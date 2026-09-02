@@ -1,5 +1,5 @@
 import { Container } from 'pixi.js';
-import { Game, Scene, Input, Random } from '../../src/core/index.ts';
+import { Game, Scene, Input, Random, SaveSystem } from '../../src/core/index.ts';
 import { TintedSprite, SpriteSheet, TileMap, Camera } from '../../src/render/index.ts';
 import { Label, theme, Window, WindowStack, ListView, type ListItem } from '../../src/ui/index.ts';
 import {
@@ -103,6 +103,28 @@ interface GroundItem extends Step {
 	sprite: TintedSprite;
 }
 
+/**
+ * The permadeath pattern: one named slot, autosaved on every descend, deleted on death so
+ * there is nothing left to continue - `mwg/core`'s `SaveSystem` doing exactly that, wired
+ * into a real game loop rather than left as an unused primitive.
+ */
+interface DungeonSave {
+	depth: number;
+	heroHp: number;
+	strength: number;
+	vitality: number;
+	armor: number;
+	weaponId: string | null;
+	armorId: string | null;
+	bag: Array<{ id: string; quantity: number }>;
+}
+
+const SAVE_SLOT = 'run';
+const saves = new SaveSystem<DungeonSave>({ namespace: 'mwg-dungeon-demo', version: 1 });
+
+/** set from `main()` before the scene starts, and consumed once in `create()` */
+let pendingSave: DungeonSave | null = null;
+
 class DungeonScene extends Scene {
 	private sheet!: SpriteSheet;
 	private camera!: Camera;
@@ -155,9 +177,61 @@ class DungeonScene extends Scene {
 
 		this.buildInterface();
 		this.stage.addChild(this.windows);
+
+		const continuing = pendingSave !== null;
+		if (pendingSave) {
+			this.applySave(pendingSave);
+			pendingSave = null;
+		}
+
 		this.enterLevel();
+		this.say(
+			continuing
+				? 'Continuing your run.'
+				: 'A new run begins. There is no continuing after you die.'
+		);
 
 		Input.onAction.add((action) => this.onAction(action));
+	}
+
+	// -------------------------------------------------------------- save/load
+
+	private toSaveData(): DungeonSave {
+		return {
+			depth: this.depth,
+			heroHp: this.heroHp,
+			strength: this.heroStats.base('strength'),
+			vitality: this.heroStats.base('vitality'),
+			armor: this.heroStats.base('armor'),
+			weaponId: this.heroEquipment.get('weapon')?.id ?? null,
+			armorId: this.heroEquipment.get('armor')?.id ?? null,
+			bag: this.heroBag.items.map((entry) => ({ id: entry.id, quantity: entry.quantity })),
+		};
+	}
+
+	private applySave(data: DungeonSave): void {
+		this.depth = data.depth;
+		this.heroHp = data.heroHp;
+		this.heroStats.setBase('strength', data.strength);
+		this.heroStats.setBase('vitality', data.vitality);
+		this.heroStats.setBase('armor', data.armor);
+
+		this.heroBag = new Inventory({ capacity: 30 });
+		for (const entry of data.bag) {
+			this.heroBag.add({ id: entry.id, quantity: entry.quantity, stackable: entry.id === 'potion', weight: 1 });
+		}
+
+		if (data.weaponId) this.heroEquipment.equip('weapon', ITEMS[data.weaponId]);
+		if (data.armorId) this.heroEquipment.equip('armor', ITEMS[data.armorId]);
+	}
+
+	/** called on every descend - autosave, not a single "save game" button */
+	private saveRun(): void {
+		saves.save(
+			SAVE_SLOT,
+			this.toSaveData(),
+			`Floor ${this.depth}, HP ${Math.max(0, this.hero.hp)}/${this.hero.maxHp}`
+		);
 	}
 
 	// ------------------------------------------------------------- the level
@@ -363,6 +437,7 @@ class DungeonScene extends Scene {
 			this.heroHp = Math.min(this.heroStats.get('maxHp'), this.hero.hp + 3);
 			this.depth++;
 			this.enterLevel();
+			this.saveRun();
 			return true;
 		}
 
@@ -452,6 +527,8 @@ class DungeonScene extends Scene {
 
 		if (creature.isHero) {
 			this.say(`You die here, on floor ${this.depth}.`);
+			saves.delete(SAVE_SLOT);
+			this.say('Your save is gone. No continuing.');
 			this.awaitingInput = false;
 			this.gameOver = true;
 		} else {
@@ -662,6 +739,9 @@ async function main(): Promise<void> {
 
 	//descending is its own action, so it can be rebound like everything else
 	Input.bind('descend', ['Period', 'NumpadDecimal']);
+
+	//a save from a previous visit continues that run; there is none once you have died
+	pendingSave = saves.load(SAVE_SLOT)?.state ?? null;
 
 	await Resources.load([TILES]);
 	await game.start(DungeonScene);

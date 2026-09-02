@@ -28,6 +28,32 @@ test('a map persists between visits - state set on it survives leaving and retur
 	assert.equal(dungeonAgain.hp, 3);
 });
 
+test('a map defined persistent: false is rebuilt fresh on every entry', () => {
+	let builds = 0;
+	const world = new World<{ hp: number; build: number }>();
+	world.define('floor', () => ({ hp: 10, build: ++builds }), { persistent: false });
+	world.define('town', () => ({ hp: 0, build: 0 }));
+
+	const first = world.enter('floor');
+	first.hp = 3; // fought something on this floor
+
+	world.enter('town');
+	const second = world.enter('floor');
+
+	assert.notEqual(second, first, 'should be rebuilt, not the same instance');
+	assert.equal(second.hp, 10, 'should be fresh state, not carried over');
+	assert.equal(second.build, 2);
+});
+
+test('isPersistent reports what a map was defined with, defaulting to true', () => {
+	const world = new World<object>();
+	world.define('town', () => ({}));
+	world.define('floor', () => ({}), { persistent: false });
+
+	assert.equal(world.isPersistent('town'), true);
+	assert.equal(world.isPersistent('floor'), false);
+});
+
 test('current and currentMapId track the active map', () => {
 	const world = new World<object>();
 	world.define('a', () => ({}));

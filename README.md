@@ -315,9 +315,11 @@ rather than showing a raw key to the player.
     625 chunks — far past the ~2,500-cell maps any current example uses) still holds 60fps,
     `cull()` costs ~0.017ms per call, and only ~1% of chunks render at a time. No regression
     found; nothing needed fixing
-20. wire `mwg/core`'s `SaveSystem` into an actual game loop end to end - a worked save/load
-    example (or an addition to `village`/`battle`), plus a debug quicksave/quickload
-    keybinding, not just the primitive itself with no game ever calling it
+20. ~~wire `mwg/core`'s `SaveSystem` into an actual game loop end to end~~ - `examples/dungeon`
+    now autosaves on every descend (`saves.save`, one named slot) and offers to continue on
+    load (verified in a browser: save on floor 3, reload, "Continuing your run", correct
+    depth/stats/bag restored). Folded together with item 27 below, since permadeath is
+    what the same wiring demonstrates on death, not a separate code path
 21. a proper character animation state convention, beyond `GridMover`'s bare walk/idle hook
     names: standing still, moving, and performing an action (attacking, using an item),
     with rules for how one interrupts another - `AnimatedSprite` and `GridMover` supply the
@@ -337,12 +339,13 @@ rather than showing a raw key to the player.
 25. `mwg/ui` — a dense icon-grid inventory view (multi-column, drag/drop, long-press to
     quickslot) alongside the existing `ListView`, for games with SPD-sized item counts where
     a scrolling list is the wrong shape
-26. `mwg/world` — an explicit non-persistent-map mode: a left floor can be discarded and
-    regenerated rather than kept alive, alongside the persistent-map default ADOM needs. SPD
-    does not keep most floors around after descending past them
-27. wire `mwg/core`'s `SaveSystem` for a permadeath pattern (slot deleted on death, no
-    continue) as a documented, tested usage — item 20's save/load wiring covers the general
-    named-slot case, not this one specifically
+26. ~~`mwg/world` — an explicit non-persistent-map mode~~: `World.define` now takes a
+    `persistent` option (default `true`, matching ADOM's shape); `persistent: false` rebuilds
+    a map from its factory on every `enter`, discarding whatever was there, which is SPD's
+    shape for its own floors. Both live in the same `World`
+27. ~~wire `mwg/core`'s `SaveSystem` for a permadeath pattern~~ - `examples/dungeon`'s save is
+    deleted the moment the hero dies (`saves.delete`, verified in a browser: die, save gone
+    from `localStorage`, reload starts a fresh floor 1 run rather than continuing)
 28. once hex tile maps (item 17) ship, consider a Civilization-like 4X or wargame as a
     further reference alongside Wesnoth - both are good candidates for exercising a hex grid
     beyond a single tactical skirmish (a much larger persistent hex map, fog of war over
