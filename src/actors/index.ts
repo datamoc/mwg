@@ -20,3 +20,5 @@ export { rollLoot } from './Loot.ts';
 export type { LootEntry, LootTable } from './Loot.ts';
 export { buy, sell } from './Shop.ts';
 export type { Price, ShopOptions } from './Shop.ts';
+export { canAfford, spend } from './Resource.ts';
+export type { ResourceCost } from './Resource.ts';

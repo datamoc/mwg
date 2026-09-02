@@ -1,5 +1,7 @@
 export { loadTiledMap } from './TiledMap.ts';
-export type { TiledMapData, TiledLayer, TiledObject, LoadedTiledMap } from './TiledMap.ts';
+export type { TiledMapData, TiledLayer, TiledObject, LoadedTiledMap, TilesetSheet, TiledTilesetData } from './TiledMap.ts';
+export { automap } from './automap.ts';
+export type { AutomapRule, AutomapOptions } from './automap.ts';
 export { GameState } from './GameState.ts';
 export { activePage, conditionHolds } from './Event.ts';
 export type { EventTrigger, EventCondition, EventPage, MapEvent } from './Event.ts';

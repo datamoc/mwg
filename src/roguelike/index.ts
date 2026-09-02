@@ -5,6 +5,9 @@ export { generateDungeon, findFreeCell, furthestRoom, DUNGEON_KINDS } from './ge
 export type { DungeonOptions } from './generate.ts';
 
 export { FieldOfView } from './FieldOfView.ts';
+export type { HeightSight } from './FieldOfView.ts';
+
+export { Elevation } from './Elevation.ts';
 
 export { Pathfinder, neighbourOffsets } from './Pathfinder.ts';
 export type { Step, PathOptions } from './Pathfinder.ts';
