@@ -290,9 +290,17 @@ rather than showing a raw key to the player.
 15. ~~`mwg/assets` + `mwg/render` — verify and harden SVG texture loading through a compiled
     `data:` URI~~ (verified in `examples/colour-transform`: Pixi's SVG parser rasterises it
     correctly through the aliased, extension-less `data:` source, no code changes needed)
-16. `mwg/render` + `mwg/roguelike` — hexagonal tile maps, and FOV/pathfinding over a hex grid
-17. `mwg/render` — isometric and staggered projection, so any Tiled orientation loads directly
-18. ~~a performance pass across the render path: profile `ColorTransformBatcher` and
+16. an SPD-shaped mockup: wire `mwg/actors` (`StatBlock`, `Inventory`, `EquipmentSlots`) into
+    `examples/dungeon` — equipment that changes combat stats, and a real inventory screen
+    opened mid-run (permadeath is already true there: `kill()` on the hero already ends the
+    run with no continue). Reordered ahead of 17/18: every piece it needs already shipped,
+    so it is integration work, not new engineering, and it is the fastest path to a
+    recognisable SPD-shaped demo
+17. `mwg/render` + `mwg/roguelike` — hexagonal tile maps, and FOV/pathfinding over a hex grid.
+    The actual blocker for a Wesnoth-shaped mockup: nothing hex-shaped is possible before
+    this lands, unlike 16 above, so it is next after that quick win rather than after 18/19
+18. `mwg/render` — isometric and staggered projection, so any Tiled orientation loads directly
+19. ~~a performance pass across the render path: profile `ColorTransformBatcher` and
     `TileMap`'s chunk culling under load, and confirm nothing ever silently falls back from
     WebGL/WebGPU to a canvas 2D renderer~~ — measured directly (`renderer.name` inspected,
     not assumed): `colour-transform`'s 4000-sprite stress test holds a steady 60fps on
@@ -301,10 +309,10 @@ rather than showing a raw key to the player.
     625 chunks — far past the ~2,500-cell maps any current example uses) still holds 60fps,
     `cull()` costs ~0.017ms per call, and only ~1% of chunks render at a time. No regression
     found; nothing needed fixing
-19. wire `mwg/core`'s `SaveSystem` into an actual game loop end to end - a worked save/load
+20. wire `mwg/core`'s `SaveSystem` into an actual game loop end to end - a worked save/load
     example (or an addition to `village`/`battle`), plus a debug quicksave/quickload
     keybinding, not just the primitive itself with no game ever calling it
-20. a proper character animation state convention, beyond `GridMover`'s bare walk/idle hook
+21. a proper character animation state convention, beyond `GridMover`'s bare walk/idle hook
     names: standing still, moving, and performing an action (attacking, using an item),
     with rules for how one interrupts another - `AnimatedSprite` and `GridMover` supply the
     pieces today, but no shared convention for naming or sequencing the states themselves
