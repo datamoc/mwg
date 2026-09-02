@@ -7,7 +7,7 @@ import { EventRunner, type EventCommand } from '../src/rpg/EventRunner.ts';
 import { WindowStack } from '../src/ui/WindowStack.ts';
 import { loadTiledMap, type TiledMapData } from '../src/rpg/TiledMap.ts';
 import { SpriteSheet } from '../src/render/SpriteSheet.ts';
-import { EMPTY } from '../src/render/TileMap.ts';
+import { EMPTY, tileFrame, tileFrameSheet, tileFrameIndex } from '../src/render/TileMap.ts';
 import { GridMover } from '../src/rpg/GridMover.ts';
 import { AnimatedSprite } from '../src/render/AnimatedSprite.ts';
 import { Texture, TextureSource } from 'pixi.js';
@@ -203,7 +203,36 @@ test('loadTiledMap refuses a staggered map on an axis or index it does not read 
 	assert.throws(() => loadTiledMap({ ...base, staggerindex: 'even' }, tinyTilesetSheet()));
 });
 
-test('loadTiledMap refuses more than one tileset', () => {
+test('tileFrame packs a sheet and frame, and plain indices decode as sheet 0', () => {
+	assert.equal(tileFrameSheet(tileFrame(2, 17)), 2);
+	assert.equal(tileFrameIndex(tileFrame(2, 17)), 17);
+	assert.equal(tileFrameSheet(5), 0);
+	assert.equal(tileFrameIndex(5), 5);
+	assert.throws(() => tileFrame(-1, 0), /sheet index/);
+	assert.throws(() => tileFrame(0, -1), /frame index/);
+});
+
+test('loadTiledMap reads a map mixing two tilesets, one of them external', () => {
+	const data: TiledMapData = {
+		width: 3,
+		height: 1,
+		tilewidth: 16,
+		tileheight: 16,
+		tilesets: [{ firstgid: 1 }, { firstgid: 100, source: 'tiles/walls.json' }],
+		layers: [{ type: 'tilelayer', name: 'ground', data: [1, 100, 102] }],
+	};
+
+	//sheets in either order - they match tilesets by firstgid, not position
+	const { map } = loadTiledMap(data, [
+		{ firstgid: 100, sheet: tinyTilesetSheet() },
+		{ firstgid: 1, sheet: tinyTilesetSheet() },
+	]);
+	assert.equal(map.getTile('ground', 0, 0), 0); // gid 1 - firstgid 1, single-owner plain index
+	assert.equal(map.getTile('ground', 1, 0), tileFrame(1, 0)); // gid 100 - firstgid 100
+	assert.equal(map.getTile('ground', 2, 0), tileFrame(1, 2)); // gid 102 - firstgid 100
+});
+
+test('loadTiledMap refuses one sheet for several tilesets, and a sheet count that matches none', () => {
 	const data: TiledMapData = {
 		width: 1,
 		height: 1,
@@ -212,7 +241,51 @@ test('loadTiledMap refuses more than one tileset', () => {
 		tilesets: [{ firstgid: 1 }, { firstgid: 100 }],
 		layers: [],
 	};
-	assert.throws(() => loadTiledMap(data, tinyTilesetSheet()));
+	assert.throws(() => loadTiledMap(data, tinyTilesetSheet()), /one sheet per tileset/);
+	assert.throws(
+		() => loadTiledMap(data, [{ firstgid: 1, sheet: tinyTilesetSheet() }]),
+		/one sheet per tileset/
+	);
+	assert.throws(
+		() =>
+			loadTiledMap(data, [
+				{ firstgid: 1, sheet: tinyTilesetSheet() },
+				{ firstgid: 2, sheet: tinyTilesetSheet() },
+			]),
+		/no sheet for the tileset at firstgid 100/
+	);
+});
+
+test('loadTiledMap refuses a sheet cut to another tile size, and a gid no tileset owns', () => {
+	const sized = (w: number, h: number) => {
+		const source = new TextureSource({ width: 64, height: 16 });
+		return SpriteSheet.fromTexture(new Texture({ source }), w, h);
+	};
+	const data: TiledMapData = {
+		width: 1,
+		height: 1,
+		tilewidth: 16,
+		tileheight: 16,
+		tilesets: [{ firstgid: 5 }, { firstgid: 100 }],
+		layers: [{ type: 'tilelayer', name: 'ground', data: [3] }],
+	};
+
+	assert.throws(
+		() =>
+			loadTiledMap(data, [
+				{ firstgid: 5, sheet: sized(8, 8) },
+				{ firstgid: 100, sheet: tinyTilesetSheet() },
+			]),
+		/firstgid 5.*8x8.*16x16/
+	);
+	assert.throws(
+		() =>
+			loadTiledMap(data, [
+				{ firstgid: 5, sheet: tinyTilesetSheet() },
+				{ firstgid: 100, sheet: tinyTilesetSheet() },
+			]),
+		/below every tileset's firstgid/
+	);
 });
 
 test('loadTiledMap refuses compressed layer data', () => {

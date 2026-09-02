@@ -1,4 +1,5 @@
-import { Container } from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
+import type { Texture } from 'pixi.js';
 import { TintedSprite } from './TintedSprite.ts';
 import type { SpriteSheet } from './SpriteSheet.ts';
 import type { Camera } from './Camera.ts';
@@ -7,12 +8,48 @@ import { hexToPixel, pixelToHex } from '../core/Hex.ts';
 /** the frame value meaning "nothing here"; a cell holding it gets no sprite at all */
 export const EMPTY = -1;
 
+/** the faces of a raised block are shaded, the way light falls on the classic block look */
+const LEFT_FACE_FILL = 0x6e6e6e;
+const RIGHT_FACE_FILL = 0x9a9a9a;
+
+/**
+ * Packs a (sheet, frame) pair into one cell value, for a `TileMap` built over
+ * several sheets - a map whose tiles come from more than one Tiled tileset.
+ *
+ * Single-sheet maps never need this: a plain frame index already decodes as
+ * sheet 0, so every existing call site keeps working unchanged.
+ */
+export function tileFrame(sheet: number, frame: number): number {
+	if (!Number.isInteger(sheet) || sheet < 0 || sheet >= 1 << 12) {
+		throw new Error(`tileFrame needs a sheet index from 0 to ${(1 << 12) - 1}, got ${sheet}`);
+	}
+	if (!Number.isInteger(frame) || frame < 0 || frame >= 1 << 20) {
+		throw new Error(`tileFrame needs a frame index from 0 to ${(1 << 20) - 1}, got ${frame}`);
+	}
+	return (sheet << 20) | frame;
+}
+
+/** the sheet half of a `tileFrame` pack, or 0 for a plain frame index */
+export function tileFrameSheet(packed: number): number {
+	return packed >>> 20;
+}
+
+/** the frame half of a `tileFrame` pack, or the value itself for a plain index */
+export function tileFrameIndex(packed: number): number {
+	return packed & ((1 << 20) - 1);
+}
+
 export interface TileMapOptions {
 	/** in tiles */
 	width: number;
 	height: number;
 
-	sheet: SpriteSheet;
+	/**
+	 * The sheet tiles are drawn from, or one per tileset when a map mixes
+	 * several. Cells then hold `tileFrame` packs rather than plain indices -
+	 * see `tileFrame`. The first sheet sets the default tile size.
+	 */
+	sheet: SpriteSheet | readonly SpriteSheet[];
 
 	/** in world units; defaults to the sheet's frame size, which is the usual case */
 	tileWidth?: number;
@@ -38,6 +75,13 @@ export interface TileMapOptions {
 	 * and large enough that there are not many of them.
 	 */
 	chunkSize?: number;
+
+	/**
+	 * Pixels of lift per elevation level; defaults to half a tile, the classic
+	 * isometric block proportion. A cell raised to height `h` draws its top
+	 * `h` steps higher, with side faces filling the bands between.
+	 */
+	heightStep?: number;
 }
 
 interface Layer {
@@ -57,6 +101,11 @@ interface Layer {
  *
  * The map is chunked and culled against the camera, so its cost tracks what is on screen
  * rather than how large the map is.
+ *
+ * Cells can also carry an elevation (`setCellHeight`): the top tile moves up by one
+ * `heightStep` per level, and on the diamond projections (isometric, staggered) each
+ * level grows two shaded side faces, the classic raised-block look. `tileCenter`
+ * rides along, so whoever stands on the cell stands on top of it.
  */
 export class TileMap extends Container {
 	readonly widthInTiles: number;
@@ -65,7 +114,10 @@ export class TileMap extends Container {
 	readonly tileHeight: number;
 	readonly shape: 'square' | 'hex' | 'isometric' | 'staggered';
 
-	private sheet: SpriteSheet;
+	/** pixels of lift per elevation level */
+	readonly heightStep: number;
+
+	private sheets: SpriteSheet[];
 	private layers: Layer[] = [];
 	private layersByName = new Map<string, Layer>();
 
@@ -79,15 +131,24 @@ export class TileMap extends Container {
 	private cellTint: Uint32Array;
 	private cellAdd: Uint32Array;
 
+	//per cell elevation, in whole levels; the side faces of raised diamond cells
+	private cellHeight: Int32Array;
+	private faces: Array<Graphics | null>;
+
 	constructor(options: TileMapOptions) {
 		super();
 
 		this.widthInTiles = options.width;
 		this.heightInTiles = options.height;
-		this.sheet = options.sheet;
-		this.tileWidth = options.tileWidth ?? options.sheet.frameWidth;
-		this.tileHeight = options.tileHeight ?? options.sheet.frameHeight;
+		this.sheets = Array.isArray(options.sheet) ? [...options.sheet] : [options.sheet];
+		if (this.sheets.length === 0) throw new Error('a TileMap needs at least one sheet');
+		this.tileWidth = options.tileWidth ?? this.sheets[0].frameWidth;
+		this.tileHeight = options.tileHeight ?? this.sheets[0].frameHeight;
 		this.shape = options.shape ?? 'square';
+		this.heightStep = options.heightStep ?? this.tileHeight / 2;
+		if (!(this.heightStep > 0)) {
+			throw new Error(`a TileMap's heightStep must be a positive number, got ${options.heightStep}`);
+		}
 
 		this.chunkSize = options.chunkSize ?? 16;
 		this.chunkColumns = Math.ceil(this.widthInTiles / this.chunkSize);
@@ -96,6 +157,8 @@ export class TileMap extends Container {
 		const cells = this.widthInTiles * this.heightInTiles;
 		this.cellTint = new Uint32Array(cells).fill(0xffffff);
 		this.cellAdd = new Uint32Array(cells);
+		this.cellHeight = new Int32Array(cells);
+		this.faces = new Array(cells).fill(null);
 	}
 
 	get layerCount(): number {
@@ -148,7 +211,8 @@ export class TileMap extends Container {
 	 * Adds a layer on top of the existing ones.
 	 *
 	 * @param data one frame index per cell, row-major, `EMPTY` for a blank cell. A missing
-	 * array makes an empty layer to fill in later.
+	 * array makes an empty layer to fill in later. On a multi-sheet map the values are
+	 * `tileFrame` packs rather than plain indices.
 	 */
 	addLayer(name: string, data?: ArrayLike<number>): this {
 		if (this.layersByName.has(name)) throw new Error(`this map already has a layer named "${name}"`);
@@ -179,10 +243,14 @@ export class TileMap extends Container {
 		this.addChild(container);
 
 		//sprites are built after registration so setTile can find the layer
+		const isBottom = this.layers.length === 1;
 		for (let y = 0; y < this.heightInTiles; y++) {
 			for (let x = 0; x < this.widthInTiles; x++) {
 				const frame = layer.data[this.index(x, y)];
 				if (frame !== EMPTY) this.buildSprite(layer, x, y, frame);
+				//faces belong to the block, which the bottom layer defines; upper
+				//layers ride the same lift through buildSprite but draw no faces
+				if (isBottom) this.syncFaces(x, y);
 			}
 		}
 
@@ -249,11 +317,21 @@ export class TileMap extends Container {
 		return { x: center.x - this.tileWidth / 2, y: center.y - this.tileHeight / 2 };
 	}
 
+	/** resolves a cell value to a texture: plain indices read sheet 0, packs read their sheet */
+	private textureFor(frame: number): Texture {
+		const sheet = tileFrameSheet(frame);
+		if (sheet >= this.sheets.length) {
+			throw new Error(`frame ${frame} names sheet ${sheet}, but this map has ${this.sheets.length}`);
+		}
+		return this.sheets[sheet].get(tileFrameIndex(frame));
+	}
+
 	private buildSprite(layer: Layer, x: number, y: number, frame: number): TintedSprite {
-		const sprite = new TintedSprite(this.sheet.get(frame));
+		const sprite = new TintedSprite(this.textureFor(frame));
 		const origin = this.cellOrigin(x, y);
 		sprite.x = origin.x;
-		sprite.y = origin.y;
+		//raised cells draw their top higher; the bands between are the faces below
+		sprite.y = origin.y - this.cellHeight[this.index(x, y)] * this.heightStep;
 
 		const cell = this.index(x, y);
 		sprite.tint = this.cellTint[cell];
@@ -284,10 +362,13 @@ export class TileMap extends Container {
 			existing?.destroy();
 			target.sprites[cell] = null;
 		} else if (existing) {
-			existing.texture = this.sheet.get(frame);
+			existing.texture = this.textureFor(frame);
 		} else {
 			this.buildSprite(target, x, y, frame);
 		}
+
+		//faces follow the bottom layer: no tile there, no block to side
+		if (this.layers[0] === target) this.syncFaces(x, y);
 	}
 
 	/** fills a whole layer at once, which is what loading a map does */
@@ -307,7 +388,8 @@ export class TileMap extends Container {
 	 *
 	 * This is the fog-of-war and lighting hook. `tint` multiplies, so it darkens; `add` is
 	 * the additive term, which is what lets an unseen-but-remembered tile wash out towards
-	 * grey rather than merely going dark.
+	 * grey rather than merely going dark. Side faces take the tint but not the add -
+	 * plain geometry has no batcher of its own to carry it.
 	 */
 	setCellColor(x: number, y: number, tint: number, add = 0): void {
 		if (!this.inside(x, y)) return;
@@ -325,6 +407,8 @@ export class TileMap extends Container {
 				sprite.colorAdd = add;
 			}
 		}
+		const face = this.faces[cell];
+		if (face) face.tint = tint;
 	}
 
 	getCellTint(x: number, y: number): number {
@@ -338,14 +422,137 @@ export class TileMap extends Container {
 		}
 	}
 
+	/**
+	 * Raises or lowers one cell, in whole levels.
+	 *
+	 * Every layer's top tile moves up by one `heightStep` per level, and on the
+	 * diamond projections a raised cell grows two shaded side faces per level -
+	 * the left and right walls of the block, drawn into the bottom layer's chunk
+	 * behind the cell's own top, so rows in front still overlap correctly. Square
+	 * and hex cells lift without faces. A cell with no bottom-layer tile grows no
+	 * faces: nothing to be the side of. Negative heights sink the top with no
+	 * faces - pits are a hole, not an inverted block.
+	 *
+	 * The usual source is an `Elevation`: `map.setCellHeight(x, y,
+	 * elevation.heightAt(x, y))` over every cell, after the layers are added.
+	 */
+	setCellHeight(x: number, y: number, height: number): void {
+		if (!this.inside(x, y)) return;
+		if (!Number.isInteger(height)) {
+			throw new Error(`a cell's height must be a whole number, got ${height}`);
+		}
+
+		const cell = this.index(x, y);
+		if (this.cellHeight[cell] === height) return;
+		this.cellHeight[cell] = height;
+
+		const lift = height * this.heightStep;
+		for (const layer of this.layers) {
+			const sprite = layer.sprites[cell];
+			if (sprite) sprite.y = this.cellOrigin(x, y).y - lift;
+		}
+		this.syncFaces(x, y);
+	}
+
+	/** the elevation of a cell in whole levels; off the map reads as ground */
+	getCellHeight(x: number, y: number): number {
+		return this.inside(x, y) ? this.cellHeight[this.index(x, y)] : 0;
+	}
+
+	/** how many cells currently draw side faces, for a debug overlay */
+	get faceCount(): number {
+		return this.faces.filter((face) => face !== null).length;
+	}
+
+	/** rebuilds or removes one cell's faces to match its height and bottom tile */
+	private syncFaces(x: number, y: number): void {
+		if (this.layers.length === 0) return;
+
+		const cell = this.index(x, y);
+		const want =
+			(this.shape === 'isometric' || this.shape === 'staggered') &&
+			this.cellHeight[cell] > 0 &&
+			this.layers[0].data[cell] !== EMPTY;
+
+		const have = this.faces[cell];
+		if (!want) {
+			if (have) {
+				have.destroy();
+				this.faces[cell] = null;
+			}
+			return;
+		}
+
+		const face = have ?? new Graphics();
+		this.drawFaces(face, x, y);
+		face.tint = this.cellTint[cell];
+		if (!have) {
+			this.faces[cell] = face;
+			//behind the cell's own top, after everything drawn above it on screen
+			const chunk = this.chunks[0][this.chunkIndex(x, y)];
+			const top = this.layers[0].sprites[cell];
+			if (top) chunk.addChildAt(face, chunk.getChildIndex(top));
+			else chunk.addChild(face);
+		}
+	}
+
+	/**
+	 * Draws one raised block: per level, a left and a right rhombus band stacking
+	 * from the base diamond up to the lifted top. Band `k` spans the step between
+	 * `(k-1) * heightStep` and `k * heightStep` above the base, so the bands tile
+	 * the whole side exactly, whatever the step is.
+	 */
+	private drawFaces(face: Graphics, x: number, y: number): void {
+		const origin = this.cellOrigin(x, y);
+		const ox = origin.x;
+		const oy = origin.y;
+		const halfW = this.tileWidth / 2;
+		const halfH = this.tileHeight / 2;
+		const step = this.heightStep;
+		const height = this.cellHeight[this.index(x, y)];
+
+		face.clear();
+		for (let k = 1; k <= height; k++) {
+			const top = k * step;
+			const bottom = (k - 1) * step;
+			face
+				.poly([
+					ox, oy + halfH - top,
+					ox + halfW, oy + halfH * 2 - top,
+					ox + halfW, oy + halfH * 2 - bottom,
+					ox, oy + halfH - bottom,
+				])
+				.fill(LEFT_FACE_FILL);
+			face
+				.poly([
+					ox + halfW, oy + halfH * 2 - top,
+					ox + halfW * 2, oy + halfH - top,
+					ox + halfW * 2, oy + halfH - bottom,
+					ox + halfW, oy + halfH * 2 - bottom,
+				])
+				.fill(RIGHT_FACE_FILL);
+		}
+	}
+
 	/** world point to tile coordinates */
 	toTile(worldX: number, worldY: number): { x: number; y: number } {
+		//the base grid, not the lifted tops: a raised tile overlaps its neighbours
+		//on screen, and unpicking which one a point meant needs the heights, which
+		//this deliberately does not consult - games with raised clickable cells
+		//adjust the point by the known height first
 		return this.projectedTile(worldX, worldY);
 	}
 
-	/** the centre of a tile, in world units — where a character standing on it belongs */
+	/**
+	 * The centre of a tile, in world units — where a character standing on it belongs.
+	 *
+	 * Rides the cell's elevation: a raised cell reports its lifted top, so whoever
+	 * is placed there stands on the block rather than inside it.
+	 */
 	tileCenter(x: number, y: number): { x: number; y: number } {
-		return this.projectedCenter(x, y);
+		const center = this.projectedCenter(x, y);
+		center.y -= this.getCellHeight(x, y) * this.heightStep;
+		return center;
 	}
 
 	/**

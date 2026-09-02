@@ -12,7 +12,7 @@ export type { AnimationOptions } from './AnimatedSprite.ts';
 export { SpriteSheet } from './SpriteSheet.ts';
 export { Camera, createCamera } from './Camera.ts';
 export type { CameraOptions } from './Camera.ts';
-export { TileMap, EMPTY } from './TileMap.ts';
+export { TileMap, EMPTY, tileFrame, tileFrameSheet, tileFrameIndex } from './TileMap.ts';
 export type { TileMapOptions } from './TileMap.ts';
 export { LayeredSprite } from './LayeredSprite.ts';
 export { Projectile } from './Projectile.ts';
