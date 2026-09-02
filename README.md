@@ -488,6 +488,17 @@ rather than showing a raw key to the player.
     and there is no allocate-a-point-into-a-named-stat helper with the usual rules a skill
     spend wants (a cap, a cost that rises per rank already invested). The gap is that seam,
     not a skill tree engine
+40. `mwg/actors` — crafting: a recipe (named ingredients and quantities, one result) resolved
+    against an `Inventory` - checked, consumed, and the result added in one call, the same
+    small-focused-function shape as `skillCheck` rather than a whole crafting subsystem.
+    `Inventory` today only stacks, weighs and adds/removes what a game already hands it; it
+    has no notion of one stack of items turning into a different one. SPD's potion brewing
+    and ADOM's alchemy are both this same shape underneath
+41. a generic board-game token/piece: owned by a player, sitting on a board cell, countable
+    or stackable, capturable or promotable - distinct from `mwg/roguelike`'s `Creature`-shaped
+    actors (no HP, no turn-taking of its own, no sight). Feeds item 30's board-game reference
+    more directly than anything shipped today; exactly what "owned", "captured" and
+    "promoted" should mean is a question for whichever board game item 30 eventually picks
 
 ## Licence and provenance
 
