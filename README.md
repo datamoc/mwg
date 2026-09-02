@@ -275,7 +275,7 @@ rather than showing a raw key to the player.
 4. ~~`mwg/ui` — windows, stack, lists, message box; `mwg/core` input with rebinding~~
 5. ~~`mwg/stage` — dialogue scenes: backdrop, characters, script runner~~
 6. ~~`mwg/i18n` — message tables, plurals, and left-to-right / right-to-left layout~~
-7. `mwg/actors` — stat blocks, equipment slots, modifiers, inventory
+7. ~~`mwg/actors` — stat blocks, equipment slots, modifiers, inventory~~
 8. ~~`mwg/roguelike` — FOV, pathfinding, energy scheduler, level generation~~
 9. `mwg/world` — many maps, transitions, persistence, the turn clock, encounter tables
 10. `mwg/rpg` — map and event data, the interpreter, switches and variables, grid movement
