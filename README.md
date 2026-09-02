@@ -11,7 +11,7 @@ of their own; improvements to `mwg`'s own files are shared back.
 
 ## What it is for
 
-Tile-based games with a camera over a grid. Six existing games mark out the corners of
+Tile-based games with a camera over a grid. Seven existing games mark out the corners of
 what that has to cover:
 
 | reference | what it demands that the others do not |
@@ -22,6 +22,7 @@ what that has to cover:
 | **[Pokémon](https://www.pokemon.com/), in its traditional form** | encounter tables by terrain, a roster of creatures with derived stats, an effectiveness matrix, speed-ordered battles, capture and storage |
 | **[Ren'Py](https://www.renpy.org/), and the conversation scenes every RPG borrows from it** | a backdrop with characters standing in front of it, expressions, whoever speaks picked out from the rest, branching written as data |
 | **[The Battle for Wesnoth](https://www.wesnoth.org/)** | hexagonal tactical maps, movement cost and defense by terrain, zone of control, turn-based unit combat with recruiting and upkeep |
+| **[Flare](https://flarerpg.org/)'s Empyrean Campaign** | isometric tile maps, loaded straight from Tiled's own isometric export |
 
 Underneath they share almost everything: a grid, a camera following someone across it,
 sprites that need tinting, turn-taking, characters with stats and equipment, an inventory,
@@ -165,7 +166,8 @@ work the same way over either, rather than a hex game needing its own copy of ea
 them, orthogonal, isometric and hex cover every map orientation
 [Tiled](https://www.mapeditor.org/) itself supports — a Tiled map loads and renders through
 the same `TileMap`, whichever orientation it was drawn in, rather than mwg reading only the
-one shape it happens to render natively.
+one shape it happens to render natively. Flare's Empyrean Campaign is the isometric-shaped
+reference, the same way Wesnoth is the hex-shaped one.
 
 ### RPG
 
@@ -291,11 +293,12 @@ rather than showing a raw key to the player.
 `mwg` is MPL-2.0. Its dependencies are permissive and compatible: PixiJS is MIT, rot.js is
 BSD-3-Clause.
 
-Shattered Pixel Dungeon (GPL-3, © Oleg Dolya and Evan Debenham) and The Battle for Wesnoth
-(GPL-2.0-or-later, © the Battle for Wesnoth contributors) are referenced only as design
-studies — a list of what a finished roguelike, and a finished hex-based tactical game,
-each have to do. None of either's code, assets, maps, unit definitions or text is included
-here, and `mwg` is not a derivative work of either.
+Shattered Pixel Dungeon (GPL-3, © Oleg Dolya and Evan Debenham), The Battle for Wesnoth
+(GPL-2.0-or-later, © the Battle for Wesnoth contributors), and Flare's Empyrean Campaign
+(GPL-3, © the Flare project) are referenced only as design studies — a list of what a
+finished roguelike, a finished hex-based tactical game, and a finished isometric one each
+have to do. None of their code, assets, maps, unit definitions or text is included here,
+and `mwg` is not a derivative work of any of them.
 
 ADOM, RPG Maker, Pokémon and Ren'Py are likewise references for a *shape of game*, not
 sources of anything. `mwg` implements none of their file formats, reads none of their projects or save

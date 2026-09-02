@@ -25,7 +25,8 @@
     "./stage": "./dist/stage/index.js",
     "./i18n": "./dist/i18n/index.js",
     "./actors": "./dist/actors/index.js",
-    "./world": "./dist/world/index.js"
+    "./world": "./dist/world/index.js",
+    "./rpg": "./dist/rpg/index.js"
   },
   "scripts": {
     "build": "npm run build:pkg && npm run build:global",
