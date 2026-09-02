@@ -1,10 +1,17 @@
 import { Application, TextureSource } from 'pixi.js';
 import type { Scene, SceneClass } from './Scene.ts';
+import { SceneStack } from './SceneStack.ts';
 import { Signal } from './Signal.ts';
 import { registerColorTransform } from '../render/TintedSprite.ts';
 import * as Input from './Input.ts';
 
 const PIXEL_ART_CLASS = 'mwg-pixel-art';
+
+/** one queued scene change, applied in order at the start of the next frame */
+type SceneRequest =
+	| { kind: 'switch'; next: SceneClass }
+	| { kind: 'push'; next: SceneClass }
+	| { kind: 'pop'; result: unknown };
 
 /**
  * A class beats an inline `canvas.style.imageRendering` because Pixi's own `autoDensity`/
@@ -77,8 +84,8 @@ export class Game {
 	/** fires after every frame's update, for systems that are not scene-owned */
 	readonly onFrame = new Signal<number>();
 
-	private scene: Scene | null = null;
-	private requested: SceneClass | null = null;
+	private stack = new SceneStack();
+	private pending: SceneRequest[] = [];
 	private options: Required<GameOptions>;
 	private started = false;
 
@@ -161,7 +168,7 @@ export class Game {
 		//which is larger on a hidpi display. Scenes lay out in logical units, so handing
 		//them the backing size would push everything they centre off the screen.
 		this.app.renderer.on('resize', () => {
-			this.scene?.resize(this.width, this.height);
+			this.stack.resize(this.width, this.height);
 		});
 
 		this.expose();
@@ -171,13 +178,39 @@ export class Game {
 		this.app.ticker.add((ticker) => this.frame(ticker.deltaMS / 1000));
 	}
 
-	/** queues a scene change; it happens at the start of the next frame */
+	/**
+	 * Queues a scene change; it happens at the start of the next frame.
+	 *
+	 * The whole stack goes: every scene is destroyed, suspended or not, and the
+	 * new one starts alone. For a scene that returns, push it instead.
+	 */
 	switchScene(next: SceneClass): void {
-		this.requested = next;
+		this.pending.push({ kind: 'switch', next });
 	}
 
+	/**
+	 * Queues a scene on top of the current one; it starts at the next frame.
+	 *
+	 * The scene underneath suspends but is not destroyed: it stops updating and
+	 * keeps rendering, so the new scene can layer over it or replace it
+	 * outright, and `popScene` resumes exactly where play left off.
+	 */
+	pushScene(next: SceneClass): void {
+		this.pending.push({ kind: 'push', next });
+	}
+
+	/**
+	 * Queues the top scene's removal; it happens at the start of the next frame.
+	 *
+	 * @param result reported back to the resumed scene's `onResume`
+	 */
+	popScene(result?: unknown): void {
+		this.pending.push({ kind: 'pop', result });
+	}
+
+	/** the scene currently updating: the top of the stack */
 	get currentScene(): Scene | null {
-		return this.scene;
+		return this.stack.current;
 	}
 
 	/**
@@ -212,16 +245,19 @@ export class Game {
 	}
 
 	private frame(deltaSeconds: number): void {
-		if (this.requested) {
-			const next = this.requested;
-			this.requested = null;
-			this.switchNow(next);
+		//queued scene changes run first, in order, so a frame never updates a
+		//scene that was already asked to leave
+		for (const request of this.pending) {
+			if (request.kind === 'switch') this.applySwitch(request.next);
+			else if (request.kind === 'push') this.applyPush(request.next);
+			else this.applyPop(request.result);
 		}
+		this.pending.length = 0;
 
 		this.elapsed = Math.min(deltaSeconds, this.options.maxDelta) * this.timeScale;
 		this.timeTotal += this.elapsed;
 
-		this.scene?.update(this.elapsed);
+		this.stack.update(this.elapsed);
 		this.onFrame.dispatch(this.elapsed);
 
 		//after everything has had a chance to poll it, so nothing misses a press
@@ -229,25 +265,46 @@ export class Game {
 	}
 
 	private switchNow(next: SceneClass): void {
-		this.scene?.destroy();
-		this.app.stage.removeChildren();
+		this.applySwitch(next);
+	}
 
+	/** a new scene alone: everything else is destroyed, the clocks restart */
+	private applySwitch(next: SceneClass): void {
 		const scene = new next();
-		this.scene = scene;
+		this.stack.replace(scene);
+		this.app.stage.removeChildren();
 		this.app.stage.addChild(scene.stage);
 
 		this.elapsed = 0;
 		this.timeTotal = 0;
 		this.timeScale = 1;
 
-		scene.create();
 		scene.resize(this.width, this.height);
+	}
+
+	/** a new scene over the current one, which suspends but survives underneath */
+	private applyPush(next: SceneClass): void {
+		const scene = new next();
+		this.stack.push(scene);
+		this.app.stage.addChild(scene.stage);
+
+		this.elapsed = 0;
+		this.timeTotal = 0;
+		this.timeScale = 1;
+
+		scene.resize(this.width, this.height);
+	}
+
+	/** the top scene leaves, reporting back to whatever it covered */
+	private applyPop(result: unknown): void {
+		const top = this.stack.current;
+		this.stack.pop(result);
+		if (top) this.app.stage.removeChild(top.stage);
 	}
 
 	destroy(): void {
 		Input.detach();
-		this.scene?.destroy();
-		this.scene = null;
+		this.stack.destroy();
 		this.onFrame.removeAll();
 		this.app.destroy(true, { children: true });
 		if (Game.instance === this) Game.instance = null;
