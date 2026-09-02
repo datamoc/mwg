@@ -9,3 +9,5 @@ export { EquipmentSlots } from './Equipment.ts';
 export type { EquippableItem } from './Equipment.ts';
 export { Inventory } from './Inventory.ts';
 export type { InventoryItem, InventoryOptions } from './Inventory.ts';
+export { craft } from './craft.ts';
+export type { Recipe } from './craft.ts';

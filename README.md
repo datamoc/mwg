@@ -298,9 +298,9 @@ rather than showing a raw key to the player.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** 40 → 42 → 32 → 31 → 34 → 33 → 35 →
-36 → 28 → 41 → 30 → 38 (17, 18, 37 and 39 have since shipped, and are no longer part of this
-ordering). Items 37 (quests) and 39 (skills)
+**Priority order among what's still open:** 42 → 32 → 31 → 34 → 33 → 35 →
+36 → 28 → 41 → 30 → 38 (17, 18, 37, 39 and 40 have since shipped, and are no longer part of
+this ordering). Items 37 (quests) and 39 (skills)
 move up from their append position - both are small, unblocked `mwg/actors`/`mwg/rpg`
 capabilities that already-committed reference games (ADOM's own row names quests explicitly;
 levelling is implicit in nearly all of them) demand directly, unlike several later entries
@@ -541,12 +541,14 @@ prose, rather than in the list's own sequence.
     before it shipped - `spend` was calling the cost callback twice per spend (once inside
     `canSpend`, again to charge it), harmless for a pure function but wrong for a game with
     a costly or side-effecting one, fixed to compute the cost exactly once
-40. `mwg/actors` — crafting: a recipe (named ingredients and quantities, one result) resolved
-    against an `Inventory` - checked, consumed, and the result added in one call, the same
-    small-focused-function shape as `skillCheck` rather than a whole crafting subsystem.
-    `Inventory` today only stacks, weighs and adds/removes what a game already hands it; it
-    has no notion of one stack of items turning into a different one. SPD's potion brewing
-    and ADOM's alchemy are both this same shape underneath
+40. ~~`mwg/actors` — crafting: a recipe (named ingredients and quantities, one result) resolved
+    against an `Inventory`~~ - `craft()` checks every ingredient, consumes it, and adds the
+    result in one call, the same small-focused-function shape `skillCheck` already is. All
+    or nothing: a missing or short ingredient touches nothing, and if every ingredient is
+    present but the result does not fit `Inventory`'s own capacity, every ingredient is put
+    back exactly as it was rather than spent for nothing - restored into a leftover stack of
+    the same item rather than a duplicate slot, if any of it was not used up. 7 unit tests
+    cover the happy path, both refusal cases, and the capacity-rollback path specifically
 41. a generic board-game token/piece: owned by a player, sitting on a board cell, countable
     or stackable, capturable or promotable - distinct from `mwg/roguelike`'s `Creature`-shaped
     actors (no HP, no turn-taking of its own, no sight). Feeds item 30's board-game reference
