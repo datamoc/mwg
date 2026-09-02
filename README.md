@@ -100,7 +100,7 @@ is synchronous. Game code never awaits an asset.
 
 ## Capability spec
 
-The definition of done for 1.0, drawn from what each of the six references actually
+The definition of done for 1.0, drawn from what each of the eight references actually
 demands. The shared floor is what all of them need; the sections after it are the parts
 only some do.
 
@@ -298,7 +298,13 @@ rather than showing a raw key to the player.
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
 17. `mwg/render` + `mwg/roguelike` — hexagonal tile maps, and FOV/pathfinding over a hex grid.
     The actual blocker for a Wesnoth-shaped mockup: nothing hex-shaped is possible before
-    this lands, unlike 16 above, so it is next after that quick win rather than after 18/19
+    this lands, unlike 16 above, so it is next after that quick win rather than after 18/19.
+    Flat-top orientation (matches Wesnoth), `TileMap`/`Level` gain a `shape` parameter
+    rather than forking into separate hex classes, and v1 FOV is simple line-of-sight, not
+    true shadowcasting. Note for whoever picks this up: rot.js's own hex `Path` topology
+    (`DIRS[6]`, doubled-width coordinates) is built for *pointy-top* hexagons - its geometry
+    does not match flat-top, so hex pathfinding here is a small custom search using
+    `Level`'s own flat-top neighbour logic, not a reuse of rot.js's hex `AStar`/`Dijkstra`
 18. `mwg/render` — isometric and staggered projection, so any Tiled orientation loads directly
 19. ~~a performance pass across the render path: profile `ColorTransformBatcher` and
     `TileMap`'s chunk culling under load, and confirm nothing ever silently falls back from
@@ -316,6 +322,33 @@ rather than showing a raw key to the player.
     names: standing still, moving, and performing an action (attacking, using an item),
     with rules for how one interrupts another - `AnimatedSprite` and `GridMover` supply the
     pieces today, but no shared convention for naming or sequencing the states themselves
+22. `mwg/roguelike` — a monster AI behaviour loop (wander / hunt / flee) driven by the
+    existing `FieldOfView`, `Pathfinder` and `Scheduler` primitives. Those three exist today
+    but nothing turns them into a monster's actual turn — this is the gap an SPD-shaped port
+    hits first, past the item-and-stats mockup item 16 already covers
+23. `mwg/render` + `mwg/roguelike` — a discoverable/hidden tile state (secret doors,
+    undiscovered traps): a cell that renders and blocks like its surroundings until revealed
+    by search or trigger. Needed for SPD-shaped vaults and traps; nothing in `TileMap` or
+    `FieldOfView` distinguishes "not yet seen" from "deliberately concealed"
+24. `mwg/roguelike` — targeting: an aim cursor with range/line-of-sight/area-of-effect shape
+    resolution for thrown items, wands and ranged attacks, plus a projectile-flight helper in
+    `mwg/render`. `battle`'s moves are turn-based and untargeted-on-a-grid; roguelike combat
+    needs its own aiming step
+25. `mwg/ui` — a dense icon-grid inventory view (multi-column, drag/drop, long-press to
+    quickslot) alongside the existing `ListView`, for games with SPD-sized item counts where
+    a scrolling list is the wrong shape
+26. `mwg/world` — an explicit non-persistent-map mode: a left floor can be discarded and
+    regenerated rather than kept alive, alongside the persistent-map default ADOM needs. SPD
+    does not keep most floors around after descending past them
+27. wire `mwg/core`'s `SaveSystem` for a permadeath pattern (slot deleted on death, no
+    continue) as a documented, tested usage — item 20's save/load wiring covers the general
+    named-slot case, not this one specifically
+28. once hex tile maps (item 17) ship, consider a Civilization-like 4X or wargame as a
+    further reference alongside Wesnoth - both are good candidates for exercising a hex grid
+    beyond a single tactical skirmish (a much larger persistent hex map, fog of war over
+    territory rather than a dungeon room, unit stacks, a turn given to every player rather
+    than one hero). No specific title picked yet; logged at low priority per the roadmap
+    process below
 
 ## Licence and provenance
 
