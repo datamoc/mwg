@@ -17,6 +17,18 @@ Everything below has shipped on `main`; no version has been tagged yet.
 - `Game.step(dt)`, to drive a frame by hand — needed because Chrome throttles
   `requestAnimationFrame` in a background tab.
 - `SaveSystem`: named, versioned save slots over `localStorage`, with an in-memory fallback.
+- `Recorder`/`Player`: action recording and replay for testing — every `Input.onAction`
+  stamped against the `Game.onFrame` count, re-dispatched at the same counts while the loop
+  is driven by hand with `Game.step(dt)`; `serializeReplay`/`deserializeReplay` round-trip
+  the log with validation.
+- `Collection`: named record collections over `localStorage` (quest logs, bestiaries,
+  achievements) — `all`/`get`/`put`/`remove`/`where`/`clear` reading storage directly, so
+  there is no cached copy to go stale; `SaveSystem`'s memory fallback is now shared.
+- `SceneStack` with `Game.pushScene`/`popScene`: a scene suspends underneath another and
+  resumes with a result via `Scene.onSuspend`/`onResume` — only the top scene updates, all
+  render, so overlays and opaque scenes both work.
+- `Logger`: categories and severity over bare `console.log` — four levels, a filter, and a
+  sink tests capture instead of the console.
 - `Hex`: cube-coordinate hex grid math (`hexNeighbors`, `hexDistance`, `hexLine`, `hexRange`,
   `hexToPixel`/`pixelToHex`), orientation-agnostic and shared by `roguelike` and `render`.
 
@@ -36,6 +48,10 @@ Everything below has shipped on `main`; no version has been tagged yet.
 - Verified: SVG textures load correctly through the compiled `data:` URI path; the render path
   holds 60fps at 4000 tinted sprites and over a 160,000-cell synthetic map, with no silent
   fallback off WebGL.
+- `TileMap` reads one sheet per tileset (`tileFrame` packs naming the sheet; plain indices
+  still read as sheet 0), and cells carry an elevation: `setCellHeight` lifts the top tile
+  by `heightStep` per level, growing two shaded side faces per level on the diamond
+  projections, with `tileCenter` riding along so occupants stand on top.
 
 **Assets**
 - `load`/`texture`/`get`/`resolve`, synchronous after one `load()` call per scene.
@@ -75,6 +91,9 @@ Everything below has shipped on `main`; no version has been tagged yet.
   anything drops, then weight-pick which.
 - `buy`/`sell`: a shop transaction between two `Inventory`s paid from a `StatBlock` currency
   stat, all-or-nothing like `craft()` — a full stock/buyer-capacity rollback on failure.
+- `canAfford`/`spend`: a spendable per-use resource (mana, stamina) over a `StatBlock`
+  pool — one cost or several, all-or-nothing `craft()`-shaped, with a negative cost
+  refused as an authoring error rather than a refund.
 
 **Roguelike**
 - `FieldOfView` (visible/explored/remembered), `Pathfinder` (A*, a Dijkstra distance map,
@@ -94,6 +113,12 @@ Everything below has shipped on `main`; no version has been tagged yet.
 - `Doors`: open/closed/locked door state, `Secrets`' own shape reused — the state is just
   terrain, swapped between a door's own open/closed kinds; locking is a separate flag that
   keeps a door closed and unopenable until `unlock` is called.
+- `Level`, `Secrets` and `Doors` gained `toJSON`/`fromJSON` — the game's own `kinds` table
+  (or live level) is supplied fresh on load, `QuestLog`'s own convention.
+- `Elevation`: a discrete height per cell, in the `Secrets`/`Doors` sidecar shape —
+  `FieldOfView.update` takes it for asymmetric cliff sight (a cell blocks exactly when
+  above viewer and target alike), and `Pathfinder` takes it with a climb limit (ascent
+  capped, descent free).
 
 **World**
 - `World` (many maps, each created once and kept alive, with an explicit non-persistent mode
@@ -107,10 +132,21 @@ Everything below has shipped on `main`; no version has been tagged yet.
   `GridMover` (tweened tile movement, a walk cycle, and `turnTo` for facing without moving).
 - `QuestLog`: staged quest/mission definitions (`canStart`/`start`/`advance`/`status`), with
   `toJSON`/`fromJSON` for `SaveSystem`.
+- `loadTiledMap` reads any number of tilesets — embedded or external (fetching an external
+  `.tsx`/JSON stays the caller's asset loading) — resolving each gid by Tiled's own
+  greatest-firstgid-at-or-below rule.
+- `automap`: Tiled-style automapping rules — `input` patterns matched anywhere (`EMPTY`
+  constrains nothing), one `output` variant written per match (`EMPTY` leaves the cell
+  alone), rules applied in order with each rule's matches collected before any write.
 
 **Stage**
 - `DialogueStage` (backdrop, characters standing in front of it, expressions, speaker focus)
   and `StageScript`, a small command interpreter run as one awaited call.
+- `StageScript.runStory`: a story as a graph of named passages — `{goto}` commands and
+  `StageChoice` jumps between them, falling off a passage ending the story.
+- `importTwee`: Twine's Twee notation (plain text, no DOM needed) into a `StoryScript` —
+  text lines become `say`, `[[links]]` in all three forms become one closing `ask`, and
+  dangling links, doubled passages and setter links are refused rather than half-read.
 
 **Battle**
 - `Creature` (wraps `actors.StatBlock`/`Progression`), `TypeMatrix`, `Party`, `battleOrder`,
@@ -151,6 +187,11 @@ Everything below has shipped on `main`; no version has been tagged yet.
 - `TurnClock`'s `TimedEffect` gained an optional `onExpire` callback, fired once right before
   an effect whose duration has run out is removed — what `applyStatusEffect` needed to tie a
   status effect's expiry to removing the `StatBlock` modifiers it applied.
+- `Game`'s scenes run as a stack: `switchScene` replaces everything, `pushScene`/`popScene`
+  suspend and resume; only the top scene updates, all render, and resize reaches the whole
+  stack.
+- `Pathfinder`'s search loops check the step (both ends on the map, climb within limit)
+  rather than the destination cell alone.
 
 ### Fixed
 - `checkEvolution` was first-match-wins; a multi-stage evolution chain could get stuck on an
@@ -168,3 +209,7 @@ Everything below has shipped on `main`; no version has been tagged yet.
   a `.mwg-pixel-art { image-rendering: pixelated }` class to the canvas — a class survives
   `autoDensity`/`resizeTo` rewriting the canvas's `style` attribute wholesale, where an inline
   style did not.
+- Off-map neighbours could alias real cells through `Level.index` (which does not
+  bounds-check), writing distances into the wrong cell once a search looked at the
+  step's origin rather than only its destination. Steps now refuse either end off
+  the map before any index is touched.

@@ -298,9 +298,8 @@ rather than showing a raw key to the player.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** 42 → 32 → 31 → 34 → 33 → 35 →
-36 → 28 → 41 → 30 → 38 (17, 18, 37, 39 and 40 have since shipped, and are no longer part of
-this ordering). Items 37 (quests) and 39 (skills)
+**Priority order among what's still open:** 28 → 30 → 41 → 45 (everything placed above
+has shipped and is no longer part of this ordering). Items 37 (quests) and 39 (skills)
 move up from their append position - both are small, unblocked `mwg/actors`/`mwg/rpg`
 capabilities that already-committed reference games (ADOM's own row names quests explicitly;
 levelling is implicit in nearly all of them) demand directly, unlike several later entries
@@ -465,20 +464,28 @@ prose, rather than in the list's own sequence.
     order given to every player rather than one hero, dice and card mechanics, a board that
     need not be a dungeon or a battlefield at all). No specific title or mechanic picked for
     either; logged at low priority per the roadmap process below, same as item 28
-31. `mwg/stage` — named-passage navigation for `StageScript`: a choice that jumps to another
+31. ~~`mwg/stage` — named-passage navigation for `StageScript`: a choice that jumps to another
     named list of commands, rather than only picking one fixed page of a single linear list
     (`EventRunner`'s `activePage`) or running straight through one (`StageScript.run` today).
     This is Twine's actual distinct demand (see the capability spec above) - a story as a
     graph of passages that can loop back or braid together, not a straight line or a single
     branch point. `DialogueStage` already needs no visual assets to run a scene that never
     calls `setBackdrop`/`show`, so the stageless half of a Twine-shaped story already works;
-    the graph-of-passages half does not yet
-32. `mwg/rpg` — Tiled's *external* tileset format (`.tsx`, or its JSON export), and more than
+    the graph-of-passages half does not yet~~ - `StageScript.runStory` runs a `StoryScript`
+    graph from a start passage, following `{goto}` commands and `StageChoice` jumps (choice
+    values matched back to their choice, `MessageBox` untouched); falling off a passage ends
+    the story. 4 new tests, including a loop back to an earlier passage
+32. ~~`mwg/rpg` — Tiled's *external* tileset format (`.tsx`, or its JSON export), and more than
     one tileset per map. `loadTiledMap` reads only a single tileset embedded directly in the
     map's own JSON today, and refuses outright the moment a map references a tileset as its
     own file or uses a second one - the ordinary shape once a project's maps share tilesets
-    rather than each embedding a copy
-33. `mwg/rpg` (or a new `mwg/automap`) — Tiled's automapping: rule maps whose `input_*` layers
+    rather than each embedding a copy~~ - `loadTiledMap` takes one sheet per tileset
+    (`TilesetSheet`, matched by `firstgid` in any order), resolving each gid by Tiled's own
+    greatest-firstgid-at-or-below rule; cells hold `tileFrame` packs over a new multi-sheet
+    `TileMap`, plain indices still reading as sheet 0. Fetching an external tileset stays the
+    caller's job (`TiledTilesetData` types the tileset JSON); every sheet must share the
+    map's tile size. 4 new tests
+33. ~~`mwg/rpg` (or a new `mwg/automap`) — Tiled's automapping: rule maps whose `input_*` layers
     are arbitrary 2D patterns (not just a cell's 8 immediate neighbours, unlike item 29's blob
     autotiling) matched anywhere against a target map, replaced by the paired `output_*`
     layers, with rules applied in order so a later one can override an earlier one's result,
@@ -486,28 +493,44 @@ prose, rather than in the list's own sequence.
     more expressive than neighbour-based autotiling - room decoration, structural
     error-correction and terrain stitching all read as the same mechanism. See
     <https://www.mapeditor.org/2026/07/14/focus-on-level-design-with-automapping.html> for
-    the mechanics this would need to reproduce
-34. `mwg/stage` — importing actual Twine story files (the Twee notation, or the `<tw-passagedata>`
+    the mechanics this would need to reproduce~~ - `rpg`'s `automap` (kept in-module
+    rather than a new package surface) matches `input` patterns anywhere (`EMPTY` constrains
+    nothing), writes one `output` variant per match picked at random (`EMPTY` leaves the
+    cell alone), rules in order with each rule's matches collected before any write, so a
+    rule never sees its own. The pick is injectable, defaulting to the seeded `Random.int`.
+    7 unit tests
+34. ~~`mwg/stage` — importing actual Twine story files (the Twee notation, or the `<tw-passagedata>`
     elements in Twine's HTML export) into `StageScript`'s command format, so a story authored
     in Twine's own editor runs under `mwg/stage` without hand-writing `StageCommand` arrays.
     Blocked on item 31 (named-passage navigation) - a Twine file is fundamentally a graph of
     named passages, so there is nothing to import into until `StageScript` can represent one.
     Twine supports several story formats (Harlowe, SugarCube, Chapbook, each with their own
     markup inside a passage's body) - which of those an importer would need to understand,
-    and how much of each's macro language, is an open question for whoever picks this up
-35. `mwg/core` — minimal database-shaped functions over `localStorage`: named collections of
+    and how much of each's macro language, is an open question for whoever picks this
+    up~~ - answered: Twee only (plain text, no DOM needed), structure only. `stage`'s
+    `importTwee` turns text lines into `say` (the last doubling as the choice prompt) and
+    `[[links]]` in all three forms into one closing `ask` with `goto` choices; `StoryData`
+    names the start else the first passage does, and dangling links, doubled passages and
+    setter links are refused. 8 unit tests
+35. ~~`mwg/core` — minimal database-shaped functions over `localStorage`: named collections of
     records, queried and filtered, rather than `SaveSystem`'s one-blob-per-slot shape. A
     quest log, a bestiary of what has been discovered, achievements - state a game wants to
     query ("everything not yet completed") rather than load wholesale the way a save slot is.
     `localStorage` only, not IndexedDB: `SaveSystem` already needed an in-memory fallback for
     `localStorage` under `file://`, and IndexedDB is a heavier API (async, versioned,
     transactional) than that - it would likely need the same treatment or worse, for a quota
-    and binary-storage benefit nothing here yet demands
-36. `mwg/core` — structured log handling: categories and severity levels over bare
+    and binary-storage benefit nothing here yet demands~~ - `core`'s `Collection`: named
+    record collections over `SaveStorage` (`localStorage` with the memory fallback, now
+    shared by exporting `SaveSystem`'s `defaultStorage`), with `all`/`get`/`put`/`remove`/
+    `where`/`clear` reading storage directly - nothing cached, nothing to go stale,
+    insertion order kept. 8 unit tests
+36. ~~`mwg/core` — structured log handling: categories and severity levels over bare
     `console.log`/`console.error`, the way every example's `main().catch` currently just
     dumps a stack trace to the page. Marginal value on its own - the browser console already
     covers most of what this would add - logged because it came up, not because a reference
-    game demands it
+    game demands it~~ - `core`'s `Logger`, kept as small as that admission demands: a
+    category, four levels, a filter, and a sink tests capture instead of the console.
+    4 unit tests
 37. ~~`mwg/rpg` — quest/mission management: named quests with stages, each stage a condition
     or a counter towards one ("kill 5 rats: 3/5"), and prerequisites between quests~~ -
     `QuestLog` tracks only which stage every known quest is on; a stage's condition or
@@ -522,13 +545,17 @@ prose, rather than in the list's own sequence.
     save/restore round-trip. Not wired into an example this round, matching the pattern
     already set for items 17/18/21/29 when there was nothing a live demo would add beyond
     what the unit tests already prove
-38. minigames: a lockpicking, fishing or hacking puzzle, a rhythm game, a photo-op - the
+38. ~~minigames: a lockpicking, fishing or hacking puzzle, a rhythm game, a photo-op - the
     self-contained diversion nearly every RPG in the capability spec's own reference list
     embeds somewhere. The actual gap is architectural, not any one minigame: `Game` only
     replaces a scene wholesale (`switchScene`), with nothing for suspending the current one,
     layering a different one over or instead of it, and resuming exactly where play left off
     once it reports back a result. No specific minigame picked; logged at low priority per
-    the roadmap process below, same as items 28 and 30
+    the roadmap process below, same as items 28 and 30~~ - the gap was architectural and is
+    now `core`'s `SceneStack` (pure, headless-tested): `pushScene` suspends the current scene
+    and starts another over it, `popScene` destroys the top and resumes with a result via
+    `Scene.onSuspend`/`onResume`. Only the top updates; all render, so overlays and opaque
+    scenes both work; resize reaches the whole stack. Still no minigame picked. 4 unit tests
 39. ~~`mwg/actors` — skills and competencies as levelling spends, not a new storage
     primitive~~ - `SkillPoints` is deliberately not a wrapper around `Progression`: a game
     grants points however it likes (`grant(levelsGained)` after `Progression.addExperience`
@@ -554,7 +581,7 @@ prose, rather than in the list's own sequence.
     actors (no HP, no turn-taking of its own, no sight). Feeds item 30's board-game reference
     more directly than anything shipped today; exactly what "owned", "captured" and
     "promoted" should mean is a question for whichever board game item 30 eventually picks
-42. `mwg/core` — action recording and replay, for testing: tap `Input.onAction`, timestamp
+42. ~~`mwg/core` — action recording and replay, for testing: tap `Input.onAction`, timestamp
     each one against a frame counter rather than the clock, and serialise the log; a player
     re-dispatches the same actions at the same frame counts while driving the frame loop
     itself with `Game.step(dt)` instead of a live `requestAnimationFrame`. Most of what this
@@ -564,22 +591,36 @@ prose, rather than in the list's own sequence.
     wrapping `Input.onAction`, not a new source of determinism. This session's own browser
     verification kept losing time to imprecise manual play (aligning a grid by eye, hunting
     for a monster that might not even be in view) - a recorded action log a test could
-    replay and screenshot-diff is the direct fix for exactly that
-43. magic/technology systems: a spellbook or a research tree. Real overlap with what already
+    replay and screenshot-diff is the direct fix for exactly that~~ - `core`'s `Recorder`
+    stamps `Input.onAction` against `Game.onFrame` counts and `Player` re-dispatches them
+    at the same counts; `serializeReplay`/`deserializeReplay` round-trip the log with
+    validation. 8 unit tests, including a record-then-replay reproduction
+43. ~~magic/technology systems: a spellbook or a research tree. Real overlap with what already
     shipped this session rather than a clean new gap - a tech tree is largely item 37's
     quest-prerequisite graph with a different name, and "spend research points to unlock a
     tech" is item 39's `SkillPoints` ledger with a different target. What is genuinely not
     covered by either: a spendable *resource* consumed per use rather than permanently, the
     way a spell costs mana - `mwg/actors`' `StatBlock` can hold `mana` as a stat, but nothing
     resolves "can this ability afford its cost right now, and if so spend it" the way
-    `craft()` resolves a recipe or `skillCheck` resolves a roll
-44. elevation/height levels for tiles and characters - a raised platform, a cliff blocking
+    `craft()` resolves a recipe or `skillCheck` resolves a roll~~ - `actors`' `canAfford`/
+    `spend` over a `StatBlock` pool (mana, stamina, HP), one cost or several, all-or-
+    nothing; a negative cost throws rather than refunding. 7 unit tests
+44. ~~elevation/height levels for tiles and characters - a raised platform, a cliff blocking
     line of sight from below but not above, a character standing higher up. Deliberately not
     the same ask as item 45's full 3D: this is a still-fundamentally-2D map with a discrete
     height value per cell (Fire Emblem's or classic XCOM's few floor levels), not a 3D scene.
     Nothing in `mwg/roguelike` or `mwg/render` has a notion of height today - `FieldOfView`
     and `Pathfinder` reason over one flat plane, and `TileMap`'s draw order is whichever
-    layer a game put a sprite on, not a height a character's own elevation could change
+    layer a game put a sprite on, not a height a character's own elevation could change~~ -
+    `roguelike`'s `Elevation` sidecar holds whole-level heights; `FieldOfView.update` takes
+    them for asymmetric cliff sight (a cell blocks exactly when above viewer and target
+    alike, line-traced per shape), and `Pathfinder` takes them with a climb limit (ascent
+    capped, descent free; square `find` descends a Dijkstra map the way hex already did).
+    `render`'s half: `TileMap.setCellHeight` lifts tops by `heightStep` with two shaded
+    rhombus faces per level on diamond projections, and `tileCenter` rides along. Caught a
+    real latent bug on the way - off-map neighbours alias cells through `Level.index`,
+    now guarded in the stepper. 7 + 10 unit tests; sprite draw-order-by-height stays
+    game-side, an art convention the framework does not own yet
 45. 3D rendering (tiles, characters) - the newest XCOM games, or something in Satellite
     Reign's shape. Logged at the user's explicit request and *very* low priority, alongside
     an explicit caution the request itself raised: this cuts directly against what `mwg` is
@@ -711,6 +752,11 @@ shipped in the same session they were logged in.
 `mwg` is MPL-2.0. Its dependencies are permissive and compatible: PixiJS is MIT, rot.js is
 BSD-3-Clause.
 
+`tools/vendored/rgssad-wasm` is a build of the `rgssad-wasm` crate from
+<https://github.com/nathaniel-daniel/rgssad-rs>, used under its MIT licence
+option (© 2022 Nathaniel Daniel) — see `tools/vendored/rgssad-wasm/README.md`.
+It is a developer-side archive tool only, not part of the framework or any game.
+
 Shattered Pixel Dungeon (GPL-3, © Oleg Dolya and Evan Debenham), The Battle for Wesnoth
 (GPL-2.0-or-later, © the Battle for Wesnoth contributors), Flare's Empyrean Campaign
 (GPL-3, © the Flare project), and Dungeon Crawl Stone Soup (GPL-2.0, © the Dungeon Crawl
@@ -730,4 +776,5 @@ queue ordered by speed" or "an effectiveness matrix". Particular numbers, names 
 artwork are another matter, and none appear here.
 
 The assets under `examples/assets` are generated by `tools/make-example-assets.mjs` and
-carry the project's own licence. Nothing in this repository was downloaded from anywhere.
+carry the project's own licence. Nothing else in this repository was downloaded from
+anywhere, with the sole exception of `tools/vendored/rgssad-wasm` above.
