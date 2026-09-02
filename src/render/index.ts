@@ -17,3 +17,6 @@ export type { TileMapOptions } from './TileMap.ts';
 export { LayeredSprite } from './LayeredSprite.ts';
 export { Projectile } from './Projectile.ts';
 export type { ProjectilePoint, ProjectileOptions } from './Projectile.ts';
+
+export { ActorAnimator } from './ActorAnimator.ts';
+export type { ActorAnimationState, ActorAnimatorOptions } from './ActorAnimator.ts';

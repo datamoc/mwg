@@ -320,10 +320,21 @@ rather than showing a raw key to the player.
     load (verified in a browser: save on floor 3, reload, "Continuing your run", correct
     depth/stats/bag restored). Folded together with item 27 below, since permadeath is
     what the same wiring demonstrates on death, not a separate code path
-21. a proper character animation state convention, beyond `GridMover`'s bare walk/idle hook
-    names: standing still, moving, and performing an action (attacking, using an item),
-    with rules for how one interrupts another - `AnimatedSprite` and `GridMover` supply the
-    pieces today, but no shared convention for naming or sequencing the states themselves
+21. ~~a proper character animation state convention, beyond `GridMover`'s bare walk/idle hook
+    names: standing still, moving, and performing an action (attacking, using an item), with
+    rules for how one interrupts another~~ - `render`'s new `ActorAnimator` is the three
+    states (`idle`/`move`/`action`) and exactly one rule: `setMoving` toggles idle/move freely
+    (a grid character's walk cycle can call it every frame), `playAction` cuts in over
+    whichever of those is showing and is *not itself* interruptible by a `setMoving` call
+    while it plays - that gets remembered and taken up automatically the instant the action's
+    animation finishes, via the same non-looping `onFinish` hook `AnimatedSprite` already
+    exposes. A second `playAction` mid-swing is a no-op unless `restart` is passed, so a turn
+    resolving faster than an attack's animation does not stutter it. Not wired into an example
+    this round - `village`'s player has no walk-cycle art yet (documented there already as
+    `make-example-assets.mjs`'s own roadmap, not something an example should fake around), and
+    faking a state machine over single static frames would not exercise the interruption rule
+    that is the actual point of this item. 12 unit tests cover the full state machine
+    including the interruption/resume rule and the "registered looping by mistake" footgun
 22. ~~`mwg/roguelike` — a monster AI behaviour loop (wander / hunt / flee) driven by the
     existing `FieldOfView`, `Pathfinder` and `Scheduler` primitives~~ - `decideMonsterAI()`
     gives each monster its own sight (a fresh small-radius `FieldOfView` per call, not the
