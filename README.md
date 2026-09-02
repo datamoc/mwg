@@ -11,7 +11,7 @@ of their own; improvements to `mwg`'s own files are shared back.
 
 ## What it is for
 
-Tile-based games with a camera over a grid. Eight existing games mark out the corners of
+Tile-based games with a camera over a grid. Nine existing games mark out the corners of
 what that has to cover:
 
 | reference | what it demands that the others do not |
@@ -24,6 +24,7 @@ what that has to cover:
 | **[The Battle for Wesnoth](https://www.wesnoth.org/)** | hexagonal tactical maps, movement cost and defense by terrain, zone of control, turn-based unit combat with recruiting and upkeep |
 | **[Flare](https://flarerpg.org/)'s Empyrean Campaign** | isometric tile maps, loaded straight from Tiled's own isometric export |
 | **[Dungeon Crawl Stone Soup](https://crawl.develz.org/) (Tiles)** | a branching dungeon of many interconnected levels, and autoexplore pathing to the nearest unseen tile |
+| **[Twine](https://twinery.org/)** | a story as named passages, not one linear list - a choice jumps to another passage by name, which can loop back or braid together, entirely on state and no visual stage at all |
 
 Underneath they share almost everything: a grid, a camera following someone across it,
 sprites that need tinting, turn-taking, characters with stats and equipment, an inventory,
@@ -100,7 +101,7 @@ is synchronous. Game code never awaits an asset.
 
 ## Capability spec
 
-The definition of done for 1.0, drawn from what each of the eight references actually
+The definition of done for 1.0, drawn from what each of the nine references actually
 demands. The shared floor is what all of them need; the sections after it are the parts
 only some do.
 
@@ -184,6 +185,7 @@ reference, the same way Wesnoth is the hex-shaped one.
 | grid movement tweened between tiles, with a walk cycle | `mwg/rpg` |
 | a dialogue stage: backdrop, characters, expressions, speaker focus | `mwg/stage` |
 | scenes written as a list of commands, awaited as one call | `mwg/stage` |
+| named passages a choice can jump between, for a story that is a graph, not a line | `mwg/stage` |
 | named save slots with a preview | `mwg/core` |
 
 ### Characters, equipment and stats
@@ -421,6 +423,14 @@ rather than showing a raw key to the player.
     order given to every player rather than one hero, dice and card mechanics, a board that
     need not be a dungeon or a battlefield at all). No specific title or mechanic picked for
     either; logged at low priority per the roadmap process below, same as item 28
+31. `mwg/stage` — named-passage navigation for `StageScript`: a choice that jumps to another
+    named list of commands, rather than only picking one fixed page of a single linear list
+    (`EventRunner`'s `activePage`) or running straight through one (`StageScript.run` today).
+    This is Twine's actual distinct demand (see the capability spec above) - a story as a
+    graph of passages that can loop back or braid together, not a straight line or a single
+    branch point. `DialogueStage` already needs no visual assets to run a scene that never
+    calls `setBackdrop`/`show`, so the stageless half of a Twine-shaped story already works;
+    the graph-of-passages half does not yet
 
 ## Licence and provenance
 
@@ -435,7 +445,7 @@ finished roguelike, a finished hex-based tactical game, a finished isometric one
 finished branching dungeon each have to do. None of their code, assets, maps, unit
 definitions or text is included here, and `mwg` is not a derivative work of any of them.
 
-ADOM, RPG Maker, Pokémon and Ren'Py are likewise references for a *shape of game*, not
+ADOM, RPG Maker, Pokémon, Ren'Py and Twine are likewise references for a *shape of game*, not
 sources of anything. `mwg` implements none of their file formats, reads none of their projects or save
 data, and includes none of their runtimes, assets, text or data tables — no type chart, no
 species list, no stat formula. Those are each game's own design work. Where a file format
