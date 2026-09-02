@@ -11,9 +11,12 @@
   TypeDoc, reskinned to match the site (`webpage/assets/typedoc-theme.css`,
   favicon wired in). Covers every shipped module automatically — nothing to
   keep in sync by hand, and it stays accurate as the API grows.
-- **Examples**: all four example builds (colour-transform, interface,
+- **Examples**: the first four example builds (colour-transform, interface,
   dialogue, dungeon) embedded live in iframes, each with a "open full screen"
-  link and its controls.
+  link and its controls. Two more examples now exist in the repo
+  (`village`, `battle` — see `examples/README.md`) but are **not yet** added
+  to this page or to `tools/build-webpage-examples.mjs`'s script map — do
+  that before the Examples page can claim to show everything.
 - **FAQ**: 8 real questions (status, editor, licensing/provenance, the
   `file://` build requirement, i18n status, Node-as-dev-tool, what it's built
   on).

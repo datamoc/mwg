@@ -58,6 +58,18 @@ export class GridMover {
 		return this.target !== null;
 	}
 
+	/**
+	 * Faces a direction without moving - what a bump into a wall or an NPC turns into,
+	 * rather than nothing at all. Without this, a player who arrives beside an NPC from the
+	 * "wrong" side can never turn to face it, since an actual step that way is blocked and
+	 * `moveBy` only ever faces the direction it successfully moves in.
+	 */
+	turnTo(dx: number, dy: number): void {
+		if (this.target) return;
+		this.facing = directionOf(dx, dy);
+		this.playIdle();
+	}
+
 	/** starts moving one tile in the given direction; false when already moving */
 	moveBy(dx: number, dy: number): boolean {
 		if (this.target) return false;

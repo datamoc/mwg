@@ -215,6 +215,26 @@ test('GridMover interpolates position across update() and snaps to the target ti
 	assert.equal(sprite.x, 16);
 });
 
+test('GridMover.turnTo faces a direction without moving', () => {
+	const sprite = new AnimatedSprite();
+	const mover = new GridMover(sprite, 2, 2, { tileWidth: 16, tileHeight: 16 });
+
+	mover.turnTo(1, 0);
+	assert.equal(mover.facing, 'right');
+	assert.equal(mover.isMoving, false);
+	assert.equal(mover.x, 2); // position is unchanged - only the facing turned
+	assert.equal(sprite.x, 32);
+});
+
+test('turnTo is ignored while a move is already in progress', () => {
+	const sprite = new AnimatedSprite();
+	const mover = new GridMover(sprite, 0, 0, { tileWidth: 16, tileHeight: 16 });
+
+	mover.moveBy(1, 0); // facing becomes 'right'
+	mover.turnTo(0, 1); // should not override mid-move
+	assert.equal(mover.facing, 'right');
+});
+
 test('GridMover refuses a second move while already moving', () => {
 	const sprite = new AnimatedSprite();
 	const mover = new GridMover(sprite, 0, 0, { tileWidth: 16, tileHeight: 16 });

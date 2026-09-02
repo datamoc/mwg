@@ -286,7 +286,7 @@ rather than showing a raw key to the player.
 11. ~~`mwg/battle` — species and stats, type matrix, speed-ordered turns~~
 12. ~~`mwg/audio`, save/load~~
 13. ~~layered character sprites, and vertical writing~~
-14. worked examples: a dungeon crawl, a village with NPCs and a cutscene, a creature battle
+14. ~~worked examples: a dungeon crawl, a village with NPCs and a cutscene, a creature battle~~
 15. `mwg/assets` + `mwg/render` — verify and harden SVG texture loading through a compiled
     `data:` URI (the MIME entry already exists in `tools/compile-resources`; whether Pixi's
     SVG parser actually rasterises it correctly from an aliased `data:` source, with no

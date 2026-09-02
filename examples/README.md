@@ -19,6 +19,12 @@ npm run example:dialogue:build  # dialogue scene, then open its dist/index.html
 
 npm run example:dungeon         # dungeon crawl, dev server
 npm run example:dungeon:build   # dungeon crawl, then open its dist/index.html
+
+npm run example:village         # a village with an NPC and a cutscene, dev server
+npm run example:village:build   # village, then open its dist/index.html
+
+npm run example:battle          # a creature battle, dev server
+npm run example:battle:build    # battle, then open its dist/index.html
 ```
 
 Opening an example's own `index.html` from disk shows a note telling you this, rather than
@@ -30,6 +36,8 @@ a black window: that file is the source page, and it needs the dev server.
 | `interface` | windows that stack, keyboard focus going to the top one only, a list with icons and disabled rows, and a message box that reveals text and ends on a choice |
 | `dungeon` | a playable dungeon crawl: generated floors, three-state fog of war, bump-to-attack, monsters that chase, stairs down. Arrow keys or the numpad to move, `.` to descend |
 | `dialogue` | a conversation scene: backdrop, Alice and Bob with expressions, the speaker lit and the other dimmed, and a branching choice. The whole scene is a list of data commands at the top of `main.ts` |
+| `village` | `mwg/rpg`: an NPC with two conversation pages selected by a switch, a choice that sets a variable, and a short autorun cutscene the first time the map loads. Arrow keys to move, Enter to talk to the shopkeeper |
+| `battle` | `mwg/battle`: a creature battle - species, a type-effectiveness matrix, speed-ordered turns, and a level-up with an evolution check on winning. The damage formula is this example's own invention, not something `mwg` prescribes |
 
 ## About the assets
 

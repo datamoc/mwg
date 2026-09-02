@@ -45,6 +45,10 @@
     "example:dialogue:build": "vite build --config examples/dialogue/vite.config.ts && node tools/emit-page.mjs examples/dialogue",
     "example:dungeon": "vite --config examples/dungeon/vite.config.ts",
     "example:dungeon:build": "vite build --config examples/dungeon/vite.config.ts && node tools/emit-page.mjs examples/dungeon",
+    "example:village": "vite --config examples/village/vite.config.ts",
+    "example:village:build": "vite build --config examples/village/vite.config.ts && node tools/emit-page.mjs examples/village",
+    "example:battle": "vite --config examples/battle/vite.config.ts",
+    "example:battle:build": "vite build --config examples/battle/vite.config.ts && node tools/emit-page.mjs examples/battle",
     "webpage:examples": "node tools/build-webpage-examples.mjs",
     "webpage:docs": "node tools/build-webpage-docs.mjs"
   },
