@@ -17,3 +17,6 @@ export type { ListItem, ListViewOptions } from './ListView.ts';
 
 export { MessageBox } from './MessageBox.ts';
 export type { MessageBoxOptions, MessagePage, Choice } from './MessageBox.ts';
+
+export { VerticalLabel, layoutVertical } from './VerticalLabel.ts';
+export type { VerticalLabelOptions, VerticalLayoutOptions, GlyphLayout } from './VerticalLabel.ts';

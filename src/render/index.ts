@@ -14,3 +14,4 @@ export { Camera, createCamera } from './Camera.ts';
 export type { CameraOptions } from './Camera.ts';
 export { TileMap, EMPTY } from './TileMap.ts';
 export type { TileMapOptions } from './TileMap.ts';
+export { LayeredSprite } from './LayeredSprite.ts';
