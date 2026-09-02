@@ -140,6 +140,8 @@ const PALETTE = {
 	heroDark: [176, 168, 152],
 	rat: [148, 112, 88],
 	blob: [116, 168, 92],
+	spike: [156, 156, 164],
+	rust: [168, 64, 48],
 };
 
 /** the tile index each name sits at, exported so the examples do not use magic numbers */
@@ -156,6 +158,7 @@ const TILES = {
 	RAT: 9,
 	BLOB: 10,
 	EMPTY: 11,
+	TRAP: 12,
 };
 
 function drawTile(canvas, index, draw) {
@@ -261,6 +264,26 @@ function buildTileset() {
 	drawTile(canvas, TILES.BLOB, (ox, oy) => {
 		canvas.disc(ox + 8, oy + 10, 5, PALETTE.blob);
 		canvas.disc(ox + 6, oy + 8, 2, [150, 200, 120]);
+	});
+
+	//a sprung trap: the same floor a hidden one disguises itself as, plus the spikes a
+	//revealed one shows once discovered
+	drawTile(canvas, TILES.TRAP, (ox, oy) => {
+		canvas.rect(ox, oy, TILE, TILE, PALETTE.stone);
+		for (let y = 0; y < TILE; y++) {
+			for (let x = 0; x < TILE; x++) {
+				const n = noise(x, y, 1);
+				if (n > 0.88) canvas.set(ox + x, oy + y, PALETTE.stoneLight);
+				else if (n < 0.12) canvas.set(ox + x, oy + y, PALETTE.stoneDark);
+			}
+		}
+		for (const sx of [3, 7, 11]) {
+			for (let row = 0; row < 6; row++) {
+				const width = 6 - row;
+				canvas.rect(ox + sx - Math.floor(width / 2), oy + 13 - row, width, 1, PALETTE.spike);
+			}
+			canvas.set(ox + sx, oy + 7, PALETTE.rust);
+		}
 	});
 
 	//TILES.EMPTY is left fully transparent on purpose

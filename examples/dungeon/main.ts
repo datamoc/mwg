@@ -13,10 +13,13 @@ import {
 	FieldOfView,
 	Pathfinder,
 	Scheduler,
+	Secrets,
 	rectCenter,
 	furthestRoom,
 	decideMonsterAI,
+	neighbourOffsets,
 	type Level,
+	type Rect,
 	type Step,
 } from '../../src/roguelike/index.ts';
 import * as Resources from '../../src/assets/index.ts';
@@ -40,6 +43,12 @@ const TILES = 'tiles.png';
 const { tiles, tileSize } = tileset;
 
 const VIEW_RADIUS = 7;
+
+//generateDungeon writes wall (0) and floor (1) itself; TRAP is this example's own kind,
+//appended after them so a trap tile is passable but distinct once revealed
+const WALL_KIND = 0;
+const FLOOR_KIND = 1;
+const TRAP_KIND = 2;
 
 /** how a cell looks in each of the three states a roguelike map has */
 const LIGHT = {
@@ -133,6 +142,8 @@ class DungeonScene extends Scene {
 	private level!: Level;
 	private fov!: FieldOfView;
 	private pathfinder!: Pathfinder;
+	private secrets!: Secrets;
+	private vaultCell: Step | null = null;
 	private scheduler = new Scheduler<Creature>();
 	private windows = new WindowStack();
 
@@ -242,12 +253,19 @@ class DungeonScene extends Scene {
 		this.camera.world.removeChildren();
 		this.creatures = [];
 		this.groundItems = [];
+		this.vaultCell = null;
 		this.scheduler.clear();
 
 		//seeded per depth, so the same run replays identically and a floor can be regenerated
 		this.level = Random.withSeed(this.depth * 7919 + 13, () =>
-			generateDungeon({ width: 64, height: 40, rooms: 12 })
+			generateDungeon({
+				width: 64,
+				height: 40,
+				rooms: 12,
+				kinds: [{ passable: true, transparent: true }], //TRAP_KIND: passable, revealed by discovery
+			})
 		);
+		this.secrets = new Secrets(this.level);
 
 		this.map = new TileMap({
 			width: this.level.width,
@@ -280,6 +298,8 @@ class DungeonScene extends Scene {
 		this.placeStairs(start);
 		this.populate();
 		this.placeItems();
+		this.placeSecretDoor();
+		this.placeHiddenTrap();
 
 		this.camera.setBounds({ minX: 0, minY: 0, maxX: this.map.worldWidth, maxY: this.map.worldHeight });
 		this.camera.snapTo(...this.worldOf(this.hero));
@@ -359,6 +379,113 @@ class DungeonScene extends Scene {
 
 			this.groundItems.push({ x: at.x, y: at.y, item, sprite });
 		}
+	}
+
+	/**
+	 * A vault: one wall cell disguised as solid rock, hiding a small pocket with a treasure
+	 * behind it. Only ever placed against genuinely unexplored rock (both the door cell and
+	 * the pocket beyond it must already be wall), so it never punches into another room or
+	 * corridor.
+	 */
+	private placeSecretDoor(): void {
+		//one of the four sides of a room's bounding box, as where the door sits and which
+		//way it steps to reach the pocket beyond
+		const sides = [
+			{ door: (room: Rect, along: number) => ({ x: along, y: room.top - 1 }), step: { x: 0, y: -1 } },
+			{ door: (room: Rect, along: number) => ({ x: along, y: room.bottom + 1 }), step: { x: 0, y: 1 } },
+			{ door: (room: Rect, along: number) => ({ x: room.left - 1, y: along }), step: { x: -1, y: 0 } },
+			{ door: (room: Rect, along: number) => ({ x: room.right + 1, y: along }), step: { x: 1, y: 0 } },
+		];
+
+		for (let attempt = 0; attempt < 30; attempt++) {
+			const room = this.level.rooms[Random.int(1, this.level.rooms.length)];
+			if (!room) return;
+
+			const side = sides[Random.int(sides.length)];
+			const horizontal = side.step.y !== 0;
+			const along = horizontal
+				? Random.range(room.left, room.right)
+				: Random.range(room.top, room.bottom);
+
+			const door = side.door(room, along);
+			const vault = { x: door.x + side.step.x, y: door.y + side.step.y };
+
+			if (!this.level.insideWithBorder(vault.x, vault.y)) continue;
+			if (this.level.passable(door.x, door.y) || this.level.passable(vault.x, vault.y)) continue;
+
+			//the vault cell itself stays solid rock - undiscovered, unlit and unexplored -
+			//until the door opens; only the door is a tracked secret, but opening it must
+			//carve the pocket behind it too, so the vault position is kept for that
+			this.vaultCell = vault;
+
+			const sprite = new TintedSprite(this.sheet.get(tiles.COIN));
+			sprite.x = vault.x * tileSize;
+			sprite.y = vault.y * tileSize;
+			sprite.tint = ITEM_TINT.sword;
+			this.creatureLayer.addChild(sprite);
+			this.groundItems.push({ x: vault.x, y: vault.y, item: ITEMS.sword, sprite });
+
+			this.secrets.conceal(door.x, door.y, WALL_KIND, FLOOR_KIND);
+			return;
+		}
+	}
+
+	/** a floor tile that looks and behaves like any other until a creature steps onto it */
+	private placeHiddenTrap(): void {
+		for (let attempt = 0; attempt < 20; attempt++) {
+			const room = this.level.rooms[Random.int(1, this.level.rooms.length)];
+			if (!room) return;
+
+			const at = { x: Random.range(room.left, room.right), y: Random.range(room.top, room.bottom) };
+			if (at.x === this.hero.x && at.y === this.hero.y) continue;
+			if (at.x === this.stairs.x && at.y === this.stairs.y) continue;
+			if (this.creatureAt(at.x, at.y) || this.groundItemAt(at.x, at.y)) continue;
+
+			this.secrets.conceal(at.x, at.y, FLOOR_KIND, TRAP_KIND);
+			return;
+		}
+	}
+
+	/** neighbours of the hero, looking for a secret to reveal - a door if it was blocking, a trap if not */
+	private searchForSecrets(): void {
+		for (const [dx, dy] of neighbourOffsets(8)) {
+			const x = this.hero.x + dx;
+			const y = this.hero.y + dy;
+			if (!this.secrets.isSecret(x, y)) continue;
+
+			const wasTrap = this.level.passable(x, y);
+			this.secrets.discover(x, y);
+			this.map.setTile('terrain', x, y, wasTrap ? tiles.TRAP : tiles.DOOR);
+			this.say(wasTrap ? 'You find a hidden trap!' : 'You find a hidden door!');
+
+			//opening the door carves the pocket behind it - the vault was never a tracked
+			//secret of its own, just solid rock until this moment
+			if (!wasTrap && this.vaultCell) {
+				this.level.set(this.vaultCell.x, this.vaultCell.y, FLOOR_KIND);
+				this.map.setTile(
+					'terrain',
+					this.vaultCell.x,
+					this.vaultCell.y,
+					Random.chance(0.15) ? tiles.FLOOR_WORN : tiles.FLOOR
+				);
+			}
+			return;
+		}
+		this.say('You find nothing.');
+	}
+
+	/** sprung the moment the hero steps on it - a trap only, since a secret door is never passable */
+	private triggerTrapAt(x: number, y: number): void {
+		if (!this.secrets.isSecret(x, y)) return;
+
+		this.secrets.discover(x, y);
+		this.map.setTile('terrain', x, y, tiles.TRAP);
+
+		const damage = Random.range(1, 4);
+		this.hero.hp -= damage;
+		this.hero.sprite.lerpTint(0xff5544, 0.85);
+		this.say(`A hidden trap springs! You take ${damage}.`);
+		if (this.hero.hp <= 0) this.kill(this.hero);
 	}
 
 	private spawn(options: {
@@ -442,17 +569,28 @@ class DungeonScene extends Scene {
 			return true;
 		}
 
+		if (action === 'search') {
+			this.awaitingInput = false;
+			this.searchForSecrets();
+			this.spendHeroTurn();
+			return true;
+		}
+
 		const move = MOVES[action];
 		if (!move) return false;
 
 		this.awaitingInput = false;
 		this.takeHeroTurn(move);
+		this.spendHeroTurn();
+		return true;
+	}
 
+	/** monsters get their turn once the hero's is spent - not after a wasted keypress */
+	private spendHeroTurn(): void {
 		if (this.hero.hp > 0) {
 			this.scheduler.spend(1);
 			this.runTurns();
 		}
-		return true;
 	}
 
 	private takeHeroTurn(move: Step): void {
@@ -469,6 +607,7 @@ class DungeonScene extends Scene {
 		} else if (this.level.passable(target.x, target.y)) {
 			this.moveTo(this.hero, target);
 			this.pickUpAt(target.x, target.y);
+			this.triggerTrapAt(target.x, target.y);
 			if (target.x === this.stairs.x && target.y === this.stairs.y) {
 				this.say('Stairs down. Press > to descend.');
 			}
@@ -662,7 +801,7 @@ class DungeonScene extends Scene {
 		this.statusLabel.setText(
 			`Floor ${this.depth}    HP ${Math.max(0, this.hero.hp)}/${this.hero.maxHp}    ` +
 				`ATK ${this.heroStats.get('attack')}  DEF ${this.heroStats.get('defense')}    ` +
-				`${weapon}, ${armor}    (Tab for inventory)`
+				`${weapon}, ${armor}    (Tab for inventory, F to search)`
 		);
 	}
 
@@ -741,8 +880,9 @@ async function main(): Promise<void> {
 		background: 0x08080c,
 	});
 
-	//descending is its own action, so it can be rebound like everything else
+	//descending and searching are their own actions, so they can be rebound like everything else
 	Input.bind('descend', ['Period', 'NumpadDecimal']);
+	Input.bind('search', ['KeyF']);
 
 	//a save from a previous visit continues that run; there is none once you have died
 	pendingSave = saves.load(SAVE_SLOT)?.state ?? null;

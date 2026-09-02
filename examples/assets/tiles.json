@@ -14,7 +14,8 @@
 		"HERO": 8,
 		"RAT": 9,
 		"BLOB": 10,
-		"EMPTY": 11
+		"EMPTY": 11,
+		"TRAP": 12
 	},
 	"character": {
 		"frameWidth": 64,

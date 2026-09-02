@@ -36,6 +36,9 @@ export interface DungeonOptions {
 	/** the terrain ids to write; both must exist in the kinds passed to the Level */
 	wall?: number;
 	floor?: number;
+
+	/** extra terrain kinds beyond wall/floor, appended after them - a game's own trap or door ids */
+	kinds?: TerrainKind[];
 }
 
 export const DUNGEON_KINDS: TerrainKind[] = [
@@ -53,9 +56,10 @@ export function generateDungeon(options: DungeonOptions): Level {
 		extraCorridors = 3,
 		wall = 0,
 		floor = 1,
+		kinds = [],
 	} = options;
 
-	const level = new Level(width, height, DUNGEON_KINDS, wall);
+	const level = new Level(width, height, [...DUNGEON_KINDS, ...kinds], wall);
 	const placed: Rect[] = [];
 
 	//rejection sampling: try a spot, keep it if it clears the others. simple, and it fails

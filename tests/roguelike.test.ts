@@ -108,6 +108,21 @@ test('different seeds produce different dungeons', () => {
 	assert.notEqual(a, b);
 });
 
+test('extra kinds are appended after wall/floor, for a game to place its own terrain', () => {
+	reset();
+	const level = generateDungeon({
+		width: 50,
+		height: 30,
+		kinds: [{ passable: true, transparent: true }],
+	});
+
+	//id 2 is the first appended kind - a floor variant a game can set without touching
+	//the generator's own wall (0) and floor (1)
+	const room = level.rooms[0];
+	level.set(room.left + 1, room.top + 1, 2);
+	assert.equal(level.passable(room.left + 1, room.top + 1), true);
+});
+
 test('the border is always solid', () => {
 	reset();
 	const level = generateDungeon({ width: 50, height: 30 });

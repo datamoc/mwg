@@ -6,7 +6,7 @@ export type { DungeonOptions } from './generate.ts';
 
 export { FieldOfView } from './FieldOfView.ts';
 
-export { Pathfinder } from './Pathfinder.ts';
+export { Pathfinder, neighbourOffsets } from './Pathfinder.ts';
 export type { Step, PathOptions } from './Pathfinder.ts';
 
 export { Scheduler } from './Scheduler.ts';
@@ -14,3 +14,5 @@ export type { Actor } from './Scheduler.ts';
 
 export { decideMonsterAI } from './MonsterAI.ts';
 export type { AIState, AIDecision, MonsterAIOptions } from './MonsterAI.ts';
+
+export { Secrets } from './Secrets.ts';

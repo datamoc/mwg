@@ -331,10 +331,20 @@ rather than showing a raw key to the player.
     already shipped. `examples/dungeon` now calls it once per monster per turn instead of the
     old single distance check; verified in a browser (a rat closed distance and landed a hit
     once in sight, killed cleanly with no console errors)
-23. `mwg/render` + `mwg/roguelike` — a discoverable/hidden tile state (secret doors,
+23. ~~`mwg/render` + `mwg/roguelike` — a discoverable/hidden tile state (secret doors,
     undiscovered traps): a cell that renders and blocks like its surroundings until revealed
-    by search or trigger. Needed for SPD-shaped vaults and traps; nothing in `TileMap` or
-    `FieldOfView` distinguishes "not yet seen" from "deliberately concealed"
+    by search or trigger~~ - `roguelike`'s new `Secrets` writes the disguise kind straight
+    into `Level`, so a concealed cell already passes every `passable`/`transparent` check as
+    whatever it is disguised as; nothing in `FieldOfView` or `Pathfinder` had to learn that
+    secrets exist. `generateDungeon` gained an optional `kinds` list so a game can add its own
+    terrain ids (a trap kind) alongside the generator's wall/floor; the render half needed
+    nothing new; `TileMap.setTile`, already shipped, is the single-cell update a reveal calls.
+    `examples/dungeon` wires both shapes in: a secret door hiding a small vault (a wall cell
+    concealed as rock, found with a new `search` action), and a hidden trap that springs and
+    damages the hero the moment they step on it. Verified in a browser; caught and fixed one
+    real bug in the process - the vault's floor and treasure were rendering through the
+    "solid" wall before the door was ever found, because the vault cell itself was carved
+    eagerly instead of staying genuinely undiscovered rock until the door opened
 24. `mwg/roguelike` — targeting: an aim cursor with range/line-of-sight/area-of-effect shape
     resolution for thrown items, wands and ranged attacks, plus a projectile-flight helper in
     `mwg/render`. `battle`'s moves are turn-based and untargeted-on-a-grid; roguelike combat
