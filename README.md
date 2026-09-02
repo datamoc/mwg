@@ -565,6 +565,29 @@ prose, rather than in the list's own sequence.
     verification kept losing time to imprecise manual play (aligning a grid by eye, hunting
     for a monster that might not even be in view) - a recorded action log a test could
     replay and screenshot-diff is the direct fix for exactly that
+43. magic/technology systems: a spellbook or a research tree. Real overlap with what already
+    shipped this session rather than a clean new gap - a tech tree is largely item 37's
+    quest-prerequisite graph with a different name, and "spend research points to unlock a
+    tech" is item 39's `SkillPoints` ledger with a different target. What is genuinely not
+    covered by either: a spendable *resource* consumed per use rather than permanently, the
+    way a spell costs mana - `mwg/actors`' `StatBlock` can hold `mana` as a stat, but nothing
+    resolves "can this ability afford its cost right now, and if so spend it" the way
+    `craft()` resolves a recipe or `skillCheck` resolves a roll
+44. elevation/height levels for tiles and characters - a raised platform, a cliff blocking
+    line of sight from below but not above, a character standing higher up. Deliberately not
+    the same ask as item 45's full 3D: this is a still-fundamentally-2D map with a discrete
+    height value per cell (Fire Emblem's or classic XCOM's few floor levels), not a 3D scene.
+    Nothing in `mwg/roguelike` or `mwg/render` has a notion of height today - `FieldOfView`
+    and `Pathfinder` reason over one flat plane, and `TileMap`'s draw order is whichever
+    layer a game put a sprite on, not a height a character's own elevation could change
+45. 3D rendering (tiles, characters) - the newest XCOM games, or something in Satellite
+    Reign's shape. Logged at the user's explicit request and *very* low priority, alongside
+    an explicit caution the request itself raised: this cuts directly against what `mwg` is
+    for, stated in this file's own first line - "a framework for building **2D** top-down
+    games". PixiJS is a 2D renderer; a true 3D pipeline (a real camera, meshes, depth) is not
+    an extension of the existing render path the way isometric or hex projection were, it is
+    a different rendering foundation entirely. Not something to pick up without first asking
+    whether it belongs in this project at all, rather than a new one built beside it
 
 ## Licence and provenance
 
