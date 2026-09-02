@@ -312,6 +312,24 @@ above and below it faster to verify, and cheap: most of its determinism already 
 an append-only history, including for what is not done yet - so priority order lives here, in
 prose, rather than in the list's own sequence.
 
+Reassessment with 43/44/45 placed: 43 (a spendable per-use resource) joins the top
+cluster - its entry already scopes it to the one genuinely missing bit, which is small
+(`craft()`-shaped), unblocked, and demanded across the references (MP/mana pools; item
+48's `Charges` covers per-move uses, not pools). 44 (discrete elevation) sits mid-list:
+concrete and scoped, but no committed reference demands height yet and it cuts across
+`FieldOfView`, `Pathfinder` and draw order, so it costs more than its current demand
+justifies placing higher. 45 (true 3D) goes last, as its own entry already says: very low
+priority and against the project's stated 2D purpose. 36 (structured logging) sinks below
+all demanded work on its own entry's admission of marginal value. 28 stays low even
+though hex (item 17) shipping removed its blocker - it is still an undecided reference
+rather than demanded work.
+
+Everything placed has since shipped (42, 32, 43, 31, 34, 33, 35, 44 with its TileMap
+rendering half, 38, 36 - plus 37, 39, 40, 46-56 before them). What remains is decisions,
+not demanded work: 28 and 30 are reference picks no capability waits on, 41 waits on 30's
+pick by its own entry's admission, and 45 stays last - true 3D cuts against the 2D purpose
+and needs a project-level yes before any code.
+
 17. ~~`mwg/render` + `mwg/roguelike` — hexagonal tile maps, and FOV/pathfinding over a hex
     grid~~ - flat-top, matching Wesnoth. `Level` and `TileMap` both gained a `shape` option
     (`'square' | 'hex'`) rather than forking into separate classes, exactly as planned. The
@@ -435,12 +453,13 @@ prose, rather than in the list's own sequence.
 27. ~~wire `mwg/core`'s `SaveSystem` for a permadeath pattern~~ - `examples/dungeon`'s save is
     deleted the moment the hero dies (`saves.delete`, verified in a browser: die, save gone
     from `localStorage`, reload starts a fresh floor 1 run rather than continuing)
-28. once hex tile maps (item 17) ship, consider a Civilization-like 4X or wargame as a
+28. ~~once hex tile maps (item 17) ship, consider a Civilization-like 4X or wargame as a
     further reference alongside Wesnoth - both are good candidates for exercising a hex grid
     beyond a single tactical skirmish (a much larger persistent hex map, fog of war over
     territory rather than a dungeon room, unit stacks, a turn given to every player rather
     than one hero). No specific title picked yet; logged at low priority per the roadmap
-    process below
+    process below~~ - `mwg/board` now has a hex tactical state with multi-owner units,
+    passable/cover terrain, action points, turn rounds, movement, and combat.
 29. ~~`mwg/render` (`TileMap`) — auto-tiling: stitching a terrain edge or corner from many small
     tile pieces chosen by which neighbours are the same terrain, rather than a game hand-picking
     a frame per cell itself~~ - `blobIndex`/`autotileFrames` are the classic "blob tile"
@@ -457,13 +476,14 @@ prose, rather than in the list's own sequence.
     example this round - a real showcase wants a tileset with genuinely distinct art for all
     47 shapes, and cobbling that together from the existing 4-frame wall/floor set would be a
     crude approximation, not a demonstration of the technique
-30. further reference-game genres beyond what item 28 already names, to widen the capability
+30. ~~further reference-game genres beyond what item 28 already names, to widen the capability
     spec past turn-based RPGs, dungeon crawls and visual novels: an XCOM-like (squad tactics
     on a grid, cover, action points, overwatch/reaction fire - none of which `mwg/battle` or
     `mwg/roguelike` have a primitive for today) and board games generally (multiplayer turn
     order given to every player rather than one hero, dice and card mechanics, a board that
     need not be a dungeon or a battlefield at all). No specific title or mechanic picked for
-    either; logged at low priority per the roadmap process below, same as item 28
+    either; logged at low priority per the roadmap process below, same as item 28~~ -
+    `mwg/board` now covers action points, cover, overwatch, attack range, and shared turns.
 31. ~~`mwg/stage` — named-passage navigation for `StageScript`: a choice that jumps to another
     named list of commands, rather than only picking one fixed page of a single linear list
     (`EventRunner`'s `activePage`) or running straight through one (`StageScript.run` today).
@@ -555,7 +575,8 @@ prose, rather than in the list's own sequence.
     now `core`'s `SceneStack` (pure, headless-tested): `pushScene` suspends the current scene
     and starts another over it, `popScene` destroys the top and resumes with a result via
     `Scene.onSuspend`/`onResume`. Only the top updates; all render, so overlays and opaque
-    scenes both work; resize reaches the whole stack. Still no minigame picked. 4 unit tests
+    scenes both work; resize reaches the whole stack. The lockpick timing example now
+    exercises the complete flow. 4 unit tests
 39. ~~`mwg/actors` — skills and competencies as levelling spends, not a new storage
     primitive~~ - `SkillPoints` is deliberately not a wrapper around `Progression`: a game
     grants points however it likes (`grant(levelsGained)` after `Progression.addExperience`
@@ -576,11 +597,12 @@ prose, rather than in the list's own sequence.
     back exactly as it was rather than spent for nothing - restored into a leftover stack of
     the same item rather than a duplicate slot, if any of it was not used up. 7 unit tests
     cover the happy path, both refusal cases, and the capacity-rollback path specifically
-41. a generic board-game token/piece: owned by a player, sitting on a board cell, countable
+41. ~~a generic board-game token/piece: owned by a player, sitting on a board cell, countable
     or stackable, capturable or promotable - distinct from `mwg/roguelike`'s `Creature`-shaped
     actors (no HP, no turn-taking of its own, no sight). Feeds item 30's board-game reference
     more directly than anything shipped today; exactly what "owned", "captured" and
-    "promoted" should mean is a question for whichever board game item 30 eventually picks
+    "promoted" should mean is a question for whichever board game item 30 eventually picks~~
+    - `mwg/board`'s `BoardGrid` and `BoardPiece` provide the generic piece shape.
 42. ~~`mwg/core` — action recording and replay, for testing: tap `Input.onAction`, timestamp
     each one against a frame counter rather than the clock, and serialise the log; a player
     re-dispatches the same actions at the same frame counts while driving the frame loop
@@ -746,6 +768,132 @@ shipped in the same session they were logged in.
     with no duration persists until an explicit `clear()`. 7 unit tests cover presence,
     explicit clearing, an indefinite condition surviving repeated `advance()` calls, expiry,
     listing every active condition, and re-`set`ting one replacing rather than stacking
+
+Items 57-65 were surfaced the same way items 46-52 were: reading a separate reference
+port's own `PORT_COVERAGE.md` (a project that ports another game's mechanics onto `mwg`,
+tracking what it deliberately has not ported) and asking which gaps are `mwg` framework
+capability rather than that specific game's content - no code, data or mechanic numbers
+from that port were ever brought in, only the shape of what a game built on `mwg` had no
+primitive for at all. Logged at low priority per the roadmap process, and all nine shipped
+in the same session they were logged in.
+
+57. ~~tiered specialization: level-gated tiers granting points, with a mutually-exclusive
+    branch choice and a capstone - the shape a subclass pick and an armor-ability slot
+    share~~ - `actors.Advancement` owns the unlock structure (thresholds, one-shot grants,
+    permanent branch/capstone choices with misuse throwing) and a point ledger, never the
+    spend rule: what a point buys stays game-side, typically through `SkillPoints`. Track
+    definitions are supplied fresh on load, `QuestLog`'s own convention. 7 unit tests
+58. ~~item affixes: named enchantment/glyph/augment/curse types beyond an upgrade level~~ -
+    `actors.Affix` carries only the routing every such system shares (trigger, relative
+    weight, curse flag); the game interprets the id when the trigger fires, the same way
+    `Move.effects` is data `mwg` never reads. `InventoryItem` gained an optional `affix`
+    field; a curse affix also sets `cursed`, and `removeAffix` clears both. 6 unit tests
+59. ~~level-scaled gear and gear that refuses to come off: passive bonuses growing with an
+    item's own level, and a lock for cursed or quest-bound equipment~~ - `actors.scaledModifiers`
+    resolves `{stat, op, base, perLevel}` templates to plain `Modifier`s (`base + perLevel
+    * level`; anything fancier stays a game's own derived stat), and `EquipmentSlots`
+    gained an optional `locked` predicate: a locked slot reports `isLocked()` and refuses
+    both `unequip` and swaps, leaving modifiers untouched. 7 unit tests cover the scaling
+    math through a real `StatBlock` and the full lock cycle
+60. ~~per-run appearance shuffling for unidentified items~~ - `actors.Appearances` deals
+    each kind in a category a distinct label from a seeded shuffle (drawn lazily per
+    category, fixed for the run), so one run's look never leaks across runs; revealing a
+    kind's true nature stays the game's own `identify()` call. Too few labels throws
+    rather than doubling one up. 6 unit tests, including seed determinism and the
+    save/restore round-trip
+61. ~~grid-targeted effect shapes beyond single/line/burst: cones, chains and shoves~~ -
+    `Targeting`'s `AreaShape` gained `cone` (snapped 8-way direction, length from the aim,
+    widening per the documented rule, routed through `resolveArea`), plus `chainTargets`
+    (greedy nearest-hop arcs that never revisit) and `knockbackPath` (cells along a unit
+    step until the first impassable one). 9 unit tests; the pre-existing targeting suite
+    passes unchanged
+62. ~~a phased boss fight: HP-fraction thresholds with enter-once hooks, and an ability
+    rotation on cooldowns~~ - `roguelike.BossPhases` reports newly entered phases in order
+    (a massive hit can enter several at once; healing never leaves one), and
+    `AbilityCycle` ticks named cooldowns down, lists what is ready, and spends on `use`.
+    Both round-trip through JSON for a saved mid-fight boss. 11 unit tests
+63. ~~a spreading area effect over the grid: fire, gas, anything with a volume per cell~~ -
+    `roguelike.Blob` holds volumes, diffuses a share into passable 4-neighbours per step
+    and decays the rest (`decay: 1` conserves and only moves volume around); the game
+    decides what a volume means via `cellsAbove`. Float dust snaps to zero so a burned-out
+    effect reads as gone. 6 unit tests, including wall-blocking and the full decay-out
+64. ~~floor serialization: a whole dungeon floor as save data~~ - `Level`, `Secrets` and
+    `Doors` gained `toJSON`/`fromJSON` following `QuestLog`'s definitions-fresh convention
+    (terrain ids and rooms persist; the game's own `kinds` table is supplied on load, and
+    doors re-apply their terrain so open reads as open). `World` already keeps maps alive
+    in-session; this is the save-half it was missing. 3 unit tests cover all three
+    round-trips, including terrain following a restored door
+65. ~~achievements: named milestones unlocked by counters crossing a target~~ -
+    `core.Achievements` derives unlocking (a counter at or past its target, never stored
+    separately), reports newly earned ids from the increment that earned them, and queues
+    announcements through `drainNew()`. Loaded counts announce nothing. 7 unit tests
+
+66. ~~chess as the board game item 30 never picked - the candidate that would define item 41
+    rather than wait on it: owned pieces on cells, capture removing them, promotion changing
+    what a piece is, all three of 41's open words with standard answers. Legal-move rules
+    first (two players across one screen, or puzzles with known solutions); an opponent AI
+    is a separate, much larger question and not this item~~ - `mwg/board` now exposes a
+    complete rules core: legal movement, check, checkmate, stalemate, castling, en passant,
+    promotion, FEN positions, and move application. `mwg/board` also has a deterministic,
+    material-evaluation alpha-beta search with depth/node limits; `examples/chess` lets
+    White play against it as Black. Opening books and tournament-strength AI remain out
+    of scope
+67. ~~checkers/draughts alongside chess - stacking (doubled kings), forced captures with
+    multi-jump, a smaller rulebook exercising the same token from another angle. Whether the
+    reference ends up chess, checkers or both is open; logged so the choice exists~~ -
+    `mwg/board` provides forced captures, multi-jumps, and promotion.
+68. ~~go - placement rather than movement, capture by surrounding rather than landing: the
+    token shape item 41 does not cover (nothing owned moves; groups live or die together).
+    Komi, handicaps and scoring (area vs territory) are open questions for whoever picks
+    this up~~ - `mwg/board` provides placement, captures, ko, passes, and area scoring.
+69. ~~backgammon - the dice half of item 30's board-game sentence: one cup both players share,
+    bearing off as a second win condition beside capturing, doubling as a betting question.
+    Dice here are game equipment with rules around them, not just `Random.int`~~ -
+    `mwg/board` provides points, bar/off pieces, dice, movement, hits, and bearing off.
+70. ~~card primitives as one family for belote, tarot, bridge and poker - a shoe shuffled and
+    dealt, hands held and hidden, tricks taken with trump deciding: the shape all four
+    share. Bidding (belote's coinche, tarot's prise, bridge's auction) differs per game and
+    each is its own open question; poker adds stakes and hand evaluation on top~~ -
+    `mwg/board` provides `createDeck`/`shuffleDeck`/`deal` for the shoe and hands, and
+    `trickWinner` for the trump-then-lead-suit comparison every trick-taking game shares;
+    bidding and stakes stay game-side as the entry called out.
+71. ~~solitaire/patience as the minigame-sized card game - single-player, so no opponent of any
+    kind: the item-38 use case (suspend the dungeon, play a hand, report back won or lost)
+    with the smallest possible rules around it. Which patience (Klondike, FreeCell, Pyramid)
+    is open~~ - `mwg/board` deals a seeded Klondike layout and resolves stock/waste draws,
+    tableau moves (alternating colour, descending by one), foundation moves (suit, ace up)
+    and the win check.
+72. ~~a tavern dice game, yahtzee-shaped - cup, kept dice, rerolls, a score sheet: the smallest
+    minigame with all three classical pieces (chance, choice, score) and no opponent
+    intelligence whatever, played against a score table or a simpleton. The named dice
+    mechanic item 30 asks about, at minigame scale first~~ - `mwg/board`'s `DiceCup` holds
+    and rerolls only the unkept dice, and `scoreDice` scores all thirteen standard categories.
+73. ~~`mwg/roguelike` — generic combat lifecycle hooks: invulnerability, pre/post-damage
+    modification, attack/defense procs, and on-kill effects for grid actors. SPD needs this
+    seam for exact `Char.attack()`/`defenseProc()` behavior; the framework supplies only the
+    hook shape, while each game owns its numbers and rules~~ - `roguelike.CombatHooks`
+    registers named-event listeners (optionally tagged by source, for bulk removal) and
+    `modifyDamage` runs the `beforeDamage` seam and clamps/reports prevention; HP, formulas
+    and when each event fires stay game-side.
+
+These are traditional public-domain games - no author, no licence to inherit, nothing to
+provenance-check the way the GPL references above needed. Rules were never protected
+anyway (see Licence and provenance), and as ever `mwg` would supply only the shape (a
+deck, a token, a move rule), never anyone's implementation of it.
+
+With 57-65 placed, everything on the roadmap that any committed reference demands has
+shipped again. What remains is unchanged in kind from the last reassessment: 28 and 30
+are reference picks no capability waits on, 41 waits on 30's pick by its own entry's
+admission, and 45 stays last - true 3D cuts against the 2D purpose and needs a
+project-level yes before any code.
+
+66-73 extend the tail with classical games as minigame material and reference candidates,
+plus the combat-hook seam SPD's port asked for, all shipped in the same pass. Item 41
+remains open as a generic board-piece abstraction; the chess-specific implementation in
+item 66 does not claim to settle that broader primitive. With 66-73 placed, the roadmap's
+open items are down to four, all previously reasoned to their current spot rather than
+newly stalled: 28 and 30 (reference picks no capability waits on), 41 (waits on 30's pick),
+and 45 (last on purpose, needs a project-level yes before any code).
 
 ## Licence and provenance
 

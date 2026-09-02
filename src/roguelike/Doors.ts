@@ -82,4 +82,40 @@ export class Doors {
 		this.lockedBy.delete(cell);
 		return true;
 	}
+
+	toJSON(): { doors: { cell: number; open: number; closed: number; locked?: string; isOpen: boolean }[] } {
+		const doors: { cell: number; open: number; closed: number; locked?: string; isOpen: boolean }[] = [];
+		for (const [cell, open] of this.openKind) {
+			doors.push({
+				cell,
+				open,
+				closed: this.closedKind.get(cell)!,
+				locked: this.lockedBy.get(cell),
+				isOpen: this.open_.get(cell) === true,
+			});
+		}
+		return { doors };
+	}
+
+	/**
+	 * Rebuilds doors from save data onto a (separately restored) level, re-applying each
+	 * door's terrain so an open door still reads as open to `passable`/`transparent`.
+	 */
+	static fromJSON(
+		level: Level,
+		data: { doors: { cell: number; open: number; closed: number; locked?: string; isOpen: boolean }[] }
+	): Doors {
+		const doors = new Doors(level);
+		for (const saved of data.doors) {
+			const x = level.xOf(saved.cell);
+			const y = level.yOf(saved.cell);
+			doors.place(x, y, {
+				open: saved.open,
+				closed: saved.closed,
+				locked: saved.locked,
+				startOpen: saved.isOpen,
+			});
+		}
+		return doors;
+	}
 }

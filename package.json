@@ -28,6 +28,7 @@
     "./world": "./dist/world/index.js",
     "./rpg": "./dist/rpg/index.js",
     "./battle": "./dist/battle/index.js",
+    "./board": "./dist/board/index.js",
     "./audio": "./dist/audio/index.js"
   },
   "scripts": {
@@ -50,6 +51,10 @@
     "example:village:build": "vite build --config examples/village/vite.config.ts && node tools/emit-page.mjs examples/village",
     "example:battle": "vite --config examples/battle/vite.config.ts",
     "example:battle:build": "vite build --config examples/battle/vite.config.ts && node tools/emit-page.mjs examples/battle",
+    "example:minigame": "vite --config examples/minigame/vite.config.ts",
+    "example:minigame:build": "vite build --config examples/minigame/vite.config.ts && node tools/emit-page.mjs examples/minigame",
+    "example:chess": "vite --config examples/chess/vite.config.ts",
+    "example:chess:build": "vite build --config examples/chess/vite.config.ts && node tools/emit-page.mjs examples/chess",
     "webpage:examples": "node tools/build-webpage-examples.mjs",
     "webpage:docs": "node tools/build-webpage-docs.mjs"
   },

@@ -14,6 +14,9 @@ Everything below has shipped on `main`; no version has been tagged yet.
 - `Game` (owns the Pixi `Application`, the frame loop, current `Scene`), `Scene`, `Signal`
   (typed event emitter, stack-mode listener order), seeded `Random` (save/restorable state,
   `withSeed` for scoped determinism), keyboard `Input` with rebinding.
+- `Achievements`: named milestones unlocked by counters crossing a target — unlocking is
+  derived, never stored; the increment that earns one reports it, `drainNew()` queues
+  announcements, and loaded counts announce nothing.
 - `Game.step(dt)`, to drive a frame by hand — needed because Chrome throttles
   `requestAnimationFrame` in a background tab.
 - `SaveSystem`: named, versioned save slots over `localStorage`, with an in-memory fallback.
@@ -91,6 +94,14 @@ Everything below has shipped on `main`; no version has been tagged yet.
   anything drops, then weight-pick which.
 - `buy`/`sell`: a shop transaction between two `Inventory`s paid from a `StatBlock` currency
   stat, all-or-nothing like `craft()` — a full stock/buyer-capacity rollback on failure.
+- `Advancement`: tiered specialization (level-gated point tiers, one permanent branch choice,
+  one capstone) with a point ledger — never the spend rule, which stays game-side.
+- `rollAffix`/`applyAffix`/`removeAffix`/`affixOf`: named item affixes carrying only trigger,
+  weight and curse flag; `InventoryItem` gained an optional `affix` field.
+- `scaledModifiers`: `{stat, op, base, perLevel}` templates resolved to plain `Modifier`s at
+  a given item level.
+- `Appearances`: per-run seeded shuffling of which look each unidentified kind wears, with
+  `toJSON`/`fromJSON`.
 - `canAfford`/`spend`: a spendable per-use resource (mana, stamina) over a `StatBlock`
   pool — one cost or several, all-or-nothing `craft()`-shaped, with a negative cost
   refused as an authoring error rather than a refund.
@@ -113,6 +124,10 @@ Everything below has shipped on `main`; no version has been tagged yet.
 - `Doors`: open/closed/locked door state, `Secrets`' own shape reused — the state is just
   terrain, swapped between a door's own open/closed kinds; locking is a separate flag that
   keeps a door closed and unopenable until `unlock` is called.
+- `BossPhases`/`AbilityCycle`: HP-fraction thresholds reporting newly entered phases in
+  order, plus named ability cooldowns with `tick`/`ready`/`use` — both JSON round-trippable.
+- `Blob`: per-cell volumes diffused into passable neighbours and decayed per step, with
+  `cellsAbove` for the game to apply its own effects on.
 - `Level`, `Secrets` and `Doors` gained `toJSON`/`fromJSON` — the game's own `kinds` table
   (or live level) is supplied fresh on load, `QuestLog`'s own convention.
 - `Elevation`: a discrete height per cell, in the `Secrets`/`Doors` sidecar shape —
@@ -163,16 +178,45 @@ Everything below has shipped on `main`; no version has been tagged yet.
 - `Field`: named, optionally-timed battle-wide conditions (weather, terrain, a screen) a game
   reads directly (`field.has('rain')`) — distinct from any one creature's own `StatBlock`.
 
+**Board**
+- `mwg/board`: a generic `BoardGrid` (owned pieces on a cell grid, move/capture) plus four
+  traditional games built on it — chess (`startingChess`/`legalMoves`/`applyMove`, FEN
+  parsing, check/mate/stalemate/draw detection, and a material-evaluation alpha-beta
+  `chooseMove`/`search` engine), checkers (forced captures, multi-jump chains, king
+  promotion), go (placement, capture-by-surrounding, ko, area scoring after two passes),
+  and backgammon (points, bar/off, dice, hitting a blot).
+- `startingTactics`/`tacticalMoves`/`tacticalAttack`/`setTacticalOverwatch`: a small
+  grid-tactics layer (move/shoot/overwatch, one action budget per unit per turn) for an
+  XCOM-shaped turn.
+- `createDeck`/`shuffleDeck`/`deal`: a standard 52-card deck (with optional jokers), shuffled
+  and dealt into equal hands; `trickWinner` resolves one trick — highest trump, or highest of
+  the lead suit with no trump played — leaving bidding and stakes to the game.
+- `dealSolitaire`/`drawSolitaire`/`moveSolitaireTableau`/`moveSolitaireToFoundation`/
+  `solitaireWon`: a seeded Klondike deal and its four moves — stock/waste draw with
+  waste-recycling, alternating-colour descending tableau moves, ace-up same-suit foundation
+  moves, and the all-four-full win check.
+- `rollDice`/`rollExpression`: `NdM` and `NdM±K` dice notation over `Random`. `DiceCup`: a
+  kept-die reroll cup (`keep`/`reRoll`/`clearKept`). `scoreDice`: all thirteen standard
+  Yahtzee-shaped categories over a five-die hand.
+
+**Roguelike**
+- `CombatHooks`: named-event listeners for a grid actor's combat lifecycle
+  (`beforeAttack`/`beforeDamage`/`afterDamage`/`onKill`, or any game-defined event string),
+  optionally tagged by source for bulk removal; `modifyDamage` runs the `beforeDamage` seam
+  and clamps/reports whether the hit was fully prevented. HP, formulas and when each event
+  fires stay game-side.
+
 **Audio**
 - `Sound` (pooled, round-robin) and `Music` (crossfade via `update(dt)`), both taking an
   injectable `create()` in place of `new Audio()` for testing.
 
 **Examples**
 - `colour-transform`, `interface`, `dialogue`, `village` (an NPC with switch-selected
-  conversation pages and an autorun cutscene), `battle`, and `dungeon` — an SPD-shaped
+  conversation pages and an autorun cutscene), `battle`, `dungeon` — an SPD-shaped
   mockup wiring together most of the above: generated floors, three-state fog of war,
   bump-to-attack, wander/hunt/flee monsters, secret doors and hidden traps, a thrown flask
-  of oil, a dense icon-grid inventory, autosave-on-descend with permadeath.
+  of oil, a dense icon-grid inventory, autosave-on-descend with permadeath — and `chess`, a
+  playable board against `mwg/board`'s search engine.
 
 **Project**
 - A project website with a live colour-transform demo, the capability-spec table, and the
@@ -183,6 +227,10 @@ Everything below has shipped on `main`; no version has been tagged yet.
 ### Changed
 - `generateDungeon` gained an optional `kinds` list, so a game can add its own terrain ids
   (a trap kind, say) alongside the generator's wall/floor without forking it.
+- `Targeting`'s `AreaShape` gained `cone`, and `coneCells`/`chainTargets`/`knockbackPath`
+  cover sprays, arcs and shoves alongside the existing `single`/`line`/`burst` resolution.
+- `EquipmentSlots` gained an optional `locked` predicate — a locked slot reports `isLocked()`
+  and refuses both `unequip` and swaps; without it every slot behaves exactly as before.
 - `examples/dungeon`'s inventory screen is an `IconGrid` now, not a `ListView`.
 - `TurnClock`'s `TimedEffect` gained an optional `onExpire` callback, fired once right before
   an effect whose duration has run out is removed — what `applyStatusEffect` needed to tie a

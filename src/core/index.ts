@@ -16,5 +16,7 @@ export { Collection } from './Collection.ts';
 export type { DbRecord, CollectionOptions } from './Collection.ts';
 export { Recorder, Player, serializeReplay, deserializeReplay } from './Replay.ts';
 export type { ReplayEvent } from './Replay.ts';
+export { Achievements } from './Achievements.ts';
+export type { AchievementDef } from './Achievements.ts';
 export { hexNeighbors, hexDistance, hexLine, hexRange, hexToPixel, pixelToHex } from './Hex.ts';
 export type { HexCoord } from './Hex.ts';

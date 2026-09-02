@@ -24,3 +24,10 @@ export { Doors } from './Doors.ts';
 
 export { chebyshevDistance, traceLine, hasLineOfSight, canTarget, resolveArea } from './Targeting.ts';
 export type { AreaShape, TargetingOptions } from './Targeting.ts';
+export { coneCells, chainTargets, knockbackPath } from './Targeting.ts';
+
+export { BossPhases, AbilityCycle } from './Boss.ts';
+
+export { Blob } from './Blob.ts';
+export { CombatHooks } from './Combat.ts';
+export type { CombatEvent, CombatHook, DamageContext } from './Combat.ts';

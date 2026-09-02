@@ -25,6 +25,12 @@ npm run example:village:build   # village, then open its dist/index.html
 
 npm run example:battle          # a creature battle, dev server
 npm run example:battle:build    # battle, then open its dist/index.html
+
+npm run example:minigame          # lockpicking timing game, dev server
+npm run example:minigame:build    # lockpicking, then open its dist/index.html
+
+npm run example:chess          # two-player chess, dev server
+npm run example:chess:build    # chess, then open its dist/index.html
 ```
 
 Opening an example's own `index.html` from disk shows a note telling you this, rather than
@@ -38,6 +44,8 @@ a black window: that file is the source page, and it needs the dev server.
 | `dialogue` | a conversation scene: backdrop, Alice and Bob with expressions, the speaker lit and the other dimmed, and a branching choice. The whole scene is a list of data commands at the top of `main.ts` |
 | `village` | `mwg/rpg`: an NPC with two conversation pages selected by a switch, a choice that sets a variable, and a short autorun cutscene the first time the map loads. Arrow keys to move, Enter to talk to the shopkeeper |
 | `battle` | `mwg/battle`: a creature battle - species, a type-effectiveness matrix, speed-ordered turns, and a level-up with an evolution check on winning. The damage formula is this example's own invention, not something `mwg` prescribes |
+| `minigame` | `mwg/core` scene stacking: a lockpicking timing challenge pauses the room underneath and returns a score through `onResume` |
+| `chess` | `mwg/board`: keyboard chess against a small deterministic alpha-beta computer player, with legal moves, check, checkmate, stalemate, castling, en passant, and promotion |
 
 ## About the assets
 

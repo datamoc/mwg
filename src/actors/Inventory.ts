@@ -22,6 +22,9 @@ export interface InventoryItem {
 	/** an enchantment or upgrade level above the item's base, such as a weapon's "+2" */
 	level?: number;
 
+	/** a named affix - an enchantment, glyph, augment or curse id from an `AffixTable` */
+	affix?: string;
+
 	/** remaining durability; omit for an item that cannot wear out at all */
 	durability?: number;
 	maxDurability?: number;

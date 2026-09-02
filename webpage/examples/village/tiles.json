@@ -1,0 +1,29 @@
+{
+	"tileSize": 16,
+	"columns": 8,
+	"rows": 2,
+	"tiles": {
+		"FLOOR": 0,
+		"FLOOR_WORN": 1,
+		"WALL": 2,
+		"WALL_TOP": 3,
+		"WATER": 4,
+		"GRASS": 5,
+		"DOOR": 6,
+		"COIN": 7,
+		"HERO": 8,
+		"RAT": 9,
+		"BLOB": 10,
+		"EMPTY": 11,
+		"TRAP": 12
+	},
+	"character": {
+		"frameWidth": 64,
+		"frameHeight": 96,
+		"expressions": {
+			"neutral": 0,
+			"happy": 1,
+			"cross": 2
+		}
+	}
+}

@@ -56,4 +56,16 @@ export class Secrets {
 		this.level.set(x, y, this.revealedKind.get(cell)!);
 		return true;
 	}
+
+	toJSON(): { revealed: [number, number][]; discovered: number[] } {
+		return { revealed: [...this.revealedKind], discovered: [...this.discovered] };
+	}
+
+	/** rebuilds secrets from save data onto a (separately restored) level */
+	static fromJSON(level: Level, data: { revealed: [number, number][]; discovered: number[] }): Secrets {
+		const secrets = new Secrets(level);
+		for (const [cell, revealed] of data.revealed) secrets.revealedKind.set(cell, revealed);
+		for (const cell of data.discovered) secrets.discovered.add(cell);
+		return secrets;
+	}
 }

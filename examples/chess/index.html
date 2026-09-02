@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>mwg — chess (source)</title>
+	<style>
+		html, body { margin: 0; height: 100%; background: #101018; overflow: hidden; }
+		#game { display: block; width: 100vw; height: 100vh; }
+		#not-built { color: #d0d0d8; font: 14px/1.8 ui-monospace, Consolas, monospace; padding: 40px; max-width: 44em; }
+		#not-built code { color: #8ad9ff; }
+		#not-built strong { color: #fff; }
+	</style>
+	<script>
+		addEventListener('DOMContentLoaded', function () {
+			if (location.protocol !== 'file:' || window.__MWG_ASSETS__) return;
+			document.body.innerHTML = '<div id="not-built"><p><strong>This is the source page, not the built game.</strong></p><p>Build it with <code>npm run example:chess:build</code>, then open <code>dist/index.html</code>.</p><p>For live development, run <code>npm run example:chess</code>.</p></div>';
+		});
+	</script>
+</head>
+<body>
+	<canvas id="game"></canvas>
+	<script type="module" src="./main.ts"></script>
+</body>
+</html>

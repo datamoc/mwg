@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 /**
- * Builds the four example games and copies each one's `dist/` into
+ * Builds the example games and copies each one's `dist/` into
  * `webpage/examples/<name>/`, so the website's Examples page has something to embed.
  *
  * The copies are generated output, not source — same rule as `examples/*\/dist` itself
@@ -19,6 +19,10 @@ const scripts = {
 	interface: 'example:ui:build',
 	dialogue: 'example:dialogue:build',
 	dungeon: 'example:dungeon:build',
+	village: 'example:village:build',
+	battle: 'example:battle:build',
+	minigame: 'example:minigame:build',
+	chess: 'example:chess:build',
 };
 
 for (const [name, script] of Object.entries(scripts)) {

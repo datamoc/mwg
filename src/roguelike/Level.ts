@@ -151,6 +151,31 @@ export class Level {
 		}
 		return out;
 	}
+
+	toJSON(): { width: number; height: number; shape: LevelShape; terrain: number[]; rooms: Rect[] } {
+		return {
+			width: this.width,
+			height: this.height,
+			shape: this.shape,
+			terrain: [...this.terrain],
+			rooms: this.rooms.map((room) => ({ ...room })),
+		};
+	}
+
+	/**
+	 * Rebuilds a level from save data - the `kinds` table is supplied fresh (it holds a
+	 * game's own terrain meanings, the same way `QuestLog` takes its definitions fresh),
+	 * so only the terrain ids and rooms are ever save data.
+	 */
+	static fromJSON(
+		kinds: TerrainKind[],
+		data: { width: number; height: number; shape: LevelShape; terrain: number[]; rooms: Rect[] }
+	): Level {
+		const level = new Level(data.width, data.height, kinds, 0, data.shape);
+		level.terrain.set(data.terrain.slice(0, level.terrain.length));
+		level.rooms = data.rooms.map((room) => ({ ...room }));
+		return level;
+	}
 }
 
 export function rectCenter(rect: Rect): { x: number; y: number } {

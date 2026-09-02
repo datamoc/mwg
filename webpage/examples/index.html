@@ -6,7 +6,7 @@
 	<title>Examples — mwg</title>
 	<meta
 		name="description"
-		content="Four playable mwg builds: colour transform, interface, dialogue scene, and a dungeon crawl — running right on the page."
+		content="Playable mwg builds: colour transform, interface, dialogue, dungeon, village, battle, minigame, and chess examples — running right on the page."
 	/>
 	<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
 	<link rel="stylesheet" href="../assets/site.css" />
@@ -17,7 +17,7 @@
 	<meta property="og:title" content="Examples — mwg" />
 	<meta
 		property="og:description"
-		content="Four playable mwg builds: colour transform, interface, dialogue scene, and a dungeon crawl — running right on the page."
+		content="Playable mwg builds: colour transform, interface, dialogue, dungeon, village, battle, minigame, and chess examples — running right on the page."
 	/>
 	<meta property="og:image" content="https://datamoc.github.io/mwg/assets/og-image.png" />
 	<meta property="og:image:width" content="1080" />
@@ -26,7 +26,7 @@
 	<meta name="twitter:title" content="Examples — mwg" />
 	<meta
 		name="twitter:description"
-		content="Four playable mwg builds: colour transform, interface, dialogue scene, and a dungeon crawl — running right on the page."
+		content="Playable mwg builds: colour transform, interface, dialogue, dungeon, village, battle, minigame, and chess examples — running right on the page."
 	/>
 	<meta name="twitter:image" content="https://datamoc.github.io/mwg/assets/og-image.png" />
 
@@ -97,7 +97,7 @@
 				<p class="eyebrow">playable, right here</p>
 				<h1>Examples</h1>
 				<p class="lede">
-					Four builds, each exercising a different corner of the framework. Every one
+					Eight builds, each exercising a different corner of the framework. Every one
 					runs straight from the framework source and opens the same way a shipped game
 					would — no server behind this page, just <code>file://</code> pages sitting in
 					an iframe.
@@ -107,6 +107,44 @@
 
 		<section style="padding-top: 0; border-bottom: none">
 			<div class="wrap">
+				<div class="panel example">
+					<div class="example-head">
+						<h3>Chess</h3>
+						<a class="btn" href="./chess/index.html">Open full screen</a>
+					</div>
+					<p>Two-player keyboard chess with legal moves, check, checkmate, stalemate, castling, en passant, and promotion.</p>
+					<iframe src="./chess/index.html" title="mwg chess example" loading="lazy"></iframe>
+					<p class="controls">arrow keys move the cursor &nbsp;·&nbsp; <kbd>Enter</kbd> select or move &nbsp;·&nbsp; <kbd>Esc</kbd> reset</p>
+				</div>
+
+				<div class="panel example">
+					<div class="example-head">
+						<h3>Lockpick minigame</h3>
+						<a class="btn" href="./minigame/index.html">Open full screen</a>
+					</div>
+					<p>A timing challenge layered over a room scene. It demonstrates scene stacking, suspension, and returning a result to the scene underneath.</p>
+					<iframe src="./minigame/index.html" title="mwg lockpick minigame example" loading="lazy"></iframe>
+					<p class="controls"><kbd>Enter</kbd> stop the needle &nbsp;·&nbsp; <kbd>Esc</kbd> leave the minigame</p>
+				</div>
+
+				<div class="panel example">
+					<div class="example-head">
+						<h3>Village</h3>
+						<a class="btn" href="./village/index.html">Open full screen</a>
+					</div>
+					<p>A small RPG map with an NPC, branching conversation, game state, and an autorun cutscene.</p>
+					<iframe src="./village/index.html" title="mwg village example" loading="lazy"></iframe>
+				</div>
+
+				<div class="panel example">
+					<div class="example-head">
+						<h3>Battle</h3>
+						<a class="btn" href="./battle/index.html">Open full screen</a>
+					</div>
+					<p>A creature battle with type effectiveness, speed-ordered turns, damage, leveling, and evolution.</p>
+					<iframe src="./battle/index.html" title="mwg battle example" loading="lazy"></iframe>
+				</div>
+
 				<div class="panel example">
 					<div class="example-head">
 						<h3>Colour transform</h3>
@@ -185,7 +223,11 @@
 npm run example             # colour-transform, dev server
 npm run example:ui          # interface, dev server
 npm run example:dialogue    # dialogue scene, dev server
-npm run example:dungeon     # dungeon crawl, dev server</code></pre>
+npm run example:dungeon     # dungeon crawl, dev server
+npm run example:village     # village RPG, dev server
+npm run example:battle      # creature battle, dev server
+npm run example:minigame    # lockpick minigame, dev server
+npm run example:chess       # two-player chess, dev server</code></pre>
 				<p>Append <code>:build</code> to any of those to produce a folder you open from disk with no server at all — see <code>examples/README.md</code> for the full list.</p>
 			</div>
 		</section>
