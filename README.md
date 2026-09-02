@@ -158,15 +158,20 @@ The Wesnoth-shaped half: a grid whose shape is a parameter, not a parallel imple
 | movement cost and defense bonus by terrain, hex or square alike | `mwg/roguelike` |
 | zone of control: a hex a unit cannot move through, only into | `mwg/roguelike` |
 | field of view and pathfinding over a hex grid, not just square | `mwg/roguelike` |
+| isometric (and staggered) projection, alongside orthogonal and hex | `mwg/render` |
 
 A game picks a grid shape once; the camera, field of view, pathfinding and turn scheduler
-work the same way over either, rather than a hex game needing its own copy of each.
+work the same way over either, rather than a hex game needing its own copy of each. Between
+them, orthogonal, isometric and hex cover every map orientation
+[Tiled](https://www.mapeditor.org/) itself supports — a Tiled map loads and renders through
+the same `TileMap`, whichever orientation it was drawn in, rather than mwg reading only the
+one shape it happens to render natively.
 
 ### RPG
 
 | capability | provided by |
 | --- | --- |
-| maps loaded as data, including Tiled's format | `mwg/rpg` |
+| maps loaded as data, in any of Tiled's map orientations | `mwg/rpg` |
 | events placed on tiles, with pages selected by conditions | `mwg/rpg` |
 | event triggers: action, touch, autorun, parallel | `mwg/rpg` |
 | a command interpreter for cutscenes: move routes, waits, branches, calls | `mwg/rpg` |
@@ -279,6 +284,7 @@ rather than showing a raw key to the player.
 13. layered character sprites, and vertical writing
 14. worked examples: a dungeon crawl, a village with NPCs and a cutscene, a creature battle
 15. `mwg/render` + `mwg/roguelike` — hexagonal tile maps, and FOV/pathfinding over a hex grid
+16. `mwg/render` — isometric and staggered projection, so any Tiled orientation loads directly
 
 ## Licence and provenance
 
