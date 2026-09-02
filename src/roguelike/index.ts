@@ -16,3 +16,6 @@ export { decideMonsterAI } from './MonsterAI.ts';
 export type { AIState, AIDecision, MonsterAIOptions } from './MonsterAI.ts';
 
 export { Secrets } from './Secrets.ts';
+
+export { chebyshevDistance, traceLine, hasLineOfSight, canTarget, resolveArea } from './Targeting.ts';
+export type { AreaShape, TargetingOptions } from './Targeting.ts';

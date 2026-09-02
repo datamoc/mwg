@@ -345,10 +345,23 @@ rather than showing a raw key to the player.
     real bug in the process - the vault's floor and treasure were rendering through the
     "solid" wall before the door was ever found, because the vault cell itself was carved
     eagerly instead of staying genuinely undiscovered rock until the door opened
-24. `mwg/roguelike` — targeting: an aim cursor with range/line-of-sight/area-of-effect shape
+24. ~~`mwg/roguelike` — targeting: an aim cursor with range/line-of-sight/area-of-effect shape
     resolution for thrown items, wands and ranged attacks, plus a projectile-flight helper in
-    `mwg/render`. `battle`'s moves are turn-based and untargeted-on-a-grid; roguelike combat
-    needs its own aiming step
+    `mwg/render`~~ - `canTarget`/`hasLineOfSight`/`resolveArea` are a Bresenham line trace, not
+    a shadowcast: aiming asks "what is on the way to this exact point", a different (and
+    cheaper) question than `FieldOfView`'s "what can be seen from here at all", so the two
+    deliberately disagree at some edges rather than share an algorithm. `resolveArea` resolves
+    `single`/`line`/`burst` shapes once a target is chosen. `render`'s `Projectile` tweens a
+    sprite's position in a straight line the same way `GridMover` tweens tile movement - position
+    only, nothing about what happens on arrival. `examples/dungeon` wires both in: throwing a
+    flask of oil (`T`) picks the nearest visible monster in range with `canTarget`, resolves the
+    hit instantly (the same instant-logic-plus-cosmetic-flourish split `attack`'s hit-flash
+    already uses), and flies a tinted sprite there with `Projectile` for show. Verified in a
+    browser via a live debug trace of the actual bundled minified code (not just the source):
+    real monster/hero positions and computed range/LOS values were read straight out of the
+    running game and matched the source's arithmetic exactly - what first looked like a broken
+    "nothing in range" turned out to be a dropped-armor ground item's tinted coin sprite being
+    mistaken for a monster at screenshot resolution, not a targeting bug
 25. `mwg/ui` — a dense icon-grid inventory view (multi-column, drag/drop, long-press to
     quickslot) alongside the existing `ListView`, for games with SPD-sized item counts where
     a scrolling list is the wrong shape

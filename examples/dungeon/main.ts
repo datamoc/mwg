@@ -1,6 +1,6 @@
 import { Container } from 'pixi.js';
 import { Game, Scene, Input, Random, SaveSystem } from '../../src/core/index.ts';
-import { TintedSprite, SpriteSheet, TileMap, Camera } from '../../src/render/index.ts';
+import { TintedSprite, SpriteSheet, TileMap, Camera, Projectile } from '../../src/render/index.ts';
 import { Label, theme, Window, WindowStack, ListView, type ListItem } from '../../src/ui/index.ts';
 import {
 	StatBlock,
@@ -18,6 +18,8 @@ import {
 	furthestRoom,
 	decideMonsterAI,
 	neighbourOffsets,
+	canTarget,
+	chebyshevDistance,
 	type Level,
 	type Rect,
 	type Step,
@@ -43,6 +45,7 @@ const TILES = 'tiles.png';
 const { tiles, tileSize } = tileset;
 
 const VIEW_RADIUS = 7;
+const THROW_RANGE = 6;
 
 //generateDungeon writes wall (0) and floor (1) itself; TRAP is this example's own kind,
 //appended after them so a trap tile is passable but distinct once revealed
@@ -77,6 +80,8 @@ interface Item extends EquippableItem {
 	slot?: 'weapon' | 'armor';
 	/** HP restored when used, for a consumable rather than something worn */
 	heal?: number;
+	/** damage dealt on a direct hit, for something thrown rather than worn or drunk */
+	throwDamage?: [number, number];
 }
 
 const ITEMS: Record<string, Item> = {
@@ -99,6 +104,7 @@ const ITEMS: Record<string, Item> = {
 		modifiers: [{ stat: 'armor', op: 'add', value: 3 }],
 	},
 	potion: { id: 'potion', name: 'a healing potion', heal: 8 },
+	flask: { id: 'flask', name: 'a flask of oil', throwDamage: [3, 6] },
 };
 
 /** the tint a ground item's sprite gets, so items read apart from the gold coin they borrow */
@@ -106,7 +112,11 @@ const ITEM_TINT: Record<string, number> = {
 	sword: 0x9fb8e0,
 	armor: 0x7fbf7f,
 	potion: 0xff8080,
+	flask: 0xffaa44,
 };
+
+/** items that merge into one stack rather than taking a slot each */
+const STACKABLE_ITEMS = new Set(['potion', 'flask']);
 
 interface GroundItem extends Step {
 	item: Item;
@@ -144,6 +154,7 @@ class DungeonScene extends Scene {
 	private pathfinder!: Pathfinder;
 	private secrets!: Secrets;
 	private vaultCell: Step | null = null;
+	private projectiles: Array<{ flight: Projectile; sprite: TintedSprite }> = [];
 	private scheduler = new Scheduler<Creature>();
 	private windows = new WindowStack();
 
@@ -184,6 +195,7 @@ class DungeonScene extends Scene {
 		this.heroBag = new Inventory({ capacity: 30 });
 		this.heroBag.add({ id: 'dagger', quantity: 1, weight: 2 });
 		this.heroBag.add({ id: 'potion', quantity: 2, stackable: true, weight: 0.5 });
+		this.heroBag.add({ id: 'flask', quantity: 2, stackable: true, weight: 0.5 });
 		this.heroEquipment = new EquipmentSlots<'weapon' | 'armor', Item>(['weapon', 'armor'], this.heroStats);
 		this.heroHp = this.heroStats.get('maxHp');
 
@@ -230,7 +242,12 @@ class DungeonScene extends Scene {
 
 		this.heroBag = new Inventory({ capacity: 30 });
 		for (const entry of data.bag) {
-			this.heroBag.add({ id: entry.id, quantity: entry.quantity, stackable: entry.id === 'potion', weight: 1 });
+			this.heroBag.add({
+				id: entry.id,
+				quantity: entry.quantity,
+				stackable: STACKABLE_ITEMS.has(entry.id),
+				weight: 1,
+			});
 		}
 
 		if (data.weaponId) this.heroEquipment.equip('weapon', ITEMS[data.weaponId]);
@@ -254,6 +271,8 @@ class DungeonScene extends Scene {
 		this.creatures = [];
 		this.groundItems = [];
 		this.vaultCell = null;
+		for (const thrown of this.projectiles) thrown.sprite.destroy();
+		this.projectiles = [];
 		this.scheduler.clear();
 
 		//seeded per depth, so the same run replays identically and a floor can be regenerated
@@ -360,7 +379,7 @@ class DungeonScene extends Scene {
 
 	/** a couple of items on the floor each level - a weapon or armor upgrade, or a potion */
 	private placeItems(): void {
-		const pool = ['sword', 'armor', 'potion', 'potion'];
+		const pool = ['sword', 'armor', 'potion', 'potion', 'flask'];
 
 		for (let i = 0; i < 2; i++) {
 			const room = this.level.rooms[Random.int(1, this.level.rooms.length)];
@@ -576,6 +595,13 @@ class DungeonScene extends Scene {
 			return true;
 		}
 
+		if (action === 'throw') {
+			this.awaitingInput = false;
+			this.throwAtNearest();
+			this.spendHeroTurn();
+			return true;
+		}
+
 		const move = MOVES[action];
 		if (!move) return false;
 
@@ -640,6 +666,53 @@ class DungeonScene extends Scene {
 		if (decision.step) this.moveTo(monster, decision.step);
 	}
 
+	/**
+	 * Throws a flask of oil at the nearest monster in range - `mwg/roguelike`'s targeting
+	 * helpers picking the target, `mwg/render`'s `Projectile` flying the sprite there. The
+	 * hit itself resolves the instant the flask leaves the hero's hand: the flight afterwards
+	 * is purely cosmetic, the same way `attack`'s hit-flash is a visual layered onto damage
+	 * that already happened, not something the turn waits on.
+	 */
+	private throwAtNearest(): void {
+		if (!this.heroBag.find('flask')) {
+			this.say('You have nothing to throw.');
+			return;
+		}
+
+		const target = this.creatures
+			.filter((c) => !c.isHero && this.fov.isVisible(c.x, c.y))
+			.filter((c) => canTarget(this.level, this.hero, c, { range: THROW_RANGE }))
+			.sort((a, b) => chebyshevDistance(this.hero, a) - chebyshevDistance(this.hero, b))[0];
+
+		if (!target) {
+			this.say('Nothing in range to throw at.');
+			return;
+		}
+
+		this.heroBag.remove('flask', 1);
+
+		const item = ITEMS.flask;
+		const [min, max] = item.throwDamage!;
+		const damage = Random.range(min, max);
+		target.hp -= damage;
+		target.sprite.lerpTint(0xff8800, 0.85);
+		this.say(`You hit ${target.name} with a flask of oil for ${damage}.`);
+		if (target.hp <= 0) this.kill(target);
+
+		const sprite = new TintedSprite(this.sheet.get(tiles.COIN));
+		sprite.tint = ITEM_TINT.flask;
+		this.creatureLayer.addChild(sprite);
+		this.projectiles.push({
+			flight: new Projectile(sprite, this.worldPoint(this.hero), this.worldPoint(target), { speed: 300 }),
+			sprite,
+		});
+	}
+
+	private worldPoint(creature: Creature): { x: number; y: number } {
+		const [x, y] = this.worldOf(creature);
+		return { x, y };
+	}
+
 	private moveTo(creature: Creature, to: Step): void {
 		creature.x = to.x;
 		creature.y = to.y;
@@ -697,7 +770,7 @@ class DungeonScene extends Scene {
 		this.groundItems.splice(index, 1);
 		sprite.destroy();
 
-		this.heroBag.add({ id: item.id, quantity: 1, stackable: item.id === 'potion', weight: 1 });
+		this.heroBag.add({ id: item.id, quantity: 1, stackable: STACKABLE_ITEMS.has(item.id), weight: 1 });
 		this.say(`You pick up ${item.name}.`);
 	}
 
@@ -750,6 +823,8 @@ class DungeonScene extends Scene {
 			this.heroBag.remove(id, 1);
 			this.hero.hp = Math.min(this.hero.maxHp, this.hero.hp + def.heal);
 			this.say(`You drink ${def.name} and recover ${def.heal} HP.`);
+		} else if (def.throwDamage) {
+			this.say(`${capitalise(def.name)} is thrown, not used - press T instead.`);
 		}
 
 		this.windows.pop();
@@ -801,7 +876,7 @@ class DungeonScene extends Scene {
 		this.statusLabel.setText(
 			`Floor ${this.depth}    HP ${Math.max(0, this.hero.hp)}/${this.hero.maxHp}    ` +
 				`ATK ${this.heroStats.get('attack')}  DEF ${this.heroStats.get('defense')}    ` +
-				`${weapon}, ${armor}    (Tab for inventory, F to search)`
+				`${weapon}, ${armor}    (Tab for inventory, F to search, T to throw)`
 		);
 	}
 
@@ -855,6 +930,14 @@ class DungeonScene extends Scene {
 		for (const creature of this.creatures) {
 			if (!creature.isHero && creature.sprite.colorAdd !== 0) creature.sprite.resetColor();
 		}
+
+		for (let i = this.projectiles.length - 1; i >= 0; i--) {
+			const thrown = this.projectiles[i];
+			if (thrown.flight.update(dt)) {
+				thrown.sprite.destroy();
+				this.projectiles.splice(i, 1);
+			}
+		}
 	}
 }
 
@@ -883,6 +966,7 @@ async function main(): Promise<void> {
 	//descending and searching are their own actions, so they can be rebound like everything else
 	Input.bind('descend', ['Period', 'NumpadDecimal']);
 	Input.bind('search', ['KeyF']);
+	Input.bind('throw', ['KeyT']);
 
 	//a save from a previous visit continues that run; there is none once you have died
 	pendingSave = saves.load(SAVE_SLOT)?.state ?? null;
