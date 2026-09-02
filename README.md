@@ -299,13 +299,16 @@ rather than showing a raw key to the player.
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
 **Priority order among what's still open, reevaluated this session:** 17 → 18 → 37 → 39 →
-40 → 32 → 31 → 34 → 33 → 35 → 36 → 28 → 41 → 30 → 38. Items 37 (quests) and 39 (skills) move
-up from their append position - both are small, unblocked `mwg/actors`/`mwg/rpg` capabilities
-that already-committed reference games (ADOM's own row names quests explicitly; levelling is
-implicit in nearly all of them) demand directly, unlike several later entries that are either
-blocked on hex (28, 41) or still deciding which genre or mechanic to commit to at all (30, 38).
-40 (crafting) is pulled up alongside them for the same reason, sharing 37/39's shape: small,
-unblocked, already-demanded. Numbers themselves are never reassigned once given - the list is
+40 → 42 → 32 → 31 → 34 → 33 → 35 → 36 → 28 → 41 → 30 → 38. Items 37 (quests) and 39 (skills)
+move up from their append position - both are small, unblocked `mwg/actors`/`mwg/rpg`
+capabilities that already-committed reference games (ADOM's own row names quests explicitly;
+levelling is implicit in nearly all of them) demand directly, unlike several later entries
+that are either blocked on hex (28, 41) or still deciding which genre or mechanic to commit
+to at all (30, 38). 40 (crafting) is pulled up alongside them for the same reason, sharing
+37/39's shape: small, unblocked, already-demanded. 42 (action recording and replay) follows
+right after - not demanded by any reference game, but the fastest way to make every item
+above and below it faster to verify, and cheap: most of its determinism already exists
+(`Random`, `Game.step`). Numbers themselves are never reassigned once given - the list is
 an append-only history, including for what is not done yet - so priority order lives here, in
 prose, rather than in the list's own sequence.
 
@@ -510,6 +513,17 @@ prose, rather than in the list's own sequence.
     actors (no HP, no turn-taking of its own, no sight). Feeds item 30's board-game reference
     more directly than anything shipped today; exactly what "owned", "captured" and
     "promoted" should mean is a question for whichever board game item 30 eventually picks
+42. `mwg/core` — action recording and replay, for testing: tap `Input.onAction`, timestamp
+    each one against a frame counter rather than the clock, and serialise the log; a player
+    re-dispatches the same actions at the same frame counts while driving the frame loop
+    itself with `Game.step(dt)` instead of a live `requestAnimationFrame`. Most of what this
+    needs already exists and was not built for this - `Random`'s seeded, save/restorable
+    state and `Game.step` (already there to defeat Chrome's background-tab throttling) are
+    exactly the determinism a replay needs, so the actual gap is just the recorder/player
+    wrapping `Input.onAction`, not a new source of determinism. This session's own browser
+    verification kept losing time to imprecise manual play (aligning a grid by eye, hunting
+    for a monster that might not even be in view) - a recorded action log a test could
+    replay and screenshot-diff is the direct fix for exactly that
 
 ## Licence and provenance
 
