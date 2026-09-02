@@ -290,12 +290,12 @@ rather than showing a raw key to the player.
 15. ~~`mwg/assets` + `mwg/render` — verify and harden SVG texture loading through a compiled
     `data:` URI~~ (verified in `examples/colour-transform`: Pixi's SVG parser rasterises it
     correctly through the aliased, extension-less `data:` source, no code changes needed)
-16. an SPD-shaped mockup: wire `mwg/actors` (`StatBlock`, `Inventory`, `EquipmentSlots`) into
-    `examples/dungeon` — equipment that changes combat stats, and a real inventory screen
-    opened mid-run (permadeath is already true there: `kill()` on the hero already ends the
-    run with no continue). Reordered ahead of 17/18: every piece it needs already shipped,
-    so it is integration work, not new engineering, and it is the fastest path to a
-    recognisable SPD-shaped demo
+16. ~~an SPD-shaped mockup: wire `mwg/actors` (`StatBlock`, `Inventory`, `EquipmentSlots`) into
+    `examples/dungeon`~~ — the hero's attack/defense/max HP are now a `StatBlock` derived
+    from strength/armor/vitality; items found on the floor go into an `Inventory`; an
+    inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
+    its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
+    sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
 17. `mwg/render` + `mwg/roguelike` — hexagonal tile maps, and FOV/pathfinding over a hex grid.
     The actual blocker for a Wesnoth-shaped mockup: nothing hex-shaped is possible before
     this lands, unlike 16 above, so it is next after that quick win rather than after 18/19

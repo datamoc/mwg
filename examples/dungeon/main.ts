@@ -1,7 +1,13 @@
 import { Container } from 'pixi.js';
 import { Game, Scene, Input, Random } from '../../src/core/index.ts';
 import { TintedSprite, SpriteSheet, TileMap, Camera } from '../../src/render/index.ts';
-import { Label, theme } from '../../src/ui/index.ts';
+import { Label, theme, Window, WindowStack, ListView, type ListItem } from '../../src/ui/index.ts';
+import {
+	StatBlock,
+	Inventory,
+	EquipmentSlots,
+	type EquippableItem,
+} from '../../src/actors/index.ts';
 import {
 	generateDungeon,
 	FieldOfView,
@@ -17,19 +23,22 @@ import tileset from '../assets/tiles.json' with { type: 'json' };
 
 /**
  * A small dungeon crawl, to exercise the roguelike module against the rest of the
- * framework.
+ * framework - and, on top of that, an SPD-shaped mockup: the hero's attack, defense and
+ * max HP are a `StatBlock` (base strength/vitality/armor, with attack/maxHp/defense as
+ * derived stats), items on the floor go into an `Inventory`, and equipping a weapon or
+ * armor from it applies `Modifier`s through `EquipmentSlots` - the same machinery
+ * `mwg/actors` gives any game, not something built specially for this example. Permadeath
+ * was already true here before any of this: `kill()` on the hero ends the run, no continue.
  *
- * Everything here is deliberately ordinary: bump to attack, monsters chase, the map is
- * remembered but not seen, and the stairs take you down. What it is proving is that the
- * pieces fit — the field of view drives the tile map's per-cell colour, the scheduler
- * decides who moves, and the camera follows without any of them knowing about each other.
+ * Monsters stay on the older, simpler `damage: [min, max]` shape rather than a full
+ * StatBlock each - the point being made is that equipment changes the *hero's* numbers,
+ * not that every creature needs the heavier machinery.
  */
 
 const TILES = 'tiles.png';
 const { tiles, tileSize } = tileset;
 
 const VIEW_RADIUS = 7;
-const HERO_MAX_HP = 20;
 
 /** how a cell looks in each of the three states a roguelike map has */
 const LIGHT = {
@@ -45,8 +54,53 @@ interface Creature extends Step {
 	hp: number;
 	maxHp: number;
 	damage: [number, number];
+	/** subtracted from incoming damage before it lands; monsters simply have none */
+	defense?: number;
 	speed: number;
 	isHero?: boolean;
+}
+
+/** an item definition - what a game keeps once it decides what its own items do */
+interface Item extends EquippableItem {
+	id: string;
+	name: string;
+	slot?: 'weapon' | 'armor';
+	/** HP restored when used, for a consumable rather than something worn */
+	heal?: number;
+}
+
+const ITEMS: Record<string, Item> = {
+	dagger: {
+		id: 'dagger',
+		name: 'a rusty dagger',
+		slot: 'weapon',
+		modifiers: [{ stat: 'strength', op: 'add', value: 1 }],
+	},
+	sword: {
+		id: 'sword',
+		name: 'an iron sword',
+		slot: 'weapon',
+		modifiers: [{ stat: 'strength', op: 'add', value: 6 }],
+	},
+	armor: {
+		id: 'armor',
+		name: 'leather armor',
+		slot: 'armor',
+		modifiers: [{ stat: 'armor', op: 'add', value: 3 }],
+	},
+	potion: { id: 'potion', name: 'a healing potion', heal: 8 },
+};
+
+/** the tint a ground item's sprite gets, so items read apart from the gold coin they borrow */
+const ITEM_TINT: Record<string, number> = {
+	sword: 0x9fb8e0,
+	armor: 0x7fbf7f,
+	potion: 0xff8080,
+};
+
+interface GroundItem extends Step {
+	item: Item;
+	sprite: TintedSprite;
 }
 
 class DungeonScene extends Scene {
@@ -57,15 +111,21 @@ class DungeonScene extends Scene {
 	private fov!: FieldOfView;
 	private pathfinder!: Pathfinder;
 	private scheduler = new Scheduler<Creature>();
+	private windows = new WindowStack();
 
 	private creatures: Creature[] = [];
 	private hero!: Creature;
 	private stairs: Step = { x: 0, y: 0 };
 	private stairsSprite!: TintedSprite;
 	private creatureLayer = new Container();
+	private groundItems: GroundItem[] = [];
+
+	private heroStats!: StatBlock;
+	private heroBag!: Inventory;
+	private heroEquipment!: EquipmentSlots<'weapon' | 'armor', Item>;
 
 	private depth = 1;
-	private heroHp = HERO_MAX_HP;
+	private heroHp = 0;
 	private log: string[] = [];
 	private logLabel!: Label;
 	private statusLabel!: Label;
@@ -79,7 +139,22 @@ class DungeonScene extends Scene {
 		this.camera = new Camera({ zoom: 3, deadzone: 0.25 });
 		this.stage.addChild(this.camera.world);
 
+		this.heroStats = new StatBlock({
+			base: { strength: 10, vitality: 5, armor: 0 },
+			derived: [
+				{ name: 'attack', from: (s) => Math.max(1, Math.floor(s.strength / 3)) },
+				{ name: 'maxHp', from: (s) => 10 + s.vitality * 2 },
+				{ name: 'defense', from: (s) => s.armor },
+			],
+		});
+		this.heroBag = new Inventory({ capacity: 30 });
+		this.heroBag.add({ id: 'dagger', quantity: 1, weight: 2 });
+		this.heroBag.add({ id: 'potion', quantity: 2, stackable: true, weight: 0.5 });
+		this.heroEquipment = new EquipmentSlots<'weapon' | 'armor', Item>(['weapon', 'armor'], this.heroStats);
+		this.heroHp = this.heroStats.get('maxHp');
+
 		this.buildInterface();
+		this.stage.addChild(this.windows);
 		this.enterLevel();
 
 		Input.onAction.add((action) => this.onAction(action));
@@ -91,6 +166,7 @@ class DungeonScene extends Scene {
 		this.gameOver = false;
 		this.camera.world.removeChildren();
 		this.creatures = [];
+		this.groundItems = [];
 		this.scheduler.clear();
 
 		//seeded per depth, so the same run replays identically and a floor can be regenerated
@@ -119,14 +195,16 @@ class DungeonScene extends Scene {
 			frame: tiles.HERO,
 			at: start,
 			hp: this.heroHp,
-			damage: [2, 5],
+			damage: [1, 1],
 			speed: 1,
 			isHero: true,
 		});
-		this.hero.maxHp = HERO_MAX_HP;
+		this.syncHeroCombatFields();
+		this.hero.hp = Math.min(this.hero.hp, this.hero.maxHp);
 
 		this.placeStairs(start);
 		this.populate();
+		this.placeItems();
 
 		this.camera.setBounds({ minX: 0, minY: 0, maxX: this.map.worldWidth, maxY: this.map.worldHeight });
 		this.camera.snapTo(...this.worldOf(this.hero));
@@ -182,6 +260,29 @@ class DungeonScene extends Scene {
 					? { name: 'a blob', frame: tiles.BLOB, at, hp: 8 + this.depth, damage: [2, 4], speed: 0.6 }
 					: { name: 'a rat', frame: tiles.RAT, at, hp: 4 + this.depth, damage: [1, 3], speed: 1 }
 			);
+		}
+	}
+
+	/** a couple of items on the floor each level - a weapon or armor upgrade, or a potion */
+	private placeItems(): void {
+		const pool = ['sword', 'armor', 'potion', 'potion'];
+
+		for (let i = 0; i < 2; i++) {
+			const room = this.level.rooms[Random.int(1, this.level.rooms.length)];
+			const at = {
+				x: Random.range(room.left, room.right),
+				y: Random.range(room.top, room.bottom),
+			};
+			if (this.creatureAt(at.x, at.y) || this.groundItemAt(at.x, at.y)) continue;
+
+			const item = ITEMS[Random.element(pool)!];
+			const sprite = new TintedSprite(this.sheet.get(tiles.COIN));
+			sprite.x = at.x * tileSize;
+			sprite.y = at.y * tileSize;
+			sprite.tint = ITEM_TINT[item.id] ?? 0xffffff;
+			this.creatureLayer.addChild(sprite);
+
+			this.groundItems.push({ x: at.x, y: at.y, item, sprite });
 		}
 	}
 
@@ -247,12 +348,19 @@ class DungeonScene extends Scene {
 	}
 
 	private onAction(action: string): boolean {
+		//a window (the inventory) takes input first; the map only sees what it lets through
+		if (this.windows.blocksWorld) return false;
 		if (this.gameOver || !this.awaitingInput) return false;
+
+		if (action === 'menu') {
+			this.openInventory();
+			return true;
+		}
 
 		if (action === 'descend' && this.hero.x === this.stairs.x && this.hero.y === this.stairs.y) {
 			//a little is recovered on the way down, so descending is a real choice rather
 			//than a slow slide into an unwinnable state
-			this.heroHp = Math.min(HERO_MAX_HP, this.hero.hp + 3);
+			this.heroHp = Math.min(this.heroStats.get('maxHp'), this.hero.hp + 3);
 			this.depth++;
 			this.enterLevel();
 			return true;
@@ -284,6 +392,7 @@ class DungeonScene extends Scene {
 			this.attack(this.hero, occupant);
 		} else if (this.level.passable(target.x, target.y)) {
 			this.moveTo(this.hero, target);
+			this.pickUpAt(target.x, target.y);
 			if (target.x === this.stairs.x && target.y === this.stairs.y) {
 				this.say('Stairs down. Press > to descend.');
 			}
@@ -321,7 +430,8 @@ class DungeonScene extends Scene {
 	}
 
 	private attack(attacker: Creature, defender: Creature): void {
-		const damage = Random.range(attacker.damage[0], attacker.damage[1]);
+		const raw = Random.range(attacker.damage[0], attacker.damage[1]);
+		const damage = Math.max(1, raw - (defender.defense ?? 0));
 		defender.hp -= damage;
 
 		//a white flash on the one that was hit: the additive colour term, used for what it
@@ -351,6 +461,78 @@ class DungeonScene extends Scene {
 
 	private creatureAt(x: number, y: number): Creature | null {
 		return this.creatures.find((c) => c.x === x && c.y === y) ?? null;
+	}
+
+	private groundItemAt(x: number, y: number): GroundItem | null {
+		return this.groundItems.find((g) => g.x === x && g.y === y) ?? null;
+	}
+
+	// ------------------------------------------------------------ inventory
+
+	private pickUpAt(x: number, y: number): void {
+		const index = this.groundItems.findIndex((g) => g.x === x && g.y === y);
+		if (index === -1) return;
+
+		const { item, sprite } = this.groundItems[index];
+		this.groundItems.splice(index, 1);
+		sprite.destroy();
+
+		this.heroBag.add({ id: item.id, quantity: 1, stackable: item.id === 'potion', weight: 1 });
+		this.say(`You pick up ${item.name}.`);
+	}
+
+	/** recomputes the hero's combat numbers from heroStats - called once, and after equipping */
+	private syncHeroCombatFields(): void {
+		const attack = this.heroStats.get('attack');
+		this.hero.damage = [attack, attack + 3];
+		this.hero.defense = this.heroStats.get('defense');
+		this.hero.maxHp = this.heroStats.get('maxHp');
+	}
+
+	private openInventory(): void {
+		const window = new Window({ width: 260, height: 200, title: 'Inventory' });
+
+		const items: ListItem[] = this.heroBag.items.map((entry) => {
+			const def = ITEMS[entry.id];
+			const worn = def.slot && this.heroEquipment.get(def.slot) === def;
+			const count = entry.quantity > 1 ? ` x${entry.quantity}` : '';
+			return { text: `${def.name}${count}${worn ? ' (worn)' : ''}`, value: entry.id };
+		});
+		if (items.length === 0) items.push({ text: '(nothing carried)', disabled: true });
+
+		const list = new ListView({
+			width: window.contentWidth,
+			height: window.contentHeight,
+			items,
+			onSelect: (item) => this.useItem(item.value as string),
+		});
+
+		window.content.addChild(list);
+		//the list is offered actions first, and only while its window is on top of the stack
+		window.delegate = list;
+		this.windows.push(window);
+		window.onClose.add(() => {
+			this.refresh();
+			return false;
+		});
+	}
+
+	private useItem(id: string): void {
+		const def = ITEMS[id];
+
+		if (def.slot) {
+			this.heroEquipment.equip(def.slot, def);
+			this.heroBag.remove(id, 1);
+			this.syncHeroCombatFields();
+			this.hero.hp = Math.min(this.hero.hp, this.hero.maxHp);
+			this.say(`You equip ${def.name}.`);
+		} else if (def.heal) {
+			this.heroBag.remove(id, 1);
+			this.hero.hp = Math.min(this.hero.maxHp, this.hero.hp + def.heal);
+			this.say(`You drink ${def.name} and recover ${def.heal} HP.`);
+		}
+
+		this.windows.pop();
 	}
 
 	// -------------------------------------------------------------- drawing
@@ -390,14 +572,21 @@ class DungeonScene extends Scene {
 			? LIGHT.visible
 			: LIGHT.remembered;
 
+		for (const ground of this.groundItems) {
+			ground.sprite.visible = this.fov.isVisible(ground.x, ground.y) || this.fov.isExplored(ground.x, ground.y);
+		}
+
+		const weapon = this.heroEquipment.get('weapon')?.name ?? 'bare hands';
+		const armor = this.heroEquipment.get('armor')?.name ?? 'no armor';
 		this.statusLabel.setText(
 			`Floor ${this.depth}    HP ${Math.max(0, this.hero.hp)}/${this.hero.maxHp}    ` +
-				`${this.creatures.length - 1} nearby`
+				`ATK ${this.heroStats.get('attack')}  DEF ${this.heroStats.get('defense')}    ` +
+				`${weapon}, ${armor}    (Tab for inventory)`
 		);
 	}
 
 	private buildInterface(): void {
-		this.statusLabel = new Label({ color: theme().color.textHighlight });
+		this.statusLabel = new Label({ color: theme().color.textHighlight, size: 12 });
 		this.statusLabel.x = 12;
 		this.statusLabel.y = 10;
 		this.stage.addChild(this.statusLabel);
@@ -433,12 +622,14 @@ class DungeonScene extends Scene {
 
 	override resize(_width: number, height: number): void {
 		this.camera.setViewport(_width, height);
+		this.windows.setViewport(_width, height);
 		if (this.logLabel) this.logLabel.y = height - 90;
 	}
 
 	override update(dt: number): void {
 		this.camera.update(dt);
 		this.map?.cull(this.camera);
+		this.windows.update(dt);
 
 		//the hit flash fades out over a moment rather than snapping back
 		for (const creature of this.creatures) {
