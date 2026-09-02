@@ -1,0 +1,9 @@
+{
+  "name": "mwg-docs-gen",
+  "private": true,
+  "description": "Isolated toolchain for generating API docs. TypeDoc's checker-based analysis needs the classic TypeScript compiler API, which typescript@7's package no longer exposes (see webpage/TODO.md) - so this nested project pins an older, compatible typescript purely for TypeDoc to read the source with. It never touches the root project's build or type-check.",
+  "devDependencies": {
+    "typedoc": "^0.28.20",
+    "typescript": "6.0.3"
+  }
+}

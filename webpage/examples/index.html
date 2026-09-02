@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Examples — mwg</title>
+	<meta
+		name="description"
+		content="Four playable mwg builds: colour transform, interface, dialogue scene, and a dungeon crawl — running right on the page."
+	/>
+	<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+	<link rel="stylesheet" href="../assets/site.css" />
+	<style>
+		.example {
+			padding: 1.25rem;
+			margin-bottom: 2rem;
+		}
+
+		.example-head {
+			display: flex;
+			justify-content: space-between;
+			align-items: baseline;
+			gap: 1rem;
+			flex-wrap: wrap;
+			margin-bottom: 0.5rem;
+		}
+
+		.example iframe {
+			display: block;
+			width: 100%;
+			height: 60vh;
+			min-height: 320px;
+			max-height: 560px;
+			border: 1px solid var(--line-strong);
+			background: #05070a;
+		}
+
+		.controls {
+			font-family: var(--font-display);
+			font-size: 0.78rem;
+			color: var(--muted);
+			margin-top: 0.6rem;
+		}
+
+		.controls kbd {
+			font-family: var(--font-display);
+			background: var(--panel-raised);
+			border: 1px solid var(--line-strong);
+			border-radius: 2px;
+			padding: 0.05em 0.4em;
+		}
+
+		.build-note {
+			font-family: var(--font-display);
+			font-size: 0.75rem;
+			color: var(--muted);
+			margin-top: 0.5rem;
+		}
+	</style>
+</head>
+<body>
+	<header class="site-header">
+		<div class="wrap">
+			<a class="brand" href="../index.html"><span class="dot"></span>mwg</a>
+			<nav class="site-nav">
+				<a href="../getting-started/index.html">Getting started</a>
+				<a href="../documentation/index.html">Documentation</a>
+				<a href="./index.html" aria-current="page">Examples</a>
+				<a href="../faq/index.html">FAQ</a>
+			</nav>
+		</div>
+	</header>
+
+	<main>
+		<section style="padding-bottom: 2rem">
+			<div class="wrap">
+				<p class="eyebrow">playable, right here</p>
+				<h1>Examples</h1>
+				<p class="lede">
+					Four builds, each exercising a different corner of the framework. Every one
+					runs straight from the framework source and opens the same way a shipped game
+					would — no server behind this page, just <code>file://</code> pages sitting in
+					an iframe.
+				</p>
+			</div>
+		</section>
+
+		<section style="padding-top: 0; border-bottom: none">
+			<div class="wrap">
+				<div class="panel example">
+					<div class="example-head">
+						<h3>Colour transform</h3>
+						<a class="btn" href="./colour-transform/index.html">Open full screen</a>
+					</div>
+					<p>
+						4000 individually tinted sprites, each carrying the per-sprite
+						<code>texel &times; M + A</code> transform that <a href="../index.html#demo">the landing page demo</a>
+						shows in miniature — Pixi's own tint could not draw this scene.
+					</p>
+					<iframe src="./colour-transform/index.html" title="mwg colour transform example" loading="lazy"></iframe>
+					<p class="build-note">
+						Blank? Build the examples first: <code>npm run webpage:examples</code> (see the
+						repository's <code>webpage/TODO.md</code>).
+					</p>
+				</div>
+
+				<div class="panel example">
+					<div class="example-head">
+						<h3>Interface</h3>
+						<a class="btn" href="./interface/index.html">Open full screen</a>
+					</div>
+					<p>
+						Windows that stack, with keyboard focus going to the top one only; a list
+						with icons and disabled rows; a message box that reveals text a character at
+						a time and ends on a choice.
+					</p>
+					<iframe src="./interface/index.html" title="mwg interface example" loading="lazy"></iframe>
+					<p class="controls">
+						<kbd>Tab</kbd> open the bag &nbsp;·&nbsp; <kbd>Enter</kbd> talk to someone
+						&nbsp;·&nbsp; arrow keys navigate &nbsp;·&nbsp; <kbd>Esc</kbd> close a window
+					</p>
+				</div>
+
+				<div class="panel example">
+					<div class="example-head">
+						<h3>Dialogue</h3>
+						<a class="btn" href="./dialogue/index.html">Open full screen</a>
+					</div>
+					<p>
+						A conversation scene: a backdrop, Alice and Bob standing in front of it with
+						expressions, whoever is speaking lit while the other is dimmed, and a
+						branching choice. The whole scene is a list of data commands.
+					</p>
+					<iframe src="./dialogue/index.html" title="mwg dialogue example" loading="lazy"></iframe>
+					<p class="controls"><kbd>Enter</kbd> / <kbd>Space</kbd> advance the conversation</p>
+				</div>
+
+				<div class="panel example">
+					<div class="example-head">
+						<h3>Dungeon crawl</h3>
+						<a class="btn" href="./dungeon/index.html">Open full screen</a>
+					</div>
+					<p>
+						A playable roguelike floor: generated rooms and corridors, three-state fog
+						of war, bump-to-attack, monsters that give chase, stairs down. The full
+						<code>roguelike</code> module working together with <code>render</code> and
+						<code>ui</code>.
+					</p>
+					<iframe src="./dungeon/index.html" title="mwg dungeon crawl example" loading="lazy"></iframe>
+					<p class="controls">
+						arrow keys or numpad move and bump to attack &nbsp;·&nbsp; <kbd>5</kbd> /
+						<kbd>.</kbd> wait &nbsp;·&nbsp; <kbd>&gt;</kbd> descend on the stairs
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<div class="wrap">
+				<p class="eyebrow">running them yourself</p>
+				<h2>From source</h2>
+				<p>Each example also runs against the framework's live source, so editing <code>src/</code> reloads the page:</p>
+				<pre><code>npm run assets              # generates examples/assets, once
+
+npm run example             # colour-transform, dev server
+npm run example:ui          # interface, dev server
+npm run example:dialogue    # dialogue scene, dev server
+npm run example:dungeon     # dungeon crawl, dev server</code></pre>
+				<p>Append <code>:build</code> to any of those to produce a folder you open from disk with no server at all — see <code>examples/README.md</code> for the full list.</p>
+			</div>
+		</section>
+	</main>
+
+	<footer class="site-footer">
+		<div class="wrap">
+			<p>mwg is licensed under the MPL-2.0.</p>
+		</div>
+	</footer>
+</body>
+</html>

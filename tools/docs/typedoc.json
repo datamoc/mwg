@@ -1,0 +1,21 @@
+{
+	"$schema": "https://typedoc.org/schema.json",
+	"entryPoints": ["../../src/index.ts"],
+	"tsconfig": "../../tsconfig.json",
+	"out": "../../webpage/documentation",
+	"name": "mwg",
+	"readme": "none",
+	"favicon": "../../webpage/assets/favicon.svg",
+	"titleLink": "../index.html",
+	"excludePrivate": true,
+	"excludeInternal": true,
+	"excludeExternals": true,
+	"githubPages": false,
+	"navigationLinks": {
+		"Overview": "../index.html",
+		"Getting started": "../getting-started/index.html",
+		"Examples": "../examples/index.html",
+		"FAQ": "../faq/index.html"
+	},
+	"customCss": "../../webpage/assets/typedoc-theme.css"
+}

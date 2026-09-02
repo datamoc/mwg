@@ -1,0 +1,8 @@
+node_modules/
+dist/
+examples/*/dist/
+webpage/examples/colour-transform/
+webpage/examples/interface/
+webpage/examples/dialogue/
+webpage/examples/dungeon/
+webpage/documentation/

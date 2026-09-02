@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>mwg — a tile-game framework you open by double-clicking</title>
+	<meta
+		name="description"
+		content="mwg is a 2D tile-game framework for dungeon crawls, hand-authored RPGs, creature battles and dialogue scenes — built to run from a local file, with no server."
+	/>
+	<link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+	<link rel="stylesheet" href="./assets/site.css" />
+</head>
+<body>
+	<header class="site-header">
+		<div class="wrap">
+			<a class="brand" href="./index.html"><span class="dot"></span>mwg</a>
+			<nav class="site-nav">
+				<a href="./getting-started/index.html">Getting started</a>
+				<a href="./documentation/index.html">Documentation</a>
+				<a href="./examples/index.html">Examples</a>
+				<a href="./faq/index.html">FAQ</a>
+			</nav>
+		</div>
+	</header>
+
+	<main>
+		<section class="hero">
+			<div class="wrap hero-grid">
+				<div>
+					<p class="eyebrow">a 2D tile-game framework</p>
+					<h1>Open it by double-clicking.</h1>
+					<p class="lede">
+						No server, no install, no runtime to download. Build a dungeon crawl, a
+						hand-authored RPG, a creature battle or a dialogue scene — ship it as a folder
+						a player opens directly, on top of <a href="https://pixijs.com">PixiJS</a> and
+						<a href="https://ondras.github.io/rot.js/">rot.js</a>.
+					</p>
+					<div class="cta-row">
+						<a class="btn primary" href="./getting-started/index.html">Get started</a>
+						<a class="btn" href="./examples/index.html">See it running</a>
+					</div>
+					<pre style="margin-top: 1.75rem"><code>npm install mwg</code></pre>
+				</div>
+				<div class="panel">
+					<div class="panel-title"><span>index.html</span><span>file://</span></div>
+					<pre style="border: none; margin: 0"><code>&lt;script src="mwg.global.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const game = new mwg.Game(canvas);
+  game.start(TitleScene);
+&lt;/script&gt;</code></pre>
+				</div>
+			</div>
+		</section>
+
+		<section id="demo">
+			<div class="wrap">
+				<p class="eyebrow">the load-bearing rendering feature</p>
+				<h2>Tint can only darken. mwg can also light up.</h2>
+				<p>
+					Every sprite in mwg carries a per-pixel colour transform,
+					<code>texel &times; M + A</code>, computed in the batch shader at no extra cost per
+					sprite. Darkness outside the field of view, a poisoned enemy, a hit flash, a room
+					lit by a fireplace — all of it is that one operation. A framework whose tint is
+					multiply-only, which is what most 2D engines ship, can only ever pull a sprite
+					<em>towards black</em>. Drag the sliders.
+				</p>
+
+				<div class="panel demo-panel">
+					<div class="demo-canvases">
+						<figure>
+							<canvas id="demo-tint" width="20" height="20"></canvas>
+							<figcaption><strong>Multiply only</strong> — what most engines' tint does</figcaption>
+						</figure>
+						<figure>
+							<canvas id="demo-full" width="20" height="20"></canvas>
+							<figcaption><strong>Multiply + add</strong> — what mwg's batcher does</figcaption>
+						</figure>
+					</div>
+
+					<div class="demo-controls">
+						<div class="control-row multiply">
+							<label for="mult-color">multiply</label>
+							<input type="range" id="mult-amount" min="0" max="1" step="0.01" value="0.55" />
+							<input type="color" id="mult-color" value="#232a55" />
+						</div>
+						<div class="control-row add">
+							<label for="add-color">add</label>
+							<input type="range" id="add-amount" min="0" max="1" step="0.01" value="0" />
+							<input type="color" id="add-color" value="#ffb347" />
+						</div>
+						<div class="presets">
+							<button
+								type="button"
+								class="preset-btn"
+								data-mult-color="#ffffff"
+								data-mult-amount="0"
+								data-add-color="#000000"
+								data-add-amount="0"
+							>
+								Day
+							</button>
+							<button
+								type="button"
+								class="preset-btn"
+								data-mult-color="#1a2140"
+								data-mult-amount="0.8"
+								data-add-color="#000000"
+								data-add-amount="0"
+							>
+								Outside the FOV
+							</button>
+							<button
+								type="button"
+								class="preset-btn"
+								data-mult-color="#3a6b3a"
+								data-mult-amount="0.5"
+								data-add-color="#4caf50"
+								data-add-amount="0.15"
+							>
+								Poisoned
+							</button>
+							<button
+								type="button"
+								class="preset-btn"
+								data-mult-color="#ffffff"
+								data-mult-amount="0"
+								data-add-color="#ffffff"
+								data-add-amount="0.85"
+							>
+								Hit flash
+							</button>
+							<button
+								type="button"
+								class="preset-btn"
+								data-mult-color="#503018"
+								data-mult-amount="0.35"
+								data-add-color="#ff9d3d"
+								data-add-amount="0.3"
+							>
+								Firelight
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section id="spec">
+			<div class="wrap">
+				<p class="eyebrow">capability spec</p>
+				<h2>Five reference games, one shared floor</h2>
+				<p>
+					Each defines what the others do not need: none is copied — no code, asset, data
+					table or file format is taken from any of them. They mark out the corners of what
+					a tile game has to cover.
+				</p>
+				<table>
+					<thead>
+						<tr>
+							<th>reference</th>
+							<th>what it demands that the others do not</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>Shattered Pixel Dungeon</td>
+							<td>generated dungeons, field of view, energy-cost turn scheduling, permadeath, dense inventory UI</td>
+						</tr>
+						<tr>
+							<td>ADOM</td>
+							<td>many persistent maps joined by a world map, hunger and long-running effects, skills and attributes, quests inside a roguelike</td>
+						</tr>
+						<tr>
+							<td>RPG Maker projects</td>
+							<td>hand-authored maps, events on tiles, dialogue and cutscenes, a party, menu combat, save slots</td>
+						</tr>
+						<tr>
+							<td>Pokémon, in its traditional form</td>
+							<td>encounter tables by terrain, a roster of creatures with derived stats, an effectiveness matrix, speed-ordered battles, capture and storage</td>
+						</tr>
+						<tr>
+							<td>Ren'Py conversation scenes</td>
+							<td>a backdrop with characters standing in front of it, expressions, whoever speaks picked out from the rest, branching written as data</td>
+						</tr>
+						<tr>
+							<td><a href="https://www.wesnoth.org/">The Battle for Wesnoth</a></td>
+							<td>hexagonal tactical maps, movement cost and defense by terrain, zone of control, turn-based unit combat with recruiting and upkeep</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section id="file-story">
+			<div class="wrap">
+				<p class="eyebrow">running from file://</p>
+				<h2>Opening a page from disk takes three things away</h2>
+				<p>mwg is shaped around the restrictions, rather than pretending they aren't there.</p>
+				<table>
+					<thead>
+						<tr>
+							<th>what is blocked</th>
+							<th>consequence</th>
+							<th>how mwg handles it</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>ES modules</td>
+							<td><code>&lt;script type="module"&gt;</code> will not run</td>
+							<td>the standalone build is a classic IIFE</td>
+						</tr>
+						<tr>
+							<td><code>fetch()</code> / XHR</td>
+							<td>no asset can be loaded on demand, no directory can be listed</td>
+							<td><code>tools/compile-resources</code> turns assets into scripts loaded before the game</td>
+						</tr>
+						<tr>
+							<td>cross-origin images</td>
+							<td>an <code>&lt;img&gt;</code> from a sibling file taints a WebGL texture in Chrome</td>
+							<td>assets travel as <code>data:</code> URIs inside those scripts</td>
+						</tr>
+					</tbody>
+				</table>
+				<p>The practical effect: resources are compiled at build time, so at runtime every lookup is synchronous. Game code never awaits an asset.</p>
+			</div>
+		</section>
+
+		<section id="roadmap">
+			<div class="wrap">
+				<p class="eyebrow">build order</p>
+				<h2>Roadmap</h2>
+				<p>Each module ships in the order below — later ones build on the modules before them.</p>
+				<ul class="roadmap">
+					<li class="done"><span class="label">mwg/core — loop, scenes, signals, RNG</span><span class="status">shipped</span></li>
+					<li class="done"><span class="label">mwg/render — colour transform, camera, tile map, sprite sheets, animation</span><span class="status">shipped</span></li>
+					<li class="done"><span class="label">mwg/assets + tools/compile-resources — the file:// story end to end</span><span class="status">shipped</span></li>
+					<li class="done"><span class="label">mwg/ui — windows, stack, lists, message box; core input with rebinding</span><span class="status">shipped</span></li>
+					<li class="done"><span class="label">mwg/stage — dialogue scenes: backdrop, characters, script runner</span><span class="status">shipped</span></li>
+					<li><span class="label">mwg/i18n — message tables, plurals, left-to-right / right-to-left layout</span><span class="status">planned</span></li>
+					<li><span class="label">mwg/actors — stat blocks, equipment slots, modifiers, inventory</span><span class="status">planned</span></li>
+					<li class="done"><span class="label">mwg/roguelike — FOV, pathfinding, energy scheduler, level generation</span><span class="status">shipped</span></li>
+					<li><span class="label">mwg/world — many maps, transitions, persistence, the turn clock, encounter tables</span><span class="status">planned</span></li>
+					<li><span class="label">mwg/rpg — map and event data, the interpreter, switches and variables, grid movement</span><span class="status">planned</span></li>
+					<li><span class="label">mwg/battle — species and stats, type matrix, speed-ordered turns</span><span class="status">planned</span></li>
+					<li><span class="label">mwg/audio, save/load</span><span class="status">planned</span></li>
+					<li><span class="label">layered character sprites, and vertical writing</span><span class="status">planned</span></li>
+					<li><span class="label">worked examples: a dungeon crawl, a village with NPCs and a cutscene, a creature battle</span><span class="status">planned</span></li>
+					<li><span class="label">mwg/render + mwg/roguelike — hexagonal tile maps, and FOV/pathfinding over a hex grid</span><span class="status">planned</span></li>
+				</ul>
+			</div>
+		</section>
+	</main>
+
+	<footer class="site-footer">
+		<div class="wrap">
+			<p>
+				mwg is licensed under the MPL-2.0. Games built with it carry no licence obligation
+				of their own; improvements to mwg's own files are shared back.
+			</p>
+			<div class="footer-links">
+				<div>
+					<a href="./getting-started/index.html">Getting started</a>
+					<a href="./documentation/index.html">Documentation</a>
+					<a href="./examples/index.html">Examples</a>
+					<a href="./faq/index.html">FAQ</a>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+	<script src="./assets/site.js"></script>
+</body>
+</html>

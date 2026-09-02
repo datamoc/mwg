@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Getting started — mwg</title>
+	<meta name="description" content="Build a small movable-character scene with mwg, from an empty folder to a finished file:// page." />
+	<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+	<link rel="stylesheet" href="../assets/site.css" />
+	<style>
+		.step {
+			margin: 2.5rem 0;
+		}
+
+		.step h3 {
+			display: flex;
+			align-items: baseline;
+			gap: 0.6rem;
+		}
+
+		.step h3 .n {
+			font-family: var(--font-display);
+			color: var(--add);
+			font-size: 0.85rem;
+		}
+
+		.two-col {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 1rem;
+		}
+
+		@media (max-width: 700px) {
+			.two-col {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
+</head>
+<body>
+	<header class="site-header">
+		<div class="wrap">
+			<a class="brand" href="../index.html"><span class="dot"></span>mwg</a>
+			<nav class="site-nav">
+				<a href="./index.html" aria-current="page">Getting started</a>
+				<a href="../documentation/index.html">Documentation</a>
+				<a href="../examples/index.html">Examples</a>
+				<a href="../faq/index.html">FAQ</a>
+			</nav>
+		</div>
+	</header>
+
+	<main>
+		<section style="padding-bottom: 1rem">
+			<div class="wrap">
+				<p class="eyebrow">tutorial</p>
+				<h1>Getting started</h1>
+				<p class="lede">
+					A floor you can walk on, a character you move with the arrow keys, a camera
+					that follows, and a status line — everything below is real, working mwg code.
+					By the end it opens as a plain file, no server.
+				</p>
+			</div>
+		</section>
+
+		<section style="border-bottom: none">
+			<div class="wrap">
+				<article class="step">
+					<h3><span class="n">01</span> Two ways to use it</h3>
+					<div class="two-col">
+						<div class="panel" style="padding: 1rem">
+							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>With a bundler</strong></p>
+							<pre style="margin: 0"><code>npm install mwg vite</code></pre>
+						</div>
+						<div class="panel" style="padding: 1rem">
+							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>Without one</strong></p>
+							<pre style="margin: 0"><code>&lt;script src="mwg.global.js"&gt;&lt;/script&gt;</code></pre>
+						</div>
+					</div>
+					<p>
+						This tutorial follows the bundler path, since that's what the code samples
+						below assume (<code>import</code> statements, TypeScript). Everything is the
+						same either way once written — the standalone build is <code>window.mwg</code>
+						instead of a module to import from.
+					</p>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">02</span> Prerequisites</h3>
+					<p>
+						While developing, run a dev server (Vite works well — it's what the
+						framework's own examples use). A page opened straight from
+						<code>file://</code> cannot load an ES module, and your source is one until
+						it's built. This is temporary: the last step below turns the finished page
+						into one that opens with no server at all, which is the whole point of mwg.
+					</p>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">03</span> A skeleton page</h3>
+					<p>The only requirement is a canvas, or nothing — <code>Game</code> creates and appends one if you don't give it one.</p>
+					<pre><code>&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;body&gt;
+	&lt;canvas id="game"&gt;&lt;/canvas&gt;
+	&lt;script type="module" src="./main.ts"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">04</span> The game and a scene</h3>
+					<p>
+						Every mwg game is a <code>Game</code> running a <code>Scene</code>. A scene's
+						<code>create()</code> builds its contents; assets are already loaded by the
+						time it runs, which the next step arranges.
+					</p>
+					<pre><code>import { Game, Scene } from 'mwg/core';
+
+class TownScene extends Scene {
+	override create(): void {
+		// contents go here
+	}
+}
+
+async function main(): Promise&lt;void&gt; {
+	const game = new Game({ canvas: document.getElementById('game') as HTMLCanvasElement });
+	await game.start(TownScene);
+}
+
+main();</code></pre>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">05</span> Loading assets</h3>
+					<p>
+						Assets load by path, before the scene that needs them starts. After
+						<code>load</code> resolves, every lookup is synchronous — scene code never
+						awaits an asset mid-build. This example needs one tileset:
+						<code>tiles.png</code>, a 16px grid, next to the page.
+					</p>
+					<pre><code>import * as Resources from 'mwg/assets';
+
+const TILES = 'tiles.png';
+
+async function main(): Promise&lt;void&gt; {
+	const game = new Game({ canvas: document.getElementById('game') as HTMLCanvasElement });
+	await Resources.load([TILES]);
+	await game.start(TownScene);
+}</code></pre>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">06</span> A floor to stand on</h3>
+					<p>
+						A <code>Camera</code> holds the world; a <code>TileMap</code> holds the
+						floor. Frame <code>0</code> of the sheet is floor, <code>1</code> is wall —
+						whatever the tileset's own layout is.
+					</p>
+					<pre><code>import { Camera, TileMap, SpriteSheet } from 'mwg/render';
+import { Random } from 'mwg/core';
+
+const FLOOR_TILE = 0;
+const WALL_TILE = 1;
+
+class TownScene extends Scene {
+	private camera!: Camera;
+	private map!: TileMap;
+
+	override create(): void {
+		const sheet = SpriteSheet.grid(TILES, 16);
+
+		this.camera = new Camera({ zoom: 3, deadzone: 0.2 });
+		this.stage.addChild(this.camera.world);
+
+		this.map = new TileMap({ width: 20, height: 15, sheet });
+
+		const cells: number[] = [];
+		for (let i = 0; i &lt; 20 * 15; i++) {
+			cells.push(Random.chance(0.12) ? WALL_TILE : FLOOR_TILE);
+		}
+		this.map.addLayer('terrain', cells);
+
+		this.camera.world.addChild(this.map);
+		this.camera.setBounds({ minX: 0, minY: 0, maxX: this.map.worldWidth, maxY: this.map.worldHeight });
+	}
+
+	override resize(width: number, height: number): void {
+		this.camera.setViewport(width, height);
+	}
+}</code></pre>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">07</span> Someone to move</h3>
+					<p>
+						A character is a <code>TintedSprite</code> at a tile position, moved on
+						<code>Input</code>'s named actions rather than raw keys — <code>up</code>,
+						<code>down</code>, <code>left</code>, <code>right</code> are bound by default.
+					</p>
+					<pre><code>import { TintedSprite } from 'mwg/render';
+import { Input } from 'mwg/core';
+
+const HERO_TILE = 2;
+const TILE_SIZE = 16;
+
+const MOVES: Record&lt;string, { x: number; y: number }&gt; = {
+	up: { x: 0, y: -1 }, down: { x: 0, y: 1 },
+	left: { x: -1, y: 0 }, right: { x: 1, y: 0 },
+};
+
+// inside TownScene:
+private hero!: TintedSprite;
+private heroX = 5;
+private heroY = 5;
+
+override create(): void {
+	// ...as above, then:
+	this.hero = new TintedSprite(sheet.get(HERO_TILE));
+	this.hero.x = this.heroX * TILE_SIZE;
+	this.hero.y = this.heroY * TILE_SIZE;
+	this.camera.world.addChild(this.hero);
+
+	Input.onAction.add((action) =&gt; this.onAction(action));
+}
+
+private onAction(action: string): boolean {
+	const move = MOVES[action];
+	if (!move) return false;
+
+	const targetX = this.heroX + move.x;
+	const targetY = this.heroY + move.y;
+
+	if (this.map.getTile('terrain', targetX, targetY) === WALL_TILE) {
+		this.hero.lerpTint(0xff4040, 0.6); // bumped a wall — see step 9
+		return true;
+	}
+
+	this.heroX = targetX;
+	this.heroY = targetY;
+	this.hero.x = targetX * TILE_SIZE;
+	this.hero.y = targetY * TILE_SIZE;
+	return true;
+}</code></pre>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">08</span> Following with the camera</h3>
+					<p>A camera that doesn't move is just a canvas. <code>follow</code> eases towards a moving point every frame:</p>
+					<pre><code>// end of create():
+this.camera.follow(this.hero);
+
+override update(dt: number): void {
+	this.camera.update(dt);
+	this.map.cull(this.camera); // only draws chunks the camera can see
+}</code></pre>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">09</span> A flash that isn't just "darker"</h3>
+					<p>
+						Step 7 already flashed the hero red on a bump, using
+						<code>lerpTint</code> — the additive colour term from
+						<a href="../index.html#demo">the landing page demo</a>. It needs to fade, so
+						the flash reads as an instant rather than a stuck colour:
+					</p>
+					<pre><code>override update(dt: number): void {
+	this.camera.update(dt);
+	this.map.cull(this.camera);
+
+	if (this.hero.colorAdd !== 0) this.hero.resetColor();
+}</code></pre>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">10</span> A status line</h3>
+					<p>Any UI text is a <code>Label</code>, styled from the current theme rather than carrying its own font and colour:</p>
+					<pre><code>import { Label, theme } from 'mwg/ui';
+
+// inside TownScene:
+private status!: Label;
+
+override create(): void {
+	// ...
+	this.status = new Label({ text: 'Arrow keys to move.', color: theme().color.textHighlight });
+	this.status.x = 8;
+	this.status.y = 8;
+	this.stage.addChild(this.status); // outside camera.world: stays put on screen
+}</code></pre>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">11</span> Building it for <code>file://</code></h3>
+					<p>
+						The dev server is gone at this point — a real build compiles the tileset
+						into a script and rewrites the entry tag to a classic, non-module script:
+					</p>
+					<pre><code>vite build
+node node_modules/mwg/tools/compile-resources.mjs ./assets ./dist/assets</code></pre>
+					<p>
+						See <code>tools/emit-page.mjs</code> in the framework's own repository for the
+						exact rewrite it does to a Vite build's output — every one of the four
+						<a href="../examples/index.html">examples</a> is built this same way.
+					</p>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">12</span> Finished code</h3>
+					<p>The whole scene, about 60 lines:</p>
+					<pre><code>import { Game, Scene, Input, Random } from 'mwg/core';
+import { Camera, TileMap, TintedSprite, SpriteSheet } from 'mwg/render';
+import { Label, theme } from 'mwg/ui';
+import * as Resources from 'mwg/assets';
+
+const TILES = 'tiles.png';
+const TILE_SIZE = 16;
+const FLOOR_TILE = 0;
+const WALL_TILE = 1;
+const HERO_TILE = 2;
+
+const MOVES: Record&lt;string, { x: number; y: number }&gt; = {
+	up: { x: 0, y: -1 }, down: { x: 0, y: 1 },
+	left: { x: -1, y: 0 }, right: { x: 1, y: 0 },
+};
+
+class TownScene extends Scene {
+	private camera!: Camera;
+	private map!: TileMap;
+	private hero!: TintedSprite;
+	private status!: Label;
+	private heroX = 5;
+	private heroY = 5;
+
+	override create(): void {
+		const sheet = SpriteSheet.grid(TILES, TILE_SIZE);
+
+		this.camera = new Camera({ zoom: 3, deadzone: 0.2 });
+		this.stage.addChild(this.camera.world);
+
+		this.map = new TileMap({ width: 20, height: 15, sheet });
+		const cells: number[] = [];
+		for (let i = 0; i &lt; 20 * 15; i++) cells.push(Random.chance(0.12) ? WALL_TILE : FLOOR_TILE);
+		this.map.addLayer('terrain', cells);
+		this.camera.world.addChild(this.map);
+		this.camera.setBounds({ minX: 0, minY: 0, maxX: this.map.worldWidth, maxY: this.map.worldHeight });
+
+		this.hero = new TintedSprite(sheet.get(HERO_TILE));
+		this.hero.x = this.heroX * TILE_SIZE;
+		this.hero.y = this.heroY * TILE_SIZE;
+		this.camera.world.addChild(this.hero);
+		this.camera.follow(this.hero);
+
+		this.status = new Label({ text: 'Arrow keys to move.', color: theme().color.textHighlight });
+		this.status.x = 8;
+		this.status.y = 8;
+		this.stage.addChild(this.status);
+
+		Input.onAction.add((action) =&gt; this.onAction(action));
+	}
+
+	private onAction(action: string): boolean {
+		const move = MOVES[action];
+		if (!move) return false;
+
+		const targetX = this.heroX + move.x;
+		const targetY = this.heroY + move.y;
+
+		if (this.map.getTile('terrain', targetX, targetY) === WALL_TILE) {
+			this.hero.lerpTint(0xff4040, 0.6);
+			return true;
+		}
+
+		this.heroX = targetX;
+		this.heroY = targetY;
+		this.hero.x = targetX * TILE_SIZE;
+		this.hero.y = targetY * TILE_SIZE;
+		return true;
+	}
+
+	override update(dt: number): void {
+		this.camera.update(dt);
+		this.map.cull(this.camera);
+		if (this.hero.colorAdd !== 0) this.hero.resetColor();
+	}
+
+	override resize(width: number, height: number): void {
+		this.camera.setViewport(width, height);
+	}
+}
+
+async function main(): Promise&lt;void&gt; {
+	const game = new Game({ canvas: document.getElementById('game') as HTMLCanvasElement });
+	await Resources.load([TILES]);
+	await game.start(TownScene);
+}
+
+main();</code></pre>
+					<p>
+						From here, the <a href="../examples/index.html">examples</a> show where each
+						piece grows: <code>colour-transform</code> pushes the tint further,
+						<code>interface</code> adds windows and menus over this kind of scene,
+						<code>dialogue</code> replaces it with a conversation, and
+						<code>dungeon</code> adds field of view, monsters and a turn scheduler on
+						top of exactly this map-and-camera setup.
+					</p>
+				</article>
+			</div>
+		</section>
+	</main>
+
+	<footer class="site-footer">
+		<div class="wrap">
+			<p>mwg is licensed under the MPL-2.0.</p>
+		</div>
+	</footer>
+</body>
+</html>
