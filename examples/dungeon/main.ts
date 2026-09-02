@@ -357,16 +357,18 @@ class DungeonScene extends Scene {
 		this.creatureLayer.addChild(this.stairsSprite);
 	}
 
+	/** a random cell inside a random room, excluding room 0 where the hero starts */
+	private randomRoomCell(): Step {
+		const room = this.level.rooms[Random.int(1, this.level.rooms.length)];
+		return { x: Random.range(room.left, room.right), y: Random.range(room.top, room.bottom) };
+	}
+
 	private populate(): void {
 		//more, and slightly tougher, the deeper you go
 		const count = 3 + this.depth;
 
 		for (let i = 0; i < count; i++) {
-			const room = this.level.rooms[Random.int(1, this.level.rooms.length)];
-			const at = {
-				x: Random.range(room.left, room.right),
-				y: Random.range(room.top, room.bottom),
-			};
+			const at = this.randomRoomCell();
 			if (this.creatureAt(at.x, at.y)) continue;
 
 			const tough = Random.chance(Math.min(0.5, this.depth * 0.12));
@@ -383,11 +385,7 @@ class DungeonScene extends Scene {
 		const pool = ['sword', 'armor', 'potion', 'potion', 'flask'];
 
 		for (let i = 0; i < 2; i++) {
-			const room = this.level.rooms[Random.int(1, this.level.rooms.length)];
-			const at = {
-				x: Random.range(room.left, room.right),
-				y: Random.range(room.top, room.bottom),
-			};
+			const at = this.randomRoomCell();
 			if (this.creatureAt(at.x, at.y) || this.groundItemAt(at.x, at.y)) continue;
 
 			const item = ITEMS[Random.element(pool)!];
@@ -453,10 +451,7 @@ class DungeonScene extends Scene {
 	/** a floor tile that looks and behaves like any other until a creature steps onto it */
 	private placeHiddenTrap(): void {
 		for (let attempt = 0; attempt < 20; attempt++) {
-			const room = this.level.rooms[Random.int(1, this.level.rooms.length)];
-			if (!room) return;
-
-			const at = { x: Random.range(room.left, room.right), y: Random.range(room.top, room.bottom) };
+			const at = this.randomRoomCell();
 			if (at.x === this.hero.x && at.y === this.hero.y) continue;
 			if (at.x === this.stairs.x && at.y === this.stairs.y) continue;
 			if (this.creatureAt(at.x, at.y) || this.groundItemAt(at.x, at.y)) continue;
