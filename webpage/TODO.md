@@ -17,6 +17,13 @@
 - **FAQ**: 8 real questions (status, editor, licensing/provenance, the
   `file://` build requirement, i18n status, Node-as-dev-tool, what it's built
   on).
+- **Deployed**: live at https://datamoc.github.io/mwg/ via
+  `.github/workflows/deploy-pages.yml`, which builds the examples and
+  TypeDoc reference and deploys `webpage/` on every push to `main`.
+- **Social previews**: `og:`/`twitter:` meta tags on the four hand-authored
+  pages (overview, getting-started, examples, FAQ), pointing at
+  `webpage/assets/og-image.png` (1080x567 — see "Regenerating the OG image"
+  below for why not the canonical 1200x630).
 
 This is at least the scope of the reference site this was benchmarked
 against (rastating's pixel.js docs: overview, 2 examples, getting-started,
@@ -57,18 +64,20 @@ typescript@7. Revisit this once TypeDoc (stable or its `1.0.0-dev.*` line,
 both tried and both currently crash the same way) ships real typescript@7
 support, and the nested project can go away.
 
+### Regenerating the OG image
+
+`webpage/assets/og-image.html` is authored at the canonical size, 1200x630
+(`.card`), but the browser available when it was first captured couldn't
+open a viewport wider than ~1080px (a portrait-capped mobile viewport). So
+`og-image.png` was captured at 1080x567 instead — same 1.91:1 ratio, just
+smaller — via a `capture-1080` class the file already has toggled at
+runtime (`document.body.classList.add('capture-1080')`), which shrinks the
+canvas and scales `.card` down to fit, then crops that exact region. If a
+proper 1200-wide viewport is available later, just screenshot the page
+without that class for the full-resolution version.
+
 ## Still open
 
-- [ ] GitHub Pages deployment workflow (approved — repo doesn't exist on
-      GitHub yet, no remote configured). Needs to run `npm run assets`,
-      `npm run webpage:examples` and `npm run webpage:docs` before
-      publishing, then deploy the `webpage/` directory.
-- [ ] `og:`/`twitter:` meta tags (approved). `webpage/assets/og-image.html` is
-      a self-contained 1200x630 source card (logo + wordmark + tagline) ready
-      to screenshot into `webpage/assets/og-image.png` — not yet rendered or
-      wired into the pages' `<head>`s. Use a placeholder URL until the repo
-      exists on GitHub (see below), then the user will announce it — no need
-      to rush the meta tags live before that.
 - [ ] Revisit the roadmap list in `index.html` whenever the real API changes
       — it's kept in sync by hand, not generated (unlike the Documentation
       page now).

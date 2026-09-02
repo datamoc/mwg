@@ -19,6 +19,12 @@
 		box-sizing: border-box;
 	}
 
+	/*
+	 * The design is authored at the canonical OG size, 1200x630, in `.card`. `.stage` is
+	 * the exported canvas: normally the same 1200x630, but overridable (see the `stage`
+	 * class below) for capturing this page from a smaller browser viewport — a scaled
+	 * screenshot of the same design rather than a redrawn one.
+	 */
 	html,
 	body {
 		margin: 0;
@@ -30,9 +36,21 @@
 		overflow: hidden;
 	}
 
+	.stage {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+	}
+
 	.card {
+		position: absolute;
+		top: 50%;
+		left: 50%;
 		width: 1200px;
 		height: 630px;
+		transform: translate(-50%, -50%);
+		transform-origin: center;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -82,13 +100,25 @@
 		color: var(--paper);
 		font-weight: 600;
 	}
+
+	/* toggled at capture time only, when the browser can't open a 1200-wide viewport */
+	body.capture-1080 {
+		width: 1080px;
+		height: 567px;
+	}
+
+	body.capture-1080 .card {
+		transform: translate(-50%, -50%) scale(0.9);
+	}
 </style>
 </head>
 <body>
-	<div class="card">
-		<div class="squares"><span class="a"></span><span class="b"></span></div>
-		<h1>mwg</h1>
-		<p><strong>Open it by double-clicking.</strong> A 2D tile-game framework with no server, no install, no runtime to download.</p>
+	<div class="stage">
+		<div class="card">
+			<div class="squares"><span class="a"></span><span class="b"></span></div>
+			<h1>mwg</h1>
+			<p><strong>Open it by double-clicking.</strong> A 2D tile-game framework with no server, no install, no runtime to download.</p>
+		</div>
 	</div>
 </body>
 </html>
