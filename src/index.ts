@@ -13,3 +13,4 @@ export * from './stage/index.ts';
 export * as Roguelike from './roguelike/index.ts';
 export * as I18n from './i18n/index.ts';
 export * as Actors from './actors/index.ts';
+export * as World from './world/index.ts';
