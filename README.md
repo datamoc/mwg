@@ -414,6 +414,13 @@ rather than showing a raw key to the player.
     example this round - a real showcase wants a tileset with genuinely distinct art for all
     47 shapes, and cobbling that together from the existing 4-frame wall/floor set would be a
     crude approximation, not a demonstration of the technique
+30. further reference-game genres beyond what item 28 already names, to widen the capability
+    spec past turn-based RPGs, dungeon crawls and visual novels: an XCOM-like (squad tactics
+    on a grid, cover, action points, overwatch/reaction fire - none of which `mwg/battle` or
+    `mwg/roguelike` have a primitive for today) and board games generally (multiplayer turn
+    order given to every player rather than one hero, dice and card mechanics, a board that
+    need not be a dungeon or a battlefield at all). No specific title or mechanic picked for
+    either; logged at low priority per the roadmap process below, same as item 28
 
 ## Licence and provenance
 
