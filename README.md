@@ -398,6 +398,11 @@ rather than showing a raw key to the player.
     territory rather than a dungeon room, unit stacks, a turn given to every player rather
     than one hero). No specific title picked yet; logged at low priority per the roadmap
     process below
+29. `mwg/render` (`TileMap`) — auto-tiling: stitching a terrain edge or corner from many small
+    tile pieces chosen by which neighbours are the same terrain, rather than a game hand-picking
+    a frame per cell itself. RPG Maker's and Tiled's own autotile/wang-tile conventions are the
+    usual shape; nothing in `TileMap` or `mwg/rpg`'s map loading resolves a neighbour-dependent
+    frame today - a loaded map's frames are exactly what its source data already says
 
 ## Licence and provenance
 
