@@ -11,7 +11,7 @@ of their own; improvements to `mwg`'s own files are shared back.
 
 ## What it is for
 
-Tile-based games with a camera over a grid. Seven existing games mark out the corners of
+Tile-based games with a camera over a grid. Eight existing games mark out the corners of
 what that has to cover:
 
 | reference | what it demands that the others do not |
@@ -23,6 +23,7 @@ what that has to cover:
 | **[Ren'Py](https://www.renpy.org/), and the conversation scenes every RPG borrows from it** | a backdrop with characters standing in front of it, expressions, whoever speaks picked out from the rest, branching written as data |
 | **[The Battle for Wesnoth](https://www.wesnoth.org/)** | hexagonal tactical maps, movement cost and defense by terrain, zone of control, turn-based unit combat with recruiting and upkeep |
 | **[Flare](https://flarerpg.org/)'s Empyrean Campaign** | isometric tile maps, loaded straight from Tiled's own isometric export |
+| **[Dungeon Crawl Stone Soup](https://crawl.develz.org/) (Tiles)** | a branching dungeon of many interconnected levels, and autoexplore pathing to the nearest unseen tile |
 
 Underneath they share almost everything: a grid, a camera following someone across it,
 sprites that need tinting, turn-taking, characters with stats and equipment, an inventory,
@@ -148,6 +149,7 @@ Shared by everything past a single screen, and the thing ADOM needs most.
 | pathfinding over a passability map | rot.js + `mwg/roguelike` |
 | turn scheduling by energy cost | `mwg/roguelike` |
 | level generation from composable room builders | `mwg/roguelike` |
+| autoexplore: pathing to the nearest unexplored cell | `mwg/roguelike` |
 
 ### Tactical maps (hex)
 
@@ -280,7 +282,7 @@ rather than showing a raw key to the player.
 7. ~~`mwg/actors` — stat blocks, equipment slots, modifiers, inventory~~
 8. ~~`mwg/roguelike` — FOV, pathfinding, energy scheduler, level generation~~
 9. ~~`mwg/world` — many maps, transitions, persistence, the turn clock, encounter tables~~
-10. `mwg/rpg` — map and event data, the interpreter, switches and variables, grid movement
+10. ~~`mwg/rpg` — map and event data, the interpreter, switches and variables, grid movement~~
 11. `mwg/battle` — species and stats, type matrix, speed-ordered turns
 12. `mwg/audio`, save/load
 13. layered character sprites, and vertical writing
@@ -294,11 +296,12 @@ rather than showing a raw key to the player.
 BSD-3-Clause.
 
 Shattered Pixel Dungeon (GPL-3, © Oleg Dolya and Evan Debenham), The Battle for Wesnoth
-(GPL-2.0-or-later, © the Battle for Wesnoth contributors), and Flare's Empyrean Campaign
-(GPL-3, © the Flare project) are referenced only as design studies — a list of what a
-finished roguelike, a finished hex-based tactical game, and a finished isometric one each
-have to do. None of their code, assets, maps, unit definitions or text is included here,
-and `mwg` is not a derivative work of any of them.
+(GPL-2.0-or-later, © the Battle for Wesnoth contributors), Flare's Empyrean Campaign
+(GPL-3, © the Flare project), and Dungeon Crawl Stone Soup (GPL-2.0, © the Dungeon Crawl
+Stone Soup development team) are referenced only as design studies — a list of what a
+finished roguelike, a finished hex-based tactical game, a finished isometric one, and a
+finished branching dungeon each have to do. None of their code, assets, maps, unit
+definitions or text is included here, and `mwg` is not a derivative work of any of them.
 
 ADOM, RPG Maker, Pokémon and Ren'Py are likewise references for a *shape of game*, not
 sources of anything. `mwg` implements none of their file formats, reads none of their projects or save

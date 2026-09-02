@@ -1,5 +1,26 @@
 import { Path } from 'rot-js';
 import type { Level } from './Level.ts';
+import type { FieldOfView } from './FieldOfView.ts';
+
+function neighbourOffsets(topology: 4 | 8): ReadonlyArray<readonly [number, number]> {
+	return topology === 4
+		? [
+				[0, -1],
+				[1, 0],
+				[0, 1],
+				[-1, 0],
+			]
+		: [
+				[0, -1],
+				[1, -1],
+				[1, 0],
+				[1, 1],
+				[0, 1],
+				[-1, 1],
+				[-1, 0],
+				[-1, -1],
+			];
+}
 
 export interface Step {
 	x: number;
@@ -79,25 +100,7 @@ export class Pathfinder {
 
 		if (!passable(to.x, to.y)) return distances;
 
-		const topology = options.topology ?? 8;
-		const neighbours =
-			topology === 4
-				? [
-						[0, -1],
-						[1, 0],
-						[0, 1],
-						[-1, 0],
-					]
-				: [
-						[0, -1],
-						[1, -1],
-						[1, 0],
-						[1, 1],
-						[0, 1],
-						[-1, 1],
-						[-1, 0],
-						[-1, -1],
-					];
+		const neighbours = neighbourOffsets(options.topology ?? 8);
 
 		//a plain breadth-first flood, since every step costs the same
 		const queue: number[] = [this.level.index(to.x, to.y)];
@@ -153,5 +156,58 @@ export class Pathfinder {
 		}
 
 		return best;
+	}
+
+	/**
+	 * Autoexplore: the path to the nearest passable, reachable cell not yet explored -
+	 * "walk towards whatever is unseen" rather than a chosen destination. A breadth-first
+	 * flood from `from` stops at the first unexplored cell it reaches, which is nearest by
+	 * construction; a Dijkstra map from a single target cannot answer this, since there is
+	 * no one target until the search itself finds one.
+	 *
+	 * @returns the steps to walk there, or `[]` when everything reachable is already explored
+	 */
+	autoExplore(from: Step, explored: FieldOfView, options: PathOptions = {}): Step[] {
+		const passable = this.passable(options);
+		if (!passable(from.x, from.y)) return [];
+
+		const neighbours = neighbourOffsets(options.topology ?? 8);
+		const cameFrom = new Map<number, Step>();
+		const visited = new Set<number>([this.level.index(from.x, from.y)]);
+		const queue: Step[] = [from];
+
+		for (let head = 0; head < queue.length; head++) {
+			const current = queue[head];
+			if (head > 0 && !explored.isExplored(current.x, current.y)) {
+				return this.reconstruct(cameFrom, current);
+			}
+
+			for (const [dx, dy] of neighbours) {
+				const next = { x: current.x + dx, y: current.y + dy };
+				if (!passable(next.x, next.y)) continue;
+
+				const index = this.level.index(next.x, next.y);
+				if (visited.has(index)) continue;
+
+				visited.add(index);
+				cameFrom.set(index, current);
+				queue.push(next);
+			}
+		}
+
+		return [];
+	}
+
+	/** walks a `cameFrom` chain back to (but excluding) its start, then reverses it */
+	private reconstruct(cameFrom: Map<number, Step>, to: Step): Step[] {
+		const path: Step[] = [to];
+
+		let step = cameFrom.get(this.level.index(to.x, to.y));
+		while (step) {
+			path.push(step);
+			step = cameFrom.get(this.level.index(step.x, step.y));
+		}
+
+		return path.reverse();
 	}
 }

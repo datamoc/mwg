@@ -5,6 +5,7 @@ import { Scheduler } from '../src/roguelike/Scheduler.ts';
 import { generateDungeon } from '../src/roguelike/generate.ts';
 import { Pathfinder } from '../src/roguelike/Pathfinder.ts';
 import { Level, rectCenter } from '../src/roguelike/Level.ts';
+import { FieldOfView } from '../src/roguelike/FieldOfView.ts';
 import { withSeed, reset } from '../src/core/Random.ts';
 
 // ------------------------------------------------------------------ scheduler
@@ -218,4 +219,28 @@ test('descending a distance map walks the whole way to the target', () => {
 	}
 
 	assert.deepEqual(at, target);
+});
+
+test('autoExplore heads for the nearest cell not yet explored', () => {
+	const level = testLevel();
+	const fov = new FieldOfView(level);
+	//mark everything explored except the far end of the corridor
+	for (let y = 1; y <= 3; y++) {
+		for (let x = 1; x <= 5; x++) fov.explored.add(level.index(x, y));
+	}
+
+	const path = new Pathfinder(level).autoExplore({ x: 1, y: 1 }, fov, { topology: 4 });
+
+	assert.ok(path.length > 0, 'should find an unexplored cell to head towards');
+	const last = path[path.length - 1];
+	assert.ok(!fov.isExplored(last.x, last.y), 'the destination itself should be unexplored');
+});
+
+test('autoExplore returns no path once everything reachable is explored', () => {
+	const level = testLevel();
+	const fov = new FieldOfView(level);
+	fov.revealAll();
+
+	const path = new Pathfinder(level).autoExplore({ x: 1, y: 1 }, fov, { topology: 4 });
+	assert.deepEqual(path, []);
 });
