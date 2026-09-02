@@ -183,3 +183,75 @@ test('a call command receives the state and is awaited', async () => {
 
 	assert.deepEqual(seen, ['x']);
 });
+
+test('runStory follows a goto into the named passage', async () => {
+	const { script: s } = script();
+
+	const done = s.runStory(
+		{
+			start: [{ say: 'one' }, { goto: 'end' }, { say: 'skipped' }],
+			end: [{ say: 'two' }],
+		},
+		'start'
+	);
+	await tick();
+	s.answer();
+	await tick();
+	s.answer();
+	const state = await done;
+
+	assert.deepEqual(
+		s.lines.map((l) => l.text),
+		['one', 'two']
+	);
+	assert.deepEqual(state.answers, {});
+});
+
+test('a choice with a goto jumps to its passage, and passages can loop back', async () => {
+	const { script: s } = script();
+
+	const done = s.runStory(
+		{
+			start: [
+				{
+					ask: 'where?',
+					choices: [{ text: 'left', goto: 'left' }, { text: 'stay' }],
+					store: 'where',
+				},
+			],
+			left: [{ say: 'went left' }, { goto: 'start' }],
+		},
+		'start'
+	);
+
+	await tick();
+	s.answer('left'); //jumps to 'left', says its line, loops back to 'start'
+	await tick();
+	assert.equal(s.lines.length, 2);
+	s.answer();
+	await tick();
+	s.answer('stay'); //no goto: the passage ends, and so does the story
+	const state = await done;
+
+	assert.deepEqual(
+		s.lines.map((l) => l.text),
+		['where?', 'went left', 'where?']
+	);
+	assert.equal(state.answers.where, 'stay');
+});
+
+test('runStory refuses an unknown start or jump target', async () => {
+	const { script: s } = script();
+
+	await assert.rejects(s.runStory({ a: [] }, 'missing'), /no passage named "missing"/);
+	await assert.rejects(
+		s.runStory({ a: [{ goto: 'missing' }] }, 'a'),
+		/no passage named "missing"/
+	);
+});
+
+test('a goto in a straight run is an error, not a silent skip', async () => {
+	const { script: s } = script();
+
+	await assert.rejects(s.run([{ goto: 'anywhere' }]), /only runs inside runStory/);
+});

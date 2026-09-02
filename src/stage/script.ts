@@ -19,9 +19,28 @@ export type StageCommand =
 	| { hideAll: true; fade?: number }
 	| { expression: string; of: string }
 	| { say: string; as?: string; speaker?: string }
-	| { ask: string; as?: string; speaker?: string; choices: Choice[]; store?: string }
+	| { ask: string; as?: string; speaker?: string; choices: StageChoice[]; store?: string }
+	| { goto: string }
 	| { wait: number }
 	| { call: (state: ScriptState) => void | Promise<void> };
+
+/**
+ * A choice that can also move the story: when the player picks it inside
+ * `runStory`, the story jumps to the named passage afterwards. Plain `Choice`
+ * objects stay valid - every one of them is already a `StageChoice` that goes
+ * nowhere - and a `MessageBox` never sees the extra field.
+ */
+export type StageChoice = Choice & {
+	/** the passage to jump to when this choice is picked, in a `runStory` story */
+	goto?: string;
+};
+
+/**
+ * A story as a graph of named passages, each a list of commands - Twine's shape
+ * rather than a straight line. Passages can loop back or braid together; reaching
+ * the end of a passage ends the story.
+ */
+export type StoryScript = Record<string, readonly StageCommand[]>;
 
 export interface ScriptState {
 	/** whatever `ask` commands have stored, keyed by their `store` name */
@@ -70,17 +89,46 @@ export class StageScript {
 	async run(commands: readonly StageCommand[]): Promise<ScriptState> {
 		for (const command of commands) {
 			if (this.cancelled) break;
-			await this.step(command);
+			const jump = await this.step(command);
+			if (jump !== undefined) {
+				throw new Error(`a "goto ${jump}" only runs inside runStory, not a straight run`);
+			}
 		}
 		return this.state;
 	}
 
-	private async step(command: StageCommand): Promise<void> {
+	/**
+	 * Runs a graph of passages starting at `start`, following `goto` commands and
+	 * choice jumps until a passage runs out or the script is cancelled.
+	 */
+	async runStory(story: StoryScript, start: string): Promise<ScriptState> {
+		if (!Object.prototype.hasOwnProperty.call(story, start)) {
+			throw new Error(`this story has no passage named "${start}"`);
+		}
+		let commands = story[start];
+		let index = 0;
+		while (index < commands.length) {
+			if (this.cancelled) break;
+			const jump = await this.step(commands[index]);
+			index++;
+			if (jump !== undefined) {
+				if (!Object.prototype.hasOwnProperty.call(story, jump)) {
+					throw new Error(`this story has no passage named "${jump}"`);
+				}
+				commands = story[jump];
+				index = 0;
+			}
+		}
+		return this.state;
+	}
+
+	/** runs one command; returns the passage to jump to, if the command jumps anywhere */
+	private async step(command: StageCommand): Promise<string | undefined> {
 		const { stage } = this.options;
 
 		if ('backdrop' in command) {
 			await stage.setBackdrop(this.options.backdrop(command.backdrop), command.fade);
-			return;
+			return undefined;
 		}
 
 		if ('show' in command) {
@@ -89,43 +137,49 @@ export class StageScript {
 				expression: command.expression,
 				fade: command.fade,
 			});
-			return;
+			return undefined;
 		}
 
 		if ('hide' in command) {
 			await stage.hide(command.hide, command.fade);
-			return;
+			return undefined;
 		}
 
 		if ('hideAll' in command) {
 			await stage.hideAll(command.fade);
-			return;
+			return undefined;
 		}
 
 		if ('expression' in command) {
 			stage.setExpression(command.of, command.expression);
-			return;
+			return undefined;
 		}
 
 		if ('say' in command) {
 			await this.speak(command.say, command.as, command.speaker);
-			return;
+			return undefined;
 		}
 
 		if ('ask' in command) {
 			const chosen = await this.speak(command.ask, command.as, command.speaker, command.choices);
 			if (command.store) this.state.answers[command.store] = chosen;
-			return;
+			//a MessageBox resolves with the chosen value, which defaults to the text
+			return command.choices.find((c) => (c.value ?? c.text) === chosen)?.goto;
+		}
+
+		if ('goto' in command) {
+			return command.goto;
 		}
 
 		if ('wait' in command) {
 			await new Promise<void>((resolve) => setTimeout(resolve, command.wait * 1000));
-			return;
+			return undefined;
 		}
 
 		if ('call' in command) {
 			await command.call(this.state);
 		}
+		return undefined;
 	}
 
 	/**
