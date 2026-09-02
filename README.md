@@ -453,6 +453,19 @@ rather than showing a raw key to the player.
     Twine supports several story formats (Harlowe, SugarCube, Chapbook, each with their own
     markup inside a passage's body) - which of those an importer would need to understand,
     and how much of each's macro language, is an open question for whoever picks this up
+35. `mwg/core` — minimal database-shaped functions over `localStorage`: named collections of
+    records, queried and filtered, rather than `SaveSystem`'s one-blob-per-slot shape. A
+    quest log, a bestiary of what has been discovered, achievements - state a game wants to
+    query ("everything not yet completed") rather than load wholesale the way a save slot is.
+    `localStorage` only, not IndexedDB: `SaveSystem` already needed an in-memory fallback for
+    `localStorage` under `file://`, and IndexedDB is a heavier API (async, versioned,
+    transactional) than that - it would likely need the same treatment or worse, for a quota
+    and binary-storage benefit nothing here yet demands
+36. `mwg/core` — structured log handling: categories and severity levels over bare
+    `console.log`/`console.error`, the way every example's `main().catch` currently just
+    dumps a stack trace to the page. Marginal value on its own - the browser console already
+    covers most of what this would add - logged because it came up, not because a reference
+    game demands it
 
 ## Licence and provenance
 
