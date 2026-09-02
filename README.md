@@ -111,7 +111,7 @@ only some do.
 | **core** | fixed-step game loop, scenes, timing | `mwg/core` |
 | | signals and listeners | `mwg/core` |
 | | deterministic seeded RNG, reproducible across machines | `mwg/core` |
-| | save/load of live object graphs, versioned | `mwg/core` |
+| | named, versioned save slots with a preview | `mwg/core` |
 | **render** | sprite batching at thousands of tiles | PixiJS |
 | | per-sprite colour transform: multiply **and** add | `mwg/render` |
 | | animated sprites driven by named frame sets | `mwg/render` |
@@ -284,7 +284,7 @@ rather than showing a raw key to the player.
 9. ~~`mwg/world` — many maps, transitions, persistence, the turn clock, encounter tables~~
 10. ~~`mwg/rpg` — map and event data, the interpreter, switches and variables, grid movement~~
 11. ~~`mwg/battle` — species and stats, type matrix, speed-ordered turns~~
-12. `mwg/audio`, save/load
+12. ~~`mwg/audio`, save/load~~
 13. layered character sprites, and vertical writing
 14. worked examples: a dungeon crawl, a village with NPCs and a cutscene, a creature battle
 15. `mwg/render` + `mwg/roguelike` — hexagonal tile maps, and FOV/pathfinding over a hex grid

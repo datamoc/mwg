@@ -16,3 +16,4 @@ export * as Actors from './actors/index.ts';
 export * as World from './world/index.ts';
 export * as Rpg from './rpg/index.ts';
 export * as Battle from './battle/index.ts';
+export * as Audio from './audio/index.ts';
