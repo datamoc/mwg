@@ -16,6 +16,7 @@ import tileset from '../assets/tiles.json' with { type: 'json' };
 const { tileSize, columns, tiles } = tileset;
 
 const TILES_PNG = 'tiles.png';
+const GEM_SVG = 'icon_gem.svg';
 
 class ColourTransformScene extends Scene {
 	private sheet!: Texture;
@@ -58,7 +59,38 @@ class ColourTransformScene extends Scene {
 		});
 
 		this.addPulsingRow(40 + rows.length * (tileSize * scale + 34), scale);
+		this.addSvgRow(40 + (rows.length + 1) * (tileSize * scale + 34), scale);
 		this.addStressTest();
+	}
+
+	/**
+	 * SVG textures, tinted the same way a PNG one is - roadmap item 15: verifying that an
+	 * SVG loads through the compiled file:// path (a data:image/svg+xml URI reached by an
+	 * aliased path with no .svg on the URL itself), not only that the path resolves.
+	 */
+	private addSvgRow(y: number, scale: number): void {
+		this.stage.addChild(
+			new Text({
+				text: 'icon_gem.svg — an SVG texture, loaded and tinted the same as a PNG one',
+				style: { fill: 0xd0d0d8, fontFamily: 'monospace', fontSize: 13 },
+				x: 20,
+				y: y - 20,
+			})
+		);
+
+		const styles: Array<(sprite: TintedSprite) => void> = [
+			() => {},
+			(s) => (s.tint = 0x5060a0),
+			(s) => s.lerpTint(0x30ff40, 0.6),
+		];
+		styles.forEach((style, index) => {
+			const sprite = new TintedSprite(Resources.texture(GEM_SVG));
+			sprite.x = 20 + index * (32 * scale + 8);
+			sprite.y = y;
+			sprite.scale.set(scale / 2);
+			style(sprite);
+			this.stage.addChild(sprite);
+		});
 	}
 
 	/** the same lerp, animated, which is what a "poisoned" or "burning" state looks like */
@@ -147,7 +179,7 @@ async function main(): Promise<void> {
 
 	//no base is needed: the dev server publishes examples/assets at its root, and a built
 	//page resolves the same path to a compiled data: URI
-	await Resources.load([TILES_PNG]);
+	await Resources.load([TILES_PNG, GEM_SVG]);
 	await game.start(ColourTransformScene);
 }
 

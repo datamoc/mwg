@@ -287,17 +287,21 @@ rather than showing a raw key to the player.
 12. ~~`mwg/audio`, save/load~~
 13. ~~layered character sprites, and vertical writing~~
 14. ~~worked examples: a dungeon crawl, a village with NPCs and a cutscene, a creature battle~~
-15. `mwg/assets` + `mwg/render` — verify and harden SVG texture loading through a compiled
-    `data:` URI (the MIME entry already exists in `tools/compile-resources`; whether Pixi's
-    SVG parser actually rasterises it correctly from an aliased `data:` source, with no
-    server and no `.svg` extension on the URL itself, is unconfirmed) — reordered ahead of
-    16/17 below: likely a small verification task, not a rendering rewrite, so it is worth
-    doing before either of those
+15. ~~`mwg/assets` + `mwg/render` — verify and harden SVG texture loading through a compiled
+    `data:` URI~~ (verified in `examples/colour-transform`: Pixi's SVG parser rasterises it
+    correctly through the aliased, extension-less `data:` source, no code changes needed)
 16. `mwg/render` + `mwg/roguelike` — hexagonal tile maps, and FOV/pathfinding over a hex grid
 17. `mwg/render` — isometric and staggered projection, so any Tiled orientation loads directly
 18. a performance pass across the render path: profile `ColorTransformBatcher` and
     `TileMap`'s chunk culling under load, and confirm nothing ever silently falls back from
     WebGL/WebGPU to a canvas 2D renderer
+19. wire `mwg/core`'s `SaveSystem` into an actual game loop end to end - a worked save/load
+    example (or an addition to `village`/`battle`), plus a debug quicksave/quickload
+    keybinding, not just the primitive itself with no game ever calling it
+20. a proper character animation state convention, beyond `GridMover`'s bare walk/idle hook
+    names: standing still, moving, and performing an action (attacking, using an item),
+    with rules for how one interrupts another - `AnimatedSprite` and `GridMover` supply the
+    pieces today, but no shared convention for naming or sequencing the states themselves
 
 ## Licence and provenance
 

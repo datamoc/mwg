@@ -453,6 +453,25 @@ function buildCharacter(palette) {
 	};
 }
 
+// ------------------------------------------------------------------- SVG
+
+/**
+ * A small vector icon, to verify SVG textures actually load through the compiled `data:`
+ * URI path (roadmap item 15) - not just resolve to one. `tools/compile-resources` already
+ * lists the MIME type; whether Pixi's SVG parser rasterises a `data:image/svg+xml` source
+ * correctly when it is reached through an *aliased* path with no `.svg` on the URL itself
+ * is the part that needed checking, not assumed from the MIME entry alone.
+ */
+function buildGemIcon() {
+	return (
+		'<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">' +
+		'<polygon points="16,2 30,12 25,30 7,30 2,12" fill="#d6b242" stroke="#8a6a1e" stroke-width="1.5"/>' +
+		'<polygon points="16,2 30,12 16,16" fill="#f0d97a"/>' +
+		'<polygon points="2,12 16,16 7,30" fill="#b8901e"/>' +
+		'</svg>\n'
+	);
+}
+
 // ---------------------------------------------------------------- sound
 
 const SAMPLE_RATE = 22050;
@@ -559,6 +578,9 @@ for (const [name, samples] of Object.entries(SOUNDS)) {
 	await writeFile(join(OUT, name), encodeWav(samples));
 }
 
+const gemIcon = buildGemIcon();
+await writeFile(join(OUT, 'icon_gem.svg'), gemIcon);
+
 //the examples import this rather than hard-coding tile numbers and frame sizes
 await writeFile(
 	join(OUT, 'tiles.json'),
@@ -589,4 +611,5 @@ for (const [name, character] of Object.entries(characters)) {
 for (const [name, samples] of Object.entries(SOUNDS)) {
 	console.log(`${name.padEnd(12)}${kb(samples.length * 2 + 44)}`);
 }
+console.log(`icon_gem.svg${kb(gemIcon.length)}`);
 console.log('\nwritten to examples/assets - generated, so redistributable under the project licence');
