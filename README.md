@@ -589,6 +589,47 @@ prose, rather than in the list's own sequence.
     a different rendering foundation entirely. Not something to pick up without first asking
     whether it belongs in this project at all, rather than a new one built beside it
 
+The following items (46-52) were surfaced by reading a separate reference port's own
+`PORT_COVERAGE.md` (a project that ports another game's mechanics onto `mwg`, tracking what
+it deliberately has not ported) and asking which gaps are `mwg` framework capability rather
+than that specific game's content - no code, data or mechanic numbers from that port belong
+here, only the shape of what a game built on `mwg` currently has no primitive for at all.
+Logged at low priority per the roadmap process, same as items 28/30/38 above.
+
+46. temporary stat modifiers with automatic expiry (a poison tick, a berserk buff, a
+    stat-halving curse) - `TurnClock` already ticks timed effects and `StatBlock` already
+    resolves permanent modifiers, but nothing today ties a `TurnClock` entry's own end to
+    removing the `StatBlock` modifier it applied; a game must wire that pairing by hand
+    every time
+47. item depth beyond `Inventory`'s stacking/weight and `EquipmentSlots`' fixed modifiers: a
+    per-item enchantment or upgrade level, durability that degrades with use, and an
+    unidentified state that hides an item's real name/effect until revealed. None of `mwg`'s
+    item-shaped modules represent an item that is anything other than fully known and static
+    from the moment it is picked up
+48. a resource that recharges over time (a wand's limited charges, regenerating one per some
+    number of turns) - distinct from item 43's instant spend-if-affordable resource (mana
+    spent per cast, restored only by an explicit event): this is the same "can it afford
+    this right now" question, but the resource refills on its own as time passes rather than
+    waiting for a game to hand it back
+49. a monster's disposition - peaceful, neutral, or hostile - and a provoked-by-attack
+    transition between them, for `decideMonsterAI` to read alongside its existing
+    wander/hunt/flee loop. Today every monster is hostile on sight; nothing represents one
+    that leaves the hero alone until struck, or that reacts to the hero attacking something
+    else nearby
+50. loot: a table of possible drops resolved into the world or straight into an `Inventory`
+    when a monster dies, and a corpse as a lootable object left behind. `mwg/actors` can
+    already add an item to an `Inventory`; nothing decides *which* item or generates a
+    persistent world object to hold it until picked up
+51. an interactive door: open/closed/locked state in `mwg/roguelike`/`mwg/rpg`, blocking
+    passage and sight while closed and optionally needing a specific key item to open.
+    Every door-shaped cell today is either a plain passable floor or a permanently open
+    passage - there is no state for a game to change at all
+52. a basic shop/economy primitive: a currency stat and a buy/sell transaction against an
+    `Inventory` (spend currency for an item, or convert an item back into currency).
+    `StatBlock` can already hold currency as a stat and `Inventory` already holds items:
+    what is missing is the transaction that moves value between the two safely, the same
+    role `craft()` fills for a recipe
+
 ## Licence and provenance
 
 `mwg` is MPL-2.0. Its dependencies are permissive and compatible: PixiJS is MIT, rot.js is
