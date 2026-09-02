@@ -112,3 +112,62 @@ test('fleeing with every neighbour blocked returns no step', () => {
 	assert.equal(decision.state, 'flee');
 	assert.equal(decision.step, null);
 });
+
+test('a peaceful monster wanders even with the target in plain sight', () => {
+	reset();
+	const level = openRoom();
+	const pathfinder = new Pathfinder(level);
+
+	const decision = decideMonsterAI(level, pathfinder, { x: 2, y: 2 }, 1, { x: 8, y: 2 }, {
+		sightRadius: 10,
+		topology: 4,
+		disposition: 'peaceful',
+	});
+
+	assert.equal(decision.state, 'wander');
+});
+
+test('a neutral monster wanders too, same as peaceful, until provoked', () => {
+	reset();
+	const level = openRoom();
+	const pathfinder = new Pathfinder(level);
+
+	const decision = decideMonsterAI(level, pathfinder, { x: 2, y: 2 }, 1, { x: 8, y: 2 }, {
+		sightRadius: 10,
+		topology: 4,
+		disposition: 'neutral',
+	});
+
+	assert.equal(decision.state, 'wander');
+});
+
+test('provoked overrides a peaceful/neutral disposition back to hunting', () => {
+	reset();
+	const level = openRoom();
+	const pathfinder = new Pathfinder(level);
+	const self = { x: 2, y: 2 };
+	const target = { x: 8, y: 2 };
+
+	const decision = decideMonsterAI(level, pathfinder, self, 1, target, {
+		sightRadius: 10,
+		topology: 4,
+		disposition: 'peaceful',
+		provoked: true,
+	});
+
+	assert.equal(decision.state, 'hunt');
+	assert.deepEqual(decision.step, pathfinder.step(self, target, { topology: 4 }));
+});
+
+test('omitting disposition defaults to hostile, unchanged from before this option existed', () => {
+	reset();
+	const level = openRoom();
+	const pathfinder = new Pathfinder(level);
+
+	const decision = decideMonsterAI(level, pathfinder, { x: 2, y: 2 }, 1, { x: 8, y: 2 }, {
+		sightRadius: 10,
+		topology: 4,
+	});
+
+	assert.equal(decision.state, 'hunt');
+});

@@ -19,6 +19,13 @@ export interface InventoryItem {
 	cursed?: boolean;
 	blessed?: boolean;
 
+	/** an enchantment or upgrade level above the item's base, such as a weapon's "+2" */
+	level?: number;
+
+	/** remaining durability; omit for an item that cannot wear out at all */
+	durability?: number;
+	maxDurability?: number;
+
 	/** a container - a bag, a chest - whose own weight adds to whatever is inside it */
 	contents?: Inventory;
 }

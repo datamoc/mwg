@@ -63,6 +63,18 @@ Everything below has shipped on `main`; no version has been tagged yet.
   to it by the points a level-up grants.
 - `craft(inventory, recipe)`: consumes every ingredient and adds the result atomically — an
   ingredient shortfall or a result that doesn't fit rolls back everything already removed.
+- `applyStatusEffect`: a temporary buff/debuff — applies `StatBlock` modifiers and registers
+  their removal against any clock shaped like `TurnClock`'s `add`/`remove`, returning a handle
+  whose `cancel()` removes them early (a cure, a remove-curse scroll).
+- `identify`/`enchant`/`damageItem`/`repairItem`: item-depth functions over a plain
+  `InventoryItem`, which gained `level`, `durability` and `maxDurability` fields — durability
+  is opt-in per item, a no-op without `maxDurability` set.
+- `Charges`: a resource that regenerates on its own as turns pass (a wand's limited charges),
+  distinct from a `StatBlock` stat spent per use and restored only by an explicit event.
+- `rollLoot`: a weighted drop table, the same shape as `world.rollEncounter` — roll whether
+  anything drops, then weight-pick which.
+- `buy`/`sell`: a shop transaction between two `Inventory`s paid from a `StatBlock` currency
+  stat, all-or-nothing like `craft()` — a full stock/buyer-capacity rollback on failure.
 
 **Roguelike**
 - `FieldOfView` (visible/explored/remembered), `Pathfinder` (A*, a Dijkstra distance map,
@@ -76,6 +88,12 @@ Everything below has shipped on `main`; no version has been tagged yet.
 - `chebyshevDistance`/`traceLine`/`hasLineOfSight`/`canTarget`/`resolveArea`: targeting via a
   Bresenham line trace (a different, cheaper question than `FieldOfView`'s shadowcast), with
   `single`/`line`/`burst` area resolution.
+- `decideMonsterAI` gained a `disposition` option (`hostile`/`neutral`/`peaceful`, defaulting
+  to `hostile`, unchanged) and a `provoked` flag — a peaceful/neutral monster always wanders
+  until either overrides it back to hunting.
+- `Doors`: open/closed/locked door state, `Secrets`' own shape reused — the state is just
+  terrain, swapped between a door's own open/closed kinds; locking is a separate flag that
+  keeps a door closed and unopenable until `unlock` is called.
 
 **World**
 - `World` (many maps, each created once and kept alive, with an explicit non-persistent mode
@@ -119,6 +137,9 @@ Everything below has shipped on `main`; no version has been tagged yet.
 - `generateDungeon` gained an optional `kinds` list, so a game can add its own terrain ids
   (a trap kind, say) alongside the generator's wall/floor without forking it.
 - `examples/dungeon`'s inventory screen is an `IconGrid` now, not a `ListView`.
+- `TurnClock`'s `TimedEffect` gained an optional `onExpire` callback, fired once right before
+  an effect whose duration has run out is removed — what `applyStatusEffect` needed to tie a
+  status effect's expiry to removing the `StatBlock` modifiers it applied.
 
 ### Fixed
 - `checkEvolution` was first-match-wins; a multi-stage evolution chain could get stuck on an

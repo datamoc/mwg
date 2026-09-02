@@ -589,46 +589,76 @@ prose, rather than in the list's own sequence.
     a different rendering foundation entirely. Not something to pick up without first asking
     whether it belongs in this project at all, rather than a new one built beside it
 
-The following items (46-52) were surfaced by reading a separate reference port's own
-`PORT_COVERAGE.md` (a project that ports another game's mechanics onto `mwg`, tracking what
-it deliberately has not ported) and asking which gaps are `mwg` framework capability rather
-than that specific game's content - no code, data or mechanic numbers from that port belong
-here, only the shape of what a game built on `mwg` currently has no primitive for at all.
-Logged at low priority per the roadmap process, same as items 28/30/38 above.
+Items 46-52 were surfaced by reading a separate reference port's own `PORT_COVERAGE.md` (a
+project that ports another game's mechanics onto `mwg`, tracking what it deliberately has not
+ported) and asking which gaps are `mwg` framework capability rather than that specific game's
+content - no code, data or mechanic numbers from that port were ever brought in, only the
+shape of what a game built on `mwg` had no primitive for at all. Logged at low priority per
+the roadmap process, same as items 28/30/38 above, and all seven shipped in the same session
+they were logged in.
 
-46. temporary stat modifiers with automatic expiry (a poison tick, a berserk buff, a
-    stat-halving curse) - `TurnClock` already ticks timed effects and `StatBlock` already
-    resolves permanent modifiers, but nothing today ties a `TurnClock` entry's own end to
-    removing the `StatBlock` modifier it applied; a game must wire that pairing by hand
-    every time
-47. item depth beyond `Inventory`'s stacking/weight and `EquipmentSlots`' fixed modifiers: a
-    per-item enchantment or upgrade level, durability that degrades with use, and an
-    unidentified state that hides an item's real name/effect until revealed. None of `mwg`'s
-    item-shaped modules represent an item that is anything other than fully known and static
-    from the moment it is picked up
-48. a resource that recharges over time (a wand's limited charges, regenerating one per some
-    number of turns) - distinct from item 43's instant spend-if-affordable resource (mana
-    spent per cast, restored only by an explicit event): this is the same "can it afford
-    this right now" question, but the resource refills on its own as time passes rather than
-    waiting for a game to hand it back
-49. a monster's disposition - peaceful, neutral, or hostile - and a provoked-by-attack
-    transition between them, for `decideMonsterAI` to read alongside its existing
-    wander/hunt/flee loop. Today every monster is hostile on sight; nothing represents one
-    that leaves the hero alone until struck, or that reacts to the hero attacking something
-    else nearby
-50. loot: a table of possible drops resolved into the world or straight into an `Inventory`
-    when a monster dies, and a corpse as a lootable object left behind. `mwg/actors` can
-    already add an item to an `Inventory`; nothing decides *which* item or generates a
-    persistent world object to hold it until picked up
-51. an interactive door: open/closed/locked state in `mwg/roguelike`/`mwg/rpg`, blocking
-    passage and sight while closed and optionally needing a specific key item to open.
-    Every door-shaped cell today is either a plain passable floor or a permanently open
-    passage - there is no state for a game to change at all
-52. a basic shop/economy primitive: a currency stat and a buy/sell transaction against an
-    `Inventory` (spend currency for an item, or convert an item back into currency).
-    `StatBlock` can already hold currency as a stat and `Inventory` already holds items:
-    what is missing is the transaction that moves value between the two safely, the same
-    role `craft()` fills for a recipe
+46. ~~temporary stat modifiers with automatic expiry (a poison tick, a berserk buff, a
+    stat-halving curse)~~ - `TurnClock`'s `TimedEffect` gained an `onExpire` callback, fired
+    once right before an expired effect is removed; `actors.applyStatusEffect` is the seam
+    that was missing, not a new storage mechanism - it adds `StatBlock` modifiers tagged with
+    a private `source` symbol and registers their removal as that callback, so a game never
+    has to remember to clean up what it added. The returned handle's `cancel()` covers early
+    removal (a cure spell, a `remove curse` scroll), which `TurnClock.remove` alone cannot do
+    since it has no idea the entry ever touched a `StatBlock`. 5 unit tests cover immediate
+    application, automatic expiry, a per-turn tick (a poison's own damage), early
+    cancellation, and two independent effects on the same stat expiring independently
+47. ~~item depth beyond `Inventory`'s stacking/weight and `EquipmentSlots`' fixed modifiers~~ -
+    `InventoryItem` gained `level` (an enchantment/upgrade level), `durability`/
+    `maxDurability`; `identified` already existed but nothing read or wrote it. `actors.identify`/
+    `enchant`/`damageItem`/`repairItem` are small functions over a plain item, the same size of
+    primitive `skillCheck` already is - durability is opt-in per item (`damageItem`/`repairItem`
+    are a no-op without `maxDurability` set, rather than every item silently paying for a
+    durability system it does not use). 9 unit tests cover all four functions, including the
+    opt-out no-op and durability never going negative or over its max
+48. ~~a resource that recharges over time (a wand's limited charges, regenerating one per some
+    number of turns)~~ - `actors.Charges` is deliberately its own small class, not built on
+    `TurnClock`: it carries its own regeneration progress (turns banked towards the next
+    charge), which a class holds more naturally than a callback would, and stays completely
+    decoupled from whatever a game already uses to drive its turns. `advance(turns)` converts
+    whole `regenRate`-sized chunks of banked time into charges, capped at `max`, and stops
+    banking further progress once full so a very long idle stretch cannot silently queue up
+    overflow charges the moment one is spent. 7 unit tests cover defaults, spending,
+    multi-charge regeneration in one call, the full-and-idle edge case, and banked progress
+    surviving a spend
+49. ~~a monster's disposition - peaceful, neutral, or hostile - and a provoked-by-attack
+    transition between them~~ - `decideMonsterAI` gained a `disposition` option (defaulting
+    to `'hostile'`, unchanged from before this existed) and a `provoked` flag a game sets the
+    moment it lands the provoking hit; a peaceful or neutral monster always wanders, skipping
+    the sight check entirely, until either disposition is hostile or provoked overrides it -
+    both read the same way `hpFraction` already is, computed fresh by the caller rather than
+    remembered by this function. 5 new unit tests cover peaceful, neutral, provoked-override,
+    and the pre-existing hostile default; the full existing suite (267 tests going in) still
+    passes unchanged
+50. ~~loot: a table of possible drops resolved into the world or straight into an `Inventory`
+    when a monster dies, and a corpse as a lootable object left behind~~ - `actors.rollLoot`
+    is the same shape as `world.rollEncounter`, deliberately: both roll whether anything
+    happens at all, then weight-pick which. A corpse needed no code of its own beyond this -
+    it is an `Inventory` placed at the monster's last position, exactly like any other
+    dropped item already is in `examples/dungeon`. 6 unit tests cover an empty table, `chance`
+    at both extremes, the default quantity, an explicit quantity, and weighted proportions
+    over enough trials
+51. ~~an interactive door: open/closed/locked state in `mwg/roguelike`, blocking passage and
+    sight while closed and optionally needing a specific key item to open~~ - `roguelike.Doors`
+    is `Secrets`' own shape reused: the state itself is just terrain (a door swaps between its
+    own open/closed terrain kinds, so `passable`/`transparent` need no door-specific code at
+    all), and the class remembers which cells are doors and what they swap to. Locking is a
+    separate flag from open/closed, so a locked door stays closed and refuses to open until a
+    game calls `unlock` (typically once it confirms the actor holds the right key item). 9
+    unit tests cover placing, opening, closing, the no-op failure cases, `startOpen`, and the
+    full lock/unlock cycle
+52. ~~a basic shop/economy primitive: a currency stat and a buy/sell transaction against an
+    `Inventory`~~ - `actors.buy`/`sell` are `craft()`'s own shape: check everything first,
+    touch nothing until every check passes, and roll back whatever an earlier step already
+    did if a later one fails (the buyer's bag has no room for what was already pulled from
+    the shop's stock). Currency lives as a plain `StatBlock` stat, read and written through
+    `base`/`setBase` the same way `SkillPoints` treats a spendable ledger. 7 unit tests cover
+    the happy paths for both directions and every refusal case, including the capacity-rollback
+    path specifically
 
 ## Licence and provenance
 

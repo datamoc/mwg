@@ -10,6 +10,9 @@ export interface TimedEffect {
 
 	/** turns remaining before this effect is removed automatically; omit to run forever */
 	duration?: number;
+
+	/** called once, the moment `duration` runs out, right before the effect is removed */
+	onExpire?: () => void;
 }
 
 export class TurnClock {
@@ -41,7 +44,10 @@ export class TurnClock {
 
 			if (effect.duration !== undefined) {
 				effect.duration -= turns;
-				if (effect.duration <= 0) this.effects.delete(id);
+				if (effect.duration <= 0) {
+					this.effects.delete(id);
+					effect.onExpire?.();
+				}
 			}
 		}
 	}

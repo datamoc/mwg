@@ -5,6 +5,9 @@ import { neighbourOffsets, type PathOptions, type Pathfinder, type Step } from '
 
 export type AIState = 'wander' | 'hunt' | 'flee';
 
+/** hostile hunts on sight, same as ever; neutral/peaceful only wander until `provoked` */
+export type Disposition = 'hostile' | 'neutral' | 'peaceful';
+
 export interface AIDecision {
 	state: AIState;
 	/** where to move this turn; null when there is nowhere sensible to go */
@@ -17,6 +20,17 @@ export interface MonsterAIOptions extends PathOptions {
 
 	/** HP fraction (0 to 1) at or below which a visible target is fled rather than hunted */
 	fleeBelow?: number;
+
+	/** defaults to 'hostile' - always hunts on sight, exactly like every monster used to */
+	disposition?: Disposition;
+
+	/**
+	 * true once this monster has been attacked (or otherwise provoked) - overrides a
+	 * neutral/peaceful disposition back to hunting, permanently, the same as `hostile`. A
+	 * game tracks this per monster and sets it the moment it lands the provoking hit; this
+	 * function stores no state of its own between calls, same as `hpFraction`.
+	 */
+	provoked?: boolean;
 }
 
 /**
@@ -42,6 +56,11 @@ export function decideMonsterAI(
 ): AIDecision {
 	const sightRadius = options.sightRadius ?? 6;
 	const fleeBelow = options.fleeBelow ?? 0;
+	const hunts = (options.disposition ?? 'hostile') === 'hostile' || options.provoked === true;
+
+	if (!hunts) {
+		return { state: 'wander', step: wanderStep(level, self, options) };
+	}
 
 	const fov = new FieldOfView(level);
 	fov.update(self.x, self.y, sightRadius);
