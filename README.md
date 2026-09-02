@@ -398,11 +398,22 @@ rather than showing a raw key to the player.
     territory rather than a dungeon room, unit stacks, a turn given to every player rather
     than one hero). No specific title picked yet; logged at low priority per the roadmap
     process below
-29. `mwg/render` (`TileMap`) — auto-tiling: stitching a terrain edge or corner from many small
+29. ~~`mwg/render` (`TileMap`) — auto-tiling: stitching a terrain edge or corner from many small
     tile pieces chosen by which neighbours are the same terrain, rather than a game hand-picking
-    a frame per cell itself. RPG Maker's and Tiled's own autotile/wang-tile conventions are the
-    usual shape; nothing in `TileMap` or `mwg/rpg`'s map loading resolves a neighbour-dependent
-    frame today - a loaded map's frames are exactly what its source data already says
+    a frame per cell itself~~ - `blobIndex`/`autotileFrames` are the classic "blob tile"
+    reduction: a diagonal neighbour only changes a cell's shape when both orthogonal neighbours
+    flanking it also belong to the terrain (an edge piece already owns that corner otherwise),
+    which is what collapses the 256 raw 8-neighbour combinations down to the 47 ever actually
+    reachable. `BLOB_SHAPES` lists all 47 in the exact order `blobIndex` returns them, so a
+    tileset's 47 frames can be arranged or drawn against it directly - this is `mwg`'s own
+    convention, not a claim of pixel compatibility with any specific existing tileset's frame
+    order. 11 unit tests cover the reduction directly: all 256 raw combinations exhaustively
+    checked, the corner-only-matters-with-both-edges rule, and `autotileFrames` end to end
+    (isolated cells, a solid block's interior, a straight edge's consistency, out-of-bounds
+    neighbours reading exactly what the caller's `sameTerrain` says). Not wired into an
+    example this round - a real showcase wants a tileset with genuinely distinct art for all
+    47 shapes, and cobbling that together from the existing 4-frame wall/floor set would be a
+    crude approximation, not a demonstration of the technique
 
 ## Licence and provenance
 
