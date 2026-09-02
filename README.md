@@ -292,9 +292,15 @@ rather than showing a raw key to the player.
     correctly through the aliased, extension-less `data:` source, no code changes needed)
 16. `mwg/render` + `mwg/roguelike` — hexagonal tile maps, and FOV/pathfinding over a hex grid
 17. `mwg/render` — isometric and staggered projection, so any Tiled orientation loads directly
-18. a performance pass across the render path: profile `ColorTransformBatcher` and
+18. ~~a performance pass across the render path: profile `ColorTransformBatcher` and
     `TileMap`'s chunk culling under load, and confirm nothing ever silently falls back from
-    WebGL/WebGPU to a canvas 2D renderer
+    WebGL/WebGPU to a canvas 2D renderer~~ — measured directly (`renderer.name` inspected,
+    not assumed): `colour-transform`'s 4000-sprite stress test holds a steady 60fps on
+    `webgl` (Pixi's default preference; `Game` sets no `preference` of its own, so nothing
+    here opts into a canvas fallback either). A synthetic 400×400-tile map (160,000 cells,
+    625 chunks — far past the ~2,500-cell maps any current example uses) still holds 60fps,
+    `cull()` costs ~0.017ms per call, and only ~1% of chunks render at a time. No regression
+    found; nothing needed fixing
 19. wire `mwg/core`'s `SaveSystem` into an actual game loop end to end - a worked save/load
     example (or an addition to `village`/`battle`), plus a debug quicksave/quickload
     keybinding, not just the primitive itself with no game ever calling it
