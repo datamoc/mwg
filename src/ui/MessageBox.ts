@@ -108,15 +108,22 @@ export class MessageBox extends Window {
 	private showPage(index: number): void {
 		const page = this.pages[index];
 		const t = theme();
+		//in rtl the portrait moves to the right edge, the text runs from the left edge up
+		//to it, and the "waiting" prompt moves to the opposite corner from ltr
+		const rtl = t.direction === 'rtl';
 
 		this.portraitLayer.removeChildren();
 		this.portrait = null;
 
 		let textLeft = 0;
+		let textWidth = this.contentWidth;
 		if (page.portrait) {
 			this.portrait = new Sprite(page.portrait);
+			if (rtl) this.portrait.x = this.contentWidth - this.portrait.width;
 			this.portraitLayer.addChild(this.portrait);
-			textLeft = this.portrait.width + t.padding;
+
+			textWidth = this.contentWidth - this.portrait.width - t.padding;
+			textLeft = rtl ? 0 : this.portrait.width + t.padding;
 		}
 
 		this.speakerLabel.visible = page.speaker !== undefined;
@@ -125,13 +132,13 @@ export class MessageBox extends Window {
 
 		this.body.x = textLeft;
 		this.body.y = page.speaker !== undefined ? this.speakerLabel.height + t.spacing : 0;
-		this.body.style.wordWrapWidth = Math.max(16, this.contentWidth - textLeft);
+		this.body.style.wordWrapWidth = Math.max(16, textWidth);
 
 		this.revealed = this.speed > 0 ? 0 : page.text.length;
 		this.body.setText(page.text.slice(0, this.revealed));
 
 		this.prompt.visible = false;
-		this.prompt.x = this.contentWidth - this.prompt.width;
+		this.prompt.x = rtl ? 0 : this.contentWidth - this.prompt.width;
 		this.prompt.y = this.contentHeight - this.prompt.height;
 	}
 

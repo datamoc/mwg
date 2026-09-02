@@ -32,7 +32,7 @@ export class Label extends Text {
 				fontWeight: opts.bold ? 'bold' : 'normal',
 				fill: opts.color ?? t.color.text,
 				lineHeight: (opts.size ?? t.font.size) * t.font.lineHeight,
-				align: opts.align ?? 'left',
+				align: opts.align ?? (t.direction === 'rtl' ? 'right' : 'left'),
 				wordWrap: opts.wrapWidth !== undefined,
 				wordWrapWidth: opts.wrapWidth ?? 0,
 				//without this a long unbroken word overflows its window instead of wrapping

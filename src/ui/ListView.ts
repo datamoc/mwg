@@ -107,22 +107,25 @@ export class ListView extends Container {
 		this.rowsLayer.removeChildren();
 
 		const t = theme();
+		//in rtl the icon moves to the right edge and the text sits to its left, ending at
+		//the same distance from that edge the ltr text starts from the left one
+		const rtl = t.direction === 'rtl';
+
 		items.forEach((item, i) => {
 			const row = new Container();
 			row.y = i * this.rowHeight;
 
-			let x = t.spacing;
 			if (item.icon) {
-				item.icon.x = x;
+				item.icon.x = rtl ? this.viewWidth - t.spacing - this.rowHeight : t.spacing;
 				row.addChild(item.icon);
-				x += this.rowHeight;
 			}
 
 			const label = new Label({
 				text: item.text,
 				color: item.disabled ? t.color.textDim : t.color.text,
 			});
-			label.x = x;
+			const textStart = t.spacing + (item.icon ? this.rowHeight : 0);
+			label.x = rtl ? this.viewWidth - textStart - label.width : textStart;
 			//centre the text in its row rather than sitting it on the top edge
 			label.y = Math.round((this.rowHeight - label.height) / 2);
 			row.addChild(label);

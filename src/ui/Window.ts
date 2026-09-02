@@ -97,7 +97,7 @@ export class Window extends Container {
 
 		let contentTop = inset;
 		if (this.titleLabel) {
-			this.titleLabel.x = inset;
+			this.titleLabel.x = t.direction === 'rtl' ? width - inset - this.titleLabel.width : inset;
 			this.titleLabel.y = inset;
 			contentTop = inset + this.titleLabel.height + t.padding;
 		}

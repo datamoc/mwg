@@ -1,4 +1,5 @@
 import type { Texture } from 'pixi.js';
+import type { Direction } from '../i18n/index.ts';
 
 /**
  * How the interface looks.
@@ -41,12 +42,21 @@ export interface Theme {
 
 	/** opacity of the layer behind a modal window, 0 to 1 */
 	overlayAlpha: number;
+
+	/**
+	 * What widgets lay themselves out against, instead of a hardcoded "left".
+	 *
+	 * A game with `mwg/i18n` sets this from `I18n.direction()` whenever the active language
+	 * changes; a game without it never has to think about the field at all.
+	 */
+	direction: Direction;
 }
 
 export const defaultTheme: Theme = {
 	panelBorder: 4,
 	padding: 8,
 	spacing: 2,
+	direction: 'ltr',
 	font: {
 		//a stack rather than one name, so a missing font degrades instead of disappearing
 		family: 'ui-monospace, Consolas, "DejaVu Sans Mono", monospace',

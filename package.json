@@ -22,7 +22,8 @@
     "./assets": "./dist/assets/index.js",
     "./tools/compile-resources": "./tools/compile-resources.mjs",
     "./ui": "./dist/ui/index.js",
-    "./stage": "./dist/stage/index.js"
+    "./stage": "./dist/stage/index.js",
+    "./i18n": "./dist/i18n/index.js"
   },
   "scripts": {
     "build": "npm run build:pkg && npm run build:global",
