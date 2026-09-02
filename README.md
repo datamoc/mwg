@@ -283,7 +283,7 @@ rather than showing a raw key to the player.
 8. ~~`mwg/roguelike` — FOV, pathfinding, energy scheduler, level generation~~
 9. ~~`mwg/world` — many maps, transitions, persistence, the turn clock, encounter tables~~
 10. ~~`mwg/rpg` — map and event data, the interpreter, switches and variables, grid movement~~
-11. `mwg/battle` — species and stats, type matrix, speed-ordered turns
+11. ~~`mwg/battle` — species and stats, type matrix, speed-ordered turns~~
 12. `mwg/audio`, save/load
 13. layered character sprites, and vertical writing
 14. worked examples: a dungeon crawl, a village with NPCs and a cutscene, a creature battle
