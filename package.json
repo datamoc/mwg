@@ -39,6 +39,7 @@
     "example:build": "vite build --config examples/colour-transform/vite.config.ts && node tools/emit-page.mjs examples/colour-transform",
     "test": "node --test \"tests/**/*.test.ts\"",
     "assets": "node tools/make-example-assets.mjs",
+    "extract:rgssad": "node tools/extract-rgssad.mjs",
     "example:ui": "vite --config examples/interface/vite.config.ts",
     "example:ui:build": "vite build --config examples/interface/vite.config.ts && node tools/emit-page.mjs examples/interface",
     "example:dialogue": "vite --config examples/dialogue/vite.config.ts",

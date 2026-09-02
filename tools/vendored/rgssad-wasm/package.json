@@ -1,0 +1,17 @@
+{
+  "name": "rgssad-wasm",
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "rgssad_wasm_bg.wasm",
+    "rgssad_wasm.js",
+    "rgssad_wasm_bg.js",
+    "rgssad_wasm.d.ts"
+  ],
+  "module": "rgssad_wasm.js",
+  "types": "rgssad_wasm.d.ts",
+  "sideEffects": [
+    "./rgssad_wasm.js",
+    "./snippets/*"
+  ]
+}
