@@ -1,0 +1,59 @@
+name: Deploy website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'webpage/**'
+      - 'src/**'
+      - 'examples/**'
+      - 'tools/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# only one deployment at a time; a new push cancels a run still in flight rather than
+# queuing behind it, since only the latest commit's site is worth publishing
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '26'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run assets
+      # generates webpage/examples/*/ and webpage/documentation/ - both gitignored, built
+      # fresh here rather than committed, same as a local `npm run webpage:examples` /
+      # `npm run webpage:docs` before opening the site by hand
+      - run: npm run webpage:examples
+      - run: npm run webpage:docs
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: webpage
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

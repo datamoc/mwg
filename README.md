@@ -16,11 +16,11 @@ what that has to cover:
 
 | reference | what it demands that the others do not |
 | --- | --- |
-| **Shattered Pixel Dungeon** | generated dungeons, field of view, energy-cost turn scheduling, permadeath, dense inventory UI |
-| **ADOM** | many persistent maps joined by a world map, hunger and long-running effects, skills and attributes, quests inside a roguelike |
-| **RPG Maker projects** | hand-authored maps, events on tiles, dialogue and cutscenes, a party, menu combat, save slots |
-| **Pokémon, in its traditional form** | encounter tables by terrain, a roster of creatures with derived stats, an effectiveness matrix, speed-ordered battles, capture and storage |
-| **Ren'Py, and the conversation scenes every RPG borrows from it** | a backdrop with characters standing in front of it, expressions, whoever speaks picked out from the rest, branching written as data |
+| **[Shattered Pixel Dungeon](https://shatteredpixel.com/shatteredpd/)** | generated dungeons, field of view, energy-cost turn scheduling, permadeath, dense inventory UI |
+| **[ADOM](https://www.adom.de/)** | many persistent maps joined by a world map, hunger and long-running effects, skills and attributes, quests inside a roguelike |
+| **[RPG Maker](https://www.rpgmakerweb.com/) projects** | hand-authored maps, events on tiles, dialogue and cutscenes, a party, menu combat, save slots |
+| **[Pokémon](https://www.pokemon.com/), in its traditional form** | encounter tables by terrain, a roster of creatures with derived stats, an effectiveness matrix, speed-ordered battles, capture and storage |
+| **[Ren'Py](https://www.renpy.org/), and the conversation scenes every RPG borrows from it** | a backdrop with characters standing in front of it, expressions, whoever speaks picked out from the rest, branching written as data |
 | **[The Battle for Wesnoth](https://www.wesnoth.org/)** | hexagonal tactical maps, movement cost and defense by terrain, zone of control, turn-based unit combat with recruiting and upkeep |
 
 Underneath they share almost everything: a grid, a camera following someone across it,
