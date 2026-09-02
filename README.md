@@ -431,6 +431,28 @@ rather than showing a raw key to the player.
     branch point. `DialogueStage` already needs no visual assets to run a scene that never
     calls `setBackdrop`/`show`, so the stageless half of a Twine-shaped story already works;
     the graph-of-passages half does not yet
+32. `mwg/rpg` — Tiled's *external* tileset format (`.tsx`, or its JSON export), and more than
+    one tileset per map. `loadTiledMap` reads only a single tileset embedded directly in the
+    map's own JSON today, and refuses outright the moment a map references a tileset as its
+    own file or uses a second one - the ordinary shape once a project's maps share tilesets
+    rather than each embedding a copy
+33. `mwg/rpg` (or a new `mwg/automap`) — Tiled's automapping: rule maps whose `input_*` layers
+    are arbitrary 2D patterns (not just a cell's 8 immediate neighbours, unlike item 29's blob
+    autotiling) matched anywhere against a target map, replaced by the paired `output_*`
+    layers, with rules applied in order so a later one can override an earlier one's result,
+    and optional random variation across several numbered output layers per rule. Genuinely
+    more expressive than neighbour-based autotiling - room decoration, structural
+    error-correction and terrain stitching all read as the same mechanism. See
+    <https://www.mapeditor.org/2026/07/14/focus-on-level-design-with-automapping.html> for
+    the mechanics this would need to reproduce
+34. `mwg/stage` — importing actual Twine story files (the Twee notation, or the `<tw-passagedata>`
+    elements in Twine's HTML export) into `StageScript`'s command format, so a story authored
+    in Twine's own editor runs under `mwg/stage` without hand-writing `StageCommand` arrays.
+    Blocked on item 31 (named-passage navigation) - a Twine file is fundamentally a graph of
+    named passages, so there is nothing to import into until `StageScript` can represent one.
+    Twine supports several story formats (Harlowe, SugarCube, Chapbook, each with their own
+    markup inside a passage's body) - which of those an importer would need to understand,
+    and how much of each's macro language, is an open question for whoever picks this up
 
 ## Licence and provenance
 
