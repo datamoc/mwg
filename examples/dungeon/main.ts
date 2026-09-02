@@ -15,6 +15,7 @@ import {
 	Scheduler,
 	rectCenter,
 	furthestRoom,
+	decideMonsterAI,
 	type Level,
 	type Step,
 } from '../../src/roguelike/index.ts';
@@ -477,10 +478,6 @@ class DungeonScene extends Scene {
 	}
 
 	private takeMonsterTurn(monster: Creature): void {
-		//monsters only act on what they can see, which is also what stops the whole level
-		//converging on the hero from the moment the floor loads
-		if (!this.fov.isVisible(monster.x, monster.y)) return;
-
 		const distance = Math.max(Math.abs(monster.x - this.hero.x), Math.abs(monster.y - this.hero.y));
 		if (distance === 1) {
 			this.attack(monster, this.hero);
@@ -493,8 +490,15 @@ class DungeonScene extends Scene {
 				.map((c) => this.level.index(c.x, c.y))
 		);
 
-		const step = this.pathfinder.step(monster, this.hero, { blocked });
-		if (step) this.moveTo(monster, step);
+		//each monster judges the hero by its own sight, not the hero's - a wounded monster
+		//that has spotted the hero flees rather than closing in
+		const decision = decideMonsterAI(this.level, this.pathfinder, monster, monster.hp / monster.maxHp, this.hero, {
+			sightRadius: VIEW_RADIUS,
+			fleeBelow: 0.25,
+			blocked,
+		});
+
+		if (decision.step) this.moveTo(monster, decision.step);
 	}
 
 	private moveTo(creature: Creature, to: Step): void {

@@ -324,10 +324,13 @@ rather than showing a raw key to the player.
     names: standing still, moving, and performing an action (attacking, using an item),
     with rules for how one interrupts another - `AnimatedSprite` and `GridMover` supply the
     pieces today, but no shared convention for naming or sequencing the states themselves
-22. `mwg/roguelike` — a monster AI behaviour loop (wander / hunt / flee) driven by the
-    existing `FieldOfView`, `Pathfinder` and `Scheduler` primitives. Those three exist today
-    but nothing turns them into a monster's actual turn — this is the gap an SPD-shaped port
-    hits first, past the item-and-stats mockup item 16 already covers
+22. ~~`mwg/roguelike` — a monster AI behaviour loop (wander / hunt / flee) driven by the
+    existing `FieldOfView`, `Pathfinder` and `Scheduler` primitives~~ - `decideMonsterAI()`
+    gives each monster its own sight (a fresh small-radius `FieldOfView` per call, not the
+    player's) and turns that into wander/hunt/flee, built entirely from the three primitives
+    already shipped. `examples/dungeon` now calls it once per monster per turn instead of the
+    old single distance check; verified in a browser (a rat closed distance and landed a hit
+    once in sight, killed cleanly with no console errors)
 23. `mwg/render` + `mwg/roguelike` — a discoverable/hidden tile state (secret doors,
     undiscovered traps): a cell that renders and blocks like its surroundings until revealed
     by search or trigger. Needed for SPD-shaped vaults and traps; nothing in `TileMap` or

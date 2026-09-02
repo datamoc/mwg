@@ -2,7 +2,8 @@ import { Path } from 'rot-js';
 import type { Level } from './Level.ts';
 import type { FieldOfView } from './FieldOfView.ts';
 
-function neighbourOffsets(topology: 4 | 8): ReadonlyArray<readonly [number, number]> {
+/** the four or eight cell offsets around a point, shared by every neighbour-walking algorithm here */
+export function neighbourOffsets(topology: 4 | 8): ReadonlyArray<readonly [number, number]> {
 	return topology === 4
 		? [
 				[0, -1],
