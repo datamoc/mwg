@@ -298,8 +298,9 @@ rather than showing a raw key to the player.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open, reevaluated this session:** 17 → 18 → 37 → 39 →
-40 → 42 → 32 → 31 → 34 → 33 → 35 → 36 → 28 → 41 → 30 → 38. Items 37 (quests) and 39 (skills)
+**Priority order among what's still open:** 18 → 37 → 39 → 40 → 42 → 32 → 31 → 34 → 33 → 35 →
+36 → 28 → 41 → 30 → 38 (17 has since shipped, and is no longer part of this ordering). Items
+37 (quests) and 39 (skills)
 move up from their append position - both are small, unblocked `mwg/actors`/`mwg/rpg`
 capabilities that already-committed reference games (ADOM's own row names quests explicitly;
 levelling is implicit in nearly all of them) demand directly, unlike several later entries
@@ -312,15 +313,26 @@ above and below it faster to verify, and cheap: most of its determinism already 
 an append-only history, including for what is not done yet - so priority order lives here, in
 prose, rather than in the list's own sequence.
 
-17. `mwg/render` + `mwg/roguelike` — hexagonal tile maps, and FOV/pathfinding over a hex grid.
-    The actual blocker for a Wesnoth-shaped mockup: nothing hex-shaped is possible before
-    this lands, unlike 16 above, so it is next after that quick win rather than after 18/19.
-    Flat-top orientation (matches Wesnoth), `TileMap`/`Level` gain a `shape` parameter
-    rather than forking into separate hex classes, and v1 FOV is simple line-of-sight, not
-    true shadowcasting. Note for whoever picks this up: rot.js's own hex `Path` topology
-    (`DIRS[6]`, doubled-width coordinates) is built for *pointy-top* hexagons - its geometry
-    does not match flat-top, so hex pathfinding here is a small custom search using
-    `Level`'s own flat-top neighbour logic, not a reuse of rot.js's hex `AStar`/`Dijkstra`
+17. ~~`mwg/render` + `mwg/roguelike` — hexagonal tile maps, and FOV/pathfinding over a hex
+    grid~~ - flat-top, matching Wesnoth. `Level` and `TileMap` both gained a `shape` option
+    (`'square' | 'hex'`) rather than forking into separate classes, exactly as planned. The
+    actual new code is small and lives in one place: `mwg/core`'s `Hex.ts` (a fixed, six-
+    cube-direction neighbour table, converted to and from an "odd-q" offset so it round-trips
+    through integers) - everything else is that module's existing shape reused unchanged.
+    `Level.neighbors(x, y)` is the seam: `Pathfinder`'s `distanceMap`/`descend`/`autoExplore`
+    and `FieldOfView`'s shadowcast-or-not branch both call it instead of a hardcoded square
+    table, so a hex `Level` gets pathfinding and field of view for free. Two things really are
+    new, not reused: `Pathfinder.find` on a hex `Level` walks a Dijkstra map one `descend()` at
+    a time instead of rot.js's `Path.AStar` (which is square-grid only - its `topology` option
+    is the same 4/8 offsets, nothing hex-shaped), and `FieldOfView` on a hex `Level` traces a
+    straight `hexLine` to every cell in range rather than shadowcasting, exactly the "v1 is
+    simple line-of-sight" this item committed to. 28 unit tests cover the geometry
+    exhaustively (every neighbour relation checked for symmetry, the `hexLine`/`hexToPixel`/
+    `pixelToHex` round-trips) and the `Level`/
+    `Pathfinder`/`FieldOfView`/`TileMap` integration together; the full existing suite (227
+    tests) and every example still build clean. Not wired into a new example this round - a
+    real Wesnoth-shaped mockup (item 28) is its own, separate piece of work once this landed,
+    not a requirement of landing it
 18. `mwg/render` — isometric and staggered projection, so any Tiled orientation loads directly
 19. ~~a performance pass across the render path: profile `ColorTransformBatcher` and
     `TileMap`'s chunk culling under load, and confirm nothing ever silently falls back from

@@ -1,27 +1,10 @@
 import { Path } from 'rot-js';
-import type { Level } from './Level.ts';
+import { neighbourOffsets, type Level } from './Level.ts';
 import type { FieldOfView } from './FieldOfView.ts';
 
-/** the four or eight cell offsets around a point, shared by every neighbour-walking algorithm here */
-export function neighbourOffsets(topology: 4 | 8): ReadonlyArray<readonly [number, number]> {
-	return topology === 4
-		? [
-				[0, -1],
-				[1, 0],
-				[0, 1],
-				[-1, 0],
-			]
-		: [
-				[0, -1],
-				[1, -1],
-				[1, 0],
-				[1, 1],
-				[0, 1],
-				[-1, 1],
-				[-1, 0],
-				[-1, -1],
-			];
-}
+/** re-exported here for anyone already importing it from `Pathfinder` - it now lives on
+ * `Level`, which is what needs it for a square level's own `neighbors()` */
+export { neighbourOffsets };
 
 export interface Step {
 	x: number;
@@ -72,6 +55,24 @@ export class Pathfinder {
 	 * should exclude the target itself from `blocked` if it means to walk into it.
 	 */
 	find(from: Step, to: Step, options: PathOptions = {}): Step[] {
+		//rot.js's own A* is square-grid only (its topology option is the 4/8 offsets above,
+		//nothing hex-shaped); a hex Level instead walks a Dijkstra map one descend() at a
+		//time, which needs no topology-specific search of its own since distanceMap and
+		//descend already go through Level.neighbors
+		if (this.level.shape === 'hex') {
+			const distances = this.distanceMap(to, options);
+			const steps: Step[] = [];
+			let current = from;
+			for (let guard = 0; guard < this.level.cellCount; guard++) {
+				const next = this.descend(current, distances, options);
+				if (!next) break;
+				steps.push(next);
+				if (next.x === to.x && next.y === to.y) break;
+				current = next;
+			}
+			return steps;
+		}
+
 		const astar = new Path.AStar(to.x, to.y, this.passable(options), {
 			topology: options.topology ?? 8,
 		});
@@ -101,8 +102,6 @@ export class Pathfinder {
 
 		if (!passable(to.x, to.y)) return distances;
 
-		const neighbours = neighbourOffsets(options.topology ?? 8);
-
 		//a plain breadth-first flood, since every step costs the same
 		const queue: number[] = [this.level.index(to.x, to.y)];
 		distances[queue[0]] = 0;
@@ -113,12 +112,10 @@ export class Pathfinder {
 			const cy = this.level.yOf(cell);
 			const next = distances[cell] + 1;
 
-			for (const [dx, dy] of neighbours) {
-				const nx = cx + dx;
-				const ny = cy + dy;
-				if (!passable(nx, ny)) continue;
+			for (const n of this.level.neighbors(cx, cy, options.topology ?? 8)) {
+				if (!passable(n.x, n.y)) continue;
 
-				const neighbour = this.level.index(nx, ny);
+				const neighbour = this.level.index(n.x, n.y);
 				if (distances[neighbour] !== -1) continue;
 
 				distances[neighbour] = next;
@@ -135,24 +132,16 @@ export class Pathfinder {
 		const here = distances[this.level.index(from.x, from.y)];
 		if (here <= 0) return null;
 
-		const topology = options.topology ?? 8;
 		let best: Step | null = null;
 		let bestDistance = here;
 
-		for (let dy = -1; dy <= 1; dy++) {
-			for (let dx = -1; dx <= 1; dx++) {
-				if (dx === 0 && dy === 0) continue;
-				if (topology === 4 && dx !== 0 && dy !== 0) continue;
+		for (const n of this.level.neighbors(from.x, from.y, options.topology ?? 8)) {
+			if (!passable(n.x, n.y)) continue;
 
-				const nx = from.x + dx;
-				const ny = from.y + dy;
-				if (!passable(nx, ny)) continue;
-
-				const distance = distances[this.level.index(nx, ny)];
-				if (distance !== -1 && distance < bestDistance) {
-					bestDistance = distance;
-					best = { x: nx, y: ny };
-				}
+			const distance = distances[this.level.index(n.x, n.y)];
+			if (distance !== -1 && distance < bestDistance) {
+				bestDistance = distance;
+				best = n;
 			}
 		}
 
@@ -172,7 +161,6 @@ export class Pathfinder {
 		const passable = this.passable(options);
 		if (!passable(from.x, from.y)) return [];
 
-		const neighbours = neighbourOffsets(options.topology ?? 8);
 		const cameFrom = new Map<number, Step>();
 		const visited = new Set<number>([this.level.index(from.x, from.y)]);
 		const queue: Step[] = [from];
@@ -183,8 +171,7 @@ export class Pathfinder {
 				return this.reconstruct(cameFrom, current);
 			}
 
-			for (const [dx, dy] of neighbours) {
-				const next = { x: current.x + dx, y: current.y + dy };
+			for (const next of this.level.neighbors(current.x, current.y, options.topology ?? 8)) {
 				if (!passable(next.x, next.y)) continue;
 
 				const index = this.level.index(next.x, next.y);

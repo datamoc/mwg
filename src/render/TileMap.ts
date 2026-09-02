@@ -2,6 +2,7 @@ import { Container } from 'pixi.js';
 import { TintedSprite } from './TintedSprite.ts';
 import type { SpriteSheet } from './SpriteSheet.ts';
 import type { Camera } from './Camera.ts';
+import { hexToPixel, pixelToHex } from '../core/Hex.ts';
 
 /** the frame value meaning "nothing here"; a cell holding it gets no sprite at all */
 export const EMPTY = -1;
@@ -16,6 +17,9 @@ export interface TileMapOptions {
 	/** in world units; defaults to the sheet's frame size, which is the usual case */
 	tileWidth?: number;
 	tileHeight?: number;
+
+	/** flat-top hex instead of square, cell for cell the same shape a `Level` can be given */
+	shape?: 'square' | 'hex';
 
 	/**
 	 * Tiles per chunk, per side.
@@ -50,6 +54,7 @@ export class TileMap extends Container {
 	readonly heightInTiles: number;
 	readonly tileWidth: number;
 	readonly tileHeight: number;
+	readonly shape: 'square' | 'hex';
 
 	private sheet: SpriteSheet;
 	private layers: Layer[] = [];
@@ -73,6 +78,7 @@ export class TileMap extends Container {
 		this.sheet = options.sheet;
 		this.tileWidth = options.tileWidth ?? options.sheet.frameWidth;
 		this.tileHeight = options.tileHeight ?? options.sheet.frameHeight;
+		this.shape = options.shape ?? 'square';
 
 		this.chunkSize = options.chunkSize ?? 16;
 		this.chunkColumns = Math.ceil(this.widthInTiles / this.chunkSize);
@@ -89,11 +95,16 @@ export class TileMap extends Container {
 
 	/** world size, for setting camera bounds */
 	get worldWidth(): number {
-		return this.widthInTiles * this.tileWidth;
+		if (this.shape === 'square') return this.widthInTiles * this.tileWidth;
+		//columns overlap three-quarters of a tile each; the last column still needs its
+		//full width past where the previous one started
+		return this.widthInTiles <= 0 ? 0 : (this.widthInTiles - 1) * this.tileWidth * 0.75 + this.tileWidth;
 	}
 
 	get worldHeight(): number {
-		return this.heightInTiles * this.tileHeight;
+		if (this.shape === 'square') return this.heightInTiles * this.tileHeight;
+		//odd columns sit half a tile lower, so the map is that much taller than the rows alone
+		return this.heightInTiles * this.tileHeight + this.tileHeight / 2;
 	}
 
 	inside(x: number, y: number): boolean {
@@ -159,10 +170,19 @@ export class TileMap extends Container {
 		return Math.floor(y / this.chunkSize) * this.chunkColumns + Math.floor(x / this.chunkSize);
 	}
 
+	/** top-left corner of a cell, in world units - where a sprite anchored at (0,0) belongs */
+	private cellOrigin(x: number, y: number): { x: number; y: number } {
+		if (this.shape === 'square') return { x: x * this.tileWidth, y: y * this.tileHeight };
+
+		const center = hexToPixel(x, y, this.tileWidth, this.tileHeight);
+		return { x: center.x - this.tileWidth / 2, y: center.y - this.tileHeight / 2 };
+	}
+
 	private buildSprite(layer: Layer, x: number, y: number, frame: number): TintedSprite {
 		const sprite = new TintedSprite(this.sheet.get(frame));
-		sprite.x = x * this.tileWidth;
-		sprite.y = y * this.tileHeight;
+		const origin = this.cellOrigin(x, y);
+		sprite.x = origin.x;
+		sprite.y = origin.y;
 
 		const cell = this.index(x, y);
 		sprite.tint = this.cellTint[cell];
@@ -249,11 +269,13 @@ export class TileMap extends Container {
 
 	/** world point to tile coordinates */
 	toTile(worldX: number, worldY: number): { x: number; y: number } {
+		if (this.shape === 'hex') return pixelToHex(worldX, worldY, this.tileWidth, this.tileHeight);
 		return { x: Math.floor(worldX / this.tileWidth), y: Math.floor(worldY / this.tileHeight) };
 	}
 
 	/** the centre of a tile, in world units — where a character standing on it belongs */
 	tileCenter(x: number, y: number): { x: number; y: number } {
+		if (this.shape === 'hex') return hexToPixel(x, y, this.tileWidth, this.tileHeight);
 		return { x: (x + 0.5) * this.tileWidth, y: (y + 0.5) * this.tileHeight };
 	}
 
@@ -267,9 +289,13 @@ export class TileMap extends Container {
 	cull(camera: Camera): void {
 		const view = camera.view;
 
+		//a hex column steps by three-quarters of a tile, not a whole one; using that as the
+		//divisor keeps the chunk estimate conservative rather than too tight
+		const columnStep = this.shape === 'hex' ? this.tileWidth * 0.75 : this.tileWidth;
+
 		//a one-chunk margin, so a chunk is switched on slightly before it is needed
-		const minChunkX = Math.floor(view.x / this.tileWidth / this.chunkSize) - 1;
-		const maxChunkX = Math.floor((view.x + view.width) / this.tileWidth / this.chunkSize) + 1;
+		const minChunkX = Math.floor(view.x / columnStep / this.chunkSize) - 1;
+		const maxChunkX = Math.floor((view.x + view.width) / columnStep / this.chunkSize) + 1;
 		const minChunkY = Math.floor(view.y / this.tileHeight / this.chunkSize) - 1;
 		const maxChunkY = Math.floor((view.y + view.height) / this.tileHeight / this.chunkSize) + 1;
 

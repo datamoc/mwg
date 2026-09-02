@@ -123,6 +123,17 @@ test('extra kinds are appended after wall/floor, for a game to place its own ter
 	assert.equal(level.passable(room.left + 1, room.top + 1), true);
 });
 
+test('Level.neighbors gives 4 or 8 cells for a square level, 6 for a hex one', () => {
+	const square = new Level(5, 5, [{ passable: true, transparent: true }], 0);
+	assert.equal(square.neighbors(2, 2, 4).length, 4);
+	assert.equal(square.neighbors(2, 2, 8).length, 8);
+
+	const hex = new Level(5, 5, [{ passable: true, transparent: true }], 0, 'hex');
+	assert.equal(hex.neighbors(2, 2).length, 6);
+	//topology is meaningless for a hex level and must not change the count
+	assert.equal(hex.neighbors(2, 2, 4).length, 6);
+});
+
 test('the border is always solid', () => {
 	reset();
 	const level = generateDungeon({ width: 50, height: 30 });

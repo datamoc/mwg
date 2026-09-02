@@ -1,3 +1,5 @@
+import { hexNeighbors } from '../core/Hex.ts';
+
 /**
  * The map a roguelike reasons about.
  *
@@ -6,6 +8,30 @@
  * appearance. A game maps its own terrain kinds onto these two flags, so it can invent
  * whatever terrain it likes without the framework knowing about lava or bookshelves.
  */
+
+/** the grid a `Level` reasons over - a parameter, not a forked class, per the roadmap */
+export type LevelShape = 'square' | 'hex';
+
+/** the four or eight cell offsets around a point, shared by every square-grid algorithm here */
+export function neighbourOffsets(topology: 4 | 8): ReadonlyArray<readonly [number, number]> {
+	return topology === 4
+		? [
+				[0, -1],
+				[1, 0],
+				[0, 1],
+				[-1, 0],
+			]
+		: [
+				[0, -1],
+				[1, -1],
+				[1, 0],
+				[1, 1],
+				[0, 1],
+				[-1, 1],
+				[-1, 0],
+				[-1, -1],
+			];
+}
 
 export interface TerrainKind {
 	/** can a creature walk onto it */
@@ -29,6 +55,7 @@ export interface Rect {
 export class Level {
 	readonly width: number;
 	readonly height: number;
+	readonly shape: LevelShape;
 
 	/** terrain id per cell, indexing into `kinds` */
 	readonly terrain: Uint8Array;
@@ -38,8 +65,9 @@ export class Level {
 	/** rooms the generator carved, for placing stairs, monsters and treasure */
 	rooms: Rect[] = [];
 
-	constructor(width: number, height: number, kinds: TerrainKind[], fill = 0) {
+	constructor(width: number, height: number, kinds: TerrainKind[], fill = 0, shape: LevelShape = 'square') {
 		this.width = width;
+		this.shape = shape;
 		this.height = height;
 		this.kinds = kinds;
 		this.terrain = new Uint8Array(width * height).fill(fill);
@@ -63,6 +91,19 @@ export class Level {
 
 	inside(x: number, y: number): boolean {
 		return x >= 0 && y >= 0 && x < this.width && y < this.height;
+	}
+
+	/**
+	 * The cells adjacent to `(x, y)` - six of them on a hex `Level`, four or eight on a
+	 * square one, regardless of which. This is the seam that lets `Pathfinder` and
+	 * `FieldOfView` work over either shape unchanged: they walk neighbours, and only this
+	 * method knows what a neighbour is.
+	 *
+	 * @param topology ignored on a hex `Level` - it only has the one neighbourhood shape
+	 */
+	neighbors(x: number, y: number, topology: 4 | 8 = 8): Array<{ x: number; y: number }> {
+		if (this.shape === 'hex') return hexNeighbors(x, y);
+		return neighbourOffsets(topology).map(([dx, dy]) => ({ x: x + dx, y: y + dy }));
 	}
 
 	/**

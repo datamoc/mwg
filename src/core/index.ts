@@ -9,3 +9,5 @@ export * as Input from './Input.ts';
 export { Generator } from './Random.ts';
 export { SaveSystem } from './Save.ts';
 export type { SaveMeta, SaveData, SaveStorage, SaveSystemOptions } from './Save.ts';
+export { hexNeighbors, hexDistance, hexLine, hexRange, hexToPixel, pixelToHex } from './Hex.ts';
+export type { HexCoord } from './Hex.ts';
