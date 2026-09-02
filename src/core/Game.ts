@@ -4,6 +4,23 @@ import { Signal } from './Signal.ts';
 import { registerColorTransform } from '../render/TintedSprite.ts';
 import * as Input from './Input.ts';
 
+const PIXEL_ART_CLASS = 'mwg-pixel-art';
+
+/**
+ * A class beats an inline `canvas.style.imageRendering` because Pixi's own `autoDensity`/
+ * `resizeTo` rewrite the canvas's `style` attribute wholesale (see `start()`); this rule
+ * lives in the CSSOM instead, in a stylesheet Pixi never touches, so it survives that.
+ * Injected once per page, however many `Game`s end up on it.
+ */
+function ensurePixelArtStylesheet(): void {
+	if (document.getElementById(PIXEL_ART_CLASS)) return;
+
+	const style = document.createElement('style');
+	style.id = PIXEL_ART_CLASS;
+	style.textContent = `.${PIXEL_ART_CLASS} { image-rendering: pixelated; }`;
+	document.head.appendChild(style);
+}
+
 export interface GameOptions {
 	/** the canvas to draw into; one is created and appended if omitted */
 	canvas?: HTMLCanvasElement;
@@ -20,7 +37,12 @@ export interface GameOptions {
 	 */
 	maxDelta?: number;
 
-	/** pixel art is never smoothed when scaled; set false for a game that is not */
+	/**
+	 * Pixel art is never smoothed when scaled - both inside the game (texture sampling)
+	 * and in the browser's own compositing of the canvas element onto the page, which is a
+	 * separate step and blurs on its own if left at the default. Set false for a game whose
+	 * art is not pixel art and should smooth when magnified.
+	 */
 	pixelArt?: boolean;
 
 	/**
@@ -72,7 +94,13 @@ export class Game {
 		if (this.options.pixelArt) {
 			//set here rather than in start(), because textures are usually loaded before
 			//the game starts and each one takes the default that was current when it was
-			//created. nearest sampling is what keeps magnified pixel art crisp.
+			//created. nearest sampling is what keeps magnified pixel art crisp - but only
+			//inside the game's own rendering; the browser then does a second, entirely
+			//separate resize when it composites the canvas element onto the page (its
+			//backing buffer is rarely the same size as its CSS display size, especially at
+			//a devicePixelRatio other than 1), and that step defaults to smooth
+			//interpolation regardless of anything Pixi does - see `start()` for the other
+			//half of this, since `app.init()` overwrites whatever style is set here.
 			TextureSource.defaultOptions.scaleMode = 'nearest';
 		}
 
@@ -117,6 +145,16 @@ export class Game {
 
 		if (!this.options.canvas.isConnected) {
 			document.body.appendChild(this.options.canvas);
+		}
+
+		//`autoDensity` (and `resizeTo`, on its own asynchronous schedule) rewrite the canvas
+		//element's `style` attribute wholesale to keep its CSS size matching the backing
+		//buffer - which loses anything else set through `canvas.style`, including right
+		//after `init` and again from inside pixi's own 'resize' event. A class, rather than
+		//an inline style, lives in a different attribute entirely and survives that.
+		if (this.options.pixelArt) {
+			ensurePixelArtStylesheet();
+			this.options.canvas.classList.add(PIXEL_ART_CLASS);
 		}
 
 		//`screen` is the logical size in css pixels; `renderer.width` is the backing store,

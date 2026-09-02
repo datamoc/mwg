@@ -17,9 +17,12 @@ Everything below has shipped on `main`; no version has been tagged yet.
 - `Game.step(dt)`, to drive a frame by hand — needed because Chrome throttles
   `requestAnimationFrame` in a background tab.
 - `SaveSystem`: named, versioned save slots over `localStorage`, with an in-memory fallback.
+- `Hex`: cube-coordinate hex grid math (`hexNeighbors`, `hexDistance`, `hexLine`, `hexRange`,
+  `hexToPixel`/`pixelToHex`), orientation-agnostic and shared by `roguelike` and `render`.
 
 **Render**
-- `Camera`, `TileMap` (chunked and culled against the camera), `SpriteSheet`, `AnimatedSprite`,
+- `Camera`, `TileMap` (chunked and culled against the camera; `square`, `hex`, `isometric`, and
+  `staggered` projections, all culled through one shape-agnostic bounding-box method), `SpriteSheet`, `AnimatedSprite`,
   `TintedSprite`, and `ColorTransformBatcher` — a per-sprite multiply-and-add colour transform
   in the batch shader, which Pixi's built-in tint cannot do.
 - `LayeredSprite`, for characters built from swappable parts (skin, hair, garment).
@@ -55,6 +58,11 @@ Everything below has shipped on `main`; no version has been tagged yet.
   `EquipmentSlots` (ties an item's modifiers to a stat block on equip/unequip),
   `Progression`/`powerCurve` (levels and experience over a replaceable growth curve),
   `Inventory` (stacking, weight, containers), `skillCheck`.
+- `SkillPoints`: a per-stat spendable ledger over a `StatBlock`, with a rising cost-per-rank
+  callback and an optional cap — deliberately not a wrapper around `Progression`, just bridged
+  to it by the points a level-up grants.
+- `craft(inventory, recipe)`: consumes every ingredient and adds the result atomically — an
+  ingredient shortfall or a result that doesn't fit rolls back everything already removed.
 
 **Roguelike**
 - `FieldOfView` (visible/explored/remembered), `Pathfinder` (A*, a Dijkstra distance map,
@@ -75,9 +83,12 @@ Everything below has shipped on `main`; no version has been tagged yet.
   `rollEncounter`.
 
 **RPG**
-- `loadTiledMap` (orthogonal, single embedded tileset, uncompressed CSV layers), `GameState`
+- `loadTiledMap` (orthogonal, single embedded tileset, uncompressed CSV layers; isometric and
+  staggered orientations too, each mapped to the matching `TileMap` shape), `GameState`
   (switches/variables), `MapEvent`/`activePage` (last matching page wins), `EventRunner`,
   `GridMover` (tweened tile movement, a walk cycle, and `turnTo` for facing without moving).
+- `QuestLog`: staged quest/mission definitions (`canStart`/`start`/`advance`/`status`), with
+  `toJSON`/`fromJSON` for `SaveSystem`.
 
 **Stage**
 - `DialogueStage` (backdrop, characters standing in front of it, expressions, speaker focus)
@@ -118,3 +129,10 @@ Everything below has shipped on `main`; no version has been tagged yet.
 - A vault's floor and treasure (behind a secret door) were rendering through the "solid" wall
   before the door was ever found, because the vault cell was carved eagerly instead of
   staying genuinely undiscovered rock until the door opened.
+- Sprites looked blurry under `pixelArt: true` on a hidpi display, even though nearest-neighbour
+  texture sampling was already on. The browser does a second, separate resize compositing the
+  canvas element onto the page (its backing buffer is rarely the same size as its CSS display
+  size), and that step defaults to smoothing regardless of anything Pixi does. Fixed by adding
+  a `.mwg-pixel-art { image-rendering: pixelated }` class to the canvas — a class survives
+  `autoDensity`/`resizeTo` rewriting the canvas's `style` attribute wholesale, where an inline
+  style did not.
