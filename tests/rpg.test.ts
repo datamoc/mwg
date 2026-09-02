@@ -161,17 +161,46 @@ test('loadTiledMap strips Tiled flip/rotation flags from a gid', () => {
 	assert.equal(map.getTile('ground', 0, 0), 1);
 });
 
-test('loadTiledMap refuses a non-orthogonal orientation', () => {
+test('loadTiledMap reads isometric and staggered orientations, choosing the matching TileMap shape', () => {
+	const base = {
+		width: 2,
+		height: 2,
+		tilewidth: 16,
+		tileheight: 16,
+		tilesets: [{ firstgid: 1 }],
+		layers: [],
+	};
+
+	assert.equal(loadTiledMap({ ...base, orientation: 'isometric' }, tinyTilesetSheet()).map.shape, 'isometric');
+	assert.equal(loadTiledMap({ ...base, orientation: 'staggered' }, tinyTilesetSheet()).map.shape, 'staggered');
+});
+
+test('loadTiledMap refuses an orientation it does not read yet', () => {
 	const data: TiledMapData = {
 		width: 1,
 		height: 1,
 		tilewidth: 16,
 		tileheight: 16,
-		orientation: 'isometric',
+		orientation: 'hexagonal',
 		tilesets: [{ firstgid: 1 }],
 		layers: [],
 	};
 	assert.throws(() => loadTiledMap(data, tinyTilesetSheet()));
+});
+
+test('loadTiledMap refuses a staggered map on an axis or index it does not read yet', () => {
+	const base = {
+		width: 1,
+		height: 1,
+		tilewidth: 16,
+		tileheight: 16,
+		orientation: 'staggered',
+		tilesets: [{ firstgid: 1 }],
+		layers: [],
+	};
+
+	assert.throws(() => loadTiledMap({ ...base, staggeraxis: 'x' }, tinyTilesetSheet()));
+	assert.throws(() => loadTiledMap({ ...base, staggerindex: 'even' }, tinyTilesetSheet()));
 });
 
 test('loadTiledMap refuses more than one tileset', () => {

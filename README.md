@@ -298,9 +298,9 @@ rather than showing a raw key to the player.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** 18 → 37 → 39 → 40 → 42 → 32 → 31 → 34 → 33 → 35 →
-36 → 28 → 41 → 30 → 38 (17 has since shipped, and is no longer part of this ordering). Items
-37 (quests) and 39 (skills)
+**Priority order among what's still open:** 37 → 39 → 40 → 42 → 32 → 31 → 34 → 33 → 35 →
+36 → 28 → 41 → 30 → 38 (17 and 18 have since shipped, and are no longer part of this
+ordering). Items 37 (quests) and 39 (skills)
 move up from their append position - both are small, unblocked `mwg/actors`/`mwg/rpg`
 capabilities that already-committed reference games (ADOM's own row names quests explicitly;
 levelling is implicit in nearly all of them) demand directly, unlike several later entries
@@ -333,7 +333,23 @@ prose, rather than in the list's own sequence.
     tests) and every example still build clean. Not wired into a new example this round - a
     real Wesnoth-shaped mockup (item 28) is its own, separate piece of work once this landed,
     not a requirement of landing it
-18. `mwg/render` — isometric and staggered projection, so any Tiled orientation loads directly
+18. ~~`mwg/render` — isometric and staggered projection, so any Tiled orientation loads
+    directly~~ - unlike hex, isometric and staggered do not change which cells are
+    neighbours (still an ordinary square grid, four or eight directions, whatever a game's
+    `Level` already is) - only where a cell draws, which is why only `TileMap` gained the
+    option and `Level` did not need one. Every place `TileMap` converted a grid position to
+    a pixel one and back is now one pair of methods (`projectedCenter`/`projectedTile`)
+    switching on shape, including `cull()` - rewritten to map the camera's four screen
+    corners into tile space and take their bounding box, which works unchanged for any of
+    the four projections rather than needing its own per-shape estimate (a rectangle's
+    image under an affine projection is a parallelogram, and the box around its four
+    corners always contains it, whichever shape drew it). `loadTiledMap` reads Tiled's
+    `orientation` field directly into the matching `TileMap` shape now, refusing only what
+    is still genuinely unsupported (Tiled's hexagonal orientation - a different offset
+    convention than `mwg`'s own flat-top scheme - and any staggered axis/index besides the
+    Y-axis, odd-row default). 17 unit tests cover the projection math (round-trips, bounding
+    boxes, `cull()` never throwing) and `loadTiledMap`'s new orientation handling; the full
+    suite (238 tests), the library build and every example still build clean
 19. ~~a performance pass across the render path: profile `ColorTransformBatcher` and
     `TileMap`'s chunk culling under load, and confirm nothing ever silently falls back from
     WebGL/WebGPU to a canvas 2D renderer~~ — measured directly (`renderer.name` inspected,

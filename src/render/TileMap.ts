@@ -18,8 +18,17 @@ export interface TileMapOptions {
 	tileWidth?: number;
 	tileHeight?: number;
 
-	/** flat-top hex instead of square, cell for cell the same shape a `Level` can be given */
-	shape?: 'square' | 'hex';
+	/**
+	 * How a cell's grid position becomes a pixel position.
+	 *
+	 * `'hex'` is the one that also changes which cells are neighbours - it is the same
+	 * `shape` a `Level` can be given, and the two must agree for a hex map to make sense.
+	 * `'isometric'` and `'staggered'` are pixel-only: the grid underneath is still an
+	 * ordinary square one (four or eight neighbours, whatever a game's `Level` already is),
+	 * this only changes where each cell draws - which is the whole difference between them
+	 * and hex, and why `Level` has no equivalent option for either.
+	 */
+	shape?: 'square' | 'hex' | 'isometric' | 'staggered';
 
 	/**
 	 * Tiles per chunk, per side.
@@ -54,7 +63,7 @@ export class TileMap extends Container {
 	readonly heightInTiles: number;
 	readonly tileWidth: number;
 	readonly tileHeight: number;
-	readonly shape: 'square' | 'hex';
+	readonly shape: 'square' | 'hex' | 'isometric' | 'staggered';
 
 	private sheet: SpriteSheet;
 	private layers: Layer[] = [];
@@ -95,16 +104,36 @@ export class TileMap extends Container {
 
 	/** world size, for setting camera bounds */
 	get worldWidth(): number {
-		if (this.shape === 'square') return this.widthInTiles * this.tileWidth;
-		//columns overlap three-quarters of a tile each; the last column still needs its
-		//full width past where the previous one started
-		return this.widthInTiles <= 0 ? 0 : (this.widthInTiles - 1) * this.tileWidth * 0.75 + this.tileWidth;
+		switch (this.shape) {
+			case 'square':
+				return this.widthInTiles * this.tileWidth;
+			case 'hex':
+				//columns overlap three-quarters of a tile each; the last column still needs
+				//its full width past where the previous one started
+				return this.widthInTiles <= 0 ? 0 : (this.widthInTiles - 1) * this.tileWidth * 0.75 + this.tileWidth;
+			case 'isometric':
+				//a diamond spanning every row and column, at their combined width
+				return (this.widthInTiles + this.heightInTiles) * (this.tileWidth / 2);
+			case 'staggered':
+				//every other row is pushed half a tile right, so the map is that much wider
+				return this.widthInTiles * this.tileWidth + this.tileWidth / 2;
+		}
 	}
 
 	get worldHeight(): number {
-		if (this.shape === 'square') return this.heightInTiles * this.tileHeight;
-		//odd columns sit half a tile lower, so the map is that much taller than the rows alone
-		return this.heightInTiles * this.tileHeight + this.tileHeight / 2;
+		switch (this.shape) {
+			case 'square':
+				return this.heightInTiles * this.tileHeight;
+			case 'hex':
+				//odd columns sit half a tile lower, so the map is that much taller than the
+				//rows alone
+				return this.heightInTiles * this.tileHeight + this.tileHeight / 2;
+			case 'isometric':
+				return (this.widthInTiles + this.heightInTiles) * (this.tileHeight / 2);
+			case 'staggered':
+				//rows are packed at half height, staggered brick-fashion
+				return this.heightInTiles * (this.tileHeight / 2) + this.tileHeight / 2;
+		}
 	}
 
 	inside(x: number, y: number): boolean {
@@ -170,11 +199,53 @@ export class TileMap extends Container {
 		return Math.floor(y / this.chunkSize) * this.chunkColumns + Math.floor(x / this.chunkSize);
 	}
 
+	/** the centre of a cell's tile, before the projections below settle on a shared contract */
+	private projectedCenter(x: number, y: number): { x: number; y: number } {
+		switch (this.shape) {
+			case 'square':
+				return { x: (x + 0.5) * this.tileWidth, y: (y + 0.5) * this.tileHeight };
+			case 'hex':
+				return hexToPixel(x, y, this.tileWidth, this.tileHeight);
+			case 'isometric':
+				//the whole diamond is shifted right by the tallest possible row offset, so
+				//every tile lands at a non-negative pixel position
+				return {
+					x: (x - y + (this.heightInTiles - 1)) * (this.tileWidth / 2) + this.tileWidth / 2,
+					y: (x + y) * (this.tileHeight / 2) + this.tileHeight / 2,
+				};
+			case 'staggered':
+				//every other row (by convention, the odd ones) is pushed half a tile right;
+				//rows are packed at half height so alternating rows still tile seamlessly
+				return {
+					x: x * this.tileWidth + (y & 1) * (this.tileWidth / 2) + this.tileWidth / 2,
+					y: y * (this.tileHeight / 2) + this.tileHeight / 2,
+				};
+		}
+	}
+
+	/** the cell under a pixel position - the inverse of `projectedCenter` */
+	private projectedTile(px: number, py: number): { x: number; y: number } {
+		switch (this.shape) {
+			case 'square':
+				return { x: Math.floor(px / this.tileWidth), y: Math.floor(py / this.tileHeight) };
+			case 'hex':
+				return pixelToHex(px, py, this.tileWidth, this.tileHeight);
+			case 'isometric': {
+				const rx = (px - this.tileWidth / 2) / (this.tileWidth / 2) - (this.heightInTiles - 1);
+				const ry = (py - this.tileHeight / 2) / (this.tileHeight / 2);
+				return { x: Math.round((rx + ry) / 2), y: Math.round((ry - rx) / 2) };
+			}
+			case 'staggered': {
+				const y = Math.round((py - this.tileHeight / 2) / (this.tileHeight / 2));
+				const x = Math.round((px - this.tileWidth / 2 - (y & 1) * (this.tileWidth / 2)) / this.tileWidth);
+				return { x, y };
+			}
+		}
+	}
+
 	/** top-left corner of a cell, in world units - where a sprite anchored at (0,0) belongs */
 	private cellOrigin(x: number, y: number): { x: number; y: number } {
-		if (this.shape === 'square') return { x: x * this.tileWidth, y: y * this.tileHeight };
-
-		const center = hexToPixel(x, y, this.tileWidth, this.tileHeight);
+		const center = this.projectedCenter(x, y);
 		return { x: center.x - this.tileWidth / 2, y: center.y - this.tileHeight / 2 };
 	}
 
@@ -269,14 +340,12 @@ export class TileMap extends Container {
 
 	/** world point to tile coordinates */
 	toTile(worldX: number, worldY: number): { x: number; y: number } {
-		if (this.shape === 'hex') return pixelToHex(worldX, worldY, this.tileWidth, this.tileHeight);
-		return { x: Math.floor(worldX / this.tileWidth), y: Math.floor(worldY / this.tileHeight) };
+		return this.projectedTile(worldX, worldY);
 	}
 
 	/** the centre of a tile, in world units — where a character standing on it belongs */
 	tileCenter(x: number, y: number): { x: number; y: number } {
-		if (this.shape === 'hex') return hexToPixel(x, y, this.tileWidth, this.tileHeight);
-		return { x: (x + 0.5) * this.tileWidth, y: (y + 0.5) * this.tileHeight };
+		return this.projectedCenter(x, y);
 	}
 
 	/**
@@ -289,15 +358,27 @@ export class TileMap extends Container {
 	cull(camera: Camera): void {
 		const view = camera.view;
 
-		//a hex column steps by three-quarters of a tile, not a whole one; using that as the
-		//divisor keeps the chunk estimate conservative rather than too tight
-		const columnStep = this.shape === 'hex' ? this.tileWidth * 0.75 : this.tileWidth;
+		//the screen's four corners, mapped into tile space through whichever projection this
+		//map uses. A projection is affine, so a rectangle's image (or preimage) is a
+		//parallelogram, and the axis-aligned box around those four points always fully
+		//contains it - the same reasoning works unchanged for square, hex, isometric or
+		//staggered, so nothing here needs to know which one it is
+		const corners = [
+			this.projectedTile(view.x, view.y),
+			this.projectedTile(view.x + view.width, view.y),
+			this.projectedTile(view.x, view.y + view.height),
+			this.projectedTile(view.x + view.width, view.y + view.height),
+		];
+		const tileMinX = Math.min(...corners.map((c) => c.x));
+		const tileMaxX = Math.max(...corners.map((c) => c.x));
+		const tileMinY = Math.min(...corners.map((c) => c.y));
+		const tileMaxY = Math.max(...corners.map((c) => c.y));
 
 		//a one-chunk margin, so a chunk is switched on slightly before it is needed
-		const minChunkX = Math.floor(view.x / columnStep / this.chunkSize) - 1;
-		const maxChunkX = Math.floor((view.x + view.width) / columnStep / this.chunkSize) + 1;
-		const minChunkY = Math.floor(view.y / this.tileHeight / this.chunkSize) - 1;
-		const maxChunkY = Math.floor((view.y + view.height) / this.tileHeight / this.chunkSize) + 1;
+		const minChunkX = Math.floor(tileMinX / this.chunkSize) - 1;
+		const maxChunkX = Math.floor(tileMaxX / this.chunkSize) + 1;
+		const minChunkY = Math.floor(tileMinY / this.chunkSize) - 1;
+		const maxChunkY = Math.floor(tileMaxY / this.chunkSize) + 1;
 
 		for (let cy = 0; cy < this.chunkRows; cy++) {
 			const rowVisible = cy >= minChunkY && cy <= maxChunkY;

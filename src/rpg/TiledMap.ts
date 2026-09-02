@@ -2,12 +2,14 @@ import { TileMap, EMPTY } from '../render/TileMap.ts';
 import type { SpriteSheet } from '../render/SpriteSheet.ts';
 
 /**
- * The subset of Tiled's JSON export this loader reads: a single embedded tileset, an
- * orthogonal grid, and uncompressed tile-layer data. That covers a map authored by hand in
- * Tiled for one game's own tileset, which is most of them. Multiple tilesets,
- * base64/compressed layer data, and the other orientations Tiled supports (isometric, hex)
- * are on the roadmap rather than read here yet - each throws a clear error naming what was
- * found, rather than silently loading something wrong.
+ * The subset of Tiled's JSON export this loader reads: a single embedded tileset, and
+ * uncompressed tile-layer data, in any of orthogonal, isometric or staggered orientation -
+ * `TileMap`'s own `shape` option is what actually draws the difference, this only has to
+ * pick the right one. Multiple tilesets, base64/compressed layer data, and Tiled's
+ * hexagonal orientation (a different offset/axial convention than `mwg`'s own flat-top
+ * scheme - see `mwg/core`'s `Hex.ts`) are still on the roadmap rather than read here yet -
+ * each throws a clear error naming what was found, rather than silently loading something
+ * wrong.
  *
  * Load the JSON itself with `mwg/assets`'s `Resources.get`, same as any other JSON asset;
  * this function only does the parsing.
@@ -18,6 +20,9 @@ export interface TiledMapData {
 	tilewidth: number;
 	tileheight: number;
 	orientation?: string;
+	/** staggered maps only - which axis alternates, and whether the odd or even one shifts */
+	staggeraxis?: string;
+	staggerindex?: string;
 	tilesets: Array<{ firstgid: number }>;
 	layers: TiledLayer[];
 }
@@ -54,16 +59,32 @@ export interface LoadedTiledMap {
  * frame size - `SpriteSheet.grid(path, data.tilewidth, data.tileheight)` is the usual way to
  * get one, since the tileset image is loaded and cut like any other asset.
  */
+const SHAPE_BY_ORIENTATION: Record<string, 'square' | 'isometric' | 'staggered'> = {
+	orthogonal: 'square',
+	isometric: 'isometric',
+	staggered: 'staggered',
+};
+
 export function loadTiledMap(data: TiledMapData, sheet: SpriteSheet): LoadedTiledMap {
-	if ((data.orientation ?? 'orthogonal') !== 'orthogonal') {
-		throw new Error(`loadTiledMap only reads orthogonal maps right now, this one is "${data.orientation}"`);
+	const orientation = data.orientation ?? 'orthogonal';
+	const shape = SHAPE_BY_ORIENTATION[orientation];
+	if (!shape) {
+		throw new Error(`loadTiledMap does not read "${orientation}" maps yet`);
+	}
+	if (shape === 'staggered' && (data.staggeraxis ?? 'y') !== 'y') {
+		throw new Error(`loadTiledMap only reads Y-axis staggered maps right now, this one is staggered on "${data.staggeraxis}"`);
+	}
+	if (shape === 'staggered' && (data.staggerindex ?? 'odd') !== 'odd') {
+		throw new Error(
+			`loadTiledMap only reads odd-index staggered maps right now, this one staggers "${data.staggerindex}"`
+		);
 	}
 	if (data.tilesets.length !== 1) {
 		throw new Error(`loadTiledMap only reads a single tileset right now, this map has ${data.tilesets.length}`);
 	}
 
 	const firstgid = data.tilesets[0].firstgid;
-	const map = new TileMap({ width: data.width, height: data.height, sheet });
+	const map = new TileMap({ width: data.width, height: data.height, sheet, shape });
 	const objects: LoadedTiledMap['objects'] = [];
 
 	for (const layer of data.layers) {
