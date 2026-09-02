@@ -48,7 +48,8 @@ class MemoryStorage implements SaveStorage {
 	}
 }
 
-function defaultStorage(): SaveStorage {
+/** `localStorage` where it exists, the in-memory fallback where it does not (including `file://`) */
+export function defaultStorage(): SaveStorage {
 	if (typeof localStorage === 'undefined') return new MemoryStorage();
 
 	return {
