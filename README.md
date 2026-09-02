@@ -298,8 +298,8 @@ rather than showing a raw key to the player.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** 39 → 40 → 42 → 32 → 31 → 34 → 33 → 35 →
-36 → 28 → 41 → 30 → 38 (17, 18 and 37 have since shipped, and are no longer part of this
+**Priority order among what's still open:** 40 → 42 → 32 → 31 → 34 → 33 → 35 →
+36 → 28 → 41 → 30 → 38 (17, 18, 37 and 39 have since shipped, and are no longer part of this
 ordering). Items 37 (quests) and 39 (skills)
 move up from their append position - both are small, unblocked `mwg/actors`/`mwg/rpg`
 capabilities that already-committed reference games (ADOM's own row names quests explicitly;
@@ -529,13 +529,18 @@ prose, rather than in the list's own sequence.
     layering a different one over or instead of it, and resuming exactly where play left off
     once it reports back a result. No specific minigame picked; logged at low priority per
     the roadmap process below, same as items 28 and 30
-39. `mwg/actors` — skills and competencies as levelling spends, not a new storage primitive:
-    `StatBlock` already holds any named stat a game invents, `lockpicking` or `persuasion`
-    exactly as well as `strength`, so nothing new is needed to *store* a skill. What is
-    missing is the bridge from `Progression` to it - gaining a level grants no points today,
-    and there is no allocate-a-point-into-a-named-stat helper with the usual rules a skill
-    spend wants (a cap, a cost that rises per rank already invested). The gap is that seam,
-    not a skill tree engine
+39. ~~`mwg/actors` — skills and competencies as levelling spends, not a new storage
+    primitive~~ - `SkillPoints` is deliberately not a wrapper around `Progression`: a game
+    grants points however it likes (`grant(levelsGained)` after `Progression.addExperience`
+    returns positive, a quest reward, a trainer NPC), and `spend(stat)` raises that stat's
+    *base* value on a `StatBlock` by one rank, refusing when a cap is reached or the ledger
+    cannot afford the rising cost of the next rank - both configurable per stat via
+    callbacks. `StatBlock` already held the storage; this is only the ledger and the spend
+    rule, the same size of primitive `skillCheck` already is. 10 unit tests cover the ledger,
+    caps, rising costs, and a real `Progression` pairing; one of them caught a real bug
+    before it shipped - `spend` was calling the cost callback twice per spend (once inside
+    `canSpend`, again to charge it), harmless for a pure function but wrong for a game with
+    a costly or side-effecting one, fixed to compute the cost exactly once
 40. `mwg/actors` — crafting: a recipe (named ingredients and quantities, one result) resolved
     against an `Inventory` - checked, consumed, and the result added in one call, the same
     small-focused-function shape as `skillCheck` rather than a whole crafting subsystem.
