@@ -664,33 +664,47 @@ Items 53-56 were requested directly, checking `mwg/battle` (the "Pokémon-shaped
 capability spec above already names) against what a real Pokémon-like needs beyond what it
 already has - species/stats/party/type-matrix/turn-order/evolution. No formula, number or
 mechanic from any specific existing game belongs here, matching `mwg`'s stated position
-already stated in the capability spec: `mwg` supplies the shape, never the numbers. Logged at
-low priority per the roadmap process, same as items 28/30/38/46-52 above.
+already stated in the capability spec: `mwg` supplies the shape, never the numbers. All four
+shipped in the same session they were logged in.
 
-53. stat stages: a bounded, symmetric stage ladder over a `StatBlock` stat (the Swords
-    Dance/Screech shape - each stage step maps to a known multiplier, capped at some number
-    of stages either direction, reset to 0 on switch-out). `StatBlock`'s own modifiers are
-    unbounded and unstructured by design - exactly right for equipment and status effects,
-    wrong for a mechanic whose entire identity is "capped, discrete, and always resets" - so
-    every game wanting this reimplements the same clamp-and-multiplier-table logic today
-54. battle AI: choosing a move (and whether to switch) for an opposing trainer's creature,
-    given the available moves, both sides' types/stats, and whatever else a game's own
-    formula wants to weigh. `roguelike.decideMonsterAI` is the nearest existing thing and
-    solves a different problem entirely - wander/hunt/flee over a `Level`'s geometry, nothing
-    about choosing among a fixed action list by expected outcome - so `mwg/battle` has no
-    equivalent seam at all today, not even a bad one to improve on
-55. a battle-scoped event/hook system for passive effects: an ability or held item reacting
-    to "this creature switched in," "a turn is about to start" (the seam a sleep or
-    paralysis status would use to skip the turn, rather than a game hand-rolling that check
-    every time), "this creature was hit," "this creature fainted." `mwg/actors`' `StatBlock`
-    modifiers and `applyStatusEffect` already cover a passive's *numeric* effect (a stat
-    boost while an ability is active); nothing today gives a passive a place to run *code*
-    in reaction to a battle event
-56. field-wide battle conditions: weather, terrain, or a screen (Reflect's shape) that
-    applies to every combatant on one side or the whole field, rather than living on any one
-    creature's own `StatBlock`. Every modifier-shaped thing `mwg/actors` has today - equipment,
-    buffs, status effects - is scoped to one creature; nothing represents an effect the battle
-    itself carries
+53. ~~stat stages: a bounded, symmetric stage ladder over a `StatBlock` stat~~ -
+    `battle.StatStages` clamps a stage to ±`max` (a required option, not a default of 6 -
+    `mwg` picks no specific game's cap any more than it picks a specific multiplier curve),
+    replaces rather than stacks the one modifier a stat's current stage applies (so raising
+    Attack twice results in exactly the stage-2 multiplier, not two stage-1 modifiers
+    compounding), and `resetAll()` clears every stage and its modifier in one call for the
+    switch-out rule. `change()` returns the actual change applied, clamped or not, so a game
+    can tell "Attack won't go any higher!" from a real change. 8 unit tests cover clamping in
+    both directions, modifier replacement rather than stacking, the stage-0 removal case, and
+    stages on different stats staying independent
+54. ~~battle AI: choosing a move (and whether to switch) for an opposing trainer's creature~~ -
+    `battle.chooseMove`/`chooseSwitch` are built on `TypeMatrix.multiplierFor`, the one piece
+    of genuinely shared knowledge either battler agrees on, the same way `decideMonsterAI` is
+    built on `FieldOfView`/`Pathfinder` rather than reimplementing sight or movement.
+    `chooseMove` takes an optional `score` function, defaulting to type effectiveness against
+    the opponent, so a game can weigh power, PP, or anything else instead without losing the
+    default; `chooseSwitch` compares the active creature's worst incoming multiplier against
+    every bench member's, returning the first genuine defensive improvement or `null` when
+    staying in is already correct. 12 unit tests cover both functions' defaults, overrides,
+    ties, and the empty-list/no-improvement edge cases
+55. ~~a battle-scoped event/hook system for passive effects~~ - `battle.BattleHooks` registers
+    a handler against a plain event-name string a game's own battle loop defines and fires
+    (`'switchIn'`, `'turnStart'`, `'hit'`, `'faint'`, or anything else) - `mwg` names none of
+    them itself, the same way it names no move effects. `offSource` removes every hook
+    registered with a given source in one call, for an ability or item leaving the field on
+    faint or switch-out. A turn-skipping status (sleep, paralysis) uses the same shape as any
+    other hook: a handler mutates a shared `context` object the caller passes to `emit` and
+    reads back afterwards, rather than a special-cased return value. 5 unit tests cover
+    per-event dispatch, registration order, the shared-context convention, `offSource`, and
+    emitting an event with nothing registered
+56. ~~field-wide battle conditions: weather, terrain, or a screen~~ - `battle.Field` is a
+    named, optionally-timed flag set a game reads directly (`field.has('rain')`) wherever its
+    own formula needs to know, doing nothing on its own beyond tracking presence and counting
+    down - matching `mwg`'s position that it supplies no move-damage formula either. `advance()`
+    ticks every timed condition down by one round, clearing any that just ran out; a condition
+    with no duration persists until an explicit `clear()`. 7 unit tests cover presence,
+    explicit clearing, an indefinite condition surviving repeated `advance()` calls, expiry,
+    listing every active condition, and re-`set`ting one replacing rather than stacking
 
 ## Licence and provenance
 

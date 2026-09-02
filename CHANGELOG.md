@@ -115,6 +115,17 @@ Everything below has shipped on `main`; no version has been tagged yet.
 **Battle**
 - `Creature` (wraps `actors.StatBlock`/`Progression`), `TypeMatrix`, `Party`, `battleOrder`,
   `checkEvolution` (last-match-wins, so a multi-stage chain reaches its final form).
+- `StatStages`: a bounded, symmetric stage ladder over a `StatBlock` stat (Swords Dance's own
+  shape) — replaces rather than stacks a stat's current modifier, and `resetAll()` clears
+  every stage in one call for the switch-out rule.
+- `chooseMove`/`chooseSwitch`: battle AI built on `TypeMatrix.multiplierFor` — a move scored
+  by type effectiveness (or a custom `score`), and a switch suggested only when the bench has
+  a genuinely better defensive matchup than staying in.
+- `BattleHooks`: a battle-scoped event/hook system for passive abilities and held items,
+  keyed by a plain event-name string a game's own battle loop defines; `offSource` removes
+  every hook tied to one source (an ability leaving the field on faint).
+- `Field`: named, optionally-timed battle-wide conditions (weather, terrain, a screen) a game
+  reads directly (`field.has('rain')`) — distinct from any one creature's own `StatBlock`.
 
 **Audio**
 - `Sound` (pooled, round-robin) and `Music` (crossfade via `update(dt)`), both taking an
