@@ -481,6 +481,13 @@ rather than showing a raw key to the player.
     layering a different one over or instead of it, and resuming exactly where play left off
     once it reports back a result. No specific minigame picked; logged at low priority per
     the roadmap process below, same as items 28 and 30
+39. `mwg/actors` — skills and competencies as levelling spends, not a new storage primitive:
+    `StatBlock` already holds any named stat a game invents, `lockpicking` or `persuasion`
+    exactly as well as `strength`, so nothing new is needed to *store* a skill. What is
+    missing is the bridge from `Progression` to it - gaining a level grants no points today,
+    and there is no allocate-a-point-into-a-named-stat helper with the usual rules a skill
+    spend wants (a cap, a cost that rises per rank already invested). The gap is that seam,
+    not a skill tree engine
 
 ## Licence and provenance
 
