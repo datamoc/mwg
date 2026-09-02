@@ -466,6 +466,21 @@ rather than showing a raw key to the player.
     dumps a stack trace to the page. Marginal value on its own - the browser console already
     covers most of what this would add - logged because it came up, not because a reference
     game demands it
+37. `mwg/rpg` — quest/mission management: named quests with stages, each stage a condition or
+    a counter towards one ("kill 5 rats: 3/5"), and prerequisites between quests. ADOM's own
+    reference row above already names "quests inside a roguelike" as a demand nothing in the
+    capability spec yet breaks out into its own deliverable - today a game hand-rolls this
+    entirely from `GameState`'s bare switches and variables, the same primitive
+    `EventRunner`'s `activePage` conditions already read, which is the natural foundation
+    for this rather than a separate storage mechanism of its own. Real overlap with item 35's
+    quest-log example - this is the state machine, item 35 would be one way to query it
+38. minigames: a lockpicking, fishing or hacking puzzle, a rhythm game, a photo-op - the
+    self-contained diversion nearly every RPG in the capability spec's own reference list
+    embeds somewhere. The actual gap is architectural, not any one minigame: `Game` only
+    replaces a scene wholesale (`switchScene`), with nothing for suspending the current one,
+    layering a different one over or instead of it, and resuming exactly where play left off
+    once it reports back a result. No specific minigame picked; logged at low priority per
+    the roadmap process below, same as items 28 and 30
 
 ## Licence and provenance
 
