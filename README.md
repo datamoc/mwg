@@ -362,9 +362,18 @@ rather than showing a raw key to the player.
     running game and matched the source's arithmetic exactly - what first looked like a broken
     "nothing in range" turned out to be a dropped-armor ground item's tinted coin sprite being
     mistaken for a monster at screenshot resolution, not a targeting bug
-25. `mwg/ui` — a dense icon-grid inventory view (multi-column, drag/drop, long-press to
-    quickslot) alongside the existing `ListView`, for games with SPD-sized item counts where
-    a scrolling list is the wrong shape
+25. ~~`mwg/ui` — a dense icon-grid inventory view (multi-column, drag/drop, long-press to
+    quickslot) alongside the existing `ListView`~~ - `IconGrid` keeps `ListView`'s keyboard
+    model (arrow keys move a highlight, wrapping at the edges, skipping disabled cells) over a
+    2D layout instead of one column. "Drag and drop" is tap-then-tap, not a continuously
+    followed ghost sprite: touch one cell to pick it up, a second to swap - it reads as drag
+    and drop to a player, and unlike a live drag needs no pointer-tracking or drag-threshold
+    fragility, since every step is a plain method a test can call directly. Long-press is a
+    frame-driven duration counter (`update(dt)`, the same shape `WindowStack` already uses),
+    not a raw `setTimeout`, so it is exactly as testable. `examples/dungeon`'s inventory (`Tab`)
+    is this now, instead of a `ListView`: a coin sprite tinted per item, a quantity badge on
+    stacked potions and flasks, and a corner mark on whichever weapon or armor is worn -
+    verified in a browser (equip, drink, and the log/HUD both reflected it correctly)
 26. ~~`mwg/world` — an explicit non-persistent-map mode~~: `World.define` now takes a
     `persistent` option (default `true`, matching ADOM's shape); `persistent: false` rebuilds
     a map from its factory on every `enter`, discarding whatever was there, which is SPD's

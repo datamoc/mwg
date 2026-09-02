@@ -1,7 +1,7 @@
-import { Container } from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
 import { Game, Scene, Input, Random, SaveSystem } from '../../src/core/index.ts';
 import { TintedSprite, SpriteSheet, TileMap, Camera, Projectile } from '../../src/render/index.ts';
-import { Label, theme, Window, WindowStack, ListView, type ListItem } from '../../src/ui/index.ts';
+import { Label, theme, Window, WindowStack, IconGrid, type IconGridItem } from '../../src/ui/index.ts';
 import {
 	StatBlock,
 	Inventory,
@@ -155,6 +155,7 @@ class DungeonScene extends Scene {
 	private secrets!: Secrets;
 	private vaultCell: Step | null = null;
 	private projectiles: Array<{ flight: Projectile; sprite: TintedSprite }> = [];
+	private inventoryGrid: IconGrid | null = null;
 	private scheduler = new Scheduler<Creature>();
 	private windows = new WindowStack();
 
@@ -782,29 +783,48 @@ class DungeonScene extends Scene {
 		this.hero.maxHp = this.heroStats.get('maxHp');
 	}
 
+	/** a coin sprite tinted to the item, plus a small corner mark for whichever is worn */
+	private itemIcon(def: Item, worn: boolean): Container {
+		const icon = new Container();
+		const coin = new TintedSprite(this.sheet.get(tiles.COIN));
+		coin.tint = ITEM_TINT[def.id] ?? 0xffffff;
+		icon.addChild(coin);
+
+		if (worn) {
+			const mark = new Graphics().rect(0, 0, 5, 5).fill({ color: theme().color.textHighlight });
+			icon.addChild(mark);
+		}
+
+		return icon;
+	}
+
 	private openInventory(): void {
-		const window = new Window({ width: 260, height: 200, title: 'Inventory' });
+		const window = new Window({ width: 200, height: 160, title: 'Inventory' });
 
-		const items: ListItem[] = this.heroBag.items.map((entry) => {
+		const gridItems: IconGridItem[] = this.heroBag.items.map((entry) => {
 			const def = ITEMS[entry.id];
-			const worn = def.slot && this.heroEquipment.get(def.slot) === def;
-			const count = entry.quantity > 1 ? ` x${entry.quantity}` : '';
-			return { text: `${def.name}${count}${worn ? ' (worn)' : ''}`, value: entry.id };
+			const worn = def.slot !== undefined && this.heroEquipment.get(def.slot) === def;
+			return { icon: this.itemIcon(def, worn), value: entry.id, quantity: entry.quantity };
 		});
-		if (items.length === 0) items.push({ text: '(nothing carried)', disabled: true });
+		if (gridItems.length === 0) {
+			gridItems.push({ icon: new Label({ text: '-', color: theme().color.textDim }), disabled: true });
+		}
 
-		const list = new ListView({
+		const grid = new IconGrid({
 			width: window.contentWidth,
 			height: window.contentHeight,
-			items,
+			columns: 4,
+			items: gridItems,
 			onSelect: (item) => this.useItem(item.value as string),
 		});
 
-		window.content.addChild(list);
-		//the list is offered actions first, and only while its window is on top of the stack
-		window.delegate = list;
+		window.content.addChild(grid);
+		//the grid is offered actions first, and only while its window is on top of the stack
+		window.delegate = grid;
+		this.inventoryGrid = grid;
 		this.windows.push(window);
 		window.onClose.add(() => {
+			this.inventoryGrid = null;
 			this.refresh();
 			return false;
 		});
@@ -925,6 +945,7 @@ class DungeonScene extends Scene {
 		this.camera.update(dt);
 		this.map?.cull(this.camera);
 		this.windows.update(dt);
+		this.inventoryGrid?.update(dt);
 
 		//the hit flash fades out over a moment rather than snapping back
 		for (const creature of this.creatures) {
