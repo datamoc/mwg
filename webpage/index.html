@@ -262,7 +262,8 @@
 			<div class="wrap">
 				<p class="eyebrow">build order</p>
 				<h2>Roadmap</h2>
-				<p>Each module ships in the order below — later ones build on the modules before them.</p>
+				<p>Each module ships in the order below — later ones build on the modules before them.
+				Order among what is still open is reevaluated periodically, not just appended to.</p>
 				<ul class="roadmap">
 					<li class="done"><span class="label">mwg/core — loop, scenes, signals, RNG</span><span class="status">shipped</span></li>
 					<li class="done"><span class="label">mwg/render — colour transform, camera, tile map, sprite sheets, animation</span><span class="status">shipped</span></li>
@@ -282,6 +283,9 @@
 					<li class="done"><span class="label">an SPD-shaped mockup: wire mwg/actors (equipment, inventory) into examples/dungeon</span><span class="status">shipped</span></li>
 					<li><span class="label">mwg/render + mwg/roguelike — hexagonal tile maps, and FOV/pathfinding over a hex grid</span><span class="status">planned</span></li>
 					<li><span class="label">mwg/render — isometric and staggered projection, so any Tiled orientation loads directly</span><span class="status">planned</span></li>
+					<li><span class="label">mwg/rpg — quest/mission management: named quests with staged conditions/counters and prerequisites</span><span class="status">planned</span></li>
+					<li><span class="label">mwg/actors — skills as levelling spends: points from Progression allocated into a StatBlock stat, with a cap and rising cost per rank</span><span class="status">planned</span></li>
+					<li><span class="label">mwg/actors — crafting: a recipe resolved against an Inventory, checked/consumed/result added in one call</span><span class="status">planned</span></li>
 					<li class="done"><span class="label">a performance pass: profile the render path, confirm no silent fallback off WebGL/WebGPU</span><span class="status">shipped</span></li>
 					<li class="done"><span class="label">wire SaveSystem into an actual game loop end to end, plus a debug quicksave/quickload</span><span class="status">shipped</span></li>
 					<li class="done"><span class="label">a character animation state convention: standing, moving, and performing an action</span><span class="status">shipped</span></li>
@@ -300,10 +304,7 @@
 					<li><span class="label">mwg/stage — importing actual Twine story files into StageScript's command format</span><span class="status">planned</span></li>
 					<li><span class="label">mwg/core — minimal database-shaped functions over localStorage: named, queryable record collections</span><span class="status">planned</span></li>
 					<li><span class="label">mwg/core — structured log handling: categories and severity levels over bare console.log</span><span class="status">planned</span></li>
-					<li><span class="label">mwg/rpg — quest/mission management: named quests with staged conditions/counters and prerequisites</span><span class="status">planned</span></li>
 					<li><span class="label">minigames: suspending/layering a scene and resuming with a result - the architecture, not any one minigame</span><span class="status">planned</span></li>
-					<li><span class="label">mwg/actors — skills as levelling spends: points from Progression allocated into a StatBlock stat, with a cap and rising cost per rank</span><span class="status">planned</span></li>
-					<li><span class="label">mwg/actors — crafting: a recipe resolved against an Inventory, checked/consumed/result added in one call</span><span class="status">planned</span></li>
 					<li><span class="label">a generic board-game token/piece: owned, on a board cell, capturable or promotable - distinct from Creature</span><span class="status">planned</span></li>
 				</ul>
 			</div>

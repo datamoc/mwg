@@ -298,6 +298,17 @@ rather than showing a raw key to the player.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
+**Priority order among what's still open, reevaluated this session:** 17 → 18 → 37 → 39 →
+40 → 32 → 31 → 34 → 33 → 35 → 36 → 28 → 41 → 30 → 38. Items 37 (quests) and 39 (skills) move
+up from their append position - both are small, unblocked `mwg/actors`/`mwg/rpg` capabilities
+that already-committed reference games (ADOM's own row names quests explicitly; levelling is
+implicit in nearly all of them) demand directly, unlike several later entries that are either
+blocked on hex (28, 41) or still deciding which genre or mechanic to commit to at all (30, 38).
+40 (crafting) is pulled up alongside them for the same reason, sharing 37/39's shape: small,
+unblocked, already-demanded. Numbers themselves are never reassigned once given - the list is
+an append-only history, including for what is not done yet - so priority order lives here, in
+prose, rather than in the list's own sequence.
+
 17. `mwg/render` + `mwg/roguelike` — hexagonal tile maps, and FOV/pathfinding over a hex grid.
     The actual blocker for a Wesnoth-shaped mockup: nothing hex-shaped is possible before
     this lands, unlike 16 above, so it is next after that quick win rather than after 18/19.
