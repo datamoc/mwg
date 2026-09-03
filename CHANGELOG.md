@@ -1,12 +1,16 @@
 # Changelog
 
 All notable changes to `mwg` are documented here. Format follows
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning will follow
-[Semantic Versioning](https://semver.org/) once a first release is tagged.
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versioning follows
+[Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
+the public API may still change between minor versions.
 
 ## [Unreleased]
 
-Everything below has shipped on `main`; no version has been tagged yet.
+## [0.1.1] - 2026-09-03
+
+First tagged release. Everything below shipped on `main` before this tag existed; nothing
+in it is new as of the tag, only now given a version number to refer to.
 
 ### Added
 
