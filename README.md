@@ -884,19 +884,13 @@ provenance-check the way the GPL references above needed. Rules were never prote
 anyway (see Licence and provenance), and as ever `mwg` would supply only the shape (a
 deck, a token, a move rule), never anyone's implementation of it.
 
-With 57-65 placed, everything on the roadmap that any committed reference demands has
-shipped again. What remains is unchanged in kind from the last reassessment: 28 and 30
-are reference picks no capability waits on, 41 waits on 30's pick by its own entry's
-admission, and 45 stays last - true 3D cuts against the 2D purpose and needs a
-project-level yes before any code.
-
 66-73 extend the tail with classical games as minigame material and reference candidates,
-plus the combat-hook seam SPD's port asked for, all shipped in the same pass. Item 41
-remains open as a generic board-piece abstraction; the chess-specific implementation in
-item 66 does not claim to settle that broader primitive. With 66-73 placed, the roadmap's
-open items are down to four, all previously reasoned to their current spot rather than
-newly stalled: 28 and 30 (reference picks no capability waits on), 41 (waits on 30's pick),
-and 45 (last on purpose, needs a project-level yes before any code).
+plus the combat-hook seam SPD's port asked for, all shipped in the same pass - including
+41's generic board-piece abstraction (`mwg/board`'s `BoardGrid`/`BoardPiece`), which 66's
+chess-specific implementation needed anyway. With 66-73 placed, item 45 is the roadmap's
+only open item, unchanged in kind from every past reassessment: 3D rendering cuts against
+`mwg`'s own 2D purpose and needs a project-level yes before any code, not just an
+implementation.
 
 ## Licence and provenance
 

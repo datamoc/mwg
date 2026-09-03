@@ -1,7 +1,7 @@
 {
   "name": "mwg",
-  "version": "0.1.0",
-  "description": "A framework for building 2D roguelikes that run from a local file, with no server and no install.",
+  "version": "0.1.1",
+  "description": "A framework for building 2D top-down games that run from a local file, with no server and no install.",
   "license": "MPL-2.0",
   "type": "module",
   "sideEffects": false,
