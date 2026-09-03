@@ -23,9 +23,13 @@ export interface Recipe {
  * @returns whether the recipe resolved
  */
 export function craft(inventory: Inventory, recipe: Recipe): boolean {
+	const needed = new Map<string, number>();
 	for (const ingredient of recipe.ingredients) {
-		const held = inventory.find(ingredient.id);
-		if (!held || held.quantity < ingredient.quantity) return false;
+		needed.set(ingredient.id, (needed.get(ingredient.id) ?? 0) + ingredient.quantity);
+	}
+	for (const [id, quantity] of needed) {
+		const held = inventory.find(id);
+		if (!held || held.quantity < quantity) return false;
 	}
 
 	//captured before anything is removed, so a failed add below can restore exactly this

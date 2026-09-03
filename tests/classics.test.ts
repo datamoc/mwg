@@ -35,6 +35,27 @@ test('Go captures surrounded stones and ends after two passes', () => {
 	assert.equal(Board.goResult(state), 'finished');
 });
 
+test('ko forbids recapture at the captured square, not the square just played', () => {
+	const state = Board.startingGo(3);
+	//a single-stone ko: black plays the corner (0,0), capturing the lone white stone at
+	//(1,0) - the black stone that just played ends up with exactly one liberty, the point
+	//it just vacated by capturing, which is the ko rule's trigger
+	state.board[1] = 'white'; // (1,0), the stone about to be captured
+	state.board[2] = 'black'; // (2,0)
+	state.board[3] = 'white'; // (0,1), a separate white stone, not captured
+	state.board[4] = 'black'; // (1,1)
+
+	Board.playGo(state, 0, 0);
+
+	assert.equal(state.board[1], null, 'the surrounded white stone is captured');
+	assert.equal(state.board[3], 'white', 'the unrelated white stone survives');
+	//the play square (0,0 -> index 0) is lower than the captured square (index 1); a ko
+	//point picked by "first index that differs" rather than "the captured stone" would
+	//wrongly point at 0, which is already occupied and so never actually forbids anything
+	assert.equal(state.ko, 1);
+	assert.throws(() => Board.playGo(state, 1, 0), /occupied or forbidden by ko/);
+});
+
 test('backgammon generates a bar entry and hits a blot', () => {
 	const state = Board.startingBackgammon();
 	state.bar.white = 1;

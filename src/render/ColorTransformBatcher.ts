@@ -14,8 +14,18 @@ import {
 	getBatchSamplersUniformGroup,
 	roundPixelsBit,
 	roundPixelsBitGl,
+	extensions,
 } from 'pixi.js';
-import type { BatchableMeshElement, BatchableQuadElement, BatcherOptions, Matrix } from 'pixi.js';
+import type {
+	BatchableMeshElement,
+	BatchableQuadElement,
+	BatcherOptions,
+	Matrix,
+	Renderer,
+	InstructionSet,
+	Texture,
+	BLEND_MODES,
+} from 'pixi.js';
 
 /**
  * The fields the runtime elements carry but the published types omit.
@@ -170,6 +180,35 @@ const NO_ADD = 0;
 
 const addOf = (element: PackedElement): number => element.colorAdd ?? NO_ADD;
 
+//one quad corner's worth of packing, factored out of packQuadAttributes so writing all four
+//needs no per-call array - that loop runs per sprite, every frame
+function writeQuadCorner(
+	float32View: Float32Array,
+	uint32View: Uint32Array,
+	index: number,
+	a: number,
+	b: number,
+	c: number,
+	d: number,
+	tx: number,
+	ty: number,
+	x: number,
+	y: number,
+	u: number,
+	v: number,
+	argb: number,
+	textureIdAndRound: number,
+	colorAdd: number
+): void {
+	float32View[index] = a * x + c * y + tx;
+	float32View[index + 1] = d * y + b * x + ty;
+	float32View[index + 2] = u;
+	float32View[index + 3] = v;
+	uint32View[index + 4] = argb;
+	uint32View[index + 5] = textureIdAndRound;
+	uint32View[index + 6] = colorAdd;
+}
+
 export class ColorTransformBatcher extends Batcher {
 	/** @internal */
 	static extension = {
@@ -238,24 +277,15 @@ export class ColorTransformBatcher extends Batcher {
 		const colorAdd = addOf(element);
 		const textureIdAndRound = (textureId << 16) | (element.roundPixels & 0xffff);
 
-		//the four corners, in the winding order Pixi's shared index buffer expects
-		const corners: readonly [number, number, number, number][] = [
-			[w1, h1, uvs.x0, uvs.y0],
-			[w0, h1, uvs.x1, uvs.y1],
-			[w0, h0, uvs.x2, uvs.y2],
-			[w1, h0, uvs.x3, uvs.y3],
-		];
-
-		for (const [x, y, u, v] of corners) {
-			float32View[index] = a * x + c * y + tx;
-			float32View[index + 1] = d * y + b * x + ty;
-			float32View[index + 2] = u;
-			float32View[index + 3] = v;
-			uint32View[index + 4] = argb;
-			uint32View[index + 5] = textureIdAndRound;
-			uint32View[index + 6] = colorAdd;
-			index += VERTEX_SIZE;
-		}
+		//the four corners, in the winding order Pixi's shared index buffer expects - written
+		//by hand rather than looped over a built array, since this runs per sprite per frame
+		writeQuadCorner(float32View, uint32View, index, a, b, c, d, tx, ty, w1, h1, uvs.x0, uvs.y0, argb, textureIdAndRound, colorAdd);
+		index += VERTEX_SIZE;
+		writeQuadCorner(float32View, uint32View, index, a, b, c, d, tx, ty, w0, h1, uvs.x1, uvs.y1, argb, textureIdAndRound, colorAdd);
+		index += VERTEX_SIZE;
+		writeQuadCorner(float32View, uint32View, index, a, b, c, d, tx, ty, w0, h0, uvs.x2, uvs.y2, argb, textureIdAndRound, colorAdd);
+		index += VERTEX_SIZE;
+		writeQuadCorner(float32View, uint32View, index, a, b, c, d, tx, ty, w1, h0, uvs.x3, uvs.y3, argb, textureIdAndRound, colorAdd);
 	}
 
 	/** @internal - Pixi calls this when the device's texture limit is known */
@@ -269,6 +299,157 @@ export class ColorTransformBatcher extends Batcher {
 		this.shader.destroy();
 		super.destroy();
 	}
+}
+
+/** what `TintedSpritePipe` needs from a renderable - a structural type, not `TintedSprite`
+ *  itself, so this file never has to import it and stays the one file that knows about
+ *  batcher/pipe internals at all */
+interface TintedRenderable {
+	colorAdd: number;
+	texture: Texture;
+	visualBounds: unknown;
+	groupTransform: unknown;
+	groupBlendMode: BLEND_MODES;
+	groupColorAlpha: number;
+	didViewUpdate: boolean;
+	_gpuData: Record<number, BatchableTintedSprite>;
+	_roundPixels: number;
+}
+
+export const TINTED_SPRITE_PIPE = 'mwg-tinted-sprite';
+
+/**
+ * Routes a `TintedSprite` through `ColorTransformBatcher`.
+ *
+ * Pixi decides which batcher an object joins from `batcherName` on its batchable element,
+ * and that element is built by a render pipe. So selecting a different batcher means
+ * supplying a pipe; this one mirrors Pixi's own SpritePipe and changes two things: the
+ * batcher name, and copying `colorAdd` across before each pack.
+ */
+class TintedSpritePipe {
+	/** @internal */
+	static extension = {
+		type: [ExtensionType.WebGLPipes, ExtensionType.WebGPUPipes, ExtensionType.CanvasPipes],
+		name: TINTED_SPRITE_PIPE,
+	} as const;
+
+	private renderer: Renderer;
+
+	constructor(renderer: Renderer) {
+		this.renderer = renderer;
+	}
+
+	addRenderable(sprite: TintedRenderable, instructionSet: InstructionSet): void {
+		const element = this.element(sprite);
+		if (sprite.didViewUpdate) this.sync(sprite, element);
+		this.renderer.renderPipes.batch.addToBatch(element, instructionSet);
+	}
+
+	updateRenderable(sprite: TintedRenderable): void {
+		const element = this.element(sprite);
+		if (sprite.didViewUpdate) this.sync(sprite, element);
+		element._batcher.updateElement(element);
+	}
+
+	validateRenderable(sprite: TintedRenderable): boolean {
+		const element = this.element(sprite);
+		return !element._batcher.checkAndUpdateTexture(element, sprite.texture);
+	}
+
+	private sync(sprite: TintedRenderable, element: BatchableTintedSprite): void {
+		element.bounds = sprite.visualBounds;
+		element.texture = sprite.texture;
+		element.colorAdd = sprite.colorAdd;
+	}
+
+	private element(sprite: TintedRenderable): BatchableTintedSprite {
+		const gpuData = sprite._gpuData;
+		return gpuData[this.renderer.uid] ?? this.create(sprite, gpuData);
+	}
+
+	private create(
+		sprite: TintedRenderable,
+		gpuData: Record<number, BatchableTintedSprite>
+	): BatchableTintedSprite {
+		const element = new BatchableTintedSprite();
+		element.renderable = sprite;
+		element.transform = sprite.groupTransform;
+		element.texture = sprite.texture;
+		element.bounds = sprite.visualBounds;
+		element.roundPixels = (((this.renderer as unknown as { _roundPixels: number })._roundPixels |
+			sprite._roundPixels) as 0 | 1);
+		element.colorAdd = sprite.colorAdd;
+
+		gpuData[this.renderer.uid] = element;
+		return element;
+	}
+
+	destroy(): void {
+		this.renderer = null as unknown as Renderer;
+	}
+}
+
+/** the same shape as Pixi's BatchableSprite, plus the additive colour */
+class BatchableTintedSprite {
+	batcherName = ColorTransformBatcher.extension.name;
+	topology = 'triangle-list' as const;
+
+	attributeSize = 4;
+	indexSize = 6;
+	packAsQuad = true;
+	roundPixels: 0 | 1 = 0;
+
+	colorAdd = 0;
+
+	renderable!: TintedRenderable;
+	texture!: Texture;
+	transform!: unknown;
+	bounds!: unknown;
+
+	//Pixi fills these in while batching; they exist on its own element type too
+	_attributeStart = 0;
+	_textureId = 0;
+	_indexStart = 0;
+	_batcher: any = null;
+	_batch: any = null;
+
+	get blendMode(): BLEND_MODES {
+		return this.renderable.groupBlendMode;
+	}
+
+	get color(): number {
+		return this.renderable.groupColorAlpha;
+	}
+
+	reset(): void {
+		this.renderable = null as unknown as TintedRenderable;
+		this.texture = null as unknown as Texture;
+		this._batcher = null;
+		this._batch = null;
+		this.bounds = null;
+		this.colorAdd = 0;
+	}
+
+	destroy(): void {
+		this.reset();
+	}
+}
+
+let registered = false;
+
+/**
+ * Registers the colour-transform batcher and the `TintedSprite` pipe with Pixi.
+ *
+ * Called automatically the first time a `TintedSprite` is rendered is not possible, because
+ * registration has to happen before the renderer is created — so `Game` calls this during
+ * start-up, and it is exported for anyone building their own renderer.
+ */
+export function registerColorTransform(): void {
+	if (registered) return;
+	registered = true;
+
+	extensions.add(ColorTransformBatcher);
+	extensions.add(TintedSpritePipe);
 }
 
 /**

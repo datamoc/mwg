@@ -49,6 +49,21 @@ test('several costs are all-or-nothing', () => {
 	assert.equal(stats.base('health'), 4);
 });
 
+test('two costs on the same stat are checked and spent against their combined total', () => {
+	const stats = mage();
+	//neither line alone exceeds 10 mana, but 6 + 5 = 11 does
+	const cost = [
+		{ stat: 'mana', amount: 6 },
+		{ stat: 'mana', amount: 5 },
+	];
+	assert.equal(canAfford(stats, cost), false);
+	assert.equal(spend(stats, cost), false);
+	assert.equal(stats.base('mana'), 10, 'untouched, never driven negative');
+
+	assert.equal(spend(stats, [{ stat: 'mana', amount: 6 }, { stat: 'mana', amount: 4 }]), true);
+	assert.equal(stats.base('mana'), 0);
+});
+
 test('canAfford checks without spending', () => {
 	const stats = mage();
 	assert.equal(canAfford(stats, { stat: 'mana', amount: 10 }), true);

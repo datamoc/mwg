@@ -32,7 +32,7 @@ export function assignAppearances(table: AppearanceTable): Map<string, string> {
 	const pool = [...table.labels];
 	for (let i = pool.length - 1; i > 0; i--) {
 		const j = Random.int(0, i + 1);
-		[pool[i], pool[j]] = [pool[i], pool[j]];
+		[pool[i], pool[j]] = [pool[j], pool[i]];
 	}
 	const out = new Map<string, string>();
 	table.kinds.forEach((kind, index) => out.set(kind, pool[index]));

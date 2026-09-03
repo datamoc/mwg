@@ -12,6 +12,17 @@ test('every kind gets a distinct label', () => {
 	assert.equal(new Set(assigned.values()).size, 3);
 });
 
+test('the shuffle actually reorders the pool, not just picks the first N labels', () => {
+	//a no-op swap (assigning pool[i] to itself instead of swapping in pool[j]) would still
+	//pass "every kind gets a distinct label" - only checking against many seeds catches it
+	const original = ['healing', 'frost', 'venom'].map((_, i) => table.labels[i]);
+	const reordered = Array.from({ length: 30 }, (_, seed) => {
+		const assigned = Random.withSeed(seed, () => assignAppearances(table));
+		return [...assigned.values()].some((label, i) => label !== original[i]);
+	}).some(Boolean);
+	assert.ok(reordered, 'expected at least one seed to produce a different order than the unshuffled labels');
+});
+
 test('the same seed deals the same mapping', () => {
 	const first = Random.withSeed(42, () => assignAppearances(table));
 	const second = Random.withSeed(42, () => assignAppearances(table));

@@ -76,6 +76,17 @@ test('withdrawing swaps a boxed member into an active slot, boxing whoever was t
 	assert.deepEqual(party.boxed, ['a']);
 });
 
+test('withdrawing to an out-of-range active slot does nothing, rather than growing the active array', () => {
+	const party = new Party<string>(1);
+	party.add('a');
+	party.add('b'); // active is full, so b goes to storage
+
+	party.withdraw(0, 5); // no active slot 5 - only slot 0 exists
+	assert.deepEqual(party.members, ['a'], 'active must stay untouched');
+	assert.deepEqual(party.boxed, ['b'], 'nothing should have been pulled out of storage either');
+	assert.equal(party.members.length, 1, 'the active array must not have grown');
+});
+
 test('activeMembers skips empty slots', () => {
 	const party = new Party<string>(3);
 	party.add('a');

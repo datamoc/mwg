@@ -570,16 +570,17 @@ export class TileMap extends Container {
 		//parallelogram, and the axis-aligned box around those four points always fully
 		//contains it - the same reasoning works unchanged for square, hex, isometric or
 		//staggered, so nothing here needs to know which one it is
-		const corners = [
-			this.projectedTile(view.x, view.y),
-			this.projectedTile(view.x + view.width, view.y),
-			this.projectedTile(view.x, view.y + view.height),
-			this.projectedTile(view.x + view.width, view.y + view.height),
-		];
-		const tileMinX = Math.min(...corners.map((c) => c.x));
-		const tileMaxX = Math.max(...corners.map((c) => c.x));
-		const tileMinY = Math.min(...corners.map((c) => c.y));
-		const tileMaxY = Math.max(...corners.map((c) => c.y));
+		//scalar min/max over the four corners by hand, rather than an array + .map() + spread,
+		//since this runs once per frame
+		const topLeft = this.projectedTile(view.x, view.y);
+		const topRight = this.projectedTile(view.x + view.width, view.y);
+		const bottomLeft = this.projectedTile(view.x, view.y + view.height);
+		const bottomRight = this.projectedTile(view.x + view.width, view.y + view.height);
+
+		const tileMinX = Math.min(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
+		const tileMaxX = Math.max(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
+		const tileMinY = Math.min(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
+		const tileMaxY = Math.max(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
 
 		//a one-chunk margin, so a chunk is switched on slightly before it is needed
 		const minChunkX = Math.floor(tileMinX / this.chunkSize) - 1;

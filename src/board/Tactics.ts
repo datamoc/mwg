@@ -23,8 +23,9 @@ export function tacticalMoves(state: TacticalState, unitId: string): TacticalMov
 	if (unit.owner !== state.turn || unit.actions <= 0) return [];
 	const out: TacticalMove[] = [];
 	for (let y = 0; y < state.height; y++) for (let x = 0; x < state.width; x++) {
-		const cost = tacticalDistance(state, unit, { x, y });
-		if (cost > 0 && cost <= unit.actions && state.cells[y * state.width + x].passable && !occupied(state, x, y) && tacticalReachable(state, unit, x, y)) out.push({ unit: unitId, x, y, cost });
+		if ((x === unit.x && y === unit.y) || !state.cells[y * state.width + x].passable || occupied(state, x, y)) continue;
+		const cost = tacticalPathCost(state, unit, x, y, unit.actions);
+		if (cost !== null) out.push({ unit: unitId, x, y, cost });
 	}
 	return out;
 }
@@ -87,4 +88,6 @@ function occupied(state: TacticalState, x: number, y: number): boolean { return 
 function tacticalInside(state: TacticalState, x: number, y: number): boolean { return x >= 0 && y >= 0 && x < state.width && y < state.height; }
 function tacticalNeighbours(state: TacticalState, x: number, y: number): { x: number; y: number }[] { return state.shape === 'hex' ? hexNeighbors(x, y) : [{ x: x - 1, y }, { x: x + 1, y }, { x, y: y - 1 }, { x, y: y + 1 }]; }
 function tacticalDistance(state: TacticalState, a: { x: number; y: number }, b: { x: number; y: number }): number { return state.shape === 'hex' ? hexDistance(a, b) : Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
-function tacticalReachable(state: TacticalState, unit: TacticalUnit, targetX: number, targetY: number): boolean { const todo = [{ x: unit.x, y: unit.y, distance: 0 }]; const seen = new Set([`${unit.x},${unit.y}`]); while (todo.length) { const current = todo.shift()!; if (current.x === targetX && current.y === targetY) return true; for (const next of tacticalNeighbours(state, current.x, current.y)) { const key = `${next.x},${next.y}`; if (!tacticalInside(state, next.x, next.y) || seen.has(key) || !state.cells[next.y * state.width + next.x].passable || occupied(state, next.x, next.y) && !(next.x === targetX && next.y === targetY)) continue; seen.add(key); todo.push({ ...next, distance: current.distance + 1 }); } } return false; }
+//the real walking distance to (targetX, targetY), never exceeding `budget` steps, or null
+//if it cannot be reached within that budget - a move's true cost, not straight-line distance
+function tacticalPathCost(state: TacticalState, unit: TacticalUnit, targetX: number, targetY: number, budget: number): number | null { const todo = [{ x: unit.x, y: unit.y, distance: 0 }]; const seen = new Set([`${unit.x},${unit.y}`]); while (todo.length) { const current = todo.shift()!; if (current.x === targetX && current.y === targetY) return current.distance; if (current.distance >= budget) continue; for (const next of tacticalNeighbours(state, current.x, current.y)) { const key = `${next.x},${next.y}`; if (!tacticalInside(state, next.x, next.y) || seen.has(key) || !state.cells[next.y * state.width + next.x].passable || occupied(state, next.x, next.y) && !(next.x === targetX && next.y === targetY)) continue; seen.add(key); todo.push({ x: next.x, y: next.y, distance: current.distance + 1 }); } } return null; }

@@ -37,6 +37,7 @@ export class Party<C> {
 
 	/** brings a boxed creature into a specific active slot, swapping out whatever was there */
 	withdraw(storageIndex: number, activeSlot: number): void {
+		if (activeSlot < 0 || activeSlot >= this.active.length) return;
 		const creature = this.storage[storageIndex];
 		if (!creature) return;
 

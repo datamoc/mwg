@@ -106,26 +106,33 @@ export class DialogueStage extends Container {
 	 */
 	setBackdrop(texture: Texture, fade = 0.4): Promise<void> {
 		this.outgoingBackdrop?.destroy();
-		this.outgoingBackdrop = this.backdrop;
+		const outgoing = this.backdrop;
+		this.outgoingBackdrop = outgoing;
 
 		const sprite = new Sprite(texture);
 		this.fitBackdrop(sprite);
 		this.backdrop = sprite;
 		this.backdropLayer.addChild(sprite);
 
+		//only clears this call's own outgoing sprite - an overlapping setBackdrop before
+		//this one's fade finishes reassigns `outgoingBackdrop` to its own, and that call's
+		//settle must not destroy the sprite the newer transition is still fading over
+		const settle = () => {
+			if (this.outgoingBackdrop === outgoing) {
+				outgoing?.destroy();
+				this.outgoingBackdrop = null;
+			}
+		};
+
 		if (fade <= 0) {
-			this.outgoingBackdrop?.destroy();
-			this.outgoingBackdrop = null;
+			settle();
 			return Promise.resolve();
 		}
 
 		sprite.alpha = 0;
 		return this.tween(fade, (t) => {
 			sprite.alpha = t;
-		}).then(() => {
-			this.outgoingBackdrop?.destroy();
-			this.outgoingBackdrop = null;
-		});
+		}).then(settle);
 	}
 
 	private fitBackdrop(sprite: Sprite): void {

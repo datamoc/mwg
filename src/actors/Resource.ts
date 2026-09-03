@@ -23,9 +23,17 @@ function all(cost: ResourceCost | readonly ResourceCost[]): readonly ResourceCos
 	return list;
 }
 
+//several costs on the same stat (two effects both drawing mana, say) must be checked
+//against their combined total, not each independently against the same starting pool
+function totals(cost: readonly ResourceCost[]): Map<string, number> {
+	const out = new Map<string, number>();
+	for (const c of cost) out.set(c.stat, (out.get(c.stat) ?? 0) + c.amount);
+	return out;
+}
+
 /** True when every cost in `cost` is currently affordable, without spending anything. */
 export function canAfford(stats: StatBlock, cost: ResourceCost | readonly ResourceCost[]): boolean {
-	return all(cost).every((c) => stats.base(c.stat) >= c.amount);
+	return [...totals(all(cost))].every(([stat, amount]) => stats.base(stat) >= amount);
 }
 
 /**
@@ -35,8 +43,8 @@ export function canAfford(stats: StatBlock, cost: ResourceCost | readonly Resour
  * this returns false. A zero cost is always affordable and deducts nothing.
  */
 export function spend(stats: StatBlock, cost: ResourceCost | readonly ResourceCost[]): boolean {
-	const list = all(cost);
-	if (!list.every((c) => stats.base(c.stat) >= c.amount)) return false;
-	for (const c of list) stats.setBase(c.stat, stats.base(c.stat) - c.amount);
+	const combined = totals(all(cost));
+	if (![...combined].every(([stat, amount]) => stats.base(stat) >= amount)) return false;
+	for (const [stat, amount] of combined) stats.setBase(stat, stats.base(stat) - amount);
 	return true;
 }

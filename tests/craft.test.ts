@@ -103,6 +103,23 @@ test('a rolled-back ingredient merges back into a leftover stack rather than dup
 	assert.equal(woodSlots[0].quantity, 5);
 });
 
+test('a recipe listing the same ingredient twice checks their combined total, not each line alone', () => {
+	const bag = new Inventory();
+	bag.add({ id: 'wood', quantity: 4, stackable: true });
+
+	const recipe: Recipe = {
+		//neither line alone exceeds 4, but 3 + 2 = 5 does
+		ingredients: [
+			{ id: 'wood', quantity: 3 },
+			{ id: 'wood', quantity: 2 },
+		],
+		result: { id: 'bow', quantity: 1 },
+	};
+
+	assert.equal(craft(bag, recipe), false);
+	assert.equal(bag.find('wood')?.quantity, 4); // untouched, never driven negative
+});
+
 test('crafting the same recipe twice needs the ingredients twice', () => {
 	const bag = new Inventory();
 	bag.add({ id: 'wood', quantity: 4, stackable: true });

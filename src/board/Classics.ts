@@ -112,9 +112,18 @@ export function playGo(state: GoState, x: number, y: number): void {
 	board[index] = state.turn;
 	const enemy = state.turn === 'black' ? 'white' : 'black';
 	let captured = 0;
-	for (const neighbour of goNeighbours(state, index)) if (board[neighbour] === enemy && liberties(board, state.size, neighbour) === 0) captured += removeGroup(board, state.size, neighbour);
+	//tracked directly rather than diffed against the old board afterwards, since the played
+	//stone's own cell also differs and diffing can't tell the two apart
+	let soleCaptured: number | null = null;
+	for (const neighbour of goNeighbours(state, index)) {
+		if (board[neighbour] !== enemy || liberties(board, state.size, neighbour) !== 0) continue;
+		const removed = group(board, state.size, neighbour);
+		if (removed.length === 1) soleCaptured = removed[0];
+		for (const cell of removed) board[cell] = null;
+		captured += removed.length;
+	}
 	if (liberties(board, state.size, index) === 0) throw new Error('suicide is not a legal Go move');
-	state.ko = captured === 1 && liberties(board, state.size, index) === 1 ? state.board.findIndex((stone, i) => stone !== board[i]) : null;
+	state.ko = captured === 1 && liberties(board, state.size, index) === 1 ? soleCaptured : null;
 	state.board = board;
 	state.turn = enemy;
 	state.passes = 0;
@@ -131,7 +140,6 @@ function goIndex(state: GoState, x: number, y: number): number {
 function goNeighbours(state: GoState, index: number): number[] { const x = index % state.size; const y = Math.floor(index / state.size); return [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].filter(([nx, ny]) => nx >= 0 && ny >= 0 && nx < state.size && ny < state.size).map(([nx, ny]) => ny * state.size + nx); }
 function group(board: Array<GoStone | null>, size: number, start: number): number[] { const stone = board[start]; if (!stone) return []; const found: number[] = []; const todo = [start]; const seen = new Set<number>(); while (todo.length) { const index = todo.pop()!; if (seen.has(index) || board[index] !== stone) continue; seen.add(index); found.push(index); const x = index % size; const y = Math.floor(index / size); for (const [nx, ny] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) if (nx >= 0 && ny >= 0 && nx < size && ny < size) todo.push(ny * size + nx); } return found; }
 function liberties(board: Array<GoStone | null>, size: number, start: number): number { const cells = group(board, size, start); const empty = new Set<number>(); for (const index of cells) { const x = index % size; const y = Math.floor(index / size); for (const [nx, ny] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) if (nx >= 0 && ny >= 0 && nx < size && ny < size && board[ny * size + nx] === null) empty.add(ny * size + nx); } return empty.size; }
-function removeGroup(board: Array<GoStone | null>, size: number, start: number): number { const cells = group(board, size, start); for (const index of cells) board[index] = null; return cells.length; }
 
 export interface BackgammonState { points: number[]; bar: { white: number; black: number }; off: { white: number; black: number }; turn: 'white' | 'black'; }
 export interface BackgammonMove { from: number | 'bar'; to: number | 'off'; die: number; }

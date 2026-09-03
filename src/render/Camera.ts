@@ -76,7 +76,8 @@ export class Camera {
 	get view(): { x: number; y: number; width: number; height: number } {
 		const width = this.viewWidth / this._zoom;
 		const height = this.viewHeight / this._zoom;
-		return { x: this.x - width / 2, y: this.y - height / 2, width, height };
+		const { x: centreX, y: centreY } = this.clampedCentre(this.x, this.y);
+		return { x: centreX - width / 2, y: centreY - height / 2, width, height };
 	}
 
 	/** stops the camera leaving the map; pass null to allow it again */
@@ -164,20 +165,25 @@ export class Camera {
 		};
 	}
 
+	//the bounds-clamped centre `apply()` renders at, also what `view` reports for
+	//culling — the two must agree, or culling drops tiles that are actually on screen
+	private clampedCentre(x: number, y: number): { x: number; y: number } {
+		if (!this.bounds) return { x, y };
+
+		const halfWidth = this.viewWidth / this._zoom / 2;
+		const halfHeight = this.viewHeight / this._zoom / 2;
+		const { minX, minY, maxX, maxY } = this.bounds;
+
+		//when the map is narrower than the view, centre it rather than clamping to an
+		//edge, which would push the map against one side of the screen
+		return {
+			x: maxX - minX < halfWidth * 2 ? (minX + maxX) / 2 : clamp(x, minX + halfWidth, maxX - halfWidth),
+			y: maxY - minY < halfHeight * 2 ? (minY + maxY) / 2 : clamp(y, minY + halfHeight, maxY - halfHeight),
+		};
+	}
+
 	private apply(): void {
-		let centreX = this.x + this.shakeX;
-		let centreY = this.y + this.shakeY;
-
-		if (this.bounds) {
-			const halfWidth = this.viewWidth / this._zoom / 2;
-			const halfHeight = this.viewHeight / this._zoom / 2;
-			const { minX, minY, maxX, maxY } = this.bounds;
-
-			//when the map is narrower than the view, centre it rather than clamping to an
-			//edge, which would push the map against one side of the screen
-			centreX = maxX - minX < halfWidth * 2 ? (minX + maxX) / 2 : clamp(centreX, minX + halfWidth, maxX - halfWidth);
-			centreY = maxY - minY < halfHeight * 2 ? (minY + maxY) / 2 : clamp(centreY, minY + halfHeight, maxY - halfHeight);
-		}
+		const { x: centreX, y: centreY } = this.clampedCentre(this.x + this.shakeX, this.y + this.shakeY);
 
 		this.world.scale.set(this._zoom);
 		//rounding to whole screen pixels stops pixel art shimmering as the camera moves
