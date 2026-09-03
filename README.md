@@ -291,12 +291,12 @@ rather than showing a raw key to the player.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full, numbered build order: 96 items, 74 shipped and
-twenty-two open (3D rendering broken into a nine-step build-up plus an engine choice, a
+See [ROADMAP.md](ROADMAP.md) for the full, numbered build order: 98 items, 74 shipped and
+twenty-four open (3D rendering broken into a nine-step build-up plus an engine choice, a
 sound and music orchestrator, five items surfaced from Wesnoth's own manual, two
-quest-marker/waypoint items, and keybind conflicts/a rebind screen/gamepad support, all
-logged at low priority; see that file for why). Each
-module ships in the order given
+quest-marker/waypoint items, keybind conflicts/a rebind screen/gamepad support, and a
+tower-defense reference plus its wave-spawner primitive, all logged at low priority; see
+that file for why). Each module ships in the order given
 there; later ones build on the
 modules before them.
 

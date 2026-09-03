@@ -741,6 +741,14 @@ since a rebind flow with nothing to warn against would ship the exact silent-col
 mapping sideways to a second input source, touching neither key storage nor a settings
 screen - so it can land in any order relative to 94/95.
 
+97 sits with 28/30 rather than the unblocked tier above: a further genre with no title or
+mechanic picked, the same open-ended shape those two already have, not demanded work. 98
+is different in kind from 97 despite being logged alongside it: a small, concrete,
+unblocked primitive (a `dt`-driven timer, nothing to decide) that item 97 would use if
+ever picked up, but useful on its own to any game with timed escalating spawns. 98 joins
+the 89-96 unblocked tier; 97 stays with 28/30, genuinely low priority until a specific
+reference is chosen the way chess once was for board games.
+
 Sequencing note for whenever 45 does get a yes: 84 (which engine) has to come *before* 74
 (build the foundation) despite its higher number, since there is no foundation to build
 until something is chosen to build it on - the append-only numbering doesn't imply build
@@ -894,3 +902,19 @@ of most of these, same reasoning that has kept move numbers and species stats ou
     or a stick. Button/axis-to-action mapping, and how an axis becomes a digital "pressed"
     (a deadzone threshold) are the open questions here, not the action-name architecture
     itself, which `Input` already has right
+
+97. a tower defense reference, further widening the genre list item 30 already opened:
+    mostly composition of what `mwg` has rather than new demand. `Targeting`'s range/area
+    resolution and `roguelike.Pathfinder` cover a tower choosing what to hit and an enemy
+    routing along (or rerouting around a blocked) lane, `render.Projectile` covers a shot in
+    flight, and `actors.Shop` covers spending currency to place or upgrade a tower. The one
+    real gap surveyed against the existing modules is a timed wave spawner, logged
+    separately as item 98 rather than folded in here, the same way item 30 named XCOM and
+    board games without picking a specific title. No specific implementation committed to
+98. a wave spawner: timed, escalating enemy spawning, distinct in shape from anything `mwg`
+    already schedules. `roguelike.Scheduler` orders whose turn it is by energy cost, a
+    discrete-turn primitive with no concept of real time at all; this wants a plain timer
+    driven by `dt`, resolving to "wave 3 starts at t+45s, spawns 8 of kind A and 2 of kind B
+    over the next 10s" rather than anyone's turn. Not specific to tower defense (any game
+    with escalating timed spawns - a horde mode, a survival minigame - wants the same
+    primitive), which is why it is its own item rather than bundled into 97
