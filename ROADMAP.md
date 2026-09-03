@@ -699,9 +699,11 @@ logged rather than started.
 
 83 and 85 have since shipped, in the order this reassessment gave them: 83 first (no yes
 needed, an hour with `Game.ts`), 85 alongside it (equally small, equally unblocked - a
-`Session` counter is not a decision the way 45/74-84 are). The 3D block stays exactly
-where 45 always put it - last, undecided, gated - because nothing about shipping 83/85
-changed that.
+`Session` counter is not a decision the way 45/74-84 are). 86 (the audio orchestrator)
+joins that same unblocked tier, requested directly and building on `mwg/audio`'s existing
+`Music`/`Sound` rather than waiting on anything. The 3D block stays exactly where 45
+always put it - last, undecided, gated - because nothing about shipping 83/85/86 changed
+that.
 
 Sequencing note for whenever 45 does get a yes: 84 (which engine) has to come *before* 74
 (build the foundation) despite its higher number, since there is no foundation to build
@@ -734,3 +736,20 @@ once the floor exists.
     store/ads/IAP SDK of any kind - a wrapper reads `session.launches` and decides for
     itself. The achievement half needed no new code: `increment()`'s return value and
     `drainNew()` were already sufficient, so no push-style `Signal` was added for it
+
+86. a sound and music orchestrator: naming what state a game is in ("exploring", "combat",
+    "boss", "menu") and letting the game just declare the current state, rather than every
+    call site remembering to call `Music.play()`/`Sound.play()` itself. `mwg/audio` already
+    has both halves this would sit on top of: `Music.play(path, fadeDuration)` crossfades
+    between tracks (the old one fades out while the new one fades in, over the same span,
+    not a hard cut), and `Sound` is a pooled one-shot player for a hit, a pickup, a step.
+    Neither knows about game state or events - a scene calls them directly, one line per
+    cue, which is fine for a handful of cues and repetitive past that. The gap is the
+    mapping itself: state name (or a fired event) to which track/cue plays, so
+    `orchestrator.enter('combat')` (or `on('bossPhase', ...)`, matching `BattleHooks`'/
+    `CombatHooks`' existing event-name-and-handler shape) is the one call site, and the
+    crossfade timing/track choice is data the game supplies once rather than duplicated at
+    every place combat can start. A state that resolves to the same track already playing
+    should not restart or refade it - re-entering "combat" mid-fight must not reset the
+    music - which is the actual design question here, not the crossfade math `Music`
+    already has
