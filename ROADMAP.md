@@ -614,7 +614,55 @@ needed. Rules were never protected anyway, and as ever `mwg` would supply only t
 66-73 extend the tail with classical games as minigame material and reference candidates,
 plus the combat-hook seam SPD's port asked for, all shipped in the same pass - including
 41's generic board-piece abstraction (`mwg/board`'s `BoardGrid`/`BoardPiece`), which 66's
-chess-specific implementation needed anyway. With 66-73 placed, item 45 is the roadmap's
-only open item, unchanged in kind from every past reassessment: 3D rendering cuts against
-`mwg`'s own 2D purpose and needs a project-level yes before any code, not just an
-implementation.
+chess-specific implementation needed anyway.
+
+Item 45 stayed one line for a long time because it never got past its own caution: whether
+3D belongs in this project at all is a project-level question, not an implementation one.
+That caution still stands - none of 74-82 below are picked up without a yes first - but a
+single line was also the wrong size for it, once asked to say what "3D rendering" would
+actually break down into. 74-82 are that breakdown: a build-up from a bare floor to
+imported models, in the order each piece would actually need the one before it, still all
+logged rather than started.
+
+74. a 3D rendering foundation: a real perspective camera, depth, and meshes - the
+    prerequisite every item below needs and item 45's own caution already named. PixiJS is
+    a 2D batcher; nothing in `mwg/render` today is an extension of it toward 3D the way
+    isometric or hex projection were extensions of the square-tile path, because a depth
+    buffer and a projection matrix are not tile-map concerns. Whether that foundation is a
+    second PixiJS application in WebGPU mode, a separate library entirely, or something
+    else is exactly the kind of choice 45 says needs a yes first
+75. a basic 3D engine with a floor: one flat plane and a camera that can move around it,
+    nothing else - proves item 74's foundation actually renders and navigates before any
+    game content sits on top of it
+76. a 3D floor with square tiles: individual tile meshes (or one textured plane with a
+    tiled UV) placed from `mwg/roguelike`'s existing square grid data, so a level generated
+    today could in principle be viewed in 3D without a second data model
+77. a 3D floor with hexagonal tiles: the same for `mwg/core`'s `Hex` grid - axial
+    coordinates already exist, only the placement math changes from square to hex
+78. square columns: raised geometry per cell reusing item 44's `Elevation` sidecar - a wall
+    or platform with actual height, the 3D analogue of `TileMap.setCellHeight`'s shaded
+    faces
+79. hexagonal columns: the same raised-geometry step over a hex floor (77 + 78 combined)
+80. glTF / GLB import: loading a pre-built model (a character, a prop) rather than hand-
+    built primitives - the standard interchange format, and what most free/purchased 3D
+    asset packs already ship as
+81. MagicaVoxel VOX import: a second, distinct asset pipeline for voxel-art models - a
+    different aesthetic from glTF's smooth meshes, and a common source for exactly the
+    chunky, tile-scaled look a game built on `mwg`'s other 2D tools might reach for
+82. characters and movement in 3D: billboarded sprites (existing 2D art, always facing the
+    camera - cheap, and keeps every other `mwg` module's assets reusable) versus true
+    animated meshes (item 80/81's import formats, full freedom, an animation system this
+    roadmap does not have yet even in 2D) is an open question of its own, not a detail
+    inside 76-79
+
+83. `mwg/core` importing from `mwg/render` (`Game` calls `registerColorTransform` at
+    start-up) means every game that imports only `mwg/core` still pulls in the whole
+    render module - `TileMap`, `Camera`, `ColorTransformBatcher`'s shader compilation, all
+    of it - whether or not the game ever draws a tile. Verified by grepping every module's
+    imports rather than assumed: `core`→`render` is the one surprising edge; everything
+    else already only depends on `core`/`assets` the way a reader would expect. Worth
+    fixing (an explicit `Game` option, or moving sprite registration to `render` itself and
+    calling it from game code) before it becomes two or three such edges instead of one,
+    and worth treating generally: a game built on a handful of modules should not find
+    unrelated ones compiled into its `mwg.global.js`, which is exactly the file size this
+    project's own performance priority cares about
