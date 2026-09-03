@@ -749,6 +749,14 @@ ever picked up, but useful on its own to any game with timed escalating spawns. 
 the 89-96 unblocked tier; 97 stays with 28/30, genuinely low priority until a specific
 reference is chosen the way chess once was for board games.
 
+99 is split by its own entry into a part that joins the unblocked tier and a part that
+does not: float position plus a continuous facing angle is unblocked the same way 98
+is (`Camera` and sprites already work in float world units; nothing here waits on a
+decision), so that half sits with 89-98. Continuous `z` is explicitly not promised by this
+item and stays behind the 3D block's own gate, same as items 74-84 and 96's whole shape;
+99 is logged as one item because the 2D half is worth building regardless of whether 3D
+ever gets a yes, not because both halves ship together.
+
 Sequencing note for whenever 45 does get a yes: 84 (which engine) has to come *before* 74
 (build the foundation) despite its higher number, since there is no foundation to build
 until something is chosen to build it on - the append-only numbering doesn't imply build
@@ -918,3 +926,16 @@ of most of these, same reasoning that has kept move numbers and species stats ou
     over the next 10s" rather than anyone's turn. Not specific to tower defense (any game
     with escalating timed spawns - a horde mode, a survival minigame - wants the same
     primitive), which is why it is its own item rather than bundled into 97
+
+99. free movement: a position and facing that are not snapped to a grid at all, in
+    floating-point rather than whole tiles or whole elevation levels. `rpg.GridMover` is the
+    only movement primitive `mwg` has today, and it is tile-to-tile by design (`moveBy`
+    tweens between two grid cells, `turnTo` faces one of four discrete directions); nothing
+    covers a twin-stick shooter, a bullet-hell, or any top-down action game whose player
+    moves and aims freely rather than stepping cell to cell. `x`/`y` in float world units is
+    already how `Camera` and every sprite position works, so the 2D half of this (position
+    plus a continuous facing angle, not one of four/eight fixed directions) is not blocked
+    on anything; `roguelike.Elevation` is whole-levels-only today (`heights are whole
+    levels, not fractions`, its own doc comment), so a genuinely continuous `z` is a
+    separate, larger question that ties into the still-gated 3D block (item 45) rather than
+    something this item can promise on its own
