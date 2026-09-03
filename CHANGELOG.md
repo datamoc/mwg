@@ -216,7 +216,8 @@ Everything below has shipped on `main`; no version has been tagged yet.
   mockup wiring together most of the above: generated floors, three-state fog of war,
   bump-to-attack, wander/hunt/flee monsters, secret doors and hidden traps, a thrown flask
   of oil, a dense icon-grid inventory, autosave-on-descend with permadeath — and `chess`, a
-  playable board against `mwg/board`'s search engine.
+  playable board against `mwg/board`'s search engine, moved by click-to-select-then-move or
+  a held/repeating arrow-key cursor.
 
 **Project**
 - A project website with a live colour-transform demo, the capability-spec table, and the
