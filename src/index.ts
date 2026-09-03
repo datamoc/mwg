@@ -1,9 +1,10 @@
 /**
- * mwg - a framework for 2D roguelikes that run from a local file.
+ * mwg - a framework for 2D top-down games that run from a local file.
  *
  * This is the whole surface in one place, which is also what the standalone
- * `mwg.global.js` build exposes as `window.mwg`. Consumers using a bundler can import the
- * narrower entry points instead: `mwg/core`, `mwg/render`, `mwg/roguelike`.
+ * `mw_games.global.js` build exposes as `window.mw_games`. Consumers using a bundler can
+ * import the narrower entry points instead: `mw_games/core`, `mw_games/render`,
+ * `mw_games/roguelike`.
  */
 export * from './core/index.ts';
 export * from './render/index.ts';

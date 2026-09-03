@@ -68,20 +68,30 @@ for free: a finished game is still a folder you double-click.
 **With a toolchain**, if you already use a bundler:
 
 ```
-npm install mwg
+npm install mw_games
 ```
 ```ts
-import { Game, Scene } from 'mwg/core';
-import { Sprite } from 'mwg/render';
+import { Game, Scene } from 'mw_games/core';
+import { Sprite } from 'mw_games/render';
 ```
 
-**Without one.** Drop one file next to your page and open it — this path exists because
-the framework's own target is a game you can run by double-clicking it:
+No npm registry access (an offline machine, a pinned artifact for reproducible builds)?
+`npm pack mw_games` downloads the exact published tarball; install it by path instead of by
+name:
+
+```
+npm install ./mw_games-0.1.1.tgz
+```
+
+**Without either.** Drop one file next to your page and open it — this path exists because
+the framework's own target is a game you can run by double-clicking it. Download
+`mw_games.global.js` from a [release](https://github.com/datamoc/mwg/releases) (no `npm`,
+no `node_modules`, nothing to install):
 
 ```html
-<script src="mwg.global.js"></script>
+<script src="mw_games.global.js"></script>
 <script>
-  const game = new mwg.Game(document.getElementById('game'));
+  const game = new mw_games.Game(document.getElementById('game'));
 </script>
 ```
 

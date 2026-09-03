@@ -2,11 +2,11 @@ import { defineConfig } from 'vite';
 import { resolve } from 'node:path';
 
 /**
- * Builds the standalone bundle: dist/mwg.global.js
+ * Builds the standalone bundle: dist/mw_games.global.js
  *
  * This is the build for people who do not want a toolchain at all. It is a classic
- * script, so a plain HTML file can load it with <script src="mwg.global.js"> and get
- * `window.mwg` — including from file://, where ES modules are blocked.
+ * script, so a plain HTML file can load it with <script src="mw_games.global.js"> and get
+ * `window.mw_games` — including from file://, where ES modules are blocked.
  *
  * The npm package (built by tsc, see tsconfig.build.json) is the other half: it is what
  * developers who already use a bundler will install.
@@ -15,9 +15,9 @@ export default defineConfig({
 	build: {
 		lib: {
 			entry: resolve(import.meta.dirname, 'src/index.ts'),
-			name: 'mwg',
+			name: 'mw_games',
 			formats: ['iife'],
-			fileName: () => 'mwg.global.js',
+			fileName: () => 'mw_games.global.js',
 		},
 		outDir: 'dist',
 		emptyOutDir: false,

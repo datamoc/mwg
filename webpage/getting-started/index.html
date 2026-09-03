@@ -44,6 +44,18 @@
 			gap: 1rem;
 		}
 
+		.three-col {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 1rem;
+		}
+
+		@media (max-width: 900px) {
+			.three-col {
+				grid-template-columns: 1fr;
+			}
+		}
+
 		@media (max-width: 700px) {
 			.two-col {
 				grid-template-columns: 1fr;
@@ -88,21 +100,30 @@
 						from them reaches the player; the finished page in step 10 is plain HTML,
 						JS and assets.
 					</p>
-					<div class="two-col">
+					<div class="three-col">
 						<div class="panel" style="padding: 1rem">
-							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>With a bundler</strong></p>
-							<pre style="margin: 0"><code>npm install mwg vite</code></pre>
+							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>From npm</strong></p>
+							<pre style="margin: 0"><code>npm install mw_games vite</code></pre>
+							<p style="margin: 0.5rem 0 0; font-size: 0.85rem">Downloads from the registry. What this tutorial uses.</p>
 						</div>
 						<div class="panel" style="padding: 1rem">
-							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>Without one</strong></p>
-							<pre style="margin: 0"><code>&lt;script src="mwg.global.js"&gt;&lt;/script&gt;</code></pre>
+							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>From a .tgz</strong></p>
+							<pre style="margin: 0"><code>npm pack mw_games
+npm install ./mw_games-0.1.1.tgz</code></pre>
+							<p style="margin: 0.5rem 0 0; font-size: 0.85rem">A downloaded, pinned tarball — no registry access needed at install time.</p>
+						</div>
+						<div class="panel" style="padding: 1rem">
+							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>No npm at all</strong></p>
+							<pre style="margin: 0"><code>&lt;script src="mw_games.global.js"&gt;&lt;/script&gt;</code></pre>
+							<p style="margin: 0.5rem 0 0; font-size: 0.85rem">Download the file from a <a href="https://github.com/datamoc/mwg/releases">release</a>; nothing to install.</p>
 						</div>
 					</div>
 					<p>
-						This tutorial follows the bundler path, since that's what the code samples
-						below assume (<code>import</code> statements, TypeScript). Everything is the
-						same either way once written — the standalone build is <code>window.mwg</code>
-						instead of a module to import from.
+						This tutorial follows the npm path, since that's what the code samples below
+						assume (<code>import</code> statements, TypeScript). Everything is the same
+						either way once written — the standalone build is <code>window.mw_games</code>
+						instead of a module to import from, and needs no build step of its own (skip
+						straight to opening the page once you have the file).
 					</p>
 					<p>
 						<strong style="color: var(--paper)">Your own art.</strong> mwg ships no
@@ -130,7 +151,8 @@
 						Assets live in their own folder, separate from source — <code>assets/</code>
 						is what step 10's build points at to compile every file it holds into the
 						finished page. Nothing under <code>my-game/</code> needs to be downloaded
-						beyond the two npm packages above; everything else here you write or draw.
+						beyond the framework itself, one of the three ways above; everything else
+						here you write or draw.
 					</p>
 				</article>
 
@@ -153,7 +175,7 @@
 						<code>create()</code> builds its contents; assets are already loaded by the
 						time it runs, which the next step arranges.
 					</p>
-					<pre><code>import { Game, Scene } from 'mwg/core';
+					<pre><code>import { Game, Scene } from 'mw_games/core';
 
 class TownScene extends Scene {
 	override create(): void {
@@ -180,7 +202,7 @@ main();</code></pre>
 						at that folder; the compiled build in step 10 ignores it; it looks assets up
 						in the script <code>compile-resources</code> generated instead.
 					</p>
-					<pre><code>import * as Resources from 'mwg/assets';
+					<pre><code>import * as Resources from 'mw_games/assets';
 
 const TILES = 'tiles.png';
 
@@ -199,8 +221,8 @@ async function main(): Promise&lt;void&gt; {
 						floor. Frame <code>0</code> of the sheet is floor, <code>1</code> is wall —
 						whatever the tileset's own layout is.
 					</p>
-					<pre><code>import { Camera, TileMap, SpriteSheet } from 'mwg/render';
-import { Random } from 'mwg/core';
+					<pre><code>import { Camera, TileMap, SpriteSheet } from 'mw_games/render';
+import { Random } from 'mw_games/core';
 
 const FLOOR_TILE = 0;
 const WALL_TILE = 1;
@@ -240,8 +262,8 @@ class TownScene extends Scene {
 						<code>Input</code>'s named actions rather than raw keys — <code>up</code>,
 						<code>down</code>, <code>left</code>, <code>right</code> are bound by default.
 					</p>
-					<pre><code>import { TintedSprite } from 'mwg/render';
-import { Input } from 'mwg/core';
+					<pre><code>import { TintedSprite } from 'mw_games/render';
+import { Input } from 'mw_games/core';
 
 const HERO_TILE = 2;
 const TILE_SIZE = 16;
@@ -317,7 +339,7 @@ override update(dt: number): void {
 				<article class="step">
 					<h3><span class="n">09</span> A status line</h3>
 					<p>Any UI text is a <code>Label</code>, styled from the current theme rather than carrying its own font and colour:</p>
-					<pre><code>import { Label, theme } from 'mwg/ui';
+					<pre><code>import { Label, theme } from 'mw_games/ui';
 
 // inside TownScene:
 private status!: Label;
@@ -347,7 +369,7 @@ export default defineConfig({
 });</code></pre>
 					<p>Then run the build, and compile <code>assets/</code> into a script the finished page can load with no server:</p>
 					<pre><code>npx vite build
-node node_modules/mwg/tools/compile-resources.mjs ./assets ./dist/assets</code></pre>
+node node_modules/mw_games/tools/compile-resources.mjs ./assets ./dist/assets</code></pre>
 					<p>
 						That leaves <code>dist/index.html</code>, <code>dist/game.js</code> and
 						<code>dist/assets/assets.js</code> — but the page still points at
@@ -372,10 +394,10 @@ node node_modules/mwg/tools/compile-resources.mjs ./assets ./dist/assets</code><
 				<article class="step">
 					<h3><span class="n">11</span> Finished code</h3>
 					<p>The whole scene, about 60 lines:</p>
-					<pre><code>import { Game, Scene, Input, Random } from 'mwg/core';
-import { Camera, TileMap, TintedSprite, SpriteSheet } from 'mwg/render';
-import { Label, theme } from 'mwg/ui';
-import * as Resources from 'mwg/assets';
+					<pre><code>import { Game, Scene, Input, Random } from 'mw_games/core';
+import { Camera, TileMap, TintedSprite, SpriteSheet } from 'mw_games/render';
+import { Label, theme } from 'mw_games/ui';
+import * as Resources from 'mw_games/assets';
 
 const TILES = 'tiles.png';
 const TILE_SIZE = 16;

@@ -1,5 +1,5 @@
 {
-  "name": "mwg",
+  "name": "mw_games",
   "version": "0.1.1",
   "description": "A framework for building 2D top-down games that run from a local file, with no server and no install.",
   "license": "MPL-2.0",
@@ -69,5 +69,5 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "unpkg": "./dist/mwg.global.js"
+  "unpkg": "./dist/mw_games.global.js"
 }
