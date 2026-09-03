@@ -713,6 +713,20 @@ unblocked-but-not-urgent tier as 86 - each is small, self-contained, and needs n
 project-level decision, but nothing demands them yet the way 87 corrects an existing
 false claim. The 3D block is still last, still gated, unchanged by any of this.
 
+Second pass on the same batch, re-reading the reference table at the very top of
+README.md rather than only the capability spec table below it: that row has said
+"turn-based unit combat with recruiting and upkeep" for Wesnoth since the reference list
+existed, which is 88's shape exactly, not just a plausible new capability. 88 moves up to
+sit directly behind 87: both correct a gap in something this project already told the
+world Wesnoth demands, one because the claim is actively false (87), the other because it
+was named and never built (88). 89-91 are a different kind of item entirely, generalised
+from the manual rather than promised anywhere in the reference table, so they stay behind
+88 with no priority order among the three of them; nothing yet distinguishes traits from
+visibility from auras in urgency, all three equally small and equally undemanded. 86
+drops one slot, behind 88, ahead of 89-91: a direct request still outranks a survey
+find, but not a standing unmet promise. The 3D block remains last and gated, untouched by
+any of this reordering.
+
 Sequencing note for whenever 45 does get a yes: 84 (which engine) has to come *before* 74
 (build the foundation) despite its higher number, since there is no foundation to build
 until something is chosen to build it on - the append-only numbering doesn't imply build
