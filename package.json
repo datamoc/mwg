@@ -7,7 +7,7 @@
   "sideEffects": false,
   "files": [
     "dist",
-    "tools",
+    "tools/compile-resources.mjs",
     "LICENSE",
     "README.md"
   ],

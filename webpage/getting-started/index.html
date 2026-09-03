@@ -81,7 +81,13 @@
 		<section style="border-bottom: none">
 			<div class="wrap">
 				<article class="step">
-					<h3><span class="n">01</span> Two ways to use it</h3>
+					<h3><span class="n">01</span> What you need</h3>
+					<p>
+						<strong style="color: var(--paper)">Node.js and npm</strong>, to install
+						packages and run the build — a dev tool only, same as a compiler. Nothing
+						from them reaches the player; the finished page in step 10 is plain HTML,
+						JS and assets.
+					</p>
 					<div class="two-col">
 						<div class="panel" style="padding: 1rem">
 							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>With a bundler</strong></p>
@@ -98,21 +104,38 @@
 						same either way once written — the standalone build is <code>window.mwg</code>
 						instead of a module to import from.
 					</p>
-				</article>
-
-				<article class="step">
-					<h3><span class="n">02</span> Prerequisites</h3>
 					<p>
-						While developing, run a dev server (Vite works well — it's what the
-						framework's own examples use). A page opened straight from
-						<code>file://</code> cannot load an ES module, and your source is one until
-						it's built. This is temporary: the last step below turns the finished page
-						into one that opens with no server at all, which is the whole point of mwg.
+						<strong style="color: var(--paper)">Your own art.</strong> mwg ships no
+						sprites or sounds of its own — it is a renderer and a set of game systems,
+						not an asset pack. This tutorial's one tileset, <code>tiles.png</code>, is a
+						16px-grid image you draw or source yourself (frame 0 floor, 1 wall, 2 a
+						character — anything in that layout works for a first try).
+					</p>
+					<p>
+						<strong style="color: var(--paper)">A dev server</strong> while writing code
+						— Vite works well, and is what the framework's own examples use. A page
+						opened straight from <code>file://</code> cannot load an ES module, and your
+						source is one until it's built. This is temporary: step 10 below turns the
+						finished page into one that opens with no server at all, which is the whole
+						point of mwg.
+					</p>
+					<p>Lay the project out like this before writing any code:</p>
+					<pre><code>my-game/
+├─ index.html
+├─ main.ts
+├─ vite.config.ts
+└─ assets/
+   └─ tiles.png</code></pre>
+					<p>
+						Assets live in their own folder, separate from source — <code>assets/</code>
+						is what step 10's build points at to compile every file it holds into the
+						finished page. Nothing under <code>my-game/</code> needs to be downloaded
+						beyond the two npm packages above; everything else here you write or draw.
 					</p>
 				</article>
 
 				<article class="step">
-					<h3><span class="n">03</span> A skeleton page</h3>
+					<h3><span class="n">02</span> A skeleton page</h3>
 					<p>The only requirement is a canvas, or nothing — <code>Game</code> creates and appends one if you don't give it one.</p>
 					<pre><code>&lt;!doctype html&gt;
 &lt;html&gt;
@@ -124,7 +147,7 @@
 				</article>
 
 				<article class="step">
-					<h3><span class="n">04</span> The game and a scene</h3>
+					<h3><span class="n">03</span> The game and a scene</h3>
 					<p>
 						Every mwg game is a <code>Game</code> running a <code>Scene</code>. A scene's
 						<code>create()</code> builds its contents; assets are already loaded by the
@@ -147,12 +170,15 @@ main();</code></pre>
 				</article>
 
 				<article class="step">
-					<h3><span class="n">05</span> Loading assets</h3>
+					<h3><span class="n">04</span> Loading assets</h3>
 					<p>
 						Assets load by path, before the scene that needs them starts. After
 						<code>load</code> resolves, every lookup is synchronous — scene code never
-						awaits an asset mid-build. This example needs one tileset:
-						<code>tiles.png</code>, a 16px grid, next to the page.
+						awaits an asset mid-build. This example needs the one tileset from step 01:
+						<code>assets/tiles.png</code>, a 16px grid.
+						<code>setBase</code> points dev-mode lookups (a plain path, served by Vite)
+						at that folder; the compiled build in step 10 ignores it; it looks assets up
+						in the script <code>compile-resources</code> generated instead.
 					</p>
 					<pre><code>import * as Resources from 'mwg/assets';
 
@@ -160,13 +186,14 @@ const TILES = 'tiles.png';
 
 async function main(): Promise&lt;void&gt; {
 	const game = new Game({ canvas: document.getElementById('game') as HTMLCanvasElement });
+	Resources.setBase('./assets/');
 	await Resources.load([TILES]);
 	await game.start(TownScene);
 }</code></pre>
 				</article>
 
 				<article class="step">
-					<h3><span class="n">06</span> A floor to stand on</h3>
+					<h3><span class="n">05</span> A floor to stand on</h3>
 					<p>
 						A <code>Camera</code> holds the world; a <code>TileMap</code> holds the
 						floor. Frame <code>0</code> of the sheet is floor, <code>1</code> is wall —
@@ -207,7 +234,7 @@ class TownScene extends Scene {
 				</article>
 
 				<article class="step">
-					<h3><span class="n">07</span> Someone to move</h3>
+					<h3><span class="n">06</span> Someone to move</h3>
 					<p>
 						A character is a <code>TintedSprite</code> at a tile position, moved on
 						<code>Input</code>'s named actions rather than raw keys — <code>up</code>,
@@ -260,7 +287,7 @@ private onAction(action: string): boolean {
 				</article>
 
 				<article class="step">
-					<h3><span class="n">08</span> Following with the camera</h3>
+					<h3><span class="n">07</span> Following with the camera</h3>
 					<p>A camera that doesn't move is just a canvas. <code>follow</code> eases towards a moving point every frame:</p>
 					<pre><code>// end of create():
 this.camera.follow(this.hero);
@@ -272,7 +299,7 @@ override update(dt: number): void {
 				</article>
 
 				<article class="step">
-					<h3><span class="n">09</span> A flash that isn't just "darker"</h3>
+					<h3><span class="n">08</span> A flash that isn't just "darker"</h3>
 					<p>
 						Step 7 already flashed the hero red on a bump, using
 						<code>lerpTint</code> — the additive colour term from
@@ -288,7 +315,7 @@ override update(dt: number): void {
 				</article>
 
 				<article class="step">
-					<h3><span class="n">10</span> A status line</h3>
+					<h3><span class="n">09</span> A status line</h3>
 					<p>Any UI text is a <code>Label</code>, styled from the current theme rather than carrying its own font and colour:</p>
 					<pre><code>import { Label, theme } from 'mwg/ui';
 
@@ -305,22 +332,45 @@ override create(): void {
 				</article>
 
 				<article class="step">
-					<h3><span class="n">11</span> Building it for <code>file://</code></h3>
-					<p>
-						The dev server is gone at this point — a real build compiles the tileset
-						into a script and rewrites the entry tag to a classic, non-module script:
-					</p>
-					<pre><code>vite build
+					<h3><span class="n">10</span> Building it for <code>file://</code></h3>
+					<p>The dev server is gone from here on — this step is what removes the need for it. First, tell Vite to bundle as a classic script rather than an ES module, with every path relative rather than site-absolute:</p>
+					<pre><code>// vite.config.ts
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+	base: './',
+	build: {
+		rollupOptions: {
+			output: { format: 'iife', entryFileNames: 'game.js' },
+		},
+	},
+});</code></pre>
+					<p>Then run the build, and compile <code>assets/</code> into a script the finished page can load with no server:</p>
+					<pre><code>npx vite build
 node node_modules/mwg/tools/compile-resources.mjs ./assets ./dist/assets</code></pre>
 					<p>
-						See <code>tools/emit-page.mjs</code> in the framework's own repository for the
-						exact rewrite it does to a Vite build's output — every one of the four
-						<a href="../examples/index.html">examples</a> is built this same way.
+						That leaves <code>dist/index.html</code>, <code>dist/game.js</code> and
+						<code>dist/assets/assets.js</code> — but the page still points at
+						<code>game.js</code> as an ES module, which <code>file://</code> refuses to
+						load, and has no <code>&lt;script&gt;</code> for the compiled assets yet. Open
+						<code>dist/index.html</code> and change this one line:
+					</p>
+					<pre><code>&lt;script type="module" crossorigin src="./game.js"&gt;&lt;/script&gt;</code></pre>
+					<p>to these two, in this order — the asset script has to run first, so <code>game.js</code> finds <code>window.__MWG_ASSETS__</code> already populated:</p>
+					<pre><code>&lt;script defer src="./assets/assets.js"&gt;&lt;/script&gt;
+&lt;script defer src="./game.js"&gt;&lt;/script&gt;</code></pre>
+					<p>
+						<code>dist/</code> is now a finished game: double-click <code>dist/index.html</code>
+						and it runs, no server, nothing installed on the machine that opens it. Ship
+						that folder. <code>tools/emit-page.mjs</code> in the framework's own repository
+						scripts exactly this last edit — every one of the
+						<a href="../examples/index.html">examples</a> is built this same way, for
+						anyone who wants it automated rather than by hand.
 					</p>
 				</article>
 
 				<article class="step">
-					<h3><span class="n">12</span> Finished code</h3>
+					<h3><span class="n">11</span> Finished code</h3>
 					<p>The whole scene, about 60 lines:</p>
 					<pre><code>import { Game, Scene, Input, Random } from 'mwg/core';
 import { Camera, TileMap, TintedSprite, SpriteSheet } from 'mwg/render';
@@ -405,6 +455,7 @@ class TownScene extends Scene {
 
 async function main(): Promise&lt;void&gt; {
 	const game = new Game({ canvas: document.getElementById('game') as HTMLCanvasElement });
+	Resources.setBase('./assets/');
 	await Resources.load([TILES]);
 	await game.start(TownScene);
 }
