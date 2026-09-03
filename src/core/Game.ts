@@ -27,6 +27,30 @@ function ensurePixelArtStylesheet(): void {
 	document.head.appendChild(style);
 }
 
+/**
+ * Calls back whenever `devicePixelRatio` changes - a browser zoom, or dragging the window
+ * to a display with a different scale factor. There is no direct DOM event for this: a
+ * `matchMedia` query only fires once, for the specific ratio it was created against, so
+ * catching the *next* change means building a fresh query after every firing.
+ *
+ * @returns a function that stops watching
+ */
+function watchDevicePixelRatio(onChange: () => void): () => void {
+	let query: MediaQueryList | null = null;
+
+	const rearm = (): void => {
+		query = matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+		query.addEventListener('change', fire, { once: true });
+	};
+	const fire = (): void => {
+		onChange();
+		rearm();
+	};
+
+	rearm();
+	return () => query?.removeEventListener('change', fire);
+}
+
 export interface GameOptions {
 	/** the canvas to draw into; one is created and appended if omitted */
 	canvas?: HTMLCanvasElement;
@@ -103,6 +127,7 @@ export class Game {
 	private pending: SceneRequest[] = [];
 	private options: Required<GameOptions>;
 	private started = false;
+	private stopWatchingDpr: (() => void) | null = null;
 
 	constructor(options: GameOptions = {}) {
 		this.options = {
@@ -186,6 +211,17 @@ export class Game {
 		//them the backing size would push everything they centre off the screen.
 		this.app.renderer.on('resize', () => {
 			this.stack.resize(this.width, this.height);
+		});
+
+		//the resolution passed to app.init() above is a one-time snapshot of
+		//devicePixelRatio; a later browser zoom (or dragging the window to a display with a
+		//different scale factor) changes that ratio without Pixi noticing on its own. Left
+		//stale, the backing buffer and the browser's own CSS scaling of the canvas element
+		//fall out of a whole-pixel relationship, and nearest-neighbour upscaling of a
+		//non-integer ratio duplicates pixel columns inconsistently - the seams a pixel-art
+		//tilemap shows between tiles that were perfectly adjacent in the buffer itself.
+		this.stopWatchingDpr = watchDevicePixelRatio(() => {
+			this.app.renderer.resize(this.width, this.height, window.devicePixelRatio || 1);
 		});
 
 		this.expose();
@@ -321,6 +357,7 @@ export class Game {
 
 	destroy(): void {
 		Input.detach();
+		this.stopWatchingDpr?.();
 		this.stack.destroy();
 		this.onFrame.removeAll();
 		this.app.destroy(true, { children: true });

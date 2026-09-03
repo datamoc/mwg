@@ -151,17 +151,23 @@ export class Camera {
 
 	/** world point to screen pixels */
 	toScreen(x: number, y: number): { x: number; y: number } {
+		//must agree with apply()'s clamped centre (shake included), or a point converted
+		//with this and placed on screen lands somewhere other than where the camera
+		//actually drew it - exactly what happens near a bound, or on an axis the map is
+		//narrower than the view
+		const { x: centreX, y: centreY } = this.clampedCentre(this.x + this.shakeX, this.y + this.shakeY);
 		return {
-			x: (x - this.x) * this._zoom + this.viewWidth / 2,
-			y: (y - this.y) * this._zoom + this.viewHeight / 2,
+			x: (x - centreX) * this._zoom + this.viewWidth / 2,
+			y: (y - centreY) * this._zoom + this.viewHeight / 2,
 		};
 	}
 
 	/** screen pixels to world point, for turning a click into a tile */
 	toWorld(x: number, y: number): { x: number; y: number } {
+		const { x: centreX, y: centreY } = this.clampedCentre(this.x + this.shakeX, this.y + this.shakeY);
 		return {
-			x: (x - this.viewWidth / 2) / this._zoom + this.x,
-			y: (y - this.viewHeight / 2) / this._zoom + this.y,
+			x: (x - this.viewWidth / 2) / this._zoom + centreX,
+			y: (y - this.viewHeight / 2) / this._zoom + centreY,
 		};
 	}
 

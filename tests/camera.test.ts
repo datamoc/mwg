@@ -36,3 +36,35 @@ test('view centres a map narrower than the viewport rather than clamping to an e
 
 	assert.equal(camera.view.x, 10 - 50); // centred at (0+20)/2 = 10
 });
+
+test('toWorld inverts toScreen at the raw (unclamped) centre', () => {
+	const camera = new Camera({ zoom: 2 });
+	camera.setViewport(200, 200);
+	camera.snapTo(30, 40);
+
+	const screen = camera.toScreen(50, 70);
+	const back = camera.toWorld(screen.x, screen.y);
+	assert.equal(back.x, 50);
+	assert.equal(back.y, 70);
+});
+
+test('toWorld agrees with the actual rendered (bounds-clamped) position, not the raw centre', () => {
+	const camera = new Camera({ zoom: 1 });
+	camera.setViewport(100, 100); // halfWidth = 50, wider than the whole map below
+	camera.setBounds({ minX: 0, minY: 0, maxX: 20, maxY: 20 });
+	//following a target near x=0; apply() actually renders centred at (0+20)/2 = 10,
+	//same as the `view centres a map narrower...` case above
+	camera.snapTo(0, 0);
+
+	//a click at screen centre must map to the tile actually drawn there (10, 10), not to
+	//the raw unclamped centre (0, 0) - the bug this test guards against left every
+	//click-to-move target off by (clamped - raw) world units
+	const world = camera.toWorld(50, 50);
+	assert.equal(world.x, 10);
+	assert.equal(world.y, 10);
+
+	//and the point it drew at screen centre (the clamped centre itself) must map back to it
+	const screen = camera.toScreen(10, 10);
+	assert.equal(screen.x, 50);
+	assert.equal(screen.y, 50);
+});
