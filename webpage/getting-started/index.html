@@ -44,18 +44,6 @@
 			gap: 1rem;
 		}
 
-		.three-col {
-			display: grid;
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-			gap: 1rem;
-		}
-
-		@media (max-width: 900px) {
-			.three-col {
-				grid-template-columns: 1fr;
-			}
-		}
-
 		@media (max-width: 700px) {
 			.two-col {
 				grid-template-columns: 1fr;
@@ -100,37 +88,37 @@
 						from them reaches the player; the finished page in step 10 is plain HTML,
 						JS and assets.
 					</p>
-					<p>Three ways to get it, all producing the same code — pick whichever matches what you already have:</p>
-					<div class="three-col">
+					<p>Two ways to get it — pick whichever matches what you already have:</p>
+					<div class="two-col">
 						<div class="panel" style="padding: 1rem">
-							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>npm</strong></p>
+							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>With npm</strong></p>
 							<pre style="margin: 0"><code>npm install mw_games vite</code></pre>
-							<p style="margin: 0.5rem 0 0; font-size: 0.85rem">Fetches from the registry. What this tutorial uses from here on.</p>
+							<p style="margin: 0.5rem 0 0; font-size: 0.85rem">
+								Fetches from the registry — what this tutorial uses from here on. No
+								registry access? Download <code>mw_games-0.1.1.tgz</code> from a
+								<a href="https://github.com/datamoc/mwg/releases">release</a> and run
+								<code>npm install ./mw_games-0.1.1.tgz</code> instead — same result,
+								same <code>node_modules/mw_games/</code>, every later step identical.
+							</p>
 						</div>
 						<div class="panel" style="padding: 1rem">
-							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>.tgz</strong></p>
-							<pre style="margin: 0"><code>npm install ./mw_games-0.1.1.tgz</code></pre>
-							<p style="margin: 0.5rem 0 0; font-size: 0.85rem">Download <code>mw_games-0.1.1.tgz</code> from a <a href="https://github.com/datamoc/mwg/releases">release</a> first, into the project folder. Same result as npm, no registry needed at install time.</p>
-						</div>
-						<div class="panel" style="padding: 1rem">
-							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>.zip</strong></p>
+							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>Without npm</strong></p>
 							<pre style="margin: 0"><code>&lt;script src="mw_games.global.js"&gt;&lt;/script&gt;</code></pre>
-							<p style="margin: 0.5rem 0 0; font-size: 0.85rem">Download and unzip <code>mw_games-0.1.1.zip</code> from a <a href="https://github.com/datamoc/mwg/releases">release</a> — it holds one file, <code>mw_games.global.js</code>. No npm, no install step, nothing else needed.</p>
+							<p style="margin: 0.5rem 0 0; font-size: 0.85rem">
+								Download and unzip <code>mw_games-0.1.1.zip</code> from a
+								<a href="https://github.com/datamoc/mwg/releases">release</a> — it holds
+								one file, already <code>file://</code>-ready. No install step, no
+								<code>node_modules/</code>.
+							</p>
 						</div>
 					</div>
 					<p>
 						This tutorial follows the npm column, since that's what the code samples below
-						assume (<code>import</code> statements, TypeScript, installed under
-						<code>node_modules/</code>). The <code>.tgz</code> ends up in exactly the same
-						place — <code>npm install</code> unpacks either one into
-						<code>node_modules/mw_games/</code> — so every later step reads the same either
-						way. The <code>.zip</code> is the odd one out: it skips <code>node_modules/</code> and
-						step 10's build entirely, since <code>mw_games.global.js</code> is already a
-						finished, file://-ready script. Drop it next to your page, load it with a plain
-						<code>&lt;script&gt;</code> tag, and write every class below as
+						assume (<code>import</code> statements, TypeScript). Without npm is the odd one
+						out: it skips step 10's build entirely, and every class below is written as
 						<code>mw_games.Game</code>, <code>mw_games.Scene</code> and so on off the
-						<code>window.mw_games</code> global instead of importing it — everything else
-						in steps 02-09 is identical.
+						<code>window.mw_games</code> global instead of imported — everything else in
+						steps 02-09 is identical.
 					</p>
 					<p>
 						<strong style="color: var(--paper)">Your own art.</strong> mwg ships no
