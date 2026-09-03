@@ -18,5 +18,7 @@ export { Recorder, Player, serializeReplay, deserializeReplay } from './Replay.t
 export type { ReplayEvent } from './Replay.ts';
 export { Achievements } from './Achievements.ts';
 export type { AchievementDef } from './Achievements.ts';
+export { Session } from './Session.ts';
+export type { SessionOptions } from './Session.ts';
 export { hexNeighbors, hexDistance, hexLine, hexRange, hexToPixel, pixelToHex } from './Hex.ts';
 export type { HexCoord } from './Hex.ts';

@@ -1,6 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { Game, Scene, Input, Random, SaveSystem } from '../../src/core/index.ts';
-import { TintedSprite, SpriteSheet, TileMap, Camera, Projectile } from '../../src/render/index.ts';
+import { TintedSprite, SpriteSheet, TileMap, Camera, Projectile, registerColorTransform } from '../../src/render/index.ts';
 import { Label, theme, Window, WindowStack, IconGrid, type IconGridItem } from '../../src/ui/index.ts';
 import {
 	StatBlock,
@@ -977,6 +977,7 @@ async function main(): Promise<void> {
 	const game = new Game({
 		canvas: document.getElementById('game') as HTMLCanvasElement,
 		background: 0x08080c,
+		extensions: [registerColorTransform],
 	});
 
 	//descending and searching are their own actions, so they can be rebound like everything else

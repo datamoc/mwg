@@ -1,6 +1,6 @@
 import { Container } from 'pixi.js';
 import { Game, Scene, Input } from '../../src/core/index.ts';
-import { TintedSprite, SpriteSheet } from '../../src/render/index.ts';
+import { TintedSprite, SpriteSheet, registerColorTransform } from '../../src/render/index.ts';
 import { Window, WindowStack, ListView, MessageBox, Label, theme } from '../../src/ui/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 import tileset from '../assets/tiles.json' with { type: 'json' };
@@ -184,6 +184,7 @@ async function main(): Promise<void> {
 	const game = new Game({
 		canvas: document.getElementById('game') as HTMLCanvasElement,
 		background: 0x14141a,
+		extensions: [registerColorTransform],
 	});
 
 	await Resources.load([TILES]);

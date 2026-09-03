@@ -655,7 +655,7 @@ logged rather than started.
     roadmap does not have yet even in 2D) is an open question of its own, not a detail
     inside 76-79
 
-83. `mwg/core` importing from `mwg/render` (`Game` calls `registerColorTransform` at
+83. ~~`mwg/core` importing from `mwg/render` (`Game` calls `registerColorTransform` at
     start-up) means every game that imports only `mwg/core` still pulls in the whole
     render module - `TileMap`, `Camera`, `ColorTransformBatcher`'s shader compilation, all
     of it - whether or not the game ever draws a tile. Verified by grepping every module's
@@ -665,7 +665,13 @@ logged rather than started.
     calling it from game code) before it becomes two or three such edges instead of one,
     and worth treating generally: a game built on a handful of modules should not find
     unrelated ones compiled into its `mwg.global.js`, which is exactly the file size this
-    project's own performance priority cares about
+    project's own performance priority cares about~~ - `GameOptions` gained `extensions`,
+    a list of Pixi-extension registration functions the caller supplies; `Game.start()`
+    runs them before the renderer is built instead of calling `registerColorTransform`
+    itself. `mwg/core` now imports from no other module (reverified by the same grep).
+    Every example using `TintedSprite` (directly, or via `TileMap`/`DialogueStage`/
+    `AnimatedSprite`) updated to pass `extensions: [registerColorTransform]`; all eight
+    still build and the dungeon example was reverified rendering correctly in a browser
 
 84. choosing an underlying 3D engine - the concrete form of item 74's "which foundation"
     question, once it comes time to actually answer it. Candidates raised so far, none
@@ -691,14 +697,11 @@ logged rather than started.
     exactly the kind of choice 45's own entry says needs a project-level yes first, same as
     45 itself
 
-Reassessment with 74-84 placed: **83 moves to the top of what's open**, ahead of the whole
-3D block. It is the opposite shape from 45/74-84 in every way that matters here - small,
-already diagnosed (grepped, not guessed), unblocked by any project-level decision, and a
-direct hit on this project's own standing performance/architecture priority (a game should
-not compile in modules it never imports). Nothing about it needs a yes; it needs an hour
-with `Game.ts`. The 3D block stays exactly where 45 always put it - last, undecided, gated
-- because nothing in 74-84 changed that: breaking one line into eleven made the shape of
-the decision legible, not the decision itself any more pressing.
+83 and 85 have since shipped, in the order this reassessment gave them: 83 first (no yes
+needed, an hour with `Game.ts`), 85 alongside it (equally small, equally unblocked - a
+`Session` counter is not a decision the way 45/74-84 are). The 3D block stays exactly
+where 45 always put it - last, undecided, gated - because nothing about shipping 83/85
+changed that.
 
 Sequencing note for whenever 45 does get a yes: 84 (which engine) has to come *before* 74
 (build the foundation) despite its higher number, since there is no foundation to build
@@ -709,7 +712,7 @@ precondition for the next; 80/81 (import formats) and 82 (character rendering) d
 depend on one another or on 78/79, so they are free to happen in any order, or in parallel,
 once the floor exists.
 
-85. app-store touchpoint hooks: not an ads SDK, an in-app-purchase system, or a Game
+85. ~~app-store touchpoint hooks: not an ads SDK, an in-app-purchase system, or a Game
     Center/Play Games integration - none of those belong inside a redistributable rendering
     framework any more than a 3D pipeline belongs inside a 2D one, and for the same reason
     45 stays gated. What a native wrapper (Capacitor, Tauri, whatever a game ships through)
@@ -724,4 +727,10 @@ once the floor exists.
     - a session/milestone signal does not exist at all: nothing in `mwg` counts launches,
       playtime, or completed runs today, which is exactly the kind of "has this player done
       enough to plausibly want to rate this" signal a wrapper would use to time a native
-      review prompt. This half is the actual gap, not the achievement half
+      review prompt. This half is the actual gap, not the achievement half~~ -
+    `core.Session` counts launches over the same `SaveStorage` abstraction `SaveSystem`
+    uses (namespaced, so two games sharing an origin never collide), incrementing and
+    persisting on construction. `mwg` counts; it still never prompts, and still bundles no
+    store/ads/IAP SDK of any kind - a wrapper reads `session.launches` and decides for
+    itself. The achievement half needed no new code: `increment()`'s return value and
+    `drainNew()` were already sufficient, so no push-style `Signal` was added for it

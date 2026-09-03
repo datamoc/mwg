@@ -1,5 +1,5 @@
 import { Game, Scene, Input } from '../../src/core/index.ts';
-import { Camera, TileMap, SpriteSheet, TintedSprite, AnimatedSprite } from '../../src/render/index.ts';
+import { Camera, TileMap, SpriteSheet, TintedSprite, AnimatedSprite, registerColorTransform } from '../../src/render/index.ts';
 import { Label, WindowStack, theme } from '../../src/ui/index.ts';
 import {
 	GameState,
@@ -224,6 +224,7 @@ async function main(): Promise<void> {
 	const game = new Game({
 		canvas: document.getElementById('game') as HTMLCanvasElement,
 		background: 0x1c2a1c,
+		extensions: [registerColorTransform],
 	});
 
 	await Resources.load([TILES, STRANGER, SHOPKEEPER]);

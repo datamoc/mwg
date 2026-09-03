@@ -1,5 +1,5 @@
 import { Game, Scene, Random } from '../../src/core/index.ts';
-import { SpriteSheet, TintedSprite } from '../../src/render/index.ts';
+import { SpriteSheet, TintedSprite, registerColorTransform } from '../../src/render/index.ts';
 import { Label, theme, Window, WindowStack, ListView, MessageBox } from '../../src/ui/index.ts';
 import {
 	Creature,
@@ -238,6 +238,7 @@ async function main(): Promise<void> {
 	const game = new Game({
 		canvas: document.getElementById('game') as HTMLCanvasElement,
 		background: 0x1a1420,
+		extensions: [registerColorTransform],
 	});
 
 	await Resources.load([TILES]);

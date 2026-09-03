@@ -1,6 +1,6 @@
 import { Rectangle, Texture, Text, Container } from 'pixi.js';
 import { Game, Scene, Random } from '../../src/core/index.ts';
-import { TintedSprite } from '../../src/render/index.ts';
+import { TintedSprite, registerColorTransform } from '../../src/render/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 import tileset from '../assets/tiles.json' with { type: 'json' };
 
@@ -175,6 +175,7 @@ async function main(): Promise<void> {
 	const game = new Game({
 		canvas: document.getElementById('game') as HTMLCanvasElement,
 		background: 0x14141a,
+		extensions: [registerColorTransform],
 	});
 
 	//no base is needed: the dev server publishes examples/assets at its root, and a built

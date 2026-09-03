@@ -7,6 +7,21 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+- `Session`: counts how many times a game has launched, persisted across page loads (the
+  same `SaveStorage` abstraction `SaveSystem` uses) - the signal a native wrapper needs to
+  decide whether to ask for a store rating. `mwg` counts; it never prompts, and bundles no
+  store/ads/IAP SDK of any kind.
+
+### Changed
+- **Breaking:** `Game` no longer registers `mwg/render`'s colour-transform batcher
+  automatically. `mwg/core` imported from `mwg/render` to do this, meaning a game that
+  only imported `mwg/core` still compiled in the whole render module. `GameOptions` gained
+  `extensions`, a list of Pixi-extension registration functions the caller supplies
+  instead: a game using `TintedSprite` (directly, or via `TileMap`/`DialogueStage`/
+  `AnimatedSprite`) now passes `{ extensions: [registerColorTransform] }` explicitly.
+  `mwg/core` now imports from no other module.
+
 ## [0.1.1] - 2026-09-03
 
 First tagged release. Everything below shipped on `main` before this tag existed; nothing

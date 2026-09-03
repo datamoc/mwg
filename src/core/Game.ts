@@ -2,7 +2,6 @@ import { Application, TextureSource } from 'pixi.js';
 import type { Scene, SceneClass } from './Scene.ts';
 import { SceneStack } from './SceneStack.ts';
 import { Signal } from './Signal.ts';
-import { registerColorTransform } from '../render/TintedSprite.ts';
 import * as Input from './Input.ts';
 
 const PIXEL_ART_CLASS = 'mwg-pixel-art';
@@ -60,6 +59,22 @@ export interface GameOptions {
 	 * when that element has a size the canvas does not depend on.
 	 */
 	resizeTo?: HTMLElement | Window;
+
+	/**
+	 * Pixi extension registrations to run before the renderer is built, such as
+	 * `mwg/render`'s `registerColorTransform` for `TintedSprite`.
+	 *
+	 * `mwg/core` does not import `mwg/render` itself - a game that only ever imports
+	 * `mwg/core` should not find the whole render module compiled in regardless. A game
+	 * that does use `TintedSprite` (directly, or through `TileMap`/`DialogueStage`/
+	 * `AnimatedSprite`, which are all built on it) passes its registration function here:
+	 *
+	 * ```ts
+	 * import { registerColorTransform } from 'mw_games/render';
+	 * new Game({ extensions: [registerColorTransform] });
+	 * ```
+	 */
+	extensions?: readonly (() => void)[];
 }
 
 /**
@@ -96,6 +111,7 @@ export class Game {
 			maxDelta: options.maxDelta ?? 0.25,
 			pixelArt: options.pixelArt ?? true,
 			resizeTo: options.resizeTo ?? window,
+			extensions: options.extensions ?? [],
 		};
 
 		if (this.options.pixelArt) {
@@ -133,9 +149,10 @@ export class Game {
 		if (this.started) throw new Error('this Game has already been started');
 		this.started = true;
 
-		//batchers and pipes have to be registered before the renderer is built, so that
-		//TintedSprite has somewhere to render to
-		registerColorTransform();
+		//batchers and pipes have to be registered before the renderer is built - see
+		//GameOptions.extensions for why this is a caller-supplied list rather than mwg/core
+		//reaching into mwg/render itself
+		for (const register of this.options.extensions) register();
 		Input.attach();
 
 		await this.app.init({

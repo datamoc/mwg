@@ -215,9 +215,13 @@ async function main(): Promise&lt;void&gt; {
 					<p>
 						A <code>Camera</code> holds the world; a <code>TileMap</code> holds the
 						floor. Frame <code>0</code> of the sheet is floor, <code>1</code> is wall —
-						whatever the tileset's own layout is.
+						whatever the tileset's own layout is. <code>TileMap</code> draws each tile as
+						a <code>TintedSprite</code> (the same class step 06 uses for the hero), so this
+						is also the point where a Pixi render extension needs registering — before the
+						renderer is built, which means before <code>game.start()</code>, not inside
+						<code>create()</code>:
 					</p>
-					<pre><code>import { Camera, TileMap, SpriteSheet } from '@datamoc/mw_games/render';
+					<pre><code>import { Camera, TileMap, SpriteSheet, registerColorTransform } from '@datamoc/mw_games/render';
 import { Random } from '@datamoc/mw_games/core';
 
 const FLOOR_TILE = 0;
@@ -249,6 +253,11 @@ class TownScene extends Scene {
 		this.camera.setViewport(width, height);
 	}
 }</code></pre>
+					<p>And in <code>main()</code>, add the registration to <code>Game</code>'s options:</p>
+					<pre><code>const game = new Game({
+	canvas: document.getElementById('game') as HTMLCanvasElement,
+	extensions: [registerColorTransform],
+});</code></pre>
 				</article>
 
 				<article class="step">
@@ -391,7 +400,7 @@ node node_modules/@datamoc/mw_games/tools/compile-resources.mjs ./assets ./dist/
 					<h3><span class="n">11</span> Finished code</h3>
 					<p>The whole scene, about 60 lines:</p>
 					<pre><code>import { Game, Scene, Input, Random } from '@datamoc/mw_games/core';
-import { Camera, TileMap, TintedSprite, SpriteSheet } from '@datamoc/mw_games/render';
+import { Camera, TileMap, TintedSprite, SpriteSheet, registerColorTransform } from '@datamoc/mw_games/render';
 import { Label, theme } from '@datamoc/mw_games/ui';
 import * as Resources from '@datamoc/mw_games/assets';
 
@@ -472,7 +481,10 @@ class TownScene extends Scene {
 }
 
 async function main(): Promise&lt;void&gt; {
-	const game = new Game({ canvas: document.getElementById('game') as HTMLCanvasElement });
+	const game = new Game({
+		canvas: document.getElementById('game') as HTMLCanvasElement,
+		extensions: [registerColorTransform],
+	});
 	Resources.setBase('./assets/');
 	await Resources.load([TILES]);
 	await game.start(TownScene);
