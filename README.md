@@ -173,9 +173,12 @@ The Wesnoth-shaped half: a grid whose shape is a parameter, not a parallel imple
 | --- | --- |
 | hexagonal tile maps, addressed by axial or offset coordinates | `mwg/render` |
 | movement cost and defense bonus by terrain, hex or square alike | `mwg/roguelike` |
-| zone of control: a hex a unit cannot move through, only into | `mwg/roguelike` |
 | field of view and pathfinding over a hex grid, not just square | `mwg/roguelike` |
 | isometric (and staggered) projection, alongside orthogonal and hex | `mwg/render` |
+
+Two capabilities Wesnoth's own row above demands are not in this table because they are
+not shipped yet, corrected here rather than left implied: zone of control, and recruiting
+against a currency with per-unit upkeep. See [ROADMAP.md](ROADMAP.md) items 87 and 88.
 
 A game picks a grid shape once; the camera, field of view, pathfinding and turn scheduler
 work the same way over either, rather than a hex game needing its own copy of each. Between
@@ -288,10 +291,11 @@ rather than showing a raw key to the player.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full, numbered build order: 86 items, 74 shipped and
-twelve open (3D rendering broken into a nine-step build-up plus an engine choice, a sound
-and music orchestrator, all logged at low priority; see that file for why). Each module
-ships in the order given there; later ones build on the
+See [ROADMAP.md](ROADMAP.md) for the full, numbered build order: 91 items, 74 shipped and
+seventeen open (3D rendering broken into a nine-step build-up plus an engine choice, a
+sound and music orchestrator, and five items surfaced from Wesnoth's own manual, all
+logged at low priority; see that file for why). Each module ships in the order given
+there; later ones build on the
 modules before them.
 
 ## Licence and provenance

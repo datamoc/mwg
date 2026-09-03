@@ -705,6 +705,14 @@ joins that same unblocked tier, requested directly and building on `mwg/audio`'s
 always put it - last, undecided, gated - because nothing about shipping 83/85/86 changed
 that.
 
+87 moves above the rest of the new Wesnoth-sourced items (88-91), ahead of even the
+already-unblocked 86: the capability spec table currently claims zone of control as
+shipped when it is not, which is a wrong claim in a document read as the definition of
+done, not just an unimplemented idea waiting its turn. 88-91 sit behind 87 at the same
+unblocked-but-not-urgent tier as 86 - each is small, self-contained, and needs no
+project-level decision, but nothing demands them yet the way 87 corrects an existing
+false claim. The 3D block is still last, still gated, unchanged by any of this.
+
 Sequencing note for whenever 45 does get a yes: 84 (which engine) has to come *before* 74
 (build the foundation) despite its higher number, since there is no foundation to build
 until something is chosen to build it on - the append-only numbering doesn't imply build
@@ -753,3 +761,63 @@ once the floor exists.
     should not restart or refade it - re-entering "combat" mid-fight must not reset the
     music - which is the actual design question here, not the crossfade math `Music`
     already has
+
+Items 87-91 were surfaced by reading The Battle for Wesnoth's own player manual
+(`doc/manual/manual.txt` in a local checkout of the real GPL-2.0-or-later source) as prose,
+the same design-study-only method items 46-52 used against another project's coverage doc:
+no code, data table, formula, config syntax or file format from Wesnoth was ever read into
+this list, only which mechanic shapes a finished Wesnoth-shaped game needs that `mwg` has
+no primitive for yet. One thing that survey caught along the way: the capability spec's own
+"Tactical maps (hex)" table (see README.md) claims zone of control is "provided by
+`mwg/roguelike`" - it is not, grepped and confirmed absent from every file in the repo, so
+that table entry was wrong until item 87 below actually ships it.
+
+87. a zone of control that actually exists: the capability spec table already claims it, but
+    no code anywhere implements it. `Pathfinder` has no notion of a hex a unit is merely
+    forced to stop upon entering, and `board.Tactics`'s `tacticalMoves`/`tacticalPathCost`
+    check only passability and occupancy, never an adjacent enemy's reach. The shape itself
+    is narrow (a unit projects control onto its immediate neighbours; entering one, for
+    anyone without an explicit override, ends that step of movement) and composes cleanly
+    with the pathfinding and move-cost work both modules already do
+88. an army economy for `mwg/board`: recruiting a new unit onto the map against a currency
+    cost, recalling a unit from a persistent pool of previously-fielded units (distinct from
+    a fresh recruit, and carried between maps rather than reset), and an automatic per-turn
+    income/upkeep tick. `actors.Shop`'s `buy`/`sell` is the nearest existing shape, a
+    one-shot transaction against a currency stat, but it moves inventory items, not board
+    pieces, and has no per-turn tick at all; `board.Tactics` has pieces on a board but no
+    currency, no spawn-only-in-a-designated-zone rule, and nothing recurring. No numbers
+    (gold per turn, upkeep per unit level) belong in this item, same as `mwg/battle`'s
+    type-matrix and damage formulas were never copied from Pokémon
+89. per-instance random traits for a creature or unit, distinct from what `mwg` already has
+    on both sides of this: `actors.Affix` is item-side (one affix per item, weight-picked,
+    trigger-routed), and `actors.Advancement` is a game-authored tier ladder a player spends
+    into deliberately. Neither covers "at creation, draw one or more modifiers at random
+    from a shared pool and keep them for that unit's whole life" - permanent rather than
+    triggered, assigned rather than chosen, read straight into `StatBlock` modifiers rather
+    than routed through a trigger at all
+90. conditional visibility, independent of terrain: `roguelike.FieldOfView` is purely
+    line-of-sight over terrain opacity, with no notion of a unit that stays undetected even
+    in clear sight unless an enemy is within some fixed radius. That one shape covers every
+    "hidden unless someone's right next to you" mechanic a tactical or stealth game reaches
+    for; `mwg` would supply the radius check and the "discovering it costs the discoverer's
+    move" rule, nothing about which terrain or ability grants it
+91. positional auras: a continuously-reevaluated effect that applies to anyone adjacent to a
+    unit carrying it, on and off as units move, rather than triggered once like
+    `battle.BattleHooks` or timed like `actors.StatusEffect`. Neither re-checks "is a
+    qualifying unit currently adjacent" on its own; this is the primitive both would need
+    underneath them to express "adjacent allies fight better while this unit is nearby"
+    without a game re-deriving adjacency-watching by hand
+
+Ruled out after the same survey, each verified against the real code rather than assumed:
+unit experience-to-advance-into-a-different-unit-type (already covered: `actors.Progression`
+plus `battle.checkEvolution` is structurally the same shape, just labelled for the Pokémon
+reference); poison/damage-over-time (already covered by `actors.applyStatusEffect` plus
+`TurnClock`'s `tick` callback - a poison tick is one line over the existing timed-modifier
+primitive); time-of-day/alignment combat modifiers (a real mechanic, but sits at the wrong
+layer - `battle.Field` is scoped to one encounter, this needs a continuous board-wide clock
+- and isn't distinct enough from `Field`'s existing flag-set shape to warrant a primitive of
+its own yet); attack-type resistance tables, unit specialties (backstab, berserk, charge)
+and orb/UI state (content and presentation, not framework primitives - `Targeting`'s
+existing shapes and `CombatHooks`'s pre/post-damage seam already cover the mechanical half
+of most of these, same reasoning that has kept move numbers and species stats out of
+`mwg/battle` throughout this list).
