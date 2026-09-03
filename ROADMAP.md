@@ -708,3 +708,20 @@ order any more than it does for the 37/39/40-before-42 cluster near the top of t
 precondition for the next; 80/81 (import formats) and 82 (character rendering) do not
 depend on one another or on 78/79, so they are free to happen in any order, or in parallel,
 once the floor exists.
+
+85. app-store touchpoint hooks: not an ads SDK, an in-app-purchase system, or a Game
+    Center/Play Games integration - none of those belong inside a redistributable rendering
+    framework any more than a 3D pipeline belongs inside a 2D one, and for the same reason
+    45 stays gated. What a native wrapper (Capacitor, Tauri, whatever a game ships through)
+    actually needs from `mwg` is just the moment something happened, as an event it can
+    subscribe to - what it does with that event (call `StoreKit`, `Play Games Services`, an
+    ad SDK) is entirely its own business and outside this file's scope. Two halves:
+    - achievement unlocks are already there: `Achievements.increment()` returns exactly the
+      ids earned by that call, and `drainNew()` queues them for anything that missed the
+      return value. Worth checking whether that's enough before adding a push-style
+      `Signal` alongside it purely for consistency with `Input.onAction`/`CombatHooks`/
+      `BattleHooks`'s own push conventions - not worth adding if nothing needs it
+    - a session/milestone signal does not exist at all: nothing in `mwg` counts launches,
+      playtime, or completed runs today, which is exactly the kind of "has this player done
+      enough to plausibly want to rate this" signal a wrapper would use to time a native
+      review prompt. This half is the actual gap, not the achievement half

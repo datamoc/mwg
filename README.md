@@ -288,10 +288,11 @@ rather than showing a raw key to the player.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full, numbered build order — 84 items, 72 shipped and
-twelve open (3D rendering broken into a nine-step build-up plus an engine choice, all
-logged at low priority, plus a module-dependency cleanup; see that file for why). Each
-module ships in the order given there; later ones build on the modules before them.
+See [ROADMAP.md](ROADMAP.md) for the full, numbered build order — 85 items, 72 shipped and
+thirteen open (3D rendering broken into a nine-step build-up plus an engine choice, a
+module-dependency cleanup, and app-store touchpoint hooks, all logged at low priority; see
+that file for why). Each module ships in the order given there; later ones build on the
+modules before them.
 
 ## Licence and provenance
 
