@@ -690,3 +690,21 @@ logged rather than started.
     from `file://` with no server - not yet checked for any candidate above. Picking one is
     exactly the kind of choice 45's own entry says needs a project-level yes first, same as
     45 itself
+
+Reassessment with 74-84 placed: **83 moves to the top of what's open**, ahead of the whole
+3D block. It is the opposite shape from 45/74-84 in every way that matters here - small,
+already diagnosed (grepped, not guessed), unblocked by any project-level decision, and a
+direct hit on this project's own standing performance/architecture priority (a game should
+not compile in modules it never imports). Nothing about it needs a yes; it needs an hour
+with `Game.ts`. The 3D block stays exactly where 45 always put it - last, undecided, gated
+- because nothing in 74-84 changed that: breaking one line into eleven made the shape of
+the decision legible, not the decision itself any more pressing.
+
+Sequencing note for whenever 45 does get a yes: 84 (which engine) has to come *before* 74
+(build the foundation) despite its higher number, since there is no foundation to build
+until something is chosen to build it on - the append-only numbering doesn't imply build
+order any more than it does for the 37/39/40-before-42 cluster near the top of this file.
+74 then 75 (bare floor) then 76/77 (tiled floors) then 78/79 (columns) are each a
+precondition for the next; 80/81 (import formats) and 82 (character rendering) do not
+depend on one another or on 78/79, so they are free to happen in any order, or in parallel,
+once the floor exists.
