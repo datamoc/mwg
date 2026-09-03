@@ -68,19 +68,19 @@ for free: a finished game is still a folder you double-click.
 **With a toolchain**, if you already use a bundler:
 
 ```
-npm install mw_games
+npm install @datamoc/mw_games
 ```
 ```ts
-import { Game, Scene } from 'mw_games/core';
-import { Sprite } from 'mw_games/render';
+import { Game, Scene } from '@datamoc/mw_games/core';
+import { Sprite } from '@datamoc/mw_games/render';
 ```
 
 No npm registry access (an offline machine, a pinned artifact for reproducible builds)?
-`npm pack mw_games` downloads the exact published tarball; install it by path instead of by
-name:
+`npm pack @datamoc/mw_games` downloads the exact published tarball; install it by path
+instead of by name:
 
 ```
-npm install ./mw_games-0.1.1.tgz
+npm install ./datamoc-mw_games-0.1.1.tgz
 ```
 
 **Without either.** Drop one file next to your page and open it — this path exists because

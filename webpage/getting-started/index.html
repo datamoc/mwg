@@ -92,13 +92,14 @@
 					<div class="two-col">
 						<div class="panel" style="padding: 1rem">
 							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>With npm</strong></p>
-							<pre style="margin: 0"><code>npm install mw_games vite</code></pre>
+							<pre style="margin: 0"><code>npm install @datamoc/mw_games vite</code></pre>
 							<p style="margin: 0.5rem 0 0; font-size: 0.85rem">
 								Fetches from the registry — what this tutorial uses from here on. No
-								registry access? Download <code>mw_games-0.1.1.tgz</code> from a
+								registry access? Download <code>datamoc-mw_games-0.1.1.tgz</code> from a
 								<a href="https://github.com/datamoc/mwg/releases">release</a> and run
-								<code>npm install ./mw_games-0.1.1.tgz</code> instead — same result,
-								same <code>node_modules/mw_games/</code>, every later step identical.
+								<code>npm install ./datamoc-mw_games-0.1.1.tgz</code> instead — same
+								result, same <code>node_modules/@datamoc/mw_games/</code>, every later
+								step identical.
 							</p>
 						</div>
 						<div class="panel" style="padding: 1rem">
@@ -146,8 +147,8 @@
 						Assets live in their own folder, separate from source — <code>assets/</code>
 						is what step 10's build points at to compile every file it holds into the
 						finished page. Nothing under <code>my-game/</code> needs to be downloaded
-						beyond the framework itself, one of the three ways above; everything else
-						here you write or draw.
+						beyond the framework itself, either way above; everything else here you
+						write or draw.
 					</p>
 				</article>
 
@@ -170,7 +171,7 @@
 						<code>create()</code> builds its contents; assets are already loaded by the
 						time it runs, which the next step arranges.
 					</p>
-					<pre><code>import { Game, Scene } from 'mw_games/core';
+					<pre><code>import { Game, Scene } from '@datamoc/mw_games/core';
 
 class TownScene extends Scene {
 	override create(): void {
@@ -197,7 +198,7 @@ main();</code></pre>
 						at that folder; the compiled build in step 10 ignores it; it looks assets up
 						in the script <code>compile-resources</code> generated instead.
 					</p>
-					<pre><code>import * as Resources from 'mw_games/assets';
+					<pre><code>import * as Resources from '@datamoc/mw_games/assets';
 
 const TILES = 'tiles.png';
 
@@ -216,8 +217,8 @@ async function main(): Promise&lt;void&gt; {
 						floor. Frame <code>0</code> of the sheet is floor, <code>1</code> is wall —
 						whatever the tileset's own layout is.
 					</p>
-					<pre><code>import { Camera, TileMap, SpriteSheet } from 'mw_games/render';
-import { Random } from 'mw_games/core';
+					<pre><code>import { Camera, TileMap, SpriteSheet } from '@datamoc/mw_games/render';
+import { Random } from '@datamoc/mw_games/core';
 
 const FLOOR_TILE = 0;
 const WALL_TILE = 1;
@@ -257,8 +258,8 @@ class TownScene extends Scene {
 						<code>Input</code>'s named actions rather than raw keys — <code>up</code>,
 						<code>down</code>, <code>left</code>, <code>right</code> are bound by default.
 					</p>
-					<pre><code>import { TintedSprite } from 'mw_games/render';
-import { Input } from 'mw_games/core';
+					<pre><code>import { TintedSprite } from '@datamoc/mw_games/render';
+import { Input } from '@datamoc/mw_games/core';
 
 const HERO_TILE = 2;
 const TILE_SIZE = 16;
@@ -334,7 +335,7 @@ override update(dt: number): void {
 				<article class="step">
 					<h3><span class="n">09</span> A status line</h3>
 					<p>Any UI text is a <code>Label</code>, styled from the current theme rather than carrying its own font and colour:</p>
-					<pre><code>import { Label, theme } from 'mw_games/ui';
+					<pre><code>import { Label, theme } from '@datamoc/mw_games/ui';
 
 // inside TownScene:
 private status!: Label;
@@ -364,7 +365,7 @@ export default defineConfig({
 });</code></pre>
 					<p>Then run the build, and compile <code>assets/</code> into a script the finished page can load with no server:</p>
 					<pre><code>npx vite build
-node node_modules/mw_games/tools/compile-resources.mjs ./assets ./dist/assets</code></pre>
+node node_modules/@datamoc/mw_games/tools/compile-resources.mjs ./assets ./dist/assets</code></pre>
 					<p>
 						That leaves <code>dist/index.html</code>, <code>dist/game.js</code> and
 						<code>dist/assets/assets.js</code> — but the page still points at
@@ -389,10 +390,10 @@ node node_modules/mw_games/tools/compile-resources.mjs ./assets ./dist/assets</c
 				<article class="step">
 					<h3><span class="n">11</span> Finished code</h3>
 					<p>The whole scene, about 60 lines:</p>
-					<pre><code>import { Game, Scene, Input, Random } from 'mw_games/core';
-import { Camera, TileMap, TintedSprite, SpriteSheet } from 'mw_games/render';
-import { Label, theme } from 'mw_games/ui';
-import * as Resources from 'mw_games/assets';
+					<pre><code>import { Game, Scene, Input, Random } from '@datamoc/mw_games/core';
+import { Camera, TileMap, TintedSprite, SpriteSheet } from '@datamoc/mw_games/render';
+import { Label, theme } from '@datamoc/mw_games/ui';
+import * as Resources from '@datamoc/mw_games/assets';
 
 const TILES = 'tiles.png';
 const TILE_SIZE = 16;
