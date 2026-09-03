@@ -757,6 +757,14 @@ item and stays behind the 3D block's own gate, same as items 74-84 and 96's whol
 99 is logged as one item because the 2D half is worth building regardless of whether 3D
 ever gets a yes, not because both halves ship together.
 
+100 joins the same unblocked tier as 89-99: small, self-contained, needs no project-level
+decision, the plug-in point on `SaveSystem` is no bigger a change than `migrations` already
+is. Requested directly, same as 86/92/93/94-96/99, so ahead of the manual-sourced 89-91 and
+behind 87/88 by the same reasoning laid out for those. The narrower ask it was requested as
+(reading `Game.rxdata` specifically) is not logged anywhere as open, and should not be:
+that would contradict this project's own stated licence-and-provenance position rather than
+extend it, the one thing every reassessment in this file has otherwise never done.
+
 Sequencing note for whenever 45 does get a yes: 84 (which engine) has to come *before* 74
 (build the foundation) despite its higher number, since there is no foundation to build
 until something is chosen to build it on - the append-only numbering doesn't imply build
@@ -939,3 +947,19 @@ of most of these, same reasoning that has kept move numbers and species stats ou
     levels, not fractions`, its own doc comment), so a genuinely continuous `z` is a
     separate, larger question that ties into the still-gated 3D block (item 45) rather than
     something this item can promise on its own
+
+100. requested directly as "import and export usual save files of other frameworks, like
+     Game.rxdata" - RPG Maker's own save format by name, which cannot be what ships:
+     README's own licence-and-provenance section says of RPG Maker specifically, alongside
+     the other reference games, "`mwg` implements none of their file formats, reads none of
+     their projects or save data" - not a stretch of that line, its exact subject. What is
+     open instead, and what this item actually is, is the generic primitive underneath the
+     ask: a plug-in point on `SaveSystem` for adopting a save that was never written by this
+     `SaveSystem` at all - `normalize(externalBytes) => T` run once, then fed through the
+     same versioned `migrations` chain an ordinary load already uses, rather than a game
+     hand-rolling "decode, then call `save()`" outside that pipeline by itself. `mwg` ships
+     the plug-in point and nothing that reads any specific other engine's format; a decoder
+     for `Game.rxdata`, a Tiled project's own save shape, or anything else is the game's own
+     code (or a separately distributed community package), the same boundary
+     `tools/extract-rgssad.mjs` already draws for RPG Maker's asset archives - "a
+     developer-side archive tool only, not part of the framework or any game"
