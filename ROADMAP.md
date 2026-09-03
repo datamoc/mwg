@@ -733,6 +733,14 @@ since neither corrects a standing promise. No order between 92 and 93 either - 9
 more naturally after 92 (a tracked quest wants a marker to have already flagged it), but
 nothing forces that sequencing; a game could ship either alone.
 
+94-96 join the same tier, requested directly alongside 92-93, but 94 and 95 are not free
+to reorder the way 92/93 were: 95 (the rebind screen) wants 94 (conflict detection)
+shipped first, a real precondition rather than a loose "reads more naturally" preference,
+since a rebind flow with nothing to warn against would ship the exact silent-collision bug
+94 exists to close. 96 (gamepad) is independent of both - it extends `Input`'s action
+mapping sideways to a second input source, touching neither key storage nor a settings
+screen - so it can land in any order relative to 94/95.
+
 Sequencing note for whenever 45 does get a yes: 84 (which engine) has to come *before* 74
 (build the foundation) despite its higher number, since there is no foundation to build
 until something is chosen to build it on - the append-only numbering doesn't imply build
@@ -864,3 +872,25 @@ of most of these, same reasoning that has kept move numbers and species stats ou
     item is only the location data and the tracked-quest pointer, not a new pathing
     primitive; drawing a compass arrow or a footprint trail from that path stays the game's
     own presentation, same boundary item 92 draws for the marker itself
+
+94. keybind conflict detection: `Input.bind(action, keys)` lets two actions silently share
+    the same physical key today, since `bind` only ever adds a mapping and nothing checks
+    what else already claims a key. The gap is a query - given a key code, which action (if
+    any) currently owns it - so a rebind flow can warn or auto-unbind the loser before
+    committing a change, rather than a player discovering the collision by both actions
+    firing at once mid-game. This is the primitive item 95's UI would actually need under
+    it; `bind` itself keeps behaving exactly as it does today for a game that never rebinds
+95. a rebind settings screen: a ready-made `mwg/ui` flow (list the current bindings from
+    `Input.keysFor`, "press a key" to capture the next one, a confirm/cancel step) over
+    `Input`'s existing `bind`/`exportBindings`/`importBindings`, the same way `IconGrid` is
+    a ready-made inventory screen over `Inventory` rather than something every game builds
+    itself. Wants item 94's conflict detection first, so a captured key already in use has
+    something to warn against rather than silently stealing it from whatever held it
+96. gamepad and controller input: `mwg/core`'s `Input` is keyboard-only today, nothing
+    reads a `Gamepad` at all. The same named-action shape that already decouples a game
+    from `KeyboardEvent.code` (`bind`/`isDown`/`justPressed`) is exactly what a controller
+    needs too - a button or axis bound to the same action name a key already is, so a game
+    written against `Input.isDown('right')` never has to know whether that came from a key
+    or a stick. Button/axis-to-action mapping, and how an axis becomes a digital "pressed"
+    (a deadzone threshold) are the open questions here, not the action-name architecture
+    itself, which `Input` already has right

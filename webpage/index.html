@@ -359,6 +359,9 @@
 					<li><span class="label">positional auras: a continuously-reevaluated effect on anyone adjacent to a unit carrying it, switching on and off as units move rather than triggered once or timed</span><span class="status">planned</span></li>
 					<li><span class="label">an interactive-marker state for QuestLog: derive whether an NPC has a quest to offer or a completed one to turn in, the bit of state behind a yellow ! or a turn-in mark, without mwg drawing the mark itself</span><span class="status">planned</span></li>
 					<li><span class="label">an objective location and a tracked quest: let a stage optionally say where it's satisfied and QuestLog track which active quest is guiding the player, feeding roguelike.Pathfinder for a compass arrow or a route the game draws itself</span><span class="status">planned</span></li>
+					<li><span class="label">keybind conflict detection: Input.bind() lets two actions silently share the same key today; add a query for which action (if any) already owns a key, the primitive a rebind screen needs before it can warn on collision</span><span class="status">planned</span></li>
+					<li><span class="label">a rebind settings screen: a ready-made mwg/ui flow over Input's existing bind/exportBindings/importBindings, the way IconGrid is a ready-made screen over Inventory</span><span class="status">planned</span></li>
+					<li><span class="label">gamepad and controller input: extend Input's existing named-action shape (bind/isDown/justPressed) to a button or axis, so a game written against isDown('right') never has to know whether that came from a key or a stick</span><span class="status">planned</span></li>
 				</ul>
 			</div>
 		</section>
