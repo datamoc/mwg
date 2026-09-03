@@ -727,6 +727,12 @@ drops one slot, behind 88, ahead of 89-91: a direct request still outranks a sur
 find, but not a standing unmet promise. The 3D block remains last and gated, untouched by
 any of this reordering.
 
+92-93 join 89-91 at that same undemanded-but-unblocked tier: requested directly, so ahead
+of the manual-sourced 89-91 by the same reasoning that placed 86 there, but behind 87/88
+since neither corrects a standing promise. No order between 92 and 93 either - 93 reads
+more naturally after 92 (a tracked quest wants a marker to have already flagged it), but
+nothing forces that sequencing; a game could ship either alone.
+
 Sequencing note for whenever 45 does get a yes: 84 (which engine) has to come *before* 74
 (build the foundation) despite its higher number, since there is no foundation to build
 until something is chosen to build it on - the append-only numbering doesn't imply build
@@ -835,3 +841,26 @@ and orb/UI state (content and presentation, not framework primitives - `Targetin
 existing shapes and `CombatHooks`'s pre/post-damage seam already cover the mechanical half
 of most of these, same reasoning that has kept move numbers and species stats out of
 `mwg/battle` throughout this list).
+
+92. an interactive-marker state for `QuestLog`: whether an NPC (or any object tied to a
+    quest id) currently has something to offer the player, derived the same way
+    `Achievements`' unlocking already is, never stored separately. `status(id)` reports
+    `'available'`/`'active'`/`'complete'` per quest today, but nothing turns "this quest is
+    available" plus "this NPC gives it" into the one bit of state a game actually draws a
+    marker from: the yellow `!` over a quest giver, a different mark over someone waiting
+    to hear a completed quest turned in, nothing over an NPC with no bearing on any quest at
+    all. `mwg` would supply the derivation (given a set of quest ids an NPC is tied to, which
+    of "has an offer" / "awaits a turn-in" / "neither" currently holds) and stop there - the
+    actual `!`, its colour, and where it floats above a sprite stay the game's own art and UI
+93. an objective location and a tracked quest, so a game can point the player somewhere
+    without hand-rolling both: `QuestStage` has a `condition` and a `counter`
+    today but nowhere to say *where* a stage is satisfied, and `QuestLog` has no notion of
+    which of several active quests is the one currently guiding the player, only whether
+    each one individually is active. Two small, related gaps: a stage-level location (so
+    "kill 5 rats" can optionally also say where the rats are) and a single tracked-quest
+    selection on `QuestLog` a game sets and reads, the way a quest journal's "track this
+    one" button does. Feeds `roguelike.Pathfinder`, which already has everything needed to
+    turn a location into a route or a single next step (`find`/`step`/`distanceMap`) - this
+    item is only the location data and the tracked-quest pointer, not a new pathing
+    primitive; drawing a compass arrow or a footprint trail from that path stays the game's
+    own presentation, same boundary item 92 draws for the marker itself
