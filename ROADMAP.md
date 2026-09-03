@@ -666,3 +666,27 @@ logged rather than started.
     and worth treating generally: a game built on a handful of modules should not find
     unrelated ones compiled into its `mwg.global.js`, which is exactly the file size this
     project's own performance priority cares about
+
+84. choosing an underlying 3D engine - the concrete form of item 74's "which foundation"
+    question, once it comes time to actually answer it. Candidates raised so far, none
+    picked:
+    - **Babylon.js** - open-source, written in and typed for TypeScript throughout; a full
+      scene graph plus built-in physics and particle editors, more engine than item 75's
+      bare floor needs at first but the deepest toolset if 76-82 grow into it
+    - **PlayCanvas** - a full 3D HTML5 engine with a cloud-based editor; the editor is a
+      web service this project's `file://`/no-server stance has no use for, so only its
+      runtime library would matter here
+    - **TresJS / React Three Fiber** - declarative, component-based layers over Three.js
+      for Vue or React respectively; both couple the 3D layer to a UI framework `mwg`
+      itself is not built on, which cuts against every other module's plain-TypeScript,
+      framework-agnostic shape
+    - **Enable3d** - a Three.js + Ammo.js physics wrapper aimed at TypeScript/JavaScript
+      directly, no UI framework attached; closer in shape to how `mwg` already wraps
+      PixiJS than the other three
+
+    Whichever is picked still has to clear the same bar every existing dependency does:
+    bundles into a classic script with relative paths (`vite.lib.config.ts`'s IIFE, the
+    same story `PixiJS` and `rot.js` already go through), so a 3D `mwg` game keeps opening
+    from `file://` with no server - not yet checked for any candidate above. Picking one is
+    exactly the kind of choice 45's own entry says needs a project-level yes first, same as
+    45 itself
