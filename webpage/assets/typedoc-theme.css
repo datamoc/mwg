@@ -87,6 +87,19 @@ h4,
 	font-size: 0.85rem;
 }
 
+/* TypeDoc's base stylesheet hardcodes inline code to a plain white background rather
+   than a theme variable, so it stays white-on-near-white against our dark theme unless
+   overridden directly here. */
+code {
+	background: var(--light-color-background-active);
+	color: var(--light-color-text);
+	border-radius: 2px;
+}
+
+pre code {
+	background: none;
+}
+
 code,
 pre {
 	font-family: 'JetBrains Mono', 'Cascadia Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;

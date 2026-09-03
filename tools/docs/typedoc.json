@@ -6,16 +6,16 @@
 	"name": "mwg",
 	"readme": "none",
 	"favicon": "../../webpage/assets/favicon.svg",
-	"titleLink": "../index.html",
+	"titleLink": "https://datamoc.github.io/mwg/index.html",
 	"excludePrivate": true,
 	"excludeInternal": true,
 	"excludeExternals": true,
 	"githubPages": false,
 	"navigationLinks": {
-		"Overview": "../index.html",
-		"Getting started": "../getting-started/index.html",
-		"Examples": "../examples/index.html",
-		"FAQ": "../faq/index.html"
+		"Overview": "https://datamoc.github.io/mwg/index.html",
+		"Getting started": "https://datamoc.github.io/mwg/getting-started/index.html",
+		"Examples": "https://datamoc.github.io/mwg/examples/index.html",
+		"FAQ": "https://datamoc.github.io/mwg/faq/index.html"
 	},
 	"customCss": "../../webpage/assets/typedoc-theme.css"
 }
