@@ -6,6 +6,9 @@ install, no runtime to download.
 Licensed under the [MPL-2.0](LICENSE): games built with `mwg` carry no licence obligation
 of their own; improvements to `mwg`'s own files are shared back.
 
+**[Live examples and API docs](https://datamoc.github.io/mwg/)** — every example below,
+playable in the browser with no download, plus the generated API reference.
+
 > **Status: early.** The scaffolding, licence and capability spec are in place. The
 > modules below are being built in the order given in [Roadmap](#roadmap).
 
