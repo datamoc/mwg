@@ -7,6 +7,8 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-03
+
 ### Added
 - `Session`: counts how many times a game has launched, persisted across page loads (the
   same `SaveStorage` abstraction `SaveSystem` uses) - the signal a native wrapper needs to
