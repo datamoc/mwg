@@ -757,13 +757,14 @@ item and stays behind the 3D block's own gate, same as items 74-84 and 96's whol
 99 is logged as one item because the 2D half is worth building regardless of whether 3D
 ever gets a yes, not because both halves ship together.
 
-100 joins the same unblocked tier as 89-99: small, self-contained, needs no project-level
-decision, the plug-in point on `SaveSystem` is no bigger a change than `migrations` already
-is. Requested directly, same as 86/92/93/94-96/99, so ahead of the manual-sourced 89-91 and
-behind 87/88 by the same reasoning laid out for those. The narrower ask it was requested as
-(reading `Game.rxdata` specifically) is not logged anywhere as open, and should not be:
-that would contradict this project's own stated licence-and-provenance position rather than
-extend it, the one thing every reassessment in this file has otherwise never done.
+100's two halves sit at different sizes, corrected once the licence wording that had
+narrowed the item was itself corrected: the `SaveSystem` plug-in point is as small and
+unblocked as 89-99 (no bigger a change than `migrations` already is), but a real
+`Game.rxdata` reader/writer is a genuine format-reverse-engineering effort, closer in size
+to `tools/vendored/rgssad-wasm` than to a one-afternoon primitive - worth doing, not small.
+Both still sit ahead of the manual-sourced 89-91 (requested directly, same reasoning as
+86/92/93/94-96/99) and behind 87/88, but 100 is the first item on this list where "joins
+the unblocked tier" undersold what shipping it would actually take.
 
 Sequencing note for whenever 45 does get a yes: 84 (which engine) has to come *before* 74
 (build the foundation) despite its higher number, since there is no foundation to build
@@ -949,17 +950,23 @@ of most of these, same reasoning that has kept move numbers and species stats ou
     something this item can promise on its own
 
 100. requested directly as "import and export usual save files of other frameworks, like
-     Game.rxdata" - RPG Maker's own save format by name, which cannot be what ships:
-     README's own licence-and-provenance section says of RPG Maker specifically, alongside
-     the other reference games, "`mwg` implements none of their file formats, reads none of
-     their projects or save data" - not a stretch of that line, its exact subject. What is
-     open instead, and what this item actually is, is the generic primitive underneath the
-     ask: a plug-in point on `SaveSystem` for adopting a save that was never written by this
-     `SaveSystem` at all - `normalize(externalBytes) => T` run once, then fed through the
-     same versioned `migrations` chain an ordinary load already uses, rather than a game
-     hand-rolling "decode, then call `save()`" outside that pipeline by itself. `mwg` ships
-     the plug-in point and nothing that reads any specific other engine's format; a decoder
-     for `Game.rxdata`, a Tiled project's own save shape, or anything else is the game's own
-     code (or a separately distributed community package), the same boundary
-     `tools/extract-rgssad.mjs` already draws for RPG Maker's asset archives - "a
-     developer-side archive tool only, not part of the framework or any game"
+     Game.rxdata" - RPG Maker's own save format by name. Revisited after the same session's
+     licence-and-provenance wording was corrected: a loader/writer for another engine's file
+     *format* is fair game, learned the ordinary way any undocumented format is, by reading
+     real files in it; what stays out is that engine's actual media, its assets, text, data
+     tables or any specific save's real content, never shipped inside `mwg`. Two distinct
+     halves, not one:
+     - a `Game.rxdata` reader/writer: `.rxdata` is Ruby's own `Marshal` binary serialization
+       format holding an RPG Maker-shaped object graph (`Game_System`, `Game_Party`,
+       `Game_Actor` and the rest) - understanding that container's layout and RPG Maker's
+       own class shapes inside it is format engineering, the same kind of work
+       `tools/vendored/rgssad-wasm` already does for RPG Maker's asset-archive format, not a
+       different rule for a save file just because it holds live game state rather than
+       assets. No actual `.rxdata` save (someone's playthrough, a shipped game's own data)
+       is ever bundled - only the format-reading code, exercised against files a developer
+       supplies themselves, the same way `extract:rgssad` never ships anyone's archive
+     - a generic plug-in point on `SaveSystem` underneath that: `normalize(externalBytes) =>
+       T` run once on import, then fed through the same versioned `migrations` chain an
+       ordinary load already uses, rather than a game hand-rolling "decode, then call
+       `save()`" outside that pipeline by itself. This half is not RPG-Maker-specific; a
+       `.rxdata` reader is one `normalize` implementation among others a game could supply

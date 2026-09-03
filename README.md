@@ -320,10 +320,14 @@ finished branching dungeon each have to do. None of their code, assets, maps, un
 definitions or text is included here, and `mwg` is not a derivative work of any of them.
 
 ADOM, RPG Maker, Pokémon, Ren'Py and Twine are likewise references for a *shape of game*, not
-sources of anything. `mwg` implements none of their file formats, reads none of their projects or save
-data, and includes none of their runtimes, assets, text or data tables: no type chart, no
-species list, no stat formula. Those are each game's own design work. Where a file format
-is needed, `mwg` uses Tiled's, which is open and documented.
+sources of anything. `mwg` includes none of their runtimes, assets, text or data tables: no
+type chart, no species list, no stat formula, no map, no line of dialogue. Those are each
+game's own design work. A loader or writer for one of their file formats is a different
+matter and is not off limits on its own: a format is a container, understood the same way
+any published format is, by reading real files in it to learn its shape; what stays out is
+the media that container holds, someone else's actual assets, text or data tables. Where a
+format already exists and needs no reverse-engineering, `mwg` uses Tiled's, which is open
+and documented.
 
 Game mechanics are not themselves protected, which is why a framework may offer "a turn
 queue ordered by speed" or "an effectiveness matrix". Particular numbers, names and
