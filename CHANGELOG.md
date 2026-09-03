@@ -33,23 +33,23 @@ in it is new as of the tag, only now given a version number to refer to.
 - `Game` (owns the Pixi `Application`, the frame loop, current `Scene`), `Scene`, `Signal`
   (typed event emitter, stack-mode listener order), seeded `Random` (save/restorable state,
   `withSeed` for scoped determinism), keyboard `Input` with rebinding.
-- `Achievements`: named milestones unlocked by counters crossing a target — unlocking is
+- `Achievements`: named milestones unlocked by counters crossing a target - unlocking is
   derived, never stored; the increment that earns one reports it, `drainNew()` queues
   announcements, and loaded counts announce nothing.
-- `Game.step(dt)`, to drive a frame by hand — needed because Chrome throttles
+- `Game.step(dt)`, to drive a frame by hand - needed because Chrome throttles
   `requestAnimationFrame` in a background tab.
 - `SaveSystem`: named, versioned save slots over `localStorage`, with an in-memory fallback.
-- `Recorder`/`Player`: action recording and replay for testing — every `Input.onAction`
+- `Recorder`/`Player`: action recording and replay for testing - every `Input.onAction`
   stamped against the `Game.onFrame` count, re-dispatched at the same counts while the loop
   is driven by hand with `Game.step(dt)`; `serializeReplay`/`deserializeReplay` round-trip
   the log with validation.
 - `Collection`: named record collections over `localStorage` (quest logs, bestiaries,
-  achievements) — `all`/`get`/`put`/`remove`/`where`/`clear` reading storage directly, so
+  achievements) - `all`/`get`/`put`/`remove`/`where`/`clear` reading storage directly, so
   there is no cached copy to go stale; `SaveSystem`'s memory fallback is now shared.
 - `SceneStack` with `Game.pushScene`/`popScene`: a scene suspends underneath another and
-  resumes with a result via `Scene.onSuspend`/`onResume` — only the top scene updates, all
+  resumes with a result via `Scene.onSuspend`/`onResume` - only the top scene updates, all
   render, so overlays and opaque scenes both work.
-- `Logger`: categories and severity over bare `console.log` — four levels, a filter, and a
+- `Logger`: categories and severity over bare `console.log` - four levels, a filter, and a
   sink tests capture instead of the console.
 - `Hex`: cube-coordinate hex grid math (`hexNeighbors`, `hexDistance`, `hexLine`, `hexRange`,
   `hexToPixel`/`pixelToHex`), orientation-agnostic and shared by `roguelike` and `render`.
@@ -57,11 +57,11 @@ in it is new as of the tag, only now given a version number to refer to.
 **Render**
 - `Camera`, `TileMap` (chunked and culled against the camera; `square`, `hex`, `isometric`, and
   `staggered` projections, all culled through one shape-agnostic bounding-box method), `SpriteSheet`, `AnimatedSprite`,
-  `TintedSprite`, and `ColorTransformBatcher` — a per-sprite multiply-and-add colour transform
+  `TintedSprite`, and `ColorTransformBatcher` - a per-sprite multiply-and-add colour transform
   in the batch shader, which Pixi's built-in tint cannot do.
 - `LayeredSprite`, for characters built from swappable parts (skin, hair, garment).
 - `ActorAnimator`: the idle/move/action animation-state convention `AnimatedSprite` and
-  `GridMover` never had on their own, with the one rule that makes them coherent — an action
+  `GridMover` never had on their own, with the one rule that makes them coherent - an action
   interrupts idle/move, but is not itself interruptible while it plays.
 - `Projectile`: tweens a sprite's position in a straight line, the render-side half of aiming
   a thrown item or a wand bolt.
@@ -97,24 +97,24 @@ in it is new as of the tag, only now given a version number to refer to.
   `Progression`/`powerCurve` (levels and experience over a replaceable growth curve),
   `Inventory` (stacking, weight, containers), `skillCheck`.
 - `SkillPoints`: a per-stat spendable ledger over a `StatBlock`, with a rising cost-per-rank
-  callback and an optional cap — deliberately not a wrapper around `Progression`, just bridged
+  callback and an optional cap - deliberately not a wrapper around `Progression`, just bridged
   to it by the points a level-up grants.
-- `craft(inventory, recipe)`: consumes every ingredient and adds the result atomically — an
+- `craft(inventory, recipe)`: consumes every ingredient and adds the result atomically - an
   ingredient shortfall or a result that doesn't fit rolls back everything already removed.
-- `applyStatusEffect`: a temporary buff/debuff — applies `StatBlock` modifiers and registers
+- `applyStatusEffect`: a temporary buff/debuff - applies `StatBlock` modifiers and registers
   their removal against any clock shaped like `TurnClock`'s `add`/`remove`, returning a handle
   whose `cancel()` removes them early (a cure, a remove-curse scroll).
 - `identify`/`enchant`/`damageItem`/`repairItem`: item-depth functions over a plain
-  `InventoryItem`, which gained `level`, `durability` and `maxDurability` fields — durability
+  `InventoryItem`, which gained `level`, `durability` and `maxDurability` fields - durability
   is opt-in per item, a no-op without `maxDurability` set.
 - `Charges`: a resource that regenerates on its own as turns pass (a wand's limited charges),
   distinct from a `StatBlock` stat spent per use and restored only by an explicit event.
-- `rollLoot`: a weighted drop table, the same shape as `world.rollEncounter` — roll whether
+- `rollLoot`: a weighted drop table, the same shape as `world.rollEncounter` - roll whether
   anything drops, then weight-pick which.
 - `buy`/`sell`: a shop transaction between two `Inventory`s paid from a `StatBlock` currency
-  stat, all-or-nothing like `craft()` — a full stock/buyer-capacity rollback on failure.
+  stat, all-or-nothing like `craft()` - a full stock/buyer-capacity rollback on failure.
 - `Advancement`: tiered specialization (level-gated point tiers, one permanent branch choice,
-  one capstone) with a point ledger — never the spend rule, which stays game-side.
+  one capstone) with a point ledger - never the spend rule, which stays game-side.
 - `rollAffix`/`applyAffix`/`removeAffix`/`affixOf`: named item affixes carrying only trigger,
   weight and curse flag; `InventoryItem` gained an optional `affix` field.
 - `scaledModifiers`: `{stat, op, base, perLevel}` templates resolved to plain `Modifier`s at
@@ -122,15 +122,15 @@ in it is new as of the tag, only now given a version number to refer to.
 - `Appearances`: per-run seeded shuffling of which look each unidentified kind wears, with
   `toJSON`/`fromJSON`.
 - `canAfford`/`spend`: a spendable per-use resource (mana, stamina) over a `StatBlock`
-  pool — one cost or several, all-or-nothing `craft()`-shaped, with a negative cost
+  pool - one cost or several, all-or-nothing `craft()`-shaped, with a negative cost
   refused as an authoring error rather than a refund.
 
 **Roguelike**
 - `FieldOfView` (visible/explored/remembered), `Pathfinder` (A*, a Dijkstra distance map,
   `autoExplore`), `Scheduler` (energy-cost turn order), `generateDungeon` (seeded, with an
   optional `kinds` list for a game's own terrain ids alongside wall/floor).
-- `decideMonsterAI`: a wander/hunt/flee behaviour loop over a monster's own `FieldOfView` —
-  not the player's — built entirely from already-shipped primitives.
+- `decideMonsterAI`: a wander/hunt/flee behaviour loop over a monster's own `FieldOfView`
+  (not the player's), built entirely from already-shipped primitives.
 - `Secrets`: discoverable/hidden tile state (secret doors, undiscovered traps). A concealed
   cell is disguised straight in `Level`'s own terrain, so `FieldOfView`/`Pathfinder` need no
   changes to support it.
@@ -138,18 +138,18 @@ in it is new as of the tag, only now given a version number to refer to.
   Bresenham line trace (a different, cheaper question than `FieldOfView`'s shadowcast), with
   `single`/`line`/`burst` area resolution.
 - `decideMonsterAI` gained a `disposition` option (`hostile`/`neutral`/`peaceful`, defaulting
-  to `hostile`, unchanged) and a `provoked` flag — a peaceful/neutral monster always wanders
+  to `hostile`, unchanged) and a `provoked` flag - a peaceful/neutral monster always wanders
   until either overrides it back to hunting.
-- `Doors`: open/closed/locked door state, `Secrets`' own shape reused — the state is just
+- `Doors`: open/closed/locked door state, `Secrets`' own shape reused - the state is just
   terrain, swapped between a door's own open/closed kinds; locking is a separate flag that
   keeps a door closed and unopenable until `unlock` is called.
 - `BossPhases`/`AbilityCycle`: HP-fraction thresholds reporting newly entered phases in
-  order, plus named ability cooldowns with `tick`/`ready`/`use` — both JSON round-trippable.
+  order, plus named ability cooldowns with `tick`/`ready`/`use` - both JSON round-trippable.
 - `Blob`: per-cell volumes diffused into passable neighbours and decayed per step, with
   `cellsAbove` for the game to apply its own effects on.
-- `Level`, `Secrets` and `Doors` gained `toJSON`/`fromJSON` — the game's own `kinds` table
+- `Level`, `Secrets` and `Doors` gained `toJSON`/`fromJSON` - the game's own `kinds` table
   (or live level) is supplied fresh on load, `QuestLog`'s own convention.
-- `Elevation`: a discrete height per cell, in the `Secrets`/`Doors` sidecar shape —
+- `Elevation`: a discrete height per cell, in the `Secrets`/`Doors` sidecar shape.
   `FieldOfView.update` takes it for asymmetric cliff sight (a cell blocks exactly when
   above viewer and target alike), and `Pathfinder` takes it with a climb limit (ascent
   capped, descent free).
@@ -166,19 +166,19 @@ in it is new as of the tag, only now given a version number to refer to.
   `GridMover` (tweened tile movement, a walk cycle, and `turnTo` for facing without moving).
 - `QuestLog`: staged quest/mission definitions (`canStart`/`start`/`advance`/`status`), with
   `toJSON`/`fromJSON` for `SaveSystem`.
-- `loadTiledMap` reads any number of tilesets — embedded or external (fetching an external
-  `.tsx`/JSON stays the caller's asset loading) — resolving each gid by Tiled's own
+- `loadTiledMap` reads any number of tilesets - embedded or external (fetching an external
+  `.tsx`/JSON stays the caller's asset loading) - resolving each gid by Tiled's own
   greatest-firstgid-at-or-below rule.
-- `automap`: Tiled-style automapping rules — `input` patterns matched anywhere (`EMPTY`
+- `automap`: Tiled-style automapping rules - `input` patterns matched anywhere (`EMPTY`
   constrains nothing), one `output` variant written per match (`EMPTY` leaves the cell
   alone), rules applied in order with each rule's matches collected before any write.
 
 **Stage**
 - `DialogueStage` (backdrop, characters standing in front of it, expressions, speaker focus)
   and `StageScript`, a small command interpreter run as one awaited call.
-- `StageScript.runStory`: a story as a graph of named passages — `{goto}` commands and
+- `StageScript.runStory`: a story as a graph of named passages - `{goto}` commands and
   `StageChoice` jumps between them, falling off a passage ending the story.
-- `importTwee`: Twine's Twee notation (plain text, no DOM needed) into a `StoryScript` —
+- `importTwee`: Twine's Twee notation (plain text, no DOM needed) into a `StoryScript`:
   text lines become `say`, `[[links]]` in all three forms become one closing `ask`, and
   dangling links, doubled passages and setter links are refused rather than half-read.
 
@@ -186,20 +186,20 @@ in it is new as of the tag, only now given a version number to refer to.
 - `Creature` (wraps `actors.StatBlock`/`Progression`), `TypeMatrix`, `Party`, `battleOrder`,
   `checkEvolution` (last-match-wins, so a multi-stage chain reaches its final form).
 - `StatStages`: a bounded, symmetric stage ladder over a `StatBlock` stat (Swords Dance's own
-  shape) — replaces rather than stacks a stat's current modifier, and `resetAll()` clears
+  shape) - replaces rather than stacks a stat's current modifier, and `resetAll()` clears
   every stage in one call for the switch-out rule.
-- `chooseMove`/`chooseSwitch`: battle AI built on `TypeMatrix.multiplierFor` — a move scored
+- `chooseMove`/`chooseSwitch`: battle AI built on `TypeMatrix.multiplierFor` - a move scored
   by type effectiveness (or a custom `score`), and a switch suggested only when the bench has
   a genuinely better defensive matchup than staying in.
 - `BattleHooks`: a battle-scoped event/hook system for passive abilities and held items,
   keyed by a plain event-name string a game's own battle loop defines; `offSource` removes
   every hook tied to one source (an ability leaving the field on faint).
 - `Field`: named, optionally-timed battle-wide conditions (weather, terrain, a screen) a game
-  reads directly (`field.has('rain')`) — distinct from any one creature's own `StatBlock`.
+  reads directly (`field.has('rain')`) - distinct from any one creature's own `StatBlock`.
 
 **Board**
 - `mwg/board`: a generic `BoardGrid` (owned pieces on a cell grid, move/capture) plus four
-  traditional games built on it — chess (`startingChess`/`legalMoves`/`applyMove`, FEN
+  traditional games built on it - chess (`startingChess`/`legalMoves`/`applyMove`, FEN
   parsing, check/mate/stalemate/draw detection, and a material-evaluation alpha-beta
   `chooseMove`/`search` engine), checkers (forced captures, multi-jump chains, king
   promotion), go (placement, capture-by-surrounding, ko, area scoring after two passes),
@@ -208,10 +208,10 @@ in it is new as of the tag, only now given a version number to refer to.
   grid-tactics layer (move/shoot/overwatch, one action budget per unit per turn) for an
   XCOM-shaped turn.
 - `createDeck`/`shuffleDeck`/`deal`: a standard 52-card deck (with optional jokers), shuffled
-  and dealt into equal hands; `trickWinner` resolves one trick — highest trump, or highest of
-  the lead suit with no trump played — leaving bidding and stakes to the game.
+  and dealt into equal hands; `trickWinner` resolves one trick - highest trump, or highest of
+  the lead suit with no trump played - leaving bidding and stakes to the game.
 - `dealSolitaire`/`drawSolitaire`/`moveSolitaireTableau`/`moveSolitaireToFoundation`/
-  `solitaireWon`: a seeded Klondike deal and its four moves — stock/waste draw with
+  `solitaireWon`: a seeded Klondike deal and its four moves - stock/waste draw with
   waste-recycling, alternating-colour descending tableau moves, ace-up same-suit foundation
   moves, and the all-four-full win check.
 - `rollDice`/`rollExpression`: `NdM` and `NdM±K` dice notation over `Random`. `DiceCup`: a
@@ -231,10 +231,10 @@ in it is new as of the tag, only now given a version number to refer to.
 
 **Examples**
 - `colour-transform`, `interface`, `dialogue`, `village` (an NPC with switch-selected
-  conversation pages and an autorun cutscene), `battle`, `dungeon` — an SPD-shaped
+  conversation pages and an autorun cutscene), `battle`, `dungeon` - an SPD-shaped
   mockup wiring together most of the above: generated floors, three-state fog of war,
   bump-to-attack, wander/hunt/flee monsters, secret doors and hidden traps, a thrown flask
-  of oil, a dense icon-grid inventory, autosave-on-descend with permadeath — and `chess`, a
+  of oil, a dense icon-grid inventory, autosave-on-descend with permadeath - and `chess`, a
   playable board against `mwg/board`'s search engine, moved by click-to-select-then-move or
   a held/repeating arrow-key cursor.
 
@@ -249,11 +249,11 @@ in it is new as of the tag, only now given a version number to refer to.
   (a trap kind, say) alongside the generator's wall/floor without forking it.
 - `Targeting`'s `AreaShape` gained `cone`, and `coneCells`/`chainTargets`/`knockbackPath`
   cover sprays, arcs and shoves alongside the existing `single`/`line`/`burst` resolution.
-- `EquipmentSlots` gained an optional `locked` predicate — a locked slot reports `isLocked()`
+- `EquipmentSlots` gained an optional `locked` predicate - a locked slot reports `isLocked()`
   and refuses both `unequip` and swaps; without it every slot behaves exactly as before.
 - `examples/dungeon`'s inventory screen is an `IconGrid` now, not a `ListView`.
 - `TurnClock`'s `TimedEffect` gained an optional `onExpire` callback, fired once right before
-  an effect whose duration has run out is removed — what `applyStatusEffect` needed to tie a
+  an effect whose duration has run out is removed - what `applyStatusEffect` needed to tie a
   status effect's expiry to removing the `StatBlock` modifiers it applied.
 - `Game`'s scenes run as a stack: `switchScene` replaces everything, `pushScene`/`popScene`
   suspend and resume; only the top scene updates, all render, and resize reaches the whole
@@ -274,7 +274,7 @@ in it is new as of the tag, only now given a version number to refer to.
   texture sampling was already on. The browser does a second, separate resize compositing the
   canvas element onto the page (its backing buffer is rarely the same size as its CSS display
   size), and that step defaults to smoothing regardless of anything Pixi does. Fixed by adding
-  a `.mwg-pixel-art { image-rendering: pixelated }` class to the canvas — a class survives
+  a `.mwg-pixel-art { image-rendering: pixelated }` class to the canvas - a class survives
   `autoDensity`/`resizeTo` rewriting the canvas's `style` attribute wholesale, where an inline
   style did not.
 - Off-map neighbours could alias real cells through `Level.index` (which does not

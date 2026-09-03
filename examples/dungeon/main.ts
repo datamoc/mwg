@@ -542,7 +542,7 @@ class DungeonScene extends Scene {
 	 *
 	 * The whole game is driven from here: monsters act one after another with no waiting,
 	 * then the loop parks on the hero and returns to the browser. That is what makes a
-	 * turn-based game feel instant — nothing is animated between two monster moves.
+	 * turn-based game feel instant: nothing is animated between two monster moves.
 	 */
 	private runTurns(): void {
 		for (let guard = 0; guard < 1000; guard++) {

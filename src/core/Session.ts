@@ -4,7 +4,7 @@ import { defaultStorage, type SaveStorage } from './Save.ts';
  * Counts how many times a game has been launched, persisted across page loads.
  *
  * Not an achievement, a quest counter, or anything a game reads to change its own
- * behaviour — the one thing this exists for is the signal a native wrapper (Capacitor,
+ * behaviour: the one thing this exists for is the signal a native wrapper (Capacitor,
  * Tauri, whatever a game ships through) needs to decide whether a player has used the
  * game enough to plausibly be worth asking for a rating. `mwg` only counts; it never
  * prompts, and has no opinion on what "enough" means.

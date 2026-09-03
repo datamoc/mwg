@@ -5,7 +5,7 @@ import { Assets, Texture } from 'pixi.js';
  *
  * In a built game, `tools/compile-resources` has already turned every asset into a `data:`
  * URI inside a script that runs before the game does. `resolve` then hands Pixi that URI
- * instead of a path, which is what lets the page work from `file://` — see the tool for
+ * instead of a path, which is what lets the page work from `file://`: see the tool for
  * why plain files next to the page do not.
  *
  * During development there is no compiled bundle, so paths are used as they are and the

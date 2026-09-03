@@ -249,7 +249,7 @@ export class Game {
 	 *
 	 * `__PIXI_APP__` is the name the PixiJS devtools extension looks for, so declaring it
 	 * costs nothing and makes the scene graph inspectable. `__MWG__` is the game itself,
-	 * which is what makes `__MWG__.step(1/60)` possible from a console — the only way to
+	 * which is what makes `__MWG__.step(1/60)` possible from a console: the only way to
 	 * advance a game whose tab the browser has suspended, and the difference between
 	 * diagnosing a frozen page and guessing at it.
 	 *

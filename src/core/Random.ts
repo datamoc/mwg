@@ -2,7 +2,7 @@
  * Deterministic random numbers.
  *
  * A roguelike lives or dies on this: the same seed has to produce the same dungeon, on
- * any machine, in any browser, forever. `Math.random()` cannot do that — it is not
+ * any machine, in any browser, forever. `Math.random()` cannot do that: it is not
  * seedable and its algorithm is not specified.
  *
  * The generator is xoshiro128**, by David Blackman and Sebastiano Vigna, released into the
@@ -148,7 +148,7 @@ export function int(min: number, max?: number): number {
 	return min + current().int(max - min);
 }
 
-/** an integer in [min, max], both ends included — the usual shape for dice */
+/** an integer in [min, max], both ends included (the usual shape for dice) */
 export function range(min: number, max: number): number {
 	return min + current().int(max - min + 1);
 }

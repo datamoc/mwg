@@ -47,7 +47,7 @@ export interface MessageBoxOptions {
  *
  * It reveals text a character at a time, advances page by page on `confirm`, and can end
  * on a set of choices. Pressing `confirm` while text is still appearing completes the page
- * instead of advancing — the behaviour every player expects, and the reason the reveal is
+ * instead of advancing: the behaviour every player expects, and the reason the reveal is
  * driven by a character count rather than by animating the label.
  *
  * This is the one window that is not closable by `cancel`: a conversation ends when it

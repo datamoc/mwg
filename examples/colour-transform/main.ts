@@ -28,9 +28,9 @@ class ColourTransformScene extends Scene {
 
 		const rows: Array<[string, (sprite: TintedSprite, index: number) => void]> = [
 			['texture as it is', () => {}],
-			['tint 0x5060a0 — multiply only, what Pixi gives you', (s) => (s.tint = 0x5060a0)],
-			['lerpTint(0x30ff40, 0.6) — needs the additive term', (s) => s.lerpTint(0x30ff40, 0.6)],
-			['silhouette(0xff4040) — shape only', (s) => s.silhouette(0xff4040)],
+			['tint 0x5060a0: multiply only, what Pixi gives you', (s) => (s.tint = 0x5060a0)],
+			['lerpTint(0x30ff40, 0.6): needs the additive term', (s) => s.lerpTint(0x30ff40, 0.6)],
+			['silhouette(0xff4040): shape only', (s) => s.silhouette(0xff4040)],
 		];
 
 		const shown = [tiles.FLOOR, tiles.WALL, tiles.WATER, tiles.GRASS, tiles.DOOR, tiles.COIN, tiles.HERO, tiles.RAT, tiles.BLOB];
@@ -71,7 +71,7 @@ class ColourTransformScene extends Scene {
 	private addSvgRow(y: number, scale: number): void {
 		this.stage.addChild(
 			new Text({
-				text: 'icon_gem.svg — an SVG texture, loaded and tinted the same as a PNG one',
+				text: 'icon_gem.svg: an SVG texture, loaded and tinted the same as a PNG one',
 				style: { fill: 0xd0d0d8, fontFamily: 'monospace', fontSize: 13 },
 				x: 20,
 				y: y - 20,
@@ -97,7 +97,7 @@ class ColourTransformScene extends Scene {
 	private addPulsingRow(y: number, scale: number): void {
 		this.stage.addChild(
 			new Text({
-				text: 'animated — the additive term driven per frame',
+				text: 'animated: the additive term driven per frame',
 				style: { fill: 0xd0d0d8, fontFamily: 'monospace', fontSize: 13 },
 				x: 20,
 				y: y - 20,

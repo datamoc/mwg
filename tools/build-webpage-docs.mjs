@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
  *
  * TypeDoc's checker-based analysis needs the classic TypeScript compiler API
  * (`ts.createProgram`, `ts.SyntaxKind`, ...), which `typescript@7`'s package no longer
- * exposes through its main entry point — it ships a new native compiler with a different
+ * exposes through its main entry point; it ships a new native compiler with a different
  * API surface instead. `tools/docs/` is an isolated nested npm project that pins an older,
  * compatible `typescript` purely for TypeDoc to read the source with; it never touches the
  * root project's own build or type-check, which keep using the real typescript@7.

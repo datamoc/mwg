@@ -7,7 +7,7 @@ import * as Random from '../core/Random.ts';
  *
  * The camera does not move: it moves the world under a fixed viewport, which is what a
  * renderer actually wants. `world` is the container to put the map and its inhabitants in;
- * anything that should stay put on screen — the HUD, a dialogue box — goes outside it.
+ * anything that should stay put on screen (the HUD, a dialogue box) goes outside it.
  *
  * Positions are in world units. At `zoom = 3` a 16px tile is 48 screen pixels.
  */
@@ -72,7 +72,7 @@ export class Camera {
 		this.viewHeight = height;
 	}
 
-	/** the visible rectangle, in world units — use it to cull */
+	/** the visible rectangle, in world units: use it to cull */
 	get view(): { x: number; y: number; width: number; height: number } {
 		const width = this.viewWidth / this._zoom;
 		const height = this.viewHeight / this._zoom;
@@ -166,7 +166,7 @@ export class Camera {
 	}
 
 	//the bounds-clamped centre `apply()` renders at, also what `view` reports for
-	//culling — the two must agree, or culling drops tiles that are actually on screen
+	//culling: the two must agree, or culling drops tiles that are actually on screen
 	private clampedCentre(x: number, y: number): { x: number; y: number } {
 		if (!this.bounds) return { x, y };
 

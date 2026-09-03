@@ -7,7 +7,7 @@ import { Signal } from './Signal.ts';
  * rebinding possible at all, and it is far easier to put in from the start than to retrofit
  * once a hundred call sites know about key codes.
  *
- * Keys are identified by `KeyboardEvent.code` — the physical key — so a binding to `KeyZ`
+ * Keys are identified by `KeyboardEvent.code` (the physical key), so a binding to `KeyZ`
  * lands on the same place under AZERTY as under QWERTY, which is what a player actually
  * wants from a movement key.
  */

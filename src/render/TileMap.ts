@@ -95,7 +95,7 @@ interface Layer {
  * A grid of tiles, drawn as sprites.
  *
  * Layers stack in the order they are added: a floor, then whatever stands on it, then a
- * roof. Every layer shares one grid, so a cell's lighting applies to all of them at once —
+ * roof. Every layer shares one grid, so a cell's lighting applies to all of them at once,
  * which is what fog of war needs, since an unseen floor and the wall on it have to dim
  * together.
  *
@@ -544,7 +544,7 @@ export class TileMap extends Container {
 	}
 
 	/**
-	 * The centre of a tile, in world units — where a character standing on it belongs.
+	 * The centre of a tile, in world units: where a character standing on it belongs.
 	 *
 	 * Rides the cell's elevation: a raised cell reports its lifted top, so whoever
 	 * is placed there stands on the block rather than inside it.

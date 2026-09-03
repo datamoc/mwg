@@ -354,7 +354,7 @@ function buildBackdrop(palette) {
  * The figure is decomposed so that every surface a game would want to vary is its own
  * colour: skin, eyes, hair, the upper garment and the lower one. Two characters are then
  * two palettes over the same silhouette, which is how a real game gets a townful of people
- * out of one drawing — and how a player-made character works at all.
+ * out of one drawing, and how a player-made character works at all.
  *
  * Frames are 64x96, standing on the bottom edge, and only the face differs between them.
  */
@@ -450,7 +450,7 @@ const PARTS = {
 /**
  * Builds one character sheet from a five-colour palette.
  *
- * @param palette skin, eyes, hair, top, bottom — each an [r, g, b] triple
+ * @param palette skin, eyes, hair, top, bottom, each an [r, g, b] triple
  */
 function buildCharacter(palette) {
 	const { width, height } = CHARACTER_FRAME;

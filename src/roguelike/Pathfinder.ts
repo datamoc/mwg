@@ -17,7 +17,7 @@ export interface PathOptions {
 	topology?: 4 | 8;
 
 	/**
-	 * Cells to treat as blocked beyond the terrain — other creatures, usually.
+	 * Cells to treat as blocked beyond the terrain (other creatures, usually).
 	 *
 	 * Passed per call rather than held, because who is standing where changes every turn
 	 * and a cached path is a monster walking through its neighbour.
@@ -41,7 +41,7 @@ export interface PathOptions {
  *
  * A* for "how do I get to that one place", which is what a monster chasing the player
  * needs. A Dijkstra map for "which way is the player from anywhere", which is what a dozen
- * monsters chasing the player need — computed once for the whole level rather than once
+ * monsters chasing the player need, computed once for the whole level rather than once
  * per monster.
  */
 export class Pathfinder {
@@ -88,7 +88,7 @@ export class Pathfinder {
 	 * The shortest route from one cell to another.
 	 *
 	 * @returns the cells to walk through, starting with the one after `from` and ending on
-	 * `to`. Empty when there is no route — including when `to` is blocked, so a caller
+	 * `to`. Empty when there is no route (including when `to` is blocked), so a caller
 	 * should exclude the target itself from `blocked` if it means to walk into it.
 	 */
 	find(from: Step, to: Step, options: PathOptions = {}): Step[] {

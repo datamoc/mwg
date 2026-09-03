@@ -1,4 +1,4 @@
-// mwg project site — the hero demo.
+// mwg project site: the hero demo.
 //
 // Draws the same tiny sprite twice and applies a colour transform to every pixel by hand:
 // `texel * M + A`. The left canvas is clamped to A = 0, which is all Pixi's built-in `tint`
@@ -9,7 +9,7 @@
 (function () {
 	const SIZE = 20;
 
-	// procedurally build a small hooded-figure sprite so no image asset is needed —
+	// procedurally build a small hooded-figure sprite so no image asset is needed:
 	// generated, not drawn by hand or downloaded, same rule the framework's own examples follow.
 	function buildSprite() {
 		const cx = SIZE / 2;

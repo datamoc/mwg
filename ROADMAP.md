@@ -1,29 +1,29 @@
 # Roadmap
 
-Each module ships in the order below — later ones build on the modules before them. Order
+Each module ships in the order below - later ones build on the modules before them. Order
 among what is still open is reevaluated periodically, not just appended to. Entries below
 mention "the capability spec" and other [README.md](README.md) sections by name; that's
 where those live.
 
-1. ~~`mwg/core` — loop, scenes, signals, RNG~~
-2. ~~`mwg/render` — colour transform, camera, tile map, sprite sheets, animation~~
-3. ~~`mwg/assets` + `tools/compile-resources` — the `file://` story end to end~~
-4. ~~`mwg/ui` — windows, stack, lists, message box; `mwg/core` input with rebinding~~
-5. ~~`mwg/stage` — dialogue scenes: backdrop, characters, script runner~~
-6. ~~`mwg/i18n` — message tables, plurals, and left-to-right / right-to-left layout~~
-7. ~~`mwg/actors` — stat blocks, equipment slots, modifiers, inventory~~
-8. ~~`mwg/roguelike` — FOV, pathfinding, energy scheduler, level generation~~
-9. ~~`mwg/world` — many maps, transitions, persistence, the turn clock, encounter tables~~
-10. ~~`mwg/rpg` — map and event data, the interpreter, switches and variables, grid movement~~
-11. ~~`mwg/battle` — species and stats, type matrix, speed-ordered turns~~
+1. ~~`mwg/core` - loop, scenes, signals, RNG~~
+2. ~~`mwg/render` - colour transform, camera, tile map, sprite sheets, animation~~
+3. ~~`mwg/assets` + `tools/compile-resources` - the `file://` story end to end~~
+4. ~~`mwg/ui` - windows, stack, lists, message box; `mwg/core` input with rebinding~~
+5. ~~`mwg/stage` - dialogue scenes: backdrop, characters, script runner~~
+6. ~~`mwg/i18n` - message tables, plurals, and left-to-right / right-to-left layout~~
+7. ~~`mwg/actors` - stat blocks, equipment slots, modifiers, inventory~~
+8. ~~`mwg/roguelike` - FOV, pathfinding, energy scheduler, level generation~~
+9. ~~`mwg/world` - many maps, transitions, persistence, the turn clock, encounter tables~~
+10. ~~`mwg/rpg` - map and event data, the interpreter, switches and variables, grid movement~~
+11. ~~`mwg/battle` - species and stats, type matrix, speed-ordered turns~~
 12. ~~`mwg/audio`, save/load~~
 13. ~~layered character sprites, and vertical writing~~
 14. ~~worked examples: a dungeon crawl, a village with NPCs and a cutscene, a creature battle~~
-15. ~~`mwg/assets` + `mwg/render` — verify and harden SVG texture loading through a compiled
+15. ~~`mwg/assets` + `mwg/render` - verify and harden SVG texture loading through a compiled
     `data:` URI~~ (verified in `examples/colour-transform`: Pixi's SVG parser rasterises it
     correctly through the aliased, extension-less `data:` source, no code changes needed)
 16. ~~an SPD-shaped mockup: wire `mwg/actors` (`StatBlock`, `Inventory`, `EquipmentSlots`) into
-    `examples/dungeon`~~ — the hero's attack/defense/max HP are now a `StatBlock` derived
+    `examples/dungeon`~~ - the hero's attack/defense/max HP are now a `StatBlock` derived
     from strength/armor/vitality; items found on the floor go into an `Inventory`; an
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
@@ -60,7 +60,7 @@ not demanded work: 28 and 30 are reference picks no capability waits on, 41 wait
 pick by its own entry's admission, and 45 stays last - true 3D cuts against the 2D purpose
 and needs a project-level yes before any code.
 
-17. ~~`mwg/render` + `mwg/roguelike` — hexagonal tile maps, and FOV/pathfinding over a hex
+17. ~~`mwg/render` + `mwg/roguelike` - hexagonal tile maps, and FOV/pathfinding over a hex
     grid~~ - flat-top, matching Wesnoth. `Level` and `TileMap` both gained a `shape` option
     (`'square' | 'hex'`) rather than forking into separate classes, exactly as planned. The
     actual new code is small and lives in one place: `mwg/core`'s `Hex.ts` (a fixed, six-
@@ -80,7 +80,7 @@ and needs a project-level yes before any code.
     tests) and every example still build clean. Not wired into a new example this round - a
     real Wesnoth-shaped mockup (item 28) is its own, separate piece of work once this landed,
     not a requirement of landing it
-18. ~~`mwg/render` — isometric and staggered projection, so any Tiled orientation loads
+18. ~~`mwg/render` - isometric and staggered projection, so any Tiled orientation loads
     directly~~ - unlike hex, isometric and staggered do not change which cells are
     neighbours (still an ordinary square grid, four or eight directions, whatever a game's
     `Level` already is) - only where a cell draws, which is why only `TileMap` gained the
@@ -99,11 +99,11 @@ and needs a project-level yes before any code.
     suite (238 tests), the library build and every example still build clean
 19. ~~a performance pass across the render path: profile `ColorTransformBatcher` and
     `TileMap`'s chunk culling under load, and confirm nothing ever silently falls back from
-    WebGL/WebGPU to a canvas 2D renderer~~ — measured directly (`renderer.name` inspected,
+    WebGL/WebGPU to a canvas 2D renderer~~ - measured directly (`renderer.name` inspected,
     not assumed): `colour-transform`'s 4000-sprite stress test holds a steady 60fps on
     `webgl` (Pixi's default preference; `Game` sets no `preference` of its own, so nothing
     here opts into a canvas fallback either). A synthetic 400×400-tile map (160,000 cells,
-    625 chunks — far past the ~2,500-cell maps any current example uses) still holds 60fps,
+    625 chunks - far past the ~2,500-cell maps any current example uses) still holds 60fps,
     `cull()` costs ~0.017ms per call, and only ~1% of chunks render at a time. No regression
     found; nothing needed fixing
 20. ~~wire `mwg/core`'s `SaveSystem` into an actual game loop end to end~~ - `examples/dungeon`
@@ -126,14 +126,14 @@ and needs a project-level yes before any code.
     faking a state machine over single static frames would not exercise the interruption rule
     that is the actual point of this item. 12 unit tests cover the full state machine
     including the interruption/resume rule and the "registered looping by mistake" footgun
-22. ~~`mwg/roguelike` — a monster AI behaviour loop (wander / hunt / flee) driven by the
+22. ~~`mwg/roguelike` - a monster AI behaviour loop (wander / hunt / flee) driven by the
     existing `FieldOfView`, `Pathfinder` and `Scheduler` primitives~~ - `decideMonsterAI()`
     gives each monster its own sight (a fresh small-radius `FieldOfView` per call, not the
     player's) and turns that into wander/hunt/flee, built entirely from the three primitives
     already shipped. `examples/dungeon` now calls it once per monster per turn instead of the
     old single distance check; verified in a browser (a rat closed distance and landed a hit
     once in sight, killed cleanly with no console errors)
-23. ~~`mwg/render` + `mwg/roguelike` — a discoverable/hidden tile state (secret doors,
+23. ~~`mwg/render` + `mwg/roguelike` - a discoverable/hidden tile state (secret doors,
     undiscovered traps): a cell that renders and blocks like its surroundings until revealed
     by search or trigger~~ - `roguelike`'s new `Secrets` writes the disguise kind straight
     into `Level`, so a concealed cell already passes every `passable`/`transparent` check as
@@ -147,7 +147,7 @@ and needs a project-level yes before any code.
     real bug in the process - the vault's floor and treasure were rendering through the
     "solid" wall before the door was ever found, because the vault cell itself was carved
     eagerly instead of staying genuinely undiscovered rock until the door opened
-24. ~~`mwg/roguelike` — targeting: an aim cursor with range/line-of-sight/area-of-effect shape
+24. ~~`mwg/roguelike` - targeting: an aim cursor with range/line-of-sight/area-of-effect shape
     resolution for thrown items, wands and ranged attacks, plus a projectile-flight helper in
     `mwg/render`~~ - `canTarget`/`hasLineOfSight`/`resolveArea` are a Bresenham line trace, not
     a shadowcast: aiming asks "what is on the way to this exact point", a different (and
@@ -164,7 +164,7 @@ and needs a project-level yes before any code.
     running game and matched the source's arithmetic exactly - what first looked like a broken
     "nothing in range" turned out to be a dropped-armor ground item's tinted coin sprite being
     mistaken for a monster at screenshot resolution, not a targeting bug
-25. ~~`mwg/ui` — a dense icon-grid inventory view (multi-column, drag/drop, long-press to
+25. ~~`mwg/ui` - a dense icon-grid inventory view (multi-column, drag/drop, long-press to
     quickslot) alongside the existing `ListView`~~ - `IconGrid` keeps `ListView`'s keyboard
     model (arrow keys move a highlight, wrapping at the edges, skipping disabled cells) over a
     2D layout instead of one column. "Drag and drop" is tap-then-tap, not a continuously
@@ -176,7 +176,7 @@ and needs a project-level yes before any code.
     is this now, instead of a `ListView`: a coin sprite tinted per item, a quantity badge on
     stacked potions and flasks, and a corner mark on whichever weapon or armor is worn -
     verified in a browser (equip, drink, and the log/HUD both reflected it correctly)
-26. ~~`mwg/world` — an explicit non-persistent-map mode~~: `World.define` now takes a
+26. ~~`mwg/world` - an explicit non-persistent-map mode~~: `World.define` now takes a
     `persistent` option (default `true`, matching ADOM's shape); `persistent: false` rebuilds
     a map from its factory on every `enter`, discarding whatever was there, which is SPD's
     shape for its own floors. Both live in the same `World`
@@ -190,7 +190,7 @@ and needs a project-level yes before any code.
     than one hero). No specific title picked yet; logged at low priority per the roadmap
     process below~~ - `mwg/board` now has a hex tactical state with multi-owner units,
     passable/cover terrain, action points, turn rounds, movement, and combat.
-29. ~~`mwg/render` (`TileMap`) — auto-tiling: stitching a terrain edge or corner from many small
+29. ~~`mwg/render` (`TileMap`) - auto-tiling: stitching a terrain edge or corner from many small
     tile pieces chosen by which neighbours are the same terrain, rather than a game hand-picking
     a frame per cell itself~~ - `blobIndex`/`autotileFrames` are the classic "blob tile"
     reduction: a diagonal neighbour only changes a cell's shape when both orthogonal neighbours
@@ -214,7 +214,7 @@ and needs a project-level yes before any code.
     need not be a dungeon or a battlefield at all). No specific title or mechanic picked for
     either; logged at low priority per the roadmap process below, same as item 28~~ -
     `mwg/board` now covers action points, cover, overwatch, attack range, and shared turns.
-31. ~~`mwg/stage` — named-passage navigation for `StageScript`: a choice that jumps to another
+31. ~~`mwg/stage` - named-passage navigation for `StageScript`: a choice that jumps to another
     named list of commands, rather than only picking one fixed page of a single linear list
     (`EventRunner`'s `activePage`) or running straight through one (`StageScript.run` today).
     This is Twine's actual distinct demand (see [README.md](README.md#capability-spec)) - a story as a
@@ -225,7 +225,7 @@ and needs a project-level yes before any code.
     graph from a start passage, following `{goto}` commands and `StageChoice` jumps (choice
     values matched back to their choice, `MessageBox` untouched); falling off a passage ends
     the story. 4 new tests, including a loop back to an earlier passage
-32. ~~`mwg/rpg` — Tiled's *external* tileset format (`.tsx`, or its JSON export), and more than
+32. ~~`mwg/rpg` - Tiled's *external* tileset format (`.tsx`, or its JSON export), and more than
     one tileset per map. `loadTiledMap` reads only a single tileset embedded directly in the
     map's own JSON today, and refuses outright the moment a map references a tileset as its
     own file or uses a second one - the ordinary shape once a project's maps share tilesets
@@ -235,7 +235,7 @@ and needs a project-level yes before any code.
     `TileMap`, plain indices still reading as sheet 0. Fetching an external tileset stays the
     caller's job (`TiledTilesetData` types the tileset JSON); every sheet must share the
     map's tile size. 4 new tests
-33. ~~`mwg/rpg` (or a new `mwg/automap`) — Tiled's automapping: rule maps whose `input_*` layers
+33. ~~`mwg/rpg` (or a new `mwg/automap`) - Tiled's automapping: rule maps whose `input_*` layers
     are arbitrary 2D patterns (not just a cell's 8 immediate neighbours, unlike item 29's blob
     autotiling) matched anywhere against a target map, replaced by the paired `output_*`
     layers, with rules applied in order so a later one can override an earlier one's result,
@@ -249,7 +249,7 @@ and needs a project-level yes before any code.
     cell alone), rules in order with each rule's matches collected before any write, so a
     rule never sees its own. The pick is injectable, defaulting to the seeded `Random.int`.
     7 unit tests
-34. ~~`mwg/stage` — importing actual Twine story files (the Twee notation, or the `<tw-passagedata>`
+34. ~~`mwg/stage` - importing actual Twine story files (the Twee notation, or the `<tw-passagedata>`
     elements in Twine's HTML export) into `StageScript`'s command format, so a story authored
     in Twine's own editor runs under `mwg/stage` without hand-writing `StageCommand` arrays.
     Blocked on item 31 (named-passage navigation) - a Twine file is fundamentally a graph of
@@ -262,7 +262,7 @@ and needs a project-level yes before any code.
     `[[links]]` in all three forms into one closing `ask` with `goto` choices; `StoryData`
     names the start else the first passage does, and dangling links, doubled passages and
     setter links are refused. 8 unit tests
-35. ~~`mwg/core` — minimal database-shaped functions over `localStorage`: named collections of
+35. ~~`mwg/core` - minimal database-shaped functions over `localStorage`: named collections of
     records, queried and filtered, rather than `SaveSystem`'s one-blob-per-slot shape. A
     quest log, a bestiary of what has been discovered, achievements - state a game wants to
     query ("everything not yet completed") rather than load wholesale the way a save slot is.
@@ -274,14 +274,14 @@ and needs a project-level yes before any code.
     shared by exporting `SaveSystem`'s `defaultStorage`), with `all`/`get`/`put`/`remove`/
     `where`/`clear` reading storage directly - nothing cached, nothing to go stale,
     insertion order kept. 8 unit tests
-36. ~~`mwg/core` — structured log handling: categories and severity levels over bare
+36. ~~`mwg/core` - structured log handling: categories and severity levels over bare
     `console.log`/`console.error`, the way every example's `main().catch` currently just
     dumps a stack trace to the page. Marginal value on its own - the browser console already
     covers most of what this would add - logged because it came up, not because a reference
     game demands it~~ - `core`'s `Logger`, kept as small as that admission demands: a
     category, four levels, a filter, and a sink tests capture instead of the console.
     4 unit tests
-37. ~~`mwg/rpg` — quest/mission management: named quests with stages, each stage a condition
+37. ~~`mwg/rpg` - quest/mission management: named quests with stages, each stage a condition
     or a counter towards one ("kill 5 rats: 3/5"), and prerequisites between quests~~ -
     `QuestLog` tracks only which stage every known quest is on; a stage's condition or
     counter is checked against `GameState`'s existing switches and variables, the same
@@ -307,7 +307,7 @@ and needs a project-level yes before any code.
     `Scene.onSuspend`/`onResume`. Only the top updates; all render, so overlays and opaque
     scenes both work; resize reaches the whole stack. The lockpick timing example now
     exercises the complete flow. 4 unit tests
-39. ~~`mwg/actors` — skills and competencies as levelling spends, not a new storage
+39. ~~`mwg/actors` - skills and competencies as levelling spends, not a new storage
     primitive~~ - `SkillPoints` is deliberately not a wrapper around `Progression`: a game
     grants points however it likes (`grant(levelsGained)` after `Progression.addExperience`
     returns positive, a quest reward, a trainer NPC), and `spend(stat)` raises that stat's
@@ -319,7 +319,7 @@ and needs a project-level yes before any code.
     before it shipped - `spend` was calling the cost callback twice per spend (once inside
     `canSpend`, again to charge it), harmless for a pure function but wrong for a game with
     a costly or side-effecting one, fixed to compute the cost exactly once
-40. ~~`mwg/actors` — crafting: a recipe (named ingredients and quantities, one result) resolved
+40. ~~`mwg/actors` - crafting: a recipe (named ingredients and quantities, one result) resolved
     against an `Inventory`~~ - `craft()` checks every ingredient, consumes it, and adds the
     result in one call, the same small-focused-function shape `skillCheck` already is. All
     or nothing: a missing or short ingredient touches nothing, and if every ingredient is
@@ -333,7 +333,7 @@ and needs a project-level yes before any code.
     more directly than anything shipped today; exactly what "owned", "captured" and
     "promoted" should mean is a question for whichever board game item 30 eventually picks~~
     - `mwg/board`'s `BoardGrid` and `BoardPiece` provide the generic piece shape.
-42. ~~`mwg/core` — action recording and replay, for testing: tap `Input.onAction`, timestamp
+42. ~~`mwg/core` - action recording and replay, for testing: tap `Input.onAction`, timestamp
     each one against a frame counter rather than the clock, and serialise the log; a player
     re-dispatches the same actions at the same frame counts while driving the frame loop
     itself with `Game.step(dt)` instead of a live `requestAnimationFrame`. Most of what this
@@ -598,7 +598,7 @@ in the same session they were logged in.
     intelligence whatever, played against a score table or a simpleton. The named dice
     mechanic item 30 asks about, at minigame scale first~~ - `mwg/board`'s `DiceCup` holds
     and rerolls only the unkept dice, and `scoreDice` scores all thirteen standard categories.
-73. ~~`mwg/roguelike` — generic combat lifecycle hooks: invulnerability, pre/post-damage
+73. ~~`mwg/roguelike` - generic combat lifecycle hooks: invulnerability, pre/post-damage
     modification, attack/defense procs, and on-kill effects for grid actors. SPD needs this
     seam for exact `Char.attack()`/`defenseProc()` behavior; the framework supplies only the
     hook shape, while each game owns its numbers and rules~~ - `roguelike.CombatHooks`

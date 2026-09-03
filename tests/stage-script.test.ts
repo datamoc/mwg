@@ -10,7 +10,7 @@ import type { StageCommand } from '../src/stage/script.ts';
  * What is worth testing here is the sequencing: that commands run in order, that a `say`
  * waits for the player rather than racing ahead, that an answer reaches the state, and
  * that cancelling stops the rest. None of that needs a renderer, so none of it is tested
- * through one — the fakes below record what they were asked to do and nothing more.
+ * through one: the fakes below record what they were asked to do and nothing more.
  */
 
 interface Recorded {
@@ -50,7 +50,7 @@ function fakes() {
 
 /**
  * The script builds a real MessageBox, which needs a renderer. Rather than stubbing Pixi,
- * the runner is driven through a subclass that reports each line and resolves when told —
+ * the runner is driven through a subclass that reports each line and resolves when told:
  * the same seam a game would use to swap in its own dialogue presentation.
  */
 class TestScript extends StageScript {

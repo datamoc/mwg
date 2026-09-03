@@ -9,11 +9,11 @@ import tileset from '../assets/tiles.json' with { type: 'json' };
  * A scripted conversation: backdrop, characters, dialogue.
  *
  * The whole scene below is data. Nothing in the list knows about Pixi, textures or the
- * frame loop — which is the point: it could as easily have come out of a file, a
+ * frame loop, which is the point: it could as easily have come out of a file, a
  * spreadsheet or an editor.
  *
  * Alice and Bob are one drawing. The generator in tools/make-example-assets.mjs builds a
- * character from five colours — skin, eyes, hair, upper garment, lower garment — so a
+ * character from five colours (skin, eyes, hair, upper garment, lower garment), so a
  * second person costs a palette rather than a second sprite sheet.
  */
 

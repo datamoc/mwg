@@ -16,7 +16,7 @@ export interface LabelOptions {
  *
  * This is a thin wrapper over Pixi's `Text`, and its job is to stop every call site from
  * repeating a style object. Pixi renders text to its own texture, so changing the string
- * costs a re-render — cheap enough for a label, wasteful for something updated every
+ * costs a re-render: cheap enough for a label, wasteful for something updated every
  * frame, where a value that only changes on whole numbers should be guarded.
  */
 export class Label extends Text {

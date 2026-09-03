@@ -50,7 +50,7 @@ type QuadElement = BatchableQuadElement & PackedElement;
  * add term is what expresses everything that pulls a sprite *towards* a colour rather
  * than darkening it: a poisoned enemy going green, a hit flashing white, a remembered but
  * unlit tile washing out to grey. Those all read as `lerp(texel, colour, strength)`, which
- * is `texel × (1 - s) + colour × s` — impossible with multiply alone.
+ * is `texel × (1 - s) + colour × s`, impossible with multiply alone.
  *
  * Doing it here rather than as a per-object filter is the whole point: a filter costs a
  * render-texture pass per object, while this rides along in the same batch and costs one
@@ -441,8 +441,8 @@ let registered = false;
  * Registers the colour-transform batcher and the `TintedSprite` pipe with Pixi.
  *
  * Called automatically the first time a `TintedSprite` is rendered is not possible, because
- * registration has to happen before the renderer is created — so `Game` calls this during
- * start-up, and it is exported for anyone building their own renderer.
+ * registration has to happen before the renderer is created. A game passes it through
+ * `GameOptions.extensions`, and it is exported for anyone building their own renderer.
  */
 export function registerColorTransform(): void {
 	if (registered) return;

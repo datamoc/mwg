@@ -46,7 +46,7 @@ interface Actor {
  * A dialogue scene: a backdrop, characters standing in front of it, and whoever is
  * speaking picked out from the rest.
  *
- * This is the presentation the tile map is not — a still image with figures on it, the
+ * This is the presentation the tile map is not: a still image with figures on it, the
  * mode nearly every RPG drops into for a conversation that matters, and the whole of how a
  * visual novel looks.
  *

@@ -9,9 +9,9 @@ import { Level, rectCenter, rectsOverlap, type Rect, type TerrainKind } from './
  * saved with the game. Borrowing a generator would mean borrowing its RNG too, and then
  * two independent streams decide what the level looks like.
  *
- * The rooms are kept on the level afterwards, because everything else a game wants to do —
- * put the stairs far from the entrance, spawn a monster where the player is not, place
- * treasure in a dead end — is a question about rooms, not about cells.
+ * The rooms are kept on the level afterwards, because everything else a game wants to do
+ * (put the stairs far from the entrance, spawn a monster where the player is not, place
+ * treasure in a dead end) is a question about rooms, not about cells.
  */
 
 export interface DungeonOptions {
@@ -63,7 +63,7 @@ export function generateDungeon(options: DungeonOptions): Level {
 	const placed: Rect[] = [];
 
 	//rejection sampling: try a spot, keep it if it clears the others. simple, and it fails
-	//gracefully — a crowded level just ends up with fewer rooms rather than looping forever
+	//gracefully: a crowded level just ends up with fewer rooms rather than looping forever
 	for (let attempt = 0; attempt < roomAttempts * 6 && placed.length < roomAttempts; attempt++) {
 		const w = Random.range(minRoomSize, maxRoomSize);
 		const h = Random.range(minRoomSize, maxRoomSize);

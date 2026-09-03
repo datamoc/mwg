@@ -72,8 +72,8 @@ class InterfaceScene extends Scene {
 	private updateStatus(): void {
 		this.status.setText(
 			this.windows.isEmpty
-				? 'Enter — talk to someone      Tab — open the bag'
-				: `Escape — close   (${this.windows.depth} window${this.windows.depth > 1 ? 's' : ''} open)`
+				? 'Enter to talk to someone      Tab to open the bag'
+				: `Escape to close   (${this.windows.depth} window${this.windows.depth > 1 ? 's' : ''} open)`
 		);
 	}
 

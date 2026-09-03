@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
  * Builds the example games and copies each one's `dist/` into
  * `webpage/examples/<name>/`, so the website's Examples page has something to embed.
  *
- * The copies are generated output, not source — same rule as `examples/*\/dist` itself
+ * The copies are generated output, not source: same rule as `examples/*\/dist` itself
  * (see .gitignore). Run this before viewing or deploying the site; it is not run as part
  * of `npm run build`, because the website is not part of the published package.
  */

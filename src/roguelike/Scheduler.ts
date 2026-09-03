@@ -3,7 +3,7 @@
  *
  * Not "everyone moves once per turn": each actor has a *speed*, and an action costs time
  * scaled by it. A hasted creature gets two moves to your one, a heavy weapon costs more
- * than a dagger, and a slowed one loses turns — all of which fall out of one number rather
+ * than a dagger, and a slowed one loses turns, all of which fall out of one number rather
  * than needing special cases.
  *
  * The queue is ordered by the time at which each actor next acts. `now` only ever moves

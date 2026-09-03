@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
  *
  * This is the build for people who do not want a toolchain at all. It is a classic
  * script, so a plain HTML file can load it with <script src="mw_games.global.js"> and get
- * `window.mw_games` — including from file://, where ES modules are blocked.
+ * `window.mw_games`, including from file://, where ES modules are blocked.
  *
  * The npm package (built by tsc, see tsconfig.build.json) is the other half: it is what
  * developers who already use a bundler will install.

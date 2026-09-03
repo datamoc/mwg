@@ -9,7 +9,7 @@ import { chebyshevDistance, traceLine } from './Targeting.ts';
  *
  * Two sets, because a roguelike map has three states and not two: lit and in view,
  * remembered but not currently seen, and never visited. The middle one is the whole reason
- * exploring a dungeon feels like exploring — the map you have built stays on screen while
+ * exploring a dungeon feels like exploring: the map you have built stays on screen while
  * what is happening on it does not.
  *
  * The shadowcasting itself comes from rot.js on a square `Level`, which has had these edge

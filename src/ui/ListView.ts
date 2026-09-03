@@ -34,7 +34,7 @@ export interface ListViewOptions {
  *
  * This is the workhorse of an inventory-heavy game: bags, spell lists, shop stock,
  * dialogue choices, save slots. It scrolls by keeping the highlight in view rather than by
- * pixel offset, which is what makes it feel right with a keyboard — the list moves only
+ * pixel offset, which is what makes it feel right with a keyboard: the list moves only
  * when the selection would otherwise leave the window.
  *
  * Rows that are `disabled` are skipped when moving, so holding a direction never lands on

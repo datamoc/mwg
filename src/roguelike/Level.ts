@@ -4,7 +4,7 @@ import { hexNeighbors } from '../core/Hex.ts';
  * The map a roguelike reasons about.
  *
  * Deliberately separate from `TileMap`, which is how a map is *drawn*. This one holds what
- * the algorithms need — can something walk here, can light pass — and nothing about
+ * the algorithms need (can something walk here, can light pass) and nothing about
  * appearance. A game maps its own terrain kinds onto these two flags, so it can invent
  * whatever terrain it likes without the framework knowing about lava or bookshelves.
  */
@@ -143,7 +143,7 @@ export class Level {
 		}
 	}
 
-	/** every passable cell, as indices — the pool to place things in */
+	/** every passable cell, as indices: the pool to place things in */
 	passableCells(): number[] {
 		const out: number[] = [];
 		for (let i = 0; i < this.terrain.length; i++) {

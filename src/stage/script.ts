@@ -9,7 +9,7 @@ import type { DialogueStage, SlotName } from './DialogueStage.ts';
  * A scripted conversation is a list of instructions, not a function. That is deliberate:
  * the same list can be written by hand, generated, translated, or one day produced by an
  * editor, and none of those need the runtime to change. It is also what lets the RPG event
- * interpreter and this share a format later — a cutscene on a tile map is the same list
+ * interpreter and this share a format later: a cutscene on a tile map is the same list
  * with a different backdrop.
  */
 export type StageCommand =
@@ -69,7 +69,7 @@ export interface ScriptOptions {
  * Runs a scene.
  *
  * `run` resolves when the list is exhausted, so a caller can simply await a conversation
- * and carry on afterwards — which is what makes a cutscene readable at the call site
+ * and carry on afterwards, which is what makes a cutscene readable at the call site
  * instead of a chain of callbacks.
  */
 export class StageScript {
@@ -186,7 +186,7 @@ export class StageScript {
 	 * Puts one line in front of the player and resolves with their answer.
 	 *
 	 * Protected rather than private on purpose: this is the seam for a game that presents
-	 * dialogue its own way — a different box, a voice line, a test harness — without
+	 * dialogue its own way (a different box, a voice line, a test harness) without
 	 * reimplementing the sequencing above.
 	 */
 	protected speak(
