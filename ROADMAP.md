@@ -1035,3 +1035,32 @@ of most of these, same reasoning that has kept move numbers and species stats ou
      92 or a tracked-quest location from item 93 drawn over it). The rendering itself (how an
      explored-cell set becomes a small texture rather than redrawing every tile every frame)
      is the open engineering question here, not the data it draws from, which already exists
+
+104. requested directly as "support management", resolved into two distinct pieces since
+     "support" means two different things depending on which side of the framework it sits
+     on - checked both against the real code, neither exists anywhere:
+     - unit support/bond relationships: a Fire Emblem-shaped mechanic where two units build
+       a relationship through proximity or shared battles over time, eventually unlocking a
+       combat bonus or dialogue. Distinct from `actors.Advancement` (a tier ladder a single
+       player spends into deliberately) and item 91's auras (positional, not cumulative) -
+       this is a persistent, growing value between a specific *pair* of units, closer in
+       shape to a second, relationship-scoped `Progression` than to anything `mwg` has today
+     - a player-facing help/support screen: `mwg/ui` has `Label`, `Window`, `WindowStack`,
+       `ListView`, `IconGrid`, `MessageBox`, `NinePatch` and `VerticalLabel`, but nothing
+       shaped like a controls reference or an FAQ screen - likely composable from what
+       already exists (a `Window` holding a `ListView` of topics and a `Label` for the body)
+       rather than demanding a new widget, which is why this is logged as a recipe more than
+       a primitive
+105. requested directly as "feedback from user", likewise two distinct pieces once resolved -
+     checked both, neither exists anywhere:
+     - in-app feedback or bug-report submission: a way for a player to send back written
+       feedback from inside the game. Distinct from `core.Session`, which only counts
+       launches silently for a native wrapper's own rating prompt and has no opinion on
+       collecting or transmitting anything a player writes; this item would need an actual
+       transport (which `mwg` has never had - every existing module is local-first, up to
+       and including `SaveSystem`'s own `localStorage`-backed storage), so the design
+       question is as much "how does this leave the player's machine at all" as it is a UI
+     - action feedback ("juice"): hit-stop (a brief `Game.timeScale` dip on a heavy hit,
+       distinct from item 101's floating text and from `Camera.shake`, both of which already
+       exist) and gamepad rumble (`Gamepad.vibrationActuator`, unused by anything item 96
+       added - that item only ever reads a pad, never writes to one)
