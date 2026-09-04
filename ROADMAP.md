@@ -1018,3 +1018,15 @@ of most of these, same reasoning that has kept move numbers and species stats ou
      a signal fired on `setTheme` that already-built widgets can subscribe to and reapply
      their own style from, the same shape `i18n`'s `direction` already flows into
      `theme.direction` from a game's own glue code, just for the rest of the theme too
+
+103. requested directly: a full map and a minimap. Nothing today turns a level or an
+     overworld into a small rendered overview - `roguelike.FieldOfView` already tracks
+     exactly the data a map screen wants (`explored`, distinct from `visible`, so a minimap
+     can show a room the player is not currently lit up in), and `world.Overworld` already
+     has named locations by position, but nothing renders either as a downscaled picture
+     with the player's own position and heading marked on it. Two related sizes, not two
+     items: a small always-on-screen minimap (a corner HUD element) and a full map screen (a
+     `Window`-shaped pause-and-look view, zoomable, potentially with quest markers from item
+     92 or a tracked-quest location from item 93 drawn over it). The rendering itself (how an
+     explored-cell set becomes a small texture rather than redrawing every tile every frame)
+     is the open engineering question here, not the data it draws from, which already exists
