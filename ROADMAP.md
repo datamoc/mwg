@@ -1101,3 +1101,14 @@ of most of these, same reasoning that has kept move numbers and species stats ou
      snapping `zoom` itself to values where tile size times zoom is a whole number of pixels,
      or turning on `roundPixels` for tile sprites specifically, is the open engineering
      question, not whether the seam is real
+
+107. requested directly as "memory management (for big games)". `world.World` already has
+     an answer at the map level - `unload(id)` exists, tested, and refuses to unload the
+     current map - but `mwg/assets` has none at all: `load`/`texture`/`get` only ever add to
+     Pixi's asset cache, and there is no `unload`/`release` anywhere in that module. A game
+     with many discrete zones, each pulling in its own tileset or sprite sheet, accumulates
+     every one of them in GPU texture memory for the rest of the session, with nothing to
+     call when the player has permanently left an area. `World.unload` freeing the map data
+     it owns while the textures that map's tiles pointed at stay cached forever is exactly
+     the gap "for big games" names: fine for a short example, a real problem for anything
+     with enough zones that unvisited-again ones should not still be paying rent
