@@ -9,7 +9,25 @@ import {
 	exportBindings,
 	importBindings,
 	DEFAULT_BINDINGS,
+	actionsForKey,
+	bindButton,
+	bindAxis,
+	gamepadButtonCode,
+	gamepadAxisCode,
+	pollGamepads,
+	isDown,
+	justPressed,
+	justReleased,
+	endFrame,
 } from '../src/core/Input.ts';
+
+function fakePad(index: number, buttons: number[] = [], axes: number[] = []): Gamepad {
+	return {
+		index,
+		buttons: buttons.map((v) => ({ pressed: v > 0.5, touched: v > 0.5, value: v })),
+		axes,
+	} as unknown as Gamepad;
+}
 
 /**
  * Key bindings, tested without a browser.
@@ -86,4 +104,66 @@ test('one key may drive several actions', () => {
 
 	assert.ok(keysFor('wait').includes('Numpad5'));
 	assert.ok(keysFor('confirm').includes('Numpad5'));
+});
+
+test('actionsForKey reports every action currently bound to a key', () => {
+	resetBindings();
+	assert.deepEqual(actionsForKey('ArrowUp'), ['up']);
+	assert.deepEqual(actionsForKey('KeyQ'), []);
+
+	bind('wait', ['Numpad5']);
+	bind('confirm', ['Numpad5', 'Enter']);
+	assert.deepEqual(new Set(actionsForKey('Numpad5')), new Set(['wait', 'confirm']));
+});
+
+test('bindButton adds a gamepad button to an action without disturbing its keyboard keys', () => {
+	resetBindings();
+	bindButton('confirm', 0, [0]);
+
+	assert.ok(keysFor('confirm').includes('Enter'), 'the existing keyboard binding must survive');
+	assert.ok(keysFor('confirm').includes(gamepadButtonCode(0, 0)));
+});
+
+test('pollGamepads treats a held button as isDown, firing justPressed once and justReleased on release', () => {
+	resetBindings();
+	bindButton('jump', 0, [0]);
+
+	pollGamepads([fakePad(0, [1])]);
+	assert.equal(isDown('jump'), true);
+	assert.equal(justPressed('jump'), true);
+
+	endFrame();
+	pollGamepads([fakePad(0, [1])]); // still held
+	assert.equal(isDown('jump'), true);
+	assert.equal(justPressed('jump'), false, 'should not re-fire while still held');
+
+	endFrame();
+	pollGamepads([fakePad(0)]); // released
+	assert.equal(isDown('jump'), false);
+	assert.equal(justReleased('jump'), true);
+});
+
+test('bindAxis maps a stick direction past its deadzone to a digital action', () => {
+	resetBindings();
+	bindAxis('right', 0, 0, 1);
+	bindAxis('left', 0, 0, -1);
+
+	pollGamepads([fakePad(0, [], [0.9])]);
+	assert.equal(isDown('right'), true);
+	assert.equal(isDown('left'), false);
+
+	endFrame();
+	pollGamepads([fakePad(0, [], [-0.9])]);
+	assert.equal(isDown('left'), true);
+	assert.equal(isDown('right'), false);
+
+	endFrame();
+	pollGamepads([fakePad(0, [], [0.1])]); // inside the deadzone
+	assert.equal(isDown('left'), false);
+	assert.equal(isDown('right'), false);
+});
+
+test('gamepadButtonCode/gamepadAxisCode never collide with a real KeyboardEvent.code', () => {
+	assert.ok(gamepadButtonCode(0, 0).startsWith('Gamepad'));
+	assert.ok(gamepadAxisCode(0, 0, 1).startsWith('Gamepad'));
 });

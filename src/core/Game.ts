@@ -310,6 +310,10 @@ export class Game {
 		this.elapsed = Math.min(deltaSeconds, this.options.maxDelta) * this.timeScale;
 		this.timeTotal += this.elapsed;
 
+		//no native "gamepad button pressed" event exists to attach a listener to, so this
+		//has to run once a frame instead, before the scene reads isDown/justPressed
+		Input.pollGamepads();
+
 		this.stack.update(this.elapsed);
 		this.onFrame.dispatch(this.elapsed);
 

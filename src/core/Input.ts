@@ -47,6 +47,24 @@ export function bind(action: Action, keys: readonly string[]): void {
 	bindings.set(action, new Set(keys));
 }
 
+/** adds keys to an action's existing bindings, rather than replacing them like `bind` does */
+function addBindings(action: Action, keys: readonly string[]): void {
+	const set = bindings.get(action) ?? new Set<string>();
+	for (const key of keys) set.add(key);
+	bindings.set(action, set);
+}
+
+/**
+ * Every action currently bound to `key`, if any - the query a rebind flow needs before
+ * committing a captured key, so it can warn (or auto-unbind the loser) instead of two
+ * actions silently firing together the moment a key ends up shared between them. `bind`
+ * itself does not call this or refuse a collision; nothing about existing behaviour changes
+ * for a game that never rebinds.
+ */
+export function actionsForKey(key: string): Action[] {
+	return actionsFor(key);
+}
+
 export function unbind(action: Action): void {
 	bindings.delete(action);
 }
@@ -141,6 +159,71 @@ function handleBlur(): void {
 	held.clear();
 	pressedThisFrame.clear();
 	releasedThisFrame.clear();
+}
+
+//---- gamepad and controller input ----
+//
+//a button or axis binds to the same named action a key does, by folding it into the very
+//same `held`/`bindings` state under a synthetic code (`gamepadButtonCode`/`gamepadAxisCode`)
+//that will never collide with a real `KeyboardEvent.code` - `isDown`/`justPressed`/
+//`justReleased`/`actionsForKey` all keep working unmodified, whether an action came from a
+//key or a stick, since none of them know or care where a held code came from.
+
+const AXIS_DEADZONE = 0.5;
+
+/** the pseudo key code for button `button` on pad `padIndex` - bind it the same way a `KeyboardEvent.code` is bound */
+export function gamepadButtonCode(padIndex: number, button: number): string {
+	return `Gamepad${padIndex}Button${button}`;
+}
+
+/** the pseudo key code for axis `axis` pushed past its deadzone in `direction` on pad `padIndex` */
+export function gamepadAxisCode(padIndex: number, axis: number, direction: 1 | -1): string {
+	return `Gamepad${padIndex}Axis${axis}${direction > 0 ? '+' : '-'}`;
+}
+
+export function bindButton(action: Action, padIndex: number, buttons: readonly number[]): void {
+	addBindings(action, buttons.map((button) => gamepadButtonCode(padIndex, button)));
+}
+
+export function bindAxis(action: Action, padIndex: number, axis: number, direction: 1 | -1): void {
+	addBindings(action, [gamepadAxisCode(padIndex, axis, direction)]);
+}
+
+/**
+ * Folds every connected gamepad's buttons and axes into the same held-code state a keydown
+ * would produce. There is no native "gamepad button pressed" event to attach a listener to
+ * - the Gamepad API only ever hands back a live snapshot - so this has to be polled once a
+ * frame instead, which is why `Game` calls it right before updating the scene, before
+ * `endFrame` clears the one-frame flags.
+ */
+export function pollGamepads(pads: readonly (Gamepad | null)[] = typeof navigator !== 'undefined' ? navigator.getGamepads() : []): void {
+	const down = new Set<string>();
+	for (const pad of pads) {
+		if (!pad) continue;
+		pad.buttons.forEach((button, i) => {
+			if (button.pressed) down.add(gamepadButtonCode(pad.index, i));
+		});
+		pad.axes.forEach((value, i) => {
+			if (value >= AXIS_DEADZONE) down.add(gamepadAxisCode(pad.index, i, 1));
+			else if (value <= -AXIS_DEADZONE) down.add(gamepadAxisCode(pad.index, i, -1));
+		});
+	}
+
+	for (const code of down) {
+		if (held.has(code)) continue;
+		held.add(code);
+		for (const action of actionsFor(code)) {
+			pressedThisFrame.add(action);
+			onAction.dispatch(action);
+		}
+	}
+	//a real KeyboardEvent.code never starts with "Gamepad", so this only ever releases
+	//codes pollGamepads itself could have added, never a key still held from handleKeyDown
+	for (const code of [...held]) {
+		if (down.has(code) || !code.startsWith('Gamepad')) continue;
+		held.delete(code);
+		for (const action of actionsFor(code)) releasedThisFrame.add(action);
+	}
 }
 
 export function attach(target: EventTarget = window): void {
