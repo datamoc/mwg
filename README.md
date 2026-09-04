@@ -175,10 +175,8 @@ The Wesnoth-shaped half: a grid whose shape is a parameter, not a parallel imple
 | movement cost and defense bonus by terrain, hex or square alike | `mwg/roguelike` |
 | field of view and pathfinding over a hex grid, not just square | `mwg/roguelike` |
 | isometric (and staggered) projection, alongside orthogonal and hex | `mwg/render` |
-
-Two capabilities Wesnoth's own row above demands are not in this table because they are
-not shipped yet, corrected here rather than left implied: zone of control, and recruiting
-against a currency with per-unit upkeep. See [ROADMAP.md](ROADMAP.md) items 87 and 88.
+| zone of control: a hex a unit can only move into, not through, unless already engaged | `mwg/board` |
+| an army economy: recruiting against a currency, recalling from a pool, per-turn upkeep | `mwg/board` |
 
 A game picks a grid shape once; the camera, field of view, pathfinding and turn scheduler
 work the same way over either, rather than a hex game needing its own copy of each. Between
@@ -291,13 +289,12 @@ rather than showing a raw key to the player.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full, numbered build order: 100 items, 74 shipped
-and twenty-six open (3D rendering broken into a nine-step build-up plus an engine choice,
-a sound and music orchestrator, five items surfaced from Wesnoth's own manual, two
-quest-marker/waypoint items, keybind conflicts/a rebind screen/gamepad support, a
-tower-defense reference plus its wave-spawner primitive, free (non-grid) movement, and a
-save-import plug-in point, all logged at low priority; see that file for why). Each
-module ships in the order given
+See [ROADMAP.md](ROADMAP.md) for the full, numbered build order: 107 items, 88 shipped
+and nineteen open (3D rendering broken into a nine-step build-up plus an engine choice, a
+tower-defense reference with no title picked yet, HUD widgets, live theme changes, a map
+and minimap, unit support/bond relationships and a help screen, in-app feedback and action
+"juice", managed zoom, and asset-level memory management for big games, all logged at low
+priority; see that file for why). Each module ships in the order given
 there; later ones build on the
 modules before them.
 
