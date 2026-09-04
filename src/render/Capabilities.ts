@@ -19,6 +19,8 @@ export interface GraphicsCapabilities {
 export interface GraphicsProbe {
 	createCanvas?(): { getContext(kind: string): unknown } | null;
 	webgpu?: boolean;
+	/** whether a real WGSL shader actually compiled; see `detectWebGpu` for how to get one */
+	wgsl?: boolean;
 }
 
 export interface RenderingDecision {
@@ -47,11 +49,45 @@ export const RENDERING_DECISIONS: readonly RenderingDecision[] = [
 /**
  * Reports browser graphics APIs without creating a renderer or selecting a fallback.
  * Pass a probe in tests or host integrations; omitting it reads the current browser safely.
+ *
+ * `wgsl` cannot be checked synchronously - the only way to genuinely know a WGSL shader
+ * compiles is `detectWebGpu`, which requests a real device and compiles one, and every step
+ * of that is asynchronous. Rather than assume WGSL works just because `navigator.gpu`
+ * exists (a browser can expose WebGPU behind a still-broken or disabled implementation),
+ * this stays `false` unless a caller supplies a real result through `probe.wgsl`.
  */
 export function inspectGraphicsCapabilities(probe: GraphicsProbe = {}): GraphicsCapabilities {
 	const canvas = probe.createCanvas?.() ?? (typeof document === 'undefined' ? null : document.createElement('canvas'));
 	const webgl2 = Boolean(canvas?.getContext('webgl2'));
 	const webgl1 = webgl2 || Boolean(canvas?.getContext('webgl') ?? canvas?.getContext('experimental-webgl'));
 	const webgpu = probe.webgpu ?? Boolean((globalThis.navigator as Navigator & { gpu?: unknown } | undefined)?.gpu);
-	return { webgl1, webgl2, webgpu, wgsl: webgpu };
+	return { webgl1, webgl2, webgpu, wgsl: probe.wgsl ?? false };
+}
+
+export interface WebGpuDetection {
+	webgpu: boolean;
+	wgsl: boolean;
+}
+
+/**
+ * The real, asynchronous WebGPU/WGSL check `inspectGraphicsCapabilities` cannot do
+ * synchronously: requests an actual adapter and device, then compiles an actual shader
+ * module and reads back its compilation diagnostics. Feed the result to
+ * `inspectGraphicsCapabilities` via `probe.webgpu`/`probe.wgsl` once resolved.
+ */
+export async function detectWebGpu(): Promise<WebGpuDetection> {
+	const gpu = (globalThis.navigator as Navigator & { gpu?: GPU } | undefined)?.gpu;
+	if (!gpu) return { webgpu: false, wgsl: false };
+
+	try {
+		const adapter = await gpu.requestAdapter();
+		const device = await adapter?.requestDevice();
+		if (!device) return { webgpu: false, wgsl: false };
+
+		const shader = device.createShaderModule({ code: '@compute @workgroup_size(1) fn main() {}' });
+		const info = await shader.getCompilationInfo();
+		return { webgpu: true, wgsl: info.messages.length === 0 };
+	} catch {
+		return { webgpu: false, wgsl: false };
+	}
 }

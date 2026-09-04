@@ -1,5 +1,5 @@
-import { access } from 'node:fs/promises';
 import { chromium } from 'playwright-core';
+import { findChrome } from './find-chrome.mjs';
 
 const executablePath = process.env.CHROME_PATH ?? await findChrome();
 const browser = await chromium.launch({ executablePath, headless: true });
@@ -40,22 +40,4 @@ try {
 	if (!result.webgl1) throw new Error('a GPU-backed WebGL context is required; Canvas 2D is not a fallback');
 } finally {
 	await browser.close();
-}
-
-async function findChrome() {
-	const candidates = process.platform === 'win32'
-		? [
-			'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-			'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-			'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-		]
-		: ['/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'];
-
-	for (const candidate of candidates) {
-		try {
-			await access(candidate);
-			return candidate;
-		} catch {}
-	}
-	return process.platform === 'win32' ? 'chrome.exe' : 'google-chrome';
 }

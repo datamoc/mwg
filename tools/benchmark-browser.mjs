@@ -1,8 +1,8 @@
-import { access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright-core';
+import { findChrome } from './find-chrome.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const relativePage = process.argv[2] ?? 'examples/dungeon/dist/index.html';
@@ -93,22 +93,4 @@ try {
 	}
 } finally {
 	await browser.close();
-}
-
-async function findChrome() {
-	const candidates = process.platform === 'win32'
-		? [
-			'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-			'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-			'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-		]
-		: ['/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'];
-
-	for (const candidate of candidates) {
-		try {
-			await access(candidate);
-			return candidate;
-		} catch {}
-	}
-	return process.platform === 'win32' ? 'chrome.exe' : 'google-chrome';
 }

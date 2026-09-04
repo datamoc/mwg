@@ -31,5 +31,5 @@ export type { ActorAnimationState, ActorAnimatorOptions } from './ActorAnimator.
 export { blobIndex, autotileFrames, BLOB_SHAPES } from './Autotile.ts';
 export type { NeighborMask } from './Autotile.ts';
 
-export { inspectGraphicsCapabilities, RENDERING_DECISIONS } from './Capabilities.ts';
-export type { GraphicsCapabilities, GraphicsProbe, GraphicsWorkload, RenderingDecision } from './Capabilities.ts';
+export { inspectGraphicsCapabilities, detectWebGpu, RENDERING_DECISIONS } from './Capabilities.ts';
+export type { GraphicsCapabilities, GraphicsProbe, GraphicsWorkload, RenderingDecision, WebGpuDetection } from './Capabilities.ts';
