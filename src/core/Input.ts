@@ -171,6 +171,9 @@ function handleBlur(): void {
 
 const AXIS_DEADZONE = 0.5;
 
+/** scratch space for `pollGamepads`, reused every call rather than allocated fresh */
+const gamepadDown = new Set<string>();
+
 /** the pseudo key code for button `button` on pad `padIndex` - bind it the same way a `KeyboardEvent.code` is bound */
 export function gamepadButtonCode(padIndex: number, button: number): string {
 	return `Gamepad${padIndex}Button${button}`;
@@ -196,20 +199,26 @@ export function bindAxis(action: Action, padIndex: number, axis: number, directi
  * frame instead, which is why `Game` calls it right before updating the scene, before
  * `endFrame` clears the one-frame flags.
  */
-export function pollGamepads(pads: readonly (Gamepad | null)[] = typeof navigator !== 'undefined' ? navigator.getGamepads() : []): void {
-	const down = new Set<string>();
+export function pollGamepads(
+	//Node has exposed a global `navigator` since v21, with no `getGamepads` on it - guarding
+	//on the method itself, not just the object, is what actually detects a browser
+	pads: readonly (Gamepad | null)[] = typeof navigator?.getGamepads === 'function' ? navigator.getGamepads() : []
+): void {
+	//reused rather than allocated fresh every call - this runs once a frame, on every frame
+	gamepadDown.clear();
 	for (const pad of pads) {
 		if (!pad) continue;
-		pad.buttons.forEach((button, i) => {
-			if (button.pressed) down.add(gamepadButtonCode(pad.index, i));
-		});
-		pad.axes.forEach((value, i) => {
-			if (value >= AXIS_DEADZONE) down.add(gamepadAxisCode(pad.index, i, 1));
-			else if (value <= -AXIS_DEADZONE) down.add(gamepadAxisCode(pad.index, i, -1));
-		});
+		for (let i = 0; i < pad.buttons.length; i++) {
+			if (pad.buttons[i].pressed) gamepadDown.add(gamepadButtonCode(pad.index, i));
+		}
+		for (let i = 0; i < pad.axes.length; i++) {
+			const value = pad.axes[i];
+			if (value >= AXIS_DEADZONE) gamepadDown.add(gamepadAxisCode(pad.index, i, 1));
+			else if (value <= -AXIS_DEADZONE) gamepadDown.add(gamepadAxisCode(pad.index, i, -1));
+		}
 	}
 
-	for (const code of down) {
+	for (const code of gamepadDown) {
 		if (held.has(code)) continue;
 		held.add(code);
 		for (const action of actionsFor(code)) {
@@ -217,10 +226,12 @@ export function pollGamepads(pads: readonly (Gamepad | null)[] = typeof navigato
 			onAction.dispatch(action);
 		}
 	}
-	//a real KeyboardEvent.code never starts with "Gamepad", so this only ever releases
-	//codes pollGamepads itself could have added, never a key still held from handleKeyDown
-	for (const code of [...held]) {
-		if (down.has(code) || !code.startsWith('Gamepad')) continue;
+	//a real KeyboardEvent.code never starts with "Gamepad", so this only ever releases codes
+	//pollGamepads itself could have added, never a key still held from handleKeyDown; safe to
+	//delete the current entry mid-iteration, since Set iteration order is insertion order and
+	//a deletion never revisits or skips an entry not yet reached
+	for (const code of held) {
+		if (gamepadDown.has(code) || !code.startsWith('Gamepad')) continue;
 		held.delete(code);
 		for (const action of actionsFor(code)) releasedThisFrame.add(action);
 	}

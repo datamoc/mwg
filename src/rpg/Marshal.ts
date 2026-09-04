@@ -9,8 +9,10 @@
  * convention and ROADMAP.md item 100 for where this line sits.
  *
  * What decodes: nil, true, false, Fixnum, Bignum, Float, String, Symbol, Array, Hash
- * (including one with a default value), and Object (`o`, a class name plus its instance
- * variables) - everything a plain-data save file actually needs. `_dump`/`_load` values
+ * (including one with a default value, read separately via `hashDefaultOf` rather than as a
+ * fake entry - a real Hash key equal to any string sentinel would otherwise collide with
+ * it), and Object (`o`, a class name plus its instance variables) - everything a plain-data
+ * save file actually needs. `_dump`/`_load` values
  * (`u`) decode to their class name plus the opaque bytes their own `_load` would need,
  * since that per-class binary layout is a second, undocumented format nested inside this
  * one and out of scope the same way a container format never explains the media it holds.
@@ -49,6 +51,21 @@ export class RubySymbol {
 const MARSHAL_MAJOR = 4;
 const MARSHAL_MINOR = 8;
 
+//a Hash.new(default)'s default value, keyed by the decoded Map itself rather than a fake
+//entry - a real Hash key equal to any string sentinel would otherwise be overwritten
+const hashDefaults = new WeakMap<Map<unknown, unknown>, unknown>();
+
+/** the default value of a Hash decoded from `Hash.new(default)` (Marshal's `}` tag), if any */
+export function hashDefaultOf(hash: Map<unknown, unknown>): unknown {
+	return hashDefaults.get(hash);
+}
+
+/** marks a Map for `encodeMarshal` to write back out as a `Hash.new(default)`, tag `}` */
+export function withHashDefault(hash: Map<unknown, unknown>, defaultValue: unknown): Map<unknown, unknown> {
+	hashDefaults.set(hash, defaultValue);
+	return hash;
+}
+
 class Reader {
 	private pos = 0;
 	private symbols: string[] = [];
@@ -65,6 +82,10 @@ class Reader {
 	}
 
 	private take(count: number): Uint8Array {
+		//a negative count (a corrupt length-prefixed field) would otherwise pass the length
+		//check below silently, since subarray(pos, pos + count) with count < 0 clamps to an
+		//empty slice rather than throwing, and rewind pos backward instead of erroring
+		if (count < 0) throw new Error('Marshal: negative length');
 		const slice = this.bytes.subarray(this.pos, this.pos + count);
 		if (slice.length < count) throw new Error('Marshal: unexpected end of input');
 		this.pos += count;
@@ -120,6 +141,14 @@ class Reader {
 		return value;
 	}
 
+	/**
+	 * A Bignum decodes to a plain JS `number`, not a `bigint` - correct up to
+	 * `Number.MAX_SAFE_INTEGER` (2^53), silently imprecise past it, the same rounding a plain
+	 * `JSON.parse` of a huge integer already has. RPG Maker save data has no legitimate use
+	 * for an integer that large (`Game_Party`'s gold, item counts, switch/variable ids are
+	 * all ordinary Fixnum range), so this stays a `number` for a uniform return type rather
+	 * than `number | bigint` for a case no real `.rxdata` file exercises.
+	 */
 	private readBignum(): number {
 		const sign = String.fromCharCode(this.byte()) === '-' ? -1 : 1;
 		const words = this.readFixnum();
@@ -153,7 +182,9 @@ class Reader {
 		this.link(map);
 		const length = this.readFixnum();
 		for (let i = 0; i < length; i++) map.set(this.readValue(), this.readValue());
-		if (withDefault) map.set('__default__', this.readValue());
+		//a Hash.new(default)'s default lives out of band, in hashDefaults - never as a fake
+		//entry, which a real key equal to that sentinel would silently collide with
+		if (withDefault) hashDefaults.set(map, this.readValue());
 		return map;
 	}
 
@@ -206,9 +237,9 @@ class Reader {
 			case 'i':
 				return this.readFixnum();
 			case 'l':
-				return this.readBignum();
+				return this.link(this.readBignum());
 			case 'f':
-				return this.readFloat();
+				return this.link(this.readFloat());
 			case ':':
 				return this.readSymbol();
 			case ';':
@@ -305,12 +336,14 @@ function writeValue(out: number[], value: unknown): void {
 		writeFixnum(out, value.length);
 		for (const item of value) writeValue(out, item);
 	} else if (value instanceof Map) {
-		out.push(char('{'));
+		const hasDefault = hashDefaults.has(value);
+		out.push(char(hasDefault ? '}' : '{'));
 		writeFixnum(out, value.size);
 		for (const [key, entry] of value) {
 			writeValue(out, key);
 			writeValue(out, entry);
 		}
+		if (hasDefault) writeValue(out, hashDefaults.get(value));
 	} else if (isRubyObject(value)) {
 		out.push(char('o'));
 		out.push(char(':'));

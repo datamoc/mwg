@@ -43,7 +43,10 @@ export class Spawner<T> {
 	private schedule: ScheduledSpawn<T>[] = [];
 	private cursor = 0;
 	private elapsed = 0;
-	private lastWaveStarted = -1;
+	//a Set, not a single "last" index - overlapping waves (see the Wave doc) interleave in
+	//the time-sorted schedule, so a wave already started can recur after a different one's
+	//entry sorts between two of its own
+	private startedWaves = new Set<number>();
 	private completed = false;
 
 	private onSpawn: (kind: T) => void;
@@ -69,7 +72,10 @@ export class Spawner<T> {
 		});
 
 		this.schedule.sort((a, b) => a.time - b.time);
-		if (this.schedule.length === 0) this.completed = true;
+		if (this.schedule.length === 0) {
+			this.completed = true;
+			this.onComplete?.();
+		}
 	}
 
 	update(dt: number): void {
@@ -78,8 +84,8 @@ export class Spawner<T> {
 
 		while (this.cursor < this.schedule.length && this.schedule[this.cursor].time <= this.elapsed) {
 			const spawn = this.schedule[this.cursor];
-			if (spawn.waveIndex !== this.lastWaveStarted) {
-				this.lastWaveStarted = spawn.waveIndex;
+			if (!this.startedWaves.has(spawn.waveIndex)) {
+				this.startedWaves.add(spawn.waveIndex);
 				this.onWaveStart?.(spawn.waveIndex);
 			}
 			this.onSpawn(spawn.kind);

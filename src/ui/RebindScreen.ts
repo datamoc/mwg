@@ -35,6 +35,10 @@ export interface RebindScreenOptions {
  * Capturing a key replaces that action's *entire* existing binding, the same way a settings
  * screen's "press a key" always means "this is the key now", not "add one more" - a row shows
  * every key `Input.keysFor` currently returns, but confirming it always ends with exactly one.
+ *
+ * Pressing the physical Escape key while capturing cancels it rather than binding Escape
+ * itself - the same reservation `DEFAULT_BINDINGS` already makes for `'cancel'`, and the only
+ * way to back out of a capture once started.
  */
 export class RebindScreen extends Container {
 	private list: ListView;
@@ -45,7 +49,9 @@ export class RebindScreen extends Container {
 	private onKeyCaptured = (event: KeyboardEvent): boolean => {
 		if (!this.capturing) return false;
 		event.preventDefault(); // Tab, Space and the arrow keys all have a default action to suppress
-		this.finishCapture(this.capturing, event.code);
+
+		if (event.code === 'Escape') this.cancelCapture();
+		else this.finishCapture(this.capturing, event.code);
 		return true; // swallow the key so it never also reaches gameplay bindings
 	};
 
@@ -86,7 +92,21 @@ export class RebindScreen extends Container {
 
 	private startCapture(action: Action): void {
 		this.capturing = action;
-		Input.onKey.add(this.onKeyCaptured);
+		this.refresh();
+
+		//`onAction` (which routes here through `confirm`) fires before `onKey` for the very
+		//same physical keydown, both from the one Input.handleKeyDown call - adding the raw
+		//listener synchronously would let that same keydown finish dispatching straight into
+		//it, capturing "Enter" as the binding. Deferring past the current microtask lands
+		//after that dispatch has fully unwound, so only the *next* key press is captured.
+		queueMicrotask(() => {
+			if (this.capturing === action) Input.onKey.add(this.onKeyCaptured);
+		});
+	}
+
+	private cancelCapture(): void {
+		Input.onKey.remove(this.onKeyCaptured);
+		this.capturing = null;
 		this.refresh();
 	}
 

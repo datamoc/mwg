@@ -12,8 +12,13 @@ export function startingTactics(width: number, height: number, shape: TacticalSh
 	return { width, height, shape, cells: Array.from({ length: width * height }, () => ({ passable: true, cover: 0 })), units: [], turn: '', round: 1 };
 }
 
+/** whether a unit could be placed at (x, y) right now - on the map, and not already occupied */
+export function canPlaceTacticalUnit(state: TacticalState, x: number, y: number): boolean {
+	return tacticalInside(state, x, y) && !occupied(state, x, y);
+}
+
 export function addTacticalUnit(state: TacticalState, unit: TacticalUnit): void {
-	if (!tacticalInside(state, unit.x, unit.y) || state.units.some((other) => other.x === unit.x && other.y === unit.y)) throw new Error('tactical unit cannot be placed there');
+	if (!canPlaceTacticalUnit(state, unit.x, unit.y)) throw new Error('tactical unit cannot be placed there');
 	state.units.push({ ...unit });
 	if (!state.turn) state.turn = unit.owner;
 }
@@ -21,10 +26,15 @@ export function addTacticalUnit(state: TacticalState, unit: TacticalUnit): void 
 export function tacticalMoves(state: TacticalState, unitId: string): TacticalMove[] {
 	const unit = getUnit(state, unitId);
 	if (unit.owner !== state.turn || unit.actions <= 0) return [];
+	//computed once per call rather than once per candidate cell - tacticalPathCost used to
+	//redo this same enemy scan and neighbour allocation for every one of the up to width*height
+	//cells below, which is pure repeated work: neither depends on the candidate destination
+	const engaged = tacticalEngaged(state, unit);
+	const zone = tacticalZone(state, unit, engaged);
 	const out: TacticalMove[] = [];
 	for (let y = 0; y < state.height; y++) for (let x = 0; x < state.width; x++) {
 		if ((x === unit.x && y === unit.y) || !state.cells[y * state.width + x].passable || occupied(state, x, y)) continue;
-		const cost = tacticalPathCost(state, unit, x, y, unit.actions);
+		const cost = tacticalPathCost(state, unit, x, y, unit.actions, zone);
 		if (cost !== null) out.push({ unit: unitId, x, y, cost });
 	}
 	return out;
@@ -88,9 +98,14 @@ function occupied(state: TacticalState, x: number, y: number): boolean { return 
 function tacticalInside(state: TacticalState, x: number, y: number): boolean { return x >= 0 && y >= 0 && x < state.width && y < state.height; }
 function tacticalNeighbours(state: TacticalState, x: number, y: number): { x: number; y: number }[] { return state.shape === 'hex' ? hexNeighbors(x, y) : [{ x: x - 1, y }, { x: x + 1, y }, { x, y: y - 1 }, { x, y: y + 1 }]; }
 function tacticalDistance(state: TacticalState, a: { x: number; y: number }, b: { x: number; y: number }): number { return state.shape === 'hex' ? hexDistance(a, b) : Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
+//enemies already adjacent to the unit before it moves - engaging one already lifts its zone
+function tacticalEngaged(state: TacticalState, unit: TacticalUnit): Set<string> { return new Set(state.units.filter((other) => other.owner !== unit.owner && tacticalNeighbours(state, unit.x, unit.y).some((cell) => cell.x === other.x && cell.y === other.y)).map((other) => other.id)); }
 //cells adjacent to an enemy the unit is not already engaged with - stepping into one uses up
 //the rest of a move (standard zone-of-control), though it can still be entered as a final stop
 function tacticalZone(state: TacticalState, unit: TacticalUnit, engaged: Set<string>): Set<string> { const zone = new Set<string>(); for (const enemy of state.units) { if (enemy.owner === unit.owner || engaged.has(enemy.id)) continue; for (const cell of tacticalNeighbours(state, enemy.x, enemy.y)) zone.add(`${cell.x},${cell.y}`); } return zone; }
-//the real walking distance to (targetX, targetY), never exceeding `budget` steps, or null
-//if it cannot be reached within that budget - a move's true cost, not straight-line distance
-function tacticalPathCost(state: TacticalState, unit: TacticalUnit, targetX: number, targetY: number, budget: number): number | null { const engaged = new Set(state.units.filter((other) => other.owner !== unit.owner && tacticalNeighbours(state, unit.x, unit.y).some((cell) => cell.x === other.x && cell.y === other.y)).map((other) => other.id)); const zone = tacticalZone(state, unit, engaged); const todo = [{ x: unit.x, y: unit.y, distance: 0 }]; const seen = new Set([`${unit.x},${unit.y}`]); while (todo.length) { const current = todo.shift()!; if (current.x === targetX && current.y === targetY) return current.distance; if (current.distance >= budget || (current.distance > 0 && zone.has(`${current.x},${current.y}`))) continue; for (const next of tacticalNeighbours(state, current.x, current.y)) { const key = `${next.x},${next.y}`; if (!tacticalInside(state, next.x, next.y) || seen.has(key) || !state.cells[next.y * state.width + next.x].passable || occupied(state, next.x, next.y) && !(next.x === targetX && next.y === targetY)) continue; seen.add(key); todo.push({ x: next.x, y: next.y, distance: current.distance + 1 }); } } return null; }
+//the real walking distance to (targetX, targetY), never exceeding `budget` steps, or null if
+//it cannot be reached within that budget - a move's true cost, not straight-line distance.
+//`zone` is precomputed once by the caller (see tacticalMoves) rather than recomputed here on
+//every call, since neither depends on the candidate target; a plain index cursor stands in
+//for `todo.shift()`, which is O(n) per pop and would make this BFS quadratic in path length
+function tacticalPathCost(state: TacticalState, unit: TacticalUnit, targetX: number, targetY: number, budget: number, zone: Set<string>): number | null { const todo = [{ x: unit.x, y: unit.y, distance: 0 }]; let head = 0; const seen = new Set([`${unit.x},${unit.y}`]); while (head < todo.length) { const current = todo[head++]; if (current.x === targetX && current.y === targetY) return current.distance; if (current.distance >= budget || (current.distance > 0 && zone.has(`${current.x},${current.y}`))) continue; for (const next of tacticalNeighbours(state, current.x, current.y)) { const key = `${next.x},${next.y}`; if (!tacticalInside(state, next.x, next.y) || seen.has(key) || !state.cells[next.y * state.width + next.x].passable || occupied(state, next.x, next.y) && !(next.x === targetX && next.y === targetY)) continue; seen.add(key); todo.push({ x: next.x, y: next.y, distance: current.distance + 1 }); } } return null; }

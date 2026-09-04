@@ -72,3 +72,21 @@ test('removing a carrier from the roster strips modifiers it was still applying'
 	field.update([ally], adjacentByDistance(1));
 	assert.equal(ally.stats.get('attack'), 1);
 });
+
+test('removing an affected target from the roster (rather than the carrier) strips its modifiers too', () => {
+	const field = new AuraField();
+	const carrier: AuraParticipant & { x: number } = { ...participant(0), x: 0, aura: { name: 'rally', modifiers: [{ stat: 'attack', op: 'add', value: 5 }] } };
+	const ally: AuraParticipant & { x: number } = { ...participant(1), x: 1 };
+
+	field.update([carrier, ally], adjacentByDistance(1));
+	assert.equal(ally.stats.get('attack'), 6);
+
+	//ally died and is no longer part of the roster passed to update - only the carrier remains
+	field.update([carrier], adjacentByDistance(1));
+	assert.equal(ally.stats.get('attack'), 1, 'a target absent from the roster must still lose the modifier it was given');
+
+	//and it must not reappear stale if the same object ever comes back into a later roster
+	//without being newly adjacent
+	field.update([carrier, ally], () => false);
+	assert.equal(ally.stats.get('attack'), 1);
+});

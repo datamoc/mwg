@@ -31,7 +31,9 @@ export class AuraField {
 	private affected = new Map<AuraParticipant, Map<AuraParticipant, symbol>>();
 
 	update(participants: readonly AuraParticipant[], isAdjacent: (a: AuraParticipant, b: AuraParticipant) => boolean): void {
+		const roster = new Set(participants);
 		const carriers = participants.filter((p): p is AuraParticipant & { aura: AuraDef } => !!p.aura);
+		const carrierSet = new Set<AuraParticipant>(carriers);
 
 		for (const carrier of carriers) {
 			let currentlyAffected = this.affected.get(carrier);
@@ -54,12 +56,22 @@ export class AuraField {
 					currentlyAffected.delete(other);
 				}
 			}
+
+			//a target affected last call but absent from this call's roster entirely (died,
+			//was removed) is never visited by the loop above, since that only walks
+			//`participants` - left alone, its modifiers and its own strong reference here
+			//would both persist forever
+			for (const [other, source] of [...currentlyAffected]) {
+				if (roster.has(other)) continue;
+				other.stats.removeModifiersFrom(source);
+				currentlyAffected.delete(other);
+			}
 		}
 
 		//a carrier that died, lost its aura, or simply is not in this call's roster any more
 		//stops affecting anyone it was still affecting, rather than leaving stale modifiers
 		for (const [carrier, currentlyAffected] of [...this.affected]) {
-			if (carriers.includes(carrier as AuraParticipant & { aura: AuraDef })) continue;
+			if (carrierSet.has(carrier)) continue;
 			for (const [other, source] of currentlyAffected) other.stats.removeModifiersFrom(source);
 			this.affected.delete(carrier);
 		}

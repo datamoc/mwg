@@ -1,5 +1,5 @@
 import type { TacticalState, TacticalUnit } from './Tactics.ts';
-import { addTacticalUnit } from './Tactics.ts';
+import { addTacticalUnit, canPlaceTacticalUnit } from './Tactics.ts';
 
 //a unit definition kept in the recall pool between maps/sessions - everything `addTacticalUnit`
 //needs except a position, which is only chosen at recall time
@@ -15,9 +15,10 @@ export function startingArmy(currency: number): ArmyState {
 }
 
 //deducts cost and places a fresh unit, all-or-nothing like actors.Shop's buy/sell: touches
-//neither currency nor the board unless every check already passed
+//neither currency nor the board unless every check already passed - canPlaceTacticalUnit is
+//checked up front rather than letting addTacticalUnit's own throw escape a boolean contract
 export function recruit(army: ArmyState, board: TacticalState, unit: TacticalUnit, cost: number): boolean {
-	if (army.currency < cost) return false;
+	if (army.currency < cost || !canPlaceTacticalUnit(board, unit.x, unit.y)) return false;
 	addTacticalUnit(board, unit);
 	army.currency -= cost;
 	return true;
@@ -27,7 +28,7 @@ export function recruit(army: ArmyState, board: TacticalState, unit: TacticalUni
 //template stays in the pool until recalled, then leaves it the way stock leaves a shop's shelf
 export function recall(army: ArmyState, board: TacticalState, unitId: string, x: number, y: number): boolean {
 	const index = army.pool.findIndex((template) => template.id === unitId);
-	if (index === -1) return false;
+	if (index === -1 || !canPlaceTacticalUnit(board, x, y)) return false;
 	addTacticalUnit(board, { ...army.pool[index], x, y });
 	army.pool.splice(index, 1);
 	return true;
