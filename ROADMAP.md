@@ -990,7 +990,7 @@ of most of these, same reasoning that has kept move numbers and species stats ou
     has stays the game's own job, same as `GridMover`'s animation callbacks already are.
     Continuous `z` remains behind the 3D block, untouched by this
 
-100. requested directly as "import and export usual save files of other frameworks, like
+100. ~~requested directly as "import and export usual save files of other frameworks, like
      Game.rxdata" - RPG Maker's own save format by name. Revisited after the same session's
      licence-and-provenance wording was corrected: a loader/writer for another engine's file
      *format* is fair game, learned the ordinary way any undocumented format is, by reading
@@ -1010,7 +1010,15 @@ of most of these, same reasoning that has kept move numbers and species stats ou
        T` run once on import, then fed through the same versioned `migrations` chain an
        ordinary load already uses, rather than a game hand-rolling "decode, then call
        `save()`" outside that pipeline by itself. This half is not RPG-Maker-specific; a
-       `.rxdata` reader is one `normalize` implementation among others a game could supply
+       `.rxdata` reader is one `normalize` implementation among others a game could supply~~
+     - `rpg.decodeMarshal`/`encodeMarshal` implement Ruby's Marshal 4.8 format generically
+       (nil/booleans/Fixnum/Bignum/Float/String/Symbol/Array/Hash/Object, backreferences
+       included on read), verified against real `Marshal.dump` byte fixtures, not only
+       against the decoder's own idea of the format; `_dump`/`_load` values decode to their
+       class name plus opaque bytes, since that per-class binary layout is a second,
+       undocumented format this reader was never taught. `SaveSystem.importExternal` is the
+       generic plug-in point, taking any `normalize` a game supplies (an `rxdata`-based one
+       being one example, not the only one)
 
 101. requested directly: `Button`, `Bar`, and floating text - three common HUD widgets
      missing from `mwg/ui`, which today has `Label`, `Window`, `WindowStack`, `ListView`,

@@ -106,6 +106,24 @@ export class SaveSystem<T> {
 		return { meta: { ...data.meta, version: this.version }, state: state as T };
 	}
 
+	/**
+	 * Adopts a save this `SaveSystem` never wrote: `normalize` runs once on `externalBytes`,
+	 * producing state at version 0, which is then carried up through the same `migrations`
+	 * chain an ordinary `load` already uses to reach the current version - a game supplies
+	 * one `normalize` per external format it wants to accept (an `rpg.decodeMarshal`-based
+	 * one for a `Game.rxdata`, say), rather than hand-rolling "decode, then call `save`"
+	 * outside the versioned pipeline every migration otherwise goes through.
+	 */
+	importExternal(slot: string, externalBytes: Uint8Array, normalize: (bytes: Uint8Array) => unknown, preview?: unknown): void {
+		let state: unknown = normalize(externalBytes);
+		for (let v = 0; v < this.version; v++) {
+			state = (this.migrations[v] ?? ((s: unknown) => s))(state);
+		}
+
+		const data: SaveData<T> = { meta: { version: this.version, savedAt: Date.now(), preview }, state: state as T };
+		this.storage.write(this.key(slot), JSON.stringify(data));
+	}
+
 	delete(slot: string): void {
 		this.storage.remove(this.key(slot));
 	}

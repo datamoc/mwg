@@ -13,3 +13,5 @@ export { FreeMover } from './FreeMover.ts';
 export type { FreeMoverOptions } from './FreeMover.ts';
 export { QuestLog } from './Quest.ts';
 export type { QuestStage, QuestDefinition, QuestStatus, QuestMarker } from './Quest.ts';
+export { decodeMarshal, encodeMarshal, RubySymbol } from './Marshal.ts';
+export type { RubyObject, RubyUserDefined } from './Marshal.ts';

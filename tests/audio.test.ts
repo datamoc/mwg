@@ -175,3 +175,32 @@ test('delete removes a slot', () => {
 	saves.delete('slot1');
 	assert.equal(saves.load('slot1'), null);
 });
+
+test('importExternal normalizes external bytes and writes them as an ordinary save', () => {
+	const saves = new SaveSystem<{ gold: number }>({ namespace: 'import-test', version: 1 });
+	const bytes = new Uint8Array([1, 2, 3]);
+
+	saves.importExternal('slot1', bytes, (raw) => ({ gold: raw.length * 10 }), 'imported');
+
+	const loaded = saves.load('slot1');
+	assert.equal(loaded?.state.gold, 30);
+	assert.equal(loaded?.meta.preview, 'imported');
+	assert.equal(loaded?.meta.version, 1);
+});
+
+test('importExternal runs the normalized state through migrations, the same as an ordinary load', () => {
+	const storage = memoryStorage();
+	const saves = new SaveSystem<{ gold: number; gems: number }>({
+		namespace: 'import-migrate',
+		version: 2,
+		storage,
+		migrations: { 0: (s) => ({ ...(s as { gold: number }), gems: 0 }), 1: (s) => s },
+	});
+
+	saves.importExternal('slot1', new Uint8Array(), () => ({ gold: 5 }));
+
+	const loaded = saves.load('slot1');
+	assert.equal(loaded?.state.gold, 5);
+	assert.equal(loaded?.state.gems, 0);
+	assert.equal(loaded?.meta.version, 2);
+});
