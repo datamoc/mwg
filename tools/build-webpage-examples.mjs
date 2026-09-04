@@ -25,6 +25,7 @@ const scripts = {
 	chess: 'example:chess:build',
 	'tower-defense': 'example:tower-defense:build',
 	'three-d': 'example:3d:build',
+	loading: 'example:loading:build',
 };
 
 for (const [name, script] of Object.entries(scripts)) {

@@ -37,6 +37,9 @@ npm run example:tower-defense:build    # tower defense, then open its dist/index
 
 npm run example:3d          # Babylon.js square/hex terrain and characters, dev server
 npm run example:3d:build    # 3D scene, then open its dist/index.html
+
+npm run example:loading          # LoadQueue + LoadingScreen + AssetStream, dev server
+npm run example:loading:build    # loading lifecycle, then open its dist/index.html
 ```
 
 Opening an example's own `index.html` from disk shows a note telling you this, rather than
@@ -71,6 +74,7 @@ npm run cap:open:android
 | `chess` | `mwg/board`: chess against a small deterministic alpha-beta computer player, with legal moves, check, checkmate, stalemate, castling, en passant, and promotion. Click a square or move a held/repeating arrow-key cursor and press Enter |
 | `tower-defense` | `mwg/core.Spawner` driving timed overlapping waves, with a simple 2D path, tower targeting, damage, rewards, and lives |
 | `three-d` | optional Babylon.js WebGL scene, orbit camera, thin-instanced square and hex terrain with elevation, a continuous heightmap hill, plus mesh and billboard characters |
+| `loading` | `core.LoadQueue` driving named, weighted tasks (an asset load, a simulated world generation that fails once on purpose, an `assets.AssetStream` preload), with `ui.LoadingScreen` showing truthful progress, failure, retry and cancel |
 
 ## About the assets
 

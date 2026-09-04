@@ -98,7 +98,7 @@
 				<p class="eyebrow">playable, right here</p>
 				<h1>Examples</h1>
 				<p class="lede">
-					Ten builds, each exercising a different corner of the framework. Every one
+					Eleven builds, each exercising a different corner of the framework. Every one
 					runs straight from the framework source and opens the same way a shipped game
 					would: no server behind this page, just <code>file://</code> pages sitting in
 					an iframe.
@@ -230,6 +230,22 @@
 						<kbd>.</kbd> wait &nbsp;·&nbsp; <kbd>&gt;</kbd> descend on the stairs
 					</p>
 				</div>
+
+				<div class="panel example">
+					<div class="example-head">
+						<h3>Loading lifecycle</h3>
+						<a class="btn" href="./loading/index.html">Open full screen</a>
+					</div>
+					<p>
+						<code>core.LoadQueue</code> running named, weighted tasks - an asset load, a
+						simulated world generation that fails once on purpose, an
+						<code>assets.AssetStream</code> preload of a likely-next area - with
+						<code>ui.LoadingScreen</code> showing truthful progress against it, including
+						the failed state and its retry/cancel buttons.
+					</p>
+					<iframe src="./loading/index.html" title="mwg loading lifecycle example" loading="lazy"></iframe>
+					<p class="controls">watch it fail once, then press Retry &nbsp;·&nbsp; Cancel stops it mid-task</p>
+				</div>
 			</div>
 		</section>
 
@@ -249,7 +265,8 @@ npm run example:3d          # optional Babylon.js 3D scene
 npm run example:village     # village RPG, dev server
 npm run example:battle      # creature battle, dev server
 npm run example:minigame    # lockpick minigame, dev server
-npm run example:chess       # chess against the built-in engine, dev server</code></pre>
+npm run example:chess       # chess against the built-in engine, dev server
+npm run example:loading     # loading lifecycle, dev server</code></pre>
 				<p>Append <code>:build</code> to any of those to produce a folder you open from disk with no server at all; see <code>examples/README.md</code> for the full list.</p>
 			</div>
 		</section>

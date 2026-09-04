@@ -65,6 +65,8 @@
     "example:tower-defense:build": "vite build --config examples/tower-defense/vite.config.ts && node tools/emit-page.mjs examples/tower-defense",
     "example:3d": "vite --config examples/three-d/vite.config.ts",
     "example:3d:build": "vite build --config examples/three-d/vite.config.ts && node tools/emit-page.mjs examples/three-d",
+    "example:loading": "vite --config examples/loading/vite.config.ts",
+    "example:loading:build": "vite build --config examples/loading/vite.config.ts && node tools/emit-page.mjs examples/loading",
     "benchmark:browser": "npm run example:dungeon:build && node tools/benchmark-browser.mjs",
     "benchmark:3d": "npm run example:3d:build && node tools/benchmark-browser.mjs examples/three-d/dist/index.html",
     "graphics:capabilities": "node tools/graphics-capabilities.mjs",

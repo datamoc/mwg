@@ -1635,6 +1635,14 @@ process - appended at low priority, not argued into or out of existence on the s
      is a regression, not a compatible result. Kept at low priority because the current
      browser benchmark already proves the shipped 3D reference scene on WebGL 2, while the
      wider matrix needs multiple browsers and GPU configurations to be meaningful.
+     `render.inspectGraphicsCapabilities`/`detectWebGpu` exist as the runtime probe this
+     audit would report through, but the audit itself - the browser/GPU matrix, WGSL's
+     build/runtime error paths exercised for real - is not done. A real bug was found and
+     fixed in the probe along the way, caught by a fresh-eyes simplify pass rather than by
+     the audit this item still asks for: `wgsl` was set to `webgpu`'s own value, asserting a
+     WGSL shader compiles just because `navigator.gpu` exists, without ever compiling one -
+     it now stays `false` unless `detectWebGpu`'s real, asynchronous compile-and-check
+     supplies a genuine result
 
 134. use the best rendering solution for each graphics workload, based on measured results
      rather than one renderer claimed to fit everything. Establish and maintain a small
@@ -1650,7 +1658,7 @@ process - appended at low priority, not argued into or out of existence on the s
      continuing architecture policy, not a license to add overlapping rendering engines
      without a concrete workload and evidence.
 
-135. a reusable loading-screen lifecycle for games that have enough assets or generation work
+135. ~~a reusable loading-screen lifecycle for games that have enough assets or generation work
      to need one. It should accept named, weighted asynchronous tasks, show determinate
      progress when a task can report it and an honest indeterminate state when it cannot,
      remain responsive while work is underway, and hand off cleanly into a `Game`/scene.
@@ -1659,7 +1667,20 @@ process - appended at low priority, not argued into or out of existence on the s
      file:// builds as well as ordinary fetches, without assuming a server or forcing every
      small example to display a loader. Logged below current rendering work because asset
      compilation already makes the typical local-file start nearly immediate; it matters
-     once games load larger optional model, audio, or generated-world payloads.
+     once games load larger optional model, audio, or generated-world payloads.~~ -
+     `core.LoadQueue` (named, weighted tasks; a task that never calls `report` leaves the
+     stage indeterminate rather than a guessed percentage) and `ui.LoadingScreen` (bound to
+     one queue via `bind`, retry/cancel left as hooks a game wires its own button or key to,
+     not drawn for it). Shipped in the same batch as items 133/134/136/137 but with no
+     caller anywhere outside its own tests, an actual verification gap a fresh-eyes simplify
+     pass caught (see item 138's own reasoning for treating that as a defect, not style) -
+     closed with a dedicated `examples/loading` reference: a task that deliberately fails
+     once, verified in a real browser through the failed state, a driven `retry()`, success,
+     and the scene switch on completion (a real pointer click could not be driven through
+     Pixi's `EventSystem` in this session's own browser tooling, the same limitation item
+     138 hit verifying `ListView`; the retry/cancel buttons themselves are real `ui.Button`s,
+     unverified only in the one respect an actual click would add over calling `retry()`
+     directly)
 
 136. package a game as a standalone desktop application using a native WebView2 host on
      Windows or a Chromium-based host where cross-platform consistency is worth its bundled
@@ -1685,7 +1706,13 @@ process - appended at low priority, not argued into or out of existence on the s
      host can stream/cache assets incrementally and report byte progress. Verify no stale
      references, duplicate fetches, GPU-memory leaks, or frame-time spikes at scene handoff.
      Kept low priority because it adds complexity and only earns its cost for large games or
-     host modes with genuinely incremental I/O.
+     host modes with genuinely incremental I/O. `assets.AssetStream` (bundle preload with
+     least-recently-used eviction under a byte budget) shipped in the same batch as items
+     133/135/136, also with no caller until item 135's `examples/loading` gave it its first
+     one (`stream.preload` for a likely-next area). That closes the "nothing ever calls
+     this" gap for the core class; the fuller scope here - byte-progress reporting for a
+     server/desktop host, eviction verified under real memory pressure rather than a budget
+     number in a test - is still open
 
 138. ~~three gaps surfaced by stress-testing `mwg` against a real, non-trivial game (an SPD-
      shaped port), relayed with exact drop-in specs written against the checkout at the time,
