@@ -1002,3 +1002,14 @@ of most of these, same reasoning that has kept move numbers and species stats ou
      - floating text: a damage number or a "+1 gold" that rises and fades over its own
        lifetime, unrelated to `Label`'s job of a static, positioned string - this is
        animation over a `Label`-shaped text object, timed rather than laid out
+
+102. requested directly: live theme changes. `ui.theme()` is read once, at construction, by
+     every widget that has one (`Label`, `Window`, `ListView`, `IconGrid`, `MessageBox`,
+     `VerticalLabel`, `WindowStack` - checked, all of them bake the values they read into a
+     style or a colour right there in the constructor). Calling `setTheme` after any of them
+     already exist changes nothing about what is already on screen; only a widget created
+     afterward sees the new theme. A day/night palette swap, or a player-chosen light/dark
+     toggle, wants existing widgets to restyle themselves, not just future ones - the gap is
+     a signal fired on `setTheme` that already-built widgets can subscribe to and reapply
+     their own style from, the same shape `i18n`'s `direction` already flows into
+     `theme.direction` from a game's own glue code, just for the rest of the theme too
