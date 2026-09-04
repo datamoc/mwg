@@ -23,3 +23,6 @@ export type { MessageBoxOptions, MessagePage, Choice } from './MessageBox.ts';
 
 export { VerticalLabel, layoutVertical } from './VerticalLabel.ts';
 export type { VerticalLabelOptions, VerticalLayoutOptions, GlyphLayout } from './VerticalLabel.ts';
+
+export { RebindScreen } from './RebindScreen.ts';
+export type { RebindScreenOptions } from './RebindScreen.ts';

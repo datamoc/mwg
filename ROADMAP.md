@@ -929,12 +929,18 @@ of most of these, same reasoning that has kept move numbers and species stats ou
     firing at once mid-game. This is the primitive item 95's UI would actually need under
     it; `bind` itself keeps behaving exactly as it does today for a game that never rebinds~~
     - `Input.actionsForKey(key)` returns every action currently bound to it
-95. a rebind settings screen: a ready-made `mwg/ui` flow (list the current bindings from
+95. ~~a rebind settings screen: a ready-made `mwg/ui` flow (list the current bindings from
     `Input.keysFor`, "press a key" to capture the next one, a confirm/cancel step) over
     `Input`'s existing `bind`/`exportBindings`/`importBindings`, the same way `IconGrid` is
     a ready-made inventory screen over `Inventory` rather than something every game builds
     itself. Wants item 94's conflict detection first, so a captured key already in use has
-    something to warn against rather than silently stealing it from whatever held it
+    something to warn against rather than silently stealing it from whatever held it~~ -
+    `ui.RebindScreen` over a `ListView`; `confirm` on a row reads the next raw key via
+    `Input.onKey` rather than a named action, and an optional `onConflict` hook (built on
+    item 94's `actionsForKey`) lets a game refuse a capture instead of always taking the key
+    over. Not verified in a live browser this session (no connected browser tool available);
+    checked by `tsc`, a clean `example:ui:build`, and close reading instead - worth an actual
+    look next time one is available
 96. ~~gamepad and controller input: `mwg/core`'s `Input` is keyboard-only today, nothing
     reads a `Gamepad` at all. The same named-action shape that already decouples a game
     from `KeyboardEvent.code` (`bind`/`isDown`/`justPressed`) is exactly what a controller

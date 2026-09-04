@@ -1,7 +1,7 @@
 import { Container } from 'pixi.js';
 import { Game, Scene, Input } from '../../src/core/index.ts';
 import { TintedSprite, SpriteSheet, registerColorTransform } from '../../src/render/index.ts';
-import { Window, WindowStack, ListView, MessageBox, Label, theme } from '../../src/ui/index.ts';
+import { Window, WindowStack, ListView, MessageBox, Label, RebindScreen, theme } from '../../src/ui/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 import tileset from '../assets/tiles.json' with { type: 'json' };
 
@@ -47,6 +47,10 @@ class InterfaceScene extends Scene {
 				this.openConversation();
 				return true;
 			}
+			if (action === 'wait') {
+				this.openRebind();
+				return true;
+			}
 			return false;
 		});
 	}
@@ -72,9 +76,28 @@ class InterfaceScene extends Scene {
 	private updateStatus(): void {
 		this.status.setText(
 			this.windows.isEmpty
-				? 'Enter to talk to someone      Tab to open the bag'
+				? 'Enter to talk to someone      Tab to open the bag      . to rebind keys'
 				: `Escape to close   (${this.windows.depth} window${this.windows.depth > 1 ? 's' : ''} open)`
 		);
+	}
+
+	private openRebind(): void {
+		const window = new Window({ width: 260, height: 200, title: 'Controls' });
+		const rebind = new RebindScreen({
+			width: window.contentWidth,
+			height: window.contentHeight,
+			actions: ['up', 'down', 'left', 'right', 'confirm', 'cancel', 'menu'],
+		});
+
+		window.content.addChild(rebind);
+		window.delegate = rebind;
+
+		this.windows.push(window);
+		window.onClose.add(() => {
+			this.updateStatus();
+			return false;
+		});
+		this.updateStatus();
 	}
 
 	private openInventory(): void {
