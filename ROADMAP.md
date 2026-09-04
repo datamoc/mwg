@@ -1077,3 +1077,19 @@ of most of these, same reasoning that has kept move numbers and species stats ou
        distinct from item 101's floating text and from `Camera.shake`, both of which already
        exist) and gamepad rumble (`Gamepad.vibrationActuator`, unused by anything item 96
        added - that item only ever reads a pad, never writes to one)
+
+106. requested directly: managed zoom, to keep a fractional zoom from letting seams show
+     between tiles. Checked the render path: `Game` already sets nearest-neighbour texture
+     sampling and rounds the whole camera container to a whole screen pixel (`Camera.apply`,
+     fixed earlier this session for `toScreen`/`toWorld` to agree with it too), but `zoom`
+     itself accepts any positive float (`Math.max(0.01, value)`, no further constraint) and
+     nothing rounds an individual tile's own edges - only the container's global offset. At a
+     non-integer zoom, each tile's edge lands on a different sub-pixel offset depending on
+     its position, so nearest-sampling rounds one tile's edge column one way and its
+     neighbour's the other, which is exactly the thin seam a fractional zoom produces even
+     though the camera-level rounding is correct. `ColorTransformBatcher` already carries a
+     per-sprite `roundPixels` bit (currently driven by the renderer's own global setting, not
+     exposed as a per-tile knob `TileMap` turns on deliberately) - whether the fix is
+     snapping `zoom` itself to values where tile size times zoom is a whole number of pixels,
+     or turning on `roundPixels` for tile sprites specifically, is the open engineering
+     question, not whether the seam is real
