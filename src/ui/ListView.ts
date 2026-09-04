@@ -1,7 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import type { Action } from '../core/Input.ts';
 import { Label } from './Label.ts';
-import { theme } from './theme.ts';
+import { theme, themeChanged } from './theme.ts';
 
 export interface ListItem {
 	/** what the row reads */
@@ -51,9 +51,12 @@ export class ListView extends Container {
 	private viewWidth: number;
 	private viewHeight: number;
 	private rowHeight: number;
+	private readonly explicitRowHeight: boolean;
 
 	private index = 0;
 	private scroll = 0;
+
+	private readonly themeListener = () => this.restyle();
 
 	onSelect: ((item: ListItem, index: number) => void) | null;
 	onHighlight: ((item: ListItem, index: number) => void) | null;
@@ -64,6 +67,7 @@ export class ListView extends Container {
 		const t = theme();
 		this.viewWidth = options.width;
 		this.viewHeight = options.height;
+		this.explicitRowHeight = options.rowHeight !== undefined;
 		this.rowHeight = options.rowHeight ?? Math.ceil(t.font.size * t.font.lineHeight) + t.spacing;
 		this.onSelect = options.onSelect ?? null;
 		this.onHighlight = options.onHighlight ?? null;
@@ -77,6 +81,45 @@ export class ListView extends Container {
 		this.drawMask();
 
 		this.setItems(options.items ?? []);
+		themeChanged.add(this.themeListener);
+	}
+
+	/**
+	 * Recolours rows and the default row height from the new theme in place, rather than
+	 * through `setItems`: a row's optional `icon` is a `Container` the caller owns, and
+	 * `setItems`'s teardown destroys a row's children on the way out - routing a restyle
+	 * through it would destroy the very icons still referenced by `this.items`, the same
+	 * trap `IconGrid.swapCells`'s own doc comment describes for its cells.
+	 */
+	private restyle(): void {
+		const t = theme();
+		if (!this.explicitRowHeight) {
+			this.rowHeight = Math.ceil(t.font.size * t.font.lineHeight) + t.spacing;
+		}
+		const rtl = t.direction === 'rtl';
+
+		this.rows.forEach((row, i) => {
+			row.y = i * this.rowHeight;
+			const item = this.items[i];
+
+			const label = row.children.find((child): child is Label => child instanceof Label);
+			if (label) {
+				label.setColor(item.disabled ? t.color.textDim : t.color.text);
+				const textStart = t.spacing + (item.icon ? this.rowHeight : 0);
+				label.x = rtl ? this.viewWidth - textStart - label.width : textStart;
+				label.y = Math.round((this.rowHeight - label.height) / 2);
+			}
+			if (item.icon) {
+				item.icon.x = rtl ? this.viewWidth - t.spacing - this.rowHeight : t.spacing;
+			}
+		});
+
+		this.refresh();
+	}
+
+	override destroy(options?: Parameters<Container['destroy']>[0]): void {
+		themeChanged.remove(this.themeListener);
+		super.destroy(options);
 	}
 
 	private drawMask(): void {

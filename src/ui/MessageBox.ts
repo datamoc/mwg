@@ -3,7 +3,7 @@ import type { Action } from '../core/Input.ts';
 import { Window } from './Window.ts';
 import { Label } from './Label.ts';
 import { ListView, type ListItem } from './ListView.ts';
-import { theme } from './theme.ts';
+import { theme, themeChanged } from './theme.ts';
 
 export interface MessagePage {
 	text: string;
@@ -72,6 +72,8 @@ export class MessageBox extends Window {
 	private onDone: ((chosen: unknown) => void) | null;
 	private finished = false;
 
+	private readonly messageThemeListener = () => this.restyleMessage();
+
 	constructor(options: MessageBoxOptions) {
 		super({
 			width: options.width,
@@ -103,6 +105,19 @@ export class MessageBox extends Window {
 		this.content.addChild(this.prompt);
 
 		this.showPage(0);
+		themeChanged.add(this.messageThemeListener);
+	}
+
+	/** recolours the parts `Window`'s own restyle does not know about: the speaker/prompt labels */
+	private restyleMessage(): void {
+		const t = theme();
+		this.speakerLabel.setColor(t.color.textHighlight);
+		this.prompt.setColor(t.color.textDim);
+	}
+
+	override destroy(options?: Parameters<Window['destroy']>[0]): void {
+		themeChanged.remove(this.messageThemeListener);
+		super.destroy(options);
 	}
 
 	private showPage(index: number): void {

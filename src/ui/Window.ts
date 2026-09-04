@@ -3,7 +3,7 @@ import { Signal } from '../core/Signal.ts';
 import type { Action } from '../core/Input.ts';
 import { NinePatch } from './NinePatch.ts';
 import { Label } from './Label.ts';
-import { theme } from './theme.ts';
+import { theme, themeChanged } from './theme.ts';
 
 export interface WindowOptions {
 	width: number;
@@ -53,6 +53,11 @@ export class Window extends Container {
 	private innerWidth = 0;
 	private innerHeight = 0;
 
+	private currentWidth = 0;
+	private currentHeight = 0;
+
+	private readonly themeListener = () => this.restyle();
+
 	constructor(options: WindowOptions) {
 		super();
 
@@ -78,9 +83,18 @@ export class Window extends Container {
 
 		this.addChild(this.content);
 		this.resize(options.width, options.height);
+		themeChanged.add(this.themeListener);
+	}
+
+	/** reapplies the current theme to the frame and title, without changing size or content */
+	private restyle(): void {
+		this.titleLabel?.setColor(theme().color.textHighlight);
+		this.resize(this.currentWidth, this.currentHeight);
 	}
 
 	resize(width: number, height: number): void {
+		this.currentWidth = width;
+		this.currentHeight = height;
 		const t = theme();
 		const border = this.background instanceof NinePatch ? this.background.border.left : 2;
 		const inset = border + t.padding;
@@ -171,5 +185,10 @@ export class Window extends Container {
 		} else {
 			this.y = Math.round((viewportHeight - bounds.height) / 2);
 		}
+	}
+
+	override destroy(options?: Parameters<Container['destroy']>[0]): void {
+		themeChanged.remove(this.themeListener);
+		super.destroy(options);
 	}
 }

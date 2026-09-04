@@ -1,5 +1,5 @@
 import { Container, Text } from 'pixi.js';
-import { theme } from './theme.ts';
+import { theme, themeChanged, type Theme } from './theme.ts';
 
 export interface GlyphLayout {
 	char: string;
@@ -83,23 +83,33 @@ export interface VerticalLabelOptions {
  * real refinements a native reader would want on top of this, not included here.
  */
 export class VerticalLabel extends Container {
+	private readonly opts: VerticalLabelOptions;
+	private readonly themeListener = (t: Theme) => this.build(t);
+
 	constructor(options: VerticalLabelOptions) {
 		super();
+		this.opts = options;
+		this.build(theme());
+		themeChanged.add(this.themeListener);
+	}
 
-		const t = theme();
-		const size = options.size ?? t.font.size;
+	/** rebuilds every glyph from scratch - font family, and possibly size, both follow the theme */
+	private build(t: Theme): void {
+		this.removeChildren().forEach((child) => child.destroy());
+
+		const size = this.opts.size ?? t.font.size;
 		const lineHeight = Math.ceil(size * t.font.lineHeight);
 
-		const glyphs = layoutVertical(options.text, {
+		const glyphs = layoutVertical(this.opts.text, {
 			lineHeight,
-			columnHeight: options.columnHeight,
-			rotate: options.rotate,
+			columnHeight: this.opts.columnHeight,
+			rotate: this.opts.rotate,
 		});
 
 		for (const glyph of glyphs) {
 			const text = new Text({
 				text: glyph.char,
-				style: { fontFamily: t.font.family, fontSize: size, fill: options.color ?? t.color.text },
+				style: { fontFamily: t.font.family, fontSize: size, fill: this.opts.color ?? t.color.text },
 			});
 
 			if (glyph.rotate) {
@@ -110,5 +120,10 @@ export class VerticalLabel extends Container {
 			text.y = glyph.y;
 			this.addChild(text);
 		}
+	}
+
+	override destroy(options?: Parameters<Container['destroy']>[0]): void {
+		themeChanged.remove(this.themeListener);
+		super.destroy(options);
 	}
 }

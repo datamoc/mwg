@@ -1,7 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import type { Action } from '../core/Input.ts';
 import { Label } from './Label.ts';
-import { theme } from './theme.ts';
+import { theme, themeChanged } from './theme.ts';
 
 export interface IconGridItem {
 	/** the icon drawn in the cell, sized to fit it */
@@ -84,6 +84,22 @@ export class IconGrid extends Container {
 	onQuickslot: ((item: IconGridItem, index: number) => void) | null;
 	onReorder: ((fromIndex: number, toIndex: number) => void) | null;
 
+	/**
+	 * Recolours quantity badges in place rather than through `setItems`: an item's `icon` is
+	 * a `Container` the caller owns, and `setItems`'s teardown destroys a cell's children on
+	 * the way out (see `swapCells`'s own doc comment) - routing a restyle through it would
+	 * destroy the very icons still referenced by `this.items`.
+	 */
+	private readonly themeListener = () => {
+		const t = theme();
+		this.items.forEach((item, i) => {
+			if ((item.quantity ?? 1) <= 1) return;
+			const badge = this.cells[i]?.children.find((child): child is Label => child instanceof Label);
+			badge?.setColor(t.color.textHighlight);
+		});
+		this.refresh();
+	};
+
 	constructor(options: IconGridOptions) {
 		super();
 
@@ -108,6 +124,12 @@ export class IconGrid extends Container {
 		this.drawMask();
 
 		this.setItems(options.items ?? []);
+		themeChanged.add(this.themeListener);
+	}
+
+	override destroy(options?: Parameters<Container['destroy']>[0]): void {
+		themeChanged.remove(this.themeListener);
+		super.destroy(options);
 	}
 
 	private drawMask(): void {

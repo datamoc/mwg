@@ -1,5 +1,5 @@
 import { Text, TextStyle } from 'pixi.js';
-import { theme } from './theme.ts';
+import { theme, themeChanged, type Theme } from './theme.ts';
 
 export interface LabelOptions {
 	text?: string;
@@ -20,6 +20,9 @@ export interface LabelOptions {
  * frame, where a value that only changes on whole numbers should be guarded.
  */
 export class Label extends Text {
+	private readonly opts: LabelOptions;
+	private readonly themeListener = (t: Theme) => this.restyle(t);
+
 	constructor(options: LabelOptions | string = {}) {
 		const opts = typeof options === 'string' ? { text: options } : options;
 		const t = theme();
@@ -39,6 +42,9 @@ export class Label extends Text {
 				breakWords: true,
 			}),
 		});
+
+		this.opts = opts;
+		themeChanged.add(this.themeListener);
 	}
 
 	/** changes the colour without rebuilding the style object */
@@ -49,5 +55,25 @@ export class Label extends Text {
 	/** avoids the re-render when the text has not actually changed */
 	setText(value: string): void {
 		if (this.text !== value) this.text = value;
+	}
+
+	/**
+	 * Reapplies whichever style fields were never given an explicit option, so an
+	 * explicit `color`/`size` a game passed in survives a theme change untouched while
+	 * anything left to the theme's own defaults picks up the new one.
+	 */
+	private restyle(t: Theme): void {
+		this.style.fontFamily = t.font.family;
+		if (this.opts.color === undefined) this.style.fill = t.color.text;
+		if (this.opts.size === undefined) {
+			this.style.fontSize = t.font.size;
+			this.style.lineHeight = t.font.size * t.font.lineHeight;
+		}
+		if (this.opts.align === undefined) this.style.align = t.direction === 'rtl' ? 'right' : 'left';
+	}
+
+	override destroy(options?: Parameters<Text['destroy']>[0]): void {
+		themeChanged.remove(this.themeListener);
+		super.destroy(options);
 	}
 }

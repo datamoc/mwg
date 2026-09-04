@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { Container } from 'pixi.js';
 
 import { IconGrid, type IconGridItem } from '../src/ui/IconGrid.ts';
+import { setTheme, defaultTheme } from '../src/ui/theme.ts';
 
 function icon(): Container {
 	return new Container();
@@ -193,4 +194,26 @@ test('setItems rebuilds and resets scroll, pick-up and pending press state', () 
 	grid.onReorder = () => (reordered = true);
 	grid.tapCell(1);
 	assert.equal(reordered, false);
+});
+
+test('a live theme change rebuilds cells without losing the current highlight', () => {
+	const grid = new IconGrid({ width: 60, height: 60, columns: 2, items: items(4) });
+	grid.move(1, 0);
+	assert.equal(grid.selectedIndex, 1);
+
+	try {
+		setTheme({ spacing: 5 });
+		assert.equal(grid.selectedIndex, 1, 'highlight must survive a restyle, not reset to cell 0');
+	} finally {
+		setTheme(defaultTheme);
+	}
+});
+
+test('destroying a grid unsubscribes it - a later theme change touches nothing destroyed', () => {
+	const grid = new IconGrid({ width: 60, height: 60, columns: 2, items: items(2) });
+	grid.destroy({ children: true });
+
+	//would throw if the grid's now-destroyed children were still being rebuilt
+	assert.doesNotThrow(() => setTheme({ spacing: 5 }));
+	setTheme(defaultTheme);
 });

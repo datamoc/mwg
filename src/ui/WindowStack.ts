@@ -2,7 +2,7 @@ import { Container, Graphics } from 'pixi.js';
 import * as Input from '../core/Input.ts';
 import type { Action } from '../core/Input.ts';
 import type { Window } from './Window.ts';
-import { theme } from './theme.ts';
+import { theme, themeChanged } from './theme.ts';
 
 /**
  * The stack of open windows, and the arbiter of who has the keyboard.
@@ -23,6 +23,7 @@ export class WindowStack extends Container {
 	private viewportHeight = 0;
 
 	private listener = (action: Action): boolean => this.handleAction(action);
+	private readonly themeListener = () => this.drawOverlay();
 
 	constructor() {
 		super();
@@ -32,6 +33,7 @@ export class WindowStack extends Container {
 		//stack mode, so this is offered actions before anything registered earlier: a window
 		//that is open should always win over the map underneath
 		Input.onAction.add(this.listener);
+		themeChanged.add(this.themeListener);
 	}
 
 	setViewport(width: number, height: number): void {
@@ -123,6 +125,7 @@ export class WindowStack extends Container {
 
 	override destroy(options?: Parameters<Container['destroy']>[0]): void {
 		Input.onAction.remove(this.listener);
+		themeChanged.remove(this.themeListener);
 		super.destroy(options);
 	}
 }

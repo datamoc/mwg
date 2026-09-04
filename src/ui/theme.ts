@@ -1,5 +1,6 @@
 import type { Texture } from 'pixi.js';
 import type { Direction } from '../i18n/index.ts';
+import { Signal } from '../core/Signal.ts';
 
 /**
  * How the interface looks.
@@ -81,6 +82,17 @@ export function theme(): Theme {
 	return current;
 }
 
+/**
+ * Fired with the new theme every time `setTheme` runs.
+ *
+ * `theme()` is read once, at construction, by every built-in widget - calling `setTheme`
+ * changes nothing about what is already on screen. A widget that wants to restyle itself for
+ * a day/night palette swap or a light/dark toggle subscribes here and reapplies its own style
+ * from the value passed in, the same shape `i18n`'s `direction` already flows into
+ * `theme.direction` from a game's own glue code. Every built-in widget already does this.
+ */
+export const themeChanged = new Signal<Theme>();
+
 /** replaces the theme; partial objects are merged over the default */
 export function setTheme(next: Partial<Theme>): void {
 	current = {
@@ -89,4 +101,5 @@ export function setTheme(next: Partial<Theme>): void {
 		font: { ...defaultTheme.font, ...next.font },
 		color: { ...defaultTheme.color, ...next.color },
 	};
+	themeChanged.dispatch(current);
 }
