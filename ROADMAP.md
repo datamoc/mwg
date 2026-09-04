@@ -988,3 +988,17 @@ of most of these, same reasoning that has kept move numbers and species stats ou
        ordinary load already uses, rather than a game hand-rolling "decode, then call
        `save()`" outside that pipeline by itself. This half is not RPG-Maker-specific; a
        `.rxdata` reader is one `normalize` implementation among others a game could supply
+
+101. requested directly: `Button`, `Bar`, and floating text - three common HUD widgets
+     missing from `mwg/ui`, which today has `Label`, `Window`, `WindowStack`, `ListView`,
+     `IconGrid`, `MessageBox`, `NinePatch` and `VerticalLabel`, but nothing a game reaches
+     for constantly enough that hand-rolling it at every call site is the current answer:
+     - `Button`: a clickable region with idle/hover/pressed states and a label, over the
+       same `NinePatch`/`theme` machinery `Window` already draws its chrome from - `ListView`
+       is the closest existing precedent for turning pointer input into a callback
+     - `Bar`: a health/mana/experience bar - a filled proportion of a track, following
+       `theme()` for colour the way `Label` does, closer to a small, focused primitive than
+       a general-purpose progress-bar widget
+     - floating text: a damage number or a "+1 gold" that rises and fades over its own
+       lifetime, unrelated to `Label`'s job of a static, positioned string - this is
+       animation over a `Label`-shaped text object, timed rather than laid out
