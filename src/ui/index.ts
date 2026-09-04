@@ -1,4 +1,4 @@
-export { theme, setTheme, defaultTheme } from './theme.ts';
+export { theme, setTheme, defaultTheme, themeChanged } from './theme.ts';
 export type { Theme } from './theme.ts';
 
 export { Label } from './Label.ts';
@@ -26,3 +26,15 @@ export type { VerticalLabelOptions, VerticalLayoutOptions, GlyphLayout } from '.
 
 export { RebindScreen } from './RebindScreen.ts';
 export type { RebindScreenOptions } from './RebindScreen.ts';
+
+export { Button } from './Button.ts';
+export type { ButtonOptions } from './Button.ts';
+
+export { Bar } from './Bar.ts';
+export type { BarOptions } from './Bar.ts';
+
+export { FloatingText } from './FloatingText.ts';
+export type { FloatingTextOptions } from './FloatingText.ts';
+
+export { HelpScreen } from './HelpScreen.ts';
+export type { HelpScreenOptions, HelpTopic } from './HelpScreen.ts';
