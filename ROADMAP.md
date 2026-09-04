@@ -851,25 +851,33 @@ that table entry was wrong until item 87 below actually ships it.
     `recruit`/`recall`/`bankUnit` (all-or-nothing against a currency total, mirroring
     `actors.Shop`) and `armyIncome`/`applyUpkeep`, a per-turn delta purely as a function of
     units controlled, with no specific rate baked in
-89. per-instance random traits for a creature or unit, distinct from what `mwg` already has
+89. ~~per-instance random traits for a creature or unit, distinct from what `mwg` already has
     on both sides of this: `actors.Affix` is item-side (one affix per item, weight-picked,
     trigger-routed), and `actors.Advancement` is a game-authored tier ladder a player spends
     into deliberately. Neither covers "at creation, draw one or more modifiers at random
     from a shared pool and keep them for that unit's whole life" - permanent rather than
     triggered, assigned rather than chosen, read straight into `StatBlock` modifiers rather
-    than routed through a trigger at all
-90. conditional visibility, independent of terrain: `roguelike.FieldOfView` is purely
+    than routed through a trigger at all~~ - `actors.assignTraits(stats, pool, count)` draws
+    `count` distinct traits at random and applies their modifiers permanently, each under its
+    own source symbol, returning which were picked so a game can display them
+90. ~~conditional visibility, independent of terrain: `roguelike.FieldOfView` is purely
     line-of-sight over terrain opacity, with no notion of a unit that stays undetected even
     in clear sight unless an enemy is within some fixed radius. That one shape covers every
     "hidden unless someone's right next to you" mechanic a tactical or stealth game reaches
     for; `mwg` would supply the radius check and the "discovering it costs the discoverer's
-    move" rule, nothing about which terrain or ability grants it
-91. positional auras: a continuously-reevaluated effect that applies to anyone adjacent to a
+    move" rule, nothing about which terrain or ability grants it~~ - `roguelike.Stealth`
+    tracks one hidden unit's sticky, one-way detection state; `checkDetection` returns `true`
+    only on the call that first brings an observer within radius, so a game knows exactly
+    which call should spend the discoverer's move
+91. ~~positional auras: a continuously-reevaluated effect that applies to anyone adjacent to a
     unit carrying it, on and off as units move, rather than triggered once like
     `battle.BattleHooks` or timed like `actors.StatusEffect`. Neither re-checks "is a
     qualifying unit currently adjacent" on its own; this is the primitive both would need
     underneath them to express "adjacent allies fight better while this unit is nearby"
-    without a game re-deriving adjacency-watching by hand
+    without a game re-deriving adjacency-watching by hand~~ - `actors.AuraField.update` diffs
+    each carrier's affected set against an adjacency test the caller supplies, adding
+    modifiers to a unit that just became adjacent and removing exactly those on leaving,
+    without reapplying (or duplicating, for two carriers at once) on every tick in between
 
 Ruled out after the same survey, each verified against the real code rather than assumed:
 unit experience-to-advance-into-a-different-unit-type (already covered: `actors.Progression`

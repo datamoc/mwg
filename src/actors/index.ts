@@ -30,3 +30,7 @@ export { buy, sell } from './Shop.ts';
 export type { Price, ShopOptions } from './Shop.ts';
 export { canAfford, spend } from './Resource.ts';
 export type { ResourceCost } from './Resource.ts';
+export { assignTraits } from './Traits.ts';
+export type { TraitDef, AssignedTrait } from './Traits.ts';
+export { AuraField } from './Aura.ts';
+export type { AuraDef, AuraParticipant } from './Aura.ts';
