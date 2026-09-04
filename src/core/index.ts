@@ -20,5 +20,7 @@ export { Achievements } from './Achievements.ts';
 export type { AchievementDef } from './Achievements.ts';
 export { Session } from './Session.ts';
 export type { SessionOptions } from './Session.ts';
+export { Spawner } from './Spawner.ts';
+export type { Wave, SpawnerOptions } from './Spawner.ts';
 export { hexNeighbors, hexDistance, hexLine, hexRange, hexToPixel, pixelToHex } from './Hex.ts';
 export type { HexCoord } from './Hex.ts';

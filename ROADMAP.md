@@ -962,15 +962,18 @@ of most of these, same reasoning that has kept move numbers and species stats ou
     real gap surveyed against the existing modules is a timed wave spawner, logged
     separately as item 98 rather than folded in here, the same way item 30 named XCOM and
     board games without picking a specific title. No specific implementation committed to
-98. a wave spawner: timed, escalating enemy spawning, distinct in shape from anything `mwg`
+98. ~~a wave spawner: timed, escalating enemy spawning, distinct in shape from anything `mwg`
     already schedules. `roguelike.Scheduler` orders whose turn it is by energy cost, a
     discrete-turn primitive with no concept of real time at all; this wants a plain timer
     driven by `dt`, resolving to "wave 3 starts at t+45s, spawns 8 of kind A and 2 of kind B
     over the next 10s" rather than anyone's turn. Not specific to tower defense (any game
     with escalating timed spawns - a horde mode, a survival minigame - wants the same
-    primitive), which is why it is its own item rather than bundled into 97
+    primitive), which is why it is its own item rather than bundled into 97~~ -
+    `core.Spawner` flattens every wave's entries into one time-sorted schedule at
+    construction, `update(dt)` fires `onSpawn` for whatever is due; waves may overlap rather
+    than queue, so a later wave is never delayed by an earlier one still finishing
 
-99. free movement: a position and facing that are not snapped to a grid at all, in
+99. ~~free movement: a position and facing that are not snapped to a grid at all, in
     floating-point rather than whole tiles or whole elevation levels. `rpg.GridMover` is the
     only movement primitive `mwg` has today, and it is tile-to-tile by design (`moveBy`
     tweens between two grid cells, `turnTo` faces one of four discrete directions); nothing
@@ -981,7 +984,11 @@ of most of these, same reasoning that has kept move numbers and species stats ou
     on anything; `roguelike.Elevation` is whole-levels-only today (`heights are whole
     levels, not fractions`, its own doc comment), so a genuinely continuous `z` is a
     separate, larger question that ties into the still-gated 3D block (item 45) rather than
-    something this item can promise on its own
+    something this item can promise on its own~~ - `rpg.FreeMover` ships the 2D half:
+    `move(dx, dy, dt)` takes an unnormalized direction and updates `x`/`y` plus a continuous
+    `facing` in radians; bucketing that angle into however many directions a sprite sheet
+    has stays the game's own job, same as `GridMover`'s animation callbacks already are.
+    Continuous `z` remains behind the 3D block, untouched by this
 
 100. requested directly as "import and export usual save files of other frameworks, like
      Game.rxdata" - RPG Maker's own save format by name. Revisited after the same session's
