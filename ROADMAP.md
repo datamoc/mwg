@@ -1112,3 +1112,22 @@ of most of these, same reasoning that has kept move numbers and species stats ou
      it owns while the textures that map's tiles pointed at stay cached forever is exactly
      the gap "for big games" names: fine for a short example, a real problem for anything
      with enough zones that unvisited-again ones should not still be paying rent
+
+Reassessed after shipping 86-100 in one batch (see the same session's commits): with that
+whole tier cleared, the open list is short enough to look at as one group rather than by
+tier. 101, 102 and 106 are the easy calls - small, self-contained, direct requests, nothing
+one needs before another, so no order among them. 103 is a step up in size (real rendering
+engineering: an explored-cell set becoming a small texture, not just composing existing
+data) but still a single, well-bounded item. 104 and 105 each split into a small documented
+half and a larger, less-defined one the same way 100 turned out to once its own scope was
+corrected: 104's help screen and 105's action-feedback half are recipes over what already
+exists, but 104's bond-relationship mechanic and especially 105's in-app feedback (which
+needs an actual network transport `mwg` has never had, a real architectural question, not a
+widget) are bigger than "requested directly" alone would suggest - flagging that here so a
+future session does not underestimate them the way 100 briefly was. 107 gets a nudge above
+the rest of this tier: it is not a new capability so much as a standing architectural gap in
+`mwg/assets` (unbounded GPU memory growth, the exact kind of resource cost this project's
+own performance priority already asks to be treated seriously), even though nothing today
+exercises enough zones to actually hit it. 97 stays exactly where 28/30 already sit -
+genuinely open-ended, no title picked, lowest priority among the non-gated items. The 3D
+block remains last and gated, untouched by any of this.
