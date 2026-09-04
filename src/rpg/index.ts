@@ -10,4 +10,4 @@ export type { EventCommand, EventRunnerState, EventRunnerOptions, MoveStep } fro
 export { GridMover } from './GridMover.ts';
 export type { GridMoverOptions, Direction4 } from './GridMover.ts';
 export { QuestLog } from './Quest.ts';
-export type { QuestStage, QuestDefinition, QuestStatus } from './Quest.ts';
+export type { QuestStage, QuestDefinition, QuestStatus, QuestMarker } from './Quest.ts';

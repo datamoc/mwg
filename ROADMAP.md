@@ -893,7 +893,7 @@ existing shapes and `CombatHooks`'s pre/post-damage seam already cover the mecha
 of most of these, same reasoning that has kept move numbers and species stats out of
 `mwg/battle` throughout this list).
 
-92. an interactive-marker state for `QuestLog`: whether an NPC (or any object tied to a
+92. ~~an interactive-marker state for `QuestLog`: whether an NPC (or any object tied to a
     quest id) currently has something to offer the player, derived the same way
     `Achievements`' unlocking already is, never stored separately. `status(id)` reports
     `'available'`/`'active'`/`'complete'` per quest today, but nothing turns "this quest is
@@ -902,8 +902,10 @@ of most of these, same reasoning that has kept move numbers and species stats ou
     to hear a completed quest turned in, nothing over an NPC with no bearing on any quest at
     all. `mwg` would supply the derivation (given a set of quest ids an NPC is tied to, which
     of "has an offer" / "awaits a turn-in" / "neither" currently holds) and stop there - the
-    actual `!`, its colour, and where it floats above a sprite stay the game's own art and UI
-93. an objective location and a tracked quest, so a game can point the player somewhere
+    actual `!`, its colour, and where it floats above a sprite stay the game's own art and UI~~
+    - `QuestLog.markerFor(ids, state)` returns `'offer'`/`'turnIn'`/`'none'`, reusing the
+    same satisfied-stage check `advance` does internally without ever mutating state itself
+93. ~~an objective location and a tracked quest, so a game can point the player somewhere
     without hand-rolling both: `QuestStage` has a `condition` and a `counter`
     today but nowhere to say *where* a stage is satisfied, and `QuestLog` has no notion of
     which of several active quests is the one currently guiding the player, only whether
@@ -914,7 +916,10 @@ of most of these, same reasoning that has kept move numbers and species stats ou
     turn a location into a route or a single next step (`find`/`step`/`distanceMap`) - this
     item is only the location data and the tracked-quest pointer, not a new pathing
     primitive; drawing a compass arrow or a footprint trail from that path stays the game's
-    own presentation, same boundary item 92 draws for the marker itself
+    own presentation, same boundary item 92 draws for the marker itself~~ - `QuestStage`
+    gained an optional `location`, and `QuestLog` gained `track`/`trackedQuest`/
+    `trackedLocation`, the last two both clearing automatically once the tracked quest
+    stops being active
 
 94. keybind conflict detection: `Input.bind(action, keys)` lets two actions silently share
     the same physical key today, since `bind` only ever adds a mapping and nothing checks

@@ -14,6 +14,14 @@ export interface QuestStage {
 
 	/** shown in a quest log's progress readout; `mwg` never reads this itself */
 	description?: string;
+
+	/**
+	 * Where this stage is satisfied, if anywhere in particular - "kill 5 rats" can
+	 * optionally also say where the rats are. `mwg` only carries this data; turning it into
+	 * a route or a compass arrow is `roguelike.Pathfinder`'s job (already has everything
+	 * needed: `find`/`step`/`distanceMap`) plus the game's own presentation.
+	 */
+	location?: { map?: string; x: number; y: number };
 }
 
 export interface QuestDefinition {
@@ -27,6 +35,16 @@ export interface QuestDefinition {
 export type QuestStatus = 'unavailable' | 'available' | 'active' | 'complete';
 
 /**
+ * What an NPC (or anything else tied to a quest) currently has to offer the player, derived
+ * the same way `Achievements`' unlocking already is rather than stored separately:
+ * `'offer'` if any tied quest could be started, `'turnIn'` if any is active and its current
+ * stage is already satisfied (ready to close out, whether or not the player has actually
+ * walked up and done so), `'none'` otherwise. The actual `!`, its colour, and where it
+ * floats above a sprite stay the game's own art and UI - this is only the derived bit.
+ */
+export type QuestMarker = 'offer' | 'turnIn' | 'none';
+
+/**
  * Tracks which stage every known quest is on, against `GameState`'s existing switches and
  * variables - not a storage mechanism of its own. A quest's *definition* (its stages, its
  * prerequisites) is static game content, supplied once, the same way the dungeon example's
@@ -38,8 +56,38 @@ export class QuestLog {
 	/** the stage index a started quest is on; absent means not yet started */
 	private stageIndex = new Map<string, number>();
 
+	/** the one active quest a game currently points the player towards, if any */
+	private tracked: string | null = null;
+
 	define(quest: QuestDefinition): void {
 		this.definitions.set(quest.id, quest);
+	}
+
+	/** marks `id` as the quest a game currently guides the player towards; `null` to clear it */
+	track(id: string | null): void {
+		if (id !== null) this.require(id);
+		this.tracked = id;
+	}
+
+	/** the currently tracked quest id, or `null` if none is tracked or it is no longer active */
+	trackedQuest(): string | null {
+		return this.tracked !== null && this.status(this.tracked) === 'active' ? this.tracked : null;
+	}
+
+	/** where the tracked quest's current stage is satisfied, if it says anywhere at all */
+	trackedLocation(): { map?: string; x: number; y: number } | null {
+		const id = this.trackedQuest();
+		return id ? (this.currentStage(id)?.location ?? null) : null;
+	}
+
+	/**
+	 * Derives what an NPC tied to `ids` currently has to offer - see `QuestMarker`. Checking
+	 * several ids at once covers an NPC that gives one quest and takes in another.
+	 */
+	markerFor(ids: readonly string[], state: GameState): QuestMarker {
+		if (ids.some((id) => this.status(id) === 'active' && this.stageSatisfied(id, state))) return 'turnIn';
+		if (ids.some((id) => this.status(id) === 'available')) return 'offer';
+		return 'none';
 	}
 
 	/** whether every prerequisite is already complete, so the quest could be started */
@@ -86,18 +134,22 @@ export class QuestLog {
 	 * @returns true if a stage (or the whole quest) completed this call
 	 */
 	advance(id: string, state: GameState): boolean {
+		if (!this.stageSatisfied(id, state)) return false;
+
+		this.stageIndex.set(id, this.stageIndex.get(id)! + 1);
+		return true;
+	}
+
+	/** whether the current stage's condition or counter already holds, without advancing it */
+	private stageSatisfied(id: string, state: GameState): boolean {
 		const stage = this.currentStage(id);
 		if (!stage) return false;
 
-		const done = stage.condition
+		return stage.condition
 			? conditionHolds(stage.condition, state)
 			: stage.counter
 				? state.variable(stage.counter.variable) >= stage.counter.target
 				: true;
-		if (!done) return false;
-
-		this.stageIndex.set(id, this.stageIndex.get(id)! + 1);
-		return true;
 	}
 
 	private require(id: string): QuestDefinition {
@@ -106,15 +158,19 @@ export class QuestLog {
 		return quest;
 	}
 
-	toJSON(): { stageIndex: [string, number][] } {
-		return { stageIndex: [...this.stageIndex] };
+	toJSON(): { stageIndex: [string, number][]; tracked: string | null } {
+		return { stageIndex: [...this.stageIndex], tracked: this.tracked };
 	}
 
 	/** rebuilds a log from save data - `definitions` are supplied fresh, the same as `ITEMS` */
-	static fromJSON(definitions: QuestDefinition[], data: { stageIndex: [string, number][] }): QuestLog {
+	static fromJSON(
+		definitions: QuestDefinition[],
+		data: { stageIndex: [string, number][]; tracked?: string | null }
+	): QuestLog {
 		const log = new QuestLog();
 		for (const quest of definitions) log.define(quest);
 		for (const [id, index] of data.stageIndex) log.stageIndex.set(id, index);
+		if (data.tracked) log.tracked = data.tracked;
 		return log;
 	}
 }

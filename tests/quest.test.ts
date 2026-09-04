@@ -146,3 +146,90 @@ test('toJSON/fromJSON round-trips a quest log, definitions supplied fresh', () =
 	assert.deepEqual(restored.currentStage('a'), {});
 	assert.equal(restored.status('b'), 'unavailable');
 });
+
+test('markerFor reports an offer for a quest that could be started', () => {
+	const log = new QuestLog();
+	const state = new GameState();
+	log.define({ id: 'fetch', stages: [{}] });
+
+	assert.equal(log.markerFor(['fetch'], state), 'offer');
+});
+
+test('markerFor reports a turn-in once the active quest\'s current stage is satisfied', () => {
+	const log = new QuestLog();
+	const state = new GameState();
+	log.define({ id: 'fetch', stages: [{ counter: { variable: 'rats', target: 5 } }] });
+	log.start('fetch');
+
+	assert.equal(log.markerFor(['fetch'], state), 'none', 'not satisfied yet');
+	state.setVariable('rats', 5);
+	assert.equal(log.markerFor(['fetch'], state), 'turnIn');
+});
+
+test('markerFor reports none for an NPC tied to no relevant quest', () => {
+	const log = new QuestLog();
+	const state = new GameState();
+	log.define({ id: 'fetch', stages: [{}], requires: ['unlockedElsewhere'] });
+	log.define({ id: 'unlockedElsewhere', stages: [{ condition: { switch: 'never', equals: true } }] });
+
+	assert.equal(log.markerFor(['fetch'], state), 'none');
+});
+
+test('checking markerFor does not itself advance the quest', () => {
+	const log = new QuestLog();
+	const state = new GameState();
+	log.define({ id: 'fetch', stages: [{ counter: { variable: 'rats', target: 5 } }, { description: 'turn in' }] });
+	log.start('fetch');
+	state.setVariable('rats', 5);
+
+	log.markerFor(['fetch'], state);
+	log.markerFor(['fetch'], state);
+	assert.deepEqual(log.currentStage('fetch'), { counter: { variable: 'rats', target: 5 } });
+});
+
+test('a stage can carry a location, read off without affecting progress', () => {
+	const log = new QuestLog();
+	log.define({ id: 'fetch', stages: [{ location: { map: 'forest', x: 3, y: 4 } }] });
+	log.start('fetch');
+
+	assert.deepEqual(log.currentStage('fetch')?.location, { map: 'forest', x: 3, y: 4 });
+});
+
+test('tracking a quest exposes its current stage location; clearing or completing it clears trackedQuest', () => {
+	const log = new QuestLog();
+	const state = new GameState();
+	log.define({ id: 'fetch', stages: [{ location: { x: 3, y: 4 } }] });
+	log.start('fetch');
+
+	log.track('fetch');
+	assert.equal(log.trackedQuest(), 'fetch');
+	assert.deepEqual(log.trackedLocation(), { x: 3, y: 4 });
+
+	log.advance('fetch', state);
+	assert.equal(log.status('fetch'), 'complete');
+	assert.equal(log.trackedQuest(), null, 'a completed quest is no longer the tracked one');
+	assert.equal(log.trackedLocation(), null);
+});
+
+test('tracking an unknown quest id throws; tracking null clears it', () => {
+	const log = new QuestLog();
+	log.define({ id: 'fetch', stages: [{}] });
+	log.start('fetch');
+	log.track('fetch');
+
+	assert.throws(() => log.track('nowhere'));
+	log.track(null);
+	assert.equal(log.trackedQuest(), null);
+});
+
+test('the tracked quest survives a save/load round-trip', () => {
+	const definitions: QuestDefinition[] = [{ id: 'fetch', stages: [{ location: { x: 1, y: 2 } }] }];
+	const log = new QuestLog();
+	for (const q of definitions) log.define(q);
+	log.start('fetch');
+	log.track('fetch');
+
+	const restored = QuestLog.fromJSON(definitions, log.toJSON());
+	assert.equal(restored.trackedQuest(), 'fetch');
+	assert.deepEqual(restored.trackedLocation(), { x: 1, y: 2 });
+});
