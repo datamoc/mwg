@@ -44,3 +44,38 @@ test('moving spends exactly the real path cost', () => {
 function getUnit(state: ReturnType<typeof detourMap>) {
 	return state.units.find((u) => u.id === 'a')!;
 }
+
+test('zone of control blocks passing through a cell threatened by an unengaged enemy', () => {
+	//3x2 square map; C at (1,1) threatens (0,1), (2,1) and (1,0) - both routes from
+	//(0,0) to (2,0) cross one of those cells, and neither unit starts adjacent to the other
+	const state = startingTactics(3, 2, 'square');
+	addTacticalUnit(state, { id: 'a', owner: 'red', x: 0, y: 0, hp: 10, maxHp: 10, actions: 10 });
+	addTacticalUnit(state, { id: 'c', owner: 'blue', x: 1, y: 1, hp: 10, maxHp: 10, actions: 0 });
+
+	const move = tacticalMoves(state, 'a').find((m) => m.x === 2 && m.y === 0);
+	assert.equal(move, undefined, 'both routes are cut off at the first threatened cell');
+});
+
+test('zone of control does not block a unit from moving onto a threatened cell as its final stop', () => {
+	const state = startingTactics(3, 2, 'square');
+	addTacticalUnit(state, { id: 'a', owner: 'red', x: 0, y: 0, hp: 10, maxHp: 10, actions: 10 });
+	addTacticalUnit(state, { id: 'c', owner: 'blue', x: 1, y: 1, hp: 10, maxHp: 10, actions: 0 });
+
+	//(1,0) is one of C's threatened cells, but stopping there (rather than passing through
+	//it) is the standard zone-of-control exception
+	const move = tacticalMoves(state, 'a').find((m) => m.x === 1 && m.y === 0);
+	assert.ok(move, 'a threatened cell can still be the final stop of a move');
+	assert.equal(move.cost, 1);
+});
+
+test('a unit already adjacent to an enemy ignores that enemy\'s zone of control', () => {
+	//B starts adjacent to A, so A is already engaged with it; B's zone (which would
+	//otherwise cut the only route through row 1) should not apply to A's move at all
+	const state = startingTactics(3, 2, 'square');
+	addTacticalUnit(state, { id: 'a', owner: 'red', x: 0, y: 0, hp: 10, maxHp: 10, actions: 10 });
+	addTacticalUnit(state, { id: 'b', owner: 'blue', x: 1, y: 0, hp: 10, maxHp: 10, actions: 0 });
+
+	const move = tacticalMoves(state, 'a').find((m) => m.x === 2 && m.y === 0);
+	assert.ok(move, 'already being engaged with the only threatening enemy lifts its zone');
+	assert.equal(move.cost, 4, 'the real route still has to go around the occupied cell (1,0)');
+});

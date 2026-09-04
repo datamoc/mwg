@@ -798,7 +798,7 @@ once the floor exists.
     itself. The achievement half needed no new code: `increment()`'s return value and
     `drainNew()` were already sufficient, so no push-style `Signal` was added for it
 
-86. a sound and music orchestrator: naming what state a game is in ("exploring", "combat",
+86. ~~a sound and music orchestrator: naming what state a game is in ("exploring", "combat",
     "boss", "menu") and letting the game just declare the current state, rather than every
     call site remembering to call `Music.play()`/`Sound.play()` itself. `mwg/audio` already
     has both halves this would sit on top of: `Music.play(path, fadeDuration)` crossfades
@@ -813,7 +813,11 @@ once the floor exists.
     every place combat can start. A state that resolves to the same track already playing
     should not restart or refade it - re-entering "combat" mid-fight must not reset the
     music - which is the actual design question here, not the crossfade math `Music`
-    already has
+    already has~~ - `audio.Orchestrator` wraps a `Music` instance: `define(state, {track,
+    fadeDuration})` declares the mapping, `enter(state)` crossfades to it and is a no-op if
+    that track is already playing (tracked by track identity, not state name, so two states
+    sharing a track never refade into each other either), `on(event, sound)`/`trigger(event)`
+    covers one-shot cues separately since they are fire-and-forget rather than "where we are"
 
 Items 87-91 were surfaced by reading The Battle for Wesnoth's own player manual
 (`doc/manual/manual.txt` in a local checkout of the real GPL-2.0-or-later source) as prose,
@@ -825,14 +829,17 @@ no primitive for yet. One thing that survey caught along the way: the capability
 `mwg/roguelike`" - it is not, grepped and confirmed absent from every file in the repo, so
 that table entry was wrong until item 87 below actually ships it.
 
-87. a zone of control that actually exists: the capability spec table already claims it, but
+87. ~~a zone of control that actually exists: the capability spec table already claims it, but
     no code anywhere implements it. `Pathfinder` has no notion of a hex a unit is merely
     forced to stop upon entering, and `board.Tactics`'s `tacticalMoves`/`tacticalPathCost`
     check only passability and occupancy, never an adjacent enemy's reach. The shape itself
     is narrow (a unit projects control onto its immediate neighbours; entering one, for
     anyone without an explicit override, ends that step of movement) and composes cleanly
-    with the pathfinding and move-cost work both modules already do
-88. an army economy for `mwg/board`: recruiting a new unit onto the map against a currency
+    with the pathfinding and move-cost work both modules already do~~ - `tacticalPathCost`
+    now stops a path at the first cell adjacent to an enemy the mover is not already engaged
+    with (already being adjacent to that enemy lifts its zone entirely), while still allowing
+    a threatened cell to be entered as the move's own final stop
+88. ~~an army economy for `mwg/board`: recruiting a new unit onto the map against a currency
     cost, recalling a unit from a persistent pool of previously-fielded units (distinct from
     a fresh recruit, and carried between maps rather than reset), and an automatic per-turn
     income/upkeep tick. `actors.Shop`'s `buy`/`sell` is the nearest existing shape, a
@@ -840,7 +847,10 @@ that table entry was wrong until item 87 below actually ships it.
     pieces, and has no per-turn tick at all; `board.Tactics` has pieces on a board but no
     currency, no spawn-only-in-a-designated-zone rule, and nothing recurring. No numbers
     (gold per turn, upkeep per unit level) belong in this item, same as `mwg/battle`'s
-    type-matrix and damage formulas were never copied from Pokémon
+    type-matrix and damage formulas were never copied from Pokémon~~ - `board.Army` adds
+    `recruit`/`recall`/`bankUnit` (all-or-nothing against a currency total, mirroring
+    `actors.Shop`) and `armyIncome`/`applyUpkeep`, a per-turn delta purely as a function of
+    units controlled, with no specific rate baked in
 89. per-instance random traits for a creature or unit, distinct from what `mwg` already has
     on both sides of this: `actors.Affix` is item-side (one affix per item, weight-picked,
     trigger-routed), and `actors.Advancement` is a game-authored tier ladder a player spends

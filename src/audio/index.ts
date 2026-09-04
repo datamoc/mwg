@@ -4,3 +4,5 @@ export { Music } from './Music.ts';
 export type { MusicOptions } from './Music.ts';
 export { createAudio } from './Playable.ts';
 export type { Playable } from './Playable.ts';
+export { Orchestrator } from './Orchestrator.ts';
+export type { OrchestratorState } from './Orchestrator.ts';
