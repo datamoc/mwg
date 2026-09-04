@@ -289,12 +289,13 @@ rather than showing a raw key to the player.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full, numbered build order: 107 items, 88 shipped
-and nineteen open (3D rendering broken into a nine-step build-up plus an engine choice, a
-tower-defense reference with no title picked yet, HUD widgets, live theme changes, a map
-and minimap, unit support/bond relationships and a help screen, in-app feedback and action
-"juice", managed zoom, and asset-level memory management for big games, all logged at low
-priority; see that file for why). Each module ships in the order given
+See [ROADMAP.md](ROADMAP.md) for the full, numbered build order: 109 items, 93 shipped
+and sixteen open (3D rendering broken into a nine-step build-up plus an engine choice, a
+tower-defense reference with no title picked yet, a Fire Emblem-shaped unit bond/support
+mechanic, in-app feedback needing a network transport `mwg` has never had, a continuous
+day/night-and-weather clock above `battle.Field`'s per-encounter scope, and a per-faction
+fog of war above `roguelike.FieldOfView`'s single-viewer scope, all logged at low priority;
+see that file for why). Each module ships in the order given
 there; later ones build on the
 modules before them.
 

@@ -1020,7 +1020,7 @@ of most of these, same reasoning that has kept move numbers and species stats ou
        generic plug-in point, taking any `normalize` a game supplies (an `rxdata`-based one
        being one example, not the only one)
 
-101. requested directly: `Button`, `Bar`, and floating text - three common HUD widgets
+101. ~~requested directly: `Button`, `Bar`, and floating text - three common HUD widgets
      missing from `mwg/ui`, which today has `Label`, `Window`, `WindowStack`, `ListView`,
      `IconGrid`, `MessageBox`, `NinePatch` and `VerticalLabel`, but nothing a game reaches
      for constantly enough that hand-rolling it at every call site is the current answer:
@@ -1032,9 +1032,17 @@ of most of these, same reasoning that has kept move numbers and species stats ou
        a general-purpose progress-bar widget
      - floating text: a damage number or a "+1 gold" that rises and fades over its own
        lifetime, unrelated to `Label`'s job of a static, positioned string - this is
-       animation over a `Label`-shaped text object, timed rather than laid out
+       animation over a `Label`-shaped text object, timed rather than laid out~~ -
+     `ui.Button` draws over `NinePatch`/a flat rectangle the way `Window` does, cycling
+     idle/hover/pressed/disabled as three brightness steps of the same panel; a real reference
+     game's title screen (icon-only rankings/badges/settings buttons, no caption) surfaced a
+     gap in the first cut, so `Button` also takes an optional `icon` alongside or instead of
+     `text`, laid out the same icon-then-label order `ListView` rows already use. `ui.Bar` is
+     a filled proportion of a track, `setValue(value, max)`; an explicit `color` survives a
+     theme change, a defaulted one follows it. `ui.FloatingText` rises and fades over its own
+     lifetime via `update(dt)`, removing and destroying itself once done
 
-102. requested directly: live theme changes. `ui.theme()` is read once, at construction, by
+102. ~~requested directly: live theme changes. `ui.theme()` is read once, at construction, by
      every widget that has one (`Label`, `Window`, `ListView`, `IconGrid`, `MessageBox`,
      `VerticalLabel`, `WindowStack` - checked, all of them bake the values they read into a
      style or a colour right there in the constructor). Calling `setTheme` after any of them
@@ -1043,9 +1051,18 @@ of most of these, same reasoning that has kept move numbers and species stats ou
      toggle, wants existing widgets to restyle themselves, not just future ones - the gap is
      a signal fired on `setTheme` that already-built widgets can subscribe to and reapply
      their own style from, the same shape `i18n`'s `direction` already flows into
-     `theme.direction` from a game's own glue code, just for the rest of the theme too
+     `theme.direction` from a game's own glue code, just for the rest of the theme too~~ -
+     `ui.themeChanged` is a `Signal<Theme>` dispatched at the end of `setTheme`; every widget
+     listed above now subscribes in its constructor and unsubscribes on `destroy`, restyling
+     in place rather than through whatever `setItems`/rebuild path already existed - routing a
+     restyle through `ListView`/`IconGrid`'s own `setItems` would destroy a caller-owned row or
+     cell `icon`, the same trap `IconGrid.swapCells`'s doc comment already describes, so both
+     recolour existing rows/cells directly instead. `Label` only touches whichever style field
+     was left to the theme's own default, so an explicit `color`/`size` a game passed in
+     survives a theme change untouched. `ListView`/`IconGrid` preserve the current highlight
+     across a restyle rather than resetting to the first row, same reasoning
 
-103. requested directly: a full map and a minimap. Nothing today turns a level or an
+103. ~~requested directly: a full map and a minimap. Nothing today turns a level or an
      overworld into a small rendered overview - `roguelike.FieldOfView` already tracks
      exactly the data a map screen wants (`explored`, distinct from `visible`, so a minimap
      can show a room the player is not currently lit up in), and `world.Overworld` already
@@ -1055,7 +1072,16 @@ of most of these, same reasoning that has kept move numbers and species stats ou
      `Window`-shaped pause-and-look view, zoomable, potentially with quest markers from item
      92 or a tracked-quest location from item 93 drawn over it). The rendering itself (how an
      explored-cell set becomes a small texture rather than redrawing every tile every frame)
-     is the open engineering question here, not the data it draws from, which already exists
+     is the open engineering question here, not the data it draws from, which already exists~~
+     - `render.Minimap` bakes each cell of a `FieldOfView.explored` set into a persistent
+     `RenderTexture` the first time (and only the first time) `sync` sees it, at whatever
+     colour a game's own `colorFor(x, y)` reports - never redrawing a cell already baked, so
+     the per-frame cost stays proportional to newly explored cells rather than the whole map.
+     `newlyRevealed` is the pure diff behind `sync`, tested without a renderer; `setMarker`
+     positions an optional facing-aware marker on top. One class serves both sizes named
+     above - a coarse `cellSize` for an always-on corner HUD, a larger one inside a `Window`
+     for a full pause-and-look screen - quest markers and a tracked-quest location stay a
+     game's own overlay, the same boundary `rpg.QuestLog.markerFor` already draws
 
 104. requested directly as "support management", resolved into two distinct pieces since
      "support" means two different things depending on which side of the framework it sits
@@ -1065,13 +1091,17 @@ of most of these, same reasoning that has kept move numbers and species stats ou
        combat bonus or dialogue. Distinct from `actors.Advancement` (a tier ladder a single
        player spends into deliberately) and item 91's auras (positional, not cumulative) -
        this is a persistent, growing value between a specific *pair* of units, closer in
-       shape to a second, relationship-scoped `Progression` than to anything `mwg` has today
-     - a player-facing help/support screen: `mwg/ui` has `Label`, `Window`, `WindowStack`,
+       shape to a second, relationship-scoped `Progression` than to anything `mwg` has today.
+       Still open - a real new mechanic, not a recipe over what already exists, so it stays
+       logged rather than built alongside this item's other, much smaller half
+     - ~~a player-facing help/support screen: `mwg/ui` has `Label`, `Window`, `WindowStack`,
        `ListView`, `IconGrid`, `MessageBox`, `NinePatch` and `VerticalLabel`, but nothing
        shaped like a controls reference or an FAQ screen - likely composable from what
        already exists (a `Window` holding a `ListView` of topics and a `Label` for the body)
        rather than demanding a new widget, which is why this is logged as a recipe more than
-       a primitive
+       a primitive~~ - `ui.HelpScreen` is exactly that recipe: a `ListView` of topic titles
+       and a `Label` for whichever one is highlighted, wrapped in a game's own `Window`
+       the same way `RebindScreen` is
 105. requested directly as "feedback from user", likewise two distinct pieces once resolved -
      checked both, neither exists anywhere:
      - in-app feedback or bug-report submission: a way for a player to send back written
@@ -1080,13 +1110,19 @@ of most of these, same reasoning that has kept move numbers and species stats ou
        collecting or transmitting anything a player writes; this item would need an actual
        transport (which `mwg` has never had - every existing module is local-first, up to
        and including `SaveSystem`'s own `localStorage`-backed storage), so the design
-       question is as much "how does this leave the player's machine at all" as it is a UI
-     - action feedback ("juice"): hit-stop (a brief `Game.timeScale` dip on a heavy hit,
+       question is as much "how does this leave the player's machine at all" as it is a UI.
+       Still open - a real architectural question this session did not resolve, so it stays
+       logged rather than built alongside this item's other, much smaller half
+     - ~~action feedback ("juice"): hit-stop (a brief `Game.timeScale` dip on a heavy hit,
        distinct from item 101's floating text and from `Camera.shake`, both of which already
        exist) and gamepad rumble (`Gamepad.vibrationActuator`, unused by anything item 96
-       added - that item only ever reads a pad, never writes to one)
+       added - that item only ever reads a pad, never writes to one)~~ - `Game.hitStop(duration,
+       scale)` dips `timeScale` for `duration` *real* seconds (counted independently of the
+       scale it is itself applying, or a hit-stop would extend its own duration) then restores
+       it to 1; `Input.rumble(padIndex, options)` calls a pad's `vibrationActuator.playEffect`
+       if the browser and that pad expose one, a no-op rather than a throw otherwise
 
-106. requested directly: managed zoom, to keep a fractional zoom from letting seams show
+106. ~~requested directly: managed zoom, to keep a fractional zoom from letting seams show
      between tiles. Checked the render path: `Game` already sets nearest-neighbour texture
      sampling and rounds the whole camera container to a whole screen pixel (`Camera.apply`,
      fixed earlier this session for `toScreen`/`toWorld` to agree with it too), but `zoom`
@@ -1100,9 +1136,15 @@ of most of these, same reasoning that has kept move numbers and species stats ou
      exposed as a per-tile knob `TileMap` turns on deliberately) - whether the fix is
      snapping `zoom` itself to values where tile size times zoom is a whole number of pixels,
      or turning on `roundPixels` for tile sprites specifically, is the open engineering
-     question, not whether the seam is real
+     question, not whether the seam is real~~ - resolved as the first option, which needed no
+     change outside `Camera` (`ColorTransformBatcher`'s per-sprite bit stays untouched, and
+     unimported by anything outside its own file, per item 83's own rule): `snapZoom(zoom,
+     tileSize)` rounds `zoom * tileSize` to the nearest whole pixel count and reports the zoom
+     that produces it; `CameraOptions.pixelPerfectTileSize`, when given, runs every `zoom`
+     assignment (construction included) through it automatically. A camera that never sets it
+     keeps a fully fractional zoom, unaffected
 
-107. requested directly as "memory management (for big games)". `world.World` already has
+107. ~~requested directly as "memory management (for big games)". `world.World` already has
      an answer at the map level - `unload(id)` exists, tested, and refuses to unload the
      current map - but `mwg/assets` has none at all: `load`/`texture`/`get` only ever add to
      Pixi's asset cache, and there is no `unload`/`release` anywhere in that module. A game
@@ -1111,7 +1153,11 @@ of most of these, same reasoning that has kept move numbers and species stats ou
      call when the player has permanently left an area. `World.unload` freeing the map data
      it owns while the textures that map's tiles pointed at stay cached forever is exactly
      the gap "for big games" names: fine for a short example, a real problem for anything
-     with enough zones that unvisited-again ones should not still be paying rent
+     with enough zones that unvisited-again ones should not still be paying rent~~ -
+     `assets.release(paths)` calls Pixi's own `Assets.unload` for whichever of the given
+     paths are actually cached, silently skipping the rest rather than treating an
+     unvisited-zone's assets as an error to check for first; `assets.isLoaded(path)` is the
+     query a game checks before deciding a zone needs `load` again at all
 
 Reassessed after shipping 86-100 in one batch (see the same session's commits): with that
 whole tier cleared, the open list is short enough to look at as one group rather than by
@@ -1131,3 +1177,41 @@ own performance priority already asks to be treated seriously), even though noth
 exercises enough zones to actually hit it. 97 stays exactly where 28/30 already sit -
 genuinely open-ended, no title picked, lowest priority among the non-gated items. The 3D
 block remains last and gated, untouched by any of this.
+
+101, 102, 103, 106, 107 and 104/105's small halves have since shipped in one pass (this same
+session's commits), leaving only what this reassessment already flagged as bigger than its
+own item let on: 104's bond/support-relationship mechanic and 105's in-app feedback (still
+wanting a network transport `mwg` has never had), both logged in place rather than built
+alongside the halves that did ship. 97 is unchanged - still open-ended, still lowest priority
+among the non-gated items. The 3D block remains last and gated.
+
+108. requested directly as "day/night management and weather". Checked against what already
+     exists rather than assumed new: `battle.Field` already carries named conditions -
+     `field.set({id: 'rain'})`, `has`/`clear`/timed `advance` - which covers weather exactly
+     at the scope it was built for, one encounter. The very survey that shipped 87-91 raised
+     this same idea and ruled it out at the time: "time-of-day/alignment combat modifiers...
+     sits at the wrong layer - `battle.Field` is scoped to one encounter, this needs a
+     continuous board-wide clock - and isn't distinct enough from `Field`'s existing flag-set
+     shape to warrant a primitive of its own yet" (see the note after item 91). What would
+     make it distinct now: a continuous, `dt`- or turn-driven clock living above any one
+     encounter - on `world.World` or a game's own overworld loop - that a game reads from
+     (`isNight()`, `currentWeather()`) and that a battle or map can pull into its own
+     per-encounter `Field` when one starts, rather than `mwg` inventing a second competing
+     conditions primitive. Logged rather than built immediately: it arrived mid-session,
+     against the other open items already agreed for this pass, and the shape above still
+     needs the same "is this actually distinct enough yet" scrutiny the original survey gave
+     it, not a rubber stamp because it was asked for twice
+
+109. requested directly as "fog of war". Checked against what already exists rather than
+     assumed new: `roguelike.FieldOfView` already computes exactly this for the shape it was
+     built for - `visible`/`explored` from one viewer's point, with shadowcasting or a hex
+     line-of-sight fallback - so a single-character roguelike already has fog of war today,
+     under a different name. What is missing is the `board`-shaped version: `board.Tactics`
+     has units on a grid and move costs, but nothing folds many units' vision into one shared
+     "what this side can currently see" set the way a squad-based tactics or 4X game wants,
+     where fog of war is a per-faction union of every controlled unit's own sight rather than
+     one character's. `roguelike.FieldOfView` is scoped to a single `(x, y)` and a single
+     `Level`; whether the fix is a thin wrapper that unions several `FieldOfView.visible` sets
+     per faction, or a distinct primitive over `board.BoardGrid`, is open. Logged rather than
+     built immediately, same reasoning as 108: it arrived mid-session against the batch of
+     items already agreed for this pass
