@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Camera } from '../src/render/Camera.ts';
+import { Camera, snapZoom } from '../src/render/Camera.ts';
 
 test('view matches the actual bounds-clamped render position, not the raw unclamped centre', () => {
 	const camera = new Camera({ zoom: 1 });
@@ -67,4 +67,23 @@ test('toWorld agrees with the actual rendered (bounds-clamped) position, not the
 	const screen = camera.toScreen(10, 10);
 	assert.equal(screen.x, 50);
 	assert.equal(screen.y, 50);
+});
+
+test('snapZoom rounds to the nearest whole pixel size for the given tile size', () => {
+	assert.equal(snapZoom(2.3, 16), 2.3125); // 2.3*16=36.8 -> rounds to 37px -> 37/16
+	assert.equal(snapZoom(2, 16), 2); // already exact, unaffected
+	assert.equal(snapZoom(0.001, 16), 1 / 16); // never rounds down to a zero-pixel tile
+});
+
+test('a camera with pixelPerfectTileSize snaps its own zoom on construction and on every set', () => {
+	const camera = new Camera({ zoom: 2.3, pixelPerfectTileSize: 16 });
+	assert.equal(camera.zoom, 2.3125);
+
+	camera.zoom = 1.1;
+	assert.equal(camera.zoom, snapZoom(1.1, 16));
+});
+
+test('a camera without pixelPerfectTileSize keeps a fractional zoom exactly', () => {
+	const camera = new Camera({ zoom: 2.3 });
+	assert.equal(camera.zoom, 2.3);
 });

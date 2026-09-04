@@ -23,6 +23,20 @@ export interface CameraOptions {
 	 * grid-based game where movement is in whole tiles.
 	 */
 	deadzone?: number;
+
+	/**
+	 * When set, `zoom` snaps to the nearest value at which one world unit of this size lands
+	 * on a whole number of screen pixels - a tile's own width or height, typically.
+	 *
+	 * `apply()` already rounds the whole camera's screen offset to a whole pixel, which stops
+	 * pixel art shimmering as the camera moves, but at a fractional zoom each tile's *own*
+	 * edge still lands on a different sub-pixel offset depending on its position, so
+	 * nearest-neighbour sampling rounds one tile's edge column one way and its neighbour's
+	 * the other - a thin seam between tiles that camera-level rounding alone cannot fix.
+	 * Snapping zoom itself so tile-size × zoom is always a whole number closes the gap at
+	 * its source, without a per-tile sampling flag.
+	 */
+	pixelPerfectTileSize?: number;
 }
 
 export class Camera {
@@ -35,6 +49,7 @@ export class Camera {
 
 	private _zoom: number;
 	private deadzone: number;
+	private readonly pixelPerfectTileSize?: number;
 
 	private viewWidth = 0;
 	private viewHeight = 0;
@@ -54,8 +69,10 @@ export class Camera {
 	private bounds: { minX: number; minY: number; maxX: number; maxY: number } | null = null;
 
 	constructor(options: CameraOptions = {}) {
-		this._zoom = options.zoom ?? 1;
 		this.deadzone = options.deadzone ?? 0;
+		this.pixelPerfectTileSize = options.pixelPerfectTileSize;
+		this._zoom = 1;
+		this.zoom = options.zoom ?? 1;
 	}
 
 	get zoom(): number {
@@ -63,7 +80,8 @@ export class Camera {
 	}
 
 	set zoom(value: number) {
-		this._zoom = Math.max(0.01, value);
+		const clamped = Math.max(0.01, value);
+		this._zoom = this.pixelPerfectTileSize ? snapZoom(clamped, this.pixelPerfectTileSize) : clamped;
 	}
 
 	/** the framework calls this on resize; sizes are in screen pixels */
@@ -200,6 +218,16 @@ export class Camera {
 
 function clamp(value: number, min: number, max: number): number {
 	return value < min ? min : value > max ? max : value;
+}
+
+/**
+ * The nearest zoom to `zoom` at which `tileSize * zoom` is a whole number of screen pixels -
+ * the pure math behind `CameraOptions.pixelPerfectTileSize`, exported so a game can snap a
+ * zoom value (from a slider, say) before ever handing it to a `Camera`.
+ */
+export function snapZoom(zoom: number, tileSize: number): number {
+	const pixels = Math.max(1, Math.round(zoom * tileSize));
+	return pixels / tileSize;
 }
 
 /** a camera sized to the running game's viewport, updated on every frame */

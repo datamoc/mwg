@@ -10,8 +10,11 @@ export { TintedSprite, registerColorTransform } from './TintedSprite.ts';
 export { AnimatedSprite, Animation } from './AnimatedSprite.ts';
 export type { AnimationOptions } from './AnimatedSprite.ts';
 export { SpriteSheet } from './SpriteSheet.ts';
-export { Camera, createCamera } from './Camera.ts';
+export { Camera, createCamera, snapZoom } from './Camera.ts';
 export type { CameraOptions } from './Camera.ts';
+
+export { Minimap, newlyRevealed } from './Minimap.ts';
+export type { MinimapOptions } from './Minimap.ts';
 export { TileMap, EMPTY, tileFrame, tileFrameSheet, tileFrameIndex } from './TileMap.ts';
 export type { TileMapOptions } from './TileMap.ts';
 export { LayeredSprite } from './LayeredSprite.ts';
