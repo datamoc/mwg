@@ -1,7 +1,19 @@
 import { Container } from 'pixi.js';
 import { Game, Scene, Input } from '../../src/core/index.ts';
-import { TintedSprite, SpriteSheet, registerColorTransform } from '../../src/render/index.ts';
-import { Window, WindowStack, ListView, MessageBox, Label, RebindScreen, theme } from '../../src/ui/index.ts';
+import { TintedSprite, SpriteSheet, registerColorTransform, Minimap } from '../../src/render/index.ts';
+import {
+	Window,
+	WindowStack,
+	ListView,
+	MessageBox,
+	Label,
+	RebindScreen,
+	Button,
+	Bar,
+	FloatingText,
+	HelpScreen,
+	theme,
+} from '../../src/ui/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 import tileset from '../assets/tiles.json' with { type: 'json' };
 
@@ -21,6 +33,10 @@ class InterfaceScene extends Scene {
 	private sheet!: SpriteSheet;
 	private status!: Label;
 
+	private hp!: Bar;
+	private popups = new Container();
+	private minimap!: Minimap;
+
 	override create(): void {
 		this.sheet = SpriteSheet.grid(TILES, tileSize);
 
@@ -32,6 +48,8 @@ class InterfaceScene extends Scene {
 		this.stage.addChild(this.status);
 
 		this.stage.addChild(this.windows);
+		this.buildHud();
+		this.stage.addChild(this.popups);
 		this.updateStatus();
 
 		//the map layer listens too, but the stack is in stack mode, so an open window is
@@ -71,6 +89,99 @@ class InterfaceScene extends Scene {
 		}
 
 		this.stage.addChild(layer);
+	}
+
+	/**
+	 * A HUD strip exercising `Button`, `Bar`, `FloatingText`, `Minimap` and `HelpScreen` -
+	 * none of them windowed like the rest of this example, all of them meant to sit
+	 * alongside gameplay rather than pause it.
+	 */
+	private buildHud(): void {
+		const hud = new Container();
+		hud.x = 12;
+		hud.y = 36;
+		this.stage.addChild(hud);
+
+		this.hp = new Bar({ width: 100, height: 10, color: 0xd05050 });
+		this.hp.setValue(0.8);
+		hud.addChild(this.hp);
+
+		const hit = new Button({
+			width: 70,
+			height: 22,
+			text: 'Hit',
+			onClick: () => this.takeHit(),
+		});
+		hit.x = 110;
+		hit.y = -6;
+		hud.addChild(hit);
+
+		const rest = new Button({
+			width: 70,
+			height: 22,
+			text: 'Rest',
+			onClick: () => this.hp.setValue(1),
+		});
+		rest.x = 186;
+		rest.y = -6;
+		hud.addChild(rest);
+
+		const help = new Button({
+			width: 70,
+			height: 22,
+			text: 'Help',
+			onClick: () => this.openHelp(),
+		});
+		help.x = 262;
+		help.y = -6;
+		hud.addChild(help);
+
+		//a corner minimap, synced from the same tile pattern drawBackdrop already drew -
+		//no roguelike Level in this example, so the "explored" set is just every cell
+		//the pattern has actually painted
+		this.minimap = new Minimap({ widthInCells: 40, heightInCells: 24, cellSize: 2 });
+		this.minimap.x = 780;
+		this.minimap.y = 8;
+		const colors = [0x4a4a3a, 0x3a3a2a, 0x555560, 0x2f5a2f, 0x2a4a6a];
+		const explored = new Set<number>();
+		for (let y = 0; y < 24; y++) {
+			for (let x = 0; x < 40; x++) explored.add(y * 40 + x);
+		}
+		this.minimap.sync(explored, (x, y) => colors[(x * 7 + y * 3) % colors.length]);
+		this.minimap.setMarker(20, 12, 0);
+		this.stage.addChild(this.minimap);
+	}
+
+	private takeHit(): void {
+		Game.current.hitStop(0.08, 0);
+		this.hp.setValue(Math.max(0, this.hp.value - 0.15));
+
+		const popup = new FloatingText({ text: '-15', color: 0xff6666 });
+		popup.x = 145;
+		popup.y = 30;
+		this.popups.addChild(popup);
+	}
+
+	private openHelp(): void {
+		const window = new Window({ width: 340, height: 200, title: 'Help' });
+		const help = new HelpScreen({
+			width: window.contentWidth,
+			height: window.contentHeight,
+			topics: [
+				{ title: 'Moving', body: 'Arrow keys or WASD move around the map.' },
+				{ title: 'Talking', body: 'Press Enter next to someone to start a conversation.' },
+				{ title: 'Bag', body: 'Press Tab to open your inventory.' },
+			],
+		});
+		window.content.addChild(help);
+		window.delegate = help;
+
+		this.windows.push(window);
+		window.onClose.add(() => {
+			this.updateStatus();
+			return false;
+		});
+		this.updateStatus();
 	}
 
 	private updateStatus(): void {
@@ -200,6 +311,8 @@ class InterfaceScene extends Scene {
 
 	override update(dt: number): void {
 		this.windows.update(dt);
+		//iterate a copy: a finished FloatingText removes itself from `popups` mid-loop
+		for (const popup of [...this.popups.children]) (popup as FloatingText).update(dt);
 	}
 }
 
