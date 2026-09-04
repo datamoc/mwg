@@ -1215,3 +1215,37 @@ among the non-gated items. The 3D block remains last and gated.
      per faction, or a distinct primitive over `board.BoardGrid`, is open. Logged rather than
      built immediately, same reasoning as 108: it arrived mid-session against the batch of
      items already agreed for this pass
+
+110. requested directly: integration with Ionic Capacitor
+     (<https://capacitorjs.com/>), to build a native iOS/Android app from a game built on
+     `mwg`. Checked against what already exists: item 85's own text already names Capacitor
+     as one example of "a native wrapper (Capacitor, Tauri, whatever a game ships through)"
+     that `core.Session`/`Achievements` are deliberately generic enough to feed, but nothing
+     here has ever actually run inside one, and Capacitor is a specific, concrete target with
+     its own real constraints to check rather than assume:
+     - Capacitor's `WebView` is not `file://` - it serves the bundled web assets from a
+       custom scheme (`capacitor://` on iOS, `https://localhost` on Android) through its own
+       local server. That is a *better* environment than this project's own `file://` bar
+       (real `fetch`, real relative asset URLs, a real origin `<img>`/WebGL sees as
+       same-origin), not a harder one - the open question is whether the existing
+       `tools/compile-resources` data-URI pipeline is still the right choice inside a
+       Capacitor shell, or whether that shell can be handed the plain asset folder it was
+       always the `file://` constraint that ruled out
+     - input: `mwg/core`'s `Input` is keyboard/gamepad-shaped (`KeyboardEvent.code`,
+       `Gamepad`); a touchscreen phone has neither by default. Capacitor's own plugins
+       (haptics, status bar, splash screen) are outside anything `Input` currently models,
+       and pointer-driven UI (`Button`, `IconGrid`'s tap-to-pick-up) already exists
+       independent of a keyboard, so touch-only play may already be closer than it looks -
+       untested, not unconsidered
+     - packaging: whether the existing `vite.lib.config.ts` IIFE output and
+       `tools/compile-resources` step need a Capacitor-specific config, or whether a
+       Capacitor project just points at the same build output any other deployment target
+       would, is unverified until an actual `npx cap init` is tried against a real `mwg`
+       example
+     - store touchpoints: item 85's `Session`/`Achievements` signals are the intended seam a
+       Capacitor wrapper reads to time a native rating prompt or report an achievement to
+       Game Center/Play Games - this item is about proving that seam actually works end to
+       end inside a real Capacitor shell, not inventing a new one
+     Logged at low priority per this project's own roadmap process rather than started on the
+     spot; a real answer needs an actual Capacitor project built against one of this
+     project's own examples, not speculation from documentation alone

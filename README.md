@@ -289,12 +289,13 @@ rather than showing a raw key to the player.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full, numbered build order: 109 items, 93 shipped
-and sixteen open (3D rendering broken into a nine-step build-up plus an engine choice, a
+See [ROADMAP.md](ROADMAP.md) for the full, numbered build order: 110 items, 93 shipped
+and seventeen open (3D rendering broken into a nine-step build-up plus an engine choice, a
 tower-defense reference with no title picked yet, a Fire Emblem-shaped unit bond/support
 mechanic, in-app feedback needing a network transport `mwg` has never had, a continuous
-day/night-and-weather clock above `battle.Field`'s per-encounter scope, and a per-faction
-fog of war above `roguelike.FieldOfView`'s single-viewer scope, all logged at low priority;
+day/night-and-weather clock above `battle.Field`'s per-encounter scope, a per-faction
+fog of war above `roguelike.FieldOfView`'s single-viewer scope, and an Ionic Capacitor
+integration for native iOS/Android builds, all logged at low priority;
 see that file for why). Each module ships in the order given
 there; later ones build on the
 modules before them.
