@@ -89,3 +89,22 @@ export function get<T>(path: string): T {
 	}
 	return Assets.get<T>(path);
 }
+
+/** true once `load` has resolved for this path and it has not since been `release`d */
+export function isLoaded(path: string): boolean {
+	return Assets.cache.has(path);
+}
+
+/**
+ * Frees assets `load` brought in, destroying any texture among them so it stops holding GPU
+ * memory. For a game with many discrete zones - each with its own tileset or sprite sheet -
+ * this is the counterpart to `world.World.unload`: that drops a map's own state, this drops
+ * the assets it pointed at, once a game decides the player has left an area for good. A path
+ * never loaded (or already released) is silently skipped rather than treated as an error,
+ * since a game unloading a zone it may or may not have visited shouldn't have to check first.
+ */
+export async function release(paths: string[]): Promise<void> {
+	const loaded = paths.filter((path) => Assets.cache.has(path));
+	if (loaded.length === 0) return;
+	await Assets.unload(loaded);
+}
