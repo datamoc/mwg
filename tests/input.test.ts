@@ -19,6 +19,7 @@ import {
 	justPressed,
 	justReleased,
 	endFrame,
+	rumble,
 } from '../src/core/Input.ts';
 
 function fakePad(index: number, buttons: number[] = [], axes: number[] = []): Gamepad {
@@ -166,4 +167,37 @@ test('bindAxis maps a stick direction past its deadzone to a digital action', ()
 test('gamepadButtonCode/gamepadAxisCode never collide with a real KeyboardEvent.code', () => {
 	assert.ok(gamepadButtonCode(0, 0).startsWith('Gamepad'));
 	assert.ok(gamepadAxisCode(0, 0, 1).startsWith('Gamepad'));
+});
+
+test('rumble plays a dual-rumble effect on a pad with a vibration actuator', () => {
+	let seen: [string, Record<string, number>] | null = null;
+	const pad = {
+		...fakePad(0),
+		vibrationActuator: { playEffect: (type: string, params: Record<string, number>) => (seen = [type, params]) },
+	} as unknown as Gamepad;
+
+	rumble(0, { duration: 200, weakMagnitude: 0.5, strongMagnitude: 1 }, [pad]);
+
+	assert.ok(seen);
+	assert.equal(seen![0], 'dual-rumble');
+	assert.deepEqual(seen![1], { duration: 200, weakMagnitude: 0.5, strongMagnitude: 1 });
+});
+
+test('rumble defaults both magnitudes to 1', () => {
+	let seen: Record<string, number> | null = null;
+	const pad = {
+		...fakePad(0),
+		vibrationActuator: { playEffect: (_type: string, params: Record<string, number>) => (seen = params) },
+	} as unknown as Gamepad;
+
+	rumble(0, { duration: 50 }, [pad]);
+	assert.deepEqual(seen, { duration: 50, weakMagnitude: 1, strongMagnitude: 1 });
+});
+
+test('rumble is a no-op, not a throw, on a pad with no vibration actuator', () => {
+	assert.doesNotThrow(() => rumble(0, { duration: 100 }, [fakePad(0)]));
+});
+
+test('rumble is a no-op on an out-of-range pad index', () => {
+	assert.doesNotThrow(() => rumble(5, { duration: 100 }, [fakePad(0)]));
 });

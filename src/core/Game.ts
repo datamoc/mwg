@@ -123,6 +123,9 @@ export class Game {
 	/** fires after every frame's update, for systems that are not scene-owned */
 	readonly onFrame = new Signal<number>();
 
+	private hitStopRemaining = 0;
+	private hitStopScale = 0;
+
 	private stack = new SceneStack();
 	private pending: SceneRequest[] = [];
 	private options: Required<GameOptions>;
@@ -267,6 +270,18 @@ export class Game {
 	}
 
 	/**
+	 * Briefly dips `timeScale` toward `scale` for `duration` real seconds, then restores it
+	 * to 1 - a heavy hit's momentary freeze-frame, distinct from `render.Camera.shake` (which
+	 * moves the view, not the clock) and from `ui.FloatingText` (a damage number, not a time
+	 * effect). A second call while one is still running simply replaces it, the same way
+	 * `Camera.shake` restarts rather than stacking.
+	 */
+	hitStop(duration: number, scale = 0): void {
+		this.hitStopRemaining = duration;
+		this.hitStopScale = scale;
+	}
+
+	/**
 	 * Advances the game by one frame and draws it, without waiting for the browser.
 	 *
 	 * The loop normally runs on requestAnimationFrame, which browsers suspend while a tab
@@ -306,6 +321,12 @@ export class Game {
 			else this.applyPop(request.result);
 		}
 		this.pending.length = 0;
+
+		if (this.hitStopRemaining > 0) {
+			//counts down in real time, not scaled time, or a hit-stop would extend itself
+			this.hitStopRemaining -= deltaSeconds;
+			this.timeScale = this.hitStopRemaining > 0 ? this.hitStopScale : 1;
+		}
 
 		this.elapsed = Math.min(deltaSeconds, this.options.maxDelta) * this.timeScale;
 		this.timeTotal += this.elapsed;

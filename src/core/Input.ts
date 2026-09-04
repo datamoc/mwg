@@ -237,6 +237,37 @@ export function pollGamepads(
 	}
 }
 
+/** the shape of `Gamepad.vibrationActuator`, which lib.dom does not type consistently across TS versions */
+interface HapticActuator {
+	playEffect(type: string, params: Record<string, number>): void;
+}
+
+export interface RumbleOptions {
+	/** milliseconds */
+	duration: number;
+	weakMagnitude?: number;
+	strongMagnitude?: number;
+}
+
+/**
+ * Vibrates one connected gamepad, if it and the browser expose a dual-rumble actuator - a
+ * no-op otherwise, rather than throwing, since support is inconsistent across browsers and a
+ * game reaching for "juice" should not have to feature-test this itself.
+ */
+export function rumble(
+	padIndex: number,
+	options: RumbleOptions,
+	pads: readonly (Gamepad | null)[] = typeof navigator?.getGamepads === 'function' ? navigator.getGamepads() : []
+): void {
+	const pad = pads[padIndex];
+	const actuator = (pad as unknown as { vibrationActuator?: HapticActuator })?.vibrationActuator;
+	actuator?.playEffect('dual-rumble', {
+		duration: options.duration,
+		weakMagnitude: options.weakMagnitude ?? 1,
+		strongMagnitude: options.strongMagnitude ?? 1,
+	});
+}
+
 export function attach(target: EventTarget = window): void {
 	if (attached) return;
 	attached = true;
