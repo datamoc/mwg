@@ -31,10 +31,33 @@ npm run example:minigame:build    # lockpicking, then open its dist/index.html
 
 npm run example:chess          # chess against the built-in engine, dev server
 npm run example:chess:build    # chess, then open its dist/index.html
+
+npm run example:tower-defense          # tower defense reference, dev server
+npm run example:tower-defense:build    # tower defense, then open its dist/index.html
+
+npm run example:3d          # Babylon.js square/hex terrain and characters, dev server
+npm run example:3d:build    # 3D scene, then open its dist/index.html
 ```
 
 Opening an example's own `index.html` from disk shows a note telling you this, rather than
 a black window: that file is the source page, and it needs the dev server.
+
+## FTL and feedback integrations
+
+`parseFTL('fr', source)` converts a small FTL catalog into the existing `Catalog` and `t()`
+path, including variables and plural variants. Games that collect player reports can use
+`new FeedbackClient({ endpoint })` and call `submit({ message, context })`; the endpoint is
+the game's own HTTPS service and must allow browser CORS requests.
+
+For mobile packaging, build the tower-defense web output and create native platform folders
+with Capacitor:
+
+```
+npm run cap:add:android  # once, when Android tooling is installed
+npm run cap:add:ios      # once, on macOS with Xcode
+npm run cap:sync         # after subsequent web changes
+npm run cap:open:android
+```
 
 | example | what it shows |
 | --- | --- |
@@ -46,6 +69,8 @@ a black window: that file is the source page, and it needs the dev server.
 | `battle` | `mwg/battle`: a creature battle - species, a type-effectiveness matrix, speed-ordered turns, and a level-up with an evolution check on winning. The damage formula is this example's own invention, not something `mwg` prescribes |
 | `minigame` | `mwg/core` scene stacking: a lockpicking timing challenge pauses the room underneath and returns a score through `onResume` |
 | `chess` | `mwg/board`: chess against a small deterministic alpha-beta computer player, with legal moves, check, checkmate, stalemate, castling, en passant, and promotion. Click a square or move a held/repeating arrow-key cursor and press Enter |
+| `tower-defense` | `mwg/core.Spawner` driving timed overlapping waves, with a simple 2D path, tower targeting, damage, rewards, and lives |
+| `three-d` | optional Babylon.js WebGL scene, orbit camera, thin-instanced square and hex terrain with elevation, a continuous heightmap hill, plus mesh and billboard characters |
 
 ## About the assets
 

@@ -70,5 +70,7 @@ export type {
 } from './Classics.ts';
 export { startingTactics, addTacticalUnit, canPlaceTacticalUnit, tacticalMoves, moveTacticalUnit, setTacticalOverwatch, triggerTacticalOverwatch, tacticalAttack, endTacticalTurn } from './Tactics.ts';
 export type { TacticalShape, TacticalCell, TacticalUnit, TacticalState, TacticalMove, TacticalAttack } from './Tactics.ts';
+export { FactionFog } from './FogOfWar.ts';
+export type { VisionCell } from './FogOfWar.ts';
 export { startingArmy, recruit, recall, bankUnit, armyIncome, applyUpkeep } from './Army.ts';
 export type { UnitTemplate, ArmyState, UpkeepRates } from './Army.ts';

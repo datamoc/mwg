@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>mwg: Babylon.js 3D</title>
+	<style>
+		html, body { margin: 0; height: 100%; overflow: hidden; background: #091018; }
+		#game { display: block; width: 100%; height: 100%; touch-action: none; }
+		#help { position: fixed; left: 16px; top: 14px; color: #e8f5ec; font: 14px/1.5 system-ui, sans-serif; text-shadow: 0 1px 3px #000; pointer-events: none; }
+		#not-built { color: #d0d0d8; font: 14px/1.8 ui-monospace, Consolas, monospace; padding: 40px; max-width: 44em; }
+		#not-built code { color: #8ad9ff; }
+		#not-built strong { color: #fff; }
+	</style>
+	<script>
+		addEventListener('DOMContentLoaded', function () {
+			if (location.protocol !== 'file:' || window.__MWG_3D__) return;
+			document.body.innerHTML = '<div id="not-built"><p><strong>This is the source page, not the built game.</strong></p>' +
+				'<p>Run <code>npm run example:3d:build</code>, then open <code>examples/three-d/dist/index.html</code>.</p></div>';
+		});
+	</script>
+</head>
+<body>
+	<canvas id="game"></canvas>
+	<div id="help"><strong>Babylon.js 3D</strong><br>Drag to orbit, wheel to zoom<br>Square and hex elevation, mesh and billboard movement</div>
+	<script type="module" src="./main.ts"></script>
+</body>
+</html>

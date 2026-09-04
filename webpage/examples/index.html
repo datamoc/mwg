@@ -6,7 +6,7 @@
 	<title>Examples - mwg</title>
 	<meta
 		name="description"
-		content="Playable mwg builds: colour transform, interface, dialogue, dungeon, village, battle, minigame, and chess examples, running right on the page."
+		content="Playable mwg builds covering 2D genres and optional Babylon.js 3D, running right on the page."
 	/>
 	<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
 	<link rel="stylesheet" href="../assets/site.css" />
@@ -17,7 +17,7 @@
 	<meta property="og:title" content="Examples - mwg" />
 	<meta
 		property="og:description"
-		content="Playable mwg builds: colour transform, interface, dialogue, dungeon, village, battle, minigame, and chess examples, running right on the page."
+		content="Playable mwg builds covering 2D genres and optional Babylon.js 3D, running right on the page."
 	/>
 	<meta property="og:image" content="https://datamoc.github.io/mwg/assets/og-image.png" />
 	<meta property="og:image:width" content="1080" />
@@ -26,7 +26,7 @@
 	<meta name="twitter:title" content="Examples - mwg" />
 	<meta
 		name="twitter:description"
-		content="Playable mwg builds: colour transform, interface, dialogue, dungeon, village, battle, minigame, and chess examples, running right on the page."
+		content="Playable mwg builds covering 2D genres and optional Babylon.js 3D, running right on the page."
 	/>
 	<meta name="twitter:image" content="https://datamoc.github.io/mwg/assets/og-image.png" />
 
@@ -98,7 +98,7 @@
 				<p class="eyebrow">playable, right here</p>
 				<h1>Examples</h1>
 				<p class="lede">
-					Eight builds, each exercising a different corner of the framework. Every one
+					Ten builds, each exercising a different corner of the framework. Every one
 					runs straight from the framework source and opens the same way a shipped game
 					would: no server behind this page, just <code>file://</code> pages sitting in
 					an iframe.
@@ -108,6 +108,16 @@
 
 		<section style="padding-top: 0; border-bottom: none">
 			<div class="wrap">
+				<div class="panel example">
+					<div class="example-head">
+						<h3>Babylon.js 3D</h3>
+						<a class="btn" href="./three-d/index.html">Open full screen</a>
+					</div>
+					<p>An optional WebGL scene with an orbit camera, square and hex terrain, elevation columns, a continuous heightmap hill, and continuously moving mesh and billboard characters.</p>
+					<iframe src="./three-d/index.html" title="mwg Babylon.js 3D example" loading="lazy"></iframe>
+					<p class="controls">drag to orbit &nbsp;·&nbsp; wheel to zoom</p>
+				</div>
+
 				<div class="panel example">
 					<div class="example-head">
 						<h3>Chess</h3>
@@ -144,6 +154,15 @@
 					</div>
 					<p>A creature battle with type effectiveness, speed-ordered turns, damage, leveling, and evolution.</p>
 					<iframe src="./battle/index.html" title="mwg battle example" loading="lazy"></iframe>
+				</div>
+
+				<div class="panel example">
+					<div class="example-head">
+						<h3>Tower defense</h3>
+						<a class="btn" href="./tower-defense/index.html">Open full screen</a>
+					</div>
+					<p>A simple lane defense demo using timed waves, tower targeting, damage, rewards, and lives.</p>
+					<iframe src="./tower-defense/index.html" title="mwg tower defense example" loading="lazy"></iframe>
 				</div>
 
 				<div class="panel example">
@@ -225,6 +244,8 @@ npm run example             # colour-transform, dev server
 npm run example:ui          # interface, dev server
 npm run example:dialogue    # dialogue scene, dev server
 npm run example:dungeon     # dungeon crawl, dev server
+npm run example:tower-defense # tower defense, dev server
+npm run example:3d          # optional Babylon.js 3D scene
 npm run example:village     # village RPG, dev server
 npm run example:battle      # creature battle, dev server
 npm run example:minigame    # lockpick minigame, dev server

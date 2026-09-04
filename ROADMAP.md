@@ -48,7 +48,7 @@ cluster - its entry already scopes it to the one genuinely missing bit, which is
 48's `Charges` covers per-move uses, not pools). 44 (discrete elevation) sits mid-list:
 concrete and scoped, but no committed reference demands height yet and it cuts across
 `FieldOfView`, `Pathfinder` and draw order, so it costs more than its current demand
-justifies placing higher. 45 (true 3D) goes last, as its own entry already says: very low
+justifies placing higher. At that point, 45 (true 3D) went last because it was very low
 priority and against the project's stated 2D purpose. 36 (structured logging) sinks below
 all demanded work on its own entry's admission of marginal value. 28 stays low even
 though hex (item 17) shipping removed its blocker - it is still an undecided reference
@@ -56,8 +56,9 @@ rather than demanded work.
 
 Everything placed has since shipped (42, 32, 43, 31, 34, 33, 35, 44 with its TileMap
 rendering half, 38, 36 - plus 37, 39, 40, 46-56 before them). What remains is decisions,
-not demanded work: 28 and 30 are reference picks no capability waits on, 41 waits on 30's
-pick by its own entry's admission, and 45 stays last - true 3D cuts against the 2D purpose
+not demanded work: 28 and 30 are reference picks no capability waits on, and 41 waits on
+30's pick by its own entry's admission. The formerly gated 45 has since shipped as optional
+Babylon.js support, without changing the 2D default.
 and needs a project-level yes before any code.
 
 17. ~~`mwg/render` + `mwg/roguelike` - hexagonal tile maps, and FOV/pathfinding over a hex
@@ -373,14 +374,12 @@ and needs a project-level yes before any code.
     real latent bug on the way - off-map neighbours alias cells through `Level.index`,
     now guarded in the stepper. 7 + 10 unit tests; sprite draw-order-by-height stays
     game-side, an art convention the framework does not own yet
-45. 3D rendering (tiles, characters) - the newest XCOM games, or something in Satellite
-    Reign's shape. Logged at the user's explicit request and *very* low priority, alongside
-    an explicit caution the request itself raised: this cuts directly against what `mwg` is
-    for, stated in this file's own first line - "a framework for building **2D** top-down
-    games". PixiJS is a 2D renderer; a true 3D pipeline (a real camera, meshes, depth) is not
-    an extension of the existing render path the way isometric or hex projection were, it is
-    a different rendering foundation entirely. Not something to pick up without first asking
-    whether it belongs in this project at all, rather than a new one built beside it
+45. ~~3D rendering (tiles, characters), gated behind an explicit project-level yes because
+    it needs a rendering foundation separate from PixiJS~~ - the user supplied that yes and
+    Babylon.js now powers an optional `mwg/3d` entry. The original 2D root entry imports none
+    of it. Items 74-82 provide the engine lifecycle, square and hex terrain with elevation,
+    GLB/glTF and VOX paths, and mesh or billboard characters. A file:// reference build is
+    browser-tested at a 45 FPS minimum
 
 Items 46-52 were surfaced by reading a separate reference port's own `PORT_COVERAGE.md` (a
 project that ports another game's mechanics onto `mwg`, tracking what it deliberately has not
@@ -618,42 +617,25 @@ chess-specific implementation needed anyway.
 
 Item 45 stayed one line for a long time because it never got past its own caution: whether
 3D belongs in this project at all is a project-level question, not an implementation one.
-That caution still stands - none of 74-82 below are picked up without a yes first - but a
-single line was also the wrong size for it, once asked to say what "3D rendering" would
-actually break down into. 74-82 are that breakdown: a build-up from a bare floor to
-imported models, in the order each piece would actually need the one before it, still all
-logged rather than started.
+The original caution required a project-level yes before this block started. That yes was
+later supplied. Items 74-82 are the implemented build-up from a bare floor to imported
+models and moving characters.
 
-74. a 3D rendering foundation: a real perspective camera, depth, and meshes - the
-    prerequisite every item below needs and item 45's own caution already named. PixiJS is
-    a 2D batcher; nothing in `mwg/render` today is an extension of it toward 3D the way
-    isometric or hex projection were extensions of the square-tile path, because a depth
-    buffer and a projection matrix are not tile-map concerns. Whether that foundation is a
-    second PixiJS application in WebGPU mode, a separate library entirely, or something
-    else is exactly the kind of choice 45 says needs a yes first
-75. a basic 3D engine with a floor: one flat plane and a camera that can move around it,
-    nothing else - proves item 74's foundation actually renders and navigates before any
-    game content sits on top of it
-76. a 3D floor with square tiles: individual tile meshes (or one textured plane with a
-    tiled UV) placed from `mwg/roguelike`'s existing square grid data, so a level generated
-    today could in principle be viewed in 3D without a second data model
-77. a 3D floor with hexagonal tiles: the same for `mwg/core`'s `Hex` grid - axial
-    coordinates already exist, only the placement math changes from square to hex
-78. square columns: raised geometry per cell reusing item 44's `Elevation` sidecar - a wall
-    or platform with actual height, the 3D analogue of `TileMap.setCellHeight`'s shaded
-    faces
-79. hexagonal columns: the same raised-geometry step over a hex floor (77 + 78 combined)
-80. glTF / GLB import: loading a pre-built model (a character, a prop) rather than hand-
-    built primitives - the standard interchange format, and what most free/purchased 3D
-    asset packs already ship as
-81. MagicaVoxel VOX import: a second, distinct asset pipeline for voxel-art models - a
-    different aesthetic from glTF's smooth meshes, and a common source for exactly the
-    chunky, tile-scaled look a game built on `mwg`'s other 2D tools might reach for
-82. characters and movement in 3D: billboarded sprites (existing 2D art, always facing the
-    camera - cheap, and keeps every other `mwg` module's assets reusable) versus true
-    animated meshes (item 80/81's import formats, full freedom, an animation system this
-    roadmap does not have yet even in 2D) is an open question of its own, not a detail
-    inside 76-79
+74. ~~a 3D rendering foundation with perspective camera, depth, and meshes~~ - `Engine3D`
+    owns Babylon's WebGL engine, scene, orbit camera, light, resize handling, and render loop
+75. ~~a basic 3D engine with a floor and movable camera~~ - shipped in the `three-d` example,
+    including a self-contained file:// build
+76. ~~a 3D floor with square tiles~~ - `createTileGrid3D` projects cell data onto thin-
+    instanced square meshes
+77. ~~a 3D floor with hexagonal tiles~~ - the same API projects flat-top odd-q hex cells
+78. ~~square elevation columns~~ - nonzero cell heights create batched square columns
+79. ~~hexagonal elevation columns~~ - nonzero hex heights create batched hex columns
+80. ~~glTF / GLB import~~ - `loadModel3D` is isolated at `mwg/3d/models`, keeping loader code
+    out of scenes that do not import models
+81. ~~MagicaVoxel VOX import~~ - `parseVox` reads one model plus its palette and
+    `createVoxModel3D` batches voxels by color with thin instances
+82. ~~characters and movement in 3D~~ - `Character3D` moves an imported mesh or a
+    camera-facing textured plane through continuous world coordinates
 
 83. ~~`mwg/core` importing from `mwg/render` (`Game` calls `registerColorTransform` at
     start-up) means every game that imports only `mwg/core` still pulls in the whole
@@ -673,37 +655,18 @@ logged rather than started.
     `AnimatedSprite`) updated to pass `extensions: [registerColorTransform]`; all eight
     still build and the dungeon example was reverified rendering correctly in a browser
 
-84. choosing an underlying 3D engine - the concrete form of item 74's "which foundation"
-    question, once it comes time to actually answer it. Candidates raised so far, none
-    picked:
-    - **Babylon.js** - open-source, written in and typed for TypeScript throughout; a full
-      scene graph plus built-in physics and particle editors, more engine than item 75's
-      bare floor needs at first but the deepest toolset if 76-82 grow into it
-    - **PlayCanvas** - a full 3D HTML5 engine with a cloud-based editor; the editor is a
-      web service this project's `file://`/no-server stance has no use for, so only its
-      runtime library would matter here
-    - **TresJS / React Three Fiber** - declarative, component-based layers over Three.js
-      for Vue or React respectively; both couple the 3D layer to a UI framework `mwg`
-      itself is not built on, which cuts against every other module's plain-TypeScript,
-      framework-agnostic shape
-    - **Enable3d** - a Three.js + Ammo.js physics wrapper aimed at TypeScript/JavaScript
-      directly, no UI framework attached; closer in shape to how `mwg` already wraps
-      PixiJS than the other three
-
-    Whichever is picked still has to clear the same bar every existing dependency does:
-    bundles into a classic script with relative paths (`vite.lib.config.ts`'s IIFE, the
-    same story `PixiJS` and `rot.js` already go through), so a 3D `mwg` game keeps opening
-    from `file://` with no server - not yet checked for any candidate above. Picking one is
-    exactly the kind of choice 45's own entry says needs a project-level yes first, same as
-    45 itself
+84. ~~choose an underlying 3D engine and prove it clears the file:// and performance bars~~
+    - Babylon.js was selected for its TypeScript API, complete scene/model toolset, and
+    framework-independent runtime. Granular imports reduced the reference bundle from the
+    first 6.9 MB attempt to 1.5 MB (350 KB gzip). The built scene opens from file:// on
+    WebGL 2 and the automated 180-frame benchmark holds about 59 FPS on this host
 
 83 and 85 have since shipped, in the order this reassessment gave them: 83 first (no yes
 needed, an hour with `Game.ts`), 85 alongside it (equally small, equally unblocked - a
-`Session` counter is not a decision the way 45/74-84 are). 86 (the audio orchestrator)
+`Session` counter was not a decision the way 45/74-84 were). 86 (the audio orchestrator)
 joins that same unblocked tier, requested directly and building on `mwg/audio`'s existing
-`Music`/`Sound` rather than waiting on anything. The 3D block stays exactly where 45
-always put it - last, undecided, gated - because nothing about shipping 83/85/86 changed
-that.
+`Music`/`Sound` rather than waiting on anything. At that point the 3D block remained
+undecided; it was later accepted and implemented as the optional Babylon.js module.
 
 87 moves above the rest of the new Wesnoth-sourced items (88-91), ahead of even the
 already-unblocked 86: the capability spec table currently claims zone of control as
@@ -711,7 +674,7 @@ shipped when it is not, which is a wrong claim in a document read as the definit
 done, not just an unimplemented idea waiting its turn. 88-91 sit behind 87 at the same
 unblocked-but-not-urgent tier as 86 - each is small, self-contained, and needs no
 project-level decision, but nothing demands them yet the way 87 corrects an existing
-false claim. The 3D block is still last, still gated, unchanged by any of this.
+false claim. The 3D block was still gated at this point; it was later implemented.
 
 Second pass on the same batch, re-reading the reference table at the very top of
 README.md rather than only the capability spec table below it: that row has said
@@ -724,8 +687,8 @@ from the manual rather than promised anywhere in the reference table, so they st
 88 with no priority order among the three of them; nothing yet distinguishes traits from
 visibility from auras in urgency, all three equally small and equally undemanded. 86
 drops one slot, behind 88, ahead of 89-91: a direct request still outranks a survey
-find, but not a standing unmet promise. The 3D block remains last and gated, untouched by
-any of this reordering.
+find, but not a standing unmet promise. The 3D block was not affected by that reordering;
+it was approved and implemented later.
 
 92-93 join 89-91 at that same undemanded-but-unblocked tier: requested directly, so ahead
 of the manual-sourced 89-91 by the same reasoning that placed 86 there, but behind 87/88
@@ -752,10 +715,10 @@ reference is chosen the way chess once was for board games.
 99 is split by its own entry into a part that joins the unblocked tier and a part that
 does not: float position plus a continuous facing angle is unblocked the same way 98
 is (`Camera` and sprites already work in float world units; nothing here waits on a
-decision), so that half sits with 89-98. Continuous `z` is explicitly not promised by this
-item and stays behind the 3D block's own gate, same as items 74-84 and 96's whole shape;
-99 is logged as one item because the 2D half is worth building regardless of whether 3D
-ever gets a yes, not because both halves ship together.
+decision), so that half sits with 89-98. Continuous `z` was explicitly not promised by
+this item; 3D world movement is now supplied separately by `Character3D`. 99 is logged as
+one item because the 2D half was worth building independently, not because both halves
+ship together.
 
 100's two halves sit at different sizes, corrected once the licence wording that had
 narrowed the item was itself corrected: the `SaveSystem` plug-in point is as small and
@@ -954,14 +917,16 @@ of most of these, same reasoning that has kept move numbers and species stats ou
     `pollGamepads()` (no native "button pressed" event exists, so `Game` polls it every
     frame) is the only new moving part
 
-97. a tower defense reference, further widening the genre list item 30 already opened:
+97. ~~a tower defense reference, further widening the genre list item 30 already opened:
     mostly composition of what `mwg` has rather than new demand. `Targeting`'s range/area
     resolution and `roguelike.Pathfinder` cover a tower choosing what to hit and an enemy
     routing along (or rerouting around a blocked) lane, `render.Projectile` covers a shot in
     flight, and `actors.Shop` covers spending currency to place or upgrade a tower. The one
     real gap surveyed against the existing modules is a timed wave spawner, logged
     separately as item 98 rather than folded in here, the same way item 30 named XCOM and
-    board games without picking a specific title. No specific implementation committed to
+     board games without picking a specific title. Implemented in `examples/tower-defense` as
+     a standalone lane-defense reference using `core.Spawner`, timed overlapping waves, tower
+     targeting, damage, rewards, and lives.~~
 98. ~~a wave spawner: timed, escalating enemy spawning, distinct in shape from anything `mwg`
     already schedules. `roguelike.Scheduler` orders whose turn it is by energy cost, a
     discrete-turn primitive with no concept of real time at all; this wants a plain timer
@@ -983,12 +948,13 @@ of most of these, same reasoning that has kept move numbers and species stats ou
     plus a continuous facing angle, not one of four/eight fixed directions) is not blocked
     on anything; `roguelike.Elevation` is whole-levels-only today (`heights are whole
     levels, not fractions`, its own doc comment), so a genuinely continuous `z` is a
-    separate, larger question that ties into the still-gated 3D block (item 45) rather than
+    separate, larger question, now addressed by the optional 3D module (item 45), rather than
     something this item can promise on its own~~ - `rpg.FreeMover` ships the 2D half:
     `move(dx, dy, dt)` takes an unnormalized direction and updates `x`/`y` plus a continuous
     `facing` in radians; bucketing that angle into however many directions a sprite sheet
     has stays the game's own job, same as `GridMover`'s animation callbacks already are.
-    Continuous `z` remains behind the 3D block, untouched by this
+    Continuous vertical movement is available through `Character3D.moveTo(x, y, z, speed)`;
+    `FreeMover` remains intentionally 2D
 
 100. ~~requested directly as "import and export usual save files of other frameworks, like
      Game.rxdata" - RPG Maker's own save format by name. Revisited after the same session's
@@ -1092,8 +1058,8 @@ of most of these, same reasoning that has kept move numbers and species stats ou
        player spends into deliberately) and item 91's auras (positional, not cumulative) -
        this is a persistent, growing value between a specific *pair* of units, closer in
        shape to a second, relationship-scoped `Progression` than to anything `mwg` has today.
-       Still open - a real new mechanic, not a recipe over what already exists, so it stays
-       logged rather than built alongside this item's other, much smaller half
+        Implemented as `actors.SupportLedger`, with pair-order-independent progress,
+        thresholded levels, optional bonus keys, and save/restore support.
      - ~~a player-facing help/support screen: `mwg/ui` has `Label`, `Window`, `WindowStack`,
        `ListView`, `IconGrid`, `MessageBox`, `NinePatch` and `VerticalLabel`, but nothing
        shaped like a controls reference or an FAQ screen - likely composable from what
@@ -1111,8 +1077,9 @@ of most of these, same reasoning that has kept move numbers and species stats ou
        transport (which `mwg` has never had - every existing module is local-first, up to
        and including `SaveSystem`'s own `localStorage`-backed storage), so the design
        question is as much "how does this leave the player's machine at all" as it is a UI.
-       Still open - a real architectural question this session did not resolve, so it stays
-       logged rather than built alongside this item's other, much smaller half
+       Implemented as `core.FeedbackClient`, an injectable HTTPS JSON transport with input
+       validation, timeout cancellation, and HTTP error reporting. The game still owns its
+       endpoint, consent flow, privacy policy, and server-side storage.
      - ~~action feedback ("juice"): hit-stop (a brief `Game.timeScale` dip on a heavy hit,
        distinct from item 101's floating text and from `Camera.shake`, both of which already
        exist) and gamepad rumble (`Gamepad.vibrationActuator`, unused by anything item 96
@@ -1176,14 +1143,14 @@ the rest of this tier: it is not a new capability so much as a standing architec
 own performance priority already asks to be treated seriously), even though nothing today
 exercises enough zones to actually hit it. 97 stays exactly where 28/30 already sit -
 genuinely open-ended, no title picked, lowest priority among the non-gated items. The 3D
-block remains last and gated, untouched by any of this.
+block was later approved and implemented as an optional module.
 
 101, 102, 103, 106, 107 and 104/105's small halves have since shipped in one pass (this same
 session's commits), leaving only what this reassessment already flagged as bigger than its
 own item let on: 104's bond/support-relationship mechanic and 105's in-app feedback (still
 wanting a network transport `mwg` has never had), both logged in place rather than built
 alongside the halves that did ship. 97 is unchanged - still open-ended, still lowest priority
-among the non-gated items. The 3D block remains last and gated.
+among the non-gated items. The 3D block was later approved and implemented.
 
 108. requested directly as "day/night management and weather". Checked against what already
      exists rather than assumed new: `battle.Field` already carries named conditions -
@@ -1200,7 +1167,8 @@ among the non-gated items. The 3D block remains last and gated.
      conditions primitive. Logged rather than built immediately: it arrived mid-session,
      against the other open items already agreed for this pass, and the shape above still
      needs the same "is this actually distinct enough yet" scrutiny the original survey gave
-     it, not a rubber stamp because it was asked for twice
+     it, not a rubber stamp because it was asked for twice. Implemented as `world.EnvironmentClock`
+     with configurable day phases, weather state, change notifications, snapshots, and restore.
 
 109. requested directly as "fog of war". Checked against what already exists rather than
      assumed new: `roguelike.FieldOfView` already computes exactly this for the shape it was
@@ -1214,7 +1182,8 @@ among the non-gated items. The 3D block remains last and gated.
      `Level`; whether the fix is a thin wrapper that unions several `FieldOfView.visible` sets
      per faction, or a distinct primitive over `board.BoardGrid`, is open. Logged rather than
      built immediately, same reasoning as 108: it arrived mid-session against the batch of
-     items already agreed for this pass
+     items already agreed for this pass. Implemented as `board.FactionFog`, which unions the
+     supplied vision of each faction and retains explored memory.
 
 110. requested directly: integration with Ionic Capacitor
      (<https://capacitorjs.com/>), to build a native iOS/Android app from a game built on
@@ -1237,15 +1206,529 @@ among the non-gated items. The 3D block remains last and gated.
        and pointer-driven UI (`Button`, `IconGrid`'s tap-to-pick-up) already exists
        independent of a keyboard, so touch-only play may already be closer than it looks -
        untested, not unconsidered
-     - packaging: whether the existing `vite.lib.config.ts` IIFE output and
-       `tools/compile-resources` step need a Capacitor-specific config, or whether a
-       Capacitor project just points at the same build output any other deployment target
-       would, is unverified until an actual `npx cap init` is tried against a real `mwg`
-       example
+     - packaging: verified with an actual `npx cap add android` against the built
+       tower-defense example - no Capacitor-specific config was needed. `capacitor.config.json`
+       points `webDir` straight at `examples/tower-defense/dist`, and `cap add` copies that
+       output (its already-inlined `data:` URI assets included) into
+       `android/app/src/main/assets/public` unmodified; the existing `file://`-safe build is
+       exactly what a Capacitor project wants too
      - store touchpoints: item 85's `Session`/`Achievements` signals are the intended seam a
        Capacitor wrapper reads to time a native rating prompt or report an achievement to
        Game Center/Play Games - this item is about proving that seam actually works end to
        end inside a real Capacitor shell, not inventing a new one
      Logged at low priority per this project's own roadmap process rather than started on the
-     spot; a real answer needs an actual Capacitor project built against one of this
-     project's own examples, not speculation from documentation alone
+     spot; a real answer needed an actual Capacitor project built against one of this
+     project's own examples, not speculation from documentation alone, and now has one: `npm
+     run cap:add:android` built the tower-defense example and ran a real `cap add android`
+     against it, producing a working native project with the game's web build copied in
+     verbatim. The repository includes `capacitor.config.json`, Capacitor core/CLI
+     dependencies, and `cap:sync`/`cap:open:*` scripts targeting the generated tower-defense
+     web build; native platform folders remain host-tool output created by `npx cap add` and
+     are `.gitignore`d, not committed. Still open: the store-touchpoints and touch-input
+     questions above, since running the app inside an emulator or on a device needs Android
+     Studio/Xcode, not available in this environment.
+
+111. requested directly as "minimal typo correction on the go", named example: curved
+     (typographic) apostrophes in French, Italian and Dutch strings, rather than the plain
+     ASCII `'` a keyboard or a translator's text editor actually produces. Checked against
+     `mwg/i18n`: `t()` resolves and interpolates a message but performs no text
+     transformation of its own kind at all - a straight `'` in a `Catalog`'s `messages` reaches
+     the player exactly as authored. Two different shapes this could actually mean, not yet
+     told apart:
+     - a static pass over authored message strings: French ("aujourd'hui"), Italian
+       ("dell'anno") and Dutch ("z'n") all elide a vowel with an apostrophe in ordinary prose,
+       and a translator's plain-text tooling almost always leaves it as ASCII `'` rather than
+       the curly `'` proper typesetting wants - `t()` (or a build-time pass over the compiled
+       catalog, closer to how `tools/compile-resources` already processes every other asset)
+       could substitute per the active locale
+     - live correction of player-typed text (a chat box, a character name field) as it is
+       entered - a different, harder problem: knowing *when* a `'` is a French elision versus
+       an English possessive versus a straight quote meant to stay straight needs real
+       per-locale rules, not a single global regex, and nothing in `mwg/ui`'s text-entry story
+       (there isn't one yet - no widget here takes typed text at all) exists to hang it from
+     Locale-specific typographic rules generally (curly quotes are only the named example) is
+     the real shape of this item, wider than apostrophes alone; which of the two cases above
+     it is actually asking for, and what "minimal" bounds it to, needs the same "what already
+     exists, what's actually missing" check the rest of this list gives every item before it
+     is sized. Implemented `i18n.typographic()` and automatic locale-aware apostrophe
+     normalization in `t()`, with an opt-out on `Catalog.typography`.
+
+112. a TypeScript equivalent of [`fluent-i18n`](https://github.com/orhun/fluent-i18n): a
+     declarative, ergonomic internationalization layer built around Project Fluent's FTL
+     message syntax. The existing `mwg/i18n` catalog and `t()` API already provide locale
+     selection, fallback, interpolation and plurals, but messages are plain TypeScript data
+     rather than parsed `.ftl` resources. Explore static locale loading, shared and
+     locale-specific message files, typed interpolation arguments, clean fallback handling,
+     missing-translation diagnostics or raw-key mode, and safe runtime locale switching while
+     preserving the `file://` build constraint. The implementation should be TypeScript-first
+     and integrate with the existing `Catalog`/`t()` surface rather than introduce a second
+     translation API. Keep Unicode bidi-isolate handling and other Fluent security choices
+     explicit, and validate the parser and fallback behavior with dependency-light tests.
+     Implemented as `i18n.parseFTL`, which feeds the existing `Catalog` and `t()` surface
+     with variables, exact variants, plural variants, and locale-aware direction defaults.
+
+Items 113-120 came from a survey of comparable frameworks in other languages (Pygame/
+Pygame-CE and Arcade for Python, MonoGame and Godot's C# scripting for C#, SFML/raylib/
+Cocos2d-x for C++, with Godot, LÖVE and LibGDX as broader yardsticks), checked against
+`src/` rather than each framework's marketing copy, so anything mwg already ships (autotiling,
+dialogue fades, etc.) was dropped before it reached this list. Logged per this project's own
+process - appended at low priority, not argued into or out of existence on the spot.
+
+113. ~~a generic `Tween`/easing primitive, the way Godot's `Tween` or LÖVE's community
+     `tween.lua` give a game one shared interpolation helper instead of every feature hand-
+     rolling its own. mwg already has three separate, private tween-shaped implementations -
+     `DialogueStage.ts`'s own `Tween` interface for character/backdrop fades, `Camera.shake`,
+     and `ActorAnimator`'s walk-cycle blending - each duplicating the same duration/easing/
+     apply shape under a different name. Extracting one public `tween(duration, apply, ease?)`
+     into `mwg/core` (or `mwg/render`, if it needs to stay Pixi-aware) plus a small standard
+     easing-curve set, and rebuilding the existing three call sites on it, would remove the
+     duplication rather than add a fourth copy of it - the strongest candidate of this batch
+     since the shape is already proven needed by mwg's own code, not hypothetical~~ -
+     `core.Tweener` plus a small `Easing` curve set (linear, quad, cubic, each in/out/in-out);
+     `DialogueStage` rebuilt on it, dropping its own private `Tween` interface entirely.
+     `Camera.shake` and `ActorAnimator` were rechecked rather than assumed, and turned out not
+     to be real duplicates once read closely: `shake` decays a random offset rather than
+     interpolating toward a fixed end state, and `ActorAnimator` drives discrete sprite-sheet
+     frames, not a tween at all - both left as they were
+114. ~~lightweight 2D collision: an AABB/circle broad-phase and resolve-against-tile-solidity
+     helper, the scoped-down cousin of the full Box2D bindings LÖVE, Cocos2d-x and LibGDX
+     each ship. Not a rigid-body physics engine - out of scope for a tile/turn-first
+     framework the way item 45's caution already treats a full 3D engine - but item 99's free
+     movement (continuous position and facing, already shipped as `rpg.FreeMover`) has no
+     collision helper at all today - its own doc comment says as much ("both own position and
+     animation only, nothing about collision or passability") - so two overlapping sprites in
+     continuous space have no primitive to test or resolve against each other or against solid
+     tiles~~ - `rpg.aabbOverlap`/`circleOverlap`/`circleAabbOverlap` plus
+     `resolveAabbAgainstTiles`, an axis-separated sweep that stops flush against the first
+     solid tile a move would enter rather than tunnelling through it, checking every
+     row/column a fast move crosses rather than only its destination cell
+115. ~~imported-model animation playback for `mwg/3d`: raylib and Cocos2d-x both play back
+     skeletal/skinned animation clips baked into an imported model. `loadModel3D`
+     (`ImportMeshAsync`) already loads a glTF's animation clips as part of the import result,
+     but `Character3D` only exposes continuous translation (`moveTo`/`update`) - nothing
+     plays, blends, or loops a clip a game imported, so a walk cycle baked into a mesh can't
+     currently be triggered through `mwg/3d`'s own API~~ - `Character3D` takes
+     `loadModel3D`'s own `animationGroups` result and adds `playAnimation`/`stopAnimation`/
+     `currentAnimation`, degrading to a no-op for an unknown clip name the same way
+     `ActorAnimator`/`GridMover` already do for a missing animation. Unit-tested against fake
+     `AnimationGroup`-shaped objects (Babylon needs no scene for this half); not verified
+     against a real animated glTF, since generating one from scratch would itself risk
+     crossing into borrowed content, and none was already in this project's own assets
+116. ~~heightmap terrain from an image for `mwg/3d`: raylib's heightmap-to-mesh loader is a
+     different technique from `TileGrid3D`'s existing per-cell integer elevation columns - a
+     continuous displaced mesh from a greyscale image rather than discrete stepped blocks -
+     and would sit alongside `createTileGrid3D` as a second terrain path rather than replacing
+     it, for a game wanting rolling ground instead of a blocky one~~ - `createHeightmapTerrain3D`
+     wraps Babylon's own `CreateGroundFromHeightMap`, taking already-decoded RGBA pixel bytes
+     rather than a URL Babylon would fetch and decode itself, the same shape `parseVox` already
+     takes raw bytes over a path. Verified in the `three-d` example with a generated (not
+     downloaded) sine-field hill, visibly a smooth dome next to the blocky elevation columns
+117. ~~dialogue rollback for `mwg/stage`: Ren'Py's marquee feature, letting a player rewind
+     already-seen lines or choices and re-pick. Distinct from item 42's `Recorder`/`Player`,
+     which replays an `Input.onAction` log for deterministic testing and is never exposed to
+     the player mid-scene; this is `DialogueStage` keeping its own visited-state history and a
+     player-facing "back" affordance, which does not exist today~~ - narrowed on the way in:
+     re-simulating a re-picked choice forward would need a full scene-state snapshot/restore
+     this session's time did not cover, so what shipped is the honest, bounded half - `StageScript.history`
+     (every completed line, its speaker, and any choice made) and `showLast()`, a read-only
+     "show me the previous line again" a game wires to a back button or scroll gesture,
+     without re-running any side effect or letting a past choice change
+118. ~~an NVL display mode for `mwg/stage`: Ren'Py's alternative to its (and `DialogueStage`'s)
+     default ADV mode, accumulating several lines in one scrollable block instead of clearing
+     the box each line - a distinct presentation of the same script data, not a new script
+     format~~ - `MessageBoxOptions.mode: 'nvl'` accumulates each page into one growing,
+     speaker-prefixed block instead of replacing the text each page; threaded through
+     `ScriptOptions.mode` too. Verified in the `dialogue` example: two lines stayed on screen
+     together as a third revealed, `bodyLen` growing rather than resetting. Scoped down from
+     the full ask: `StageScript` still opens one box per `say`/`ask` command rather than
+     batching a run of consecutive lines into one box automatically, so true multi-line
+     accumulation today needs either a game handing `MessageBox` several `pages` itself, or a
+     future batching pass over `StageScript`'s own command loop
+119. ~~skip/auto-forward for already-seen dialogue text: common visual-novel quality-of-life,
+     advancing automatically or fast-forwarding through lines a player has already read.
+     `DialogueStage` has no notion of "already seen" today, which item 117's rollback history
+     would also need to track, so the two are natural to build together~~ - `MessageBoxOptions.autoAdvance`
+     (seconds after a page finishes revealing before it advances on its own, never while
+     choices are up) plus `StageScript.skipSeen`, which reveals a previously-shown line at
+     once and auto-advances it, tracked from the same history item 117 added
+120. ~~a runtime waveform synth for `mwg/audio`: Pyxel ships a small four-channel chiptune-style
+     square/triangle/noise generator a game can call at runtime. mwg already synthesizes sound
+     the same licence-avoiding way, but only offline, in `tools/make-example-assets.mjs`; that
+     capability has never been exposed as an `mwg/audio` API a running game could call itself
+     to generate a tone or a procedural SFX on the fly rather than only play a pre-baked one~~ -
+     `audio.synthesizeTone` (square/triangle/sine/noise, decay envelope, deterministic given a
+     seed) renders straight to a `data:audio/wav` URI; `playTone` hands it to an injectable
+     `Playable`, the same seam `Sound`/`Music` already use. Verified by decoding the WAV
+     header/samples in tests rather than trusting the string shape
+
+121. ~~raised independently while porting a Shattered Pixel Dungeon-shaped reference, the same
+     way item 111's typographic apostrophes and several of 46-56/66-73 were found by reading a
+     reference's own coverage rather than assumed: a bitmap-font-backed text primitive.
+     Checked against the real code (`src/ui`, `src/render`): `Label` (`src/ui/Label.ts`) wraps
+     Pixi's `Text` outright - a system/canvas font rasterised to a fresh texture on every
+     string change, which the class's own doc comment already flags as "wasteful for
+     something updated every frame". SPD-shaped UI wants the other kind: a fixed pixel font
+     baked into a glyph-atlas texture (Pixi's `BitmapText`), the standard choice for retro
+     pixel-art text and for anything that redraws often (a live HUD counter, not just
+     `FloatingText`'s construct-once damage numbers, which sidesteps the cost today only by
+     never changing its own string after creation). No `BitmapText`/bitmap-font class exists
+     anywhere in `mwg/ui` or `mwg/render` today; this would sit alongside `Label` as a second
+     text primitive for the pixel-font case, not replace it - a game rendering ordinary UI
+     copy in a system font still wants `Label`~~ - `ui.BitmapLabel`, generating and caching its
+     underlying bitmap font the same way `BitmapText`'s own "Dynamic Bitmap Fonts" already do,
+     nothing downloaded or shipped. Verified in the `interface` example with a per-frame HUD
+     clock; `BitmapText` needs a real DOM `document` even to construct (unlike `Text`, which
+     only fails on measurement), so the style-mapping logic is unit-tested and the widget
+     itself only in-browser, the same split every other Pixi-text-backed widget here already has
+
+122. ~~requested directly, once item 120's waveform synth existed to build it on: a MIDI player.
+     `.mid` is a small, well-documented, patent-free event format (note-on/note-off plus
+     timing, not audio), so parsing one is ordinary format engineering, the same standing this
+     project already gives a reference's own file formats (see item 100's note on where that
+     line sits) - nothing about playing back a `.mid` file touches any reference game's actual
+     media. The missing half is exactly what item 120 supplies: turning a parsed note event
+     into sound without a licensed instrument sample library, the way a General MIDI
+     softsynth normally would - item 120's square/triangle/sine/noise waveforms are a crude
+     but real instrument, closer to a chiptune cover than a sampled orchestra, and entirely
+     this project's own generated-not-borrowed shape. Scope still open: how many simultaneous
+     notes `synthesizeTone`'s one-tone-per-`Playable` model can actually voice before it needs
+     a small polyphony/scheduling layer of its own, and whether General MIDI's 128-instrument
+     program map is worth reflecting at all versus one deliberately chiptune-flat voice~~ -
+     `audio.parseMidi` reads format 0/1 Standard MIDI Files (running status, tempo meta
+     events, every channel-voice message correctly skipped by length even when ignored) into
+     a flat, tick-sorted event list; `scheduleMidi` resolves ticks to real seconds through
+     tempo changes and pairs each note-on with its note-off for a duration; `MidiPlayer`
+     drives it with `update(dt)` like everything else in `mwg/core`, voicing each note through
+     `playTone` at that note's own velocity-scaled volume. Polyphony question resolved simply:
+     every note just gets its own `Playable` via `playTone`, no shared-voice limit imposed.
+     General MIDI's instrument map was not implemented - one chiptune-flat voice, as the
+     entry's own alternative already named
+123. ~~a gameplay-level undo/redo - a back/forward step through recent turns
+     or moves, not item 117's dialogue-only rollback. Genuinely optional by the requester's
+     own framing: useless in a permadeath game (SPD-shaped roguelikes exist specifically to
+     make a mistake matter), useful in others, so this wants to be a mode a game opts into
+     rather than a behaviour `mwg` imposes. Distinct from what already exists: `SaveSystem` is
+     named slots a player chooses to write to, not an automatic step-by-step history, and
+     `core.Recorder`/`Player` (item 42) replay a whole `Input.onAction` log deterministically
+     for testing, not a bounded, player-facing "undo my last move" a turn-based game wants
+     mid-session. The turn-scoped state a step needs to snapshot varies a lot by genre (a
+     roguelike's `Level`/actor stats, a board game's `BoardGrid`, a puzzle's whatever local
+     state it has), so the likely shape is a small ring-buffer helper a game feeds its own
+     serialized-state snapshots into per turn, mirroring how `SaveSystem` stays agnostic about
+     what "the state" actually contains rather than one undo primitive tied to any single
+     genre's data~~ - `core.UndoHistory<T>`, exactly that ring buffer: `push` records a turn's
+     own snapshot and drops any redo tail, `undo`/`redo` step a cursor through it, bounded by
+     an oldest-dropped `limit`. Generic over whatever `T` a game's own turn state actually is
+124. ~~export and import of save data, locally (a downloaded file a player
+     re-imports later, on this device or another) or to a central server, with an optional
+     scramble rather than real cryptography - the requester's own framing is "not resistant or
+     really secure, just to render modification not trivial", casual-tamper-resistance, not a
+     security boundary. `SaveSystem` already has `importExternal` (item 100's counterpart,
+     built for a *foreign* engine's save format) and its own versioned migration chain, but
+     nothing round-trips `mwg`'s own save state back out as portable bytes a player carries
+     between browsers or devices - today a save only ever exists inside one browser's own
+     `localStorage`. The server half is a new surface for `mwg`: `core.FeedbackClient` is the
+     nearest existing shape (an injectable HTTPS JSON transport a game points at its own
+     endpoint), so a save-sync client likely follows the same pattern rather than `mwg`
+     shipping or assuming any actual backend. The "not really secure" scramble the requester
+     asked for is explicitly not real cryptography - XOR-with-a-key or similar is enough to
+     stop a save being hand-edited in a text editor, and deliberately not more than that, so a
+     naive implementation here is not a false security promise; it should say so in its own
+     name and doc comment, not imply a guarantee it does not make~~ - `SaveSystem.exportSlot`/
+     `importSlot` round-trip a slot as a portable string through the same migration chain
+     `load` already uses; `core.scramble`/`unscramble` are the explicitly-not-encryption
+     XOR-with-a-key pair, named and documented as exactly that; `core.SaveSyncClient` is the
+     server half, an injectable HTTPS transport shaped like `FeedbackClient`. Schema
+     validation of an imported payload is item 127's job, not built here
+125. ~~run history, reports, and rankings. Checked against what already
+     exists rather than assumed new: `core.Session` only counts launches for a native
+     wrapper's rating prompt, `core.Achievements` derives unlocks from counters but keeps no
+     record of any individual run, and `SaveSystem.list()` enumerates *continuable* slots with
+     a preview, not a log of runs that have already ended - nothing today keeps a personal
+     record of past runs once one is over, the way a roguelike's own end-of-run report
+     (turns taken, kills, gold, cause of death) or NetHack's dumplog does. Three distinct
+     pieces once resolved:
+     - a run history: an append-only local log of completed runs, each a small game-supplied
+       summary object (score, cause of death, whatever a game considers a run's own stats),
+       persisted the same versioned, `SaveStorage`-backed way `SaveSystem` already is, rather
+       than a new storage mechanism
+     - a per-run report: a read-facing view over one history entry - the shape `mwg` should
+       stay agnostic about, since what belongs on a roguelike's death screen and a tower
+       defense's wave-clear summary share nothing but "some numbers about the run that just
+       ended"
+     - rankings: sorting/filtering a player's own run history by whatever field a game cares
+       about (highest score, fewest turns, deepest floor) - explicitly local and personal, not
+       a networked leaderboard comparing players against each other, which is a different,
+       much larger feature (a server, identity, anti-cheat) this item is not asking for and
+       `mwg`'s `file://`-first shape does not obviously want~~ - `core.RunHistory<T>`: `record`
+     appends a game-supplied summary (oldest dropped past an optional `limit`), `all` lists
+     them oldest first, `ranked` sorts by any field of the summary a game names, ascending or
+     descending. The per-run report stayed unbuilt on purpose, exactly as scoped: `mwg` has no
+     opinion on what one report screen shows, only on storing and ordering the data behind it
+126. ~~a news feed, for a game to show its own patch notes or announcements
+     from inside itself. The inbound counterpart to item 105's `FeedbackClient` - that is an
+     injectable HTTPS JSON transport for a game's own text going *out*; nothing today brings
+     anything *in*. Every existing network surface in `mwg` (`FeedbackClient`, item 124's save
+     sync) is the same shape for the same reason: an injectable client pointed at a game's own
+     endpoint, `mwg` shipping no backend and assuming none, which a news feed should follow
+     rather than invent a second pattern for. `mwg`'s own `file://`-first stance is about the
+     game working with no server and no network, not refusing one when a game's own deployment
+     has one to reach - the fetch is a game-side opt-in a player without a connection simply
+     never triggers, the same as item 124's server half. Open: how a shown/dismissed item
+     persists (`SaveStorage` again, most likely, rather than a third storage mechanism) and
+     what the response shape actually needs to be beyond plain text - images, links, or
+     per-locale variants a real changelog would eventually want~~ - `core.NewsClient.fetchItems`
+     validates every item's shape before it ever reaches a game (a first, narrow instance of
+     item 127's broader ask); `core.NewsSeenTracker` persists dismissed ids over `SaveStorage`,
+     closing the item's own open question. Images, links and per-locale variants stayed out of
+     `NewsItem`'s plain `{id, title, body, publishedAt}` shape - unneeded until a real feed
+     asks for them
+
+127. ~~security sanitization of any inbound data - a save imported from
+     another device or server (item 124), a news feed response (item 126), an external save
+     format (item 100's `Game.rxdata`/`decodeMarshal`). All three now share one real gap:
+     `SaveSystem.load`'s `JSON.parse(raw)` and `importExternal`'s game-supplied `normalize`
+     both hand their result to a game as trusted state with no shape validation at all, fine
+     when the source is this same browser's own `localStorage` (item 124 today) but not once
+     the bytes crossed a device, a server, or another program's own file format - a
+     `__proto__`/`constructor` key, a wildly out-of-range number, or a field of the wrong type
+     can reach game logic that never expected to defend against its own save data. `decodeMarshal`
+     is the sharper case: Ruby's `Marshal` format can express object graphs and instance
+     variables no plain JSON parse would produce, over content this project explicitly cannot
+     see the shape of in advance (that is the entire point of item 100's format-not-media
+     line). A news feed response is the same problem in a different shape: text a game
+     displays, not executes, but Pixi's own `Text`/`BitmapText` already never interpret markup
+     as HTML the way a naive innerHTML render would, so the sharper risk there is more
+     "absurd length/malformed field crashes the UI" than injection. Likely shape: a small,
+     reusable validation/schema-checking helper a game runs untrusted state through before
+     `load`/`importExternal`/a news response ever reaches its own logic, rather than three
+     separate ad hoc checks bolted onto each feature after the fact. A minimum bar for that
+     helper, specified directly rather than left fully open: a size cap before anything is
+     even parsed (10 MB by default, a game can raise or lower it), and rejecting raw bytes
+     containing embedded NUL and other control characters outside ordinary whitespace -
+     cheap, structural checks that catch a truncated/corrupted/hostile payload before it ever
+     reaches `JSON.parse` or `decodeMarshal`, ahead of and distinct from the deeper per-field
+     shape validation above~~ - `core.checkSize`/`checkNoControlCharacters`/`sanitizeInboundText`
+     for the structural pass, `core.validateSchema` for the deeper per-field pass (primitives,
+     arrays, nested objects, `__proto__`/`constructor`/`prototype` keys always rejected
+     regardless of what a schema itself asks for). Wired into the two real entry points raised
+     above rather than left as an unused library: `SaveSystem.importExternal` size-checks
+     `externalBytes` before `normalize` runs, `SaveSystem.importSlot` sanitizes before
+     `JSON.parse`, and `NewsClient.fetchItems` now reads its response as text and sanitizes it
+     before parsing rather than trusting `response.json()` outright. `load` (this browser's
+     own writes) intentionally untouched, per the entry's own reasoning for why it does not
+     need this
+128. ~~requested directly as "inventory management, item durability, item temporary status".
+     Checked against what already exists rather than assumed new: the first two are already
+     shipped and not what remains open. `actors.Inventory` already covers management -
+     stacking, weight, and containers within containers; `actors.ItemState`'s `damageItem`/
+     `repairItem` already cover durability, opt-in per item via `maxDurability`. What is
+     genuinely missing is the third piece: a *temporary* status on an item itself.
+     `actors.applyStatusEffect` (a buff/debuff with a duration, tied to `TurnClock`'s expiry)
+     only ever targets a `StatBlock` - a character's own stats - never an `InventoryItem`.
+     Today's item-level fields (`cursed`, `blessed`, `level`, `affix`) are all permanent until
+     a game explicitly changes them; nothing expires an item's own state after N turns the way
+     a status effect expires a character's. The shape SPD and similar roguelikes want: a
+     weapon temporarily coated in a poison that wears off after a fixed number of hits or
+     turns, a shield temporarily reinforced, a ring blessed only "for this floor". Likely
+     close to `StatusEffect`'s own shape (a duration registered with `TurnClock`, cleared on
+     expiry) but targeting an `InventoryItem`'s own fields instead of a `StatBlock`'s
+     modifiers, so the two probably share more of their timing plumbing than their target type~~
+     - `actors.applyItemStatusEffect`, exactly that: it shares `StatusEffect.ts`'s own
+     `EffectClock` interface rather than redeclaring it, applies arbitrary fields onto any
+     object (typed generically, not limited to `InventoryItem`), and restores each field to
+     its actual prior value - including `undefined` for a field the item never had - on
+     expiry or early `cancel()`
+
+129. requested directly as "online mode (multiple files support, multiplayer)". Checked
+     against what already exists: every network-facing piece `mwg` has (`FeedbackClient`,
+     `NewsClient`, `SaveSyncClient`) is one-shot HTTP request/response against a game's own
+     endpoint, never a live, bidirectional connection - none of them are, or were ever meant
+     to be, real multiplayer transport, and item 125's rankings were explicitly scoped away
+     from a networked leaderboard for the same reason. Real-time multiplayer is a categorically
+     larger feature: a persistent connection (WebSocket or WebRTC, neither used anywhere in
+     `mwg` today), authoritative state and reconciliation, and identity/matchmaking of some
+     kind - a server `mwg` would have to assume exists, unlike every other network surface
+     here, which assumes a game supplies its own and stays optional. "Multiple files support"
+     in the request is unclear as written - possibly multiple save files/profiles kept in
+     sync across an online session, possibly something else - and needs the requester's own
+     clarification before this is sized rather than guessed at
+130. ~~local multiplayer, same screen or split screen. Checked against what
+     already exists rather than assumed possible: both halves this needs are missing.
+     `core.Input` is a module-level singleton - `bindings`, `pressedThisFrame`, and `onAction`
+     all live at module scope, not per instance - so two controllers bound to the same action
+     names (`bindButton('confirm', 0, ...)` and `bindButton('confirm', 1, ...)`) collide into
+     one `onAction` stream with no way to tell which pad pressed it; nothing here is
+     player-scoped today, only pad-index-scoped at the binding level. Rendering has the other
+     half of the gap: `Game`/`Camera` assume one viewport and one camera per game, with no
+     notion of splitting the screen into regions each following a different player. Two
+     genuinely separate primitives, likely in that order (input scoping first, unblocking a
+     shared-screen mode that needs no viewport split at all before the harder split-screen
+     rendering half)~~ - `core.PlayerInput`, a thin per-player-id prefix over `Input`'s bare
+     action names (`bind`/`bindButton`/`bindAxis`/`isDown`/`justPressed`/`justReleased`), so
+     two players' "confirm" become two distinct actions rather than one shared one; a test
+     reproduces the exact collision the entry describes, unscoped, alongside the fix. On the
+     rendering half, `Camera.setViewport` gained an optional screen-space offset
+     (`screenX`/`screenY`, defaulting to 0 - fully backward compatible) so a camera's own
+     rectangle need not start at the canvas corner, and `render.Viewport` wraps one camera,
+     its own screen region, and a mask clipping it to that region, into the single unit a
+     split-screen player needs; `splitScreenHalves` gives the common two-way landscape/portrait
+     split as plain rectangles. `Viewport`'s camera math and mask presence are unit-tested;
+     the split itself was not additionally verified in a browser beyond that, since masking a
+     container to a rectangle is standard, well-trodden Pixi usage
+131. ~~accessibility modes: subtitles, sound
+     captioning, colour modes, contrast. Checked against what already exists rather than
+     assumed new, since two of the four turned out to already be covered:
+     - subtitles for dialogue: already the default, not a gap - `mwg/stage`'s `MessageBox` is
+       how every line of dialogue is shown at all, text-first with no voiced-audio path
+       running in parallel that would need separate subtitles to match it
+     - contrast: also already reachable without new framework code - `ui.setTheme` replaces
+       the whole colour palette a game reads from, so a high-contrast theme is a second
+       `Theme` object away, not a missing primitive; what might still be missing is a
+       ready-made high-contrast theme/settings-screen toggle a game does not have to compose
+       itself, closer to a recipe than new capability, the same distinction item 104 drew for
+       `ui.HelpScreen`
+     - sound/caption for non-dialogue audio: a genuine gap - a footstep, a monster's growl, a
+       door creaking have no visual-indicator hook today; `mwg/audio`'s `Sound`/`Music` have
+       no event a captioning overlay could subscribe to
+     - colour modes: also genuine - `mwg/render`'s per-sprite multiply-and-add colour
+       transform is the exact mechanism a colourblind-correction filter would apply
+       screen-wide, but nothing maps a named colourblind type (protanopia, deuteranopia,
+       tritanopia) to a correction matrix today
+     Two real primitives once narrowed down (sound captioning, colourblind filters), one
+     ready-made recipe worth shipping despite already being possible (a high-contrast theme
+     preset), and one already-satisfied non-gap (dialogue subtitles) that does not need
+     revisiting~~ - `audio.onCaption` fires whenever a `Sound` constructed with a `caption`
+     string plays, decoupled from any captioning overlay; `Music` deliberately left uncaptioned,
+     per the entry's own reasoning. `render.createColorBlindnessFilter` wraps Pixi's own
+     `ColorMatrixFilter` with named protanopia/deuteranopia/tritanopia simulation matrices;
+     verified in the `interface` example cycling all three live and screenshotting each -
+     water and grass tiles shift distinctly under each, and the HP bar's own red returns
+     correctly under tritanopia. `ui.highContrastTheme` is the ready-made preset, a
+     `setTheme` call away. Subtitles confirmed as already satisfied, not revisited
+
+132. requested directly: a general mouse-wheel input primitive, not scoped to any one
+     widget. Raised alongside `ListView` gaining its own plain wheel-to-scroll handling
+     (one row per notch, wired directly on that class since its scroll is derived from the
+     selection rather than an independent offset - see that class's own doc comment), but
+     the request is explicitly broader: `mwg/core`'s `Input` has no wheel event at all today
+     (checked - `bind`/`bindButton`/`bindAxis` cover keyboard and gamepad only), so nothing
+     ties a wheel notch to a named action the way every other input source already does, and
+     `ListView`'s own handling cannot be reused by `IconGrid`'s own scrolling or by a game's
+     camera. The requested shape: modifier keys distinguishing intent on the same physical
+     wheel - plain for vertical scroll, a modifier for horizontal (a game with wide content,
+     not `ListView`'s own single column), another for in-game zoom specifically, which needs
+     `event.preventDefault()` to stop the browser's own page-zoom/pinch-zoom from firing at
+     the same time as `Camera.zoom` changes. Likely shape: `Input` gains a wheel-to-action
+     path parallel to its existing key/gamepad one, with the modifier convention as a
+     documented default a game can rebind like any other action, rather than the browser's
+     own inconsistent-across-platforms Ctrl+wheel-means-zoom convention baked in unconditionally
+
+133. check rendering capabilities across WebGL, WebGPU, and WGSL. This is a compatibility
+     audit, not a promise to replace PixiJS or Babylon.js renderers: document the minimum
+     supported WebGL version and browser matrix, verify the existing 2D and optional 3D
+     examples under WebGL 1/2 and WebGPU where available, and identify which Babylon/Pixi
+     features require each backend. Include WGSL specifically: establish whether custom
+     shaders can be authored once or need maintained GLSL/WGSL pairs, exercise their build
+     and runtime error paths, and record the portable subset. The audit must retain the
+     project's file:// guarantee and GPU-only render requirement; a silent Canvas 2D fallback
+     is a regression, not a compatible result. Kept at low priority because the current
+     browser benchmark already proves the shipped 3D reference scene on WebGL 2, while the
+     wider matrix needs multiple browsers and GPU configurations to be meaningful.
+
+134. use the best rendering solution for each graphics workload, based on measured results
+     rather than one renderer claimed to fit everything. Establish and maintain a small
+     decision matrix for 2D sprites and tile maps, UI/text, post-processing and custom
+     shaders, particles, instanced terrain, voxel scenes, imported animated models, and
+     large 3D worlds. Compare quality, frame time, memory, bundle cost, input latency,
+     accessibility, browser/backend availability, and file:// deployment. Keep PixiJS for
+     its proven 2D path and Babylon.js for optional 3D unless benchmarks demonstrate a clear
+     improvement; use native browser APIs only when they materially outperform those layers.
+     Any chosen solution must remain optional where appropriate, expose framework-level
+     abstractions rather than application-specific renderer internals, and have an automated
+     visual/performance regression test before it replaces an existing path. This is a
+     continuing architecture policy, not a license to add overlapping rendering engines
+     without a concrete workload and evidence.
+
+135. a reusable loading-screen lifecycle for games that have enough assets or generation work
+     to need one. It should accept named, weighted asynchronous tasks, show determinate
+     progress when a task can report it and an honest indeterminate state when it cannot,
+     remain responsive while work is underway, and hand off cleanly into a `Game`/scene.
+     Include a themed default view plus hooks for game-owned art, accessible text and error
+     reporting with retry/cancel behavior. It must work for compiled `data:` assets and
+     file:// builds as well as ordinary fetches, without assuming a server or forcing every
+     small example to display a loader. Logged below current rendering work because asset
+     compilation already makes the typical local-file start nearly immediate; it matters
+     once games load larger optional model, audio, or generated-world payloads.
+
+136. package a game as a standalone desktop application using a native WebView2 host on
+     Windows or a Chromium-based host where cross-platform consistency is worth its bundled
+     runtime. Compare a minimal WebView2 shell, Electron/Tauri-style Chromium packaging, and
+     the existing Capacitor mobile route by installer size, startup time, GPU/WebGL/WebGPU
+     behavior, offline asset loading, crash/error reporting, update responsibility, code
+     signing, and the permissions each bridge exposes. The wrapper must load the same built
+     game output without requiring a web server, preserve the browser build as the canonical
+     target, and keep native APIs opt-in so games remain portable. Start with a documented
+     reference host and build/run smoke test, then add desktop-only capabilities only when a
+     game supplies a concrete need. Low priority behind the web rendering and loading work:
+     double-clickable file:// output already serves the core desktop use case without a shell.
+
+137. progressive asset loading and unloading so scene transitions have no visible loading
+     pause where the deployment environment permits it. Build on `assets.isLoaded`/`release`
+     with a game-directed preload manifest and priorities: fetch/decode likely-next maps,
+     textures, audio, models, and generated data while the current scene remains playable;
+     atomically promote only ready assets; and evict assets that are no longer reachable
+     under an explicit memory budget. Expose progress and cancellation to item 135's loading
+     lifecycle when a foreground wait is unavoidable, rather than pretending every transfer
+     can be hidden. Define capability tiers: compiled data-URI/file:// games can only stage
+     what is already packaged and decoded locally; a server or standalone WebView2/Chromium
+     host can stream/cache assets incrementally and report byte progress. Verify no stale
+     references, duplicate fetches, GPU-memory leaks, or frame-time spikes at scene handoff.
+     Kept low priority because it adds complexity and only earns its cost for large games or
+     host modes with genuinely incremental I/O.
+
+138. ~~three gaps surfaced by stress-testing `mwg` against a real, non-trivial game (an SPD-
+     shaped port), relayed with exact drop-in specs written against the checkout at the time,
+     verified against the real current source before applying rather than taken on faith:
+     - `ListView` had no pointer support at all - keyboard-only - while its sibling
+       `IconGrid` already wired `pointerdown` per cell. Confirmed by reading both files: `IconGrid.setItems`
+       sets `eventMode`/`cursor`/`pointerdown` per cell, `ListView.setItems` did none of it
+     - `Bar` could only fill a flat colour rect against a 0..1 fraction, with no way to draw
+       real bar chrome art or guarantee a nonzero sliver of value never rounds down to an
+       invisible zero-width fill. Confirmed by reading `Bar.draw`: a bare `Graphics.rect().fill({color})`,
+       no texture option, no rounding
+     - no generic queued, timed pop-up notification existed - an achievement unlock, a
+       level-up banner, a "quest complete" toast - only `FloatingText`'s fire-and-forget,
+       one-at-a-time damage-number shape. Confirmed: no `Toast`/`Banner`-shaped file anywhere
+       in `mwg/ui`
+     Implemented as specified, adapted to this project's actual Pixi v8 API (Graphics'
+     native `fill({texture, color})` texture support, used directly rather than switching
+     `Bar`'s track/fill to `Sprite` as the relayed spec suggested, since Graphics already
+     does this): `ListView` gained the same `eventMode`/`pointerdown` wiring as `IconGrid`,
+     plus wheel-to-scroll (one row per notch - see item 132 for the broader, not-yet-built
+     wheel-with-modifiers primitive this does not attempt); `BarOptions` gained
+     `fillTexture`/`backgroundTexture` (tinted by `color` only when one was explicitly
+     given, so an art texture is not unexpectedly recoloured) and `roundUpToPixel`; `ui.Toast`
+     is a plain phase/elapsed state machine (fade in, hold, fade out, queue) rather than
+     chained tween promises, after a chained-`Tweener` version proved fragile to drive
+     synchronously in a test (a `.then()` callback is a microtask, not synchronous with the
+     `update()` call that resolves it) - the same one-frame-boundary shape `FloatingText`
+     already uses. `Bar`/`Toast` are fully unit-tested (`Bar` down to the exact drawn pixel
+     width, `Toast` through every phase transition); `ListView` cannot be constructed in
+     Node at all - a pre-existing constraint, not caused by this change, since it builds a
+     `Label` per row and `Label.height` needs a real DOM `document` the same way `BitmapText`
+     does - and this session's own synthetic-`PointerEvent` browser check did not manage to
+     drive Pixi's `EventSystem` end to end (an already-working `Button` click failed the same
+     way, pointing at the test harness rather than the code), so `ListView`'s new wiring is
+     verified by exact structural match to `IconGrid`'s own already-shipped pattern and
+     runtime confirmation that `eventMode`/`cursor`/the listener are actually attached to
+     each row, not by a driven click in a real browser
+
+139. a smaller process note from the same stress-test as item 138: comments in that port's
+     own code claimed three separate times that "`mwg` doesn't have X" for a capability
+     (`Button`, `Bar`, `FloatingText`) added to `mwg` since those comments were written,
+     caught only by manually diffing against the current checkout each time. Not a defect in
+     `mwg` itself, but a discoverability gap for anything consuming it: a lightweight
+     changelog, or an exported version constant readable without grepping source (`import {
+     version } from '@datamoc/mw_games'`, say), would make "is this still missing, or did it
+     ship since I last checked" cheaper to answer than re-deriving it by hand every time

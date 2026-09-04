@@ -9,5 +9,12 @@ webpage/examples/village/
 webpage/examples/battle/
 webpage/examples/minigame/
 webpage/examples/chess/
+webpage/examples/tower-defense/
+webpage/examples/three-d/
 webpage/documentation/
+benchmark-results/
+android/
+ios/
+desktop/**/bin/
+desktop/**/obj/
 .aider*

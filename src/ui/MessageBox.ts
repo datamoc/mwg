@@ -40,6 +40,22 @@ export interface MessageBoxOptions {
 
 	/** where the stack puts the box */
 	anchor?: 'center' | 'bottom' | 'top';
+
+	/**
+	 * `'adv'` (the default) clears and redraws the box for each page, the way this class
+	 * has always worked. `'nvl'` is Ren'Py's other display mode: every page's text stays
+	 * on screen, accumulating into one growing block instead of being replaced - the same
+	 * script data, presented as a page of prose instead of a strip of speech bubbles.
+	 */
+	mode?: 'adv' | 'nvl';
+
+	/**
+	 * Seconds after a page's text finishes revealing before it advances on its own, as if
+	 * `confirm` had been pressed. Never applies once choices are on screen - a choice
+	 * always waits for a real answer. Omit to require `confirm` for every page, the
+	 * default.
+	 */
+	autoAdvance?: number;
 }
 
 /**
@@ -59,6 +75,7 @@ export class MessageBox extends Window {
 
 	private speed: number;
 	private revealed = 0;
+	private mode: 'adv' | 'nvl';
 
 	private body: Label;
 	private speakerLabel: Label;
@@ -71,6 +88,9 @@ export class MessageBox extends Window {
 
 	private onDone: ((chosen: unknown) => void) | null;
 	private finished = false;
+
+	private autoAdvance?: number;
+	private autoAdvanceElapsed = 0;
 
 	private readonly messageThemeListener = () => this.restyleMessage();
 
@@ -86,6 +106,8 @@ export class MessageBox extends Window {
 
 		this.pages = options.pages.map((page) => (typeof page === 'string' ? { text: page } : page));
 		this.speed = options.speed ?? 40;
+		this.mode = options.mode ?? 'adv';
+		this.autoAdvance = options.autoAdvance;
 		this.choices = options.choices ?? [];
 		this.onDone = options.onDone ?? null;
 
@@ -141,20 +163,42 @@ export class MessageBox extends Window {
 			textLeft = rtl ? 0 : this.portrait.width + t.padding;
 		}
 
-		this.speakerLabel.visible = page.speaker !== undefined;
+		//nvl mode inlines the speaker into the accumulated text instead of a separate label,
+		//since there is no longer one current page's worth of header to place
+		this.speakerLabel.visible = this.mode === 'adv' && page.speaker !== undefined;
 		this.speakerLabel.x = textLeft;
 		this.speakerLabel.setText(page.speaker ?? '');
 
 		this.body.x = textLeft;
-		this.body.y = page.speaker !== undefined ? this.speakerLabel.height + t.spacing : 0;
+		this.body.y = this.mode === 'adv' && page.speaker !== undefined ? this.speakerLabel.height + t.spacing : 0;
 		this.body.style.wordWrapWidth = Math.max(16, textWidth);
 
 		this.revealed = this.speed > 0 ? 0 : page.text.length;
-		this.body.setText(page.text.slice(0, this.revealed));
+		this.autoAdvanceElapsed = 0;
+		this.renderBody();
 
 		this.prompt.visible = false;
 		this.prompt.x = rtl ? 0 : this.contentWidth - this.prompt.width;
 		this.prompt.y = this.contentHeight - this.prompt.height;
+	}
+
+	/** the current page's revealed slice, formatted with its speaker inline in nvl mode */
+	private renderBody(): void {
+		if (this.mode === 'adv') {
+			this.body.setText(this.pages[this.pageIndex].text.slice(0, Math.floor(this.revealed)));
+			return;
+		}
+
+		//every earlier page is already fully revealed and stays on screen; only the newest
+		//page's own reveal is still in progress
+		const lines = this.pages.slice(0, this.pageIndex).map((page) => this.formatLine(page, page.text));
+		const current = this.pages[this.pageIndex];
+		lines.push(this.formatLine(current, current.text.slice(0, Math.floor(this.revealed))));
+		this.body.setText(lines.join('\n\n'));
+	}
+
+	private formatLine(page: MessagePage, text: string): string {
+		return page.speaker !== undefined ? `${page.speaker}: ${text}` : text;
 	}
 
 	private get pageComplete(): boolean {
@@ -162,14 +206,26 @@ export class MessageBox extends Window {
 	}
 
 	override update(dt: number): void {
-		if (this.finished || this.pageComplete) {
-			//only prompt once there is something to advance to
-			this.prompt.visible = this.pageComplete && !this.choiceList;
+		if (this.finished) return;
+
+		if (!this.pageComplete) {
+			this.revealed = Math.min(this.pages[this.pageIndex].text.length, this.revealed + this.speed * dt);
+			this.renderBody();
 			return;
 		}
 
-		this.revealed = Math.min(this.pages[this.pageIndex].text.length, this.revealed + this.speed * dt);
-		this.body.setText(this.pages[this.pageIndex].text.slice(0, Math.floor(this.revealed)));
+		//only prompt once there is something to advance to
+		this.prompt.visible = !this.choiceList;
+
+		//never applies with choices on screen - a choice always waits for a real answer,
+		//the same rule `confirm` follows once `delegate` takes over
+		if (this.autoAdvance === undefined || this.choiceList) return;
+
+		this.autoAdvanceElapsed += dt;
+		if (this.autoAdvanceElapsed >= this.autoAdvance) {
+			this.autoAdvanceElapsed = 0;
+			this.advance();
+		}
 	}
 
 	override handleAction(action: Action): boolean {
@@ -182,23 +238,28 @@ export class MessageBox extends Window {
 		//also skip the page, or fast readers lose lines
 		if (!this.pageComplete) {
 			this.revealed = this.pages[this.pageIndex].text.length;
-			this.body.setText(this.pages[this.pageIndex].text);
+			this.renderBody();
 			return true;
 		}
 
+		this.advance();
+		return true;
+	}
+
+	/** what a completed page does next: the next page, choices, or finishing - shared by `confirm` and `autoAdvance` */
+	private advance(): void {
 		if (this.pageIndex < this.pages.length - 1) {
 			this.pageIndex++;
 			this.showPage(this.pageIndex);
-			return true;
+			return;
 		}
 
 		if (this.choices.length > 0) {
 			this.showChoices();
-			return true;
+			return;
 		}
 
 		this.finish(undefined);
-		return true;
 	}
 
 	private showChoices(): void {

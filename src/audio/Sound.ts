@@ -1,4 +1,5 @@
 import { createAudio, type Playable } from './Playable.ts';
+import { onCaption } from './Captions.ts';
 
 export interface SoundOptions {
 	/** overlapping instances before the oldest is reused; a footstep needs more than a shout */
@@ -7,6 +8,9 @@ export interface SoundOptions {
 
 	/** creates one playable instance for the resolved path; defaults to a real `Audio` element */
 	create?: (path: string) => Playable;
+
+	/** shown by a captioning overlay (via `Captions.onCaption`) every time this sound plays */
+	caption?: string;
 }
 
 /**
@@ -18,12 +22,14 @@ export interface SoundOptions {
 export class Sound {
 	private pool: Playable[];
 	private next = 0;
+	private caption?: string;
 	volume: number;
 
 	constructor(path: string, options: SoundOptions = {}) {
 		const size = Math.max(1, options.poolSize ?? 4);
 		const create = options.create ?? createAudio;
 		this.volume = options.volume ?? 1;
+		this.caption = options.caption;
 		this.pool = Array.from({ length: size }, () => create(path));
 	}
 
@@ -34,6 +40,8 @@ export class Sound {
 		audio.volume = this.volume;
 		audio.currentTime = 0;
 		void audio.play();
+
+		if (this.caption) onCaption.dispatch({ text: this.caption });
 	}
 
 	stopAll(): void {

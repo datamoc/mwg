@@ -1,7 +1,7 @@
 {
   "name": "@datamoc/mw_games",
   "version": "0.1.2",
-  "description": "A framework for building 2D top-down games that run from a local file, with no server and no install.",
+  "description": "A local-file game framework for 2D top-down games with optional Babylon.js 3D rendering.",
   "license": "MPL-2.0",
   "type": "module",
   "sideEffects": false,
@@ -32,13 +32,16 @@
     "./rpg": "./dist/rpg/index.js",
     "./battle": "./dist/battle/index.js",
     "./board": "./dist/board/index.js",
-    "./audio": "./dist/audio/index.js"
+    "./audio": "./dist/audio/index.js",
+    "./3d": "./dist/three-d/index.js",
+    "./3d/models": "./dist/three-d/Models.js"
   },
   "scripts": {
     "build": "npm run build:pkg && npm run build:global",
     "build:pkg": "tsc -p tsconfig.build.json",
     "build:global": "vite build --config vite.lib.config.ts",
     "check": "tsc --noEmit",
+    "audit": "npm audit --audit-level=high",
     "example": "vite --config examples/colour-transform/vite.config.ts",
     "example:build": "vite build --config examples/colour-transform/vite.config.ts && node tools/emit-page.mjs examples/colour-transform",
     "test": "node --test \"tests/**/*.test.ts\"",
@@ -58,15 +61,46 @@
     "example:minigame:build": "vite build --config examples/minigame/vite.config.ts && node tools/emit-page.mjs examples/minigame",
     "example:chess": "vite --config examples/chess/vite.config.ts",
     "example:chess:build": "vite build --config examples/chess/vite.config.ts && node tools/emit-page.mjs examples/chess",
+    "example:tower-defense": "vite --config examples/tower-defense/vite.config.ts",
+    "example:tower-defense:build": "vite build --config examples/tower-defense/vite.config.ts && node tools/emit-page.mjs examples/tower-defense",
+    "example:3d": "vite --config examples/three-d/vite.config.ts",
+    "example:3d:build": "vite build --config examples/three-d/vite.config.ts && node tools/emit-page.mjs examples/three-d",
+    "benchmark:browser": "npm run example:dungeon:build && node tools/benchmark-browser.mjs",
+    "benchmark:3d": "npm run example:3d:build && node tools/benchmark-browser.mjs examples/three-d/dist/index.html",
+    "graphics:capabilities": "node tools/graphics-capabilities.mjs",
     "webpage:examples": "node tools/build-webpage-examples.mjs",
-    "webpage:docs": "node tools/build-webpage-docs.mjs"
+    "webpage:docs": "node tools/build-webpage-docs.mjs",
+    "mobile:build": "npm run example:tower-defense:build",
+    "cap:cli": "node --require ./tools/capacitor-node-workaround.cjs ./node_modules/@capacitor/cli/bin/capacitor",
+    "cap:add:android": "npm run mobile:build && npm run cap:cli -- add android",
+    "cap:add:ios": "npm run mobile:build && npm run cap:cli -- add ios",
+    "cap:sync": "npm run mobile:build && npm run cap:cli -- sync",
+    "cap:open:android": "npm run cap:cli -- open android",
+    "cap:open:ios": "npm run cap:cli -- open ios"
   },
   "dependencies": {
     "pixi.js": "^8.20.1",
     "rot-js": "^2.2.1"
   },
+  "peerDependencies": {
+    "@babylonjs/core": "^9.25.0",
+    "@babylonjs/loaders": "^9.25.0",
+    "@capacitor/core": "^7.4.4"
+  },
+  "peerDependenciesMeta": {
+    "@babylonjs/core": { "optional": true },
+    "@babylonjs/loaders": { "optional": true },
+    "@capacitor/core": { "optional": true }
+  },
   "devDependencies": {
+    "@babylonjs/core": "^9.25.0",
+    "@babylonjs/loaders": "^9.25.0",
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/cli": "^7.4.4",
+    "@capacitor/core": "^7.4.4",
+    "@capacitor/ios": "^7.4.4",
     "@types/node": "^26.4.1",
+    "playwright-core": "^1.62.1",
     "typescript": "^7.0.2",
     "vite": "^8.2.2"
   },

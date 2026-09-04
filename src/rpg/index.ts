@@ -11,6 +11,8 @@ export { GridMover } from './GridMover.ts';
 export type { GridMoverOptions, Direction4 } from './GridMover.ts';
 export { FreeMover } from './FreeMover.ts';
 export type { FreeMoverOptions } from './FreeMover.ts';
+export { aabbOverlap, circleOverlap, circleAabbOverlap, resolveAabbAgainstTiles } from './Collision.ts';
+export type { AABB, Circle, SolidTile, ResolveTileMoveOptions } from './Collision.ts';
 export { QuestLog } from './Quest.ts';
 export type { QuestStage, QuestDefinition, QuestStatus, QuestMarker } from './Quest.ts';
 export { decodeMarshal, encodeMarshal, RubySymbol, hashDefaultOf, withHashDefault } from './Marshal.ts';

@@ -47,6 +47,14 @@ export interface ScriptState {
 	answers: Record<string, unknown>;
 }
 
+/** one completed line, kept for `StageScript.history`/`showLast` */
+export interface HistoryEntry {
+	text: string;
+	speaker?: string;
+	/** the value picked, when this line ended on choices; undefined for a plain line */
+	chosen?: unknown;
+}
+
 export interface ScriptOptions {
 	stage: DialogueStage;
 	windows: WindowStack;
@@ -63,6 +71,9 @@ export interface ScriptOptions {
 
 	/** characters revealed per second */
 	speed?: number;
+
+	/** `'adv'` (default) or `'nvl'`, `MessageBox`'s two display modes; see `MessageBoxOptions.mode` */
+	mode?: 'adv' | 'nvl';
 }
 
 /**
@@ -78,12 +89,56 @@ export class StageScript {
 
 	private cancelled = false;
 
+	private historyLog: HistoryEntry[] = [];
+	private seenLines = new Set<string>();
+
+	/**
+	 * When true, a line whose exact text has already been shown once this script's lifetime
+	 * reveals at once and advances on its own instead of waiting for `confirm` - common
+	 * visual-novel "skip already-read text". A line with choices never skips: those always
+	 * wait for a real answer.
+	 */
+	skipSeen = false;
+
 	constructor(options: ScriptOptions) {
 		this.options = options;
 	}
 
 	cancel(): void {
 		this.cancelled = true;
+	}
+
+	/** every line completed so far, oldest first */
+	get history(): readonly HistoryEntry[] {
+		return this.historyLog;
+	}
+
+	/**
+	 * Re-shows the most recently completed line for review: a player-facing "back" a game
+	 * can wire to a button or a scroll gesture. This is read-only - it does not let a past
+	 * choice be re-picked or replay any side effect (`show`/`hide`/`call`) around it, only
+	 * the words themselves, the bounded and honestly-scoped half of "rollback" this offers.
+	 * Resolves to `false` when there is nothing in `history` yet.
+	 */
+	async showLast(): Promise<boolean> {
+		const last = this.historyLog.at(-1);
+		if (!last) return false;
+
+		const { windows } = this.options;
+		await new Promise<void>((resolve) => {
+			windows.push(
+				new MessageBox({
+					width: this.options.boxWidth ?? 480,
+					height: this.options.boxHeight ?? 120,
+					speed: 0,
+					pages: [{ text: last.text, speaker: last.speaker }],
+					dims: false,
+					anchor: 'bottom',
+					onDone: () => resolve(),
+				})
+			);
+		});
+		return true;
 	}
 
 	async run(commands: readonly StageCommand[]): Promise<ScriptState> {
@@ -157,11 +212,13 @@ export class StageScript {
 
 		if ('say' in command) {
 			await this.speak(command.say, command.as, command.speaker);
+			this.recordHistory(command.say, command.as, command.speaker);
 			return undefined;
 		}
 
 		if ('ask' in command) {
 			const chosen = await this.speak(command.ask, command.as, command.speaker, command.choices);
+			this.recordHistory(command.ask, command.as, command.speaker, chosen);
 			if (command.store) this.state.answers[command.store] = chosen;
 			//a MessageBox resolves with the chosen value, which defaults to the text
 			return command.choices.find((c) => (c.value ?? c.text) === chosen)?.goto;
@@ -180,6 +237,12 @@ export class StageScript {
 			await command.call(this.state);
 		}
 		return undefined;
+	}
+
+	private recordHistory(text: string, as: string | undefined, speaker: string | undefined, chosen?: unknown): void {
+		const name = speaker ?? (as ? (this.options.displayName?.(as) ?? as) : undefined);
+		this.seenLines.add(seenKey(as, text));
+		this.historyLog.push({ text, speaker: name, chosen });
 	}
 
 	/**
@@ -202,12 +265,18 @@ export class StageScript {
 
 		const name = speaker ?? (as ? (this.options.displayName?.(as) ?? as) : undefined);
 
+		//a line with choices always waits for a real answer, even in skip mode - skipping
+		//is for text already read, never for a decision not yet made
+		const skipNow = this.skipSeen && !choices && this.seenLines.has(seenKey(as, text));
+
 		return new Promise((resolve) => {
 			windows.push(
 				new MessageBox({
 					width: this.options.boxWidth ?? 480,
 					height: this.options.boxHeight ?? 120,
-					speed: this.options.speed ?? 45,
+					speed: skipNow ? 0 : (this.options.speed ?? 45),
+					autoAdvance: skipNow ? 0 : undefined,
+					mode: this.options.mode,
 					pages: [{ text, speaker: name }],
 					//choices, when the line has them, are answered in the same box
 					choices,
@@ -220,4 +289,9 @@ export class StageScript {
 			);
 		});
 	}
+}
+
+/** the seen-set key for a line - text alone is ambiguous once two characters can say the same thing */
+function seenKey(as: string | undefined, text: string): string {
+	return `${as ?? ''} ${text}`;
 }

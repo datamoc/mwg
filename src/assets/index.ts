@@ -108,3 +108,6 @@ export async function release(paths: string[]): Promise<void> {
 	if (loaded.length === 0) return;
 	await Assets.unload(loaded);
 }
+
+export { AssetStream } from './Streaming.ts';
+export type { AssetBundle, AssetStreamOptions } from './Streaming.ts';

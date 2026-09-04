@@ -1,7 +1,7 @@
 # mwg
 
-A framework for building 2D top-down games that run **from a local file**: no server, no
-install, no runtime to download.
+A framework for building primarily 2D top-down games that run **from a local file**: no
+server, no install, no runtime to download. An optional Babylon.js module supports 3D maps.
 
 Licensed under the [MPL-2.0](LICENSE): games built with `mwg` carry no licence obligation
 of their own; improvements to `mwg`'s own files are shared back.
@@ -39,7 +39,8 @@ four directions on a square grid and another in six on a hex grid.
 
 `mwg` provides that shared floor plus each specialism, on top of
 [PixiJS](https://pixijs.com) for rendering and [rot.js](https://ondras.github.io/rot.js/)
-for the classic roguelike algorithms. See [Capability spec](#capability-spec).
+for the classic roguelike algorithms. Optional 3D scenes use Babylon.js. See
+[Capability spec](#capability-spec).
 
 These are references for *what a finished game of each kind has to do*, and nothing more.
 No code, asset, data table or file format is taken from any of them: see
@@ -139,6 +140,7 @@ only some do.
 | | pointer, keyboard and gamepad input with rebinding | `mwg/core` |
 | **text** | message tables per language, compiled at build time | `mwg/i18n` |
 | | plurals, gendered forms and interpolation | `mwg/i18n` |
+| | Fluent-style FTL catalogs with locale-aware fallback and variants | `mwg/i18n` |
 | | left-to-right, right-to-left and vertical writing | `mwg/i18n` |
 | | interface mirrored for right-to-left languages | `mwg/ui` |
 | | a missing translation falls back rather than showing a key | `mwg/i18n` |
@@ -287,23 +289,34 @@ Message tables are compiled at build time, the same way every other resource is,
 a language costs nothing at runtime and a missing string falls back to the base language
 rather than showing a raw key to the player.
 
+## Optional Babylon.js 3D
+
+`@babylonjs/core`/`@babylonjs/loaders` are peer dependencies, not installed automatically -
+a game that never imports `mwg/3d` never downloads Babylon.js. Add them yourself
+(`npm install @babylonjs/core @babylonjs/loaders`) once a game imports 3D support:
+
+```ts
+import { Engine3D, createTileGrid3D } from '@datamoc/mw_games/3d';
+import { loadModel3D } from '@datamoc/mw_games/3d/models';
+```
+
+`Engine3D` owns a WebGL scene, orbit camera, light, resize handling, and render loop.
+`createTileGrid3D` batches square or flat-top hex tiles and elevation columns with thin
+instances; `createHeightmapTerrain3D` builds continuous terrain from decoded RGBA heightmap
+pixels. `Character3D` moves imported meshes or camera-facing sprites continuously, and can
+play imported animation clips. `parseVox` and `createVoxModel3D` load one MagicaVoxel model;
+`loadModel3D` handles glTF/GLB.
+Run `npm run example:3d` for the live example or `npm run benchmark:3d` for its FPS gate.
+
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full, numbered build order: 110 items, 93 shipped
-and seventeen open (3D rendering broken into a nine-step build-up plus an engine choice, a
-tower-defense reference with no title picked yet, a Fire Emblem-shaped unit bond/support
-mechanic, in-app feedback needing a network transport `mwg` has never had, a continuous
-day/night-and-weather clock above `battle.Field`'s per-encounter scope, a per-faction
-fog of war above `roguelike.FieldOfView`'s single-viewer scope, and an Ionic Capacitor
-integration for native iOS/Android builds, all logged at low priority;
-see that file for why). Each module ships in the order given
-there; later ones build on the
-modules before them.
+See [ROADMAP.md](ROADMAP.md) for the full, numbered build order and implementation notes.
+The optional 3D group is now implemented without changing the existing 2D entry point.
 
 ## Licence and provenance
 
-`mwg` is MPL-2.0. Its dependencies are permissive and compatible: PixiJS is MIT, rot.js is
-BSD-3-Clause.
+`mwg` is MPL-2.0. Its dependencies are permissive and compatible: PixiJS and Babylon.js are
+MIT, and rot.js is BSD-3-Clause.
 
 `tools/vendored/rgssad-wasm` is a build of the `rgssad-wasm` crate from
 <https://github.com/nathaniel-daniel/rgssad-rs>, used under its MIT licence

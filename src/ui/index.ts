@@ -1,8 +1,11 @@
-export { theme, setTheme, defaultTheme, themeChanged } from './theme.ts';
+export { theme, setTheme, defaultTheme, highContrastTheme, themeChanged } from './theme.ts';
 export type { Theme } from './theme.ts';
 
 export { Label } from './Label.ts';
 export type { LabelOptions } from './Label.ts';
+
+export { BitmapLabel, bitmapLabelStyle } from './BitmapLabel.ts';
+export type { BitmapLabelOptions } from './BitmapLabel.ts';
 
 export { NinePatch } from './NinePatch.ts';
 export type { NinePatchOptions } from './NinePatch.ts';
@@ -36,5 +39,11 @@ export type { BarOptions } from './Bar.ts';
 export { FloatingText } from './FloatingText.ts';
 export type { FloatingTextOptions } from './FloatingText.ts';
 
+export { Toast } from './Toast.ts';
+export type { ToastOptions } from './Toast.ts';
+
 export { HelpScreen } from './HelpScreen.ts';
 export type { HelpScreenOptions, HelpTopic } from './HelpScreen.ts';
+
+export { LoadingScreen } from './LoadingScreen.ts';
+export type { LoadingScreenOptions } from './LoadingScreen.ts';

@@ -21,11 +21,19 @@ export type Direction = 'ltr' | 'rtl';
 /** a value that varies by count, keyed by the CLDR plural category it applies to */
 export type PluralForms = Partial<Record<Intl.LDMLPluralRule, string>>;
 
+export interface FluentMessage {
+	format(params?: MessageParams): string;
+}
+
+export type MessageValue = string | PluralForms | FluentMessage;
+
 export interface Catalog {
 	/** a BCP-47 tag, such as 'en', 'fr', or 'ar' - passed straight to Intl.PluralRules */
 	locale: string;
 	direction: Direction;
-	messages: Record<string, string | PluralForms>;
+	messages: Record<string, MessageValue>;
+	/** Apply locale-aware typographic apostrophes when resolving messages. Defaults to true. */
+	typography?: boolean;
 }
 
 let base: Catalog | null = null;
@@ -70,8 +78,19 @@ export function t(key: string, params?: MessageParams): string {
 	const entry = active?.messages[key] ?? base?.messages[key];
 	if (entry === undefined) return key;
 
-	const text = typeof entry === 'string' ? entry : resolvePlural(entry, params?.count);
-	return params ? interpolate(text, params) : text;
+	const text = typeof entry === 'string' ? entry : isFluentMessage(entry) ? entry.format(params) : resolvePlural(entry, params?.count);
+	const translated = params ? interpolate(text, params) : text;
+	return (active ?? base)?.typography === false ? translated : typographic(translated, locale());
+}
+
+/**
+ * Replaces apostrophes between letters for locales whose ordinary elisions use a curly
+ * apostrophe. English and other locales are left untouched, as a straight apostrophe can
+ * be intentional punctuation there.
+ */
+export function typographic(text: string, language = locale()): string {
+	if (!/^(fr|it|nl)(?:-|$)/i.test(language)) return text;
+	return text.replace(/([\p{L}])'(?=[\p{L}])/gu, '$1’');
 }
 
 /** true when `key` resolves to something other than itself, in either language */
@@ -88,6 +107,10 @@ function resolvePlural(forms: PluralForms, count: number | undefined): string {
 	return forms[category] ?? forms.other ?? '';
 }
 
+function isFluentMessage(value: PluralForms | FluentMessage): value is FluentMessage {
+	return 'format' in value;
+}
+
 function interpolate(text: string, params: MessageParams): string {
 	return text.replace(/\{(\w+)\}/g, (whole, token: string) => {
 		const value = params[token];
@@ -101,3 +124,6 @@ export function reset(): void {
 	active = null;
 	activeRules = null;
 }
+
+export { parseFTL } from './Fluent.ts';
+export type { FluentOptions } from './Fluent.ts';

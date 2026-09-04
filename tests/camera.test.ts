@@ -87,3 +87,45 @@ test('a camera without pixelPerfectTileSize keeps a fractional zoom exactly', ()
 	const camera = new Camera({ zoom: 2.3 });
 	assert.equal(camera.zoom, 2.3);
 });
+
+// ------------------------------------------------------------------- screen-region offset (split screen)
+
+test('setViewport defaults its screen offset to 0, unchanged from a full-screen camera', () => {
+	const camera = new Camera({ zoom: 1 });
+	camera.setViewport(100, 100);
+	camera.snapTo(0, 0);
+	assert.equal(camera.world.x, 50);
+	assert.equal(camera.toScreen(0, 0).x, 50);
+});
+
+test('a nonzero screen offset shifts world.x/world.y by exactly that offset', () => {
+	const camera = new Camera({ zoom: 1 });
+	camera.setViewport(100, 100, 200, 300); // this camera's own rectangle starts at (200, 300)
+	camera.snapTo(0, 0);
+	assert.equal(camera.world.x, 200 + 50);
+	assert.equal(camera.world.y, 300 + 50);
+});
+
+test('toScreen/toWorld account for the screen offset and remain inverses of each other', () => {
+	const camera = new Camera({ zoom: 2 });
+	camera.setViewport(100, 100, 400, 0);
+	camera.snapTo(10, 10);
+
+	const screen = camera.toScreen(30, 40);
+	assert.equal(screen.x, (30 - 10) * 2 + 400 + 50); // matches apply()'s own math
+	assert.deepEqual(camera.toWorld(screen.x, screen.y), { x: 30, y: 40 });
+});
+
+test('two cameras sharing one canvas, offset side by side, report independent screen coordinates for the same world point', () => {
+	const left = new Camera({ zoom: 1 });
+	left.setViewport(160, 100, 0, 0);
+	left.snapTo(0, 0);
+
+	const right = new Camera({ zoom: 1 });
+	right.setViewport(160, 100, 160, 0);
+	right.snapTo(0, 0);
+
+	//the same world origin lands in each camera's own half of the screen, 160px apart
+	assert.equal(left.toScreen(0, 0).x, 80);
+	assert.equal(right.toScreen(0, 0).x, 240);
+});

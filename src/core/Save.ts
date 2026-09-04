@@ -5,6 +5,8 @@
  * constructor pair), not to be serialised by reference with cycles preserved; that is a
  * different, much larger problem than a save system needs to solve.
  */
+import { scramble, unscramble } from './Scramble.ts';
+import { checkSize, sanitizeInboundText } from './Sanitize.ts';
 
 export interface SaveMeta {
 	version: number;
@@ -113,8 +115,13 @@ export class SaveSystem<T> {
 	 * one `normalize` per external format it wants to accept (an `rpg.decodeMarshal`-based
 	 * one for a `Game.rxdata`, say), rather than hand-rolling "decode, then call `save`"
 	 * outside the versioned pipeline every migration otherwise goes through.
+	 *
+	 * `externalBytes` is size-checked before `normalize` ever sees it - a cheap, structural
+	 * guard against a truncated or hostile file, ahead of and distinct from validating
+	 * whatever shape `normalize` itself produces.
 	 */
 	importExternal(slot: string, externalBytes: Uint8Array, normalize: (bytes: Uint8Array) => unknown, preview?: unknown): void {
+		checkSize(externalBytes);
 		let state: unknown = normalize(externalBytes);
 		for (let v = 0; v < this.version; v++) {
 			state = (this.migrations[v] ?? ((s: unknown) => s))(state);
@@ -126,6 +133,41 @@ export class SaveSystem<T> {
 
 	delete(slot: string): void {
 		this.storage.remove(this.key(slot));
+	}
+
+	/**
+	 * Reads a slot back out as a portable string a player can carry to another browser or
+	 * device, or hand to their own server - the counterpart to `importSlot`, for `mwg`'s own
+	 * save shape rather than a foreign one (`importExternal` covers that side). `scrambleKey`,
+	 * when given, runs the payload through `scramble` first: not encryption, only enough to
+	 * stop a save being hand-edited in a text editor. Returns null for a slot with no save.
+	 */
+	exportSlot(slot: string, scrambleKey?: string): string | null {
+		const raw = this.storage.read(this.key(slot));
+		if (raw === null) return null;
+		return scrambleKey ? scramble(raw, scrambleKey) : raw;
+	}
+
+	/**
+	 * Writes a payload from this `SaveSystem`'s own `exportSlot` back as an ordinary save,
+	 * migrated up to the current version the same way `load` migrates an older save found
+	 * locally. `scrambleKey` must match whatever `exportSlot` scrambled it with, if any.
+	 *
+	 * `payload` is size- and control-character-checked before it is unscrambled or parsed -
+	 * this crossed a device or a server, unlike `load`'s own `localStorage`, which this same
+	 * `SaveSystem` wrote itself and has no reason to distrust.
+	 */
+	importSlot(slot: string, payload: string, scrambleKey?: string): void {
+		checkSize(payload);
+		const raw = scrambleKey ? unscramble(payload, scrambleKey) : payload;
+		const data = JSON.parse(sanitizeInboundText(raw)) as SaveData<unknown>;
+		let state = data.state;
+		for (let v = data.meta.version; v < this.version; v++) {
+			state = (this.migrations[v] ?? ((s: unknown) => s))(state);
+		}
+
+		const normalized: SaveData<T> = { meta: { ...data.meta, version: this.version }, state: state as T };
+		this.storage.write(this.key(slot), JSON.stringify(normalized));
 	}
 
 	/** every slot with a save, and its metadata - for a save-select screen */

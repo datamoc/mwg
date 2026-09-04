@@ -12,6 +12,10 @@ export type { AnimationOptions } from './AnimatedSprite.ts';
 export { SpriteSheet } from './SpriteSheet.ts';
 export { Camera, createCamera, snapZoom } from './Camera.ts';
 export type { CameraOptions } from './Camera.ts';
+export { Viewport, splitScreenHalves } from './Viewport.ts';
+export type { ViewportOptions } from './Viewport.ts';
+export { createColorBlindnessFilter, COLOR_BLINDNESS_MATRICES } from './ColorBlindness.ts';
+export type { ColorBlindnessType } from './ColorBlindness.ts';
 
 export { Minimap, newlyRevealed } from './Minimap.ts';
 export type { MinimapOptions } from './Minimap.ts';
@@ -26,3 +30,6 @@ export type { ActorAnimationState, ActorAnimatorOptions } from './ActorAnimator.
 
 export { blobIndex, autotileFrames, BLOB_SHAPES } from './Autotile.ts';
 export type { NeighborMask } from './Autotile.ts';
+
+export { inspectGraphicsCapabilities, RENDERING_DECISIONS } from './Capabilities.ts';
+export type { GraphicsCapabilities, GraphicsProbe, GraphicsWorkload, RenderingDecision } from './Capabilities.ts';

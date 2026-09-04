@@ -255,3 +255,56 @@ test('a goto in a straight run is an error, not a silent skip', async () => {
 
 	await assert.rejects(s.run([{ goto: 'anywhere' }]), /only runs inside runStory/);
 });
+
+test('history records every completed line in order, including a choice made', async () => {
+	const { script: s } = script();
+
+	const done = s.run([
+		{ say: 'first line' },
+		{ ask: 'well?', choices: [{ text: 'yes' }, { text: 'no' }], store: 'reply' },
+	]);
+	await tick();
+	s.answer();
+	await tick();
+	s.answer('yes');
+	await done;
+
+	assert.deepEqual(
+		s.history.map((entry) => ({ text: entry.text, chosen: entry.chosen })),
+		[
+			{ text: 'first line', chosen: undefined },
+			{ text: 'well?', chosen: 'yes' },
+		]
+	);
+});
+
+test('history records the resolved speaker name, not the raw character id, via displayName', async () => {
+	const { script: s } = script({ displayName: (id) => (id === 'alice' ? 'Alice' : id) });
+
+	const done = s.run([{ say: 'hi', as: 'alice' }]);
+	await tick();
+	s.answer();
+	await done;
+
+	assert.equal(s.history[0]?.speaker, 'Alice');
+});
+
+test('an explicit speaker overrides displayName in history, the same as it does live', async () => {
+	const { script: s } = script({ displayName: () => 'Ignored' });
+
+	const done = s.run([{ say: 'hi', as: 'alice', speaker: 'A Mysterious Voice' }]);
+	await tick();
+	s.answer();
+	await done;
+
+	assert.equal(s.history[0]?.speaker, 'A Mysterious Voice');
+});
+
+test('showLast resolves false when nothing has been said yet, without touching a window', async () => {
+	const { script: s, windows } = script();
+	let pushed = false;
+	windows.push = () => { pushed = true; };
+
+	assert.equal(await s.showLast(), false);
+	assert.equal(pushed, false);
+});

@@ -53,6 +53,10 @@ export class Camera {
 
 	private viewWidth = 0;
 	private viewHeight = 0;
+	//where this camera's own rectangle starts on screen; 0,0 for an ordinary full-screen
+	//camera, nonzero for one player's share of a split-screen layout (see render.Viewport)
+	private screenX = 0;
+	private screenY = 0;
 
 	private followTarget: { x: number; y: number } | null = null;
 	//how fast the camera closes on its target: it covers `intensity` of the remaining
@@ -84,10 +88,17 @@ export class Camera {
 		this._zoom = this.pixelPerfectTileSize ? snapZoom(clamped, this.pixelPerfectTileSize) : clamped;
 	}
 
-	/** the framework calls this on resize; sizes are in screen pixels */
-	setViewport(width: number, height: number): void {
+	/**
+	 * The framework calls this on resize; sizes are in screen pixels. `screenX`/`screenY`
+	 * default to 0 (an ordinary camera starting at the corner of the canvas); a `Viewport`
+	 * gives its camera a nonzero one so this camera's own rectangle starts partway across
+	 * the screen instead, for a split-screen layout.
+	 */
+	setViewport(width: number, height: number, screenX = 0, screenY = 0): void {
 		this.viewWidth = width;
 		this.viewHeight = height;
+		this.screenX = screenX;
+		this.screenY = screenY;
 	}
 
 	/** the visible rectangle, in world units: use it to cull */
@@ -175,8 +186,8 @@ export class Camera {
 		//narrower than the view
 		const { x: centreX, y: centreY } = this.clampedCentre(this.x + this.shakeX, this.y + this.shakeY);
 		return {
-			x: (x - centreX) * this._zoom + this.viewWidth / 2,
-			y: (y - centreY) * this._zoom + this.viewHeight / 2,
+			x: (x - centreX) * this._zoom + this.screenX + this.viewWidth / 2,
+			y: (y - centreY) * this._zoom + this.screenY + this.viewHeight / 2,
 		};
 	}
 
@@ -184,8 +195,8 @@ export class Camera {
 	toWorld(x: number, y: number): { x: number; y: number } {
 		const { x: centreX, y: centreY } = this.clampedCentre(this.x + this.shakeX, this.y + this.shakeY);
 		return {
-			x: (x - this.viewWidth / 2) / this._zoom + centreX,
-			y: (y - this.viewHeight / 2) / this._zoom + centreY,
+			x: (x - this.screenX - this.viewWidth / 2) / this._zoom + centreX,
+			y: (y - this.screenY - this.viewHeight / 2) / this._zoom + centreY,
 		};
 	}
 
@@ -211,8 +222,8 @@ export class Camera {
 
 		this.world.scale.set(this._zoom);
 		//rounding to whole screen pixels stops pixel art shimmering as the camera moves
-		this.world.x = Math.round(this.viewWidth / 2 - centreX * this._zoom);
-		this.world.y = Math.round(this.viewHeight / 2 - centreY * this._zoom);
+		this.world.x = Math.round(this.screenX + this.viewWidth / 2 - centreX * this._zoom);
+		this.world.y = Math.round(this.screenY + this.viewHeight / 2 - centreY * this._zoom);
 	}
 }
 

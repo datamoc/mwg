@@ -80,6 +80,14 @@ export class ListView extends Container {
 		this.rowsLayer.mask = this.mask_;
 		this.drawMask();
 
+		//a masked list with no click support (before this session) or wheel support was
+		//otherwise unreachable past the visible rows without the keyboard; one row per
+		//notch, the same step `move` already takes for an arrow key, since scroll is
+		//derived from the selection rather than an independent pixel offset (see this
+		//class's own doc comment) - a free-scrolling wheel would fight that invariant
+		this.eventMode = 'static';
+		this.on('wheel', (event) => this.move(event.deltaY > 0 ? 1 : -1));
+
 		this.setItems(options.items ?? []);
 		themeChanged.add(this.themeListener);
 	}
@@ -157,6 +165,16 @@ export class ListView extends Container {
 		items.forEach((item, i) => {
 			const row = new Container();
 			row.y = i * this.rowHeight;
+			row.eventMode = 'static';
+			row.cursor = item.disabled ? 'default' : 'pointer';
+			//a tap selects and confirms in one step, the way a mouse/touch player expects
+			//from a menu row - IconGrid's cells already work this way, this closes the same
+			//gap on ListView, which was keyboard-only until now
+			row.on('pointerdown', () => {
+				if (item.disabled) return;
+				this.select(i);
+				this.confirm();
+			});
 
 			if (item.icon) {
 				item.icon.x = rtl ? this.viewWidth - t.spacing - this.rowHeight : t.spacing;

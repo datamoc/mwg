@@ -23,6 +23,8 @@ const scripts = {
 	battle: 'example:battle:build',
 	minigame: 'example:minigame:build',
 	chess: 'example:chess:build',
+	'tower-defense': 'example:tower-defense:build',
+	'three-d': 'example:3d:build',
 };
 
 for (const [name, script] of Object.entries(scripts)) {

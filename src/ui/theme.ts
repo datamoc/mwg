@@ -76,6 +76,37 @@ export const defaultTheme: Theme = {
 	overlayAlpha: 0.5,
 };
 
+/**
+ * A ready-made high-contrast preset: pure white text on black panels, a thicker border, and
+ * a near-opaque modal overlay. Not new capability - `setTheme` already replaces the whole
+ * palette a game reads from, so any high-contrast theme was always a second `Theme` object
+ * away - but a game wanting one should not have to compose it from scratch, the same recipe
+ * `ui.HelpScreen` already is over `Window`/`ListView`/`Label`. `setTheme(highContrastTheme)`
+ * applies it; a game with its own colours can still start from this and override just what
+ * it wants to keep, the same as any partial object `setTheme` accepts.
+ */
+export const highContrastTheme: Theme = {
+	panelBorder: 6,
+	padding: 10,
+	spacing: 4,
+	direction: 'ltr',
+	font: {
+		family: defaultTheme.font.family,
+		size: 14,
+		lineHeight: 1.5,
+	},
+	color: {
+		text: 0xffffff,
+		textDim: 0xcccccc,
+		textHighlight: 0xffff00,
+		panelFill: 0x000000,
+		panelBorder: 0xffffff,
+		selection: 0xffff00,
+		overlay: 0x000000,
+	},
+	overlayAlpha: 0.85,
+};
+
 let current: Theme = defaultTheme;
 
 export function theme(): Theme {

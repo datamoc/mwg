@@ -1,6 +1,6 @@
 import { Game, Scene } from '../../src/core/index.ts';
 import { SpriteSheet, registerColorTransform } from '../../src/render/index.ts';
-import { WindowStack } from '../../src/ui/index.ts';
+import { WindowStack, MessageBox } from '../../src/ui/index.ts';
 import { DialogueStage, StageScript, type StageCommand } from '../../src/stage/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 import tileset from '../assets/tiles.json' with { type: 'json' };
@@ -89,7 +89,30 @@ class DialogueScene extends Scene {
 			boxHeight: 110,
 		});
 
-		void this.script.run(SCENE);
+		void this.script.run(SCENE).then(() => this.showEpilogueNvl());
+	}
+
+	/**
+	 * A standalone `MessageBox` in `'nvl'` mode: several lines accumulate into one growing
+	 * block instead of clearing each time, Ren'Py's other display mode alongside the
+	 * strip-of-speech-bubbles `'adv'` mode the scripted scene above already used.
+	 */
+	private showEpilogueNvl(): void {
+		this.windows.push(
+			new MessageBox({
+				width: Math.min(560, Game.current.width - 80),
+				height: 160,
+				mode: 'nvl',
+				speed: 45,
+				pages: [
+					{ text: 'The lamp went out before they reached the lot.', speaker: 'Narrator' },
+					{ text: 'Neither of them minded. They knew the way from here.', speaker: 'Narrator' },
+					{ text: 'The end.', speaker: 'Narrator' },
+				],
+				dims: false,
+				anchor: 'bottom',
+			})
+		);
 	}
 
 	override resize(width: number, height: number): void {

@@ -1,17 +1,19 @@
 import { Container } from 'pixi.js';
 import { Game, Scene, Input } from '../../src/core/index.ts';
-import { TintedSprite, SpriteSheet, registerColorTransform, Minimap } from '../../src/render/index.ts';
+import { TintedSprite, SpriteSheet, registerColorTransform, Minimap, createColorBlindnessFilter, type ColorBlindnessType } from '../../src/render/index.ts';
 import {
 	Window,
 	WindowStack,
 	ListView,
 	MessageBox,
 	Label,
+	BitmapLabel,
 	RebindScreen,
 	Button,
 	Bar,
 	FloatingText,
 	HelpScreen,
+	Toast,
 	theme,
 } from '../../src/ui/index.ts';
 import * as Resources from '../../src/assets/index.ts';
@@ -36,6 +38,10 @@ class InterfaceScene extends Scene {
 	private hp!: Bar;
 	private popups = new Container();
 	private minimap!: Minimap;
+	private clock!: BitmapLabel;
+	private elapsed = 0;
+	private colorBlindnessIndex = 0;
+	private toast!: Toast;
 
 	override create(): void {
 		this.sheet = SpriteSheet.grid(TILES, tileSize);
@@ -50,6 +56,12 @@ class InterfaceScene extends Scene {
 		this.stage.addChild(this.windows);
 		this.buildHud();
 		this.stage.addChild(this.popups);
+
+		this.toast = new Toast({ fadeIn: 0.2, hold: 1.2, fadeOut: 0.5 });
+		this.toast.x = Game.current.width / 2;
+		this.toast.y = 80;
+		this.stage.addChild(this.toast);
+
 		this.updateStatus();
 
 		//the map layer listens too, but the stack is in stack mode, so an open window is
@@ -136,6 +148,33 @@ class InterfaceScene extends Scene {
 		help.y = -6;
 		hud.addChild(help);
 
+		//BitmapText-backed, unlike `status`/everything above: updated every frame in
+		//`update`, exactly the case `Label`'s own doc comment calls wasteful for it
+		this.clock = new BitmapLabel({ color: theme().color.textDim });
+		this.clock.x = 342;
+		this.clock.y = -3;
+		hud.addChild(this.clock);
+
+		const colorblind = new Button({
+			width: 100,
+			height: 22,
+			text: 'Colourblind',
+			onClick: () => this.cycleColorBlindness(),
+		});
+		colorblind.x = 420;
+		colorblind.y = -6;
+		hud.addChild(colorblind);
+
+		const toastButton = new Button({
+			width: 70,
+			height: 22,
+			text: 'Toast',
+			onClick: () => this.showToast(),
+		});
+		toastButton.x = 528;
+		toastButton.y = -6;
+		hud.addChild(toastButton);
+
 		//a corner minimap, synced from the same tile pattern drawBackdrop already drew -
 		//no roguelike Level in this example, so the "explored" set is just every cell
 		//the pattern has actually painted
@@ -160,6 +199,21 @@ class InterfaceScene extends Scene {
 		popup.x = 145;
 		popup.y = 30;
 		this.popups.addChild(popup);
+	}
+
+	/** cycles the whole scene through none/protanopia/deuteranopia/tritanopia, applying a Pixi filter to `this.stage` - `render.createColorBlindnessFilter`'s own visual verification */
+	private cycleColorBlindness(): void {
+		const types: readonly (ColorBlindnessType | null)[] = [null, 'protanopia', 'deuteranopia', 'tritanopia'];
+		this.colorBlindnessIndex = (this.colorBlindnessIndex + 1) % types.length;
+		const type = types[this.colorBlindnessIndex];
+		this.stage.filters = type ? [createColorBlindnessFilter(type)] : null;
+	}
+
+	/** queues a toast; two quick presses show the queueing (not overlapping) `ui.Toast` gives */
+	private showToast(): void {
+		const label = new Label({ text: 'Level up!', color: 0xffe680, bold: true });
+		label.anchor.set(0.5);
+		this.toast.show(label);
 	}
 
 	private openHelp(): void {
@@ -313,6 +367,10 @@ class InterfaceScene extends Scene {
 		this.windows.update(dt);
 		//iterate a copy: a finished FloatingText removes itself from `popups` mid-loop
 		for (const popup of [...this.popups.children]) (popup as FloatingText).update(dt);
+
+		this.elapsed += dt;
+		this.clock.setText(this.elapsed.toFixed(1) + 's');
+		this.toast.update(dt);
 	}
 }
 

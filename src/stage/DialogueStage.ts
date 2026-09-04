@@ -1,4 +1,5 @@
 import { Container, Sprite, Texture } from 'pixi.js';
+import { Tweener } from '../core/Tween.ts';
 import { TintedSprite } from '../render/TintedSprite.ts';
 import type { SpriteSheet } from '../render/SpriteSheet.ts';
 
@@ -69,7 +70,7 @@ export class DialogueStage extends Container {
 	private stageWidth: number;
 	private stageHeight: number;
 
-	private tweens: Tween[] = [];
+	private tweener = new Tweener();
 
 	/** how far a character is darkened while someone else is speaking, 0 to 1 */
 	dimAmount = 0.45;
@@ -130,7 +131,7 @@ export class DialogueStage extends Container {
 		}
 
 		sprite.alpha = 0;
-		return this.tween(fade, (t) => {
+		return this.tweener.tween(fade, (t) => {
 			sprite.alpha = t;
 		}).then(settle);
 	}
@@ -177,7 +178,7 @@ export class DialogueStage extends Container {
 		if (fade <= 0) return Promise.resolve();
 
 		sprite.alpha = 0;
-		return this.tween(fade, (t) => {
+		return this.tweener.tween(fade, (t) => {
 			sprite.alpha = t;
 		});
 	}
@@ -195,7 +196,7 @@ export class DialogueStage extends Container {
 			return Promise.resolve();
 		}
 
-		return this.tween(fade, (t) => {
+		return this.tweener.tween(fade, (t) => {
 			actor.sprite.alpha = 1 - t;
 		}).then(() => actor.sprite.destroy());
 	}
@@ -253,37 +254,12 @@ export class DialogueStage extends Container {
 		actor.sprite.y = Math.round((definition.baseline ?? 0.92) * this.stageHeight - wanted);
 	}
 
-	private tween(duration: number, apply: (t: number) => void): Promise<void> {
-		return new Promise((resolve) => {
-			this.tweens.push({ elapsed: 0, duration, apply, resolve });
-		});
-	}
-
 	update(dt: number): void {
-		if (this.tweens.length === 0) return;
-
-		//iterate a copy: a tween's resolve may start another
-		for (const tween of [...this.tweens]) {
-			tween.elapsed += dt;
-			const t = Math.min(1, tween.elapsed / tween.duration);
-			tween.apply(t);
-
-			if (t >= 1) {
-				this.tweens.splice(this.tweens.indexOf(tween), 1);
-				tween.resolve();
-			}
-		}
+		this.tweener.update(dt);
 	}
 
 	/** true while a fade is running, so a script can wait for it */
 	get isBusy(): boolean {
-		return this.tweens.length > 0;
+		return this.tweener.isBusy;
 	}
-}
-
-interface Tween {
-	elapsed: number;
-	duration: number;
-	apply: (t: number) => void;
-	resolve: () => void;
 }
