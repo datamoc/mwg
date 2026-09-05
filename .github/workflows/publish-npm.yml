@@ -3,6 +3,11 @@ name: Publish to npm
 on:
   release:
     types: [published]
+  # lets a maintainer re-run this exact workflow definition by hand (`gh workflow run
+  # publish-npm.yml --ref <tag>`) - `gh run rerun` on a past run replays the workflow
+  # snapshot pinned to that run's original trigger, not the file's current content, so it
+  # cannot be used to test a workflow change against an already-published release
+  workflow_dispatch:
 
 jobs:
   publish:
