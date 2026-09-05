@@ -7,6 +7,20 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-05
+
+### Fixed
+- `Sound.play()`, `Music.play()` and `Synth.playTone()` discarded the `Promise` that
+  `HTMLAudioElement.play()` returns with no rejection handler. Reusing a pooled `Sound`
+  instance before its prior `play()` settled, or `Music`'s crossfade pausing the previous
+  track while the incoming one was still loading, rejects that promise ("The fetching
+  process for the media resource was aborted..."), which surfaced as an unhandled
+  rejection instead of being silently absorbed, the correct handling for an interruption
+  that is expected, not an error.
+- `Camera.update()` computed its deadzone size through the `view` getter, which also
+  clamps to bounds and allocates a rectangle object - two needless allocations every
+  frame for values the deadzone calculation never used.
+
 ## [0.2.0] - 2026-09-05
 
 ### Added
