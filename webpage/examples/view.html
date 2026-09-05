@@ -67,6 +67,27 @@
 			border: 1px solid var(--line-strong);
 			border-radius: 3px;
 		}
+
+		.example-source-heading {
+			font-family: var(--font-display);
+			font-size: 0.85rem;
+			color: var(--muted);
+			margin: 1.5rem 0 0.5rem;
+		}
+
+		.example-source {
+			display: block;
+			margin: 0;
+			padding: 1rem;
+			overflow-x: auto;
+			max-height: 32rem;
+			overflow-y: auto;
+			border: 1px solid var(--line-strong);
+			border-radius: 3px;
+			background: #05070a;
+			font-size: 0.8rem;
+			line-height: 1.5;
+		}
 	</style>
 </head>
 <body>
@@ -98,6 +119,8 @@
 					<p class="controls" id="example-controls" hidden></p>
 					<p class="build-note" id="example-build-note" hidden></p>
 					<img class="example-diagram" id="example-diagram" alt="" hidden />
+					<p class="example-source-heading" id="example-source-heading" hidden>Source</p>
+					<pre class="example-source" id="example-source" hidden><code id="example-source-code"></code></pre>
 				</div>
 
 				<nav class="example-nav">
@@ -150,6 +173,19 @@
 			diagram.alt = example.title + ' - architecture diagram';
 			diagram.hidden = false;
 		}
+
+		//loaded as a classic script rather than fetched, so this page keeps working opened
+		//directly from disk the same way the compiled example itself does (see build-webpage-examples.mjs)
+		var sourceScript = document.createElement('script');
+		sourceScript.src = './' + example.id + '/source.js';
+		sourceScript.onload = function () {
+			if (!window.MWG_EXAMPLE_SOURCE) return;
+			document.getElementById('example-source-code').textContent = window.MWG_EXAMPLE_SOURCE;
+			document.getElementById('example-source-heading').hidden = false;
+			document.getElementById('example-source').hidden = false;
+			window.MWG_EXAMPLE_SOURCE = undefined;
+		};
+		document.body.appendChild(sourceScript);
 
 		var prevExample = examples[(index - 1 + examples.length) % examples.length];
 		var nextExample = examples[(index + 1) % examples.length];

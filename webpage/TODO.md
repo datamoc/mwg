@@ -26,7 +26,12 @@
   plays on its own
   `view.html?ex=<id>` page, one iframe at a time, with prev/next links
   walking the curriculum in the same order and an "open full screen" link
-  straight to the built game.
+  straight to the built game. Each `view.html` page also shows the example's
+  own source underneath (`main.ts`, plus any sibling helper file such as
+  dungeon's `combat.ts`) - `build-webpage-examples.mjs` writes it as a plain
+  `window.MWG_EXAMPLE_SOURCE = "..."` script (`source.js`, generated output
+  next to `game.js`) rather than a `fetch()`, so the page still works opened
+  straight from disk.
 - **Design choices** (`design/index.html`): why mwg looks the way it does -
   the `file://` constraint, module boundaries, where it sits among
   PixiJS/rot.js/Babylon.js, and the RPG event model - each paired with one

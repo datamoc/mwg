@@ -3,6 +3,10 @@
   "version": "0.3.1",
   "description": "A local-file game framework for 2D top-down games, with optional 3D, mobile, and desktop packaging.",
   "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/datamoc/mwg.git"
+  },
   "type": "module",
   "sideEffects": false,
   "publishConfig": {

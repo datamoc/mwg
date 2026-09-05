@@ -9,24 +9,36 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      # trusted publishing: npm exchanges this workflow's own OIDC identity for a short-lived
+      # publish token itself, once npmjs.org's package settings list this repo/workflow as a
+      # trusted publisher - no NPM_TOKEN secret (and no 2FA/OTP prompt a CI run can't answer,
+      # which is what a classic automation token still hit) needed at all
+      id-token: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: '26'
-          cache: npm
-          # points `npm publish` at npmjs.org explicitly, the same registry a local publish
-          # already uses - this is what makes NODE_AUTH_TOKEN below apply to the right host
+          # never cache in a release build: a stale package-manager cache is exactly the
+          # kind of non-reproducible state a published artifact must not depend on
+          package-manager-cache: false
           registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci
+      # trusted publishing needs npm 11.5.1+ for the OIDC exchange; pin high enough that a
+      # future Node LTS bundling an older npm doesn't silently fall back to failing for a
+      # missing token
+      - run: npm install -g npm@^11.5.1
       # the same gate CI already runs on every push; a tag alone proves nothing about
       # whether the code at that tag still builds and passes
       - run: npm run check
       - run: npm test
       - run: npm run build
 
-      - run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # staged, not direct: this uploads the tarball but leaves it pending. The npmjs.org
+      # trusted publisher for this repo is configured to allow only `npm stage publish`, not
+      # `npm publish` - so a compromised or buggy workflow run can never make a version
+      # public by itself. `npm stage approve` needs interactive 2FA and is run by hand
+      # (`npm stage list` shows what's pending); OIDC tokens cannot approve, only stage.
+      - run: npm stage publish --access public
