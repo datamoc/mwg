@@ -59,7 +59,9 @@ export function synthesizeTone(options: ToneOptions = {}): string {
  */
 export function playTone(options: ToneOptions = {}, create: (dataUri: string) => Playable = (uri) => new Audio(uri)): Playable {
 	const playable = create(synthesizeTone(options));
-	void playable.play();
+	// same rejection-swallowing as Sound.play()/Music.play(): an interrupted play() here is
+	// expected, not an error, and must not escape as an unhandled rejection.
+	void Promise.resolve(playable.play()).catch(() => {});
 	return playable;
 }
 
