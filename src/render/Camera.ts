@@ -148,8 +148,10 @@ export class Camera {
 
 	update(dt: number): void {
 		if (this.followTarget && this.followIntensity > 0) {
-			const deadX = (this.view.width * this.deadzone) / 2;
-			const deadY = (this.view.height * this.deadzone) / 2;
+			//half the view's world-unit size, not this.view itself: that getter also clamps to
+			//bounds, which the deadzone has no use for and would cost an extra allocation here
+			const deadX = (this.viewWidth / this._zoom * this.deadzone) / 2;
+			const deadY = (this.viewHeight / this._zoom * this.deadzone) / 2;
 
 			let dx = this.followTarget.x - this.x;
 			let dy = this.followTarget.y - this.y;
