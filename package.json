@@ -7,6 +7,26 @@
     "type": "git",
     "url": "git+https://github.com/datamoc/mwg.git"
   },
+  "keywords": [
+    "game-framework",
+    "game-engine",
+    "2d-game-engine",
+    "html5-games",
+    "pixijs",
+    "babylonjs",
+    "typescript",
+    "tile-map",
+    "top-down",
+    "rpg",
+    "roguelike",
+    "dungeon-crawler",
+    "turn-based",
+    "dialogue-system",
+    "capacitor",
+    "offline-first",
+    "no-server",
+    "local-file"
+  ],
   "type": "module",
   "sideEffects": false,
   "publishConfig": {
