@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# a new push on the same branch/PR supersedes a run still in flight
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '26'
+          cache: npm
+
+      - run: npm ci
+      # tsc --noEmit over src, examples, tools, and tests - the same gate CLAUDE.md's own
+      # "Verifying" section asks a human to run before calling anything done
+      - run: npm run check
+      - run: npm test
+      # the library build (tsc emit + the standalone mw_games.global.js IIFE) - catches a
+      # build break tsc --noEmit alone would not, such as a broken vite config
+      - run: npm run build
