@@ -6,6 +6,7 @@
  * import the narrower entry points instead: `mw_games/core`, `mw_games/render`,
  * `mw_games/roguelike`.
  */
+export { version } from './version.ts';
 export * from './core/index.ts';
 export * from './render/index.ts';
 export * as Resources from './assets/index.ts';

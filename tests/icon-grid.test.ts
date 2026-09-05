@@ -13,6 +13,22 @@ function items(count: number, disabledAt: Set<number> = new Set()): IconGridItem
 	return Array.from({ length: count }, (_, i) => ({ icon: icon(), disabled: disabledAt.has(i) }));
 }
 
+test('a wheel notch moves the selection down or up one row, the same as ListView', () => {
+	const grid = new IconGrid({ width: 120, height: 120, columns: 3, items: items(9) });
+	assert.equal(grid.selectedIndex, 0);
+
+	grid.emit('wheel', { deltaY: 1 } as never);
+	assert.equal(grid.selectedIndex, 3, 'scrolling down moves one row down');
+
+	grid.emit('wheel', { deltaY: -1 } as never);
+	assert.equal(grid.selectedIndex, 0, 'scrolling up moves one row up');
+});
+
+test('every grid is set up for wheel interaction', () => {
+	const grid = new IconGrid({ width: 120, height: 120, columns: 3, items: items(9) });
+	assert.equal(grid.eventMode, 'static');
+});
+
 test('cells lay out in row-major order across the given number of columns', () => {
 	const grid = new IconGrid({ width: 120, height: 120, columns: 3, items: items(7) });
 	assert.equal(grid.rows, 3);

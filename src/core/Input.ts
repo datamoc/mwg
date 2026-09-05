@@ -25,6 +25,48 @@ export const onAction = new Signal<Action>(true);
 /** fires for every keydown, for the rare case that needs the raw key */
 export const onKey = new Signal<KeyboardEvent>(true);
 
+/**
+ * What one wheel notch means, decided by whichever modifier key was held - the same
+ * physical wheel serves three different intents depending on it. `'zoom'` is for a game's
+ * own in-scene zoom (`render.Camera.zoom`, typically), never the browser's own page/pinch
+ * zoom, which `dispatchWheel` already calls `preventDefault()` to stop from firing at the
+ * same time.
+ */
+export type WheelAction = 'scroll' | 'scrollHorizontal' | 'zoom';
+
+export interface WheelInput {
+	action: WheelAction;
+	/** the raw wheel delta for whichever axis `action` reads; positive is down/right/out */
+	delta: number;
+}
+
+/** fires once per wheel notch, resolved to a `WheelAction` by the held modifier; a listener returning true stops it reaching anything else */
+export const onWheel = new Signal<WheelInput>(true);
+
+/**
+ * The documented default modifier convention: plain wheel scrolls vertically, Shift scrolls
+ * horizontally (for a game with wide content - `ListView`'s own plain-wheel handling is a
+ * single column and does not need this), Ctrl/Cmd zooms. Exported so a game can override the
+ * convention itself rather than only being able to work around a baked-in one - unlike the
+ * browser's own inconsistent-across-platforms Ctrl+wheel-means-zoom behaviour, which this
+ * does not rely on: the modifier check happens here, not left to the browser to interpret.
+ */
+export function wheelActionFor(event: Pick<globalThis.WheelEvent, 'ctrlKey' | 'metaKey' | 'shiftKey'>): WheelAction {
+	if (event.ctrlKey || event.metaKey) return 'zoom';
+	if (event.shiftKey) return 'scrollHorizontal';
+	return 'scroll';
+}
+
+function handleWheel(event: globalThis.WheelEvent): void {
+	const action = wheelActionFor(event);
+	//stops the browser's own page-zoom/pinch-zoom from firing alongside an in-game zoom;
+	//plain and shift-scroll are left alone, since preventing those would also block a page
+	//that embeds the game from scrolling normally around it
+	if (action === 'zoom') event.preventDefault();
+	const delta = action === 'scrollHorizontal' && event.deltaX !== 0 ? event.deltaX : event.deltaY;
+	onWheel.dispatch({ action, delta });
+}
+
 let attached = false;
 
 /** the bindings a game starts with; every one can be replaced */
@@ -275,6 +317,9 @@ export function attach(target: EventTarget = window): void {
 	target.addEventListener('keydown', handleKeyDown as EventListener);
 	target.addEventListener('keyup', handleKeyUp as EventListener);
 	window.addEventListener('blur', handleBlur);
+	//not passive: a zoom notch calls preventDefault() to stop the browser's own page/pinch
+	//zoom, which a passive listener is not allowed to do
+	target.addEventListener('wheel', handleWheel as EventListener, { passive: false });
 }
 
 export function detach(target: EventTarget = window): void {
@@ -283,6 +328,7 @@ export function detach(target: EventTarget = window): void {
 
 	target.removeEventListener('keydown', handleKeyDown as EventListener);
 	target.removeEventListener('keyup', handleKeyUp as EventListener);
+	target.removeEventListener('wheel', handleWheel as EventListener);
 	window.removeEventListener('blur', handleBlur);
 	handleBlur();
 }

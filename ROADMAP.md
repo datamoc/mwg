@@ -1607,7 +1607,7 @@ process - appended at low priority, not argued into or out of existence on the s
      correctly under tritanopia. `ui.highContrastTheme` is the ready-made preset, a
      `setTheme` call away. Subtitles confirmed as already satisfied, not revisited
 
-132. requested directly: a general mouse-wheel input primitive, not scoped to any one
+132. ~~a general mouse-wheel input primitive, not scoped to any one
      widget. Raised alongside `ListView` gaining its own plain wheel-to-scroll handling
      (one row per notch, wired directly on that class since its scroll is derived from the
      selection rather than an independent offset - see that class's own doc comment), but
@@ -1622,7 +1622,19 @@ process - appended at low priority, not argued into or out of existence on the s
      the same time as `Camera.zoom` changes. Likely shape: `Input` gains a wheel-to-action
      path parallel to its existing key/gamepad one, with the modifier convention as a
      documented default a game can rebind like any other action, rather than the browser's
-     own inconsistent-across-platforms Ctrl+wheel-means-zoom convention baked in unconditionally
+     own inconsistent-across-platforms Ctrl+wheel-means-zoom convention baked in unconditionally~~
+     - `Input.onWheel`, a `Signal<WheelInput>` parallel to `onKey`, fed by one real `wheel`
+     listener `attach()` now installs (`{ passive: false }`, since a `zoom` notch calls
+     `preventDefault()` and a passive listener may not). `wheelActionFor` is the exported,
+     pure modifier-decision function (plain → `scroll`, Shift → `scrollHorizontal`, Ctrl/Cmd
+     → `zoom`) - a game can call it itself to build its own convention rather than being
+     stuck with this one. Verified two ways: `wheelActionFor`'s own logic directly, and a
+     real `WheelEvent` dispatched in a running browser confirming `preventDefault()` actually
+     fires for a Ctrl+wheel notch and not for a plain one. `IconGrid` also gained the same
+     one-row-per-notch wheel handling `ListView` already had, closing the other half of this
+     item's own "cannot be reused by `IconGrid`" gap; wiring a game's own `Camera.zoom` to
+     `onWheel`'s `zoom` action is left to the game, the same way `Camera.shake`/`follow`
+     already are
 
 133. check rendering capabilities across WebGL, WebGPU, and WGSL. This is a compatibility
      audit, not a promise to replace PixiJS or Babylon.js renderers: document the minimum
@@ -1751,11 +1763,16 @@ process - appended at low priority, not argued into or out of existence on the s
      runtime confirmation that `eventMode`/`cursor`/the listener are actually attached to
      each row, not by a driven click in a real browser
 
-139. a smaller process note from the same stress-test as item 138: comments in that port's
+139. ~~a smaller process note from the same stress-test as item 138: comments in that port's
      own code claimed three separate times that "`mwg` doesn't have X" for a capability
      (`Button`, `Bar`, `FloatingText`) added to `mwg` since those comments were written,
      caught only by manually diffing against the current checkout each time. Not a defect in
      `mwg` itself, but a discoverability gap for anything consuming it: a lightweight
      changelog, or an exported version constant readable without grepping source (`import {
      version } from '@datamoc/mw_games'`, say), would make "is this still missing, or did it
-     ship since I last checked" cheaper to answer than re-deriving it by hand every time
+     ship since I last checked" cheaper to answer than re-deriving it by hand every time~~ -
+     `import { version } from '@datamoc/mw_games'`, exactly as named above. Kept in sync with
+     `package.json` by a test that fails the moment they disagree, rather than a build step
+     that injects it - simpler, and this project's own build has no earlier step this would
+     need to run ahead of. A full changelog stays unbuilt; the version constant alone answers
+     the actual question this item was raised over ("did this ship since I last checked")

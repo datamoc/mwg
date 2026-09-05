@@ -123,6 +123,12 @@ export class IconGrid extends Container {
 		this.cellsLayer.mask = this.mask_;
 		this.drawMask();
 
+		//a masked grid with no click support (before this session) or wheel support was
+		//otherwise unreachable past the visible rows without the keyboard - the same gap
+		//`ListView`'s own wheel handling closed there, one row per notch here too
+		this.eventMode = 'static';
+		this.on('wheel', (event) => this.move(0, event.deltaY > 0 ? 1 : -1));
+
 		this.setItems(options.items ?? []);
 		themeChanged.add(this.themeListener);
 	}
