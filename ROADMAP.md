@@ -1224,9 +1224,22 @@ among the non-gated items. The 3D block was later approved and implemented.
      verbatim. The repository includes `capacitor.config.json`, Capacitor core/CLI
      dependencies, and `cap:sync`/`cap:open:*` scripts targeting the generated tower-defense
      web build; native platform folders remain host-tool output created by `npx cap add` and
-     are `.gitignore`d, not committed. Still open: the store-touchpoints and touch-input
-     questions above, since running the app inside an emulator or on a device needs Android
-     Studio/Xcode, not available in this environment.
+     are `.gitignore`d, not committed.
+     ~~The touch-input half closed next: `core.Input` gained `touchCode`/`bindTouch`/
+     `pressTouch`/`releaseTouch`, following the exact same pattern `bindButton`/`pollGamepads`
+     already established for a gamepad - bind a synthetic code to an action once, then flip
+     that one code's held state, so `isDown`/`justPressed`/`justReleased` keep working
+     unmodified for a touch-driven action the same way they already do for a key or a pad
+     press. `ui.Button` gained `onPress`/`onRelease` signals (fired on pointerdown and
+     pointerup/pointerupoutside) as the hook a virtual on-screen d-pad button needs to feed
+     `pressTouch`/`releaseTouch` for hold-to-repeat movement, which a click-only `onClick`
+     cannot do. `core.Input` also gained `attachSwipe`, resolving a one-finger drag into one
+     of the 8 movement-action pulses by angle (or a `tap` action for a short drag) - the more
+     common mobile roguelike control scheme of one swipe per tile rather than a held
+     direction. `core.PlayerInput` gained matching `bindTouch`/`pressTouch`/`releaseTouch`
+     wrappers for local multiplayer's own per-player scoping. Still open: the store-touchpoints
+     question above, since verifying it needs Android Studio/Xcode, not available in this
+     environment.~~
 
 111. ~~requested directly as "minimal typo correction on the go", named example: curved
      (typographic) apostrophes in French, Italian and Dutch strings, rather than the plain
@@ -1797,6 +1810,21 @@ process - appended at low priority, not argued into or out of existence on the s
      bundles remained ready at the end. Byte-progress reporting for a server/desktop host
      specifically (as opposed to the asset-count fraction now wired through) stays open, since
      nothing here runs inside such a host yet to give that number meaning - see item 136.~~
+     ~~Byte-progress closed next, now that item 136's desktop host exists to give it meaning:
+     `assets.fetchWithByteProgress` reports real cumulative bytes transferred (and the known
+     total, from `Content-Length`, or `null` when a server never sends one) as a
+     `ReadableStream` reader delivers them - deliberately a separate function from `load`'s own
+     `AssetProgress`, since that one's doc comment already explains why it cannot back a byte
+     figure uniformly across every Pixi loader; this one only reports what `fetch` itself can
+     back. `fetch` is blocked from `file://` entirely, so the gap this closes needed a real
+     origin to mean anything, which is what `desktop/MwgDesktopHost` gained: it now serves the
+     built game through `CoreWebView2.SetVirtualHostNameToFolderMapping` (a real
+     `https://mwg.local/` origin WebView2 maps to the built game's own folder) instead of a
+     plain `file://` navigation, the same game build otherwise completely unchanged. No shipped
+     example calls `fetchWithByteProgress` itself - every one of this project's own examples is
+     built to be opened by double-clicking, which is exactly the `file://` tier this primitive
+     is not for, so forcing a caller into one would be misleading rather than honest about what
+     it demonstrates. The desktop host is the real, honest integration point.~~
 
 138. ~~three gaps surfaced by stress-testing `mwg` against a real, non-trivial game (an SPD-
      shaped port), relayed with exact drop-in specs written against the checkout at the time,
@@ -1937,7 +1965,7 @@ process - appended at low priority, not argued into or out of existence on the s
      to attach their stats to a written report), so that half was already covered without
      this item's own guess ever biting. 17 unit tests across `PlayerStats`/`TelemetryClient`.
 
-144. requested directly from a screenshot of `examples/three-d`: the hero capsule clipping
+144. ~~requested directly from a screenshot of `examples/three-d`: the hero capsule clipping
      into the side of a raised elevation column. Root cause, confirmed by reading the
      example's own path data against `mwg/3d`'s height formula: `hero.moveTo` interpolates
      in a flat plane with no notion of terrain height, collision, or step-up at all - `mwg/3d`
@@ -1952,6 +1980,22 @@ process - appended at low priority, not argued into or out of existence on the s
      height, resolving a moving capsule/AABB against solid terrain and other meshes - is
      unbuilt and logged here at low priority per this project's own process, the 3D-module
      counterpart to item 114.
+     Closed: `mwg/3d` gained `Collision3D.ts` (`buildHeightIndex`, `cellAt`, `heightAt`,
+     `resolveCapsuleAgainstGrid`), horizontal collision for `createTileGrid3D`'s stepped grid
+     specifically - a continuous `createHeightmapTerrain3D` ground already has Babylon's own
+     `GroundMesh.getHeightAtCoordinates` and needed nothing new. `resolveCapsuleAgainstGrid`
+     samples along a frame's intended (x, z) move rather than solving the swept shape
+     analytically, the same simple-over-exact trade-off `rpg.Collision`'s own doc comment
+     already makes for its 2D tile sweep, chosen here because it stays shape-agnostic across
+     both `createTileGrid3D` shapes (square and hex) without hex-edge-specific geometry.
+     `Character3D` gained an optional third constructor argument, `collideXZ`, called every
+     `update()` to clamp the intended move before it is applied - omitted, `moveTo` behaves
+     exactly as before this existed. `examples/three-d` now wires `resolveCapsuleAgainstGrid`
+     into its own hero and walks the *original* diagonal path that used to clip through the
+     ridge (`x >= 6 && y >= 5`) - the demo detects and stops at the collision itself now,
+     rather than the path being hand-routed around it. Verified with a dedicated regression
+     test reproducing the exact reported bug shape (a flat approach into a raised column) in
+     `tests/three-d-collision.test.ts`, not just the general-case math.~~
 
 145. a simplify pass over this same session's own work flagged `ui.Label`'s `stroke`,
      `resolution`, and `roundPixels` options (and `ui.Button`'s `skin`/`label` seam) as having

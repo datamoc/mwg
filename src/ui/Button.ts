@@ -30,6 +30,10 @@ export interface ButtonOptions {
 	label?: Omit<LabelOptions, 'text'>;
 	disabled?: boolean;
 	onClick?: () => void;
+	/** fires on pointerdown, before onClick - the hook a virtual d-pad button needs to feed `core.Input`'s `pressTouch` for hold-to-repeat movement, which a click-only callback cannot do */
+	onPress?: () => void;
+	/** fires on pointerup or pointerupoutside, whether or not it completed a click - the `pressTouch` counterpart to `onPress` */
+	onRelease?: () => void;
 }
 
 
@@ -45,6 +49,8 @@ export interface ButtonOptions {
  */
 export class Button extends Container {
 	readonly onClick = new Signal<void>();
+	readonly onPress = new Signal<void>();
+	readonly onRelease = new Signal<void>();
 
 	private readonly skin?: ButtonSkin;
 	private readonly labelOptions: Omit<LabelOptions, 'text'>;
@@ -79,17 +85,29 @@ export class Button extends Container {
 		if (this.labelText) this.addChild(this.labelText);
 
 		if (options.onClick) this.onClick.add(options.onClick);
+		if (options.onPress) this.onPress.add(options.onPress);
+		if (options.onRelease) this.onRelease.add(options.onRelease);
 
 		this.eventMode = 'static';
 		this.on('pointerover', () => this.setState('hover'));
 		this.on('pointerout', () => this.setState('idle'));
-		this.on('pointerdown', () => this.setState('pressed'));
+		this.on('pointerdown', () => {
+			this.setState('pressed');
+			this.onPress.dispatch();
+		});
 		this.on('pointerup', () => {
 			const wasPressed = this.state === 'pressed';
 			this.setState('hover');
-			if (wasPressed) this.onClick.dispatch();
+			if (wasPressed) {
+				this.onRelease.dispatch();
+				this.onClick.dispatch();
+			}
 		});
-		this.on('pointerupoutside', () => this.setState('idle'));
+		this.on('pointerupoutside', () => {
+			const wasPressed = this.state === 'pressed';
+			this.setState('idle');
+			if (wasPressed) this.onRelease.dispatch();
+		});
 
 		this.setState(this.disabled_ ? 'disabled' : 'idle');
 		themeChanged.add(this.themeListener);

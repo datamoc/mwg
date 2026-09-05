@@ -9,6 +9,8 @@ import {
 	createTileGrid3D,
 	createHeightmapTerrain3D,
 	gridPoint3D,
+	buildHeightIndex,
+	resolveCapsuleAgainstGrid,
 } from '../../src/three-d/index.ts';
 import type { GridCell3D } from '../../src/three-d/index.ts';
 
@@ -71,13 +73,18 @@ body.position.y = 0.75;
 const heroMaterial = new StandardMaterial('hero-material', game.scene);
 heroMaterial.diffuseColor = Color3.FromHexString('#f0b35b');
 body.material = heroMaterial;
-const hero = new Character3D(heroRoot);
 
-//stays inside the flat interior the whole way: y never reaches 5, so this never crosses
-//into the raised ridge (`x >= 6 && y >= 5`) or the border wall - `hero.moveTo` interpolates
-//in a flat plane with no collision or step-up of its own, so a path that clips a raised
-//column's side is a path-authoring bug, not something the demo can detect on its own yet
-const path = [[1, 1], [8, 1], [8, 4], [1, 4], [1, 1]] as const;
+//real collision, not a path-authoring workaround: this is item 144's own fix. The path below
+//cuts diagonally straight across the raised ridge (`x >= 6 && y >= 5`) between two flat
+//waypoints on purpose, the exact line that used to clip through the column's side - now
+//resolveCapsuleAgainstGrid stops the hero flush against it instead, the same way
+//rpg.Collision stops a 2D mover at a solid tile's edge
+const squareHeights = buildHeightIndex(squareCells);
+const hero = new Character3D(heroRoot, [], (from, to) =>
+	resolveCapsuleAgainstGrid(from, to, { shape: 'square', heights: squareHeights, maxStepUp: 0 })
+);
+
+const path = [[1, 1], [8, 1], [8, 4], [2, 6], [1, 1]] as const;
 let pathIndex = 0;
 function nextHeroTarget(): void {
 	const [x, y] = path[pathIndex++ % path.length];

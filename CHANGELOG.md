@@ -7,6 +7,32 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+- `core.Input` gains touch input: `touchCode`/`bindTouch`/`pressTouch`/`releaseTouch` follow
+  the same synthetic-code pattern `bindButton`/`pollGamepads` already use for a gamepad, so
+  `isDown`/`justPressed`/`justReleased` work unmodified for a touch-driven action. `attachSwipe`
+  resolves a one-finger drag into one of 8 directional action pulses by angle, or a `tap`
+  action for a short drag. `core.PlayerInput` gains matching `bindTouch`/`pressTouch`/
+  `releaseTouch` wrappers.
+- `ui.Button` gains `onPress`/`onRelease` signals (pointerdown, and pointerup/pointerupoutside),
+  the hook a virtual on-screen d-pad button needs to feed `pressTouch`/`releaseTouch` for
+  hold-to-repeat movement, independent of `onClick`.
+- `mwg/3d` gains `Collision3D.ts` (`buildHeightIndex`, `cellAt`, `heightAt`,
+  `resolveCapsuleAgainstGrid`): horizontal collision against `createTileGrid3D`'s stepped
+  grid, stopping a moving capsule/AABB at a raised column's edge instead of clipping through
+  it. `Character3D` takes an optional third constructor argument, `collideXZ`, to plug this
+  in; omitted, movement behaves exactly as before.
+- `assets.fetchWithByteProgress` reports real cumulative bytes transferred (and the known
+  total, from `Content-Length`) for a real origin - a dev server, or a desktop host serving
+  through a virtual origin rather than `file://`. `desktop/MwgDesktopHost` now serves the
+  built game through `CoreWebView2.SetVirtualHostNameToFolderMapping` (a real `https://`
+  origin) instead of a plain `file://` navigation, which is what makes this - and any other
+  real network call - actually usable inside it.
+
+### Fixed
+- `examples/three-d`'s hero now actually collides with the raised ridge its demo path crosses,
+  rather than the path being hand-routed around it.
+
 ## [0.3.1] - 2026-09-05
 
 ### Added

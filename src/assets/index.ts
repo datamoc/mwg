@@ -123,3 +123,5 @@ export async function release(paths: string[]): Promise<void> {
 
 export { AssetStream } from './Streaming.ts';
 export type { AssetBundle, AssetStreamOptions } from './Streaming.ts';
+export { fetchWithByteProgress } from './ByteProgress.ts';
+export type { ByteProgress, OnByteProgress } from './ByteProgress.ts';

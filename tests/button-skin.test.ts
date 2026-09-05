@@ -36,6 +36,55 @@ test('custom skin follows input, resize, disabled and theme changes', () => {
 	assert.equal(Texture.WHITE.destroyed, false);
 });
 
+test('onPress fires on pointerdown and onRelease on pointerup, independent of onClick', () => {
+	let presses = 0;
+	let releases = 0;
+	let clicks = 0;
+	const event = new FederatedPointerEvent(new EventBoundary());
+	const button = new Button({
+		width: 40, height: 20,
+		onPress: () => presses++,
+		onRelease: () => releases++,
+		onClick: () => clicks++,
+	});
+
+	button.emit('pointerdown', event);
+	assert.equal(presses, 1);
+	assert.equal(releases, 0, 'onRelease must not fire on press');
+
+	button.emit('pointerup', event);
+	assert.equal(releases, 1);
+	assert.equal(clicks, 1);
+
+	button.destroy({ children: true });
+});
+
+test('onRelease fires for pointerupoutside too, so a virtual d-pad button released by dragging off it still stops repeating', () => {
+	let releases = 0;
+	let clicks = 0;
+	const event = new FederatedPointerEvent(new EventBoundary());
+	const button = new Button({ width: 40, height: 20, onRelease: () => releases++, onClick: () => clicks++ });
+
+	button.emit('pointerdown', event);
+	button.emit('pointerupoutside', event);
+	assert.equal(releases, 1);
+	assert.equal(clicks, 0, 'a drag-off must not count as a click');
+
+	button.destroy({ children: true });
+});
+
+test('onRelease does not fire for pointerup or pointerupoutside without a prior pointerdown', () => {
+	let releases = 0;
+	const event = new FederatedPointerEvent(new EventBoundary());
+	const button = new Button({ width: 40, height: 20, onRelease: () => releases++ });
+
+	button.emit('pointerup', event);
+	button.emit('pointerupoutside', event);
+	assert.equal(releases, 0);
+
+	button.destroy({ children: true });
+});
+
 test('label render options survive theme changes', () => {
 	const label = new Label({ text: 'Test', stroke: { color: 0x123456, width: 2 }, resolution: 2, roundPixels: true });
 	setTheme({});

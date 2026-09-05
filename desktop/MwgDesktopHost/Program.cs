@@ -1,3 +1,4 @@
+using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
 namespace MwgDesktopHost;
@@ -7,11 +8,17 @@ namespace MwgDesktopHost;
 /// own vite/emit-page pipeline runs unmodified inside a native Windows shell, the same way
 /// item 110 proved it inside a Capacitor shell.
 ///
-/// This loads the built game's own index.html directly via a `file://` navigation - the
-/// point being that nothing about the game's build changes for this host. It is a reference
-/// and a build/run smoke test, not a shipping installer: no packaging, code signing, or
-/// update mechanism is attempted here, per the item's own "start with a documented reference
-/// host and build/run smoke test" scope.
+/// Serves the built game through <c>SetVirtualHostNameToFolderMapping</c> rather than a plain
+/// `file://` navigation - a real `https://` origin WebView2 maps straight to this folder on
+/// disk, with none of `file://`'s restrictions (no `fetch`/XHR, no same-origin `<img>`/WebGL
+/// for local files). The game's own build stays untouched either way - only which URL loads
+/// it changes - but the virtual host is what makes item 137's `assets.fetchWithByteProgress`
+/// (or a WebSocket multiplayer connection, or any other real network call) actually work
+/// inside this host at all, closing the exact gap item 137 named: "nothing here runs inside
+/// such a host yet to give that number meaning". It is a reference and a build/run smoke
+/// test, not a shipping installer: no packaging, code signing, or update mechanism is
+/// attempted here, per the item's own "start with a documented reference host and build/run
+/// smoke test" scope.
 /// </summary>
 internal static class Program
 {
@@ -53,7 +60,15 @@ internal static class Program
 		};
 		form.Controls.Add(webView);
 
-		form.Load += (_, _) => webView.Source = new Uri(gamePage);
+		form.Load += async (_, _) =>
+		{
+			await webView.EnsureCoreWebView2Async();
+			var gameFolder = Path.GetDirectoryName(gamePage)!;
+			webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+				"mwg.local", gameFolder, CoreWebView2HostResourceAccessKind.Allow
+			);
+			webView.Source = new Uri("https://mwg.local/index.html");
+		};
 
 		Application.Run(form);
 	}

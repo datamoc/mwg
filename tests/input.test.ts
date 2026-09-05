@@ -20,6 +20,11 @@ import {
 	justReleased,
 	endFrame,
 	rumble,
+	touchCode,
+	bindTouch,
+	pressTouch,
+	releaseTouch,
+	attachSwipe,
 } from '../src/core/Input.ts';
 
 function fakePad(index: number, buttons: number[] = [], axes: number[] = []): Gamepad {
@@ -200,4 +205,142 @@ test('rumble is a no-op, not a throw, on a pad with no vibration actuator', () =
 
 test('rumble is a no-op on an out-of-range pad index', () => {
 	assert.doesNotThrow(() => rumble(5, { duration: 100 }, [fakePad(0)]));
+});
+
+//---- touch input ----
+
+test('touchCode never collides with a real KeyboardEvent.code or a gamepad pseudo-code', () => {
+	assert.ok(touchCode('dpad-up').startsWith('Touch:'));
+});
+
+test('pressTouch/releaseTouch drive isDown/justPressed/justReleased exactly like a bound key', () => {
+	bindTouch('touch-confirm', 'confirm-button');
+
+	pressTouch('confirm-button');
+	assert.equal(isDown('touch-confirm'), true);
+	assert.equal(justPressed('touch-confirm'), true);
+
+	endFrame();
+	assert.equal(isDown('touch-confirm'), true, 'holding the touch control keeps the action down past the press frame');
+
+	releaseTouch('confirm-button');
+	assert.equal(isDown('touch-confirm'), false);
+	assert.equal(justReleased('touch-confirm'), true);
+
+	unbind('touch-confirm');
+});
+
+test('pressTouch is a no-op if already held, so a duplicate pointerdown does not re-fire justPressed', () => {
+	bindTouch('touch-repeat', 'repeat-button');
+	pressTouch('repeat-button');
+	endFrame();
+
+	pressTouch('repeat-button');
+	assert.equal(justPressed('touch-repeat'), false, 'a second press while already held must not look like a fresh press');
+
+	releaseTouch('repeat-button');
+	unbind('touch-repeat');
+});
+
+test('a touch control bound to two actions presses and releases both, the same way a shared key would', () => {
+	bindTouch('touch-shared-a', 'shared-button');
+	bindTouch('touch-shared-b', 'shared-button');
+
+	pressTouch('shared-button');
+	assert.equal(isDown('touch-shared-a'), true);
+	assert.equal(isDown('touch-shared-b'), true);
+
+	releaseTouch('shared-button');
+	assert.equal(isDown('touch-shared-a'), false);
+	assert.equal(isDown('touch-shared-b'), false);
+
+	unbind('touch-shared-a');
+	unbind('touch-shared-b');
+});
+
+function pointerEvent(type: string, props: { pointerId?: number; clientX: number; clientY: number }): Event {
+	const event = new Event(type) as Event & { pointerId: number; clientX: number; clientY: number };
+	event.pointerId = props.pointerId ?? 1;
+	event.clientX = props.clientX;
+	event.clientY = props.clientY;
+	return event;
+}
+
+test('attachSwipe resolves a rightward drag to the right action', () => {
+	const target = new EventTarget();
+	const detach = attachSwipe(target, { actions: { right: 'swipe-right' } });
+
+	target.dispatchEvent(pointerEvent('pointerdown', { clientX: 0, clientY: 0 }));
+	target.dispatchEvent(pointerEvent('pointerup', { clientX: 100, clientY: 0 }));
+
+	assert.equal(justPressed('swipe-right'), true);
+	assert.equal(isDown('swipe-right'), false, 'a swipe is a pulse, not a held direction');
+
+	endFrame();
+	detach();
+});
+
+test('attachSwipe resolves all 8 directions by angle', () => {
+	const target = new EventTarget();
+	const actions = {
+		up: 'swipe-up', down: 'swipe-down', left: 'swipe-left', right: 'swipe-right',
+		upLeft: 'swipe-upLeft', upRight: 'swipe-upRight', downLeft: 'swipe-downLeft', downRight: 'swipe-downRight',
+	};
+	const detach = attachSwipe(target, { actions });
+
+	const cases: [number, number, string][] = [
+		[100, 0, 'swipe-right'],
+		[100, 100, 'swipe-downRight'],
+		[0, 100, 'swipe-down'],
+		[-100, 100, 'swipe-downLeft'],
+		[-100, 0, 'swipe-left'],
+		[-100, -100, 'swipe-upLeft'],
+		[0, -100, 'swipe-up'],
+		[100, -100, 'swipe-upRight'],
+	];
+
+	for (const [dx, dy, action] of cases) {
+		target.dispatchEvent(pointerEvent('pointerdown', { clientX: 0, clientY: 0 }));
+		target.dispatchEvent(pointerEvent('pointerup', { clientX: dx, clientY: dy }));
+		assert.equal(justPressed(action), true, `(${dx}, ${dy}) should resolve to ${action}`);
+		endFrame();
+	}
+
+	detach();
+});
+
+test('attachSwipe dispatches the tap action for a drag shorter than minDistance', () => {
+	const target = new EventTarget();
+	const detach = attachSwipe(target, { actions: { tap: 'swipe-tap', right: 'swipe-right' }, minDistance: 24 });
+
+	target.dispatchEvent(pointerEvent('pointerdown', { clientX: 0, clientY: 0 }));
+	target.dispatchEvent(pointerEvent('pointerup', { clientX: 5, clientY: 0 }));
+
+	assert.equal(justPressed('swipe-tap'), true);
+	assert.equal(justPressed('swipe-right'), false);
+
+	endFrame();
+	detach();
+});
+
+test('attachSwipe ignores a pointerup from a different pointerId than the one that started the drag', () => {
+	const target = new EventTarget();
+	const detach = attachSwipe(target, { actions: { right: 'swipe-multi-right' } });
+
+	target.dispatchEvent(pointerEvent('pointerdown', { pointerId: 1, clientX: 0, clientY: 0 }));
+	target.dispatchEvent(pointerEvent('pointerup', { pointerId: 2, clientX: 100, clientY: 0 }));
+
+	assert.equal(justPressed('swipe-multi-right'), false);
+	detach();
+});
+
+test('detaching attachSwipe stops it from reacting to further gestures', () => {
+	const target = new EventTarget();
+	const detach = attachSwipe(target, { actions: { right: 'swipe-detach-right' } });
+	detach();
+
+	target.dispatchEvent(pointerEvent('pointerdown', { clientX: 0, clientY: 0 }));
+	target.dispatchEvent(pointerEvent('pointerup', { clientX: 100, clientY: 0 }));
+
+	assert.equal(justPressed('swipe-detach-right'), false);
 });

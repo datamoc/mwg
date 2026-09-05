@@ -52,6 +52,20 @@ export class PlayerInput {
 		Input.bindAxis(this.scoped(action), this.padIndex, axis, direction);
 	}
 
+	/** binds this player's own action to an on-screen touch control, independent of any other player's binding for the same action name */
+	bindTouch(action: Action, id: string = action): void {
+		Input.bindTouch(this.scoped(action), `${this.id}:${id}`);
+	}
+
+	/** presses this player's own touch control, bound previously with `bindTouch` */
+	pressTouch(id: string): void {
+		Input.pressTouch(`${this.id}:${id}`);
+	}
+
+	releaseTouch(id: string): void {
+		Input.releaseTouch(`${this.id}:${id}`);
+	}
+
 	isDown(action: Action): boolean {
 		return Input.isDown(this.scoped(action));
 	}

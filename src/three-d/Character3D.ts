@@ -33,17 +33,37 @@ function resolveSource(source: string): string {
  * this is what turns one of them into something a game can actually trigger, the way a walk
  * cycle baked into a mesh needs to be, rather than leaving them loaded but unreachable.
  */
+/**
+ * Clamps one frame's intended horizontal move to wherever collision actually allows - the
+ * hook `mwg/3d`'s own grid collision (`resolveCapsuleAgainstGrid`) plugs into. `blocked`,
+ * when the resolver reports it (`resolveCapsuleAgainstGrid` always does), tells `update`
+ * directly whether the move was cut short, rather than `update` re-deriving the same fact by
+ * comparing the resolved position against the intended one through separate floating-point
+ * arithmetic - two numbers that are conceptually equal are not guaranteed bit-identical.
+ */
+export type CollideXZ = (
+	from: { x: number; z: number },
+	to: { x: number; z: number }
+) => { x: number; z: number; blocked?: boolean };
+
 export class Character3D {
 	readonly node: TransformNode;
 	private target: Vector3 | null = null;
 	private speed = 0;
+	private readonly collideXZ?: CollideXZ;
 
 	private readonly animations: Map<string, AnimationGroup>;
 	private currentClip: AnimationGroup | null = null;
 
-	constructor(node: TransformNode, animations: readonly AnimationGroup[] = []) {
+	/**
+	 * @param collideXZ optional, like `rpg.FreeMover` stays unopinionated about collision
+	 * until a game wires one in - omitted, `moveTo` interpolates through open space with no
+	 * notion of terrain height or collision at all, same as before this existed.
+	 */
+	constructor(node: TransformNode, animations: readonly AnimationGroup[] = [], collideXZ?: CollideXZ) {
 		this.node = node;
 		this.animations = new Map(animations.map((group) => [group.name, group]));
+		this.collideXZ = collideXZ;
 	}
 
 	/** true when an animation clip of this name was imported with the model */
@@ -89,15 +109,34 @@ export class Character3D {
 
 	update(deltaSeconds: number): boolean {
 		if (!this.target) return false;
+
 		const distance = Vector3.Distance(this.node.position, this.target);
-		if (distance <= this.speed * deltaSeconds) {
-			this.node.position.copyFrom(this.target);
+		const reachesTarget = distance <= this.speed * deltaSeconds;
+		const rawDirection = this.target.subtract(this.node.position);
+		const intended = reachesTarget ? this.target : this.node.position.add(rawDirection.normalize().scale(this.speed * deltaSeconds));
+		if (!reachesTarget) this.node.rotation.y = Math.atan2(rawDirection.x, rawDirection.z);
+
+		if (this.collideXZ) {
+			const from = { x: this.node.position.x, z: this.node.position.z };
+			const to = { x: intended.x, z: intended.z };
+			const resolved = this.collideXZ(from, to);
+			this.node.position.set(resolved.x, intended.y, resolved.z);
+			//stopped short of where it meant to go - the target it was walking toward is no
+			//longer reachable along this line, the same "give up on this path" a caller of
+			//rpg.Collision's resolveAabbAgainstTiles already has to decide for itself
+			const blocked = resolved.blocked ?? (resolved.x !== to.x || resolved.z !== to.z);
+			if (blocked) {
+				this.target = null;
+				return false;
+			}
+		} else {
+			this.node.position.copyFrom(intended);
+		}
+
+		if (reachesTarget) {
 			this.target = null;
 			return false;
 		}
-		const direction = this.target.subtract(this.node.position).normalize();
-		this.node.position.addInPlace(direction.scale(this.speed * deltaSeconds));
-		this.node.rotation.y = Math.atan2(direction.x, direction.z);
 		return true;
 	}
 

@@ -144,6 +144,29 @@ function actionsFor(code: string): Action[] {
 	return out;
 }
 
+/**
+ * Presses a held code - a key, a gamepad button/axis, or a touch control - fanning out to
+ * every action currently bound to it. Shared by `handleKeyDown`, `pollGamepads`, and
+ * `pressTouch` rather than each repeating the same "add to `held`, mark every bound action
+ * pressed this frame, dispatch `onAction`" sequence, since none of them differ in anything
+ * but where `code` came from.
+ */
+function pressCode(code: string): void {
+	if (held.has(code)) return;
+	held.add(code);
+	for (const action of actionsFor(code)) {
+		pressedThisFrame.add(action);
+		onAction.dispatch(action);
+	}
+}
+
+/** the release counterpart to `pressCode` */
+function releaseCode(code: string): void {
+	if (!held.has(code)) return;
+	held.delete(code);
+	for (const action of actionsFor(code)) releasedThisFrame.add(action);
+}
+
 /** true for as long as the key is held */
 export function isDown(action: Action): boolean {
 	const keys = bindings.get(action);
@@ -181,19 +204,12 @@ function handleKeyDown(event: KeyboardEvent): void {
 		return;
 	}
 
-	held.add(event.code);
-	for (const action of actionsFor(event.code)) {
-		pressedThisFrame.add(action);
-		onAction.dispatch(action);
-	}
+	pressCode(event.code);
 	onKey.dispatch(event);
 }
 
 function handleKeyUp(event: KeyboardEvent): void {
-	held.delete(event.code);
-	for (const action of actionsFor(event.code)) {
-		releasedThisFrame.add(action);
-	}
+	releaseCode(event.code);
 }
 
 function handleBlur(): void {
@@ -260,22 +276,14 @@ export function pollGamepads(
 		}
 	}
 
-	for (const code of gamepadDown) {
-		if (held.has(code)) continue;
-		held.add(code);
-		for (const action of actionsFor(code)) {
-			pressedThisFrame.add(action);
-			onAction.dispatch(action);
-		}
-	}
+	for (const code of gamepadDown) pressCode(code);
 	//a real KeyboardEvent.code never starts with "Gamepad", so this only ever releases codes
 	//pollGamepads itself could have added, never a key still held from handleKeyDown; safe to
 	//delete the current entry mid-iteration, since Set iteration order is insertion order and
 	//a deletion never revisits or skips an entry not yet reached
 	for (const code of held) {
 		if (gamepadDown.has(code) || !code.startsWith('Gamepad')) continue;
-		held.delete(code);
-		for (const action of actionsFor(code)) releasedThisFrame.add(action);
+		releaseCode(code);
 	}
 }
 
@@ -308,6 +316,136 @@ export function rumble(
 		weakMagnitude: options.weakMagnitude ?? 1,
 		strongMagnitude: options.strongMagnitude ?? 1,
 	});
+}
+
+//---- touch input ----
+//
+//a touchscreen phone has no keyboard and, unless a gamepad is paired, no Gamepad API input
+//either - the gap item 110's own Capacitor integration named as "untested, not unconsidered"
+//once `Button`'s existing pointer support is set aside. This follows the exact same pattern
+//`bindButton`/`pollGamepads` already established: bind a synthetic code to an action once,
+//then flip that one code's held state - `isDown`/`justPressed`/`justReleased` already work
+//unmodified, since none of them know or care whether a held code came from a key, a pad, or
+//an on-screen control.
+
+/** the pseudo key code for an on-screen touch control identified by `id` - bind it the same way a `KeyboardEvent.code` is bound */
+export function touchCode(id: string): string {
+	return `Touch:${id}`;
+}
+
+/** binds this player's own action to an on-screen touch control, the same way `bindButton` wires up a gamepad button - call once during setup, then toggle it with `pressTouch`/`releaseTouch` */
+export function bindTouch(action: Action, id: string = action): void {
+	addBindings(action, [touchCode(id)]);
+}
+
+/**
+ * Presses an on-screen touch control bound with `bindTouch`, e.g. from a `Button`'s
+ * `onPress` - shares the same held/`justPressed` state a real key does, so holding a virtual
+ * d-pad button repeats a move the same way holding an arrow key does, rather than firing
+ * once per tap the way `Button.onClick` alone would.
+ */
+export function pressTouch(id: string): void {
+	pressCode(touchCode(id));
+}
+
+export function releaseTouch(id: string): void {
+	releaseCode(touchCode(id));
+}
+
+/** where a swipe's own 8 directions and its short in-place tap map to, defaulting to this project's own default movement/wait bindings */
+export interface SwipeActions {
+	up?: Action;
+	down?: Action;
+	left?: Action;
+	right?: Action;
+	upLeft?: Action;
+	upRight?: Action;
+	downLeft?: Action;
+	downRight?: Action;
+	/** dispatched for a touch that moved less than `minDistance`; omit to ignore taps */
+	tap?: Action;
+}
+
+const DEFAULT_SWIPE_ACTIONS: Required<Omit<SwipeActions, 'tap'>> = {
+	up: 'up', down: 'down', left: 'left', right: 'right',
+	upLeft: 'upLeft', upRight: 'upRight', downLeft: 'downLeft', downRight: 'downRight',
+};
+
+//screen-space octant order starting at 0 radians (right) and going clockwise (since screen
+//y grows downward) - index matches `Math.round(angle / (PI/4))` folded into 0..7 by attachSwipe
+const SWIPE_OCTANTS: readonly (keyof SwipeActions)[] = [
+	'right', 'downRight', 'down', 'downLeft', 'left', 'upLeft', 'up', 'upRight',
+];
+
+export interface SwipeOptions {
+	actions?: SwipeActions;
+	/** minimum drag distance, in CSS pixels, before a touch counts as a swipe rather than a tap; default 24 */
+	minDistance?: number;
+}
+
+/**
+ * Turns a one-finger drag on `target` into a single directional action pulse - press
+ * immediately followed by release, the same shape a quick key tap produces - resolved to one
+ * of 8 directions by angle, or to `actions.tap` for a touch that barely moved. Movement by
+ * swipe rather than a held virtual d-pad is the more common mobile roguelike control scheme
+ * (a swipe per tile, not a held direction), so this dispatches one pulse per gesture rather
+ * than holding an action down for the drag's duration.
+ *
+ * Returns a function that removes the listeners this attached.
+ */
+export function attachSwipe(target: EventTarget, options: SwipeOptions = {}): () => void {
+	const actions: SwipeActions = { ...DEFAULT_SWIPE_ACTIONS, ...options.actions };
+	const minDistance = options.minDistance ?? 24;
+
+	//bound once up front, the same way a game calling bindButton itself would - attachSwipe
+	//is this project's own convenience wrapper over that same primitive, not a special case
+	for (const id of [...SWIPE_OCTANTS, 'tap' as const]) {
+		const action = actions[id];
+		if (action) bindTouch(action, `swipe:${id}`);
+	}
+
+	let tracking = false;
+	let pointerId = -1;
+	let startX = 0;
+	let startY = 0;
+
+	function pulse(id: string): void {
+		pressTouch(`swipe:${id}`);
+		releaseTouch(`swipe:${id}`);
+	}
+
+	function onPointerDown(event: PointerEvent): void {
+		tracking = true;
+		pointerId = event.pointerId;
+		startX = event.clientX;
+		startY = event.clientY;
+	}
+
+	function onPointerUp(event: PointerEvent): void {
+		if (!tracking || event.pointerId !== pointerId) return;
+		tracking = false;
+
+		const dx = event.clientX - startX;
+		const dy = event.clientY - startY;
+		if (Math.hypot(dx, dy) < minDistance) {
+			if (actions.tap) pulse('tap');
+			return;
+		}
+
+		const octant = (Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8 + 8) % 8;
+		const id = SWIPE_OCTANTS[octant];
+		if (actions[id]) pulse(id);
+	}
+
+	target.addEventListener('pointerdown', onPointerDown as EventListener);
+	target.addEventListener('pointerup', onPointerUp as EventListener);
+	target.addEventListener('pointercancel', onPointerUp as EventListener);
+
+	return () => {
+		target.removeEventListener('pointerdown', onPointerDown as EventListener);
+		target.removeEventListener('pointerup', onPointerUp as EventListener);
+		target.removeEventListener('pointercancel', onPointerUp as EventListener);
+	};
 }
 
 export function attach(target: EventTarget = window): void {
