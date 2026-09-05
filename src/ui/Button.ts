@@ -1,8 +1,17 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, type Texture } from 'pixi.js';
 import { Signal } from '../core/Signal.ts';
-import { NinePatch } from './NinePatch.ts';
-import { Label } from './Label.ts';
+import { NinePatch, type NinePatchOptions } from './NinePatch.ts';
+import { Label, type LabelOptions } from './Label.ts';
 import { theme, themeChanged } from './theme.ts';
+
+export type ButtonState = 'idle' | 'hover' | 'pressed' | 'disabled';
+
+export interface ButtonSkin {
+	texture: Texture;
+	border: NinePatchOptions['border'];
+	/** Missing states retain the standard button tint. */
+	tints?: Partial<Record<ButtonState, number>>;
+}
 
 export interface ButtonOptions {
 	width: number;
@@ -15,11 +24,14 @@ export interface ButtonOptions {
 	/** drawn to one side of the text, or centred alone if `text` is omitted */
 	icon?: Container;
 
+	/** Per-button chrome, independent of the window theme. Textures remain caller-owned. */
+	skin?: ButtonSkin;
+	/** Caption styling, also used when setText creates a caption later. */
+	label?: Omit<LabelOptions, 'text'>;
 	disabled?: boolean;
 	onClick?: () => void;
 }
 
-type ButtonState = 'idle' | 'hover' | 'pressed' | 'disabled';
 
 /**
  * A clickable region with idle/hover/pressed/disabled states, a label, an icon, or both.
@@ -34,6 +46,8 @@ type ButtonState = 'idle' | 'hover' | 'pressed' | 'disabled';
 export class Button extends Container {
 	readonly onClick = new Signal<void>();
 
+	private readonly skin?: ButtonSkin;
+	private readonly labelOptions: Omit<LabelOptions, 'text'>;
 	private background: NinePatch | Graphics;
 	private labelText: Label | null;
 	private icon: Container | null;
@@ -52,14 +66,16 @@ export class Button extends Container {
 		this.height_ = options.height;
 		this.disabled_ = options.disabled ?? false;
 
+		this.skin = options.skin;
+		this.labelOptions = options.label ?? {};
 		const t = theme();
-		this.background = t.panel ? new NinePatch(t.panel, { border: t.panelBorder }) : new Graphics();
+		this.background = this.skin ? new NinePatch(this.skin.texture, { border: this.skin.border }) : t.panel ? new NinePatch(t.panel, { border: t.panelBorder }) : new Graphics();
 		this.addChild(this.background);
 
 		this.icon = options.icon ?? null;
 		if (this.icon) this.addChild(this.icon);
 
-		this.labelText = options.text !== undefined ? new Label({ text: options.text, align: 'center' }) : null;
+		this.labelText = options.text !== undefined ? new Label({ align: 'center', ...this.labelOptions, text: options.text }) : null;
 		if (this.labelText) this.addChild(this.labelText);
 
 		if (options.onClick) this.onClick.add(options.onClick);
@@ -95,7 +111,7 @@ export class Button extends Container {
 		} else if (this.labelText) {
 			this.labelText.setText(text);
 		} else {
-			this.labelText = new Label({ text, align: 'center' });
+			this.labelText = new Label({ align: 'center', ...this.labelOptions, text });
 			this.addChild(this.labelText);
 		}
 		this.layoutContent();
@@ -167,7 +183,7 @@ export class Button extends Container {
 
 		if (this.background instanceof NinePatch) {
 			this.background.resize(this.width_, this.height_);
-			this.background.tint = tint;
+			this.background.tint = this.skin?.tints?.[this.state] ?? tint;
 		} else {
 			const fill = this.state === 'pressed' ? t.color.selection : t.color.panelFill;
 			this.background
@@ -177,7 +193,7 @@ export class Button extends Container {
 				.stroke({ color: t.color.panelBorder, width: 1 });
 		}
 
-		this.labelText?.setColor(this.disabled_ ? t.color.textDim : t.color.text);
+		this.labelText?.setColor(this.disabled_ ? t.color.textDim : this.labelOptions.color ?? t.color.text);
 		if (this.icon) this.icon.alpha = this.disabled_ ? 0.4 : 1;
 		this.layoutContent();
 	}

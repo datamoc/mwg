@@ -48,3 +48,67 @@ test('AssetStream retains paths shared with a loaded bundle', async () => {
 	assert.deepEqual(loaded, [['shared.png', 'one.png'], ['two.png']]);
 	assert.deepEqual(released, [['one.png'], ['shared.png', 'two.png']]);
 });
+
+test('preload forwards its loader\'s progress callback', async () => {
+	const seen: number[] = [];
+	const stream = new AssetStream({
+		load: async (_paths, onProgress) => {
+			onProgress?.(0.5);
+			onProgress?.(1);
+		},
+	});
+
+	await stream.preload({ id: 'a', paths: ['a.png'] }, (fraction) => seen.push(fraction));
+	assert.deepEqual(seen, [0.5, 1]);
+});
+
+test('preload reports full progress immediately for an already-ready bundle or an empty one', async () => {
+	const seen: number[] = [];
+	const stream = new AssetStream({ load: async () => {} });
+
+	await stream.preload({ id: 'empty', paths: [] }, (fraction) => seen.push(fraction));
+	await stream.preload({ id: 'a', paths: ['a.png'] });
+	await stream.preload({ id: 'a', paths: ['a.png'] }, (fraction) => seen.push(fraction)); //already ready
+
+	assert.deepEqual(seen, [1, 1]);
+});
+
+test('preloadLikely reports one fraction across every bundle in the list', async () => {
+	const seen: number[] = [];
+	const stream = new AssetStream({
+		load: async (_paths, onProgress) => {
+			onProgress?.(0.5);
+			onProgress?.(1);
+		},
+	});
+
+	await stream.preloadLikely(
+		[
+			{ id: 'a', paths: ['a.png'], priority: 2 },
+			{ id: 'b', paths: ['b.png'], priority: 1 },
+		],
+		(fraction) => seen.push(fraction)
+	);
+
+	assert.deepEqual(seen, [0.25, 0.5, 0.75, 1, 1]);
+});
+
+test('repeated preload/evict cycles under a tight budget never exceed it and release everything evicted', async () => {
+	const released = new Set<string>();
+	const stream = new AssetStream({
+		budgetBytes: 10,
+		load: async () => {},
+		release: async (paths) => { for (const path of paths) released.add(path); },
+	});
+
+	for (let i = 0; i < 50; i++) {
+		await stream.preload({ id: `zone-${i}`, paths: [`zone-${i}.png`], estimatedBytes: 5 });
+		assert.ok(stream.estimatedBytes <= 10, `budget exceeded after zone-${i}: ${stream.estimatedBytes}`);
+	}
+
+	//every zone but the last two (10 bytes of budget, 5 bytes each) must have been evicted and released
+	assert.equal(released.size, 48);
+	assert.equal(stream.isReady('zone-49'), true);
+	assert.equal(stream.isReady('zone-48'), true);
+	assert.equal(stream.isReady('zone-0'), false);
+});

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Examples - mwg</title>
+	<meta name="description" content="A single playable mwg build, running right on the page." />
+	<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+	<link rel="stylesheet" href="../assets/site.css" />
+
+	<style>
+		.example-frame {
+			display: block;
+			width: 100%;
+			height: 70vh;
+			min-height: 360px;
+			max-height: 640px;
+			border: 1px solid var(--line-strong);
+			background: #05070a;
+		}
+
+		.example-head {
+			display: flex;
+			justify-content: space-between;
+			align-items: baseline;
+			gap: 1rem;
+			flex-wrap: wrap;
+			margin-bottom: 0.5rem;
+		}
+
+		.example-nav {
+			display: flex;
+			justify-content: space-between;
+			gap: 1rem;
+			margin-top: 1.25rem;
+			font-family: var(--font-display);
+			font-size: 0.85rem;
+		}
+
+		.controls {
+			font-family: var(--font-display);
+			font-size: 0.78rem;
+			color: var(--muted);
+			margin-top: 0.6rem;
+		}
+
+		.controls kbd {
+			font-family: var(--font-display);
+			background: var(--panel-raised);
+			border: 1px solid var(--line-strong);
+			border-radius: 2px;
+			padding: 0.05em 0.4em;
+		}
+
+		.build-note {
+			font-family: var(--font-display);
+			font-size: 0.75rem;
+			color: var(--muted);
+			margin-top: 0.5rem;
+		}
+	</style>
+</head>
+<body>
+	<header class="site-header">
+		<div class="wrap">
+			<a class="brand" href="../index.html"><span class="dot"></span>mwg</a>
+			<nav class="site-nav">
+				<a href="../getting-started/index.html">Getting started</a>
+				<a href="../documentation/index.html">Documentation</a>
+				<a href="./index.html" aria-current="page">Examples</a>
+				<a href="../faq/index.html">FAQ</a>
+				<a href="https://github.com/datamoc/mwg">GitHub</a>
+			</nav>
+		</div>
+	</header>
+
+	<main>
+		<section>
+			<div class="wrap">
+				<p class="eyebrow"><a href="./index.html">&larr; all examples</a></p>
+				<div class="panel example" style="padding: 1.25rem">
+					<div class="example-head">
+						<h1 id="example-title" style="margin: 0"></h1>
+						<a class="btn" id="example-fullscreen" href="#">Open full screen</a>
+					</div>
+					<p id="example-description"></p>
+					<iframe class="example-frame" id="example-frame" title="mwg example" loading="eager"></iframe>
+					<p class="controls" id="example-controls" hidden></p>
+					<p class="build-note" id="example-build-note" hidden></p>
+				</div>
+
+				<nav class="example-nav">
+					<a id="example-prev" href="#">&larr; previous</a>
+					<a id="example-next" href="#">next &rarr;</a>
+				</nav>
+			</div>
+		</section>
+	</main>
+
+	<footer class="site-footer">
+		<div class="wrap">
+			<p>mwg is licensed under the MPL-2.0.</p>
+		</div>
+	</footer>
+
+	<script src="./examples-data.js"></script>
+	<script>
+		var examples = window.MWG_EXAMPLES;
+		var params = new URLSearchParams(window.location.search);
+		var requestedId = params.get('ex');
+		var index = examples.findIndex(function (e) {
+			return e.id === requestedId;
+		});
+		if (index === -1) index = 0;
+		var example = examples[index];
+
+		document.title = example.title + ' - Examples - mwg';
+		document.getElementById('example-title').textContent = example.title;
+		document.getElementById('example-description').innerHTML = example.description;
+		document.getElementById('example-frame').src = './' + example.id + '/index.html';
+		document.getElementById('example-frame').title = 'mwg ' + example.title + ' example';
+		document.getElementById('example-fullscreen').href = './' + example.id + '/index.html';
+
+		if (example.controls) {
+			var controls = document.getElementById('example-controls');
+			controls.innerHTML = example.controls;
+			controls.hidden = false;
+		}
+
+		if (example.buildNote) {
+			var buildNote = document.getElementById('example-build-note');
+			buildNote.innerHTML = example.buildNote;
+			buildNote.hidden = false;
+		}
+
+		var prevExample = examples[(index - 1 + examples.length) % examples.length];
+		var nextExample = examples[(index + 1) % examples.length];
+		var prevLink = document.getElementById('example-prev');
+		var nextLink = document.getElementById('example-next');
+		prevLink.href = './view.html?ex=' + encodeURIComponent(prevExample.id);
+		prevLink.textContent = '← ' + prevExample.title;
+		nextLink.href = './view.html?ex=' + encodeURIComponent(nextExample.id);
+		nextLink.textContent = nextExample.title + ' →';
+	</script>
+</body>
+</html>

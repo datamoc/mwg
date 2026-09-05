@@ -1,6 +1,6 @@
 {
   "name": "@datamoc/mw_games",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A local-file game framework for 2D top-down games, with optional 3D, mobile, and desktop packaging.",
   "license": "MPL-2.0",
   "type": "module",
@@ -19,6 +19,7 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./simulation": "./dist/simulation/index.js",
     "./core": "./dist/core/index.js",
     "./render": "./dist/render/index.js",
     "./roguelike": "./dist/roguelike/index.js",
@@ -69,6 +70,9 @@
     "example:loading:build": "vite build --config examples/loading/vite.config.ts && node tools/emit-page.mjs examples/loading",
     "benchmark:browser": "npm run example:dungeon:build && node tools/benchmark-browser.mjs",
     "benchmark:3d": "npm run example:3d:build && node tools/benchmark-browser.mjs examples/three-d/dist/index.html",
+    "benchmark:tower-defense": "npm run example:tower-defense:build && node tools/benchmark-browser.mjs examples/tower-defense/dist/index.html",
+    "benchmark:ui": "npm run example:ui:build && node tools/benchmark-browser.mjs examples/interface/dist/index.html",
+    "benchmark:simulation": "node tools/benchmark-simulation.mjs",
     "graphics:capabilities": "node tools/graphics-capabilities.mjs",
     "webpage:examples": "node tools/build-webpage-examples.mjs",
     "webpage:docs": "node tools/build-webpage-docs.mjs",
@@ -78,7 +82,10 @@
     "cap:add:ios": "npm run mobile:build && npm run cap:cli -- add ios",
     "cap:sync": "npm run mobile:build && npm run cap:cli -- sync",
     "cap:open:android": "npm run cap:cli -- open android",
-    "cap:open:ios": "npm run cap:cli -- open ios"
+    "cap:open:ios": "npm run cap:cli -- open ios",
+    "desktop:build": "npm run mobile:build && dotnet build desktop/MwgDesktopHost",
+    "desktop:run": "npm run mobile:build && dotnet run --project desktop/MwgDesktopHost",
+    "multiplayer:server": "node tools/multiplayer-server.mjs"
   },
   "dependencies": {
     "pixi.js": "^8.20.1",
@@ -90,9 +97,15 @@
     "@capacitor/core": "^7.4.4"
   },
   "peerDependenciesMeta": {
-    "@babylonjs/core": { "optional": true },
-    "@babylonjs/loaders": { "optional": true },
-    "@capacitor/core": { "optional": true }
+    "@babylonjs/core": {
+      "optional": true
+    },
+    "@babylonjs/loaders": {
+      "optional": true
+    },
+    "@capacitor/core": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@babylonjs/core": "^9.25.0",
@@ -102,9 +115,11 @@
     "@capacitor/core": "^7.4.4",
     "@capacitor/ios": "^7.4.4",
     "@types/node": "^26.4.1",
+    "@types/ws": "^8.18.1",
     "playwright-core": "^1.62.1",
     "typescript": "^7.0.2",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "ws": "^8.21.3"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

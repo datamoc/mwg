@@ -200,6 +200,26 @@ The target that shapes everything: **a game you open by double-clicking a local 
 server. That is why resources are compiled at build time and why the bundle is a classic
 IIFE. Never regress it for convenience.
 
+## Rendering backend policy
+
+Use the best rendering solution for each graphics workload, based on measured results rather
+than one renderer claimed to fit everything. Weigh this against a small decision matrix
+spanning 2D sprites and tile maps, UI/text, post-processing and custom shaders, particles,
+instanced terrain, voxel scenes, imported animated models, and large 3D worlds: quality,
+frame time, memory, bundle cost, input latency, accessibility, browser/backend availability,
+and the `file://` deployment constraint above all else. Keep PixiJS for its proven 2D path
+and Babylon.js for optional 3D unless benchmarks demonstrate a clear improvement; use native
+browser APIs only when they materially outperform those layers. Any chosen solution must
+remain optional where appropriate, expose framework-level abstractions rather than
+application-specific renderer internals, and earn an automated visual/performance
+regression test before it replaces an existing path.
+
+This is a continuing policy to keep re-evaluating, not a license to add overlapping
+rendering engines without a concrete workload and evidence behind the change. Originally
+ROADMAP.md item 134; moved here because it is a standing decision rule to weigh on every
+relevant session, not a feature with a finish line that belongs in a numbered build-order
+list.
+
 ## Conventions that are already load-bearing
 
 - **Node and npm are developer tools.** Nothing from them reaches the player. Do not

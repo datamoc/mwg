@@ -6,7 +6,7 @@
 	<title>Examples - mwg</title>
 	<meta
 		name="description"
-		content="Playable mwg builds covering 2D genres and optional Babylon.js 3D, running right on the page."
+		content="Playable mwg builds covering 2D genres and optional Babylon.js 3D, each on its own page."
 	/>
 	<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
 	<link rel="stylesheet" href="../assets/site.css" />
@@ -17,7 +17,7 @@
 	<meta property="og:title" content="Examples - mwg" />
 	<meta
 		property="og:description"
-		content="Playable mwg builds covering 2D genres and optional Babylon.js 3D, running right on the page."
+		content="Playable mwg builds covering 2D genres and optional Babylon.js 3D, each on its own page."
 	/>
 	<meta property="og:image" content="https://datamoc.github.io/mwg/assets/og-image.png" />
 	<meta property="og:image:width" content="1080" />
@@ -26,55 +26,45 @@
 	<meta name="twitter:title" content="Examples - mwg" />
 	<meta
 		name="twitter:description"
-		content="Playable mwg builds covering 2D genres and optional Babylon.js 3D, running right on the page."
+		content="Playable mwg builds covering 2D genres and optional Babylon.js 3D, each on its own page."
 	/>
 	<meta name="twitter:image" content="https://datamoc.github.io/mwg/assets/og-image.png" />
 
 	<style>
-		.example {
-			padding: 1.25rem;
-			margin-bottom: 2rem;
-		}
-
-		.example-head {
-			display: flex;
-			justify-content: space-between;
-			align-items: baseline;
+		.example-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
 			gap: 1rem;
-			flex-wrap: wrap;
-			margin-bottom: 0.5rem;
 		}
 
-		.example iframe {
-			display: block;
-			width: 100%;
-			height: 60vh;
-			min-height: 320px;
-			max-height: 560px;
-			border: 1px solid var(--line-strong);
-			background: #05070a;
+		.example-card {
+			padding: 1.1rem;
+			display: flex;
+			flex-direction: column;
+			gap: 0.6rem;
 		}
 
-		.controls {
-			font-family: var(--font-display);
-			font-size: 0.78rem;
+		.example-card h3 {
+			margin: 0;
+		}
+
+		.example-card p {
+			margin: 0;
 			color: var(--muted);
-			margin-top: 0.6rem;
+			font-size: 0.92rem;
+			flex-grow: 1;
 		}
 
-		.controls kbd {
-			font-family: var(--font-display);
-			background: var(--panel-raised);
-			border: 1px solid var(--line-strong);
-			border-radius: 2px;
-			padding: 0.05em 0.4em;
+		.example-card .card-actions {
+			display: flex;
+			gap: 0.6rem;
+			flex-wrap: wrap;
 		}
 
 		.build-note {
 			font-family: var(--font-display);
 			font-size: 0.75rem;
 			color: var(--muted);
-			margin-top: 0.5rem;
 		}
 	</style>
 </head>
@@ -101,151 +91,16 @@
 					Eleven builds, each exercising a different corner of the framework. Every one
 					runs straight from the framework source and opens the same way a shipped game
 					would: no server behind this page, just <code>file://</code> pages sitting in
-					an iframe.
+					an iframe. Each one lives on its own page rather than all eleven loading at
+					once here - a phone cannot afford eleven live WebGL contexts open on one
+					screen, and neither can most laptops.
 				</p>
 			</div>
 		</section>
 
 		<section style="padding-top: 0; border-bottom: none">
 			<div class="wrap">
-				<div class="panel example">
-					<div class="example-head">
-						<h3>Babylon.js 3D</h3>
-						<a class="btn" href="./three-d/index.html">Open full screen</a>
-					</div>
-					<p>An optional WebGL scene with an orbit camera, square and hex terrain, elevation columns, a continuous heightmap hill, and continuously moving mesh and billboard characters.</p>
-					<iframe src="./three-d/index.html" title="mwg Babylon.js 3D example" loading="lazy"></iframe>
-					<p class="controls">drag to orbit &nbsp;·&nbsp; wheel to zoom</p>
-				</div>
-
-				<div class="panel example">
-					<div class="example-head">
-						<h3>Chess</h3>
-						<a class="btn" href="./chess/index.html">Open full screen</a>
-					</div>
-					<p>Chess against a small deterministic alpha-beta computer player, with legal moves, check, checkmate, stalemate, castling, en passant, and promotion.</p>
-					<iframe src="./chess/index.html" title="mwg chess example" loading="lazy"></iframe>
-					<p class="controls">click a square, or hold an arrow key to move the cursor and <kbd>Enter</kbd> to select/move &nbsp;·&nbsp; <kbd>Esc</kbd> reset</p>
-				</div>
-
-				<div class="panel example">
-					<div class="example-head">
-						<h3>Lockpick minigame</h3>
-						<a class="btn" href="./minigame/index.html">Open full screen</a>
-					</div>
-					<p>A timing challenge layered over a room scene. It demonstrates scene stacking, suspension, and returning a result to the scene underneath.</p>
-					<iframe src="./minigame/index.html" title="mwg lockpick minigame example" loading="lazy"></iframe>
-					<p class="controls"><kbd>Enter</kbd> stop the needle &nbsp;·&nbsp; <kbd>Esc</kbd> leave the minigame</p>
-				</div>
-
-				<div class="panel example">
-					<div class="example-head">
-						<h3>Village</h3>
-						<a class="btn" href="./village/index.html">Open full screen</a>
-					</div>
-					<p>A small RPG map with an NPC, branching conversation, game state, and an autorun cutscene.</p>
-					<iframe src="./village/index.html" title="mwg village example" loading="lazy"></iframe>
-				</div>
-
-				<div class="panel example">
-					<div class="example-head">
-						<h3>Battle</h3>
-						<a class="btn" href="./battle/index.html">Open full screen</a>
-					</div>
-					<p>A creature battle with type effectiveness, speed-ordered turns, damage, leveling, and evolution.</p>
-					<iframe src="./battle/index.html" title="mwg battle example" loading="lazy"></iframe>
-				</div>
-
-				<div class="panel example">
-					<div class="example-head">
-						<h3>Tower defense</h3>
-						<a class="btn" href="./tower-defense/index.html">Open full screen</a>
-					</div>
-					<p>A simple lane defense demo using timed waves, tower targeting, damage, rewards, and lives.</p>
-					<iframe src="./tower-defense/index.html" title="mwg tower defense example" loading="lazy"></iframe>
-				</div>
-
-				<div class="panel example">
-					<div class="example-head">
-						<h3>Colour transform</h3>
-						<a class="btn" href="./colour-transform/index.html">Open full screen</a>
-					</div>
-					<p>
-						4000 individually tinted sprites, each carrying the per-sprite
-						<code>texel &times; M + A</code> transform that <a href="../index.html#demo">the landing page demo</a>
-						shows in miniature; Pixi's own tint could not draw this scene.
-					</p>
-					<iframe src="./colour-transform/index.html" title="mwg colour transform example" loading="lazy"></iframe>
-					<p class="build-note">
-						Blank? Build the examples first: <code>npm run webpage:examples</code> (see the
-						repository's <code>webpage/TODO.md</code>).
-					</p>
-				</div>
-
-				<div class="panel example">
-					<div class="example-head">
-						<h3>Interface</h3>
-						<a class="btn" href="./interface/index.html">Open full screen</a>
-					</div>
-					<p>
-						Windows that stack, with keyboard focus going to the top one only; a list
-						with icons and disabled rows; a message box that reveals text a character at
-						a time and ends on a choice.
-					</p>
-					<iframe src="./interface/index.html" title="mwg interface example" loading="lazy"></iframe>
-					<p class="controls">
-						<kbd>Tab</kbd> open the bag &nbsp;·&nbsp; <kbd>Enter</kbd> talk to someone
-						&nbsp;·&nbsp; arrow keys navigate &nbsp;·&nbsp; <kbd>Esc</kbd> close a window
-					</p>
-				</div>
-
-				<div class="panel example">
-					<div class="example-head">
-						<h3>Dialogue</h3>
-						<a class="btn" href="./dialogue/index.html">Open full screen</a>
-					</div>
-					<p>
-						A conversation scene: a backdrop, Alice and Bob standing in front of it with
-						expressions, whoever is speaking lit while the other is dimmed, and a
-						branching choice. The whole scene is a list of data commands.
-					</p>
-					<iframe src="./dialogue/index.html" title="mwg dialogue example" loading="lazy"></iframe>
-					<p class="controls"><kbd>Enter</kbd> / <kbd>Space</kbd> advance the conversation</p>
-				</div>
-
-				<div class="panel example">
-					<div class="example-head">
-						<h3>Dungeon crawl</h3>
-						<a class="btn" href="./dungeon/index.html">Open full screen</a>
-					</div>
-					<p>
-						A playable roguelike floor: generated rooms and corridors, three-state fog
-						of war, bump-to-attack, monsters that give chase, stairs down. The full
-						<code>roguelike</code> module working together with <code>render</code> and
-						<code>ui</code>.
-					</p>
-					<iframe src="./dungeon/index.html" title="mwg dungeon crawl example" loading="lazy"></iframe>
-					<p class="controls">
-						arrow keys or numpad move and bump to attack &nbsp;·&nbsp; <kbd>5</kbd> /
-						<kbd>.</kbd> wait &nbsp;·&nbsp; <kbd>&gt;</kbd> descend on the stairs
-					</p>
-				</div>
-
-				<div class="panel example">
-					<div class="example-head">
-						<h3>Loading lifecycle</h3>
-						<a class="btn" href="./loading/index.html">Open full screen</a>
-					</div>
-					<p>
-						<code>core.LoadQueue</code> running named, weighted tasks - an asset load, a
-						simulated world generation that fails once on purpose, an
-						<code>assets.AssetStream</code> preload of a likely-next area - with
-						<code>ui.LoadingScreen</code> showing truthful progress against it, including
-						the failed state and its retry/cancel buttons.
-					</p>
-					<iframe src="./loading/index.html" title="mwg loading lifecycle example" loading="lazy"></iframe>
-					<p class="controls">watch it fail once, then press Retry &nbsp;·&nbsp; Cancel stops it mid-task</p>
-				</div>
+				<div class="example-grid" id="example-grid"></div>
 			</div>
 		</section>
 
@@ -277,5 +132,47 @@ npm run example:loading     # loading lifecycle, dev server</code></pre>
 			<p>mwg is licensed under the MPL-2.0.</p>
 		</div>
 	</footer>
+
+	<script src="./examples-data.js"></script>
+	<script>
+		var grid = document.getElementById('example-grid');
+		window.MWG_EXAMPLES.forEach(function (example) {
+			var card = document.createElement('div');
+			card.className = 'panel example-card';
+
+			var title = document.createElement('h3');
+			title.textContent = example.title;
+			card.appendChild(title);
+
+			var description = document.createElement('p');
+			description.innerHTML = example.description;
+			card.appendChild(description);
+
+			if (example.buildNote) {
+				var note = document.createElement('p');
+				note.className = 'build-note';
+				note.innerHTML = example.buildNote;
+				card.appendChild(note);
+			}
+
+			var actions = document.createElement('div');
+			actions.className = 'card-actions';
+
+			var play = document.createElement('a');
+			play.className = 'btn primary';
+			play.href = './view.html?ex=' + encodeURIComponent(example.id);
+			play.textContent = 'Play';
+			actions.appendChild(play);
+
+			var fullScreen = document.createElement('a');
+			fullScreen.className = 'btn';
+			fullScreen.href = './' + example.id + '/index.html';
+			fullScreen.textContent = 'Open full screen';
+			actions.appendChild(fullScreen);
+
+			card.appendChild(actions);
+			grid.appendChild(card);
+		});
+	</script>
 </body>
 </html>

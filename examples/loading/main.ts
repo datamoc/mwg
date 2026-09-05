@@ -39,7 +39,7 @@ class LoadingScene extends Scene {
 		this.queue.add({
 			id: 'loading assets',
 			weight: 1,
-			run: () => Resources.load([TILES]),
+			run: (context: LoadTaskContext) => Resources.load([TILES], (fraction) => context.report(fraction)),
 		});
 		this.queue.add({
 			id: 'generating world',
@@ -59,7 +59,8 @@ class LoadingScene extends Scene {
 		this.queue.add({
 			id: 'preloading next area',
 			weight: 1,
-			run: () => this.stream.preload({ id: 'area-2', paths: [TILES], estimatedBytes: 1 }),
+			run: (context: LoadTaskContext) =>
+				this.stream.preload({ id: 'area-2', paths: [TILES], estimatedBytes: 1 }, (fraction) => context.report(fraction)),
 		});
 
 		this.screen = new LoadingScreen({

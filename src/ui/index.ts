@@ -31,7 +31,7 @@ export { RebindScreen } from './RebindScreen.ts';
 export type { RebindScreenOptions } from './RebindScreen.ts';
 
 export { Button } from './Button.ts';
-export type { ButtonOptions } from './Button.ts';
+export type { ButtonOptions, ButtonSkin, ButtonState } from './Button.ts';
 
 export { Bar } from './Bar.ts';
 export type { BarOptions } from './Bar.ts';
@@ -44,6 +44,9 @@ export type { ToastOptions } from './Toast.ts';
 
 export { HelpScreen } from './HelpScreen.ts';
 export type { HelpScreenOptions, HelpTopic } from './HelpScreen.ts';
+
+export { StatsScreen } from './StatsScreen.ts';
+export type { StatsScreenOptions, StatRow } from './StatsScreen.ts';
 
 export { LoadingScreen } from './LoadingScreen.ts';
 export type { LoadingScreenOptions } from './LoadingScreen.ts';

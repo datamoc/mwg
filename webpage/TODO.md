@@ -11,9 +11,13 @@
   TypeDoc, reskinned to match the site (`webpage/assets/typedoc-theme.css`,
   favicon wired in). Covers every shipped module automatically: nothing to
   keep in sync by hand, and it stays accurate as the API grows.
-- **Examples**: ten example builds (colour-transform, interface, dialogue,
-  dungeon, village, battle, minigame, chess, tower defense, 3D) embedded live in iframes, each with an
-  "open full screen" link and its controls.
+- **Examples**: eleven example builds (colour-transform, interface, dialogue,
+  dungeon, village, battle, minigame, chess, tower defense, 3D, loading
+  lifecycle). `index.html` lists them as cards with no live iframe - eleven
+  simultaneous WebGL contexts is more than a phone (and plenty of laptops)
+  can hold at once - and each one actually plays on its own `view.html?ex=<id>`
+  page, one iframe at a time, with prev/next links to the next example and
+  an "open full screen" link straight to the built game.
 - **FAQ**: 8 real questions (status, editor, licensing/provenance, the
   `file://` build requirement, i18n status, Node-as-dev-tool, what it's built
   on).
@@ -42,10 +46,12 @@ npm run webpage:examples
 npm run webpage:docs
 ```
 
-before viewing the site or deploying it. `webpage/examples/index.html` (the
-page around the iframes) is hand-authored and tracked normally; nothing
-under `webpage/documentation/` is hand-authored any more, see "Why TypeDoc
-needs its own TypeScript" below before touching it.
+before viewing the site or deploying it. `webpage/examples/index.html`,
+`view.html`, and `examples-data.js` (the one place each example's title,
+description, and controls are written down - both pages read it, so there
+is nowhere for the two to drift apart) are hand-authored and tracked
+normally; nothing under `webpage/documentation/` is hand-authored any more,
+see "Why TypeDoc needs its own TypeScript" below before touching it.
 
 ### Why TypeDoc needs its own TypeScript
 

@@ -1,3 +1,5 @@
+import { advanceToInput } from '../../src/simulation/index.ts';
+import { resolveAttack } from './combat.ts';
 import { Container, Graphics } from 'pixi.js';
 import { Game, Scene, Input, Random, SaveSystem } from '../../src/core/index.ts';
 import { TintedSprite, SpriteSheet, TileMap, Camera, Projectile, registerColorTransform } from '../../src/render/index.ts';
@@ -545,22 +547,15 @@ class DungeonScene extends Scene {
 	 * turn-based game feel instant: nothing is animated between two monster moves.
 	 */
 	private runTurns(): void {
-		for (let guard = 0; guard < 1000; guard++) {
-			//the hero leaves the scheduler on death, so without this the loop would run on
-			//with no player turn to stop at, and the monsters would beat a corpse
-			if (this.gameOver) return;
-
-			const actor = this.scheduler.peek();
-			if (!actor) return;
-
-			if (actor.isHero) {
-				this.awaitingInput = true;
-				this.refresh();
-				return;
-			}
-
-			this.takeMonsterTurn(actor);
-			this.scheduler.spend(1);
+		const result = advanceToInput({
+			scheduler: this.scheduler,
+			finished: () => this.gameOver,
+			needsInput: (actor) => !!actor.isHero,
+			act: (actor) => { this.takeMonsterTurn(actor); return 1; },
+		}, 1000);
+		if (result.status === 'input') {
+			this.awaitingInput = true;
+			this.refresh();
 		}
 	}
 
@@ -717,9 +712,8 @@ class DungeonScene extends Scene {
 	}
 
 	private attack(attacker: Creature, defender: Creature): void {
-		const raw = Random.range(attacker.damage[0], attacker.damage[1]);
-		const damage = Math.max(1, raw - (defender.defense ?? 0));
-		defender.hp -= damage;
+		const { damage, hp } = resolveAttack(attacker, defender, Random);
+		defender.hp = hp;
 
 		//a white flash on the one that was hit: the additive colour term, used for what it
 		//is for. a multiply tint could only darken, which reads as nothing happening

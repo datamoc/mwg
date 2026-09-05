@@ -7,6 +7,53 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-05
+
+### Added
+- `core.PlayerStats` (a lifetime total, folded per run - deliberately not derived from
+  `RunHistory`, which can drop old entries), `ui.StatsScreen` (a `label: value` display
+  recipe), and `core.TelemetryClient` (automatic structured events, off by default until a
+  game calls `setConsent(true)`).
+- `tools/benchmark-browser.mjs` now records each run's fps/p95/memory to a per-page history
+  file (`benchmark-results/`, gitignored) and fails on a regression against the best-seen
+  prior run, not only its fixed gate. `npm run benchmark:tower-defense`/`benchmark:ui` cover
+  those examples the same way `benchmark:browser`/`benchmark:3d` already did.
+  `tools/benchmark-simulation.mjs` (`npm run benchmark:simulation`) measures headless
+  `runScenario`/`advanceToInput` throughput, with the same history tracking.
+- `core.LockstepClient` and a reference server, `tools/multiplayer-server.mjs` (real-time
+  multiplayer's one exception to "`mwg` ships no backend"): lockstep tick authority over a
+  plain `WebSocket`, server-assigned identity, and a `?room=` matchmaking string. Run it with
+  `npm run multiplayer:server`.
+- `core.SaveSyncClient.list()` returns every save-profile slot name an endpoint holds, so a
+  player's multiple named profiles (`SaveSystem` already supports as many as a game creates)
+  can each sync independently against one endpoint.
+- `desktop/MwgDesktopHost`, a minimal WebView2 (WinForms, net8.0-windows) reference host that
+  loads a built example's own `index.html` via `file://` unmodified. `npm run desktop:build`/
+  `desktop:run` mirror the existing `cap:*` scripts' naming and target the same `tower-defense`
+  reference build. Verified with a real `dotnet build`/`dotnet run` and a screenshot of the
+  running window showing the game actually rendered.
+- `assets.load` and `assets.AssetStream`'s `preload`/`preloadLikely` take an optional
+  `onProgress` (asset-count fraction, not literal bytes), threaded through `examples/loading`'s
+  own tasks into `LoadQueue.report`. Eviction under a tight budget was verified in a real
+  browser across 300 preload/evict cycles: resident texture count stayed pinned to the budget
+  throughout.
+- `render.StatusVisuals` maps active status-effect names to a tint on a sprite (priority by
+  declaration order, an optional pulsing strength), bridging `actors.applyStatusEffect`'s
+  game-side data to what a character looks like without either module importing the other.
+- `mwg/simulation` (`Simulation` on the standalone build): `advanceToInput` runs a
+  scheduler's automatic actions up to a budget until an actor needs input, and
+  `runScenario` applies a finite command sequence against caller-supplied rules. Both
+  are headless, with no rendering or browser imports, and take random state explicitly
+  for reproducibility.
+- Button accepts a per-instance nine-patch skin with state tints and caption styling, including captions created later with setText.
+- Label accepts stroke, resolution and roundPixels options. Existing defaults are unchanged. Textures remain owned by the caller.
+
+### Changed
+- **Breaking:** `core.SaveSyncClient.upload`/`download` now take a `slot` name -
+  `upload(payload)`/`download()` are `upload(slot, payload)`/`download(slot)` - so one
+  endpoint can hold more than one player profile.
+
+
 ## [0.2.1] - 2026-09-05
 
 ### Fixed
@@ -354,3 +401,5 @@ in it is new as of the tag, only now given a version number to refer to.
   bounds-check), writing distances into the wrong cell once a search looked at the
   step's origin rather than only its destination. Steps now refuse either end off
   the map before any index is touched.
+
+

@@ -9,7 +9,7 @@ of their own; improvements to `mwg`'s own files are shared back.
 **[Live examples and API docs](https://datamoc.github.io/mwg/)**: every example below,
 playable in the browser with no download, plus the generated API reference.
 
-> **Status: early release (v0.2.1).** Every module in the shared floor below, plus optional
+> **Status: early release (v0.3.0).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
 > [ROADMAP.md](ROADMAP.md) for the full, numbered history. Still `0.y.z`: the "public API"
 > can still change between minor versions, and the wider genre-specific modules keep growing.
@@ -309,6 +309,49 @@ pixels. `Character3D` moves imported meshes or camera-facing sprites continuousl
 play imported animation clips. `parseVox` and `createVoxModel3D` load one MagicaVoxel model;
 `loadModel3D` handles glTF/GLB.
 Run `npm run example:3d` for the live example or `npm run benchmark:3d` for its FPS gate.
+
+## Headless simulation
+
+`@datamoc/mw_games/simulation` has no rendering or browser imports. It provides two
+small runners while games keep their state, commands, rules, and event types:
+
+- `advanceToInput(rules, budget)` runs automatic scheduled actions until an actor needs
+  input, the game finishes, the queue is empty, or the action budget is reached. Rules
+  supply `scheduler`, `finished`, `needsInput`, and `act`. `act` returns the cost to
+  charge to the current queue entry after the action, or `null` when it handled its own
+  scheduling. A `limit` result does not grant input; the caller chooses how to resume.
+- `runScenario({ state, commands, random, step, status? })` applies a finite command
+  sequence, preserving event order and stopping when a rule returns `finished`. Each
+  rule returns `{ state, events, status: 'ready' | 'finished' }`. Results also report
+  `processedCommands`; a command need not consume a game turn.
+
+```ts
+import { runScenario } from '@datamoc/mw_games/simulation';
+
+const result = runScenario({
+  state: { position: 0 },
+  commands: [1, 2, -1],
+  random: null, // This example has no randomness; supply a generator when needed.
+  step: (state, distance, _random) => ({
+    state: { position: state.position + distance },
+    events: [{ moved: distance }],
+    status: 'ready',
+  }),
+});
+// result.state.position === 2; result.processedCommands === 3
+```
+
+The root/standalone build also exposes these as `Simulation`. The dungeon example uses
+the scheduled runner and shares its own damage rule between the scene and headless
+scenario tests. Neither runner implements a game's combat, inventory, or movement rules.
+
+For reproducibility, supply the same initial state, commands, and random state, and keep
+rules independent of wall-clock time and ambient randomness. Existing `Generator`
+instances expose `getState()`/`setState()`; store that state alongside a game's snapshot.
+The runners do not clone state, serialize arbitrary graphs, or roll back a throwing rule.
+Frame-based `core.Recorder`/`Player` remains available for UI replay; command scenarios do
+not need a frame loop. Callers must bound automatic work inside each rule, for example
+with `advanceToInput`.
 
 ## Roadmap
 

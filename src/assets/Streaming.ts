@@ -1,4 +1,5 @@
 import { load, release } from './index.ts';
+import type { AssetProgress } from './index.ts';
 
 export interface AssetBundle {
 	id: string;
@@ -10,7 +11,7 @@ export interface AssetBundle {
 
 export interface AssetStreamOptions {
 	budgetBytes?: number;
-	load?: (paths: string[]) => Promise<void>;
+	load?: (paths: string[], onProgress?: AssetProgress) => Promise<void>;
 	release?: (paths: string[]) => Promise<void>;
 }
 
@@ -29,7 +30,7 @@ interface Entry extends AssetBundle {
 export class AssetStream {
 	private readonly entries = new Map<string, Entry>();
 	private readonly budgetBytes: number;
-	private readonly loadAssets: (paths: string[]) => Promise<void>;
+	private readonly loadAssets: (paths: string[], onProgress?: AssetProgress) => Promise<void>;
 	private readonly releaseAssets: (paths: string[]) => Promise<void>;
 	private clock = 0;
 
@@ -41,23 +42,34 @@ export class AssetStream {
 	}
 
 	/** loads one bundle now, then evicts older ready bundles if its budget requires it */
-	async preload(bundle: AssetBundle): Promise<void> {
+	async preload(bundle: AssetBundle, onProgress?: AssetProgress): Promise<void> {
 		if (!bundle.id) throw new Error('asset bundle needs an id');
 		if (bundle.estimatedBytes !== undefined && bundle.estimatedBytes < 0) throw new Error('asset bundle size must not be negative');
 		const existing = this.entries.get(bundle.id);
 		if (existing?.ready) {
 			existing.lastUsed = ++this.clock;
+			onProgress?.(1);
 			return;
 		}
 		const paths = bundle.paths.filter((path) => !this.isRetained(path));
-		if (paths.length > 0) await this.loadAssets([...paths]);
+		if (paths.length > 0) await this.loadAssets([...paths], onProgress);
+		else onProgress?.(1);
 		this.entries.set(bundle.id, { ...bundle, lastUsed: ++this.clock, ready: true });
 		await this.enforceBudget(bundle.id);
 	}
 
-	/** preloads bundles in highest-priority-first order; callers may intentionally not await it */
-	async preloadLikely(bundles: readonly AssetBundle[]): Promise<void> {
-		for (const bundle of [...bundles].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))) await this.preload(bundle);
+	/**
+	 * Preloads bundles in highest-priority-first order; callers may intentionally not await it.
+	 * `onProgress`, when given, reports overall fraction across every bundle in `bundles` (each
+	 * one weighted equally), for a caller that wants one progress figure across the whole list
+	 * rather than per-bundle callbacks of its own.
+	 */
+	async preloadLikely(bundles: readonly AssetBundle[], onProgress?: AssetProgress): Promise<void> {
+		const ordered = [...bundles].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+		for (const [index, bundle] of ordered.entries()) {
+			await this.preload(bundle, onProgress && ((fraction) => onProgress((index + fraction) / ordered.length)));
+		}
+		onProgress?.(1);
 	}
 
 	/** marks a ready bundle as recently used at the moment a scene adopts it */

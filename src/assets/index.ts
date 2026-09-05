@@ -59,19 +59,31 @@ export function resolve(path: string): string {
 }
 
 /**
+ * 0 (started) to 1 (complete) - a count of assets finished, not a byte count. Pixi's own
+ * loaders do not expose bytes transferred across every asset type uniformly, so this reports
+ * what is actually available rather than a byte figure it cannot back with a real number.
+ */
+export type AssetProgress = (fraction: number) => void;
+
+/**
  * Loads assets by path, giving each one an alias equal to its path.
  *
  * Load everything a scene needs before creating it; afterwards `texture()` is synchronous,
- * so game code never has to await in the middle of building a scene.
+ * so game code never has to await in the middle of building a scene. `onProgress`, when
+ * given, is item 135's `LoadQueue`/`LoadingScreen` seam for a task that would otherwise only
+ * ever report 0 then 1 around one opaque `await`.
  */
-export async function load(paths: string[]): Promise<void> {
+export async function load(paths: string[], onProgress?: AssetProgress): Promise<void> {
 	const pending = paths.filter((path) => !Assets.cache.has(path));
-	if (pending.length === 0) return;
+	if (pending.length === 0) {
+		onProgress?.(1);
+		return;
+	}
 
 	for (const path of pending) {
 		Assets.add({ alias: path, src: resolve(path) });
 	}
-	await Assets.load(pending);
+	await Assets.load(pending, onProgress);
 }
 
 /** a loaded texture, by the same path it was loaded with */

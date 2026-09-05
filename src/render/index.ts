@@ -28,6 +28,9 @@ export type { ProjectilePoint, ProjectileOptions } from './Projectile.ts';
 export { ActorAnimator } from './ActorAnimator.ts';
 export type { ActorAnimationState, ActorAnimatorOptions } from './ActorAnimator.ts';
 
+export { StatusVisuals } from './StatusVisuals.ts';
+export type { TintTarget, StatusVisualStyle, StatusVisualsOptions } from './StatusVisuals.ts';
+
 export { blobIndex, autotileFrames, BLOB_SHAPES } from './Autotile.ts';
 export type { NeighborMask } from './Autotile.ts';
 

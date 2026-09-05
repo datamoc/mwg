@@ -17,8 +17,17 @@ export type { SaveMeta, SaveData, SaveStorage, SaveSystemOptions } from './Save.
 export { scramble, unscramble } from './Scramble.ts';
 export { SaveSyncClient } from './SaveSync.ts';
 export type { SaveSyncOptions, SaveSyncResponse } from './SaveSync.ts';
+
+export { LockstepClient } from './Multiplayer.ts';
+export type { WebSocketLike, LockstepClientOptions, TickEvent } from './Multiplayer.ts';
 export { RunHistory } from './RunHistory.ts';
 export type { RunHistoryEntry, RunHistoryOptions } from './RunHistory.ts';
+
+export { PlayerStats } from './Stats.ts';
+export type { PlayerStatsOptions } from './Stats.ts';
+
+export { TelemetryClient } from './Telemetry.ts';
+export type { TelemetryEvent, TelemetryOptions, TelemetryResponse } from './Telemetry.ts';
 export { NewsClient, NewsSeenTracker } from './News.ts';
 export type { NewsItem, NewsOptions, NewsSeenOptions } from './News.ts';
 export { checkSize, checkNoControlCharacters, sanitizeInboundText, validateSchema } from './Sanitize.ts';

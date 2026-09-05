@@ -9,6 +9,11 @@ export interface LabelOptions {
 	wrapWidth?: number;
 	align?: 'left' | 'center' | 'right';
 	bold?: boolean;
+	/** Outline in texture pixels, useful for text over artwork. */
+	stroke?: { color: number; width: number };
+	/** Text texture resolution; omit to use the renderer default. */
+	resolution?: number;
+	roundPixels?: boolean;
 }
 
 /**
@@ -29,8 +34,11 @@ export class Label extends Text {
 
 		super({
 			text: opts.text ?? '',
+			resolution: opts.resolution,
+			roundPixels: opts.roundPixels,
 			style: new TextStyle({
 				fontFamily: t.font.family,
+				stroke: opts.stroke,
 				fontSize: opts.size ?? t.font.size,
 				fontWeight: opts.bold ? 'bold' : 'normal',
 				fill: opts.color ?? t.color.text,

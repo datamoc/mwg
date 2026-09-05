@@ -1,4 +1,5 @@
 import { tmpdir } from 'node:os';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright-core';
@@ -12,6 +13,30 @@ const framesToMeasure = Number(process.env.MWG_BENCHMARK_FRAMES ?? 180);
 //it must remain on Pixi's WebGL/WebGPU path rather than silently falling back to canvas 2D.
 const minFps = Number(process.env.MWG_BENCHMARK_MIN_FPS ?? 45);
 const maxP95FrameMs = Number(process.env.MWG_BENCHMARK_MAX_P95_MS ?? 40);
+//how far below its own history's best-seen fps a run may fall before this is a regression,
+//not just noise between runs on the same machine
+const maxFpsRegression = Number(process.env.MWG_BENCHMARK_MAX_FPS_REGRESSION ?? 0.15);
+//named by the page it measures, so `examples/dungeon/dist/index.html` and
+//`examples/tower-defense/dist/index.html` keep separate histories rather than one shared file
+const historySlug = relativePage.replace(/[\\/]/g, '-').replace(/\.html$/, '');
+const historyPath = resolve(root, 'benchmark-results', `${historySlug}.json`);
+const maxHistoryEntries = 50;
+
+async function readHistory() {
+	try {
+		return JSON.parse(await readFile(historyPath, 'utf8'));
+	} catch {
+		return []; //no prior run recorded yet - not an error, just nothing to compare against
+	}
+}
+
+async function appendHistory(entry) {
+	const history = await readHistory();
+	history.push(entry);
+	await mkdir(resolve(root, 'benchmark-results'), { recursive: true });
+	await writeFile(historyPath, JSON.stringify(history.slice(-maxHistoryEntries), null, 2));
+	return history;
+}
 
 if (!Number.isInteger(framesToMeasure) || framesToMeasure < 30) {
 	throw new Error('MWG_BENCHMARK_FRAMES must be an integer of at least 30');
@@ -73,9 +98,16 @@ try {
 		const p95FrameMs = samples[Math.min(samples.length - 1, Math.floor(samples.length * 0.95))];
 		return { averageMs, p95FrameMs, fps: 1000 / averageMs, frames: samples.length };
 	}, framesToMeasure);
+	//`performance.memory` is a non-standard Chrome extension - null everywhere else, reported
+	//as such rather than guessed at, the same honesty item 137 already insisted on for
+	//asset-load progress it could not actually back with a real byte count
+	const memoryMB = await page.evaluate(() => {
+		const memory = performance.memory;
+		return memory ? memory.usedJSHeapSize / (1024 * 1024) : null;
+	});
 
 	await page.screenshot({ path: screenshot, type: 'png' });
-	const result = { page: pageUrl, ...state, ...metrics, screenshot, pageErrors, thresholds: { minFps, maxP95FrameMs } };
+	const result = { page: pageUrl, ...state, ...metrics, memoryMB, screenshot, pageErrors, thresholds: { minFps, maxP95FrameMs } };
 	console.log(JSON.stringify(result, null, 2));
 
 	if (!state.gameReady || state.canvas.width === 0 || state.canvas.height === 0) {
@@ -89,6 +121,19 @@ try {
 		throw new Error(
 			`browser performance threshold failed: ${metrics.fps.toFixed(1)} FPS, ` +
 			`p95 ${metrics.p95FrameMs.toFixed(2)} ms`,
+		);
+	}
+
+	//a fixed gate alone cannot see a slow decline that never quite crosses minFps; comparing
+	//against this same page's own best-seen fps catches that even when the gate does not
+	const priorHistory = await readHistory();
+	const bestPriorFps = priorHistory.length > 0 ? Math.max(...priorHistory.map((entry) => entry.fps)) : null;
+	await appendHistory({ timestamp: new Date().toISOString(), fps: metrics.fps, p95FrameMs: metrics.p95FrameMs, memoryMB });
+
+	if (bestPriorFps !== null && metrics.fps < bestPriorFps * (1 - maxFpsRegression)) {
+		throw new Error(
+			`browser performance regressed against history: ${metrics.fps.toFixed(1)} FPS now vs ` +
+			`${bestPriorFps.toFixed(1)} FPS best-seen (${historyPath})`,
 		);
 	}
 } finally {
