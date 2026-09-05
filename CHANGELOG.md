@@ -7,6 +7,63 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-05
+
+### Added
+
+**Core**
+- `Tweener`/`Easing`, `UndoHistory`, `PlayerInput` (rebindable action-to-key mapping),
+  `RunHistory` (per-run reports and rankings, no online component), `News` (`NewsClient`,
+  `NewsSeenTracker`), `Sanitize` (`checkSize`, `checkNoControlCharacters`,
+  `sanitizeInboundText`, `validateSchema` - a 10MB default size cap and no embedded control
+  characters on any inbound save/news/sync data), `Scramble`, `SaveSync` (`SaveSyncClient`),
+  `Save.exportSlot`/`importSlot`, `Loading` (`LoadQueue`), `Feedback` (`FeedbackClient`),
+  `Input.onWheel` (wheel scroll as a first-class input signal alongside keys, not just a
+  `ListView` feature - horizontal-scroll and zoom modifier keys resolve to a
+  `WheelAction`/`WheelInput` the game interprets, distinct from the browser's own scroll/zoom).
+- `version`: `mwg`'s own version string, exported from `mwg/core` and kept in sync with
+  `package.json` by a dedicated test.
+
+**Render**
+- `Viewport`/`splitScreenHalves` (local split-screen multiplayer), `Camera.setViewport`
+  screen offset, `ColorBlindness` (`createColorBlindnessFilter`, accessible colour modes),
+  `Capabilities.inspectGraphicsCapabilities`/`detectWebGpu` (real WebGPU shader-compile
+  probe, not just a `navigator.gpu` existence check), `Streaming.AssetStream`.
+
+**UI**
+- `BitmapLabel`, `Toast`, `theme.highContrastTheme`, `LoadingScreen`, pointer and wheel
+  support on `ListView`/`IconGrid`, `Bar` fill/background textures with pixel rounding.
+
+**Audio**
+- `Synth` (`synthesizeTone`, `playTone`), `Midi` (`parseMidi`, `scheduleMidi`,
+  `MidiPlayer`, `noteToFrequency`), `Captions` (`onCaption` - subtitles for accessibility).
+
+**Actors / World / Board / RPG**
+- `Support` (`SupportLedger`), `ItemStatusEffect.applyItemStatusEffect` (temporary item
+  status), `Environment` (`EnvironmentClock`), `FogOfWar.FactionFog`, `Collision`
+  (`aabbOverlap`, `circleOverlap`, `circleAabbOverlap`, `resolveAabbAgainstTiles`).
+
+**i18n / Stage**
+- `Fluent.parseFTL`, typographic apostrophes, `StageScript.history`/`showLast`/`skipSeen`,
+  `MessageBox` `nvl` mode and `autoAdvance`.
+
+**3D, mobile and desktop**
+- `Character3D.playAnimation`/`stopAnimation`/`currentAnimation`,
+  `Heightmap.createHeightmapTerrain3D`, an Ionic Capacitor integration for native
+  iOS/Android packaging, and a WebView2 desktop host reference under `desktop/`.
+
+**Examples**
+- `examples/loading` (`LoadQueue`/`LoadingScreen`/`AssetStream` end to end, including a
+  deliberately-failing-once task exercising retry), `examples/three-d`,
+  `examples/tower-defense`.
+
+### Changed
+- `graphics-capabilities`'s `wgsl` capability now defaults to `false` unless a real
+  WebGPU shader-compile probe supplies it, instead of asserting true from
+  `navigator.gpu`'s mere existence.
+- `tools/find-chrome.mjs` extracted from the byte-identical `findChrome()` duplicated in
+  `benchmark-browser.mjs` and `graphics-capabilities.mjs`.
+
 ## [0.1.2] - 2026-09-03
 
 ### Added

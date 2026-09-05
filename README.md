@@ -9,8 +9,10 @@ of their own; improvements to `mwg`'s own files are shared back.
 **[Live examples and API docs](https://datamoc.github.io/mwg/)**: every example below,
 playable in the browser with no download, plus the generated API reference.
 
-> **Status: early.** The scaffolding, licence and capability spec are in place. The
-> modules below are being built in the order given in [ROADMAP.md](ROADMAP.md).
+> **Status: early release (v0.2.0).** Every module in the shared floor below, plus optional
+> 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
+> [ROADMAP.md](ROADMAP.md) for the full, numbered history. Still `0.y.z`: the public API can
+> still change between minor versions, and the wider genre-specific modules keep growing.
 
 ## What it is for
 

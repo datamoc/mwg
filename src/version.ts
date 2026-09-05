@@ -9,4 +9,4 @@
  * this from `package.json` automatically, chosen because this project's own build already
  * has no step before `tsc`/`vite` that this would need to run ahead of.
  */
-export const version = '0.1.2';
+export const version = '0.2.0';

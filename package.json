@@ -1,7 +1,7 @@
 {
   "name": "@datamoc/mw_games",
-  "version": "0.1.2",
-  "description": "A local-file game framework for 2D top-down games with optional Babylon.js 3D rendering.",
+  "version": "0.2.0",
+  "description": "A local-file game framework for 2D top-down games, with optional 3D, mobile, and desktop packaging.",
   "license": "MPL-2.0",
   "type": "module",
   "sideEffects": false,
