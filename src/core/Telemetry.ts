@@ -1,13 +1,11 @@
+import { HttpTransport, type HttpTransportOptions } from './HttpTransport.ts';
+
 export interface TelemetryEvent {
 	name: string;
 	properties?: Record<string, string | number | boolean | null>;
 }
 
-export interface TelemetryOptions {
-	endpoint: string;
-	timeoutMs?: number;
-	fetch?: typeof globalThis.fetch;
-}
+export type TelemetryOptions = HttpTransportOptions;
 
 export interface TelemetryResponse {
 	ok: boolean;
@@ -27,19 +25,11 @@ export interface TelemetryResponse {
  * endpoint lives - the same boundary `FeedbackClient`'s own doc comment draws for manual
  * reports.
  */
-export class TelemetryClient {
-	private readonly endpoint: string;
-	private readonly timeoutMs: number;
-	private readonly fetchFn: typeof globalThis.fetch;
+export class TelemetryClient extends HttpTransport {
 	private consented = false;
 
 	constructor(options: TelemetryOptions) {
-		if (!options.endpoint) throw new Error('telemetry endpoint is required');
-		this.endpoint = options.endpoint;
-		this.timeoutMs = options.timeoutMs ?? 10000;
-		if (!(this.timeoutMs > 0)) throw new Error('telemetry timeout must be positive');
-		this.fetchFn = options.fetch ?? globalThis.fetch;
-		if (!this.fetchFn) throw new Error('fetch is unavailable; provide TelemetryOptions.fetch');
+		super(options, 'telemetry');
 	}
 
 	/** whether `send` will actually transmit anything right now */
@@ -57,19 +47,15 @@ export class TelemetryClient {
 		if (!event.name) throw new Error('telemetry event needs a name');
 		if (!this.consented) return null;
 
-		const controller = new AbortController();
-		const timer = setTimeout(() => controller.abort(), this.timeoutMs);
-		try {
+		return this.withTimeout(async (signal) => {
 			const response = await this.fetchFn(this.endpoint, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify(event),
-				signal: controller.signal,
+				signal,
 			});
 			if (!response.ok) throw new Error(`telemetry request failed with HTTP ${response.status}`);
 			return { ok: true, status: response.status };
-		} finally {
-			clearTimeout(timer);
-		}
+		});
 	}
 }

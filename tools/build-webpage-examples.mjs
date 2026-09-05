@@ -26,6 +26,14 @@ const scripts = {
 	'tower-defense': 'example:tower-defense:build',
 	'three-d': 'example:3d:build',
 	loading: 'example:loading:build',
+	'hello-world': 'example:hello-world:build',
+	movement: 'example:movement:build',
+	'save-load': 'example:save-load:build',
+	audio: 'example:audio:build',
+	i18n: 'example:i18n:build',
+	'world-transition': 'example:world-transition:build',
+	'event-system': 'example:event-system:build',
+	headless: 'example:headless:build',
 };
 
 for (const [name, script] of Object.entries(scripts)) {

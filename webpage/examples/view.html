@@ -58,6 +58,15 @@
 			color: var(--muted);
 			margin-top: 0.5rem;
 		}
+
+		.example-diagram {
+			display: block;
+			width: 100%;
+			height: auto;
+			margin-top: 1.5rem;
+			border: 1px solid var(--line-strong);
+			border-radius: 3px;
+		}
 	</style>
 </head>
 <body>
@@ -68,6 +77,7 @@
 				<a href="../getting-started/index.html">Getting started</a>
 				<a href="../documentation/index.html">Documentation</a>
 				<a href="./index.html" aria-current="page">Examples</a>
+				<a href="../design/index.html">Design</a>
 				<a href="../faq/index.html">FAQ</a>
 				<a href="https://github.com/datamoc/mwg">GitHub</a>
 			</nav>
@@ -87,6 +97,7 @@
 					<iframe class="example-frame" id="example-frame" title="mwg example" loading="eager"></iframe>
 					<p class="controls" id="example-controls" hidden></p>
 					<p class="build-note" id="example-build-note" hidden></p>
+					<img class="example-diagram" id="example-diagram" alt="" hidden />
 				</div>
 
 				<nav class="example-nav">
@@ -131,6 +142,13 @@
 			var buildNote = document.getElementById('example-build-note');
 			buildNote.innerHTML = example.buildNote;
 			buildNote.hidden = false;
+		}
+
+		if (example.diagram) {
+			var diagram = document.getElementById('example-diagram');
+			diagram.src = '../assets/' + example.diagram;
+			diagram.alt = example.title + ' - architecture diagram';
+			diagram.hidden = false;
 		}
 
 		var prevExample = examples[(index - 1 + examples.length) % examples.length];

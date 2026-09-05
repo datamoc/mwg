@@ -92,7 +92,9 @@ class VillageScene extends Scene {
 							choices: [{ text: 'Gladly', value: true }, { text: 'No thanks', value: false }],
 							store: 'tookPotion',
 						},
-						{ addVariable: 'potions', amount: 1 },
+						//EventRunner's built-in `if` only reads GameState (switches/variables), not an
+						//`ask`'s own stored answer - `call` is the escape hatch for exactly this
+						{ call: (state) => { if (state.answers.tookPotion) state.game.setVariable('potions', state.game.variable('potions') + 1); } },
 					],
 				},
 				{

@@ -23,6 +23,8 @@ export class Music {
 	private current: Playable | null = null;
 	private fades: Fade[] = [];
 	private create: (path: string) => Playable;
+	private trackQueue: string[] | null = null;
+	private playlistFade = 1;
 	volume: number;
 
 	constructor(options: MusicOptions = {}) {
@@ -32,8 +34,41 @@ export class Music {
 
 	/** @param fadeDuration seconds; 0 switches immediately with no crossfade */
 	play(path: string, fadeDuration = 1): void {
+		this.trackQueue = null;
+		this.start(path, fadeDuration, true);
+	}
+
+	/**
+	 * Plays the supplied sequence repeatedly. This is deliberately small and backend-agnostic:
+	 * callers can repeat entries to weight a track, while HTMLAudioElement's optional `onended`
+	 * advances the queue when available.
+	 */
+	playTracks(paths: readonly string[], fadeDuration = 1): void {
+		if (paths.length === 0) {
+			this.stop(fadeDuration);
+			return;
+		}
+		this.trackQueue = [...paths];
+		this.playlistFade = fadeDuration;
+		this.startNextTrack();
+	}
+
+	private startNextTrack(): void {
+		if (!this.trackQueue?.length) return;
+		const path = this.trackQueue.shift()!;
+		this.trackQueue.push(path);
+		this.start(path, this.playlistFade, false);
+	}
+
+	private start(path: string, fadeDuration: number, loop: boolean): void {
 		const incoming = this.create(path);
-		incoming.loop = true;
+		incoming.loop = loop;
+		if (!loop && incoming.onended !== undefined) {
+			// A delayed event from a fading-out track must not advance a newer playlist.
+			incoming.onended = () => {
+				if (this.current === incoming) this.startNextTrack();
+			};
+		}
 
 		const previous = this.current;
 		this.current = incoming;
@@ -65,6 +100,7 @@ export class Music {
 	}
 
 	stop(fadeDuration = 1): void {
+		this.trackQueue = null;
 		const audio = this.current;
 		if (!audio) return;
 		this.current = null;

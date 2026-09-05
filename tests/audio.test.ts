@@ -37,6 +37,17 @@ function fakeAudio(): Playable & { playCount: number; paused: boolean } {
 	};
 }
 
+/**
+ * A fake that also has `onended` (present, `null` until `Music` assigns one) - unlike
+ * `fakeAudio`, which omits the property entirely to represent a backend with no end event.
+ * `Music.start` only ever wires up `onended` when the property is present at all
+ * (`!== undefined`, not just falsy), so this is a separate fake rather than an option on
+ * `fakeAudio` itself.
+ */
+function fakeAudioWithEnded(): Playable & { playCount: number; paused: boolean } {
+	return { ...fakeAudio(), onended: null };
+}
+
 test('Sound cycles through its pool round-robin, so overlapping plays do not steal the same instance', () => {
 	const instances: ReturnType<typeof fakeAudio>[] = [];
 	const sound = new Sound('blip.wav', {
@@ -121,6 +132,65 @@ test('Music.stop fades the current track out and pauses it', () => {
 	// nothing to assert on the instance directly since it is not exposed, but update()
 	// should not throw once the fade completes and is removed
 	assert.doesNotThrow(() => music.update(1));
+});
+
+// ------------------------------------------------------------------- Music.playTracks
+
+test('playTracks with an empty list stops rather than throwing', () => {
+	const music = new Music({ create: fakeAudioWithEnded, volume: 1 });
+	music.play('a.ogg', 0);
+	assert.doesNotThrow(() => music.playTracks([], 0));
+});
+
+test('playTracks plays the first track immediately, not looping', () => {
+	const tracks: ReturnType<typeof fakeAudioWithEnded>[] = [];
+	const music = new Music({ create: () => (tracks[tracks.length] = fakeAudioWithEnded()), volume: 1 });
+
+	music.playTracks(['a.ogg', 'b.ogg', 'c.ogg'], 0);
+
+	assert.equal(tracks.length, 1);
+	assert.equal(tracks[0].loop, false);
+	assert.equal(tracks[0].playCount, 1);
+	assert.equal(tracks[0].volume, 1);
+});
+
+test('onended advances the playlist to the next track, in order', () => {
+	const tracks: ReturnType<typeof fakeAudioWithEnded>[] = [];
+	const music = new Music({ create: () => (tracks[tracks.length] = fakeAudioWithEnded()), volume: 1 });
+
+	music.playTracks(['a.ogg', 'b.ogg', 'c.ogg'], 0);
+	tracks[0].onended?.(new Event('ended'));
+	assert.equal(tracks.length, 2);
+	assert.ok(tracks[0].paused, 'the finished track should be paused once the next one starts');
+	assert.ok(!tracks[1].paused);
+
+	tracks[1].onended?.(new Event('ended'));
+	assert.equal(tracks.length, 3);
+	assert.ok(!tracks[2].paused);
+});
+
+test('the playlist wraps back to the first track after the last one ends', () => {
+	const tracks: ReturnType<typeof fakeAudioWithEnded>[] = [];
+	const music = new Music({ create: () => (tracks[tracks.length] = fakeAudioWithEnded()), volume: 1 });
+
+	music.playTracks(['a.ogg', 'b.ogg'], 0);
+	tracks[0].onended?.(new Event('ended')); // -> b
+	tracks[1].onended?.(new Event('ended')); // -> a again
+
+	assert.equal(tracks.length, 3);
+	assert.ok(!tracks[2].paused);
+});
+
+test('a stale onended from a track already replaced by play() does not advance a newer playlist', () => {
+	const tracks: ReturnType<typeof fakeAudioWithEnded>[] = [];
+	const music = new Music({ create: () => (tracks[tracks.length] = fakeAudioWithEnded()), volume: 1 });
+
+	music.playTracks(['a.ogg', 'b.ogg'], 0);
+	const stale = tracks[0];
+	music.play('c.ogg', 0); // switches away from the playlist entirely
+
+	stale.onended?.(new Event('ended'));
+	assert.equal(tracks.length, 2, 'the stale onended must not have started a third track');
 });
 
 // ------------------------------------------------------------------- SaveSystem

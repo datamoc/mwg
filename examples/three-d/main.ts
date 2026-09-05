@@ -73,7 +73,11 @@ heroMaterial.diffuseColor = Color3.FromHexString('#f0b35b');
 body.material = heroMaterial;
 const hero = new Character3D(heroRoot);
 
-const path = [[1, 1], [8, 1], [8, 4], [2, 6], [1, 1]] as const;
+//stays inside the flat interior the whole way: y never reaches 5, so this never crosses
+//into the raised ridge (`x >= 6 && y >= 5`) or the border wall - `hero.moveTo` interpolates
+//in a flat plane with no collision or step-up of its own, so a path that clips a raised
+//column's side is a path-authoring bug, not something the demo can detect on its own yet
+const path = [[1, 1], [8, 1], [8, 4], [1, 4], [1, 1]] as const;
 let pathIndex = 0;
 function nextHeroTarget(): void {
 	const [x, y] = path[pathIndex++ % path.length];

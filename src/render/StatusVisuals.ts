@@ -35,12 +35,15 @@ export interface StatusVisualsOptions {
 export class StatusVisuals {
 	private target: TintTarget;
 	private styles: Record<string, StatusVisualStyle>;
+	/** `styles`' own key order, computed once rather than every `update()` - a per-frame call */
+	private priority: readonly string[];
 	private active = new Set<string>();
 	private elapsed = 0;
 
 	constructor(target: TintTarget, options: StatusVisualsOptions) {
 		this.target = target;
 		this.styles = options.styles;
+		this.priority = Object.keys(options.styles);
 	}
 
 	/** marks `kind` active or inactive; a `kind` with no matching style is tracked but never shown */
@@ -57,7 +60,7 @@ export class StatusVisuals {
 	update(dt: number): void {
 		this.elapsed += dt;
 
-		const kind = Object.keys(this.styles).find((k) => this.active.has(k));
+		const kind = this.priority.find((k) => this.active.has(k));
 		if (kind === undefined) {
 			this.target.resetColor();
 			return;

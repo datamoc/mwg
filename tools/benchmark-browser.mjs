@@ -1,9 +1,9 @@
 import { tmpdir } from 'node:os';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright-core';
 import { findChrome } from './find-chrome.mjs';
+import { readHistory, appendHistory, bestSeen } from './benchmark-history.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const relativePage = process.argv[2] ?? 'examples/dungeon/dist/index.html';
@@ -20,23 +20,6 @@ const maxFpsRegression = Number(process.env.MWG_BENCHMARK_MAX_FPS_REGRESSION ?? 
 //`examples/tower-defense/dist/index.html` keep separate histories rather than one shared file
 const historySlug = relativePage.replace(/[\\/]/g, '-').replace(/\.html$/, '');
 const historyPath = resolve(root, 'benchmark-results', `${historySlug}.json`);
-const maxHistoryEntries = 50;
-
-async function readHistory() {
-	try {
-		return JSON.parse(await readFile(historyPath, 'utf8'));
-	} catch {
-		return []; //no prior run recorded yet - not an error, just nothing to compare against
-	}
-}
-
-async function appendHistory(entry) {
-	const history = await readHistory();
-	history.push(entry);
-	await mkdir(resolve(root, 'benchmark-results'), { recursive: true });
-	await writeFile(historyPath, JSON.stringify(history.slice(-maxHistoryEntries), null, 2));
-	return history;
-}
 
 if (!Number.isInteger(framesToMeasure) || framesToMeasure < 30) {
 	throw new Error('MWG_BENCHMARK_FRAMES must be an integer of at least 30');
@@ -96,18 +79,17 @@ try {
 		samples.sort((a, b) => a - b);
 		const averageMs = samples.reduce((sum, value) => sum + value, 0) / samples.length;
 		const p95FrameMs = samples[Math.min(samples.length - 1, Math.floor(samples.length * 0.95))];
-		return { averageMs, p95FrameMs, fps: 1000 / averageMs, frames: samples.length };
-	}, framesToMeasure);
-	//`performance.memory` is a non-standard Chrome extension - null everywhere else, reported
-	//as such rather than guessed at, the same honesty item 137 already insisted on for
-	//asset-load progress it could not actually back with a real byte count
-	const memoryMB = await page.evaluate(() => {
+		//`performance.memory` is a non-standard Chrome extension - null everywhere else, reported
+		//as such rather than guessed at, the same honesty item 137 already insisted on for
+		//asset-load progress it could not actually back with a real byte count. Read here,
+		//in the same round trip as the frame samples, rather than a second `page.evaluate`.
 		const memory = performance.memory;
-		return memory ? memory.usedJSHeapSize / (1024 * 1024) : null;
-	});
+		const memoryMB = memory ? memory.usedJSHeapSize / (1024 * 1024) : null;
+		return { averageMs, p95FrameMs, fps: 1000 / averageMs, frames: samples.length, memoryMB };
+	}, framesToMeasure);
 
 	await page.screenshot({ path: screenshot, type: 'png' });
-	const result = { page: pageUrl, ...state, ...metrics, memoryMB, screenshot, pageErrors, thresholds: { minFps, maxP95FrameMs } };
+	const result = { page: pageUrl, ...state, ...metrics, screenshot, pageErrors, thresholds: { minFps, maxP95FrameMs } };
 	console.log(JSON.stringify(result, null, 2));
 
 	if (!state.gameReady || state.canvas.width === 0 || state.canvas.height === 0) {
@@ -126,9 +108,14 @@ try {
 
 	//a fixed gate alone cannot see a slow decline that never quite crosses minFps; comparing
 	//against this same page's own best-seen fps catches that even when the gate does not
-	const priorHistory = await readHistory();
-	const bestPriorFps = priorHistory.length > 0 ? Math.max(...priorHistory.map((entry) => entry.fps)) : null;
-	await appendHistory({ timestamp: new Date().toISOString(), fps: metrics.fps, p95FrameMs: metrics.p95FrameMs, memoryMB });
+	const history = await readHistory(historyPath);
+	const bestPriorFps = bestSeen(history, (entry) => entry.fps);
+	await appendHistory(historyPath, history, {
+		timestamp: new Date().toISOString(),
+		fps: metrics.fps,
+		p95FrameMs: metrics.p95FrameMs,
+		memoryMB: metrics.memoryMB,
+	});
 
 	if (bestPriorFps !== null && metrics.fps < bestPriorFps * (1 - maxFpsRegression)) {
 		throw new Error(

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Design choices - mwg</title>
+	<meta name="description" content="Why mwg looks the way it does: the file:// constraint, module boundaries, where it sits among PixiJS/rot.js/Babylon.js, and the RPG event model." />
+	<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+	<link rel="stylesheet" href="../assets/site.css" />
+
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="mwg" />
+	<meta property="og:url" content="https://datamoc.github.io/mwg/design/index.html" />
+	<meta property="og:title" content="Design choices - mwg" />
+	<meta property="og:description" content="Why mwg looks the way it does: the file:// constraint, module boundaries, where it sits among PixiJS/rot.js/Babylon.js, and the RPG event model." />
+	<meta property="og:image" content="https://datamoc.github.io/mwg/assets/og-image.png" />
+	<meta property="og:image:width" content="1080" />
+	<meta property="og:image:height" content="567" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Design choices - mwg" />
+	<meta name="twitter:description" content="Why mwg looks the way it does: the file:// constraint, module boundaries, where it sits among PixiJS/rot.js/Babylon.js, and the RPG event model." />
+	<meta name="twitter:image" content="https://datamoc.github.io/mwg/assets/og-image.png" />
+
+	<style>
+		.diagram-figure {
+			margin: 1.5rem 0 0;
+		}
+
+		.diagram-figure img {
+			display: block;
+			width: 100%;
+			height: auto;
+			border: 1px solid var(--line-strong);
+			border-radius: 3px;
+		}
+
+		.design-section {
+			padding-top: 2.5rem;
+		}
+
+		.design-section:first-of-type {
+			padding-top: 0;
+		}
+	</style>
+</head>
+<body>
+	<header class="site-header">
+		<div class="wrap">
+			<a class="brand" href="../index.html"><span class="dot"></span>mwg</a>
+			<nav class="site-nav">
+				<a href="../getting-started/index.html">Getting started</a>
+				<a href="../documentation/index.html">Documentation</a>
+				<a href="../examples/index.html">Examples</a>
+				<a href="./index.html" aria-current="page">Design</a>
+				<a href="../faq/index.html">FAQ</a>
+				<a href="https://github.com/datamoc/mwg">GitHub</a>
+			</nav>
+		</div>
+	</header>
+
+	<main>
+		<section style="padding-bottom: 1rem">
+			<div class="wrap">
+				<p class="eyebrow">why it looks like this</p>
+				<h1>Design choices</h1>
+				<p class="lede">
+					mwg's shape follows from one target, held hard everywhere else has to bend
+					around it: <strong>a game you open by double-clicking a local file.</strong> No
+					server, no install step, no Node.js on the player's machine. Everything below -
+					the build pipeline, the module boundaries, which libraries it stands on, how its
+					own RPG data model works - is either a direct consequence of that constraint or a
+					deliberate choice made once and then held to consistently, documented here so it
+					does not have to be re-derived by reading source.
+				</p>
+			</div>
+		</section>
+
+		<section class="design-section" style="border-bottom: none">
+			<div class="wrap">
+				<h2>The file:// constraint</h2>
+				<p>
+					Both <code>fetch()</code>/XHR and <code>&lt;script type="module"&gt;</code> are
+					blocked from <code>file://</code>, and Chrome treats a same-folder
+					<code>&lt;img&gt;</code> as cross-origin for WebGL. A game built with an ordinary
+					bundler simply will not run from disk. mwg's answer is to do the network-shaped
+					work once, at build time, rather than ever asking the player's browser to do it:
+					<code>tools/compile-resources.mjs</code> turns every asset into a <code>data:</code>
+					URI inside a plain script (grouped by folder, written to a global
+					<code>window.__MWG_ASSETS__</code>), and the library build emits a classic IIFE
+					instead of ES modules. <code>tools/emit-page.mjs</code> is the last build step for
+					every example: it rewrites Vite's own module entry tag to a deferred classic
+					script and inlines the compiled asset scripts ahead of it, in document order.
+				</p>
+				<p>
+					The result reaches the player two ways, both landing on the same built output:
+					a <code>&lt;script&gt;</code> tag and <code>mw_games.global.js</code> with no
+					install step at all, or <code>npm install @datamoc/mw_games</code> plus a bundler
+					for development - either path compiles down to a page that opens from disk with
+					nothing else running.
+				</p>
+				<figure class="diagram-figure">
+					<img src="../assets/0b_runtime_deployment.svg" alt="Running and deploying an mwg game: developer build, game artifact, and what the browser runs" />
+				</figure>
+			</div>
+		</section>
+
+		<section class="design-section" style="border-bottom: none">
+			<div class="wrap">
+				<h2>Module boundaries</h2>
+				<p>
+					mwg is organized into modules a game imports only as needed, not one framework
+					object a game configures. <code>core</code> never imports from any other
+					module - <code>Game</code> takes a <code>GameOptions.extensions</code> array of
+					Pixi-extension registration functions instead of reaching into
+					<code>render</code> itself, so a game that only imports <code>mwg/core</code>
+					never pulls in <code>mwg/render</code> at all. The same discipline holds one
+					level up: <code>render.ColorTransformBatcher.ts</code> is the only file allowed
+					to know about Pixi's batcher/high-shader internals, and every genre-specific
+					module (<code>rpg</code>, <code>battle</code>, <code>roguelike</code>,
+					<code>board</code>) builds on the shared floor without the shared floor knowing
+					any of them exist. A game using <code>roguelike</code>, <code>actors</code>, and
+					<code>world</code> together still never pulls in <code>battle</code> or
+					<code>board</code> - the composition principle the diagram below names directly.
+				</p>
+				<figure class="diagram-figure">
+					<img src="../assets/0c_framework_architecture.svg" alt="mwg framework architecture: Foundations, Presentation, Gameplay and Specialized module groups, composed as needed" />
+				</figure>
+			</div>
+		</section>
+
+		<section class="design-section" style="border-bottom: none">
+			<div class="wrap">
+				<h2>Where mwg sits in its ecosystem</h2>
+				<p>
+					mwg is not a renderer or a pathfinding library with a game framework's name on
+					it - it is the layer between a game's own code and the lower-level libraries that
+					actually draw pixels and compute algorithms. <a href="https://pixijs.com/">PixiJS</a>
+					owns 2D rendering (sprites, tiles, the WebGL/WebGPU path); <a href="https://github.com/ondras/rot.js">rot.js</a>
+					owns the roguelike algorithms mwg's own <code>roguelike</code> module builds
+					on (field of view, pathfinding); <a href="https://www.babylonjs.com/">Babylon.js</a>
+					is an optional peer dependency for the <code>3d</code> module alone, never
+					required for a 2D game. mwg keeps rendering on a GPU-accelerated path throughout -
+					a silent Canvas 2D fallback anywhere in the render path would be a regression, not
+					a convenience - and re-evaluates that choice on an ongoing basis rather than
+					treating it as settled once and forgotten (see "Rendering backend policy" in this
+					repository's own <code>CLAUDE.md</code>/<code>AGENTS.md</code>, not reproduced
+					here since it is a standing engineering policy rather than a fact about a shipped
+					feature).
+				</p>
+				<figure class="diagram-figure">
+					<img src="../assets/0a_mwg_ecosystem.svg" alt="mwg in its ecosystem: a game's own code, mwg's modules, and the lower-level libraries (PixiJS, rot.js, Babylon.js) underneath" />
+				</figure>
+			</div>
+		</section>
+
+		<section class="design-section">
+			<div class="wrap">
+				<h2>The RPG event model</h2>
+				<p>
+					<code>mwg/rpg</code>'s event system is kept as three small, separable pieces
+					rather than one interpreter that owns everything. <code>GameState</code> is
+					nothing but switches and variables - plain enough that a save system can
+					serialize it like any other data. A <code>MapEvent</code> is a position plus an
+					ordered list of <code>EventPage</code>s, each with its own conditions;
+					<code>activePage()</code> picks the <em>last</em> page whose conditions all hold,
+					the same convention RPG Maker uses, so an event reads as "default behaviour, then
+					increasingly specific overrides" rather than a chain of if/else. Once a page is
+					selected, <code>EventRunner</code> interprets its <code>commands</code> - dialogue,
+					switches, variables, branches, movement - against that same <code>GameState</code>,
+					writing its effects out to a game's own <code>WindowStack</code>/<code>MessageBox</code>
+					or map. Nothing here is specific to a shopkeeper or a cutscene; the
+					<code>village</code> and <code>event-system</code> examples both build on exactly
+					this shape, one with a full map around it and one without.
+				</p>
+				<figure class="diagram-figure">
+					<img src="../assets/0d_rpg_event_flow.svg" alt="RPG flow: GameState feeds activePage(), which selects an EventPage whose commands EventRunner interprets" />
+				</figure>
+			</div>
+		</section>
+	</main>
+
+	<footer class="site-footer">
+		<div class="wrap">
+			<p>mwg is licensed under the MPL-2.0.</p>
+		</div>
+	</footer>
+</body>
+</html>

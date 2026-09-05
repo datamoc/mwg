@@ -2,7 +2,7 @@ import { Container, Graphics, type Texture } from 'pixi.js';
 import { Signal } from '../core/Signal.ts';
 import { NinePatch, type NinePatchOptions } from './NinePatch.ts';
 import { Label, type LabelOptions } from './Label.ts';
-import { theme, themeChanged } from './theme.ts';
+import { theme, themeChanged, type Theme } from './theme.ts';
 
 export type ButtonState = 'idle' | 'hover' | 'pressed' | 'disabled';
 
@@ -69,7 +69,7 @@ export class Button extends Container {
 		this.skin = options.skin;
 		this.labelOptions = options.label ?? {};
 		const t = theme();
-		this.background = this.skin ? new NinePatch(this.skin.texture, { border: this.skin.border }) : t.panel ? new NinePatch(t.panel, { border: t.panelBorder }) : new Graphics();
+		this.background = Button.createBackground(this.skin, t);
 		this.addChild(this.background);
 
 		this.icon = options.icon ?? null;
@@ -93,6 +93,13 @@ export class Button extends Container {
 
 		this.setState(this.disabled_ ? 'disabled' : 'idle');
 		themeChanged.add(this.themeListener);
+	}
+
+	/** a per-instance skin's own chrome, falling back to the theme's panel, falling back to a plain rect */
+	private static createBackground(skin: ButtonSkin | undefined, t: Theme): NinePatch | Graphics {
+		if (skin) return new NinePatch(skin.texture, { border: skin.border });
+		if (t.panel) return new NinePatch(t.panel, { border: t.panelBorder });
+		return new Graphics();
 	}
 
 	/** live-resize the button, for a caller whose own layout reflows on window resize rather

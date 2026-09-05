@@ -560,6 +560,30 @@ const SOUNDS = {
 	}),
 };
 
+/**
+ * A short melody loop: `notesHz` played one after another over `duration`, each with its
+ * own soft attack/decay so consecutive notes do not click into each other. For
+ * `examples/audio`'s `Music.playTracks` demo - three of these, not one, is the whole point:
+ * a playlist needs more than one track to show a "several tracks" behaviour at all.
+ */
+function melody(duration, notesHz, waveform) {
+	const noteDuration = duration / notesHz.length;
+	return synth(duration, (t) => {
+		const index = Math.min(notesHz.length - 1, Math.floor(t / noteDuration));
+		const localP = (t - index * noteDuration) / noteDuration;
+		return 0.25 * Math.sin(Math.PI * localP) * waveform(2 * Math.PI * notesHz[index] * t);
+	});
+}
+
+const MUSIC = {
+	//C E G C, sine - a gentle, rising figure
+	'tune_dawn.wav': melody(4, [261.63, 329.63, 392.0, 523.25], Math.sin),
+	//G B D F, square - punchier, for an active scene
+	'tune_march.wav': melody(4, [196.0, 246.94, 293.66, 349.23], square),
+	//A C F C(low), sine - a descending figure, for a quieter moment
+	'tune_dusk.wav': melody(4, [220.0, 261.63, 174.61, 130.81], Math.sin),
+};
+
 // ---------------------------------------------------------------- write it out
 
 await mkdir(OUT, { recursive: true });
@@ -601,6 +625,10 @@ for (const [name, samples] of Object.entries(SOUNDS)) {
 	await writeFile(join(OUT, name), encodeWav(samples));
 }
 
+for (const [name, samples] of Object.entries(MUSIC)) {
+	await writeFile(join(OUT, name), encodeWav(samples));
+}
+
 const gemIcon = buildGemIcon();
 await writeFile(join(OUT, 'icon_gem.svg'), gemIcon);
 
@@ -633,6 +661,9 @@ for (const [name, character] of Object.entries(characters)) {
 }
 for (const [name, samples] of Object.entries(SOUNDS)) {
 	console.log(`${name.padEnd(12)}${kb(samples.length * 2 + 44)}`);
+}
+for (const [name, samples] of Object.entries(MUSIC)) {
+	console.log(`${name.padEnd(14)}${kb(samples.length * 2 + 44)}`);
 }
 console.log(`icon_gem.svg${kb(gemIcon.length)}`);
 console.log('\nwritten to examples/assets - generated, so redistributable under the project licence');

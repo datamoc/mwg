@@ -31,7 +31,11 @@ export function createLockstepServer(options = {}) {
 	function room(name) {
 		let entry = rooms.get(name);
 		if (!entry) {
-			entry = { clients: new Map(), tick: 0, timer: null };
+			//submittedCount tracks how many of entry.clients currently have hasSubmitted set,
+			//kept in step by every place that changes hasSubmitted, rather than counting the
+			//whole client map on every single input message (checked on every message, not
+			//just once per tick, so it is worth not being O(clients) each time)
+			entry = { clients: new Map(), tick: 0, timer: null, submittedCount: 0 };
 			rooms.set(name, entry);
 		}
 		return entry;
@@ -49,6 +53,7 @@ export function createLockstepServer(options = {}) {
 			client.pendingInput = null;
 			client.hasSubmitted = false;
 		}
+		entry.submittedCount = 0;
 		const message = JSON.stringify({ type: 'tick', tick: entry.tick, inputs });
 		for (const client of entry.clients.values()) client.socket.send(message);
 		entry.tick += 1;
@@ -56,9 +61,7 @@ export function createLockstepServer(options = {}) {
 	}
 
 	function maybeAdvanceEarly(entry) {
-		if (entry.clients.size > 0 && [...entry.clients.values()].every((client) => client.hasSubmitted)) {
-			advance(entry);
-		}
+		if (entry.clients.size > 0 && entry.submittedCount === entry.clients.size) advance(entry);
 	}
 
 	wss.on('connection', (socket, request) => {
@@ -82,11 +85,16 @@ export function createLockstepServer(options = {}) {
 			const client = entry.clients.get(id);
 			if (!client) return;
 			client.pendingInput = message.payload ?? null;
-			client.hasSubmitted = true;
+			if (!client.hasSubmitted) {
+				client.hasSubmitted = true;
+				entry.submittedCount += 1;
+			}
 			maybeAdvanceEarly(entry);
 		});
 
 		socket.on('close', () => {
+			const client = entry.clients.get(id);
+			if (client?.hasSubmitted) entry.submittedCount -= 1;
 			entry.clients.delete(id);
 			if (entry.clients.size === 0) {
 				if (entry.timer) clearTimeout(entry.timer);

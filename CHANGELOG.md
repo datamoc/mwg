@@ -7,6 +7,15 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-09-05
+
+### Added
+- `audio.Music.playTracks(paths, fadeDuration)` plays a playlist rather than one looping
+  track: each track plays once, `HTMLAudioElement.onended` (when the backend exposes it)
+  advances to the next, and the sequence cycles once it reaches the end. `play()`/`stop()`
+  cancel an active playlist so a stale `onended` from a track already replaced cannot advance
+  a newer one.
+
 ## [0.3.0] - 2026-09-05
 
 ### Added

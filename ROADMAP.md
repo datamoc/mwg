@@ -1936,3 +1936,27 @@ process - appended at low priority, not argued into or out of existence on the s
      `PlayerStats.get()` snapshot as `FeedbackClient.submit()`'s `message` (a player choosing
      to attach their stats to a written report), so that half was already covered without
      this item's own guess ever biting. 17 unit tests across `PlayerStats`/`TelemetryClient`.
+
+144. requested directly from a screenshot of `examples/three-d`: the hero capsule clipping
+     into the side of a raised elevation column. Root cause, confirmed by reading the
+     example's own path data against `mwg/3d`'s height formula: `hero.moveTo` interpolates
+     in a flat plane with no notion of terrain height, collision, or step-up at all - `mwg/3d`
+     has none of item 114's 2D AABB/circle collision primitives, or any equivalent. The
+     example's own hardcoded demo path cut diagonally across the raised ridge
+     (`x >= 6 && y >= 5`in its height formula) between two flat waypoints, so the straight
+     line between them passed through the column's side - fixed immediately by routing the
+     demo path to stay inside the flat interior the whole way, but that only fixes this one
+     example's own data, not the underlying gap: nothing in `mwg/3d` would stop a game's own
+     character from doing the same thing with a path it does not control as tightly as a
+     four-point demo loop. Real 3D collision - broad-phase against `GridCell3D`/heightmap
+     height, resolving a moving capsule/AABB against solid terrain and other meshes - is
+     unbuilt and logged here at low priority per this project's own process, the 3D-module
+     counterpart to item 114.
+
+145. a simplify pass over this same session's own work flagged `ui.Label`'s `stroke`,
+     `resolution`, and `roundPixels` options (and `ui.Button`'s `skin`/`label` seam) as having
+     no caller anywhere but their own unit test - an example demonstrating them (text over
+     artwork for `stroke`, a per-button nine-patch skin in `examples/interface` or
+     `examples/loading`) is still missing, the same "shipped but never actually driven" gap
+     item 138's own reasoning treats as worth closing rather than leaving as a style note.
+     Logged at low priority per this project's own process rather than built on the spot.

@@ -12,6 +12,9 @@ export interface Playable {
 	currentTime: number;
 	volume: number;
 	loop: boolean;
+	/** Optional completion hook, matching HTMLAudioElement.onended. Backends without an
+	 * end event can omit it; single-track Music remains fully usable there. */
+	onended?: ((event: Event) => unknown) | null;
 }
 
 /** the real thing: an `HTMLAudioElement` pointed at a resolved asset path */

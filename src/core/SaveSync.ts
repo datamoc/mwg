@@ -1,3 +1,5 @@
+import { HttpTransport, type HttpTransportOptions } from './HttpTransport.ts';
+
 /**
  * Uploads/downloads `SaveSystem.exportSlot` payloads to a game's own HTTPS endpoint - the
  * server half of item 124's save export/import, following `FeedbackClient`'s own shape
@@ -10,29 +12,16 @@
  * only ever one save. `list()` is the seam a profile picker reads before choosing which slot
  * to `download`.
  */
-export interface SaveSyncOptions {
-	endpoint: string;
-	timeoutMs?: number;
-	fetch?: typeof globalThis.fetch;
-}
+export type SaveSyncOptions = HttpTransportOptions;
 
 export interface SaveSyncResponse {
 	ok: boolean;
 	status: number;
 }
 
-export class SaveSyncClient {
-	private readonly endpoint: string;
-	private readonly timeoutMs: number;
-	private readonly fetchFn: typeof globalThis.fetch;
-
+export class SaveSyncClient extends HttpTransport {
 	constructor(options: SaveSyncOptions) {
-		if (!options.endpoint) throw new Error('save sync endpoint is required');
-		this.endpoint = options.endpoint;
-		this.timeoutMs = options.timeoutMs ?? 10000;
-		if (!(this.timeoutMs > 0)) throw new Error('save sync timeout must be positive');
-		this.fetchFn = options.fetch ?? globalThis.fetch;
-		if (!this.fetchFn) throw new Error('fetch is unavailable; provide SaveSyncOptions.fetch');
+		super(options, 'save sync');
 	}
 
 	/** sends an `exportSlot` payload for `slot` to the endpoint, replacing whatever it held before */
@@ -74,16 +63,6 @@ export class SaveSyncClient {
 			}
 			return data.slots as string[];
 		});
-	}
-
-	private async withTimeout<T>(run: (signal: AbortSignal) => Promise<T>): Promise<T> {
-		const controller = new AbortController();
-		const timer = setTimeout(() => controller.abort(), this.timeoutMs);
-		try {
-			return await run(controller.signal);
-		} finally {
-			clearTimeout(timer);
-		}
 	}
 
 	private slotUrl(slot: string): string {

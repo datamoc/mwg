@@ -76,6 +76,7 @@
 				<a href="../getting-started/index.html">Getting started</a>
 				<a href="../documentation/index.html">Documentation</a>
 				<a href="./index.html" aria-current="page">Examples</a>
+				<a href="../design/index.html">Design</a>
 				<a href="../faq/index.html">FAQ</a>
 				<a href="https://github.com/datamoc/mwg">GitHub</a>
 			</nav>
@@ -88,41 +89,55 @@
 				<p class="eyebrow">playable, right here</p>
 				<h1>Examples</h1>
 				<p class="lede">
-					Eleven builds, each exercising a different corner of the framework. Every one
-					runs straight from the framework source and opens the same way a shipped game
-					would: no server behind this page, just <code>file://</code> pages sitting in
-					an iframe. Each one lives on its own page rather than all eleven loading at
-					once here - a phone cannot afford eleven live WebGL contexts open on one
-					screen, and neither can most laptops.
+					Nineteen builds, organized as a curriculum rather than just a feature list:
+					<strong>Level 1</strong> is one concept at a time in well under 100 lines,
+					<strong>Level 2</strong> puts two or three of those together the way a real
+					screen would, <strong>Level 3</strong> is a complete reference game, and
+					<strong>Technical demos</strong> cover something specific enough - a render
+					technique, a headless-only module - that it does not teach mwg's everyday
+					shape the way the other three do. Every one runs straight from the framework
+					source and opens the same way a shipped game would: no server behind this
+					page, just <code>file://</code> pages sitting in an iframe. Each one lives on
+					its own page rather than all nineteen loading at once here - a phone cannot
+					afford that many live WebGL contexts open on one screen, and neither can most
+					laptops.
 				</p>
 			</div>
 		</section>
 
 		<section style="padding-top: 0; border-bottom: none">
-			<div class="wrap">
-				<div class="example-grid" id="example-grid"></div>
-			</div>
+			<div class="wrap" id="example-levels"></div>
 		</section>
 
 		<section>
 			<div class="wrap">
 				<p class="eyebrow">running them yourself</p>
 				<h2>From source</h2>
-				<p>Each example also runs against the framework's live source, so editing <code>src/</code> reloads the page:</p>
-				<pre><code>npm run assets              # generates examples/assets, once
+				<p>Each example also runs against the framework's live source, so editing <code>src/</code> reloads the page - append <code>:build</code> to any script below to produce a folder you open from disk with no server at all; see <code>examples/README.md</code> for the full list, grouped the same way as above:</p>
+				<pre><code>npm run assets                    # generates examples/assets, once
 
-npm run example             # colour-transform, dev server
-npm run example:ui          # interface, dev server
-npm run example:dialogue    # dialogue scene, dev server
-npm run example:dungeon     # dungeon crawl, dev server
-npm run example:tower-defense # tower defense, dev server
-npm run example:3d          # optional Babylon.js 3D scene
-npm run example:village     # village RPG, dev server
-npm run example:battle      # creature battle, dev server
-npm run example:minigame    # lockpick minigame, dev server
-npm run example:chess       # chess against the built-in engine, dev server
-npm run example:loading     # loading lifecycle, dev server</code></pre>
-				<p>Append <code>:build</code> to any of those to produce a folder you open from disk with no server at all; see <code>examples/README.md</code> for the full list.</p>
+npm run example:hello-world       # Level 1: Game -> Scene -> update(dt), ~50 lines
+npm run example:loading           # Level 1: LoadQueue + LoadingScreen + AssetStream
+npm run example:ui                # Level 1: interface, windows/lists/message box
+npm run example:movement          # Level 1: grid movement, tile collision, TileMap layers, camera
+npm run example:save-load         # Level 1: SaveSystem alone
+npm run example:i18n              # Level 1: Catalog, t(), plurals, right-to-left
+
+npm run example:dialogue          # Level 2: dialogue scene
+npm run example:village           # Level 2: village RPG
+npm run example:event-system      # Level 2: switches/variables/conditions/pages + Inventory via call
+npm run example:world-transition  # Level 2: World<M>, two maps
+npm run example:audio             # Level 2: Music.playTracks + Sound
+npm run example:battle            # Level 2: creature battle
+npm run example:minigame          # Level 2: lockpick minigame
+
+npm run example:dungeon           # Level 3: dungeon crawl
+npm run example:chess             # Level 3: chess against the built-in engine
+npm run example:tower-defense     # Level 3: tower defense
+
+npm run example                   # tech demo: colour-transform
+npm run example:3d                # tech demo: optional Babylon.js 3D scene
+npm run example:headless          # tech demo: mwg/simulation, no rendering at all</code></pre>
 			</div>
 		</section>
 	</main>
@@ -135,43 +150,62 @@ npm run example:loading     # loading lifecycle, dev server</code></pre>
 
 	<script src="./examples-data.js"></script>
 	<script>
-		var grid = document.getElementById('example-grid');
+		var levels = document.getElementById('example-levels');
+		var byLevel = {};
 		window.MWG_EXAMPLES.forEach(function (example) {
-			var card = document.createElement('div');
-			card.className = 'panel example-card';
+			(byLevel[example.level] = byLevel[example.level] || []).push(example);
+		});
 
-			var title = document.createElement('h3');
-			title.textContent = example.title;
-			card.appendChild(title);
+		Object.keys(window.MWG_EXAMPLE_LEVELS).forEach(function (levelKey) {
+			var examples = byLevel[levelKey];
+			if (!examples || examples.length === 0) return;
 
-			var description = document.createElement('p');
-			description.innerHTML = example.description;
-			card.appendChild(description);
+			var heading = document.createElement('h2');
+			heading.textContent = window.MWG_EXAMPLE_LEVELS[levelKey];
+			heading.style.marginTop = '2rem';
+			levels.appendChild(heading);
 
-			if (example.buildNote) {
-				var note = document.createElement('p');
-				note.className = 'build-note';
-				note.innerHTML = example.buildNote;
-				card.appendChild(note);
-			}
+			var grid = document.createElement('div');
+			grid.className = 'example-grid';
+			levels.appendChild(grid);
 
-			var actions = document.createElement('div');
-			actions.className = 'card-actions';
+			examples.forEach(function (example) {
+				var card = document.createElement('div');
+				card.className = 'panel example-card';
 
-			var play = document.createElement('a');
-			play.className = 'btn primary';
-			play.href = './view.html?ex=' + encodeURIComponent(example.id);
-			play.textContent = 'Play';
-			actions.appendChild(play);
+				var title = document.createElement('h3');
+				title.textContent = example.title;
+				card.appendChild(title);
 
-			var fullScreen = document.createElement('a');
-			fullScreen.className = 'btn';
-			fullScreen.href = './' + example.id + '/index.html';
-			fullScreen.textContent = 'Open full screen';
-			actions.appendChild(fullScreen);
+				var description = document.createElement('p');
+				description.innerHTML = example.description;
+				card.appendChild(description);
 
-			card.appendChild(actions);
-			grid.appendChild(card);
+				if (example.buildNote) {
+					var note = document.createElement('p');
+					note.className = 'build-note';
+					note.innerHTML = example.buildNote;
+					card.appendChild(note);
+				}
+
+				var actions = document.createElement('div');
+				actions.className = 'card-actions';
+
+				var play = document.createElement('a');
+				play.className = 'btn primary';
+				play.href = './view.html?ex=' + encodeURIComponent(example.id);
+				play.textContent = 'Play';
+				actions.appendChild(play);
+
+				var fullScreen = document.createElement('a');
+				fullScreen.className = 'btn';
+				fullScreen.href = './' + example.id + '/index.html';
+				fullScreen.textContent = 'Open full screen';
+				actions.appendChild(fullScreen);
+
+				card.appendChild(actions);
+				grid.appendChild(card);
+			});
 		});
 	</script>
 </body>

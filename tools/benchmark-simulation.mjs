@@ -1,7 +1,7 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { runScenario, advanceToInput } from '../src/simulation/index.ts';
+import { readHistory, appendHistory, bestSeen } from './benchmark-history.mjs';
 
 /**
  * Headless throughput for `mwg/simulation` - the one workload item 133/134's browser-focused
@@ -17,22 +17,6 @@ const commandsToRun = Number(process.env.MWG_BENCHMARK_COMMANDS ?? 200_000);
 const turnStepsToRun = Number(process.env.MWG_BENCHMARK_TURN_STEPS ?? 200_000);
 const maxRegression = Number(process.env.MWG_BENCHMARK_MAX_REGRESSION ?? 0.2);
 const historyPath = resolve(root, 'benchmark-results', 'simulation.json');
-const maxHistoryEntries = 50;
-
-async function readHistory() {
-	try {
-		return JSON.parse(await readFile(historyPath, 'utf8'));
-	} catch {
-		return [];
-	}
-}
-
-async function appendHistory(entry) {
-	const history = await readHistory();
-	history.push(entry);
-	await mkdir(resolve(root, 'benchmark-results'), { recursive: true });
-	await writeFile(historyPath, JSON.stringify(history.slice(-maxHistoryEntries), null, 2));
-}
 
 function benchmarkScenario() {
 	const commands = Array.from({ length: commandsToRun }, (_, i) => (i % 2 === 0 ? 1 : -1));
@@ -82,12 +66,12 @@ const turns = benchmarkTurns();
 const result = { timestamp: new Date().toISOString(), scenario, turns };
 console.log(JSON.stringify(result, null, 2));
 
-const history = await readHistory();
+const history = await readHistory(historyPath);
 const bestPrior = {
-	commandsPerSecond: history.length > 0 ? Math.max(...history.map((entry) => entry.scenario.commandsPerSecond)) : null,
-	stepsPerSecond: history.length > 0 ? Math.max(...history.map((entry) => entry.turns.stepsPerSecond)) : null,
+	commandsPerSecond: bestSeen(history, (entry) => entry.scenario.commandsPerSecond),
+	stepsPerSecond: bestSeen(history, (entry) => entry.turns.stepsPerSecond),
 };
-await appendHistory(result);
+await appendHistory(historyPath, history, result);
 
 const regressions = [];
 if (bestPrior.commandsPerSecond !== null && scenario.commandsPerSecond < bestPrior.commandsPerSecond * (1 - maxRegression)) {

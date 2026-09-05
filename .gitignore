@@ -12,6 +12,14 @@ webpage/examples/chess/
 webpage/examples/tower-defense/
 webpage/examples/three-d/
 webpage/examples/loading/
+webpage/examples/hello-world/
+webpage/examples/movement/
+webpage/examples/save-load/
+webpage/examples/audio/
+webpage/examples/i18n/
+webpage/examples/world-transition/
+webpage/examples/event-system/
+webpage/examples/headless/
 webpage/documentation/
 benchmark-results/
 android/
