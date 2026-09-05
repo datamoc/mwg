@@ -1,0 +1,32 @@
+name: Publish to npm
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '26'
+          cache: npm
+          # points `npm publish` at npmjs.org explicitly, the same registry a local publish
+          # already uses - this is what makes NODE_AUTH_TOKEN below apply to the right host
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+      # the same gate CI already runs on every push; a tag alone proves nothing about
+      # whether the code at that tag still builds and passes
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
