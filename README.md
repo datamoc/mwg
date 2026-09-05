@@ -11,8 +11,8 @@ playable in the browser with no download, plus the generated API reference.
 
 > **Status: early release (v0.2.0).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
-> [ROADMAP.md](ROADMAP.md) for the full, numbered history. Still `0.y.z`: the public API can
-> still change between minor versions, and the wider genre-specific modules keep growing.
+> [ROADMAP.md](ROADMAP.md) for the full, numbered history. Still `0.y.z`: the "public API"
+> can still change between minor versions, and the wider genre-specific modules keep growing.
 
 ## What it is for
 
