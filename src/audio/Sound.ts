@@ -39,7 +39,10 @@ export class Sound {
 
 		audio.volume = this.volume;
 		audio.currentTime = 0;
-		void audio.play();
+		// play() can return a Promise that rejects if this reuse interrupts its own prior,
+		// still-loading play() (a real browser, not the fakes tests supply) - swallow it the
+		// standard way, since restarting a pooled clip mid-load is expected here, not an error.
+		void Promise.resolve(audio.play()).catch(() => {});
 
 		if (this.caption) onCaption.dispatch({ text: this.caption });
 	}

@@ -40,13 +40,16 @@ export class Music {
 
 		if (fadeDuration <= 0) {
 			incoming.volume = this.volume;
-			void incoming.play();
+			// a rejection here means the switch itself (or the previous.pause() right below)
+			// interrupted this play()'s own in-flight load - expected during a track switch,
+			// so swallow it the standard way rather than let it surface as unhandled.
+			void Promise.resolve(incoming.play()).catch(() => {});
 			previous?.pause();
 			return;
 		}
 
 		incoming.volume = 0;
-		void incoming.play();
+		void Promise.resolve(incoming.play()).catch(() => {});
 		this.fades.push({ audio: incoming, elapsed: 0, duration: fadeDuration, from: 0, to: this.volume, stopAtEnd: false });
 
 		if (previous) {
