@@ -27,11 +27,16 @@ if (!Number.isInteger(framesToMeasure) || framesToMeasure < 30) {
 
 const executablePath = process.env.CHROME_PATH ?? await findChrome();
 const screenshot = join(tmpdir(), `mwg-browser-benchmark-${process.pid}.png`);
+//A CI runner has no GPU, so Chrome there has to be told which software WebGL path to take
+//(`--use-gl=angle --use-angle=swiftshader`). That is a property of the machine, not of the
+//benchmark, so it comes from the environment rather than being hard-coded for everyone.
+const extraChromeArgs = (process.env.MWG_BENCHMARK_CHROME_ARGS ?? '').split(' ').filter(Boolean);
 const browser = await chromium.launch({
 	executablePath,
 	headless: true,
 	args: [
 		'--allow-file-access-from-files',
+		...extraChromeArgs,
 	],
 });
 

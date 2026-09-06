@@ -1,0 +1,106 @@
+name: Benchmark (browser)
+
+# Deliberately not on push or pull_request.
+#
+# tools/benchmark-browser.mjs measures frames per second in a real Chrome. On a GitHub
+# runner there is no GPU, so Chrome renders through SwiftShader, and a shared runner's
+# frame times vary with whatever else that machine is doing. Gating every push on that
+# would fail pull requests for reasons that have nothing to do with the change. What this
+# workflow is for instead: proving the built example still reaches a working WebGL page
+# from file:// (the check no typechecker can make), and tracking fps over time against the
+# cached per-page history, at the tool's own 15% regression threshold.
+on:
+  schedule:
+    # once a week, Monday 04:00 UTC
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      min-fps:
+        description: 'Minimum fps before the run fails (tool default 45; software WebGL on a runner may warrant lower)'
+        required: false
+        default: ''
+      frames:
+        description: 'Frames to measure (tool default 180)'
+        required: false
+        default: ''
+
+concurrency:
+  group: benchmark-browser-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    strategy:
+      # one page's numbers are worth having even if another page fails its threshold
+      fail-fast: false
+      matrix:
+        # the 2D pages only. benchmark:3d renders a Babylon scene, which through SwiftShader
+        # is far below the tool's 45 fps floor for reasons that say nothing about the code;
+        # measuring 3D needs a runner with a real GPU.
+        include:
+          - name: dungeon
+            script: benchmark:browser
+          - name: tower-defense
+            script: benchmark:tower-defense
+          - name: ui
+            script: benchmark:ui
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '26'
+          cache: npm
+
+      - run: npm ci
+
+      # the example assets are generated, never downloaded (tools/make-example-assets.mjs);
+      # regenerating them is deterministic and cheap, and makes the build independent of
+      # which generated files happen to be committed
+      - run: npm run assets
+
+      # the GitHub-hosted Ubuntu image ships Google Chrome; tools/find-chrome.mjs would find
+      # it at /usr/bin/google-chrome anyway, but failing here with a clear message beats
+      # failing later inside playwright-core with a spawn error
+      - name: Locate Chrome
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$chrome" ]; then
+            echo "no Chrome on this runner; benchmark-browser.mjs cannot run" >&2
+            exit 1
+          fi
+          echo "CHROME_PATH=$chrome" >> "$GITHUB_ENV"
+          "$chrome" --version
+
+      # per-page fps history, so a scheduled run can be compared against what earlier
+      # scheduled runs on the same kind of runner saw. restore-keys makes a new week's cache
+      # start from the most recent one rather than from nothing.
+      - name: Restore benchmark history
+        uses: actions/cache@v4
+        with:
+          path: benchmark-results
+          key: benchmark-browser-${{ matrix.name }}-${{ github.run_id }}
+          restore-keys: |
+            benchmark-browser-${{ matrix.name }}-
+
+      - name: Run ${{ matrix.script }}
+        env:
+          # no GPU on a runner: keep Pixi on a real WebGL path via ANGLE's software backend
+          # rather than letting Chrome fall back to something the tool would reject
+          MWG_BENCHMARK_CHROME_ARGS: '--use-gl=angle --use-angle=swiftshader --disable-dev-shm-usage'
+          MWG_BENCHMARK_MIN_FPS: ${{ inputs.min-fps }}
+          MWG_BENCHMARK_FRAMES: ${{ inputs.frames }}
+        run: |
+          # an empty workflow input must not become MWG_BENCHMARK_MIN_FPS="" - Number("") is
+          # 0, which would silently disable the threshold instead of using the tool default
+          [ -n "$MWG_BENCHMARK_MIN_FPS" ] || unset MWG_BENCHMARK_MIN_FPS
+          [ -n "$MWG_BENCHMARK_FRAMES" ] || unset MWG_BENCHMARK_FRAMES
+          npm run ${{ matrix.script }}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-browser-${{ matrix.name }}
+          path: benchmark-results/
+          if-no-files-found: warn

@@ -29,3 +29,33 @@ jobs:
       # the library build (tsc emit + the standalone mw_games.global.js IIFE) - catches a
       # build break tsc --noEmit alone would not, such as a broken vite config
       - run: npm run build
+
+  # The one benchmark that needs no browser, no GPU and no example build: pure Node
+  # throughput for mwg/simulation. Safe on every push because of what it does NOT do - it
+  # starts from an empty benchmark-results/ every run, so there is no history to compare
+  # against and the run can only fail if the runners actually throw or stop processing
+  # every command. Comparing a shared GitHub runner's throughput against a best-seen value
+  # measured on some other, faster runner is how a benchmark gate turns into a flaky gate,
+  # so the regression half of this tool is deliberately left to a developer's own machine
+  # and to the scheduled browser benchmark, which keeps its history in a cache.
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '26'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run benchmark:simulation
+
+      # kept as an artifact so a human can eyeball the numbers across runs even though CI
+      # itself never asserts on them
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-simulation
+          path: benchmark-results/
+          if-no-files-found: warn
