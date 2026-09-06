@@ -1,5 +1,6 @@
 import * as Random from '../core/Random.ts';
 import { Level, rectCenter, rectsOverlap, type Rect, type TerrainKind } from './Level.ts';
+import { hallBuilder, pickBuilder, type RoomBuilder } from './RoomBuilders.ts';
 
 /**
  * Rooms joined by corridors.
@@ -39,6 +40,58 @@ export interface DungeonOptions {
 
 	/** extra terrain kinds beyond wall/floor, appended after them - a game's own trap or door ids */
 	kinds?: TerrainKind[];
+
+	/**
+	 * Regional generation callbacks, fired as the pipeline reaches each stage - the seam a
+	 * game hangs hand-placed rooms, branch entrances, wells, plants, statues, chasms, doors
+	 * and traps from, without forking the generator itself. `mwg` calls these; it never
+	 * decides what a game does inside one.
+	 */
+	hooks?: DungeonGenerationHooks;
+
+	/**
+	 * Room interiors to compose the floor from, picked per room by weight and size fit.
+	 *
+	 * Omit it and every room is a plain filled rectangle, exactly as before builders existed;
+	 * a room no listed builder fits falls back to that same plain rectangle rather than being
+	 * left as solid rock, since it has already been placed and joined by a corridor.
+	 */
+	builders?: readonly RoomBuilder[];
+}
+
+export interface DungeonGenerationHooks {
+	/** fired once a room is placed and filled, before any corridor touches it */
+	onRoomPlaced?(room: Rect, index: number): void;
+
+	/** fired after a corridor is carved between two rooms */
+	onCorridorCarved?(edge: RoomEdge, from: Rect, to: Rect): void;
+}
+
+/** a corridor between two rooms, by index into the level's own `rooms` array */
+export interface RoomEdge {
+	a: number;
+	b: number;
+
+	/** false for the backbone chain that guarantees reachability; true for an added loop */
+	extra: boolean;
+}
+
+export interface DungeonResult {
+	level: Level;
+
+	/** every corridor carved, backbone first then loops, in carve order */
+	graph: RoomEdge[];
+
+	/** placement attempts that were rejected (overlap or off-map) before every room resolved */
+	retries: number;
+
+	/**
+	 * Which builder carved each room, by the same index the room has in `level.rooms`.
+	 *
+	 * Always populated, so a floor generated with no `builders` reads as every room being
+	 * `'hall'` rather than as an absent field a parity trace would have to special-case.
+	 */
+	roomBuilders: string[];
 }
 
 export const DUNGEON_KINDS: TerrainKind[] = [
@@ -46,7 +99,12 @@ export const DUNGEON_KINDS: TerrainKind[] = [
 	{ passable: true, transparent: true }, //1 floor
 ];
 
-export function generateDungeon(options: DungeonOptions): Level {
+/**
+ * The full pipeline result: the level, its room graph, and how many placement attempts were
+ * rejected along the way. `generateDungeon` is the same pipeline, returning only the level,
+ * for a caller that has no use for the graph or retry count.
+ */
+export function generateDungeonGraph(options: DungeonOptions): DungeonResult {
 	const {
 		width,
 		height,
@@ -57,10 +115,15 @@ export function generateDungeon(options: DungeonOptions): Level {
 		wall = 0,
 		floor = 1,
 		kinds = [],
+		hooks,
+		builders,
 	} = options;
 
 	const level = new Level(width, height, [...DUNGEON_KINDS, ...kinds], wall);
 	const placed: Rect[] = [];
+	const graph: RoomEdge[] = [];
+	const roomBuilders: string[] = [];
+	let retries = 0;
 
 	//rejection sampling: try a spot, keep it if it clears the others. simple, and it fails
 	//gracefully: a crowded level just ends up with fewer rooms rather than looping forever
@@ -73,29 +136,54 @@ export function generateDungeon(options: DungeonOptions): Level {
 		const top = Random.int(1, Math.max(2, height - h - 1));
 
 		const room: Rect = { left, top, right: left + w - 1, bottom: top + h - 1 };
-		if (room.right >= width - 1 || room.bottom >= height - 1) continue;
+		if (room.right >= width - 1 || room.bottom >= height - 1) {
+			retries++;
+			continue;
+		}
 
 		//a two-cell margin, so rooms never share a wall and corridors have somewhere to run
-		if (placed.some((other) => rectsOverlap(room, other, 2))) continue;
+		if (placed.some((other) => rectsOverlap(room, other, 2))) {
+			retries++;
+			continue;
+		}
 
 		placed.push(room);
-		level.fillRect(room, floor);
+
+		//a builder carves the interior; with none supplied (or none that fits) this is the
+		//plain filled rectangle the generator always did
+		const builder = (builders?.length ? pickBuilder(builders, room) : null) ?? hallBuilder;
+		builder.paint(level, room, floor);
+		roomBuilders.push(builder.id);
+
+		hooks?.onRoomPlaced?.(room, placed.length - 1);
 	}
 
 	//join each room to the previous one, which guarantees every room is reachable
 	for (let i = 1; i < placed.length; i++) {
 		carveCorridor(level, rectCenter(placed[i - 1]), rectCenter(placed[i]), floor);
+		const edge: RoomEdge = { a: i - 1, b: i, extra: false };
+		graph.push(edge);
+		hooks?.onCorridorCarved?.(edge, placed[i - 1], placed[i]);
 	}
 
 	//then a few extra links, so the map has loops instead of being a tree
 	for (let i = 0; i < extraCorridors && placed.length > 2; i++) {
-		const a = placed[Random.int(placed.length)];
-		const b = placed[Random.int(placed.length)];
-		if (a !== b) carveCorridor(level, rectCenter(a), rectCenter(b), floor);
+		const a = Random.int(placed.length);
+		const b = Random.int(placed.length);
+		if (a !== b) {
+			carveCorridor(level, rectCenter(placed[a]), rectCenter(placed[b]), floor);
+			const edge: RoomEdge = { a, b, extra: true };
+			graph.push(edge);
+			hooks?.onCorridorCarved?.(edge, placed[a], placed[b]);
+		}
 	}
 
 	level.rooms = placed;
-	return level;
+	return { level, graph, retries, roomBuilders };
+}
+
+export function generateDungeon(options: DungeonOptions): Level {
+	return generateDungeonGraph(options).level;
 }
 
 /**
