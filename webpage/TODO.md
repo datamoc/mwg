@@ -117,12 +117,20 @@ without that class for the full-resolution version.
 - [ ] Revisit the roadmap list in `index.html` whenever the real API changes;
       it's kept in sync by hand, not generated (unlike the Documentation
       page now).
-- [ ] The Battle for Wesnoth was added as a 6th reference (README.md,
+- [x] The Battle for Wesnoth was added as a 6th reference (README.md,
       capability spec, roadmap, FAQ) and hexagonal tile maps are now a
-      documented, planned capability, but nothing was implemented. When
-      `mwg/render`'s hex tile map and `mwg/roguelike`'s hex FOV/pathfinding
-      actually ship, add them to the Documentation page and flip the
-      roadmap item from "planned" to "shipped".
+      documented, planned capability. `mwg/render`'s hex tile map and
+      `mwg/roguelike`'s hex FOV/pathfinding have since shipped (item 17), as
+      have zone of control (87) and the recruiting/upkeep army economy (88);
+      `index.html`'s roadmap list already read "shipped" for all three. This
+      pass also caught five *other* roadmap rows that had drifted stale
+      ("planned" for online multiplayer, the rendering audit, the desktop
+      host, and progressive asset streaming - all shipped since; the
+      rendering-decision-matrix row was removed outright, since that item
+      moved out of the numbered roadmap into CLAUDE.md's standing policy)
+      and appended the eight items (140-147) that had never made it onto the
+      website's list at all - the TypeDoc-generated Documentation page needs
+      no equivalent fix, since it has nothing to keep in sync by hand.
 - [ ] Each per-example diagram (all nineteen now, `01`-`19_*.svg`) labels a
       handful of specific steps as its own boxes (e.g. dungeon's "FOV
       update", "Actor actions"). Pairing each of those boxes with the

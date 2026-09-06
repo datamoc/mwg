@@ -45,13 +45,18 @@ required because the output must open via `file://` with no server.
 root `src/index.ts` (which is also what the standalone `mw_games.global.js` build exposes as
 `window.mw_games`):
 
-- **`core`** - `Game` (owns the Pixi `Application`, the frame loop, current `Scene`),
-  `Scene`, `Signal` (typed event emitter), `Random`, `Input`. `Game` is a singleton reachable
-  via `Game.current`; scenes are swapped with `switchScene`, which takes effect at the start
-  of the next frame. `Game.step(dt)` drives one frame synchronously, needed because Chrome
-  throttles `requestAnimationFrame` in a background tab, which can otherwise make an example
-  look frozen for reasons unrelated to the code.
-- **`render`** - `Camera`, `TileMap`, `SpriteSheet`, `AnimatedSprite`, `TintedSprite`, and
+- **`core`** - `Scene` (lifecycle only: `create`/`update`/`resize`/`onSuspend`/`onResume`/
+  `destroy`, owning no display node), `SceneStack`, `Signal` (typed event emitter), `Random`,
+  `Input`, saves. **`core` imports no other module and no renderer**, which is what lets a
+  Babylon game use it; the renderer-isolation test enforces that rather than trusting it.
+- **`two-d`** - everything drawn through Pixi, and the counterpart to `three-d`. `Game` (owns
+  the Pixi `Application`, the frame loop, the current scene) and `Scene2D` (`core.Scene` plus
+  a `stage` container) sit at its root, with `render`, `ui` and `stage` beneath it. `Game` is
+  a singleton reachable via `Game.current`; scenes are swapped with `switchScene`, which takes
+  effect at the start of the next frame. `Game.step(dt)` drives one frame synchronously,
+  needed because Chrome throttles `requestAnimationFrame` in a background tab, which can
+  otherwise make an example look frozen for reasons unrelated to the code.
+- **`two-d/render`** - `Camera`, `TileMap`, `SpriteSheet`, `AnimatedSprite`, `TintedSprite`, and
   `ColorTransformBatcher`. The batcher implements a per-sprite `texel × M + A` colour
   transform (multiply *and* add) in the batch shader, which Pixi's built-in multiply-only
   `tint` cannot do. **All Pixi batcher/high-shader internals are confined to
@@ -93,11 +98,13 @@ root `src/index.ts` (which is also what the standalone `mw_games.global.js` buil
   `Session` reuses the same storage abstraction for one counter: how many times this game
   has launched, for a native wrapper to decide whether to ask for a rating; `mwg` counts,
   never prompts.
-- **`core` never imports from any other module.** `Game` takes a `GameOptions.extensions`
-  array of Pixi-extension registration functions instead of calling `render`'s
-  `registerColorTransform` itself, so a game that only imports `mwg/core` never pulls in
-  `mwg/render`. A game using `TintedSprite` (directly, or via `TileMap`/`DialogueStage`/
-  `AnimatedSprite`, all built on it) passes `{ extensions: [registerColorTransform] }`.
+- **`core` imports no other module, and no renderer.** `Game` takes a
+  `GameOptions.extensions` array of Pixi-extension registration functions instead of calling
+  `registerColorTransform` itself. A game using `TintedSprite` (directly, or via `TileMap`/
+  `DialogueStage`/`AnimatedSprite`, all built on it) passes
+  `{ extensions: [registerColorTransform] }`. Pixi lives entirely under `two-d` (plus `rpg`,
+  which drives a `MessageBox`, and `assets/loader.ts`); `assets/paths.ts` resolves paths with
+  no renderer so `two-d` and `three-d` can share the compiled-asset map.
 
 ### The `file://` constraint
 
@@ -227,9 +234,17 @@ list.
 - **Tests use Node's built-in runner over `.ts` directly.** No test framework. Keep it that
   way; the dependency list is a feature.
 - **Relative imports carry `.ts`,** rewritten to `.js` on emit. Node's resolver needs it.
-- **Pixi internals are confined to `src/render/ColorTransformBatcher.ts`.** That file is the
+- **Pixi internals are confined to `src/two-d/render/ColorTransformBatcher.ts`.** That file is the
   only one allowed to know about batchers and high-shader bits. If a second file needs
   them, something has gone wrong.
+- **Diagrams under `webpage/assets/` are generated, never hand-drawn.**
+  `npm run webpage:diagrams` rebuilds both sets: `tools/make-example-diagrams.mjs` for the
+  numbered example diagrams, `tools/make-architecture-diagrams.mjs` for `0a`-`0d`, with
+  `tools/diagram-chrome.mjs` holding the shared visual language. `0c_framework_architecture`
+  reads the module list out of `src/` and classifies each module by walking its real import
+  graph, so it cannot describe a layout the code does not have. The hand-drawn originals were
+  wrong for months before anyone noticed, which is the whole reason for this rule; they are
+  kept under `webpage/assets/archive/` for reference only.
 - **Assets are generated, never downloaded.** `tools/make-example-assets.mjs`. Borrowed art
   brings borrowed licence terms, and this project has to stay redistributable.
 - **No code or media from the reference games; their file formats are fair game.** They are

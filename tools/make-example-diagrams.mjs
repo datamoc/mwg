@@ -1,6 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { panel, text, open, close, ACCENT } from './diagram-chrome.mjs';
 
 /**
  * Generates the "conceptual example diagram" SVGs under `webpage/assets/`, in the exact
@@ -18,26 +19,8 @@ import { fileURLToPath } from 'node:url';
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const OUT = join(root, 'webpage', 'assets');
 
-const FONT = 'Inter,Segoe UI,Arial,sans-serif';
 const CATEGORY_COLORS = ['#4ea1ff', '#e53935', '#4caf50'];
 const FLOW_COLOR = '#ff6659';
-
-function escapeXml(text) {
-	return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-function panel(x, y, width, height, accent) {
-	return (
-		`<g filter="url(#shadow)">\n` +
-		`  <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>\n` +
-		`  <rect x="${x}" y="${y}" width="8" height="${height}" rx="4" fill="${accent}"/>\n` +
-		`</g>\n`
-	);
-}
-
-function text(x, y, fill, size, weight, anchor, content) {
-	return `<text x="${x}" y="${y}" fill="${fill}" text-anchor="${anchor}" font-family="${FONT}" font-size="${size}"${weight ? ` font-weight="${weight}"` : ''}>${escapeXml(content)}</text>\n`;
-}
 
 /**
  * @param spec.title e.g. "hello world" - rendered as "MWG example — hello world"
@@ -50,22 +33,7 @@ function text(x, y, fill, size, weight, anchor, content) {
  * @param spec.callouts exactly 3 indices into `flow` (dashed arrow from category i to flow[callouts[i]])
  */
 function renderDiagram(spec) {
-	const parts = [];
-	parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">`);
-	parts.push(
-		`<defs>\n` +
-			`  <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">\n` +
-			`    <path d="M0,0 L12,6 L0,12 z" fill="#596273"/>\n` +
-			`  </marker>\n` +
-			`  <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">\n` +
-			`    <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#000000" flood-opacity="0.28"/>\n` +
-			`  </filter>\n` +
-			`</defs>`
-	);
-	parts.push(`<rect width="100%" height="100%" fill="#0b0d10"/>`);
-	parts.push(`<rect x="0" y="0" width="100%" height="12" fill="#e53935"/>`);
-	parts.push(text(70, 80, '#f3f4f6', 40, 700, 'start', `MWG example — ${spec.title}`));
-	parts.push(text(70, 120, '#aab2bf', 20, null, 'start', spec.subtitle));
+	const parts = open(`MWG example — ${spec.title}`, spec.subtitle);
 
 	// what it shows / why it matters
 	const summaryBoxes = [

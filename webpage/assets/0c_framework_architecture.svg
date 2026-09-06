@@ -9,146 +9,106 @@
 </defs>
 <rect width="100%" height="100%" fill="#0b0d10"/>
 <rect x="0" y="0" width="100%" height="12" fill="#e53935"/>
-<text x="70" y="82" fill="#f3f4f6" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="38" font-weight="700">MWG framework architecture</text>
-<text x="70" y="122" fill="#aab2bf" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20">Major modules and their responsibilities</text>
+<text x="70" y="80" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="40" font-weight="700">MWG framework architecture</text>
+
+<text x="70" y="120" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20">Which modules reach a renderer, and which do not</text>
+
+<text x="70" y="168" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18">Generated from src/: every module below was classified by walking its real import graph.</text>
 
 <g filter="url(#shadow)">
-  <rect x="80" y="180" width="280" height="510" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="80" y="180" width="8" height="510" rx="4" fill="#e53935"/>
+  <rect x="70" y="210" width="470" height="620" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
+  <rect x="70" y="210" width="8" height="620" rx="4" fill="#4caf50"/>
 </g>
-<text x="104" y="218" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Foundations</text>
-<text x="104" y="252" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17"></text>
 
+<text x="94" y="252" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">No renderer</text>
+
+<text x="94" y="282" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">usable from any renderer, or none</text>
+
+<g>
+  <rect x="94" y="310" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="330" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">actors</text>
+<text x="110" y="341" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">24 files</text>
+</g>
+<g>
+  <rect x="94" y="360" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="380" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">audio</text>
+<text x="110" y="391" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">10 files</text>
+</g>
+<g>
+  <rect x="94" y="410" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="430" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">battle</text>
+<text x="110" y="441" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">13 files</text>
+</g>
+<g>
+  <rect x="94" y="460" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="480" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">board</text>
+<text x="110" y="491" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">9 files</text>
+</g>
+<g>
+  <rect x="94" y="510" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="530" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">core</text>
+<text x="110" y="541" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">29 files</text>
+</g>
+<g>
+  <rect x="94" y="560" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="580" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">i18n</text>
+<text x="110" y="591" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">2 files</text>
+</g>
+<g>
+  <rect x="94" y="610" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="630" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">roguelike</text>
+<text x="110" y="641" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">24 files</text>
+</g>
+<g>
+  <rect x="94" y="660" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="680" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">rpg</text>
+<text x="110" y="691" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">12 files</text>
+</g>
+<g>
+  <rect x="94" y="710" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="730" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">simulation</text>
+<text x="110" y="741" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">3 files</text>
+</g>
+<g>
+  <rect x="94" y="760" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="780" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">world</text>
+<text x="110" y="791" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">8 files</text>
+</g>
 <g filter="url(#shadow)">
-  <rect x="108" y="275" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="108" y="275" width="8" height="74" rx="4" fill="#e53935"/>
+  <rect x="564" y="210" width="470" height="220" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
+  <rect x="564" y="210" width="8" height="220" rx="4" fill="#4ea1ff"/>
 </g>
-<text x="220.0" y="313" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">core</text>
 
+<text x="588" y="252" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">2D, on PixiJS</text>
 
+<text x="588" y="282" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">mwg/two-d and what needs it</text>
+
+<g>
+  <rect x="588" y="310" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="604" y="330" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">assets</text>
+<text x="604" y="341" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">5 files</text>
+</g>
+<g>
+  <rect x="588" y="360" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="604" y="380" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">two-d</text>
+<text x="604" y="391" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">65 files</text>
+</g>
 <g filter="url(#shadow)">
-  <rect x="108" y="367" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="108" y="367" width="8" height="74" rx="4" fill="#e53935"/>
+  <rect x="1058" y="210" width="470" height="170" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
+  <rect x="1058" y="210" width="8" height="170" rx="4" fill="#b05cff"/>
 </g>
-<text x="220.0" y="405" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">assets</text>
 
+<text x="1082" y="252" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">3D, on Babylon.js</text>
 
-<g filter="url(#shadow)">
-  <rect x="108" y="459" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="108" y="459" width="8" height="74" rx="4" fill="#e53935"/>
+<text x="1082" y="282" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">optional; a 2D game never pays for it</text>
+
+<g>
+  <rect x="1082" y="310" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="1098" y="330" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">3d</text>
+<text x="1098" y="341" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">9 files</text>
 </g>
-<text x="220.0" y="497" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">audio</text>
+<text x="70" y="864" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">mwg/core depends on no other module and no renderer, so a Babylon game uses its input, saves, RNG and scene stack unchanged.</text>
 
+<text x="1530" y="964" fill="#667080" text-anchor="end" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Generated from src/ - MWG architecture</text>
 
-<g filter="url(#shadow)">
-  <rect x="108" y="551" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="108" y="551" width="8" height="74" rx="4" fill="#e53935"/>
-</g>
-<text x="220.0" y="589" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">i18n</text>
-
-
-<g filter="url(#shadow)">
-  <rect x="410" y="180" width="280" height="510" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="410" y="180" width="8" height="510" rx="4" fill="#4ea1ff"/>
-</g>
-<text x="434" y="218" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Presentation</text>
-<text x="434" y="252" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17"></text>
-
-<g filter="url(#shadow)">
-  <rect x="438" y="275" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="438" y="275" width="8" height="74" rx="4" fill="#4ea1ff"/>
-</g>
-<text x="550.0" y="313" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">render</text>
-
-
-<g filter="url(#shadow)">
-  <rect x="438" y="367" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="438" y="367" width="8" height="74" rx="4" fill="#4ea1ff"/>
-</g>
-<text x="550.0" y="405" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">ui</text>
-
-
-<g filter="url(#shadow)">
-  <rect x="438" y="459" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="438" y="459" width="8" height="74" rx="4" fill="#4ea1ff"/>
-</g>
-<text x="550.0" y="497" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">stage</text>
-
-
-<g filter="url(#shadow)">
-  <rect x="740" y="180" width="280" height="510" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="740" y="180" width="8" height="510" rx="4" fill="#4caf50"/>
-</g>
-<text x="764" y="218" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Gameplay</text>
-<text x="764" y="252" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17"></text>
-
-<g filter="url(#shadow)">
-  <rect x="768" y="275" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="768" y="275" width="8" height="74" rx="4" fill="#4caf50"/>
-</g>
-<text x="880.0" y="313" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">actors</text>
-
-
-<g filter="url(#shadow)">
-  <rect x="768" y="367" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="768" y="367" width="8" height="74" rx="4" fill="#4caf50"/>
-</g>
-<text x="880.0" y="405" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">world</text>
-
-
-<g filter="url(#shadow)">
-  <rect x="768" y="459" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="768" y="459" width="8" height="74" rx="4" fill="#4caf50"/>
-</g>
-<text x="880.0" y="497" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">rpg</text>
-
-
-<g filter="url(#shadow)">
-  <rect x="768" y="551" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="768" y="551" width="8" height="74" rx="4" fill="#4caf50"/>
-</g>
-<text x="880.0" y="589" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">battle</text>
-
-
-<g filter="url(#shadow)">
-  <rect x="1070" y="180" width="280" height="510" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="1070" y="180" width="8" height="510" rx="4" fill="#f4c95d"/>
-</g>
-<text x="1094" y="218" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Specialized</text>
-<text x="1094" y="252" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17"></text>
-
-<g filter="url(#shadow)">
-  <rect x="1098" y="275" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="1098" y="275" width="8" height="74" rx="4" fill="#f4c95d"/>
-</g>
-<text x="1210.0" y="313" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">roguelike</text>
-
-
-<g filter="url(#shadow)">
-  <rect x="1098" y="367" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="1098" y="367" width="8" height="74" rx="4" fill="#f4c95d"/>
-</g>
-<text x="1210.0" y="405" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">board</text>
-
-
-<g filter="url(#shadow)">
-  <rect x="1098" y="459" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="1098" y="459" width="8" height="74" rx="4" fill="#f4c95d"/>
-</g>
-<text x="1210.0" y="497" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">simulation</text>
-
-
-<g filter="url(#shadow)">
-  <rect x="1098" y="551" width="224" height="74" rx="18" fill="#1d2430" stroke="#2a3240" stroke-width="2"/>
-  <rect x="1098" y="551" width="8" height="74" rx="4" fill="#f4c95d"/>
-</g>
-<text x="1210.0" y="589" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">3d</text>
-
-
-<g filter="url(#shadow)">
-  <rect x="180" y="760" width="1240" height="120" rx="18" fill="#171b23" stroke="#2a3240" stroke-width="2"/>
-  <rect x="180" y="760" width="8" height="120" rx="4" fill="#ff6659"/>
-</g>
-<text x="800.0" y="798" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Composition principle</text>
-<text x="800.0" y="832" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">A game only uses the modules it needs — e.g. core + render + ui + actors + world + roguelike</text>
-<line x1="220" y1="690" x2="300" y2="760" stroke="#596273" stroke-width="3" marker-end="url(#arrow)" stroke-dasharray="10 10"/><line x1="550" y1="690" x2="600" y2="760" stroke="#596273" stroke-width="3" marker-end="url(#arrow)" stroke-dasharray="10 10"/><line x1="880" y1="690" x2="900" y2="760" stroke="#596273" stroke-width="3" marker-end="url(#arrow)" stroke-dasharray="10 10"/><line x1="1210" y1="690" x2="1190" y2="760" stroke="#596273" stroke-width="3" marker-end="url(#arrow)" stroke-dasharray="10 10"/><text x="1530" y="964" fill="#667080" text-anchor="end" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">MWG — conceptual diagram</text></svg>
+</svg>

@@ -9,55 +9,91 @@
 </defs>
 <rect width="100%" height="100%" fill="#0b0d10"/>
 <rect x="0" y="0" width="100%" height="12" fill="#e53935"/>
-<text x="70" y="82" fill="#f3f4f6" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="38" font-weight="700">Running and deploying an MWG game</text>
-<text x="70" y="122" fill="#aab2bf" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20">From the developer workstation to the player opening the game in a browser</text>
+<text x="70" y="80" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="40" font-weight="700">Running and deploying an MWG game</text>
+
+<text x="70" y="120" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20">From source to a file a player double-clicks</text>
+
+<text x="70" y="168" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18">The target that shapes every build choice: a game you open from disk, with no server.</text>
 
 <g filter="url(#shadow)">
-  <rect x="80" y="190" width="330" height="190" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="80" y="190" width="8" height="190" rx="4" fill="#4ea1ff"/>
+  <rect x="70" y="260" width="335" height="300" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
+  <rect x="70" y="260" width="8" height="300" rx="4" fill="#e53935"/>
 </g>
-<text x="104" y="228" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Developer</text>
-<text x="104" y="262" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">TypeScript / JavaScript</text><text x="104" y="290" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">npm + Vite</text><text x="104" y="318" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">assets + maps + data</text>
-<line x1="410" y1="285" x2="560" y2="285" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/><text x="485.0" y="275.0" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15">build</text>
-<g filter="url(#shadow)">
-  <rect x="560" y="175" width="450" height="220" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="560" y="175" width="8" height="220" rx="4" fill="#e53935"/>
-</g>
-<text x="584" y="213" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Game artifact</text>
-<text x="584" y="247" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">index.html</text><text x="584" y="275" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">game.js / mw_games.global.js</text><text x="584" y="303" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">resources.js + compiled resources</text>
-<line x1="1010" y1="285" x2="1170" y2="285" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/><text x="1090.0" y="275.0" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15">delivery</text>
-<g filter="url(#shadow)">
-  <rect x="1170" y="190" width="330" height="190" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="1170" y="190" width="8" height="190" rx="4" fill="#4caf50"/>
-</g>
-<text x="1194" y="228" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Player</text>
-<text x="1194" y="262" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">double-click index.html</text><text x="1194" y="290" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">no Node.js required</text><text x="1194" y="318" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">local / offline game</text>
-<line x1="1335" y1="380" x2="1335" y2="540" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/><text x="1335.0" y="450.0" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15">opens</text>
-<g filter="url(#shadow)">
-  <rect x="1040" y="540" width="590" height="180" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="1040" y="540" width="8" height="180" rx="4" fill="#f4c95d"/>
-</g>
-<text x="1335.0" y="578" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Browser</text>
-<text x="1335.0" y="612" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">HTML + JavaScript</text><text x="1335.0" y="640" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">PixiJS / WebGL</text><text x="1335.0" y="668" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">keyboard / mouse / gamepad input</text>
-<line x1="1040" y1="630" x2="850" y2="630" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/><text x="945.0" y="620.0" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15">runtime</text>
-<g filter="url(#shadow)">
-  <rect x="420" y="520" width="430" height="220" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="420" y="520" width="8" height="220" rx="4" fill="#e53935"/>
-</g>
-<text x="444" y="558" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">MWG runtime</text>
-<text x="444" y="592" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">Scene + game loop</text><text x="444" y="620" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">render / UI / events / state</text><text x="444" y="648" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">audio / combat / world…</text>
-<line x1="560" y1="740" x2="560" y2="850" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/><text x="560.0" y="785.0" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15">renders to</text>
-<g filter="url(#shadow)">
-  <rect x="360" y="850" width="400" height="90" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="360" y="850" width="8" height="90" rx="4" fill="#4ea1ff"/>
-</g>
-<text x="560.0" y="888" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Canvas / screen</text>
-<text x="560.0" y="922" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">game frames</text>
 
+<text x="94" y="306" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="23" font-weight="700">Author</text>
+
+<text x="94" y="346" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">TypeScript, plus art</text>
+
+<text x="94" y="374" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">and audio on disk.</text>
+
+<text x="94" y="402" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16"></text>
+
+<text x="94" y="430" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">Maps and events are</text>
+
+<text x="94" y="458" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">data, not code.</text>
+
+<line x1="411" y1="350" x2="437" y2="350" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/>
 <g filter="url(#shadow)">
-  <rect x="80" y="520" width="260" height="220" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="80" y="520" width="8" height="220" rx="4" fill="#b05cff"/>
+  <rect x="445" y="260" width="335" height="300" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
+  <rect x="445" y="260" width="8" height="300" rx="4" fill="#ffab40"/>
 </g>
-<text x="104" y="558" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">compile-resources</text>
-<text x="104" y="592" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">images → data URI</text><text x="104" y="620" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">JSON/data → JS</text><text x="104" y="648" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">avoids fetch(file://)</text>
-<line x1="340" y1="630" x2="420" y2="630" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/><text x="380.0" y="620.0" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15">feeds</text><text x="1530" y="964" fill="#667080" text-anchor="end" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">MWG — conceptual diagram</text></svg>
+
+<text x="469" y="306" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="23" font-weight="700">Build</text>
+
+<text x="469" y="346" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">compile-resources turns</text>
+
+<text x="469" y="374" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">every asset into a data:</text>
+
+<text x="469" y="402" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">URI inside a plain script.</text>
+
+<text x="469" y="430" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16"></text>
+
+<text x="469" y="458" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">The library emits a</text>
+
+<text x="469" y="486" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">classic IIFE, not ESM.</text>
+
+<line x1="786" y1="350" x2="812" y2="350" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/>
+<g filter="url(#shadow)">
+  <rect x="820" y="260" width="335" height="300" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
+  <rect x="820" y="260" width="8" height="300" rx="4" fill="#4caf50"/>
+</g>
+
+<text x="844" y="306" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="23" font-weight="700">Artifact</text>
+
+<text x="844" y="346" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">One folder: index.html,</text>
+
+<text x="844" y="374" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">game.js, asset scripts.</text>
+
+<text x="844" y="402" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16"></text>
+
+<text x="844" y="430" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">No install step, no</text>
+
+<text x="844" y="458" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">runtime to download.</text>
+
+<line x1="1161" y1="350" x2="1187" y2="350" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/>
+<g filter="url(#shadow)">
+  <rect x="1195" y="260" width="335" height="300" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
+  <rect x="1195" y="260" width="8" height="300" rx="4" fill="#4ea1ff"/>
+</g>
+
+<text x="1219" y="306" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="23" font-weight="700">Run</text>
+
+<text x="1219" y="346" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">Opens from file://,</text>
+
+<text x="1219" y="374" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">a static host, Capacitor</text>
+
+<text x="1219" y="402" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">or a WebView2 desktop</text>
+
+<text x="1219" y="430" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">shell, unchanged.</text>
+
+<text x="1219" y="458" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16"></text>
+
+<text x="1219" y="486" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">Draws through WebGL.</text>
+
+<text x="70" y="700" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18">file:// blocks ES modules, fetch() and cross-origin images, which is why assets are compiled in and the bundle is a classic script.</text>
+
+<text x="70" y="732" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18">Everything after load is synchronous: game code never awaits an asset mid-scene.</text>
+
+<text x="1530" y="964" fill="#667080" text-anchor="end" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Conceptual MWG diagram</text>
+
+</svg>

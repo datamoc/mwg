@@ -9,47 +9,86 @@
 </defs>
 <rect width="100%" height="100%" fill="#0b0d10"/>
 <rect x="0" y="0" width="100%" height="12" fill="#e53935"/>
-<text x="70" y="82" fill="#f3f4f6" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="38" font-weight="700">MWG in its ecosystem</text>
-<text x="70" y="122" fill="#aab2bf" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20">How MWG sits between game code, reusable systems, and lower-level libraries</text>
+<text x="70" y="80" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="40" font-weight="700">MWG in its ecosystem</text>
+
+<text x="70" y="120" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20">What a game built on MWG actually stands on</text>
+
+<text x="70" y="168" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18">MWG is a TypeScript framework: your game imports it, and it imports these.</text>
 
 <g filter="url(#shadow)">
-  <rect x="525" y="165" width="550" height="120" rx="18" fill="#201719" stroke="#2a3240" stroke-width="2"/>
-  <rect x="525" y="165" width="8" height="120" rx="4" fill="#ff6659"/>
+  <rect x="70" y="210" width="470" height="306" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
+  <rect x="70" y="210" width="8" height="306" rx="4" fill="#e53935"/>
 </g>
-<text x="800.0" y="203" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Your game</text>
-<text x="800.0" y="237" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">maps • characters • quests • rules • content</text>
-<line x1="800" y1="285" x2="800" y2="350" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/><text x="800.0" y="307.5" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15">API / data</text>
-<g filter="url(#shadow)">
-  <rect x="325" y="350" width="950" height="300" rx="18" fill="#171b23" stroke="#2a3240" stroke-width="2"/>
-  <rect x="325" y="350" width="8" height="300" rx="4" fill="#e53935"/>
-</g>
-<text x="800.0" y="388" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="32" font-weight="700">MWG</text>
-<text x="800.0" y="422" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">core • render • ui • actors • world • rpg • battle</text><text x="800.0" y="450" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">roguelike • stage • audio • board • simulation • 3d</text>
+
+<text x="94" y="252" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Your game</text>
+
+<text x="94" y="282" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">TypeScript or JavaScript</text>
+
 <g>
-<rect x="470" y="520" width="335.5" height="38" rx="19" fill="#261a1d" stroke="#6d2c2a"/>
-<text x="637.75" y="545" text-anchor="middle" fill="#ffd6d2" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15" font-weight="600">TypeScript / JavaScript framework</text>
-</g><g>
-<rect x="815" y="520" width="345.0" height="38" rx="19" fill="#242c38" stroke="#394353"/>
-<text x="987.5" y="545" text-anchor="middle" fill="#f3f4f6" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15" font-weight="600">2D, tactical, RPG, roguelike games</text>
-</g><line x1="520" y1="650" x2="420" y2="755" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/><text x="470.0" y="692.5" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15">2D rendering</text><line x1="800" y1="650" x2="800" y2="755" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/><text x="800.0" y="692.5" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15">algorithms</text><line x1="1080" y1="650" x2="1180" y2="755" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/><text x="1130.0" y="692.5" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15">optional 3D</text>
-<g filter="url(#shadow)">
-  <rect x="210" y="755" width="420" height="120" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="210" y="755" width="8" height="120" rx="4" fill="#4ea1ff"/>
+  <rect x="94" y="310" width="422" height="50" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="336" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">scenes and rules</text>
+<text x="110" y="353" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">what the game is</text>
 </g>
-<text x="420.0" y="793" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">PixiJS</text>
-<text x="420.0" y="827" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">sprites • tiles • WebGL/canvas</text>
+<g>
+  <rect x="94" y="372" width="422" height="50" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="398" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">art, audio, data</text>
+<text x="110" y="415" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">compiled in at build time</text>
+</g>
+<g>
+  <rect x="94" y="434" width="422" height="50" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="460" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">its own numbers</text>
+<text x="110" y="477" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">MWG supplies shape, never values</text>
+</g>
+<g filter="url(#shadow)">
+  <rect x="564" y="210" width="470" height="306" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
+  <rect x="564" y="210" width="8" height="306" rx="4" fill="#4caf50"/>
+</g>
 
-<g filter="url(#shadow)">
-  <rect x="590" y="755" width="420" height="120" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="590" y="755" width="8" height="120" rx="4" fill="#4caf50"/>
-</g>
-<text x="800.0" y="793" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">rot.js</text>
-<text x="800.0" y="827" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">FOV • pathfinding • roguelike</text>
+<text x="588" y="252" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">MWG</text>
 
-<g filter="url(#shadow)">
-  <rect x="970" y="755" width="420" height="120" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="970" y="755" width="8" height="120" rx="4" fill="#f4c95d"/>
+<text x="588" y="282" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">MPL-2.0, redistributable</text>
+
+<g>
+  <rect x="588" y="310" width="422" height="50" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="604" y="336" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">core</text>
+<text x="604" y="353" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">loop-adjacent lifecycle, input, saves, RNG</text>
 </g>
-<text x="1180.0" y="793" fill="#f3f4f6" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Babylon.js</text>
-<text x="1180.0" y="827" fill="#aab2bf" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">optional 3D rendering</text>
-<text x="1530" y="964" fill="#667080" text-anchor="end" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">MWG — conceptual diagram</text></svg>
+<g>
+  <rect x="588" y="372" width="422" height="50" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="604" y="398" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">gameplay modules</text>
+<text x="604" y="415" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">actors, roguelike, rpg, battle, board, world</text>
+</g>
+<g>
+  <rect x="588" y="434" width="422" height="50" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="604" y="460" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">two-d / 3d</text>
+<text x="604" y="477" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">the rendering halves, chosen per game</text>
+</g>
+<g filter="url(#shadow)">
+  <rect x="1058" y="210" width="470" height="306" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
+  <rect x="1058" y="210" width="8" height="306" rx="4" fill="#4ea1ff"/>
+</g>
+
+<text x="1082" y="252" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Underneath</text>
+
+<text x="1082" y="282" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16">third-party runtimes</text>
+
+<g>
+  <rect x="1082" y="310" width="422" height="50" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="1098" y="336" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">PixiJS</text>
+<text x="1098" y="353" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">the 2D renderer, via mwg/two-d</text>
+</g>
+<g>
+  <rect x="1082" y="372" width="422" height="50" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="1098" y="398" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">Babylon.js</text>
+<text x="1098" y="415" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">optional 3D, via mwg/3d</text>
+</g>
+<g>
+  <rect x="1082" y="434" width="422" height="50" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="1098" y="460" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">rot.js</text>
+<text x="1098" y="477" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">classic roguelike algorithms</text>
+</g>
+<text x="70" y="550" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17">Node and npm are developer tools here. Nothing from them is present when the game runs.</text>
+
+<text x="1530" y="964" fill="#667080" text-anchor="end" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Conceptual MWG diagram</text>
+
+</svg>

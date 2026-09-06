@@ -1237,9 +1237,27 @@ among the non-gated items. The 3D block was later approved and implemented.
      of the 8 movement-action pulses by angle (or a `tap` action for a short drag) - the more
      common mobile roguelike control scheme of one swipe per tile rather than a held
      direction. `core.PlayerInput` gained matching `bindTouch`/`pressTouch`/`releaseTouch`
-     wrappers for local multiplayer's own per-player scoping. Still open: the store-touchpoints
-     question above, since verifying it needs Android Studio/Xcode, not available in this
-     environment.~~
+     wrappers for local multiplayer's own per-player scoping. Still open at that point: the
+     store-touchpoints question above, since verifying it needed Android Studio/Xcode, not
+     available in that environment.~~
+     Revisited once Android Studio (2024.2) turned out to already be installed: a real debug
+     build was pushed further than before. `android/local.properties` pointed at the local
+     SDK, and `JAVA_HOME` set to Android Studio's own bundled JBR (the system's separate
+     Adoptium JDK path in the default environment was stale/uninstalled) let
+     `gradlew assembleDebug` run end to end - `BUILD SUCCESSFUL`, 85 tasks, a real signed
+     debug APK, proving the whole Capacitor-plus-native-Android pipeline actually compiles,
+     not just that `cap add android` can scaffold the project. Installing and launching that
+     APK on the SDK's own `Medium_Phone_API_35` AVD did not get as far: `am start` reported
+     `Activity class ... does not exist` despite `dumpsys package` showing the exact same
+     activity correctly registered in the resolver table, and the emulator itself then
+     crashed outright (`FrameBuffer.cpp: Failed to find ColorBuffer`, a SwiftShader/GPU
+     rendering fault in this specific headless environment, not an application-code issue).
+     Xcode remains flatly impossible here regardless - Apple restricts it to macOS, and this
+     machine runs Windows. So: the build half of item 110 is now genuinely verified; the
+     live on-device half (actually seeing `Session`/`Achievements` reach a Capacitor plugin
+     at runtime) still needs a working emulator or a real device, which this environment
+     could not sustain long enough to test. Left open rather than fought further, per this
+     project's own "stop and report rather than loop on an unstable environment" instinct.
 
 111. ~~requested directly as "minimal typo correction on the go", named example: curved
      (typographic) apostrophes in French, Italian and Dutch strings, rather than the plain
@@ -1775,7 +1793,7 @@ process - appended at low priority, not argued into or out of existence on the s
      first reference host, and this environment cannot exercise code signing or a real
      installer build regardless.
 
-137. progressive asset loading and unloading so scene transitions have no visible loading
+137. ~~progressive asset loading and unloading so scene transitions have no visible loading
      pause where the deployment environment permits it. Build on `assets.isLoaded`/`release`
      with a game-directed preload manifest and priorities: fetch/decode likely-next maps,
      textures, audio, models, and generated data while the current scene remains playable;
@@ -1793,7 +1811,7 @@ process - appended at low priority, not argued into or out of existence on the s
      one (`stream.preload` for a likely-next area). That closes the "nothing ever calls
      this" gap for the core class; the fuller scope here - byte-progress reporting for a
      server/desktop host, eviction verified under real memory pressure rather than a budget
-     number in a test - is still open.
+     number in a test - is still open.~~
      ~~Progress reporting closed next: `assets.load` and `AssetStream.preload`/`preloadLikely`
      take an optional `onProgress`, threaded straight from Pixi's own `Assets.load` callback -
      a fraction of assets completed, not literal bytes, since Pixi's loaders do not expose
@@ -1997,10 +2015,370 @@ process - appended at low priority, not argued into or out of existence on the s
      test reproducing the exact reported bug shape (a flat approach into a raised column) in
      `tests/three-d-collision.test.ts`, not just the general-case math.~~
 
-145. a simplify pass over this same session's own work flagged `ui.Label`'s `stroke`,
+145. ~~a simplify pass over this same session's own work flagged `ui.Label`'s `stroke`,
      `resolution`, and `roundPixels` options (and `ui.Button`'s `skin`/`label` seam) as having
      no caller anywhere but their own unit test - an example demonstrating them (text over
      artwork for `stroke`, a per-button nine-patch skin in `examples/interface` or
      `examples/loading`) is still missing, the same "shipped but never actually driven" gap
      item 138's own reasoning treats as worth closing rather than leaving as a style note.
-     Logged at low priority per this project's own process rather than built on the spot.
+     Logged at low priority per this project's own process rather than built on the spot~~ -
+     `examples/interface`'s HUD caption (`this.status`) now sets a black `stroke`, since it
+     sits directly over the tiled backdrop rather than a `Window`'s own opaque panel, exactly
+     the "text over artwork" case the option existed for. A new "Skinned" HUD button supplies a
+     `ButtonSkin`: a small rounded-rect texture generated once at runtime via
+     `Game.current.app.renderer.generateTexture` (never downloaded, matching this project's own
+     asset rule) and reused, tinted per state through `tints` rather than baked separately per
+     state. Verified in a real browser (served over `http://localhost`, since this session's
+     browser tool refuses `file://` navigation outright): the stroked caption reads clearly
+     over the tile pattern, and the skinned button's rounded, tinted panel renders distinctly
+     from the flat-panel buttons beside it, no console errors
+
+146. ~~raised by the same SPD-shaped talent port as items 73/121/138: selectable, persisted
+     talent nodes and several live effects exist, but the remaining Java-level proc families
+     had no reusable `mwg` primitive, only scene-local one-offs. Five distinct shapes, not one:
+     barrier/shield pools with decay and layered absorption; timed trigger trackers for combo,
+     stealth, healing and kill-streak conditions; ranged/area attack modifiers (a falloff by
+     distance band, or by how many targets an area effect already hit); charge/resource
+     conversion and refund rules; and multi-stage subclass/ability effects (an ability that
+     unfolds through named stages - windup, active, recovery - on its own, rather than
+     resolving instantly). This is intentionally about the shape, not a claim that every game's
+     talent system should share formulas, the same boundary items 53-56/89-91 already draw~~ -
+     `actors.Barrier` (layered absorption, most-recently-added layer drains first, optional
+     per-layer decay); `roguelike.TriggerTracker` (a streak that extends within a turn window
+     and restarts once it lapses - a `roguelike` primitive, not `battle`-scoped, since combo
+     and stealth conditions read from turns rather than one encounter); `roguelike.rangeMultiplier`/
+     `areaFalloffMultiplier` (both the same band-lookup shape `actors.scaledModifiers` already
+     established, added to `Targeting.ts` alongside `resolveArea` rather than a new file, since
+     both consume the same distance/order data that module already computes); `actors.refund`/
+     `convertToCharges` (the mirror of `Resource.ts`'s existing `spend`, plus a bridge into
+     `Charges.refund`, a new direct-restore method `Charges` itself gained since nothing let a
+     kill or crit grant a charge outside the normal turn-driven regen path); and
+     `roguelike.MultiStageAbility` (`AbilityCycle`'s cooldown-only view given a sibling for the
+     ability's own multi-turn unfolding, the same file-adjacency choice `BossPhases`/
+     `AbilityCycle` already share in `Boss.ts` - kept in its own file since it is not
+     boss-specific). 33 new unit tests across the five primitives; the full existing suite
+     passes unchanged
+
+147. ~~requested directly, following on from the SPD-shaped talent port's `actors.Affix` usage:
+     four further affix-system gaps, checked against the real code rather than assumed -
+     `Affix.ts` carried a trigger id, a relative weight, and a curse flag, rolled once per item
+     and applied/removed as a single `InventoryItem.affix` field.
+     - affix transfer/copy between two item instances - upgrading a base item onto a better one
+       and carrying its enchantment across, the way many action-RPGs let a player "transfer" a
+       socket or a rune. No code moved an `affix` from one `InventoryItem` to another; only
+       `rollAffix` created one and `removeAffix` cleared one.
+     - affix-trigger context (melee, thrown, bow, ability) - `AffixTrigger` was already a closed
+       union (`'strike' | 'defend' | 'passive'`), not the bare id string this item's own first
+       draft assumed before rereading the file; what was actually missing was a way to
+       distinguish an attack's *kind* within one of those triggers, so a "bow only" affix could
+       exist without inventing a fourth trigger value for it.
+     - upgrade policies that preserve or remove affixes under configurable rules - `enchant`
+       (`ItemState.ts`) raised an item's level with no opinion on any affix it carried; whether
+       an upgrade should keep or strip an existing affix was entirely a game's own choice to
+       make by hand, with no policy primitive to lean on.
+     - explicit item-instance identity, so two otherwise-identical items (same id, same affix)
+       can still be told apart - `Inventory`'s stacking was identity-free (a stack is quantity
+       over a shared definition), which is exactly what breaks once two instances of the same
+       item need to diverge (one enchanted, one not) and still not silently merge into one
+       stack~~ - `actors.copyAffix` copies (or, given a plain source, clears) an affix and its
+     curse mark onto another item; a true move is `copyAffix` plus `removeAffix(from)`, left to
+     the caller rather than a second near-identical function. `AffixDef` gained an optional
+     `kinds` list of `AttackKind`s (`'melee' | 'thrown' | 'bow' | 'ability' | string`) and
+     `actors.matchesContext(affix, context)` checks a fired trigger's kind against it, an affix
+     with no `kinds` still firing for anything, unchanged from before this existed. `enchant`
+     gained an optional `affixPolicy: 'keep' | 'remove'` (defaulting to `'keep'`, its only
+     behaviour before this option existed), routed through the existing `removeAffix` rather
+     than duplicating its curse-clearing logic. `InventoryItem` gained an optional
+     `instanceId`, and `Inventory.add`'s stacking check now also requires it to match, so two
+     items of the same id merge exactly when they always did before this existed (both
+     omitting `instanceId`) and stay apart the moment either sets a distinguishing one. 12 new
+     unit tests across the four; the full existing suite passes unchanged
+
+148. Wesnoth-style hex skirmishes expose a gap between `board.Tactics`' generic action-point/cover model and a reusable army-game rules layer: weighted terrain movement and defence per unit, adjacent attack exchanges with retaliation and hit chances, village ownership/healing, and per-side turn income. `wesnoth-1.19.27/mwg` keeps these rules as an original game-side prototype for now, wired to `mwg`'s hex geometry and faction fog; evaluate a small, data-driven `board.HexSkirmish` API once a second game needs the same combination. It must provide mechanisms rather than any reference game's units, maps, probabilities, or economy values.
+
+149. ~~Add the reusable dungeon-content primitives exposed by the Shattered Pixel Dungeon port:
+    deterministic seeded floor generation with room graphs and retry reporting; regional
+    generation hooks for hand-placed rooms, special-room content, branches, wells, plants,
+    statues, chasms, doors, traps, and terrain-feeling variants; and a floor feature/event
+    layer that lets a game attach inspect, interaction, consequence, and persistence rules to
+    generated cells. Keep the framework data-driven and game-agnostic: it should provide the
+    generation pipeline, seeded RNG boundaries, feature registries, and save/load hooks, while
+    the game supplies its rooms, monsters, items, regional tables, and exact content formulas~~
+    - `generateDungeonGraph` is `generateDungeon`'s own pipeline, also returning a room graph
+    (corridor edges, backbone chain then extra loops, by room index) and a retry count
+    (placement attempts rejected before every room resolved); `generateDungeon` itself is now
+    a thin wrapper returning just its `.level`, so nothing calling it before this shipped
+    changed behaviour. `DungeonOptions.hooks` (`onRoomPlaced`/`onCorridorCarved`) is the
+    regional seam: fired as the pipeline itself reaches each stage, so a game hangs hand-placed
+    rooms, branch entrances, wells, plants, statues, chasms, doors and traps from the moment a
+    room or corridor exists, without forking the generator. `roguelike.FeatureLayer` is the
+    floor feature/event layer: a named kind's `inspect`/`interact`/`consequence`/`persistent`
+    rules attach to a cell (`interact` gates `consequence`, returning `false` refuses it before
+    it runs; `persistent: false` removes the feature once its consequence has fired), following
+    `QuestLog`'s "definitions supplied fresh on load" convention - only which cell holds which
+    kind is ever save data. 14 new unit tests across both
+
+150. ~~Add a reusable variant-spawn/content-roll API for dungeon games: weighted regular rosters,
+    rare additions, per-entry alternative variants, and explicit RNG accounting for skipped or
+    deferred content rolls. The API must support deterministic replay and expose the roll trace
+    for parity tests without forcing a framework-wide monster or item model~~ - `rollRoster`
+    runs the "add-rare, swap, shuffle" order directly: rare entries roll in first, then each
+    regular entry's own alternative may swap it (rare additions never carry an alternative of
+    their own), then the whole roster shuffles unless told not to. Every roll is traced,
+    including a rare entry marked `enabled: false`, logged as `'deferred'` (an explicit
+    non-roll, consuming no RNG) rather than `'skipped'` (a roll that happened and lost) - the
+    distinction a parity trace needs to tell "this depth never asks" from "this depth asked and
+    failed". Driven entirely through `Random`, so the same pushed seed reproduces the same
+    roster and the same trace, roll for roll. 9 unit tests
+
+151. ~~Add a framework-level dungeon parity/test harness: run a seeded generation pipeline, dump
+    room graphs, terrain, features, content placements, RNG draws, and retry counts, then compare
+    those artifacts against a reference implementation or golden fixtures. Include region/depth
+    fixtures, repeat-generation determinism checks, and a way to separate graph-stage mismatches
+    from paint/content-stage mismatches~~ - `DungeonArtifacts` is the flattened, comparable shape
+    (room graph, retries, terrain, features, content, RNG draw count); `mwg` dictates none of
+    the game-side fields (`content`/`rngDraws` are whatever a game's own roll traces and counters
+    hold) - only how to diff two of them. `compareDungeonArtifacts` tags every mismatch `'graph'`
+    (the room graph, the retry count) or `'paint'` (terrain, features, content, RNG draws), so a
+    generation-shape bug and a decoration-content bug are never read as the same failure.
+    `checkDeterminism` repeats a generation call against itself and diffs every run against the
+    first, for the "same seed, same result" check on its own. 7 unit tests
+
+Items 152-155 came from auditing the capability spec in [README.md](README.md#capability-spec)
+against the actual code rather than trusting it, the same check item 87 once forced after that
+table claimed zone of control it did not have. Four rows were claiming shipped capability that
+did not exist anywhere in `src/`: particle effects, screen transitions, tooltips, and level
+generation "from composable room builders" (the generator placed rejection-sampled rectangles
+and joined them with L-corridors, with no builder concept at all). The spec is the stated
+definition of done for 1.0, so the rows were made true rather than trimmed.
+
+152. ~~`mwg/render` - particle effects, which the capability spec's "shared floor" table has
+     claimed since the reference list existed~~ - `ParticleEmitter` is pooled: the pool is
+     allocated once at `max` and reused forever after, because this is the one primitive here
+     that can be asked to create and discard thousands of short-lived objects per second, and
+     a collector pause is exactly the frame time this project's own performance priority
+     cares about. Asking for more than `max` while `max` are alive drops the request rather
+     than growing, and a full pool drops its emission backlog rather than banking it into a
+     later burst. Every draw goes through `core`'s seeded `Random`, so a replayed run
+     reproduces the same spray instead of particles being the one thing on screen a
+     deterministic replay cannot reproduce. An emitter given no `texture` runs the whole
+     simulation and draws nothing, which is both the headless case and how all 12 unit tests
+     exercise the physics without a DOM
+153. ~~`mwg/render` - screen transitions: fade, flash, tint, the second capability-spec row
+     with no implementation behind it~~ - `ScreenEffects` is one full-screen overlay with
+     `fadeOut`/`fadeIn`/`flash`/`setTint` over it. Driven by a plain elapsed timer rather than
+     a promise-returning tween, matching `Toast` and `FloatingText`: `update(dt)` returns true
+     on the exact frame an effect completes, the same way `Projectile.update` reports arrival,
+     so "fade out, swap the level, fade in" sequences without `await` and a test drives the
+     whole thing one call at a time. A flash is a single phase rather than a fade-out chained
+     into a fade-in, so interrupting one cancels the whole gesture instead of leaving the
+     screen stuck at full white waiting for a second phase that no longer runs. 12 unit tests
+154. ~~`mwg/ui` - tooltips, the third false row: the table has read "windows, lists, tooltips"
+     while no tooltip existed anywhere~~ - `Tooltip` counts its hover delay in `update(dt)`
+     rather than a `setTimeout`, the choice `IconGrid` already made for long-press: a
+     frame-driven counter cannot fire after the scene that owned it is gone. The panel is a
+     non-modal `Window` rather than a second kind of panel, so it inherits the theme's frame,
+     padding and live restyling instead of drifting the moment a game sets `theme.panel`.
+     Near an edge it flips to the other side of the pointer rather than sliding, so it never
+     covers the thing it is explaining. Caught a real re-derivation on the way: `place()` was
+     reading `panel.width` back off Pixi, which walks child bounds into a canvas text measure -
+     both a per-frame cost and the reason the layout could not be tested at all; the size is
+     now kept from where it is computed. `measureBody()` is a protected seam a test overrides,
+     the same shape `StageScript`'s own tests already use instead of stubbing Pixi. 12 unit tests
+155. ~~`mwg/roguelike` - composable room builders, the fourth row: level generation was
+     claimed as being "from composable room builders" when rooms were only ever filled
+     rectangles~~ - a `RoomBuilder` carves one room's interior; the generator still decides
+     where rooms go and what joins them. That split is what makes them composable: a game
+     registers a hall, a pillared chamber, a flooded cistern, and a floor is some mixture of
+     them without the generator knowing what a cistern is. `mwg` ships exactly one
+     (`hallBuilder`, the filled rectangle the generator always did) and expects a game to
+     bring the rest, the same content boundary every other module here draws. `minSize` is
+     checked against a room's shorter side and `maxSize` against its longer one, so a builder
+     never receives a rectangle it cannot fit; a room no builder fits falls back to a plain
+     hall rather than being left as solid rock, since it has already been placed and joined by
+     a corridor and a player must be able to enter it. `DungeonResult.roomBuilders` records
+     which builder carved each room, which the item 151 parity harness diffs as a paint-stage
+     artifact. 8 unit tests
+
+Items 156-159 came from a design review of the whole framework rather than from a reference
+game: an audit of the module graph, the public API's internal consistency, the test suite's
+shape, packaging, and what the examples actually exercise. The finding that drove most of it
+is that the API grew faster than anything validated it, so the same shape had been solved
+several different ways in different modules. These are breaking changes, taken deliberately
+while the version is still `0.y.z` and the cost of changing a name is a line in a changelog
+rather than someone else's build.
+
+156. ~~the character sheet could not be saved: `Level`, `Doors`, `Secrets`, `Blob` and
+     `FeatureLayer` all had `toJSON`/`fromJSON`, while `Inventory`, `StatBlock`,
+     `EquipmentSlots`, `Progression`, `SkillPoints` and `Charges` had none - so every game
+     hand-rolled the most important half of its own save file. `examples/dungeon` is the
+     proof: it rebuilt its inventory item by item against its own `ITEMS` table and
+     round-tripped stats field by field through `base()`/`setBase()`~~ - all six now
+     serialize, and the design question ("what identifies an item instance") is answered by
+     splitting kind from instance. `Inventory.toJSON` writes id, quantity and every field that
+     can diverge between two items sharing an id (level, durability, affix, identified,
+     cursed, blessed, `instanceId`, nested container contents); `fromJSON(defs, data)` takes
+     `stackable` and `weight` from the game's own item table, so rebalancing an item's weight
+     reaches an old save instead of the save baking in the old number, and an id the game no
+     longer defines throws rather than restoring a weightless unstackable ghost of it.
+     `StatBlock` saves base values and deliberately no modifiers: every modifier is owned by
+     whatever applied it (`EquipmentSlots`, `applyStatusEffect`, `AuraField`) and each puts its
+     own back on load, so saving them here as well would double every bonus the instant a
+     restored character re-equipped what it was already wearing - which is exactly why
+     `EquipmentSlots.fromJSON` re-equips rather than just refilling its map, and why it
+     restores a locked cursed item still worn instead of refusing it the way `equip` would.
+     `SkillPoints` saves only the unspent ledger, since spent points already live as raised
+     base values. `Charges` saves the banked progress as well as the count, so reloading part
+     way to a recharge cannot shorten the wait. 15 unit tests, including that last one
+     specifically
+157. ~~two consolidations of things solved twice: `battle.BattleHooks` and
+     `roguelike.CombatHooks` were the same class line for line (`on`/`offSource`/`emit` with
+     identical bodies), and "nothing to pick" was spelled three ways in one call chain -
+     `Random.weighted` returned `-1`, `weightedKey` and `element` returned `undefined`, and
+     `rollEncounter`/`rollLoot` returned `null`, with the `-1`-to-`null` translation written
+     out by hand in two separate files~~ - `core.HookRegistry<TArgs>` is now the one registry
+     and both are thin specializations of it that fix the argument types and keep their own
+     documentation; `CombatHooks` still owns `modifyDamage`, which was the only real
+     difference. It also gained `off`, `size` and `clear`, and now iterates a copy while
+     emitting so a handler removing itself mid-dispatch cannot shift the loop. Every
+     "pick one" returns `null`: `weighted`, `element`, `weightedKey`, and the five call sites
+     that consumed them
+158. ~~three naming rules the API followed only loosely. `advance` meant five different things
+     (whole turns in `TurnClock`/`Charges`, one round in `Field`, real seconds in
+     `EnvironmentClock`, one ability stage in `MultiStageAbility`, and "progress a quest" in
+     `QuestLog`), while turn-scale work also appeared as `Barrier.decay`, `AbilityCycle.tick`
+     and `BossPhases.update` - the last colliding with the `update(dt)` that means real time
+     everywhere in `render`, `ui` and `audio`. Producing save data had six namings across the
+     codebase, and "nothing to pick" had three~~ - the rules are now stated at the top of
+     `REFERENCE.md` and followed: `advance(turns)` is turns or rounds, `update(dt)` is real
+     seconds, and anything that is not time passing gets its own verb. So
+     `EnvironmentClock.advance(seconds)` became `update(dt)`, `Barrier.decay(ticks)` and
+     `AbilityCycle.tick()` became `advance(turns)`, `Field.advance()` took a `rounds` count,
+     `BossPhases.update(hpFraction)` became `check(hpFraction)` since it reads HP rather than
+     time, and `QuestLog.advance` became `advanceStage`. `EnvironmentClock.snapshot`/`restore`
+     and `SupportLedger.save`/`restore` became `toJSON`/`fromJSON`; `Random.Generator` keeps
+     `getState`/`setState`, which resumes a live stream in place rather than producing a
+     payload, and `Input`'s binding export stays a pair of namespace functions
+159. ~~`ColorTransformBatcher` had no test at all: 484 lines, the framework's actual rendering
+     differentiator, and the one file the architecture confines every Pixi batcher and
+     high-shader internal to. The benchmark harness had the opposite problem - it existed,
+     was good, and never ran: `tools/benchmark-browser.mjs` drives a built example through
+     real Chrome, measures fps and p95 frame time, asserts the renderer never silently fell
+     back to canvas 2D, and compares against per-page history at a 15% threshold, while CI
+     ran only `check`, `test` and `build`~~ - 26 tests now cover the packing maths
+     (`packColorAdd`'s byte order against the `unorm8x4` attribute, clamping, quantisation
+     round-trips, `packTintAdd`'s energy-conservation invariant, `NO_COLOR_ADD` really being
+     the identity) and the vertex packers, which are the part most likely to break on a Pixi
+     upgrade - including that `packAttributes` and `packQuadAttributes`, two hand-written
+     copies of one layout, still agree word for word on the same quad. No production seam was
+     needed: neither packer touches `this`, so the tests call the real methods off the
+     prototype. The GPU half is stated in the file's own header as not covered and not
+     coverable under `node --test`. In CI, `benchmark:simulation` (no browser, no GPU) runs on
+     every push with its history deliberately not restored, so it can only fail if the runners
+     actually throw - comparing a shared runner against a best-seen number from a faster
+     machine is how a benchmark gate becomes a flaky gate; the browser benchmarks run weekly
+     and on demand in their own workflow, with history in a cache so the 15% check has
+     something real to compare against
+
+160. ~~`mwg/3d` renders through Babylon and should cost a game nothing in Pixi, but reached it
+     anyway: `three-d`'s `Models.ts` and `Character3D.ts` need `resolve` to look a path up in
+     the compiled `data:` URI map, `resolve` lived in `assets/index.ts`, and that file imported
+     Pixi's `Assets` loader at the top for the entirely unrelated other half of its job. The
+     dependency was invisible because it was several hops away and tree-shaking hid most of the
+     cost. `audio/Playable.ts` had the identical bug for the identical reason, needing only
+     `resolve` to point an `Audio` element at a resolved path~~ - `assets` is now two files
+     either side of a seam that was already there: `paths.ts` (`setBase`/`isCompiled`/`paths`/
+     `has`/`resolve`, pure string and map work, no renderer) and `loader.ts` (`load`/`texture`/
+     `get`/`isLoaded`/`release`, which is the half that genuinely needs Pixi). `index.ts` is
+     now a plain barrel over both, so the public API is unchanged, and `./assets/paths` is its
+     own export subpath for a game rendering through something else. `three-d` and `audio` both
+     import from `paths.ts` directly. Two side effects worth having: the
+     `Streaming.ts`-to-`index.ts` file-level import cycle is gone (it imports `loader.ts` and
+     `paths.ts` directly now), and the freshly built 3D example dropped from 1,720,928 to
+     1,522,636 bytes with zero remaining references to Pixi, where it previously carried a
+     few. `tests/renderer-isolation.test.ts` is the durable half: it walks the real import
+     graph from each module's barrel and asserts which entry points reach Pixi, in both
+     directions - `i18n`, `actors`, `world`, `battle`, `simulation`, `roguelike`, `board`,
+     `audio` and `3d` must stay clean, while `render`, `ui`, `stage`, `rpg` and `core` must
+     still show up dirty, so the check cannot pass by silently failing to detect Pixi at all.
+     Writing it immediately caught a false claim this session had just put into `REFERENCE.md`:
+     `rpg` was listed as renderer-free when `EventRunner` drives a `MessageBox` and it reaches
+     Pixi through 14 files
+
+161. `mwg/roguelike` - extend the dungeon feature/content seam with deterministic placement
+     policies for generated floor content: candidate filters over terrain and occupancy,
+     distinct-cell selection without replacement, bounded fallback when fewer cells are
+     available, and an explicit roll trace that can be included in the item 151 parity
+     artifact. The API should support a feature releasing several neighbouring items,
+     scattering regional decorations, and placing branch or room rewards without making
+     `FeatureLayer` know any game's item or monster classes. Placement must be pure until
+     the caller commits the result, and the selected cells plus RNG state must round-trip
+     through the existing save/load boundary; the game remains responsible for the actual
+     payload, uniqueness rules, and consequences.
+
+161. ~~item 160 closed the cheap half of the renderer decoupling and left the expensive half
+     open: `core` still imported Pixi, because `Game` owns the `Application` and `Scene` owned
+     a `Container`. That was the whole cost, and it was paid by the wrong people - a Babylon
+     game wanting `Input`, `SaveSystem`, `Random` or `SceneStack` had to pull in a 2D renderer
+     it would never draw with, and 27 of `core`'s 29 files were already renderer-free and
+     simply unreachable without the other two~~ - `src/two-d` is now the Pixi half of the
+     framework, symmetric with `src/three-d`: `render`, `ui` and `stage` moved bodily
+     underneath it, `Game` moved out of `core`, and `Scene` split along the seam that was
+     already there. `core.Scene` keeps the lifecycle every renderer needs (`create`, `update`,
+     `resize`, `onSuspend`, `onResume`, a `destroy` that fires once, and a `teardown` hook for
+     whatever a subclass owns); `two-d.Scene2D` adds the container and destroys it. The split
+     was cheap because `Scene` only ever touched Pixi twice, to make a `Container` and to
+     destroy it, and `SceneStack` never touched one at all - it calls lifecycle methods and
+     nothing else, which is why making it generic (`SceneStack<T extends Scene>`) hands 3D
+     games working scene management, suspend/resume and minigame stacking for free rather than
+     as a later port. Verified in the built output rather than claimed: `dist/core` and
+     `dist/three-d` contain zero references to Pixi. Granular subpaths survive the move
+     (`two-d/render`, `two-d/ui`, `two-d/stage`) so nothing about bundle size regressed, and no
+     legacy `./render` aliases were kept - the point of doing this before 1.0 is that a name
+     costs a line in a changelog now and somebody else's build later. Two small things fixed in
+     passing: `stage/script.ts` carried a literal NUL byte as a string separator, replaced with
+     a visible `\u0000` escape, and item 160's `Streaming.ts` import cycle stayed fixed.
+     `tests/renderer-isolation.test.ts` grew `core` into the renderer-free set it now enforces
+
+162. ~~`rpg` was the last module reaching Pixi by accident rather than intent, and the ugliest
+     edge in the graph: an event interpreter - pure control flow over `GameState` - dragged
+     the whole 2D widget layer in behind it. Four separate couplings, not one, and each was
+     shallower than it looked~~ - `EventRunner.speak` constructed a `ui.MessageBox` and pushed
+     it onto a `ui.WindowStack`; it now calls an injected `DialoguePresenter`, so how a line
+     is shown is the game's business and `two-d/ui.messageBoxPresenter` is the ready-made 2D
+     one (`present: messageBoxPresenter(this.windows)`, a single argument, so the common case
+     got no harder). `automap` named `render.TileMap` for two method signatures and now names
+     an `AutomapTarget` interface a real `TileMap` satisfies structurally, with its own `EMPTY`
+     wildcard pinned to `render.EMPTY` by a test rather than an import. `GridMover` and
+     `FreeMover` demanded an `AnimatedSprite` when they only ever touch `x`, `y`, `update`,
+     `has` and `play` - now a `MovableSprite` whose animation members are optional, which is
+     what `examples/movement` had a comment apologising for. `loadTiledMap` moved to
+     `two-d/render`, where the `TileMap` and `SpriteSheet` it builds already lived: it was in
+     `rpg` because Tiled is associated with RPGs, not because anything about it is gameplay.
+     The payoff beyond the graph: a 3D game can now run map events, dialogue, switches,
+     variables and quests with no 2D renderer in reach, and `tests/rpg.test.ts` dropped its
+     `WindowStack` entirely - control-flow tests no longer need a renderer to check control
+     flow. Verified in the built output: `dist/rpg` contains zero references to Pixi, and the
+     renderer-isolation test now enforces it alongside `core`, leaving `two-d/*` as the only
+     deliberate Pixi dependency in the framework
+
+163. ~~the four architecture diagrams (`0a`-`0d`) under `webpage/assets/` were hand-drawn SVG,
+     and every one of them was wrong. `0c_framework_architecture` still showed `render`, `ui`
+     and `stage` as top-level modules after they moved under `two-d`, and
+     `0d_rpg_event_flow` still showed `EventRunner` driving a `WindowStack`/`MessageBox` after
+     that coupling was replaced by an injected presenter. Nothing catches a stale picture, and
+     they had drifted silently through several structural changes~~ - the originals are
+     archived under `webpage/assets/archive/` with a note saying what they described and why
+     they were replaced, and `tools/make-architecture-diagrams.mjs` generates all four now.
+     `0c` does more than read a fixed spec: it reads the module list out of `src/` and
+     classifies each module by walking its real import graph for a `pixi.js` or `@babylonjs/`
+     import, the same walk `tests/renderer-isolation.test.ts` enforces and with the same
+     type-only exemption, so it cannot describe a layout the code does not have. It correctly
+     discovered the current one on its first run - ten renderer-free modules including `core`
+     and `rpg`, `assets` and `two-d` on Pixi, `3d` on Babylon - and its column layout tightens
+     its row pitch as modules are added rather than running off the canvas. The shared visual
+     language moved to `tools/diagram-chrome.mjs`, which the existing example-diagram
+     generator now uses too: that refactor was verified by regenerating all 19 example
+     diagrams and confirming every one was byte-identical, so nothing about the established
+     look changed. `npm run webpage:diagrams` rebuilds both sets, and CLAUDE.md/AGENTS.md now
+     carry the rule that these are generated rather than drawn
