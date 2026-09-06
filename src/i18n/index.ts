@@ -13,6 +13,22 @@
  * A missing key in the active language falls back to the base language rather than showing
  * a raw key to the player - a translation catalog is nearly always incomplete somewhere,
  * and a placeholder key breaks immersion far worse than the wrong language would.
+ *
+ * @example
+ * ```ts
+ * import { setBase, setActive, t, locale, direction, typographic, parseFTL, reset } from '@datamoc/mw_games/i18n';
+ *
+ * setBase({ locale: 'en', direction: 'ltr', messages: { greeting: 'Hello, {name}!' } });
+ *
+ * const french = parseFTL('fr', 'greeting = Bonjour, { $name } !');
+ * setActive(french);
+ *
+ * console.log(t('greeting', { name: 'Ada' })); // 'Bonjour, Ada !'
+ * console.log(locale(), direction()); // 'fr' 'ltr'
+ * console.log(typographic("aujourd'hui")); // "aujourd’hui"
+ *
+ * reset(); // back to unset, for the next test or a language switch from scratch
+ * ```
  */
 
 /** left-to-right is the default; right-to-left is the other case `mwg/ui` mirrors against */
@@ -80,7 +96,18 @@ export function t(key: string, params?: MessageParams): string {
 
 	const text = typeof entry === 'string' ? entry : isFluentMessage(entry) ? entry.format(params) : resolvePlural(entry, params?.count);
 	const translated = params ? interpolate(text, params) : text;
-	return (active ?? base)?.typography === false ? translated : typographic(translated, locale());
+	const resolved = (active ?? base)?.typography === false ? translated : typographic(translated, locale());
+
+	// Canvas 2D's fillText (what every renderer here draws text through) always resolves
+	// bidi runs against an 'ltr' paragraph base, since nothing sets the context's own
+	// `direction`. A message that is mostly RTL but starts or ends with a weak/neutral
+	// character (a digit, an interpolated Latin name) then gets its runs ordered as if
+	// the paragraph were LTR. Wrapping the whole string in an explicit right-to-left
+	// isolate is a Unicode Bidi Algorithm formatting control, not a locale heuristic, so
+	// fillText honours it regardless of the canvas's own direction.
+	const RLI = '⁧'; // right-to-left isolate
+	const PDI = '⁩'; // pop directional isolate
+	return direction() === 'rtl' ? `${RLI}${resolved}${PDI}` : resolved;
 }
 
 /**

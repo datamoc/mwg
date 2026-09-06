@@ -27,3 +27,7 @@ ios/
 desktop/**/bin/
 desktop/**/obj/
 .aider*
+
+# scratch dir for tests/api-examples.test.ts's temp compile
+.example-check/
+.scratch-check/

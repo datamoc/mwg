@@ -85,7 +85,15 @@ const hero = new Character3D(heroRoot, [], (from, to) =>
 );
 
 const path = [[1, 1], [8, 1], [8, 4], [2, 6], [1, 1]] as const;
-let pathIndex = 0;
+//a TransformNode's default position, the world origin, lands exactly on grid cell (0, 0) -
+//an edge tile at height 1, not the interior floor the path below walks on. Left unset, the
+//hero spawns standing on top of that wall column and resolveCapsuleAgainstGrid's maxStepUp:0
+//blocks its very first move trying to step down off it, forever - so it has to start already
+//standing on its own first waypoint instead of stepping onto it
+const [startX, startY] = path[0];
+const start = gridPoint3D('square', startX, startY, 1);
+heroRoot.position.set(start.x, start.y, start.z);
+let pathIndex = 1;
 function nextHeroTarget(): void {
 	const [x, y] = path[pathIndex++ % path.length];
 	const point = gridPoint3D('square', x, y, 1);
