@@ -7,7 +7,73 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-06
+
+**The reshaping release, and intended to be the last one.**
+
+`mwg` grew fast, and grew by accretion: the renderer ended up inside `mwg/core`, an event
+interpreter ended up importing a widget library, the same idea got solved three or four
+different ways in different modules, and several names meant a different thing depending on
+which file you were reading. None of that was going to get cheaper to fix. A rename costs a
+line in this file today; after 1.0 it costs somebody else's build.
+
+So this release spends the breakage budget deliberately, all at once, while the version
+number still says it is allowed:
+
+- **The renderer is no longer part of the core.** `mwg/core` now holds the scene lifecycle,
+  input, saves, RNG and signals, and pulls in no renderer at all. `Game` and the display half
+  of `Scene` moved to the new `mwg/two-d`, which is where `render`, `ui` and `stage` now live
+  as well. `mwg/3d` is its Babylon counterpart, and neither costs a game anything if it is
+  not used.
+- **Game logic is renderer-free too.** `mwg/rpg` was the last module reaching a renderer by
+  accident; its event interpreter now takes an injected dialogue presenter. So dungeon
+  generation, map events, quests, stats, turn order, inventory and battles all run under a 2D
+  game, a 3D game, or a headless test, unchanged. `tests/renderer-isolation.test.ts` walks the
+  real import graph and enforces exactly which modules may reach PixiJS or Babylon.
+- **One idea, one spelling.** `advance(turns)` is turns and `update(dt)` is real seconds.
+  `toJSON`/`fromJSON` is how a class saves. "Nothing to pick" is `null`, not `-1` or
+  `undefined`. Two identical hook registries became one.
+- **The character sheet can be saved.** `Inventory`, `StatBlock`, `EquipmentSlots`,
+  `Progression`, `SkillPoints` and `Charges` gained serialization, so a game stops hand-rolling
+  the most important half of its own save file.
+
+The hope, stated plainly: **1.0 should be this shape.** What remains before it is coverage and
+confidence, not another reshuffle. Additions rather than renames from here.
+
 ### Added
+- `two-d.ParticleEmitter` - a pooled, seeded particle emitter (sparks, dust, rain). The pool
+  is allocated once at `max` and never grows, and every draw goes through `core.Random`, so a
+  replayed run reproduces the same spray. Given no `texture` it runs the simulation and draws
+  nothing, which is how it is tested without a DOM.
+- `two-d.ScreenEffects` - a full-screen colour wash: `fadeOut`/`fadeIn`/`flash`/`setTint`,
+  driven by `update(dt)` returning true on the frame an effect completes.
+- `two-d.Tooltip` - a hover explanation over a themed `Window`, with a frame-driven delay and
+  edge-aware placement that flips rather than running off screen.
+- `roguelike.RoomBuilder`/`hallBuilder`/`eligibleBuilders`/`pickBuilder`, and
+  `DungeonOptions.builders` - composable room interiors: the generator places and joins rooms,
+  a builder carves each one. A room no builder fits falls back to a plain hall.
+- `roguelike.generateDungeonGraph` - the same pipeline as `generateDungeon`, also returning the
+  room graph, a rejected-placement retry count, and which builder carved each room.
+  `DungeonOptions.hooks` fires `onRoomPlaced`/`onCorridorCarved` as the pipeline runs.
+- `roguelike.FeatureLayer` - a floor feature/event layer: named kinds with
+  `inspect`/`interact`/`consequence`/`persistent` rules attached to generated cells.
+- `roguelike.rollRoster` - a variant-spawn/content-roll API: rare additions, per-entry
+  alternative swaps, then a shuffle, with every roll traced (including an explicitly deferred
+  one) for parity tests.
+- `roguelike.compareDungeonArtifacts`/`checkDeterminism` - a dungeon parity harness that tags
+  every mismatch `'graph'` or `'paint'`.
+- **Save/load for the character sheet.** `Inventory`, `StatBlock`, `EquipmentSlots`,
+  `Progression`, `SkillPoints` and `Charges` all gain `toJSON`/`fromJSON`. `Inventory` saves
+  per-item instance state (level, wear, affix, `instanceId`) while taking kind-level fields
+  from the game's own item table on load, so rebalancing reaches old saves. `StatBlock` saves
+  base values and deliberately no modifiers, since whatever applied them reapplies them.
+  `Charges` saves banked regeneration progress, so reloading cannot shorten a recharge.
+- `core.HookRegistry` - the named-event registry `battle.BattleHooks` and
+  `roguelike.CombatHooks` are now both built on.
+- `two-d/ui.messageBoxPresenter` - wires `rpg.EventRunner`'s dialogue to a `MessageBox` in one
+  argument.
+- `rpg.MovableSprite`, `rpg.AutomapTarget`, `rpg.DialoguePresenter` - the structural shapes
+  that replaced concrete renderer types in `mwg/rpg`'s signatures.
 - `core.Input` gains touch input: `touchCode`/`bindTouch`/`pressTouch`/`releaseTouch` follow
   the same synthetic-code pattern `bindButton`/`pollGamepads` already use for a gamepad, so
   `isDown`/`justPressed`/`justReleased` work unmodified for a touch-driven action. `attachSwipe`
@@ -28,6 +94,42 @@ the public API may still change between minor versions.
   built game through `CoreWebView2.SetVirtualHostNameToFolderMapping` (a real `https://`
   origin) instead of a plain `file://` navigation, which is what makes this - and any other
   real network call - actually usable inside it.
+
+### Changed
+
+- **Breaking: `mwg/render`, `mwg/ui` and `mwg/stage` moved under `mwg/two-d`.** The Pixi half
+  of the framework is now one module, symmetric with `mwg/3d`. Import from
+  `@datamoc/mw_games/two-d` (or the granular `two-d/render`, `two-d/ui`, `two-d/stage`). No
+  legacy aliases were kept.
+- **Breaking: `Game` moved from `mwg/core` to `mwg/two-d`, and `Scene` split.** `core.Scene` is
+  now the renderer-free lifecycle (`create`/`update`/`resize`/`onSuspend`/`onResume`/`destroy`);
+  `two-d.Scene2D` adds the Pixi container and is what a 2D game extends. `SceneStack` is generic
+  over the scene type, so a Babylon game gets scene management, suspend/resume and minigame
+  stacking. **`mwg/core` now pulls in no renderer at all**, and neither does `mwg/rpg`.
+- **Breaking: `rpg.EventRunner` takes `present: DialoguePresenter` instead of `windows`.** The
+  event interpreter no longer builds a `MessageBox`; use
+  `present: messageBoxPresenter(this.windows)` for the previous behaviour. `boxWidth`,
+  `boxHeight` and `speed` moved onto the presenter.
+- **Breaking: `loadTiledMap` moved from `mwg/rpg` to `mwg/two-d/render`**, where the `TileMap`
+  and `SpriteSheet` it builds already lived.
+- **Breaking: every "pick one" now returns `null`.** `Random.weighted` returned `-1` and
+  `Random.element`/`Random.weightedKey` returned `undefined`; all three now match
+  `rollEncounter`/`rollLoot`.
+- **Breaking: one meaning per name.** `advance(turns)` is turns or rounds and `update(dt)` is
+  real seconds, so `EnvironmentClock.advance(seconds)` became `update(dt)`,
+  `Barrier.decay(ticks)` and `AbilityCycle.tick()` became `advance(turns)`,
+  `BossPhases.update(hpFraction)` became `check(hpFraction)`, and `QuestLog.advance` became
+  `advanceStage`. `EnvironmentClock.snapshot`/`restore` and `SupportLedger.save`/`restore`
+  became `toJSON`/`fromJSON`.
+- **Breaking: `GridMover`/`FreeMover` take a `MovableSprite`** rather than an `AnimatedSprite`,
+  so a static sprite (or anything with `x`/`y`) works; the animation members are optional.
+- `mwg/assets` split into renderer-free path resolution (`assets/paths`, its own export
+  subpath) and the Pixi-backed loader, which is what took Pixi out of `mwg/3d` and `mwg/audio`.
+- Per-module export subpaths now ship TypeScript types; previously only the package root did,
+  so `@datamoc/mw_games/core` resolved to `any` under `moduleResolution: bundler`/`node16`.
+- `sideEffects` narrowed from a blanket `false` to the two `mwg/3d` files with real
+  side-effect imports, so a bundler can no longer drop Babylon's glTF and thin-instance
+  registrations.
 
 ### Fixed
 - `examples/three-d`'s hero now actually collides with the raised ridge its demo path crosses,

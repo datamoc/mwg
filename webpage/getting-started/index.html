@@ -172,9 +172,9 @@
 						<code>create()</code> builds its contents; assets are already loaded by the
 						time it runs, which the next step arranges.
 					</p>
-					<pre><code>import { Game, Scene } from '@datamoc/mw_games/core';
+					<pre><code>import { Game, Scene2D } from '@datamoc/mw_games/two-d';
 
-class TownScene extends Scene {
+class TownScene extends Scene2D {
 	override create(): void {
 		// contents go here
 	}
@@ -222,13 +222,13 @@ async function main(): Promise&lt;void&gt; {
 						renderer is built, which means before <code>game.start()</code>, not inside
 						<code>create()</code>:
 					</p>
-					<pre><code>import { Camera, TileMap, SpriteSheet, registerColorTransform } from '@datamoc/mw_games/render';
+					<pre><code>import { Camera, TileMap, SpriteSheet, registerColorTransform } from '@datamoc/mw_games/two-d/render';
 import { Random } from '@datamoc/mw_games/core';
 
 const FLOOR_TILE = 0;
 const WALL_TILE = 1;
 
-class TownScene extends Scene {
+class TownScene extends Scene2D {
 	private camera!: Camera;
 	private map!: TileMap;
 
@@ -268,7 +268,7 @@ class TownScene extends Scene {
 						<code>Input</code>'s named actions rather than raw keys: <code>up</code>,
 						<code>down</code>, <code>left</code>, <code>right</code> are bound by default.
 					</p>
-					<pre><code>import { TintedSprite } from '@datamoc/mw_games/render';
+					<pre><code>import { TintedSprite } from '@datamoc/mw_games/two-d/render';
 import { Input } from '@datamoc/mw_games/core';
 
 const HERO_TILE = 2;
@@ -345,7 +345,7 @@ override update(dt: number): void {
 				<article class="step">
 					<h3><span class="n">09</span> A status line</h3>
 					<p>Any UI text is a <code>Label</code>, styled from the current theme rather than carrying its own font and colour:</p>
-					<pre><code>import { Label, theme } from '@datamoc/mw_games/ui';
+					<pre><code>import { Label, theme } from '@datamoc/mw_games/two-d/ui';
 
 // inside TownScene:
 private status!: Label;
@@ -400,9 +400,10 @@ node node_modules/@datamoc/mw_games/tools/compile-resources.mjs ./assets ./dist/
 				<article class="step">
 					<h3><span class="n">11</span> Finished code</h3>
 					<p>The whole scene, about 60 lines:</p>
-					<pre><code>import { Game, Scene, Input, Random } from '@datamoc/mw_games/core';
-import { Camera, TileMap, TintedSprite, SpriteSheet, registerColorTransform } from '@datamoc/mw_games/render';
-import { Label, theme } from '@datamoc/mw_games/ui';
+					<pre><code>import { Game, Scene2D } from '@datamoc/mw_games/two-d';
+import { Input, Random } from '@datamoc/mw_games/core';
+import { Camera, TileMap, TintedSprite, SpriteSheet, registerColorTransform } from '@datamoc/mw_games/two-d/render';
+import { Label, theme } from '@datamoc/mw_games/two-d/ui';
 import * as Resources from '@datamoc/mw_games/assets';
 
 const TILES = 'tiles.png';
@@ -416,7 +417,7 @@ const MOVES: Record&lt;string, { x: number; y: number }&gt; = {
 	left: { x: -1, y: 0 }, right: { x: 1, y: 0 },
 };
 
-class TownScene extends Scene {
+class TownScene extends Scene2D {
 	private camera!: Camera;
 	private map!: TileMap;
 	private hero!: TintedSprite;

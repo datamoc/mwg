@@ -1,7 +1,9 @@
 # mwg
 
-A framework for building primarily 2D top-down games that run **from a local file**: no
-server, no install, no runtime to download. An optional Babylon.js module supports 3D maps.
+A framework for building tile games that run **from a local file**: no server, no install,
+no runtime to download. The game logic depends on no renderer at all, so a game draws through
+PixiJS in 2D (`mwg/two-d`) or Babylon.js in 3D (`mwg/3d`), and the dungeon generation, map
+events, quests, stats and turn order underneath are the same either way.
 
 Licensed under the [MPL-2.0](LICENSE): games built with `mwg` carry no licence obligation
 of their own; improvements to `mwg`'s own files are shared back.
@@ -9,10 +11,14 @@ of their own; improvements to `mwg`'s own files are shared back.
 **[Live examples and API docs](https://datamoc.github.io/mwg/)**: every example below,
 playable in the browser with no download, plus the generated API reference.
 
-> **Status: early release (v0.3.1).** Every module in the shared floor below, plus optional
+> **Status: early release (v0.4.0).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
-> [ROADMAP.md](ROADMAP.md) for the full, numbered history. Still `0.y.z`: the "public API"
-> can still change between minor versions, and the wider genre-specific modules keep growing.
+> [ROADMAP.md](ROADMAP.md) for the full, numbered history.
+>
+> 0.4.0 is the reshaping release: the renderer moved out of `mwg/core`, `render`/`ui`/`stage`
+> became `mwg/two-d`, and a set of names that meant several things each were made to mean one.
+> It is deliberately the last such release planned before 1.0. Still `0.y.z` until then, but
+> the intent from here is additions rather than renames.
 
 ## What it is for
 
@@ -75,7 +81,7 @@ npm install @datamoc/mw_games
 ```
 ```ts
 import { Game, Scene } from '@datamoc/mw_games/core';
-import { Sprite } from '@datamoc/mw_games/render';
+import { Sprite } from '@datamoc/mw_games/two-d/render';
 ```
 
 No npm registry access (an offline machine, a pinned artifact for reproducible builds)?
@@ -130,21 +136,21 @@ only some do.
 | | deterministic seeded RNG, reproducible across machines | `mwg/core` |
 | | named, versioned save slots with a preview | `mwg/core` |
 | **render** | sprite batching at thousands of tiles | PixiJS |
-| | per-sprite colour transform: multiply **and** add | `mwg/render` |
-| | animated sprites driven by named frame sets | `mwg/render` |
-| | dense tile maps, multi-layer, with per-cell visibility | `mwg/render` |
-| | hexagonal tile maps, alongside square, as a second grid shape | `mwg/render` |
-| | camera with follow, pan, shake and zoom | `mwg/render` |
-| | particle effects | `mwg/render` |
-| | screen transitions: fade, flash, tint | `mwg/render` |
-| **ui** | windows, lists, tooltips | `mwg/ui` |
+| | per-sprite colour transform: multiply **and** add | `mwg/two-d/render` |
+| | animated sprites driven by named frame sets | `mwg/two-d/render` |
+| | dense tile maps, multi-layer, with per-cell visibility | `mwg/two-d/render` |
+| | hexagonal tile maps, alongside square, as a second grid shape | `mwg/two-d/render` |
+| | camera with follow, pan, shake and zoom | `mwg/two-d/render` |
+| | particle effects | `mwg/two-d/render` |
+| | screen transitions: fade, flash, tint | `mwg/two-d/render` |
+| **ui** | windows, lists, tooltips | `mwg/two-d/ui` |
 | | text and fonts, including non-latin fallback | PixiJS |
 | | pointer, keyboard and gamepad input with rebinding | `mwg/core` |
 | **text** | message tables per language, compiled at build time | `mwg/i18n` |
 | | plurals, gendered forms and interpolation | `mwg/i18n` |
 | | Fluent-style FTL catalogs with locale-aware fallback and variants | `mwg/i18n` |
 | | left-to-right, right-to-left and vertical writing | `mwg/i18n` |
-| | interface mirrored for right-to-left languages | `mwg/ui` |
+| | interface mirrored for right-to-left languages | `mwg/two-d/ui` |
 | | a missing translation falls back rather than showing a key | `mwg/i18n` |
 | **audio** | sound effects with pooling, music with crossfade | `mwg/audio` |
 
@@ -175,10 +181,10 @@ The Wesnoth-shaped half: a grid whose shape is a parameter, not a parallel imple
 
 | capability | provided by |
 | --- | --- |
-| hexagonal tile maps, addressed by axial or offset coordinates | `mwg/render` |
+| hexagonal tile maps, addressed by axial or offset coordinates | `mwg/two-d/render` |
 | movement cost and defense bonus by terrain, hex or square alike | `mwg/roguelike` |
 | field of view and pathfinding over a hex grid, not just square | `mwg/roguelike` |
-| isometric (and staggered) projection, alongside orthogonal and hex | `mwg/render` |
+| isometric (and staggered) projection, alongside orthogonal and hex | `mwg/two-d/render` |
 | zone of control: a hex a unit can only move into, not through, unless already engaged | `mwg/board` |
 | an army economy: recruiting against a currency, recalling from a pool, per-turn upkeep | `mwg/board` |
 
@@ -199,11 +205,11 @@ reference, the same way Wesnoth is the hex-shaped one.
 | event triggers: action, touch, autorun, parallel | `mwg/rpg` |
 | a command interpreter for cutscenes: move routes, waits, branches, calls | `mwg/rpg` |
 | global switches and variables, saved with the game | `mwg/rpg` |
-| message box with portraits, choices and typewriter reveal | `mwg/rpg` + `mwg/ui` |
+| message box with portraits, choices and typewriter reveal | `mwg/rpg` + `mwg/two-d/ui` |
 | grid movement tweened between tiles, with a walk cycle | `mwg/rpg` |
-| a dialogue stage: backdrop, characters, expressions, speaker focus | `mwg/stage` |
-| scenes written as a list of commands, awaited as one call | `mwg/stage` |
-| named passages a choice can jump between, for a story that is a graph, not a line | `mwg/stage` |
+| a dialogue stage: backdrop, characters, expressions, speaker focus | `mwg/two-d/stage` |
+| scenes written as a list of commands, awaited as one call | `mwg/two-d/stage` |
+| named passages a choice can jump between, for a story that is a graph, not a line | `mwg/two-d/stage` |
 | named save slots with a preview | `mwg/core` |
 
 ### Characters, equipment and stats
@@ -220,7 +226,7 @@ rather than classes.
 | modifiers from equipment, buffs and states, resolved in a stated order | `mwg/actors` |
 | an inventory with stacking, weight and containers | `mwg/actors` |
 | item identification, and cursed or blessed states | `mwg/actors` |
-| a layered character sprite, so worn equipment is visible | `mwg/render` |
+| a layered character sprite, so worn equipment is visible | `mwg/two-d/render` |
 
 That last row is why `tools/make-example-assets.mjs` draws its character in parts. A figure
 assembled from skin, eyes, hair and garments is one palette away from being a second
@@ -256,7 +262,7 @@ white on a hit, a room lit by a fireplace, a screen-wide tint for a night scene:
 is that one operation.
 
 Pixi's built-in `tint` is multiply-only, which can only ever darken. The additive term is
-what `mwg/render` adds, in the batch shader rather than as a per-object filter, so it costs
+what `mwg/two-d/render` adds, in the batch shader rather than as a per-object filter, so it costs
 nothing per sprite. See `examples/colour-transform`.
 
 ### Why maps and events are data, not code
@@ -279,7 +285,7 @@ Supporting more than one language is mostly bookkeeping. Supporting more than on
   can handle: canvas applies the Unicode bidirectional algorithm and shapes the glyphs, so
   a label mostly comes out right once its direction is declared. The *interface* is the
   harder half, because a right-to-left reader expects it mirrored: lists indent from the
-  right, a back arrow points the other way, a progress bar fills the other way. `mwg/ui`
+  right, a back arrow points the other way, a progress bar fills the other way. `mwg/two-d/ui`
   lays widgets out against a direction rather than against "left" so this can be flipped,
   and a game only has to mark which of its own icons must not be mirrored.
 - **Vertical**, top to bottom (traditional Chinese, Japanese, Mongolian), gets no help at

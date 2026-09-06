@@ -113,7 +113,7 @@
 					module - <code>Game</code> takes a <code>GameOptions.extensions</code> array of
 					Pixi-extension registration functions instead of reaching into
 					<code>render</code> itself, so a game that only imports <code>mwg/core</code>
-					never pulls in <code>mwg/render</code> at all. The same discipline holds one
+					never pulls in <code>mwg/two-d/render</code> at all. The same discipline holds one
 					level up: <code>render.ColorTransformBatcher.ts</code> is the only file allowed
 					to know about Pixi's batcher/high-shader internals, and every genre-specific
 					module (<code>rpg</code>, <code>battle</code>, <code>roguelike</code>,
