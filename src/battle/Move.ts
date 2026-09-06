@@ -30,6 +30,19 @@ export interface BattleAction<C = unknown> {
  * not a persistent queue. `mwg/roguelike`'s `Scheduler` already covers continuous
  * energy-cost time for a dungeon; a battle round picks everyone's action first and then
  * needs only this, a single stable sort.
+ *
+ * @example
+ * ```ts
+ * import { battleOrder, type BattleAction } from '@datamoc/mw_games/battle';
+ *
+ * const actions: BattleAction<string>[] = [
+ *   { actor: 'hero', speed: 12 },
+ *   { actor: 'wolf', speed: 18 },
+ *   { actor: 'hero-item', speed: 12, priority: 1 }, // items go first regardless of speed
+ * ];
+ *
+ * const order = battleOrder(actions).map((a) => a.actor); // ['hero-item', 'wolf', 'hero']
+ * ```
  */
 export function battleOrder<A extends { speed: number; priority?: number }>(actions: readonly A[]): A[] {
 	return [...actions].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0) || b.speed - a.speed);

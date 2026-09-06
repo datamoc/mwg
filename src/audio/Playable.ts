@@ -17,7 +17,17 @@ export interface Playable {
 	onended?: ((event: Event) => unknown) | null;
 }
 
-/** the real thing: an `HTMLAudioElement` pointed at a resolved asset path */
+/**
+ * The real thing: an `HTMLAudioElement` pointed at a resolved asset path.
+ *
+ * @example
+ * ```ts
+ * import { createAudio, Sound } from '@datamoc/mw_games/audio';
+ *
+ * // Sound/Music both default to this; supply your own only for a test or a non-browser backend
+ * const hit = new Sound('sounds/hit.mp3', { create: createAudio });
+ * ```
+ */
 export function createAudio(path: string): Playable {
 	return new Audio(Resources.resolve(path));
 }

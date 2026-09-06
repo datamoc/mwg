@@ -6,6 +6,14 @@
  * classic XOR weakness, accepted on purpose rather than overlooked. Reach for this only
  * where "not trivially editable" is the actual requirement, per `SaveSystem.exportSlot`'s
  * own use of it.
+ *
+ * @example
+ * ```ts
+ * import { scramble, unscramble } from '@datamoc/mw_games/core';
+ *
+ * const scrambled = scramble('{"depth":3}', 'a-per-game-key');
+ * const restored = unscramble(scrambled, 'a-per-game-key'); // '{"depth":3}'
+ * ```
  */
 export function scramble(text: string, key: string): string {
 	if (!key) throw new Error('scramble needs a non-empty key');

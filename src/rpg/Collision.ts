@@ -7,6 +7,25 @@
  * `rpg.FreeMover`'s own doc comment: "both own position and animation only, nothing about
  * collision or passability". A game wires this in itself; `FreeMover` stays unopinionated
  * about whether a game wants tile solidity, circle-vs-circle hits, or no collision at all.
+ *
+ * @example
+ * ```ts
+ * import { aabbOverlap, circleOverlap, circleAabbOverlap, resolveAabbAgainstTiles } from '@datamoc/mw_games/rpg';
+ *
+ * const player = { x: 10, y: 10, width: 16, height: 16 };
+ * const chest = { x: 20, y: 10, width: 16, height: 16 };
+ * aabbOverlap(player, chest); // false, not touching yet
+ *
+ * const hero = { x: 100, y: 100, radius: 8 };
+ * const bomb = { x: 105, y: 100, radius: 4 };
+ * circleOverlap(hero, bomb); // true - within blast radius
+ * circleAabbOverlap(hero, chest); // circle vs box, same idea
+ *
+ * const resolved = resolveAabbAgainstTiles(player, 5, 0, {
+ *   tileSize: 32,
+ *   isSolid: (tx, ty) => tx === 1 && ty === 0, // one solid tile
+ * });
+ * ```
  */
 
 export interface AABB {

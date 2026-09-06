@@ -35,7 +35,25 @@ export interface MidiFile {
 
 const DEFAULT_TEMPO = 500000; // 120 BPM
 
-/** Reads format 0/1 Standard MIDI File bytes into a flat, tick-ordered event list. */
+/**
+ * Reads format 0/1 Standard MIDI File bytes into a flat, tick-ordered event list.
+ *
+ * @example
+ * ```ts
+ * import { parseMidi, scheduleMidi, noteToFrequency, MidiPlayer } from '@datamoc/mw_games/audio';
+ *
+ * declare const midiBytes: ArrayBuffer;
+ *
+ * const file = parseMidi(midiBytes);
+ * const notes = scheduleMidi(file); // absolute-time notes, ready to voice
+ * console.log(noteToFrequency(69)); // 440 - A4
+ *
+ * const player = new MidiPlayer(file, { waveform: 'triangle' });
+ * player.play();
+ * // in the game loop:
+ * player.update(1 / 60);
+ * ```
+ */
 export function parseMidi(data: ArrayBuffer | ArrayBufferView): MidiFile {
 	const bytes = data instanceof ArrayBuffer
 		? new Uint8Array(data)

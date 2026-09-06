@@ -5,6 +5,16 @@
  * proc shares. `mwg` tracks only the streak and its turn-window; what counts as a qualifying
  * event, and what a streak length unlocks, stay the game's own rule, fired from `trigger`'s
  * own returned count.
+ *
+ * @example
+ * ```ts
+ * import { TriggerTracker } from '@datamoc/mw_games/roguelike';
+ *
+ * const combo = new TriggerTracker(2); // a hit must land within 2 turns of the last
+ * combo.trigger(1); // streak: 1
+ * combo.trigger(2); // streak: 2 - within the window
+ * combo.trigger(10); // streak restarts at 1 - the window lapsed
+ * ```
  */
 export class TriggerTracker {
 	private readonly window: number;

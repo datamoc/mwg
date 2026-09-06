@@ -5,6 +5,18 @@
  * stacking means in practice - forty arrows are one inventory slot, not forty. Weight and
  * capacity are optional: a game that does not track carry weight simply never sets a
  * capacity, and every check trivially passes.
+ *
+ * @example
+ * ```ts
+ * import { Inventory } from '@datamoc/mw_games/actors';
+ *
+ * const bag = new Inventory({ capacity: 50 });
+ * bag.add({ id: 'potion', quantity: 3, stackable: true, weight: 0.5 });
+ * bag.add({ id: 'potion', quantity: 2, stackable: true, weight: 0.5 }); // merges into one stack of 5
+ *
+ * const potion = bag.find('potion');
+ * console.log(potion?.quantity, bag.totalWeight);
+ * ```
  */
 
 export interface InventoryItem {

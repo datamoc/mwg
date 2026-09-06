@@ -24,6 +24,17 @@ export interface TelemetryResponse {
  * given game (a settings toggle, a first-launch prompt, a platform-level flag), and where the
  * endpoint lives - the same boundary `FeedbackClient`'s own doc comment draws for manual
  * reports.
+ *
+ * @example
+ * ```ts
+ * import { TelemetryClient } from '@datamoc/mw_games/core';
+ *
+ * const telemetry = new TelemetryClient({ endpoint: 'https://example.com/api/telemetry' });
+ *
+ * // nothing sends until a game's own consent flow grants it
+ * telemetry.setConsent(true);
+ * await telemetry.send({ name: 'level_started', properties: { level: 3 } });
+ * ```
  */
 export class TelemetryClient extends HttpTransport {
 	private consented = false;

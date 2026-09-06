@@ -18,7 +18,21 @@ export interface EnvironmentOptions {
 	phaseBoundaries?: readonly [number, number, number];
 }
 
-/** A continuous world clock that maps elapsed time to day phase and weather. */
+/**
+ * A continuous world clock that maps elapsed time to day phase and weather.
+ *
+ * @example
+ * ```ts
+ * import { EnvironmentClock } from '@datamoc/mw_games/world';
+ *
+ * const clock = new EnvironmentClock({ dayLength: 600 }); // a 10-minute day
+ * clock.setWeather('rain');
+ *
+ * // in the game loop:
+ * const snapshot = clock.update(1 / 60);
+ * console.log(snapshot.phase, snapshot.weather);
+ * ```
+ */
 export class EnvironmentClock {
 	readonly changed = new Signal<EnvironmentSnapshot>();
 	readonly dayLength: number;

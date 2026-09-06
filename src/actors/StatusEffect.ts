@@ -35,6 +35,24 @@ export interface StatusEffectHandle {
  * `cancel()` on the returned handle removes the modifiers immediately and unregisters the
  * clock entry - needed because `TurnClock.remove` alone only stops future ticks, it does not
  * know this entry ever touched a `StatBlock` at all.
+ *
+ * @example
+ * ```ts
+ * import { applyStatusEffect, StatBlock } from '@datamoc/mw_games/actors';
+ * import { TurnClock } from '@datamoc/mw_games/world';
+ *
+ * const stats = new StatBlock({ base: { hp: 20, attack: 5 } });
+ * const clock = new TurnClock();
+ *
+ * const poison = applyStatusEffect(stats, clock, {
+ *   modifiers: [{ stat: 'attack', op: 'add', value: -2 }],
+ *   duration: 3,
+ *   tick: () => stats.setBase('hp', stats.base('hp') - 2),
+ * });
+ *
+ * clock.advance(); // one poison tick
+ * poison.cancel(); // a cure spell removes it early
+ * ```
  */
 export function applyStatusEffect(
 	stats: StatBlock,

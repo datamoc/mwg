@@ -8,6 +8,20 @@ import type { StatBlock, Modifier } from '../actors/StatBlock.ts';
  * seam that shape needed: `mwg` supplies the clamp and the one-modifier-per-stat bookkeeping,
  * a game supplies `multiplier` - there is no "official" stage-to-multiplier curve to default
  * to without copying a specific existing game's numbers.
+ *
+ * @example
+ * ```ts
+ * import { StatStages } from '@datamoc/mw_games/battle';
+ * import { StatBlock } from '@datamoc/mw_games/actors';
+ *
+ * const stats = new StatBlock({ base: { attack: 10 } });
+ * const stages = new StatStages(stats, { max: 6, multiplier: (stage) => 1 + stage * 0.5 });
+ *
+ * stages.change('attack', 2); // two stages up
+ * console.log(stats.get('attack')); // 20
+ *
+ * stages.resetAll(); // switching out clears every stage at once
+ * ```
  */
 export interface StatStagesOptions {
 	/** the furthest a stage can go, either direction (Infinity for no cap at all) */

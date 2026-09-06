@@ -5,6 +5,18 @@ import { sanitizeInboundText } from './Sanitize.ts';
  * Fetches a game's own news/announcements feed - the inbound counterpart to
  * `FeedbackClient`, following the same injectable-transport shape (a game's own HTTPS
  * endpoint, no backend shipped or assumed) rather than a second pattern.
+ *
+ * @example
+ * ```ts
+ * import { NewsClient, NewsSeenTracker } from '@datamoc/mw_games/core';
+ *
+ * const news = new NewsClient({ endpoint: 'https://example.com/api/news' });
+ * const seen = new NewsSeenTracker({ namespace: 'my-game' });
+ *
+ * const items = await news.fetchItems();
+ * const unread = items.filter((item) => !seen.isSeen(item.id));
+ * for (const item of unread) seen.markSeen(item.id);
+ * ```
  */
 export interface NewsItem {
 	id: string;

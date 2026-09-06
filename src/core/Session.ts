@@ -8,6 +8,16 @@ import { defaultStorage, type SaveStorage } from './Save.ts';
  * Tauri, whatever a game ships through) needs to decide whether a player has used the
  * game enough to plausibly be worth asking for a rating. `mwg` only counts; it never
  * prompts, and has no opinion on what "enough" means.
+ *
+ * @example
+ * ```ts
+ * import { Session } from '@datamoc/mw_games/core';
+ *
+ * const session = new Session({ namespace: 'my-game' });
+ * if (session.launches === 5) {
+ *   // a native wrapper's own moment to ask for a rating - mwg never prompts itself
+ * }
+ * ```
  */
 
 export interface SessionOptions {

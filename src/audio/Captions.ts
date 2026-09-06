@@ -12,5 +12,17 @@ export interface CaptionEvent {
 	text: string;
 }
 
-/** fires whenever a captioned `Sound` plays - a captioning overlay subscribes here, entirely decoupled from `Sound` itself, which never imports anything UI-shaped */
+/**
+ * Fires whenever a captioned `Sound` plays - a captioning overlay subscribes here, entirely
+ * decoupled from `Sound` itself, which never imports anything UI-shaped.
+ *
+ * @example
+ * ```ts
+ * import { onCaption } from '@datamoc/mw_games/audio';
+ *
+ * onCaption.add(({ text }) => showCaptionOverlay(text));
+ *
+ * declare function showCaptionOverlay(text: string): void;
+ * ```
+ */
 export const onCaption = new Signal<CaptionEvent>();

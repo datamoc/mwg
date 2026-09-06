@@ -20,6 +20,23 @@ export interface CellFeatureDef<TContext = unknown> {
 	persistent?: boolean;
 }
 
+/**
+ * @example
+ * ```ts
+ * import { FeatureLayer } from '@datamoc/mw_games/roguelike';
+ *
+ * const features = new FeatureLayer<{ hp: number }>();
+ * features.define('trap', {
+ *   interact: () => true,
+ *   consequence: (_cell, ctx) => { ctx.hp -= 5; },
+ *   persistent: false, // sprung once, then gone
+ * });
+ *
+ * features.place(42, 'trap');
+ * const hero = { hp: 20 };
+ * features.interact(42, hero); // hero.hp is now 15, and the trap is gone
+ * ```
+ */
 export class FeatureLayer<TContext = unknown> {
 	private defs = new Map<string, CellFeatureDef<TContext>>();
 	private placed = new Map<number, string>();

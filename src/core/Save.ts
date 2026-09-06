@@ -4,6 +4,19 @@
  * themselves the same way `mwg/rpg`'s `GameState` already does (a `toJSON`/reviving
  * constructor pair), not to be serialised by reference with cycles preserved; that is a
  * different, much larger problem than a save system needs to solve.
+ *
+ * @example
+ * ```ts
+ * import { SaveSystem } from '@datamoc/mw_games/core';
+ *
+ * interface RunState { depth: number; hp: number }
+ *
+ * const saves = new SaveSystem<RunState>({ namespace: 'my-game', version: 1 });
+ * saves.save('slot1', { depth: 3, hp: 12 }, 'Floor 3, 12 HP');
+ *
+ * const loaded = saves.load('slot1');
+ * if (loaded) console.log(loaded.state.depth); // 3
+ * ```
  */
 import { scramble, unscramble } from './Scramble.ts';
 import { checkSize, sanitizeInboundText } from './Sanitize.ts';

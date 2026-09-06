@@ -9,6 +9,19 @@ import type { Level } from './Level.ts';
  * Locking is a separate flag from open/closed: a locked door is always closed and refuses to
  * open until `unlock` is called (typically once a game confirms the actor holds the right
  * key item), rather than open/closed and locked/unlocked being folded into one state.
+ *
+ * @example
+ * ```ts
+ * import { Doors, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ *
+ * const level = new Level(20, 20, [WALL, FLOOR], 1);
+ * const doors = new Doors(level);
+ *
+ * doors.place(5, 5, { open: 1, closed: 0, locked: 'brass-key' });
+ * doors.unlock(5, 5); // once the player is confirmed to hold the key
+ * doors.open(5, 5);
+ * console.log(doors.isOpen(5, 5));
+ * ```
  */
 export class Doors {
 	private level: Level;

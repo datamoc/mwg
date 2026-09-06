@@ -5,6 +5,19 @@
  * absorption always drains the most recently added layer first, so a ward cast on top of a
  * standing shield breaks before the shield underneath it does, matching how a layered proc
  * family (barrier-then-shield, shield-then-barrier) is meant to read regardless of order cast.
+ *
+ * @example
+ * ```ts
+ * import { Barrier } from '@datamoc/mw_games/actors';
+ *
+ * const barrier = new Barrier();
+ * barrier.add(20); // a shield spell
+ * barrier.add(10, 2); // a ward on top, decaying 2 per turn on its own
+ *
+ * const absorbed = barrier.absorb(15); // drains the ward first, then spills into the shield
+ * barrier.advance(1); // one turn of decay
+ * console.log(barrier.total);
+ * ```
  */
 export interface BarrierLayer {
 	amount: number;

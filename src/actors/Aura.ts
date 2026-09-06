@@ -24,6 +24,22 @@ export interface AuraParticipant {
  * each carrier last time: a unit that just became adjacent gets the carrier's modifiers added,
  * one that just left loses exactly those modifiers, and one that stays adjacent is left alone
  * rather than having its modifiers reapplied on every tick.
+ *
+ * @example
+ * ```ts
+ * import { AuraField, StatBlock, type AuraParticipant } from '@datamoc/mw_games/actors';
+ *
+ * const field = new AuraField();
+ * const captain: AuraParticipant = {
+ *   stats: new StatBlock({ base: {} }),
+ *   aura: { name: 'rally', modifiers: [{ stat: 'attack', op: 'add', value: 2 }] },
+ * };
+ * const soldier: AuraParticipant = { stats: new StatBlock({ base: { attack: 5 } }) };
+ *
+ * // call every time positions change, with whatever "adjacent" means on this grid
+ * field.update([captain, soldier], (a, b) => a === captain && b === soldier);
+ * console.log(soldier.stats.get('attack')); // 7, while adjacent
+ * ```
  */
 export class AuraField {
 	//per carrier, which participants currently carry that carrier's modifiers and under

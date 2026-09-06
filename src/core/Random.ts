@@ -12,6 +12,17 @@
  * Generators are kept on a stack. Level generation pushes a seeded one so a floor is
  * reproducible, then pops it, so unrelated rolls elsewhere do not consume from that
  * stream and shift the results.
+ *
+ * @example
+ * ```ts
+ * import { Random } from '@datamoc/mw_games/core';
+ *
+ * // a floor generated from a seed always comes out the same
+ * Random.push(12345);
+ * const roll = Random.int(1, 20);
+ * const critical = Random.chance(0.05);
+ * Random.pop();
+ * ```
  */
 
 /** splitmix32, used to expand a single seed into the four words of generator state */
@@ -26,6 +37,19 @@ function splitmix32(seed: number): () => number {
 	};
 }
 
+/**
+ * The seeded generator class `Random`'s free functions wrap directly, for a game that wants
+ * its own independent stream rather than sharing the ambient one.
+ *
+ * @example
+ * ```ts
+ * import { Generator } from '@datamoc/mw_games/core';
+ *
+ * const rng = new Generator(42); // same seed, same sequence, every time
+ * const roll = rng.int(20);
+ * const saved = rng.getState(); // resumable, for a save file
+ * ```
+ */
 export class Generator {
 	private s0 = 0;
 	private s1 = 0;

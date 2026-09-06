@@ -14,6 +14,19 @@ import type { Level } from './Level.ts';
  * Discovery itself is a game's call, not this class's: a search action rolling against a
  * distance, a trap firing the moment a creature steps onto it, a wand of revealing. This
  * only does the bookkeeping once that decision has been made.
+ *
+ * @example
+ * ```ts
+ * import { Secrets, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ *
+ * const level = new Level(20, 20, [WALL, FLOOR], 1);
+ * const secrets = new Secrets(level);
+ *
+ * secrets.conceal(5, 5, 0, 1); // disguised as WALL (0), reveals as FLOOR (1) once found
+ * console.log(secrets.isSecret(5, 5)); // true - the cell reads as solid rock until found
+ *
+ * secrets.discover(5, 5); // a search action succeeded
+ * ```
  */
 export class Secrets {
 	private level: Level;

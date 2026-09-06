@@ -7,6 +7,21 @@ import type { Inventory } from './Inventory.ts';
  * nothing until every check passes, and if any later step fails (the buyer's bag has no
  * room), roll back whatever the earlier steps already did rather than losing stock or coin
  * for nothing.
+ *
+ * @example
+ * ```ts
+ * import { buy, sell, StatBlock, Inventory, type ShopOptions } from '@datamoc/mw_games/actors';
+ *
+ * const wallet = new StatBlock({ base: { gold: 100 } });
+ * const shopStock = new Inventory();
+ * shopStock.add({ id: 'potion', quantity: 10, stackable: true });
+ * const bag = new Inventory();
+ *
+ * const options: ShopOptions = { currency: 'gold', prices: new Map([['potion', { buy: 15, sell: 5 }]]) };
+ *
+ * buy(wallet, shopStock, bag, 'potion', 2, options); // 30 gold spent, 2 potions in bag
+ * sell(wallet, shopStock, bag, 'potion', 1, options); // 5 gold refunded
+ * ```
  */
 export interface Price {
 	/** cost to buy one unit from the shop */

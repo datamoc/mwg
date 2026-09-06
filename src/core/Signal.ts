@@ -4,6 +4,17 @@
  * Unlike a DOM event, a listener returning `true` stops the dispatch. Input handling in a
  * roguelike needs that: a modal window has to be able to swallow a keypress before the map
  * below it sees it.
+ *
+ * @example
+ * ```ts
+ * import { Signal } from '@datamoc/mw_games/core';
+ *
+ * const onDamage = new Signal<{ amount: number }>();
+ * onDamage.add(({ amount }) => {
+ *   console.log(`took ${amount} damage`);
+ * });
+ * onDamage.dispatch({ amount: 5 });
+ * ```
  */
 export type SignalListener<T> = (value: T) => boolean | void;
 

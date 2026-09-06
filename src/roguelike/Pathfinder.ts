@@ -3,8 +3,17 @@ import { neighbourOffsets, type Level } from './Level.ts';
 import type { FieldOfView } from './FieldOfView.ts';
 import type { Elevation } from './Elevation.ts';
 
-/** re-exported here for anyone already importing it from `Pathfinder` - it now lives on
- * `Level`, which is what needs it for a square level's own `neighbors()` */
+/**
+ * Re-exported here for anyone already importing it from `Pathfinder` - it now lives on
+ * `Level`, which is what needs it for a square level's own `neighbors()`.
+ *
+ * @example
+ * ```ts
+ * import { neighbourOffsets } from '@datamoc/mw_games/roguelike';
+ *
+ * const offsets = neighbourOffsets(8); // the 8 (x, y) deltas around a cell, diagonals included
+ * ```
+ */
 export { neighbourOffsets };
 
 export interface Step {
@@ -43,6 +52,18 @@ export interface PathOptions {
  * needs. A Dijkstra map for "which way is the player from anywhere", which is what a dozen
  * monsters chasing the player need, computed once for the whole level rather than once
  * per monster.
+ *
+ * @example
+ * ```ts
+ * import { Pathfinder, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ *
+ * const level = new Level(20, 20, [WALL, FLOOR], 1);
+ * const pathfinder = new Pathfinder(level);
+ *
+ * const route = pathfinder.find({ x: 0, y: 0 }, { x: 10, y: 10 }); // one monster's own route
+ *
+ * const distances = pathfinder.distanceMap({ x: 10, y: 10 }); // every monster reads the same map
+ * ```
  */
 export class Pathfinder {
 	private level: Level;

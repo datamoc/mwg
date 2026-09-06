@@ -29,7 +29,24 @@ export interface RoomBuilder {
 	paint(level: Level, room: Rect, floor: number): void;
 }
 
-/** a plain filled rectangle: the generator's own original behaviour, as a builder */
+/**
+ * A plain filled rectangle: the generator's own original behaviour, as a builder.
+ *
+ * @example
+ * ```ts
+ * import { generateDungeon, hallBuilder, pickBuilder, eligibleBuilders, type RoomBuilder } from '@datamoc/mw_games/roguelike';
+ *
+ * const pillaredHall: RoomBuilder = {
+ *   id: 'pillared',
+ *   minSize: 6,
+ *   paint(level, room, floor) {
+ *     level.fillRect(room, floor); // then carve pillars into the interior, game-side
+ *   },
+ * };
+ *
+ * const level = generateDungeon({ width: 60, height: 40, builders: [hallBuilder, pillaredHall] });
+ * ```
+ */
 export const hallBuilder: RoomBuilder = {
 	id: 'hall',
 	paint: (level, room, floor) => level.fillRect(room, floor),

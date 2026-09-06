@@ -17,6 +17,22 @@ import { HookRegistry } from '../core/Hooks.ts';
  * The registry itself is `core.HookRegistry`, shared with `roguelike.CombatHooks`. What is
  * battle-specific is only the shape of what a handler receives: the creature the event is
  * about, plus that optional shared context.
+ *
+ * @example
+ * ```ts
+ * import { BattleHooks } from '@datamoc/mw_games/battle';
+ *
+ * const hooks = new BattleHooks<{ name: string }>();
+ * const paralysis = {};
+ *
+ * hooks.on('turnStart', (creature, context) => {
+ *   if ((context as { skip: boolean }).skip === undefined) return;
+ *   (context as { skip: boolean }).skip = true; // this creature cannot act this turn
+ * }, paralysis);
+ *
+ * const context = { skip: false };
+ * hooks.emit('turnStart', { name: 'hero' }, context);
+ * ```
  */
 export class BattleHooks<C> extends HookRegistry<[creature: C, context?: unknown]> {}
 

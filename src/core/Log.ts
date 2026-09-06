@@ -27,6 +27,15 @@ export interface LoggerOptions {
  * Marginal on its own - the browser console already exists - which is why this
  * stays small: a named category per system, four levels, a filter, and a sink
  * tests can capture instead of the console.
+ *
+ * @example
+ * ```ts
+ * import { Logger } from '@datamoc/mw_games/core';
+ *
+ * const log = new Logger('combat', { level: 'info' }); // debug entries are filtered out
+ * log.info('turn started', { turn: 3 });
+ * log.warn('attack missed unexpectedly');
+ * ```
  */
 export class Logger {
 	private readonly category: string;

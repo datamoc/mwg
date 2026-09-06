@@ -17,6 +17,20 @@ interface MapDefinition<M> {
  * `persistent: false` at `define` time: `enter` then rebuilds them from the factory every
  * time, discarding whatever was there. Both live in the same `World`; a game's overworld and
  * towns can stay persistent while its dungeon floors do not.
+ *
+ * @example
+ * ```ts
+ * import { World } from '@datamoc/mw_games/world';
+ *
+ * interface MyMap { name: string }
+ *
+ * const world = new World<MyMap>();
+ * world.define('town', () => ({ name: 'town' })); // persistent by default
+ * world.define('dungeon1', () => ({ name: 'dungeon1' }), { persistent: false });
+ *
+ * world.enter('town');
+ * console.log(world.current?.name); // 'town'
+ * ```
  */
 export class World<M> {
 	private factories = new Map<string, MapDefinition<M>>();

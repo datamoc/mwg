@@ -20,6 +20,20 @@ export interface PlayerInputOptions {
  * player's own `id`, so two players' "confirm" become two distinct actions
  * (`"p1:confirm"`, `"p2:confirm"`) that never collide. A single-player game using `Input`'s
  * bare action names directly is entirely unaffected.
+ *
+ * @example
+ * ```ts
+ * import { PlayerInput } from '@datamoc/mw_games/core';
+ *
+ * const player1 = new PlayerInput('p1', { padIndex: 0 });
+ * const player2 = new PlayerInput('p2', { padIndex: 1 });
+ *
+ * player1.bind('confirm', ['Enter']);
+ * player2.bind('confirm', ['Space']);
+ *
+ * // each player's "confirm" fires independently, even though both call it "confirm"
+ * if (player1.justPressed('confirm')) console.log('player 1 confirmed');
+ * ```
  */
 export class PlayerInput {
 	readonly id: string;

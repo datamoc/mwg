@@ -30,6 +30,21 @@ export interface ScenarioResult<State, Event> extends SimulationStep<State, Even
  * initial state, random state, commands, and rules that use only those inputs.
  * No cloning or rollback is implicit: mutable rules and throwing rules remain the game's
  * responsibility. Persist a game's snapshot and random state together to resume a run.
+ *
+ * @example
+ * ```ts
+ * import { runScenario, type SimulationRule } from '@datamoc/mw_games/simulation';
+ * import { Generator } from '@datamoc/mw_games/core';
+ *
+ * type State = { hp: number };
+ * const step: SimulationRule<State, 'attack', { damage: number }, Generator> = (state, _cmd, rng) => {
+ *   const damage = rng.int(3) + 1;
+ *   const hp = state.hp - damage;
+ *   return { state: { hp }, events: [{ damage }], status: hp <= 0 ? 'finished' : 'ready' };
+ * };
+ *
+ * const result = runScenario({ state: { hp: 10 }, commands: ['attack', 'attack'], random: new Generator(1), step });
+ * ```
  */
 export function runScenario<State, Command, Event, Random>(
 	scenario: Scenario<State, Command, Event, Random>,

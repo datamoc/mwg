@@ -6,6 +6,19 @@ import { removeAffix } from './Affix.ts';
  * an enchantment/upgrade level, and durability that wears down with use. Small, focused
  * functions over a plain `InventoryItem` - the same size of primitive `skillCheck` already is -
  * rather than a class, since none of the three need to remember anything beyond the item.
+ *
+ * @example
+ * ```ts
+ * import { identify, enchant, damageItem, repairItem } from '@datamoc/mw_games/actors';
+ *
+ * const sword = { id: 'sword', quantity: 1, durability: 30, maxDurability: 50 };
+ *
+ * identify(sword);
+ * enchant(sword, 1); // now +1
+ *
+ * const broke = damageItem(sword, 40); // durability floors at 0
+ * repairItem(sword, 10);
+ * ```
  */
 
 /** reveals an item's real nature - a potion's true effect, a ring's curse - once identified */

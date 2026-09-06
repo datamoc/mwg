@@ -2,6 +2,20 @@
  * Global switches and variables - the two pieces of state an RPG's events read and write
  * most, kept as plain maps rather than anything fancier so `mwg/core`'s eventual save
  * system (see the roadmap) can serialise them like any other plain data.
+ *
+ * @example
+ * ```ts
+ * import { GameState } from '@datamoc/mw_games/rpg';
+ *
+ * const state = new GameState();
+ * state.setSwitch('metShopkeeper', true);
+ * state.setVariable('gold', 50);
+ *
+ * console.log(state.switch('metShopkeeper'), state.variable('gold'));
+ *
+ * const saved = JSON.stringify(state.toJSON());
+ * const restored = GameState.fromJSON(JSON.parse(saved));
+ * ```
  */
 export class GameState {
 	private switches = new Map<string, boolean>();

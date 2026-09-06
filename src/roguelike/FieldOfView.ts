@@ -31,6 +31,19 @@ export interface HeightSight {
 	height?: number;
 }
 
+/**
+ * @example
+ * ```ts
+ * import { FieldOfView, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ *
+ * const level = new Level(20, 20, [WALL, FLOOR], 1);
+ * const fov = new FieldOfView(level);
+ *
+ * fov.update(5, 5, 8); // the hero's own sight, radius 8
+ * console.log(fov.visible.has(level.index(6, 5))); // true - lit right now
+ * console.log(fov.explored.has(level.index(6, 5))); // true - stays remembered after leaving
+ * ```
+ */
 export class FieldOfView {	private level: Level;
 	//rot.js exports FOV as an object of classes rather than a namespace, so the type of
 	//an instance has to be derived from the constructor

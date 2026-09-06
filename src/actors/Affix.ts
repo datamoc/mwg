@@ -11,6 +11,26 @@ import * as Random from '../core/Random.ts';
  * answers to (`strike`, `defend`, or a `passive` that is always on), how likely it is
  * relative to its table, and whether it is a curse - and the game interprets the id
  * itself when that trigger fires, the same way `Move.effects` is data `mwg` never reads.
+ *
+ * @example
+ * ```ts
+ * import { rollAffix, applyAffix, affixOf, removeAffix, copyAffix, matchesContext, type AffixTable } from '@datamoc/mw_games/actors';
+ *
+ * const table: AffixTable = { entries: [{ id: 'flaming', trigger: 'strike', weight: 1, kinds: ['melee'] }] };
+ * const sword = { id: 'sword', quantity: 1 };
+ * const betterSword = { id: 'sword', quantity: 1, instanceId: 'b' };
+ *
+ * const affix = rollAffix(table);
+ * if (affix) applyAffix(sword, affix);
+ * console.log(affixOf(sword)); // 'flaming'
+ *
+ * if (affix && matchesContext(affix, { trigger: 'strike', kind: 'melee' })) {
+ *   console.log('flaming affix fires on this melee hit');
+ * }
+ *
+ * copyAffix(sword, betterSword); // carries the enchantment onto an upgraded item
+ * removeAffix(sword);
+ * ```
  */
 
 export type AffixTrigger = 'strike' | 'defend' | 'passive';

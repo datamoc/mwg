@@ -26,6 +26,18 @@ export interface CollectionOptions {
  * to go stale, and two `Collection` objects over the same name agree trivially.
  * Records come back in insertion order. Built for logs and bestiaries (hundreds
  * of records), not for anything scanned per frame.
+ *
+ * @example
+ * ```ts
+ * import { Collection } from '@datamoc/mw_games/core';
+ *
+ * const quests = new Collection('quests');
+ * quests.put({ id: 'rats', stage: 1, done: false });
+ * quests.put({ id: 'shopkeeper', stage: 3, done: true });
+ *
+ * const active = quests.where((q) => !q.done);
+ * console.log(quests.size, active.length); // 2 1
+ * ```
  */
 export class Collection {
 	private readonly prefix: string;

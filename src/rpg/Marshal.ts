@@ -20,6 +20,22 @@
  * ordinary Marshal value. Backreferences (`@`, `;`) resolve against the same link tables a
  * real Ruby `Marshal.load` keeps, so a value referenced twice decodes to the same object
  * twice rather than being duplicated.
+ *
+ * @example
+ * ```ts
+ * import { decodeMarshal, encodeMarshal, RubySymbol, hashDefaultOf, withHashDefault } from '@datamoc/mw_games/rpg';
+ *
+ * declare const rxdataBytes: Uint8Array; // read from a Game.rxdata file
+ *
+ * const decoded = decodeMarshal(rxdataBytes);
+ * if (decoded instanceof Map) {
+ *   console.log(hashDefaultOf(decoded)); // a Hash.new(default)'s own default, if it had one
+ * }
+ *
+ * // writing back out: a Ruby Hash's default survives only if set explicitly
+ * const hash = withHashDefault(new Map([['key', 1]]), 0);
+ * const bytes = encodeMarshal(new RubySymbol('an_ivar_name'));
+ * ```
  */
 
 /** an RPG Maker (or any other) object: its class name and every instance variable, by name */

@@ -8,6 +8,20 @@
  *
  * The queue is ordered by the time at which each actor next acts. `now` only ever moves
  * forward, so effects that expire can be timestamped against it.
+ *
+ * @example
+ * ```ts
+ * import { Scheduler, type Actor } from '@datamoc/mw_games/roguelike';
+ *
+ * interface Monster extends Actor { name: string }
+ *
+ * const scheduler = new Scheduler<Monster>();
+ * scheduler.add({ name: 'hero', speed: 1 });
+ * scheduler.add({ name: 'fast rat', speed: 2 }); // acts twice as often
+ *
+ * const acting = scheduler.peek(); // whoever's turn it is
+ * scheduler.spend(1); // charge them for a normal-speed action, hand the turn on
+ * ```
  */
 
 export interface Actor {

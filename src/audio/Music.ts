@@ -18,6 +18,17 @@ export interface MusicOptions {
  * Background music with crossfade: switching tracks fades the old one out and the new one
  * in over the same span, rather than cutting straight from one to the other. Like
  * `AnimatedSprite`, nothing advances on its own - call `update(dt)` from the scene.
+ *
+ * @example
+ * ```ts
+ * import { Music } from '@datamoc/mw_games/audio';
+ *
+ * const music = new Music({ volume: 0.7 });
+ * music.play('music/town.mp3', 2); // crossfades in over 2 seconds
+ *
+ * // in the game loop:
+ * music.update(1 / 60);
+ * ```
  */
 export class Music {
 	private current: Playable | null = null;

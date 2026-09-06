@@ -11,6 +11,23 @@
  * Points are deliberately only a ledger here, not a spend rule: what a point buys is a
  * game's own design (a stat rank, a talent node), so spending stays game-side the way
  * `skillCheck` is a dice roll and nothing about who is rolling it.
+ *
+ * @example
+ * ```ts
+ * import { Advancement, type AdvancementTrack } from '@datamoc/mw_games/actors';
+ *
+ * const track: AdvancementTrack = {
+ *   tiers: [
+ *     { threshold: 5, kind: 'points', points: 2 },
+ *     { threshold: 10, kind: 'branch', options: [{ id: 'ranger' }, { id: 'mage' }] },
+ *   ],
+ * };
+ *
+ * const advancement = new Advancement(track);
+ * advancement.grant(6); // opens tier 0, granting 2 points
+ * advancement.grant(10); // opens tier 1, a branch to commit to
+ * advancement.choose(1, 'ranger', 10);
+ * ```
  */
 
 export type AdvancementTierKind = 'points' | 'branch' | 'capstone';

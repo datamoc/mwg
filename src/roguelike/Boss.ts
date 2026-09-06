@@ -8,6 +8,18 @@
  * tracks the ladder and the timers; what a phase *does* (relocate, spawn, change the
  * arena) and what an ability *is* stay the game's own code, fired from the hooks and
  * picks this returns.
+ *
+ * @example
+ * ```ts
+ * import { BossPhases, AbilityCycle } from '@datamoc/mw_games/roguelike';
+ *
+ * const phases = new BossPhases([0.66, 0.33]); // three stages
+ * const entered = phases.check(0.3); // [1, 2] if a massive hit skipped straight past phase 1
+ *
+ * const abilities = new AbilityCycle({ slam: 3, roar: 5 });
+ * abilities.advance(1); // one turn of cooldowns ticking down
+ * if (abilities.ready().includes('slam')) abilities.use('slam');
+ * ```
  */
 
 export class BossPhases {

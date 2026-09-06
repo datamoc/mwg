@@ -11,6 +11,20 @@ import { HttpTransport, type HttpTransportOptions } from './HttpTransport.ts';
  * creates) can sync each independently against one endpoint rather than the endpoint holding
  * only ever one save. `list()` is the seam a profile picker reads before choosing which slot
  * to `download`.
+ *
+ * @example
+ * ```ts
+ * import { SaveSyncClient, SaveSystem } from '@datamoc/mw_games/core';
+ *
+ * const sync = new SaveSyncClient({ endpoint: 'https://example.com/api/saves' });
+ * const saves = new SaveSystem<{ depth: number }>({ namespace: 'my-game', version: 1 });
+ *
+ * const payload = saves.exportSlot('slot1');
+ * if (payload) await sync.upload('slot1', payload);
+ *
+ * const slots = await sync.list();
+ * const restored = await sync.download('slot1');
+ * ```
  */
 export type SaveSyncOptions = HttpTransportOptions;
 

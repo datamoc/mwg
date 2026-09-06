@@ -7,6 +7,17 @@ import { resolve, type AssetProgress } from './paths.ts';
  * Split from `paths.ts` so path resolution stays renderer-free: a game rendering through
  * something other than Pixi (`mwg/3d` on Babylon) resolves paths through the same compiled
  * asset map and hands the fetch to its own loader, rather than importing this file at all.
+ *
+ * @example
+ * ```ts
+ * import { load, texture, isLoaded, release } from '@datamoc/mw_games/assets';
+ *
+ * await load(['tiles.png', 'data/level1.json']);
+ * const tilesTexture = texture('tiles.png');
+ * console.log(isLoaded('tiles.png')); // true
+ *
+ * await release(['tiles.png']); // frees the GPU texture once a zone is left for good
+ * ```
  */
 
 /**

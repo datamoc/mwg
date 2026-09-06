@@ -30,6 +30,23 @@ export interface LoadSnapshot {
  * start independent work concurrently inside one task. A task that cannot measure itself
  * simply never calls `report`, so consumers can display an indeterminate current stage
  * instead of inventing a percentage.
+ *
+ * @example
+ * ```ts
+ * import { LoadQueue } from '@datamoc/mw_games/core';
+ *
+ * const queue = new LoadQueue();
+ * queue.add({ id: 'tileset', run: async () => { await loadTileset(); } });
+ * queue.add({ id: 'sounds', weight: 2, run: async (ctx) => {
+ *   await loadSounds((fraction) => ctx.report(fraction));
+ * }});
+ *
+ * queue.changed.add((snapshot) => console.log(snapshot.status, snapshot.completed));
+ * await queue.start();
+ *
+ * declare function loadTileset(): Promise<void>;
+ * declare function loadSounds(onProgress: (fraction: number) => void): Promise<void>;
+ * ```
  */
 export class LoadQueue {
 	readonly changed = new Signal<LoadSnapshot>();

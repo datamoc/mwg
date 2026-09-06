@@ -44,6 +44,16 @@ export interface ContentRollResult<T> {
  * needs. Every roll, including a disabled rare entry's explicit non-roll, is recorded in
  * `trace`, so two runs against the same seed can be diffed roll for roll rather than only by
  * final roster.
+ *
+ * @example
+ * ```ts
+ * import { rollRoster } from '@datamoc/mw_games/roguelike';
+ *
+ * const { roster, trace } = rollRoster(
+ *   [{ value: 'rat' }, { value: 'rat', alternative: { value: 'albino rat', chance: 0.02 } }],
+ *   [{ value: 'boss-rat', chance: 0.01 }] // a rare addition, on top of the regulars
+ * );
+ * ```
  */
 export function rollRoster<T>(regular: readonly RosterEntry<T>[], rare: readonly RareEntry<T>[] = [], shuffleResult = true): ContentRollResult<T> {
 	const trace: RollTraceEntry[] = [];

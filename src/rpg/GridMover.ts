@@ -24,6 +24,20 @@ export interface GridMoverOptions {
  * This owns position and animation only. Whether the target tile is passable, whether
  * something is standing on it, whether stepping onto it should trigger an event - all of
  * that is a question for the map, asked before `moveBy` is called.
+ *
+ * @example
+ * ```ts
+ * import { GridMover } from '@datamoc/mw_games/rpg';
+ * import type { MovableSprite } from '@datamoc/mw_games/rpg';
+ *
+ * declare const heroSprite: MovableSprite;
+ *
+ * const mover = new GridMover(heroSprite, 5, 5, { tileWidth: 32, tileHeight: 32, speed: 4 });
+ * mover.moveBy(1, 0); // a tile check already confirmed this is passable
+ *
+ * // in the game loop:
+ * mover.update(1 / 60);
+ * ```
  */
 export class GridMover {
 	x: number;

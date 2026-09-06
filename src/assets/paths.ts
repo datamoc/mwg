@@ -14,6 +14,16 @@
  * split is what lets `mwg/3d` resolve a `.glb` path through the same compiled-asset map every
  * 2D game uses while handing the fetch to Babylon, without a Babylon-only game importing
  * Pixi at all - which it did, transitively, purely because these two halves shared a file.
+ *
+ * @example
+ * ```ts
+ * import { setBase, isCompiled, paths, resolve } from '@datamoc/mw_games/assets/paths';
+ *
+ * setBase('assets/'); // dev-server mode; a compiled build ignores this
+ *
+ * if (isCompiled()) console.log('every compiled path:', paths());
+ * const url = resolve('tiles.png'); // a data: URI in a compiled build, 'assets/tiles.png' in dev
+ * ```
  */
 
 declare global {

@@ -9,6 +9,18 @@ import { defaultStorage, type SaveStorage } from './Save.ts';
  * `SaveSystem` stays agnostic about what "the save" contains: a game supplies its own
  * `summary` shape (score, cause of death, floor reached, whatever it considers a run's own
  * stats) and this only ever stores, lists, and sorts it.
+ *
+ * @example
+ * ```ts
+ * import { RunHistory } from '@datamoc/mw_games/core';
+ *
+ * interface RunSummary { score: number; cause: string }
+ *
+ * const runs = new RunHistory<RunSummary>({ namespace: 'my-game', limit: 20 });
+ * runs.record({ score: 340, cause: 'slain by a rat' });
+ *
+ * const best = runs.ranked((summary) => summary.score, 'desc');
+ * ```
  */
 export interface RunHistoryEntry<T> {
 	id: string;

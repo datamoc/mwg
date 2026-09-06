@@ -2,6 +2,17 @@
  * A roster with a limited active lineup and unlimited off-party storage - a box, a PC,
  * whatever a game calls it. Active slots can hold a gap (a fainted, withdrawn, or simply
  * empty slot); storage is just an overflow list in the order creatures were added to it.
+ *
+ * @example
+ * ```ts
+ * import { Party, Creature, type Species } from '@datamoc/mw_games/battle';
+ *
+ * const species: Species = { id: 'fireling', types: ['fire'], baseStats: { attack: 10 } };
+ * const party = new Party<Creature>(3); // 3 active slots
+ *
+ * party.add(new Creature({ species })); // fills an active slot, then overflows to storage
+ * console.log(party.members.length, party.boxed.length);
+ * ```
  */
 export class Party<C> {
 	private active: Array<C | null>;

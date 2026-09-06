@@ -6,6 +6,19 @@
  * carries its own regeneration progress instead of leaning on `TurnClock` for it - a charge
  * either has or does not have enough banked turns to regenerate, which is exactly the kind
  * of running total a class holds more naturally than a callback would.
+ *
+ * @example
+ * ```ts
+ * import { Charges } from '@datamoc/mw_games/actors';
+ *
+ * const wand = new Charges({ max: 3, regenRate: 10 }); // one charge every 10 turns
+ * wand.spend(1);
+ *
+ * wand.advance(10); // 10 turns pass; one charge regenerates
+ * console.log(wand.current); // back to max
+ *
+ * wand.refund(1); // a kill or crit grants a charge directly, outside the normal regen path
+ * ```
  */
 export interface ChargesOptions {
 	/** the most this can ever hold */

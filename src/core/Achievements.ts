@@ -8,6 +8,21 @@
  * can only ever move one way and an unlocked achievement can never disagree with the
  * count behind it. Descriptions are display text `mwg` never reads; persistence is the
  * usual definitions-fresh, progress-saved split (`QuestLog`'s own convention).
+ *
+ * @example
+ * ```ts
+ * import { Achievements } from '@datamoc/mw_games/core';
+ *
+ * const achievements = new Achievements();
+ * achievements.define({ id: 'first-blood', counter: 'kills', target: 1 });
+ * achievements.define({ id: 'slayer', counter: 'kills', target: 100 });
+ *
+ * const unlocked = achievements.increment('kills', 1);
+ * console.log(unlocked); // ['first-blood']
+ *
+ * // later, a UI drains and announces whatever unlocked since it last checked
+ * const toast = achievements.drainNew();
+ * ```
  */
 
 export interface AchievementDef {

@@ -39,6 +39,17 @@ export interface TwineStory {
  * The path ends at a wall.
  * [[Go back->Start]]
  * ```
+ *
+ * @example
+ * ```ts
+ * import { importTwee, StageScript } from '@datamoc/mw_games/two-d';
+ *
+ * declare const tweeSource: string;
+ * declare const script: StageScript;
+ *
+ * const story = importTwee(tweeSource);
+ * await script.runStory(story.story, story.start);
+ * ```
  */
 export function importTwee(source: string): TwineStory {
 	const passages = splitPassages(source);

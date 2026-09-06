@@ -21,7 +21,21 @@ export interface LootTable {
 	chance?: number;
 }
 
-/** @returns what dropped, or null when the roll misses or the table is empty */
+/**
+ * @returns what dropped, or null when the roll misses or the table is empty
+ *
+ * @example
+ * ```ts
+ * import { rollLoot, type LootTable } from '@datamoc/mw_games/actors';
+ *
+ * const ratLoot: LootTable = {
+ *   chance: 0.5,
+ *   entries: [{ id: 'gold', weight: 3, quantity: 5 }, { id: 'cheese', weight: 1 }],
+ * };
+ *
+ * const drop = rollLoot(ratLoot); // { id: 'gold', quantity: 5 }, or null, most of the time
+ * ```
+ */
 export function rollLoot(table: LootTable): { id: string; quantity: number } | null {
 	if (table.entries.length === 0) return null;
 	if (!Random.chance(table.chance ?? 1)) return null;

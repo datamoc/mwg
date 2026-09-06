@@ -16,6 +16,20 @@ export interface Location {
 	spawn?: string;
 }
 
+/**
+ * @example
+ * ```ts
+ * import { Overworld } from '@datamoc/mw_games/world';
+ *
+ * declare const world: import('@datamoc/mw_games/world').World<unknown>;
+ *
+ * const overworld = new Overworld();
+ * overworld.add({ id: 'cave', x: 12, y: 4, leadsTo: 'caveLevel1', spawn: 'entrance' });
+ *
+ * const location = overworld.get('cave');
+ * if (location) world.enter(location.leadsTo, location.spawn);
+ * ```
+ */
 export class Overworld {
 	private locations = new Map<string, Location>();
 

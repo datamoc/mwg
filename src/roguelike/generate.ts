@@ -94,6 +94,17 @@ export interface DungeonResult {
 	roomBuilders: string[];
 }
 
+/**
+ * The two terrain kinds every dungeon needs: wall (index 0) and floor (index 1). A game
+ * appends its own kinds (traps, doors) after these via `DungeonOptions.kinds`.
+ *
+ * @example
+ * ```ts
+ * import { DUNGEON_KINDS } from '@datamoc/mw_games/roguelike';
+ *
+ * const kinds = [...DUNGEON_KINDS, { passable: false, transparent: true }]; // + a window
+ * ```
+ */
 export const DUNGEON_KINDS: TerrainKind[] = [
 	{ passable: false, transparent: false }, //0 wall
 	{ passable: true, transparent: true }, //1 floor
@@ -182,6 +193,22 @@ export function generateDungeonGraph(options: DungeonOptions): DungeonResult {
 	return { level, graph, retries, roomBuilders };
 }
 
+/**
+ * Rooms joined by corridors, seeded and reproducible.
+ *
+ * @example
+ * ```ts
+ * import { generateDungeon, generateDungeonGraph } from '@datamoc/mw_games/roguelike';
+ * import { Random } from '@datamoc/mw_games/core';
+ *
+ * Random.push(12345); // the same seed always produces the same floor
+ * const level = generateDungeon({ width: 60, height: 40, rooms: 12 });
+ * Random.pop();
+ *
+ * // generateDungeonGraph is the same pipeline, also returning the room graph and retries
+ * const { level: level2, graph, retries, roomBuilders } = generateDungeonGraph({ width: 60, height: 40 });
+ * ```
+ */
 export function generateDungeon(options: DungeonOptions): Level {
 	return generateDungeonGraph(options).level;
 }
@@ -226,7 +253,20 @@ function carveLine(
 	}
 }
 
-/** a random passable cell, avoiding any listed as taken */
+/**
+ * A random passable cell, avoiding any listed as taken.
+ *
+ * @example
+ * ```ts
+ * import { generateDungeon, findFreeCell, furthestRoom, rectCenter } from '@datamoc/mw_games/roguelike';
+ *
+ * const level = generateDungeon({ width: 40, height: 30 });
+ * const start = rectCenter(level.rooms[0]);
+ *
+ * const stairsRoom = furthestRoom(level, start); // put the exit far from the entrance
+ * const monsterCell = findFreeCell(level, new Set([level.index(start.x, start.y)]));
+ * ```
+ */
 export function findFreeCell(level: Level, taken: ReadonlySet<number> = new Set()): number | null {
 	const free = level.passableCells().filter((cell) => !taken.has(cell));
 	return free.length > 0 ? free[Random.int(free.length)] : null;

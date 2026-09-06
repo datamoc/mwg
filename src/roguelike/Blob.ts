@@ -9,6 +9,17 @@ import { neighbourOffsets } from './Level.ts';
  * or corrode whoever stands there). Per-creature timers (`applyStatusEffect`) already
  * cover "this victim burns for 3 turns"; this covers the other half, "this *place*
  * burns until it burns out".
+ *
+ * @example
+ * ```ts
+ * import { Blob } from '@datamoc/mw_games/roguelike';
+ *
+ * const fire = new Blob(20, 20);
+ * fire.seed(5, 5, 10); // a fireball lands
+ *
+ * fire.spread((x, y) => x >= 0 && y >= 0 && x < 20 && y < 20, 0.25, 0.9); // one turn of spreading
+ * for (const cell of fire.cellsAbove(0.5)) console.log('burning at', cell.x, cell.y);
+ * ```
  */
 
 export class Blob {

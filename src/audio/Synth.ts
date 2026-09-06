@@ -27,6 +27,14 @@ export interface ToneOptions {
  * Renders a short tone to a `data:audio/wav` URI, ready to hand to an `Audio` element (or
  * any other `Playable` source) without touching the network or `mwg/assets` - nothing here
  * is loaded, only computed.
+ *
+ * @example
+ * ```ts
+ * import { synthesizeTone } from '@datamoc/mw_games/audio';
+ *
+ * const dataUri = synthesizeTone({ waveform: 'square', frequency: 880, duration: 0.1 });
+ * const audio = new Audio(dataUri);
+ * ```
  */
 export function synthesizeTone(options: ToneOptions = {}): string {
 	const waveform = options.waveform ?? 'square';
@@ -56,6 +64,13 @@ export function synthesizeTone(options: ToneOptions = {}): string {
  * Synthesizes a tone and plays it once, fire-and-forget - the runtime counterpart to
  * `Sound.play`, generating instead of loading. `create` is injectable the same way
  * `Sound`/`Music` already are, so a test never needs a real `Audio` element.
+ *
+ * @example
+ * ```ts
+ * import { playTone } from '@datamoc/mw_games/audio';
+ *
+ * playTone({ waveform: 'sine', frequency: 660, duration: 0.08 }); // a quick UI blip
+ * ```
  */
 export function playTone(options: ToneOptions = {}, create: (dataUri: string) => Playable = (uri) => new Audio(uri)): Playable {
 	const playable = create(synthesizeTone(options));

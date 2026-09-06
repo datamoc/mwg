@@ -16,6 +16,26 @@ import type { Scene } from './Scene.ts';
  *
  * Takes instances, never classes: constructing scenes is the `Game`'s job, and
  * keeping it out is what keeps this testable without a browser.
+ *
+ * @example
+ * ```ts
+ * import { SceneStack, Scene } from '@datamoc/mw_games/core';
+ *
+ * class DungeonScene extends Scene {
+ *   create(): void {}
+ *   onResume(result: unknown): void {
+ *     console.log('the pushed scene reported back', result);
+ *   }
+ * }
+ * class PauseMenu extends Scene {
+ *   create(): void {}
+ * }
+ *
+ * const stack = new SceneStack();
+ * stack.replace(new DungeonScene());
+ * stack.push(new PauseMenu()); // dungeon suspends, pause menu draws over it
+ * stack.pop('resumed'); // pause menu destroyed, DungeonScene.onResume('resumed') fires
+ * ```
  */
 export class SceneStack<T extends Scene = Scene> {
 	private scenes: T[] = [];

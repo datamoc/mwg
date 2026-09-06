@@ -9,6 +9,14 @@ import type { Modifier, ModifierOp } from './StatBlock.ts';
  * increment, resolved to plain `Modifier`s for a given level. `mwg` picks no curve
  * beyond linear - anything fancier (diminishing returns, breakpoints) is a game's own
  * `from` function on a derived stat, not a framework formula.
+ *
+ * @example
+ * ```ts
+ * import { scaledModifiers, type LevelScale } from '@datamoc/mw_games/actors';
+ *
+ * const ringScales: LevelScale[] = [{ stat: 'evasion', op: 'add', base: 1, perLevel: 1 }];
+ * const modifiers = scaledModifiers(3, ringScales); // [{ stat: 'evasion', op: 'add', value: 4 }]
+ * ```
  */
 
 export interface LevelScale {

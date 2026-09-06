@@ -29,6 +29,20 @@ export interface AssignedTrait {
  *
  * @param count clamped to `pool.length` - asking for more traits than exist in the pool
  * assigns every one of them rather than throwing
+ *
+ * @example
+ * ```ts
+ * import { assignTraits, StatBlock, type TraitDef } from '@datamoc/mw_games/actors';
+ *
+ * const stats = new StatBlock({ base: { strength: 10, speed: 10 } });
+ * const pool: TraitDef[] = [
+ *   { name: 'strong', modifiers: [{ stat: 'strength', op: 'add', value: 3 }] },
+ *   { name: 'fast', modifiers: [{ stat: 'speed', op: 'add', value: 3 }] },
+ * ];
+ *
+ * const assigned = assignTraits(stats, pool, 1); // one random trait, applied permanently
+ * console.log(assigned[0].trait.name);
+ * ```
  */
 export function assignTraits(stats: StatBlock, pool: readonly TraitDef[], count: number): AssignedTrait[] {
 	const picked = Random.shuffle([...pool]).slice(0, Math.min(count, pool.length));

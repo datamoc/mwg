@@ -13,7 +13,17 @@ export interface FeedbackResponse {
 	status: number;
 }
 
-/** Small, injectable transport for a game's own feedback endpoint. */
+/**
+ * Small, injectable transport for a game's own feedback endpoint.
+ *
+ * @example
+ * ```ts
+ * import { FeedbackClient } from '@datamoc/mw_games/core';
+ *
+ * const feedback = new FeedbackClient({ endpoint: 'https://example.com/api/feedback' });
+ * await feedback.submit({ message: 'the boss fight softlocks on floor 5', contact: 'a@b.com' });
+ * ```
+ */
 export class FeedbackClient extends HttpTransport {
 	constructor(options: FeedbackOptions) {
 		super(options, 'feedback');

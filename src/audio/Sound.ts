@@ -18,6 +18,14 @@ export interface SoundOptions {
  * same second must not cut each other off, which a single `<audio>` element would - the
  * next play just steals the oldest of the pool, round-robin, rather than restarting the one
  * already mid-sound.
+ *
+ * @example
+ * ```ts
+ * import { Sound } from '@datamoc/mw_games/audio';
+ *
+ * const hit = new Sound('sounds/hit.mp3', { poolSize: 6, caption: 'a sword strikes' });
+ * hit.play(); // safe to call several times in the same second
+ * ```
  */
 export class Sound {
 	private pool: Playable[];

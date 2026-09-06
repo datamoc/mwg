@@ -19,6 +19,18 @@ export interface EvolutionRule<S> {
  * "ordered low to high, most-specific-that-matches wins" convention `mwg/rpg`'s event pages
  * use, so a chain authored `[16 -> adult, 32 -> elder]` reaches "elder" at level 40 rather
  * than getting stuck on the first threshold it ever crossed.
+ *
+ * @example
+ * ```ts
+ * import { checkEvolution, type EvolutionRule } from '@datamoc/mw_games/battle';
+ *
+ * const rules: EvolutionRule<string>[] = [
+ *   { at: (level) => level >= 16, into: 'adult-form' },
+ *   { at: (level) => level >= 32, into: 'elder-form' },
+ * ];
+ *
+ * const evolvedInto = checkEvolution(rules, 40); // 'elder-form'
+ * ```
  */
 export function checkEvolution<S>(rules: readonly EvolutionRule<S>[], level: number): S | null {
 	let match: S | null = null;

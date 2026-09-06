@@ -18,6 +18,20 @@ export interface PlayerStatsOptions<T, S = T> {
  * incrementally by `record` and never recomputed from a list that can shrink. A game wanting
  * both a "last 50 runs" list and a true lifetime total uses both classes side by side, each
  * for the question it actually answers.
+ *
+ * @example
+ * ```ts
+ * import { PlayerStats } from '@datamoc/mw_games/core';
+ *
+ * const lifetimeKills = new PlayerStats<number, number>({
+ *   namespace: 'my-game',
+ *   initial: 0,
+ *   combine: (total, killsThisRun) => total + killsThisRun,
+ * });
+ *
+ * lifetimeKills.record(12); // this run's own kill count folds into the total
+ * console.log(lifetimeKills.get());
+ * ```
  */
 export class PlayerStats<T, S = T> {
 	private readonly storage: SaveStorage;

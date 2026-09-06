@@ -49,6 +49,21 @@ export type QuestMarker = 'offer' | 'turnIn' | 'none';
  * variables - not a storage mechanism of its own. A quest's *definition* (its stages, its
  * prerequisites) is static game content, supplied once, the same way the dungeon example's
  * `ITEMS` table is; only which stage each quest has reached is what gets saved.
+ *
+ * @example
+ * ```ts
+ * import { QuestLog, GameState } from '@datamoc/mw_games/rpg';
+ *
+ * const state = new GameState();
+ * const quests = new QuestLog();
+ * quests.define({ id: 'rats', stages: [{ counter: { variable: 'ratsKilled', target: 5 } }] });
+ *
+ * quests.track('rats');
+ * state.setVariable('ratsKilled', 5);
+ * quests.advanceStage('rats', state); // true - the counter stage is satisfied
+ *
+ * console.log(quests.status('rats')); // 'complete'
+ * ```
  */
 export class QuestLog {
 	private definitions = new Map<string, QuestDefinition>();

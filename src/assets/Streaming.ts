@@ -26,6 +26,16 @@ interface Entry extends AssetBundle {
  * It deliberately does not guess a player's next map: the game supplies bundles it considers
  * likely. This works with compiled data URIs as a decode/GPU warm-up and with server or
  * desktop hosts as ordinary asynchronous streaming.
+ *
+ * @example
+ * ```ts
+ * import { AssetStream } from '@datamoc/mw_games/assets';
+ *
+ * const stream = new AssetStream({ budgetBytes: 50_000_000 });
+ *
+ * // when a player enters a town, a likely-next zone starts loading in the background
+ * await stream.preload({ id: 'forest', paths: ['forest-tiles.png'], priority: 1 });
+ * ```
  */
 export class AssetStream {
 	private readonly entries = new Map<string, Entry>();

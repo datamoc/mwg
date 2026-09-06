@@ -27,6 +27,19 @@ export interface ItemStatusEffectHandle {
  * it), and restores exactly that value once `clock` expires the effect or `cancel()` is
  * called early - the same "never has to remember to remove what it added" guarantee
  * `applyStatusEffect` already gives a `StatBlock`.
+ *
+ * @example
+ * ```ts
+ * import { applyItemStatusEffect } from '@datamoc/mw_games/actors';
+ * import { TurnClock } from '@datamoc/mw_games/world';
+ *
+ * const sword = { id: 'sword', quantity: 1, blessed: false };
+ * const clock = new TurnClock();
+ *
+ * const blessing = applyItemStatusEffect(sword, clock, { fields: { blessed: true }, duration: 3 });
+ * clock.advance(3); // blessed reverts to false automatically
+ * blessing.cancel(); // or end it early
+ * ```
  */
 export function applyItemStatusEffect<T extends object>(
 	item: T,

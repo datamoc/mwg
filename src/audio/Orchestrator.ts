@@ -23,6 +23,20 @@ export interface OrchestratorState {
  * Cues are separate from states because they are fire-and-forget one-shots (`Sound`, not
  * `Music`) - folding them into `enter` would conflate "this is where we are" with "this just
  * happened".
+ *
+ * @example
+ * ```ts
+ * import { Orchestrator, Music, Sound } from '@datamoc/mw_games/audio';
+ *
+ * const orchestrator = new Orchestrator(new Music());
+ * orchestrator.define('exploring', { track: 'music/town.mp3' });
+ * orchestrator.define('combat', { track: 'music/battle.mp3', fadeDuration: 0.5 });
+ * orchestrator.on('levelUp', new Sound('sounds/level-up.mp3'));
+ *
+ * orchestrator.enter('combat'); // crossfades in
+ * orchestrator.enter('combat'); // already playing - a no-op, does not refade
+ * orchestrator.trigger('levelUp'); // fires the one-shot cue
+ * ```
  */
 export class Orchestrator {
 	private states = new Map<string, OrchestratorState>();

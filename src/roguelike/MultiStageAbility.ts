@@ -13,6 +13,22 @@ export interface AbilityStage {
 	duration: number;
 }
 
+/**
+ * @example
+ * ```ts
+ * import { MultiStageAbility } from '@datamoc/mw_games/roguelike';
+ *
+ * const dive = new MultiStageAbility([
+ *   { name: 'windup', duration: 1 },
+ *   { name: 'active', duration: 1 },
+ *   { name: 'recovery', duration: 2 },
+ * ]);
+ *
+ * dive.start();
+ * console.log(dive.stage?.name); // 'windup'
+ * dive.advance(); // one turn passes; moves to 'active' once windup's duration elapses
+ * ```
+ */
 export class MultiStageAbility {
 	private stages: readonly AbilityStage[];
 	private index = -1;

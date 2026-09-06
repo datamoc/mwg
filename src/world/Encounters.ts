@@ -7,6 +7,18 @@ import * as Random from '../core/Random.ts';
  *
  * Built on `mwg/core`'s `Random.chance` and `Random.weighted` rather than its own dice, so
  * an encounter roll is seeded and reproducible the same way everything else in a run is.
+ *
+ * @example
+ * ```ts
+ * import { rollEncounter } from '@datamoc/mw_games/world';
+ *
+ * const grassland = {
+ *   rate: 0.1,
+ *   entries: [{ value: 'rat', weight: 3 }, { value: 'bat', weight: 1 }],
+ * };
+ *
+ * const encounter = rollEncounter(grassland); // 'rat', 'bat', or null most steps
+ * ```
  */
 export interface EncounterEntry<T> {
 	value: T;

@@ -17,6 +17,19 @@ export interface StealthOptions {
  * Tracks one hidden unit's detection state. Detection is one-way and sticky: once found, a
  * unit stays found until something explicitly re-hides it (`reset`), the same way a real
  * ambush does not un-happen because the enemy that spotted you wandered off again.
+ *
+ * @example
+ * ```ts
+ * import { Stealth } from '@datamoc/mw_games/roguelike';
+ *
+ * const assassin = new Stealth({ radius: 2 });
+ * const guards = [{ x: 10, y: 10 }, { x: 5, y: 5 }];
+ *
+ * if (assassin.checkDetection({ x: 4, y: 5 }, guards)) {
+ *   console.log('spotted! that guard spends its move noticing');
+ * }
+ * console.log(assassin.isDetected);
+ * ```
  */
 export class Stealth {
 	private detected = false;

@@ -12,6 +12,20 @@
  * cube math round-trip back to integers; nothing about it is rot.js's, which is deliberate
  * (see the roadmap: rot.js's own hex `Path` topology is doubled-width coordinates built for
  * *pointy-top* hexagons, and does not match this orientation).
+ *
+ * @example
+ * ```ts
+ * import { hexNeighbors, hexDistance, hexLine, hexRange, hexToPixel, pixelToHex } from '@datamoc/mw_games/core';
+ *
+ * const start = { x: 2, y: 2 };
+ * const neighbours = hexNeighbors(start.x, start.y); // the 6 adjacent cells
+ * const cellsAway = hexDistance(start, { x: 4, y: 1 });
+ * const path = hexLine(start, { x: 4, y: 1 }); // every cell the line crosses
+ * const nearby = hexRange(start, 2); // every cell within 2 hexes
+ *
+ * const pixel = hexToPixel(start.x, start.y, 32, 28); // tile width/height in pixels
+ * const backToHex = pixelToHex(pixel.x, pixel.y, 32, 28); // round-trips to { x: 2, y: 2 }
+ * ```
  */
 
 export interface HexCoord {

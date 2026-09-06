@@ -24,7 +24,26 @@ export interface TargetingOptions {
 	requireLineOfSight?: boolean;
 }
 
-/** the straight-line ruler distance a roguelike uses: diagonals cost the same as a step */
+/**
+ * The straight-line ruler distance a roguelike uses: diagonals cost the same as a step.
+ *
+ * @example
+ * ```ts
+ * import { chebyshevDistance, traceLine, hasLineOfSight, canTarget, resolveArea, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ *
+ * const level = new Level(20, 20, [WALL, FLOOR], 1); // an open floor
+ * const origin = { x: 2, y: 2 };
+ * const target = { x: 8, y: 5 };
+ *
+ * chebyshevDistance(origin, target); // 6
+ * traceLine(origin, target); // every cell the shot crosses
+ * hasLineOfSight(level, origin, target); // true - nothing blocks it
+ *
+ * if (canTarget(level, origin, target, { range: 10 })) {
+ *   const hit = resolveArea(origin, target, { kind: 'burst', radius: 2 });
+ * }
+ * ```
+ */
 export function chebyshevDistance(a: Step, b: Step): number {
 	return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 }
@@ -112,6 +131,19 @@ export function resolveArea(origin: Step, target: Step, shape: AreaShape): Step[
  * nearest of the 8 directions, the length is the distance aimed, and step `i` of `length`
  * spans `round(i / length * width)` cells to each side of the centre line. A width of 0
  * is a single-file beam, the same cells `line` would trace along that snapped direction.
+ *
+ * @example
+ * ```ts
+ * import { coneCells, chainTargets, knockbackPath, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ *
+ * const breath = coneCells({ x: 5, y: 5 }, { x: 5, y: 0 }, 3); // a dragon's breath, aimed north
+ *
+ * const monsters = [{ x: 5, y: 4 }, { x: 5, y: 3 }, { x: 6, y: 2 }];
+ * const arc = chainTargets(monsters, { x: 5, y: 5 }, 3, 2); // a lightning bolt hopping between them
+ *
+ * const level = new Level(20, 20, [WALL, FLOOR], 1);
+ * const shovedTo = knockbackPath(level, { x: 5, y: 5 }, { x: 1, y: 0 }, 3); // shoved 3 cells east
+ * ```
  */
 export function coneCells(origin: Step, target: Step, width: number): Step[] {
 	const dx = target.x - origin.x;
@@ -171,6 +203,18 @@ export function chainTargets(candidates: readonly Step[], origin: Step, jumps: n
  * once its distance is known. `mwg` supplies no default bands or multipliers, only the lookup:
  * bands are checked in order, the first whose `max` is at or above `distance` applies, and a
  * distance past every band's `max` falls back to `beyond`.
+ *
+ * @example
+ * ```ts
+ * import { rangeMultiplier, areaFalloffMultiplier, type RangeBand } from '@datamoc/mw_games/roguelike';
+ *
+ * const bands: RangeBand[] = [{ max: 2, multiplier: 1.5 }, { max: 6, multiplier: 1 }];
+ * rangeMultiplier(1, bands); // 1.5 - point-blank bonus
+ * rangeMultiplier(10, bands, 0.5); // 0.5 - past every band, falls back to `beyond`
+ *
+ * areaFalloffMultiplier(0, [1, 0.5]); // 1 - first target hit, full damage
+ * areaFalloffMultiplier(1, [1, 0.5]); // 0.5 - second target
+ * ```
  */
 export interface RangeBand {
 	/** the greatest distance this band covers */

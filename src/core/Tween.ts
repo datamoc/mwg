@@ -29,7 +29,22 @@ interface ActiveTween {
 	resolve: () => void;
 }
 
-/** Runs any number of concurrent tweens; a game or a widget drives it from its own `update(dt)`. */
+/**
+ * Runs any number of concurrent tweens; a game or a widget drives it from its own `update(dt)`.
+ *
+ * @example
+ * ```ts
+ * import { Tweener, Easing } from '@datamoc/mw_games/core';
+ *
+ * const tweener = new Tweener();
+ * const sprite = { alpha: 0 };
+ *
+ * tweener.tween(0.5, (t) => { sprite.alpha = t; }, Easing.easeOutQuad);
+ *
+ * // in the game loop:
+ * tweener.update(1 / 60);
+ * ```
+ */
 export class Tweener {
 	private tweens: ActiveTween[] = [];
 

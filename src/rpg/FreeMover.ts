@@ -22,6 +22,20 @@ export interface FreeMoverOptions {
  * twin-stick shooter, a bullet-hell, or any top-down game whose player moves and aims freely
  * rather than stepping cell to cell. `rpg.GridMover` is the tile-to-tile counterpart to this;
  * both own position and animation only, nothing about collision or passability.
+ *
+ * @example
+ * ```ts
+ * import { FreeMover } from '@datamoc/mw_games/rpg';
+ * import type { MovableSprite } from '@datamoc/mw_games/rpg';
+ *
+ * declare const heroSprite: MovableSprite;
+ *
+ * const mover = new FreeMover(heroSprite, 100, 100, { speed: 120 });
+ *
+ * // in the game loop, from a joystick or WASD:
+ * mover.move(1, 0, 1 / 60); // unnormalized direction; FreeMover normalizes it
+ * console.log(mover.facing); // radians, updated to face the movement direction
+ * ```
  */
 export class FreeMover {
 	x: number;

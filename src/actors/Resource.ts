@@ -8,6 +8,20 @@ import type { Charges } from './Charges.ts';
  * total: a buff that raises maximum mana changes the ceiling, not what is left
  * to spend. Restoring the pool is just `stats.setBase`; only spending needed a
  * primitive of its own.
+ *
+ * @example
+ * ```ts
+ * import { canAfford, spend, refund, convertToCharges, StatBlock, Charges } from '@datamoc/mw_games/actors';
+ *
+ * const stats = new StatBlock({ base: { mana: 30 } });
+ * const cost = { stat: 'mana', amount: 10 };
+ *
+ * if (canAfford(stats, cost)) spend(stats, cost);
+ * refund(stats, cost, 0.5); // half the cost back, e.g. on a missed cast
+ *
+ * const battery = new Charges({ max: 5, regenRate: 10 });
+ * convertToCharges(stats, { stat: 'mana', amount: 20 }, battery, 5); // 20 mana -> 4 charges
+ * ```
  */
 export interface ResourceCost {
 	stat: string;

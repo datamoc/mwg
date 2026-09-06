@@ -7,6 +7,21 @@
  *
  * Distinct from `Recorder`/`Player` (item 42), which replay a whole `Input.onAction` log
  * deterministically for testing, not a bounded, player-facing "undo my last move".
+ *
+ * @example
+ * ```ts
+ * import { UndoHistory } from '@datamoc/mw_games/core';
+ *
+ * interface TurnState { x: number; y: number }
+ *
+ * const history = new UndoHistory<TurnState>({ limit: 20 });
+ * history.push({ x: 0, y: 0 });
+ * history.push({ x: 1, y: 0 });
+ *
+ * if (history.canUndo) {
+ *   const previous = history.undo();
+ * }
+ * ```
  */
 export interface UndoHistoryOptions {
 	/** states retained before the oldest is dropped; defaults to 50 */

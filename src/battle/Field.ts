@@ -6,6 +6,17 @@
  * stat block by hand. Deliberately just a named, optionally-timed flag set - it does
  * nothing on its own, the same way `mwg` supplies no move-damage formula: a game reads
  * `field.has('rain')` itself wherever a formula needs to know.
+ *
+ * @example
+ * ```ts
+ * import { Field } from '@datamoc/mw_games/battle';
+ *
+ * const field = new Field();
+ * field.set({ id: 'rain', duration: 5 });
+ *
+ * if (field.has('rain')) console.log('water moves are boosted');
+ * field.advance(); // one round passes; duration counts down, expiring at 0
+ * ```
  */
 export interface FieldCondition {
 	id: string;

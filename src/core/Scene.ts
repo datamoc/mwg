@@ -11,6 +11,19 @@ import { Signal } from './Signal.ts';
  *
  * Switching scenes destroys the old one, so a scene may hold whatever state it likes without
  * cleaning up by hand.
+ *
+ * @example
+ * ```ts
+ * import { Scene } from '@datamoc/mw_games/core';
+ *
+ * // a 2D game extends two-d.Scene2D instead, which adds the Pixi display container;
+ * // this base is what a renderer-free game (or a Babylon one) extends directly.
+ * class TitleScreen extends Scene {
+ *   create(): void {
+ *     // build the screen's own state here
+ *   }
+ * }
+ * ```
  */
 export abstract class Scene {
 	/** fires when the scene is torn down, for listeners that need to detach */

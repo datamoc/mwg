@@ -21,6 +21,22 @@ export interface Recipe {
  * spent for nothing.
  *
  * @returns whether the recipe resolved
+ *
+ * @example
+ * ```ts
+ * import { craft, Inventory, type Recipe } from '@datamoc/mw_games/actors';
+ *
+ * const bag = new Inventory();
+ * bag.add({ id: 'wood', quantity: 3, stackable: true });
+ * bag.add({ id: 'iron', quantity: 1, stackable: true });
+ *
+ * const recipe: Recipe = {
+ *   ingredients: [{ id: 'wood', quantity: 2 }, { id: 'iron', quantity: 1 }],
+ *   result: { id: 'torch', quantity: 1 },
+ * };
+ *
+ * const made = craft(bag, recipe); // true - both ingredients present, consumed, torch added
+ * ```
  */
 export function craft(inventory: Inventory, recipe: Recipe): boolean {
 	const needed = new Map<string, number>();

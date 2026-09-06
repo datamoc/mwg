@@ -25,6 +25,16 @@ export type OnByteProgress = (progress: ByteProgress) => void;
  * complete body as a `Blob` - handed to `URL.createObjectURL` to become something
  * `assets.load`'s own texture/audio/JSON decoding can take from there, the same as any other
  * resolved asset URL.
+ *
+ * @example
+ * ```ts
+ * import { fetchWithByteProgress } from '@datamoc/mw_games/assets';
+ *
+ * const blob = await fetchWithByteProgress('https://example.com/big-tileset.png', (progress) => {
+ *   if (progress.total) console.log(`${progress.loaded} / ${progress.total} bytes`);
+ * });
+ * const url = URL.createObjectURL(blob);
+ * ```
  */
 export async function fetchWithByteProgress(
 	url: string,

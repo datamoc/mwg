@@ -54,6 +54,21 @@ function featuresEqual(a: readonly [number, string][], b: readonly [number, stri
  * a golden fixture), reporting every mismatch tagged with which stage it belongs to: `'graph'`
  * for the room graph and retry count, `'paint'` for terrain, features, content placements and
  * RNG draw count. An empty result means the two runs are equivalent by every artifact checked.
+ *
+ * @example
+ * ```ts
+ * import { compareDungeonArtifacts, checkDeterminism, type DungeonArtifacts } from '@datamoc/mw_games/roguelike';
+ *
+ * declare const mine: DungeonArtifacts;
+ * declare const golden: DungeonArtifacts; // a reference implementation's own run
+ *
+ * const mismatches = compareDungeonArtifacts(golden, mine);
+ * for (const m of mismatches) console.log(m.stage, m.field); // 'graph' or 'paint'
+ *
+ * // and the same seed must always reproduce itself, regardless of any reference
+ * declare function generate(): DungeonArtifacts;
+ * checkDeterminism(generate, 3);
+ * ```
  */
 export function compareDungeonArtifacts(expected: DungeonArtifacts, actual: DungeonArtifacts): DungeonMismatch[] {
 	const mismatches: DungeonMismatch[] = [];

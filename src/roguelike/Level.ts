@@ -41,7 +41,18 @@ export interface TerrainKind {
 	transparent: boolean;
 }
 
-/** the two that every map needs; a game adds its own alongside */
+/**
+ * The two terrain kinds every map needs; a game adds its own alongside.
+ *
+ * @example
+ * ```ts
+ * import { Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ *
+ * const level = new Level(20, 15, [WALL, FLOOR], 0); // 0 = WALL, everything starts solid
+ * level.set(5, 5, 1); // 1 = FLOOR
+ * console.log(level.passable(5, 5)); // true
+ * ```
+ */
 export const WALL: TerrainKind = { passable: false, transparent: false };
 export const FLOOR: TerrainKind = { passable: true, transparent: true };
 
@@ -185,6 +196,20 @@ export function rectCenter(rect: Rect): { x: number; y: number } {
 	};
 }
 
+/**
+ * Whether two rectangles overlap, optionally requiring `margin` cells of clearance between
+ * them - the check `generateDungeon` itself uses so rooms never end up sharing a wall.
+ *
+ * @example
+ * ```ts
+ * import { rectsOverlap } from '@datamoc/mw_games/roguelike';
+ *
+ * const roomA = { left: 0, top: 0, right: 4, bottom: 4 };
+ * const roomB = { left: 5, top: 0, right: 9, bottom: 4 };
+ * rectsOverlap(roomA, roomB); // false - adjacent, not overlapping
+ * rectsOverlap(roomA, roomB, 2); // true - too close with a 2-cell margin required
+ * ```
+ */
 export function rectsOverlap(a: Rect, b: Rect, margin = 0): boolean {
 	return !(
 		a.right + margin < b.left ||

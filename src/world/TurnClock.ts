@@ -15,6 +15,22 @@ export interface TimedEffect {
 	onExpire?: () => void;
 }
 
+/**
+ * @example
+ * ```ts
+ * import { TurnClock } from '@datamoc/mw_games/world';
+ *
+ * const clock = new TurnClock();
+ * const poisonId = clock.add({
+ *   tick: () => console.log('poison ticks'),
+ *   duration: 5,
+ *   onExpire: () => console.log('poison wears off'),
+ * });
+ *
+ * clock.advance(); // one turn passes; every registered effect ticks
+ * clock.remove(poisonId); // cured early
+ * ```
+ */
 export class TurnClock {
 	turn = 0;
 

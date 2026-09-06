@@ -32,6 +32,23 @@ export function conditionHolds(condition: EventCondition, state: GameState): boo
  * The last page whose conditions all hold - the same convention RPG Maker uses, so an event
  * is authored as an ordered list running from "default behaviour" to "most specific", and
  * whichever specific case currently applies overrides the general one before it.
+ *
+ * @example
+ * ```ts
+ * import { activePage, conditionHolds, GameState, type MapEvent } from '@datamoc/mw_games/rpg';
+ *
+ * const state = new GameState();
+ * const shopkeeper: MapEvent = {
+ *   id: 'shopkeeper', x: 5, y: 3,
+ *   pages: [
+ *     { trigger: 'action', commands: [{ say: 'Welcome!' }] },
+ *     { conditions: [{ switch: 'questDone', equals: true }], trigger: 'action', commands: [{ say: 'Thank you!' }] },
+ *   ],
+ * };
+ *
+ * conditionHolds({ switch: 'questDone', equals: true }, state); // false, until the switch flips
+ * const page = activePage(shopkeeper, state); // the first page, until "questDone" is set
+ * ```
  */
 export function activePage(event: MapEvent, state: GameState): EventPage | undefined {
 	let match: EventPage | undefined;

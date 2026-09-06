@@ -10,6 +10,18 @@ import { Signal } from './Signal.ts';
  * Keys are identified by `KeyboardEvent.code` (the physical key), so a binding to `KeyZ`
  * lands on the same place under AZERTY as under QWERTY, which is what a player actually
  * wants from a movement key.
+ *
+ * @example
+ * ```ts
+ * import { Input } from '@datamoc/mw_games/core';
+ *
+ * Input.bind('confirm', ['Enter', 'Space']);
+ * Input.bind('left', ['ArrowLeft', 'KeyA']);
+ *
+ * // in the game loop:
+ * if (Input.justPressed('confirm')) console.log('confirmed');
+ * if (Input.isDown('left')) console.log('moving left');
+ * ```
  */
 
 export type Action = string;

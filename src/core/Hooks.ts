@@ -11,6 +11,20 @@
  * fixed and their own documentation attached. They used to be two line-for-line copies of the
  * same class; the difference between them was never the registry, only what a handler is
  * handed when it runs.
+ *
+ * @example
+ * ```ts
+ * import { HookRegistry } from '@datamoc/mw_games/core';
+ *
+ * const hooks = new HookRegistry<[amount: number]>();
+ * const poisonRing = {};
+ *
+ * hooks.on('turnStart', (amount) => console.log('poison ticks for', amount), poisonRing);
+ * hooks.emit('turnStart', 3);
+ *
+ * // the ring is removed - every hook it registered comes off in one call
+ * hooks.offSource(poisonRing);
+ * ```
  */
 export interface Hook<TArgs extends unknown[]> {
 	event: string;

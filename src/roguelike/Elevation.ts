@@ -14,6 +14,21 @@ import type { Level } from './Level.ts';
  * tiles where the grid says, and sprites stand where the game puts them - a
  * raised cell *looks* raised because the game offsets its occupants' sprites
  * upward by their height, which is presentation, not pathing, and lives game-side.
+ *
+ * @example
+ * ```ts
+ * import { Elevation, Level, Pathfinder, FieldOfView, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ *
+ * const level = new Level(20, 20, [WALL, FLOOR], 1);
+ * const heights = new Elevation(level);
+ * heights.set(5, 5, 2); // a raised platform
+ *
+ * const pathfinder = new Pathfinder(level);
+ * pathfinder.find({ x: 0, y: 0 }, { x: 5, y: 5 }, { heights, climb: 1 });
+ *
+ * const fov = new FieldOfView(level);
+ * fov.update(0, 0, 10, { heights, height: 0 }); // sight from ground level
+ * ```
  */
 export class Elevation {
 	private readonly level: Level;

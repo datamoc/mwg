@@ -15,7 +15,20 @@ export interface GrowthCurve {
 	maxLevel: number;
 }
 
-/** a curve reaching `maxLevel` at roughly `base * (level - 1) ^ power` total experience */
+/**
+ * A curve reaching `maxLevel` at roughly `base * (level - 1) ^ power` total experience.
+ *
+ * @example
+ * ```ts
+ * import { powerCurve, Progression } from '@datamoc/mw_games/actors';
+ *
+ * const curve = powerCurve(100, 1.5, 50); // level 50 caps out around 100 * 49^1.5 experience
+ * const progression = new Progression(curve);
+ *
+ * const levelsGained = progression.addExperience(250);
+ * console.log(progression.level, progression.experienceToNext);
+ * ```
+ */
 export function powerCurve(base: number, power: number, maxLevel: number): GrowthCurve {
 	return {
 		maxLevel,

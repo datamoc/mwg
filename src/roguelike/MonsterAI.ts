@@ -45,6 +45,20 @@ export interface MonsterAIOptions extends PathOptions {
  * the monster counts a level actually has. `mwg` does not decide what a monster does with
  * the result - a game's own turn loop calls this once per monster and acts on the `step`
  * (or doesn't, for wander's "nowhere in particular").
+ *
+ * @example
+ * ```ts
+ * import { decideMonsterAI, Pathfinder, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ *
+ * const level = new Level(20, 20, [WALL, FLOOR], 1);
+ * const pathfinder = new Pathfinder(level);
+ *
+ * const decision = decideMonsterAI(level, pathfinder, { x: 5, y: 5 }, 0.8, { x: 8, y: 5 }, {
+ *   sightRadius: 6,
+ *   fleeBelow: 0.2,
+ * });
+ * if (decision.step) console.log(decision.state, decision.step); // 'hunt', a step towards the player
+ * ```
  */
 export function decideMonsterAI(
 	level: Level,

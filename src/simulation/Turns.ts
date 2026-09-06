@@ -22,6 +22,17 @@ export type TurnResult<Actor> =
  * even if that action ends the game; return null when the action already handled its cost.
  * Reaching the budget returns limit without another peek or action. The caller decides
  * whether to resume, report a stalled simulation, or yield to its host.
+ *
+ * @example
+ * ```ts
+ * import { advanceToInput, type TurnRules } from '@datamoc/mw_games/simulation';
+ *
+ * declare const rules: TurnRules<{ id: string; isPlayer: boolean }>;
+ *
+ * // runs monster turns automatically, stopping the moment the player needs to act
+ * const result = advanceToInput(rules, 1000);
+ * if (result.status === 'input') console.log('waiting on', result.actor.id);
+ * ```
  */
 export function advanceToInput<Actor>(rules: TurnRules<Actor>, budget: number): TurnResult<Actor> {
 	if (!Number.isSafeInteger(budget) || budget < 0) throw new RangeError('Turn budget must be a non-negative safe integer');

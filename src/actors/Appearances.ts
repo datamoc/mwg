@@ -22,6 +22,18 @@ export interface AppearanceTable {
 /**
  * Deals each kind a distinct label from a shuffled copy of the pool - pure, so a game
  * that wants the shuffle scoped (one seed per run, say) wraps it in `Random.withSeed`.
+ *
+ * @example
+ * ```ts
+ * import { assignAppearances, Appearances } from '@datamoc/mw_games/actors';
+ *
+ * const potions = assignAppearances({ kinds: ['healing', 'poison'], labels: ['red', 'blue'] });
+ * console.log(potions.get('healing')); // 'red' or 'blue', fixed for this shuffle
+ *
+ * // Appearances wraps this per category, drawing lazily on first ask and caching for the run
+ * const appearances = new Appearances({ potions: { kinds: ['healing', 'poison'], labels: ['red', 'blue'] } });
+ * const label = appearances.appearanceOf('potions', 'healing');
+ * ```
  */
 export function assignAppearances(table: AppearanceTable): Map<string, string> {
 	if (table.labels.length < table.kinds.length) {

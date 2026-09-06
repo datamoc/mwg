@@ -43,6 +43,18 @@ export interface TickEvent {
  * multiplayer has no one-shot shape to hide a server behind, which is why `mwg` ships a
  * reference one (`tools/multiplayer-server.mjs`) rather than assuming a game brings its own,
  * the same reasoning that decided this the moment the item was sized.
+ *
+ * @example
+ * ```ts
+ * import { LockstepClient } from '@datamoc/mw_games/core';
+ *
+ * const client = new LockstepClient({ url: 'wss://example.com/room/1' });
+ * client.onTick.add(({ tick, inputs }) => console.log('tick', tick, inputs));
+ * client.connect();
+ *
+ * // each frame this client has an input for:
+ * client.submitInput({ move: 'left' });
+ * ```
  */
 export class LockstepClient {
 	readonly onWelcome = new Signal<{ id: string }>();

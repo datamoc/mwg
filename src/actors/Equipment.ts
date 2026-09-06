@@ -20,6 +20,24 @@ export interface EquipmentOptions<Slot extends string, Item extends EquippableIt
  * Whatever an item's `modifiers` are, equipping it applies them to the given `StatBlock` and
  * unequipping removes exactly those - tagged by the item itself as their `source`, so two
  * rings of the same kind never remove each other's bonus by mistake.
+ *
+ * @example
+ * ```ts
+ * import { EquipmentSlots, StatBlock } from '@datamoc/mw_games/actors';
+ *
+ * const stats = new StatBlock({ base: { attack: 3 } });
+ * const equipment = new EquipmentSlots<'weapon' | 'armor', { modifiers?: import('@datamoc/mw_games/actors').Modifier[] }>(
+ *   ['weapon', 'armor'],
+ *   stats
+ * );
+ *
+ * const sword = { modifiers: [{ stat: 'attack', op: 'add' as const, value: 5 }] };
+ * equipment.equip('weapon', sword);
+ * console.log(stats.get('attack')); // 8
+ *
+ * equipment.unequip('weapon');
+ * console.log(stats.get('attack')); // 3
+ * ```
  */
 export class EquipmentSlots<Slot extends string, Item extends EquippableItem> {
 	private readonly names: ReadonlySet<Slot>;

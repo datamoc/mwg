@@ -21,6 +21,19 @@ export interface SkillPointsOptions {
  * number), from a quest reward, from a trainer NPC, or all three - this only tracks the
  * ledger and the spend rule, the same way `skillCheck` is a dice roll and nothing about who
  * is rolling it.
+ *
+ * @example
+ * ```ts
+ * import { SkillPoints, StatBlock } from '@datamoc/mw_games/actors';
+ *
+ * const stats = new StatBlock({ base: { lockpicking: 0 } });
+ * const points = new SkillPoints(stats, { cap: () => 10, cost: (_stat, rank) => rank });
+ *
+ * points.grant(3); // e.g. after Progression.addExperience returned levelsGained
+ * if (points.canSpend('lockpicking')) points.spend('lockpicking');
+ *
+ * console.log(stats.base('lockpicking'), points.points);
+ * ```
  */
 export class SkillPoints {
 	private stats: StatBlock;

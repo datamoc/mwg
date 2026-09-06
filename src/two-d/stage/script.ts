@@ -82,6 +82,26 @@ export interface ScriptOptions {
  * `run` resolves when the list is exhausted, so a caller can simply await a conversation
  * and carry on afterwards, which is what makes a cutscene readable at the call site
  * instead of a chain of callbacks.
+ *
+ * @example
+ * ```ts
+ * import { StageScript, DialogueStage, type StageCommand } from '@datamoc/mw_games/two-d';
+ * import { WindowStack } from '@datamoc/mw_games/two-d';
+ * import type { Texture } from 'pixi.js';
+ *
+ * declare const backdropTexture: Texture;
+ *
+ * const stage = new DialogueStage(1280, 720);
+ * const windows = new WindowStack();
+ * const script = new StageScript({ stage, windows, backdrop: () => backdropTexture });
+ *
+ * const commands: StageCommand[] = [
+ *   { backdrop: 'town-square' },
+ *   { show: 'hero', at: 'center' },
+ *   { say: 'A new adventure begins.', as: 'hero' },
+ * ];
+ * await script.run(commands);
+ * ```
  */
 export class StageScript {
 	private options: ScriptOptions;

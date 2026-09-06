@@ -9,8 +9,24 @@ import type { TypeMatrix } from './TypeMatrix.ts';
  * a game is free to ignore `decideMonsterAI`'s step and hand-roll a boss's own behaviour.
  */
 
-/** picks the move whose type is most effective against `opponentTypes`, ties keeping the
- * first candidate; `null` for an empty list */
+/**
+ * Picks the move whose type is most effective against `opponentTypes`, ties keeping the
+ * first candidate; `null` for an empty list.
+ *
+ * @example
+ * ```ts
+ * import { chooseMove, chooseSwitch, TypeMatrix } from '@datamoc/mw_games/battle';
+ *
+ * const matrix = new TypeMatrix();
+ * matrix.set('fire', 'grass', 2);
+ *
+ * const moves = [{ type: 'fire' }, { type: 'normal' }];
+ * const best = chooseMove(moves, matrix, ['grass']); // the fire move
+ *
+ * const bench = [{ types: ['water'] }, { types: ['grass'] }];
+ * const swapTo = chooseSwitch(['grass'], bench, matrix, ['fire']); // index of the water one
+ * ```
+ */
 export function chooseMove<M extends { type: string }>(
 	moves: readonly M[],
 	matrix: TypeMatrix,

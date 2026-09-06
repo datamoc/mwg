@@ -71,6 +71,20 @@ export interface EventRunnerOptions {
 
 }
 
+/**
+ * @example
+ * ```ts
+ * import { EventRunner, GameState, type DialoguePresenter } from '@datamoc/mw_games/rpg';
+ *
+ * declare const present: DialoguePresenter; // two-d/ui.messageBoxPresenter(windows), typically
+ *
+ * const runner = new EventRunner({ present, game: new GameState() });
+ * await runner.run([
+ *   { say: 'A cold wind blows.' },
+ *   { setSwitch: 'doorOpen', value: true },
+ * ]);
+ * ```
+ */
 export class EventRunner {
 	private options: EventRunnerOptions;
 	readonly state: EventRunnerState;

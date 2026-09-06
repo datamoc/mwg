@@ -10,6 +10,14 @@ import * as Random from '../core/Random.ts';
  * save file.
  *
  * @returns true if the check succeeds
+ *
+ * @example
+ * ```ts
+ * import { skillCheck } from '@datamoc/mw_games/actors';
+ *
+ * const success = skillCheck(5, 15); // proficiency 5, difficulty 15, default d20 roll
+ * const withCustomDice = skillCheck(5, 15, () => 12); // an injected, non-random roll
+ * ```
  */
 export function skillCheck(
 	value: number,

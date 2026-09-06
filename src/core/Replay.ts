@@ -25,6 +25,21 @@ export interface ReplayEvent {
  *
  * The signals are parameters rather than imports so tests can drive a
  * recorder with plain `Signal` instances instead of a whole `Game`.
+ *
+ * @example
+ * ```ts
+ * import { Recorder, Signal, serializeReplay } from '@datamoc/mw_games/core';
+ *
+ * const onAction = new Signal<string>();
+ * const onFrame = new Signal<number>();
+ *
+ * const recorder = new Recorder(onAction, onFrame);
+ * onFrame.dispatch(0);
+ * onAction.dispatch('confirm');
+ *
+ * const saved = serializeReplay(recorder.toJSON());
+ * recorder.stop();
+ * ```
  */
 export class Recorder {
 	private frame = 0;
@@ -76,6 +91,22 @@ export class Recorder {
  * stamp, before the player's own count advances - the same relative point a
  * live action held during recording. `dispatch` usually forwards into
  * `Input.onAction`, but tests pass a collector instead.
+ *
+ * @example
+ * ```ts
+ * import { Player, Signal, deserializeReplay } from '@datamoc/mw_games/core';
+ *
+ * declare const saved: string; // written by serializeReplay, see Recorder
+ *
+ * const onFrame = new Signal<number>();
+ * const replayed: string[] = [];
+ *
+ * const player = new Player(deserializeReplay(saved), (action) => replayed.push(action), onFrame);
+ * onFrame.dispatch(0);
+ *
+ * console.log(player.done);
+ * player.stop();
+ * ```
  */
 export class Player {
 	private frame = 0;

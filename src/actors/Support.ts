@@ -21,6 +21,17 @@ export interface SupportSave {
 /**
  * Stores persistent progress for a relationship between a specific pair of units.
  * Pair order is ignored, so `add('alice', 'bob', 1)` and the reverse address one bond.
+ *
+ * @example
+ * ```ts
+ * import { SupportLedger, type SupportLevel } from '@datamoc/mw_games/actors';
+ *
+ * const levels: SupportLevel[] = [{ id: 'C', threshold: 10 }, { id: 'B', threshold: 30 }];
+ * const support = new SupportLedger(levels);
+ *
+ * support.add('hero', 'ally', 12); // proximity, a shared battle, whatever a game counts
+ * console.log(support.level('ally', 'hero')?.id); // 'C' - pair order does not matter
+ * ```
  */
 export class SupportLedger {
 	private levels: SupportLevel[];

@@ -38,6 +38,23 @@ interface ScheduledSpawn<T> {
  * The whole schedule is flattened and sorted once, at construction, rather than tracked wave
  * by wave - simpler to get right, and cheap enough that a spawner is not something a game
  * expects to have thousands of.
+ *
+ * @example
+ * ```ts
+ * import { Spawner } from '@datamoc/mw_games/core';
+ *
+ * const spawner = new Spawner<'rat' | 'bat'>({
+ *   waves: [
+ *     { delay: 0, entries: [{ kind: 'rat', count: 3 }], duration: 5 },
+ *     { delay: 20, entries: [{ kind: 'rat', count: 5 }, { kind: 'bat', count: 2 }], duration: 10 },
+ *   ],
+ *   onSpawn: (kind) => console.log('spawn', kind),
+ *   onWaveStart: (index) => console.log('wave', index, 'starting'),
+ * });
+ *
+ * // in the game loop:
+ * spawner.update(1 / 60);
+ * ```
  */
 export class Spawner<T> {
 	private schedule: ScheduledSpawn<T>[] = [];

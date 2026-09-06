@@ -54,6 +54,22 @@ interface Actor {
  * It draws only the scene. The words go in a `MessageBox` from `mwg/ui`, so a game gets
  * the same dialogue box whether it is talking to a shopkeeper on a tile map or running a
  * scripted scene here.
+ *
+ * @example
+ * ```ts
+ * import { DialogueStage } from '@datamoc/mw_games/two-d';
+ * import type { Texture } from 'pixi.js';
+ * import type { SpriteSheet } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const backdropTexture: Texture;
+ * declare const heroSheet: SpriteSheet;
+ *
+ * const stage = new DialogueStage(1280, 720);
+ * stage.defineCharacter('hero', { sheet: heroSheet, expressions: { neutral: 0, happy: 1 } });
+ *
+ * await stage.setBackdrop(backdropTexture);
+ * await stage.show('hero', { at: 'center', expression: 'happy' });
+ * ```
  */
 export class DialogueStage extends Container {
 	private backdropLayer = new Container();

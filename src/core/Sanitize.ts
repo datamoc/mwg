@@ -6,6 +6,24 @@
  * truncated, corrupted, or hostile payload cheaply, ahead of and distinct from validating
  * that a parsed value's own fields have the shape a game actually expects (`validateSchema`,
  * below), which is a separate, deeper pass over already-parsed data.
+ *
+ * @example
+ * ```ts
+ * import { checkSize, checkNoControlCharacters, sanitizeInboundText, validateSchema } from '@datamoc/mw_games/core';
+ *
+ * declare const rawResponseText: string;
+ *
+ * // the cheap structural pass, before JSON.parse ever sees the payload
+ * const text = sanitizeInboundText(rawResponseText, { maxBytes: 1_000_000 });
+ * // equivalent to calling checkSize then checkNoControlCharacters by hand
+ *
+ * // the deeper pass, once the payload is parsed
+ * const parsed = JSON.parse(text);
+ * validateSchema(parsed, {
+ *   type: 'object',
+ *   fields: { id: { type: 'string' }, score: { type: 'number', min: 0 } },
+ * });
+ * ```
  */
 
 export interface SizeLimitOptions {

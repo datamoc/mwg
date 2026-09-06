@@ -20,6 +20,21 @@ export interface AutomapTarget {
  * Deliberately the same value as `two-d/render`'s own `EMPTY`, declared here rather than
  * imported so this module needs no renderer. `tests/automap.test.ts` asserts the two stay
  * equal, the same way the version test pins `version.ts` to `package.json`.
+ *
+ * @example
+ * ```ts
+ * import { automap, AUTOMAP_EMPTY, type AutomapTarget, type AutomapRule } from '@datamoc/mw_games/rpg';
+ *
+ * declare const map: AutomapTarget; // a real two-d/render.TileMap satisfies this structurally
+ *
+ * const cornerRule: AutomapRule = {
+ *   width: 2, height: 2,
+ *   input: { ground: [1, AUTOMAP_EMPTY, AUTOMAP_EMPTY, AUTOMAP_EMPTY] },
+ *   outputs: [{ ground: [2, AUTOMAP_EMPTY, AUTOMAP_EMPTY, AUTOMAP_EMPTY] }],
+ * };
+ *
+ * const changed = automap(map, [cornerRule]); // how many cells the rules actually wrote
+ * ```
  */
 export const EMPTY = -1;
 import { int } from '../core/Random.ts';

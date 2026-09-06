@@ -35,6 +35,16 @@ const DEFAULT_GROWTH = powerCurve(20, 2, 100);
  * a `StatBlock` so it can carry the same equipment modifiers any other actor can. Reuses
  * both rather than reimplementing them, since a creature's stats are not a different shape
  * from a character's - a level and a growth curve, feeding a `StatBlock`.
+ *
+ * @example
+ * ```ts
+ * import { Creature, type Species } from '@datamoc/mw_games/battle';
+ *
+ * const fireling: Species = { id: 'fireling', types: ['fire'], baseStats: { attack: 10, speed: 8 } };
+ *
+ * const wild = new Creature({ species: fireling, level: 5 });
+ * console.log(wild.stats.get('attack'));
+ * ```
  */
 export class Creature {
 	readonly species: Species;
