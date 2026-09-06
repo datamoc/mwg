@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { StatBlock } from '../src/actors/StatBlock.ts';
-import { canAfford, spend } from '../src/actors/Resource.ts';
+import { canAfford, spend, refund, convertToCharges } from '../src/actors/Resource.ts';
+import { Charges } from '../src/actors/Charges.ts';
 
 function mage() {
 	return new StatBlock({ base: { mana: 10, health: 6 } });
@@ -82,4 +83,46 @@ test('a negative cost is an authoring error, not a refund', () => {
 	assert.throws(() => spend(stats, { stat: 'mana', amount: -1 }), /non-negative/);
 	assert.throws(() => canAfford(stats, { stat: 'mana', amount: -1 }), /non-negative/);
 	assert.equal(stats.base('mana'), 10);
+});
+
+test('refund restores a spent cost, scaled by fraction', () => {
+	const stats = mage();
+	spend(stats, { stat: 'mana', amount: 6 });
+	assert.equal(stats.base('mana'), 4);
+
+	refund(stats, { stat: 'mana', amount: 6 }, 0.5);
+	assert.equal(stats.base('mana'), 7, 'half of the 6 spent comes back');
+
+	refund(stats, [
+		{ stat: 'mana', amount: 1 },
+		{ stat: 'health', amount: 2 },
+	]);
+	assert.equal(stats.base('mana'), 8);
+	assert.equal(stats.base('health'), 8);
+});
+
+test('convertToCharges spends a resource and converts it into charges at a rate', () => {
+	const stats = mage();
+	const charges = new Charges({ max: 5, current: 0, regenRate: 100 });
+
+	assert.equal(convertToCharges(stats, { stat: 'mana', amount: 9 }, charges, 3), 3);
+	assert.equal(stats.base('mana'), 1);
+	assert.equal(charges.current, 3);
+});
+
+test('convertToCharges spends nothing and gains nothing when the cost is unaffordable', () => {
+	const stats = mage();
+	const charges = new Charges({ max: 5, current: 0, regenRate: 100 });
+
+	assert.equal(convertToCharges(stats, { stat: 'mana', amount: 99 }, charges, 3), 0);
+	assert.equal(stats.base('mana'), 10);
+	assert.equal(charges.current, 0);
+});
+
+test('convertToCharges caps the gain at the charge pool\'s own max', () => {
+	const stats = mage();
+	const charges = new Charges({ max: 2, current: 0, regenRate: 100 });
+
+	assert.equal(convertToCharges(stats, { stat: 'mana', amount: 10 }, charges, 1), 2);
+	assert.equal(charges.current, 2);
 });

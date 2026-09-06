@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { layoutVertical } from '../src/ui/VerticalLabel.ts';
+import { layoutVertical } from '../src/two-d/ui/VerticalLabel.ts';
 
 /**
  * Only the pure layout math is tested: `VerticalLabel` itself creates Pixi `Text` objects,

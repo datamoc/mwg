@@ -1,9 +1,10 @@
 import { advanceToInput } from '../../src/simulation/index.ts';
 import { resolveAttack } from './combat.ts';
 import { Container, Graphics } from 'pixi.js';
-import { Game, Scene, Input, Random, SaveSystem } from '../../src/core/index.ts';
-import { TintedSprite, SpriteSheet, TileMap, Camera, Projectile, registerColorTransform } from '../../src/render/index.ts';
-import { Label, theme, Window, WindowStack, IconGrid, type IconGridItem } from '../../src/ui/index.ts';
+import { Input, Random, SaveSystem } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
+import { TintedSprite, SpriteSheet, TileMap, Camera, Projectile, registerColorTransform } from '../../src/two-d/render/index.ts';
+import { Label, theme, Window, WindowStack, IconGrid, type IconGridItem } from '../../src/two-d/ui/index.ts';
 import {
 	StatBlock,
 	Inventory,
@@ -147,7 +148,7 @@ const saves = new SaveSystem<DungeonSave>({ namespace: 'mwg-dungeon-demo', versi
 /** set from `main()` before the scene starts, and consumed once in `create()` */
 let pendingSave: DungeonSave | null = null;
 
-class DungeonScene extends Scene {
+class DungeonScene extends Scene2D {
 	private sheet!: SpriteSheet;
 	private camera!: Camera;
 	private map!: TileMap;

@@ -3,7 +3,7 @@ import { ImportMeshAsync } from '@babylonjs/core/Loading/sceneLoader.js';
 import type { ImportMeshOptions, ISceneLoaderAsyncResult } from '@babylonjs/core/Loading/sceneLoader.js';
 import type { Scene } from '@babylonjs/core/scene.js';
 
-import { resolve } from '../assets/index.ts';
+import { resolve } from '../assets/paths.ts';
 
 export type ModelSource3D = string | File | ArrayBufferView;
 

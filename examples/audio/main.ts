@@ -1,6 +1,6 @@
-import { Game, Scene } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
 import { Music, Sound } from '../../src/audio/index.ts';
-import { Button, Label, theme } from '../../src/ui/index.ts';
+import { Button, Label, theme } from '../../src/two-d/ui/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 
 /**
@@ -13,7 +13,7 @@ import * as Resources from '../../src/assets/index.ts';
 
 const TRACKS = ['tune_dawn.wav', 'tune_march.wav', 'tune_dusk.wav'];
 
-class AudioScene extends Scene {
+class AudioScene extends Scene2D {
 	private music = new Music({ volume: 0.6 });
 	private pickup = new Sound('pickup.wav', { volume: 0.8 });
 	private volumeLabel!: Label;

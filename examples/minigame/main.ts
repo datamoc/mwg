@@ -1,5 +1,6 @@
 import { Graphics, Text } from 'pixi.js';
-import { Game, Input, Scene } from '../../src/core/index.ts';
+import { Input } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
 
 type LockpickResult = { success: boolean; score: number } | { canceled: true };
 
@@ -7,7 +8,7 @@ const TAU = Math.PI * 2;
 const TARGET_START = -0.42;
 const TARGET_SIZE = 0.72;
 
-class RoomScene extends Scene {
+class RoomScene extends Scene2D {
 	private status!: Text;
 	private input = (action: string): boolean => {
 		if (action !== 'confirm') return false;
@@ -57,7 +58,7 @@ class RoomScene extends Scene {
 	}
 }
 
-class LockpickScene extends Scene {
+class LockpickScene extends Scene2D {
 	private needle = 0;
 	private attempts = 3;
 	private dial!: Graphics;

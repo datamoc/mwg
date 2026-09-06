@@ -1,5 +1,6 @@
 import { Graphics, Text } from 'pixi.js';
-import { Game, Scene, Spawner } from '../../src/core/index.ts';
+import { Spawner } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
 
 const COLS = 16;
 const ROWS = 9;
@@ -21,7 +22,7 @@ interface Tower {
 	cooldown: number;
 }
 
-class TowerDefenseScene extends Scene {
+class TowerDefenseScene extends Scene2D {
 	private enemies: Enemy[] = [];
 	private towers: Tower[] = [];
 	private spawner!: Spawner<'scout' | 'armoured'>;

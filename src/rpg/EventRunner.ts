@@ -1,5 +1,33 @@
-import { MessageBox, type Choice } from '../ui/MessageBox.ts';
-import type { WindowStack } from '../ui/WindowStack.ts';
+/**
+ * One choice a `ask` command offers. Structurally identical to `two-d/ui`'s own `Choice`,
+ * declared here so an event script is data this module can describe without a widget library.
+ */
+export interface EventChoice {
+	text: string;
+	value?: unknown;
+	disabled?: boolean;
+}
+
+/** what the runner wants shown; how it looks is the presenter's business entirely */
+export interface DialogueRequest {
+	text: string;
+	speaker?: string;
+
+	/** present when the runner is asking rather than telling; resolve with the chosen `value` */
+	choices?: EventChoice[];
+}
+
+/**
+ * Shows one line (or one question) and resolves once the player is done with it.
+ *
+ * This is the seam that keeps `mwg/rpg` free of a renderer. `EventRunner` used to construct a
+ * `ui.MessageBox` and push it onto a `ui.WindowStack` itself, which meant an event interpreter
+ * - pure control flow over `GameState` - dragged the whole 2D widget layer in behind it, and
+ * a game presenting dialogue any other way (a 3D scene, a DOM overlay, a test harness
+ * asserting on script order) could not use it at all. `two-d/ui`'s `messageBoxPresenter` is
+ * the ready-made implementation, so nothing about the common case got harder.
+ */
+export type DialoguePresenter = (request: DialogueRequest) => Promise<unknown>;
 import { conditionHolds, type EventCondition } from './Event.ts';
 import type { GameState } from './GameState.ts';
 
@@ -17,7 +45,7 @@ export interface MoveStep {
  */
 export type EventCommand =
 	| { say: string; speaker?: string }
-	| { ask: string; speaker?: string; choices: Choice[]; store?: string }
+	| { ask: string; speaker?: string; choices: EventChoice[]; store?: string }
 	| { wait: number }
 	| { setSwitch: string; value: boolean }
 	| { setVariable: string; value: number }
@@ -33,16 +61,14 @@ export interface EventRunnerState {
 }
 
 export interface EventRunnerOptions {
-	windows: WindowStack;
+	/** shows a line or a question; `two-d/ui.messageBoxPresenter` is the standard one */
+	present: DialoguePresenter;
+
 	game: GameState;
 
 	/** carries out a move command; the runner itself does not know what "moving" means */
 	move?: (target: string, steps: readonly MoveStep[]) => Promise<void>;
 
-	/** width/height of the dialogue box; characters revealed per second */
-	boxWidth?: number;
-	boxHeight?: number;
-	speed?: number;
 }
 
 export class EventRunner {
@@ -116,20 +142,7 @@ export class EventRunner {
 		}
 	}
 
-	private speak(text: string, speaker: string | undefined, choices?: Choice[]): Promise<unknown> {
-		const { windows } = this.options;
-		return new Promise((resolve) => {
-			windows.push(
-				new MessageBox({
-					width: this.options.boxWidth ?? 480,
-					height: this.options.boxHeight ?? 120,
-					speed: this.options.speed ?? 45,
-					pages: [{ text, speaker }],
-					choices,
-					anchor: 'bottom',
-					onDone: (chosen) => resolve(chosen),
-				})
-			);
-		});
+	private speak(text: string, speaker: string | undefined, choices?: EventChoice[]): Promise<unknown> {
+		return this.options.present({ text, speaker, choices });
 	}
 }

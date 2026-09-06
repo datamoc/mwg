@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { theme, themeChanged, setTheme, defaultTheme, highContrastTheme } from '../src/ui/theme.ts';
+import { theme, themeChanged, setTheme, defaultTheme, highContrastTheme } from '../src/two-d/ui/theme.ts';
 
 test('setTheme dispatches the merged theme to themeChanged listeners', () => {
 	const seen: number[] = [];

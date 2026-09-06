@@ -1,5 +1,5 @@
 import { Container, Sprite, Texture } from 'pixi.js';
-import { Tweener } from '../core/Tween.ts';
+import { Tweener } from '../../core/Tween.ts';
 import { TintedSprite } from '../render/TintedSprite.ts';
 import type { SpriteSheet } from '../render/SpriteSheet.ts';
 

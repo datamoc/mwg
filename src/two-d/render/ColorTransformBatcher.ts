@@ -61,8 +61,9 @@ type QuadElement = BatchableQuadElement & PackedElement;
  * This is the one file in `mwg` that builds on Pixi's batching internals: `Batcher`, the
  * high-shader bits, and the vertex packing layout. They are exported from the package
  * root, but they are implementation surface and may shift between Pixi minor versions.
- * The coupling is deliberately confined to this file, and `ColorTransform.test.ts` pins
- * the behaviour so an upgrade fails loudly rather than quietly rendering wrong.
+ * The coupling is deliberately confined to this file, and `tests/color-transform-batcher.test.ts`
+ * pins the packing behaviour so an upgrade fails loudly rather than quietly rendering wrong.
+ * What that test cannot see is the GPU half; `npm run benchmark:browser` covers that.
  */
 
 /** the extra vertex attribute, and how it folds into the fragment colour */

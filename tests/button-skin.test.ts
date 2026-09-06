@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Texture, FederatedPointerEvent, EventBoundary } from 'pixi.js';
-import { Button } from '../src/ui/Button.ts';
-import { Label } from '../src/ui/Label.ts';
-import { NinePatch } from '../src/ui/NinePatch.ts';
-import { setTheme } from '../src/ui/theme.ts';
+import { Button } from '../src/two-d/ui/Button.ts';
+import { Label } from '../src/two-d/ui/Label.ts';
+import { NinePatch } from '../src/two-d/ui/NinePatch.ts';
+import { setTheme } from '../src/two-d/ui/theme.ts';
 
 test('custom skin follows input, resize, disabled and theme changes', () => {
 	let clicks = 0;

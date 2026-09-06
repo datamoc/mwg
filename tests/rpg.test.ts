@@ -4,12 +4,17 @@ import assert from 'node:assert/strict';
 import { GameState } from '../src/rpg/GameState.ts';
 import { activePage, type MapEvent } from '../src/rpg/Event.ts';
 import { EventRunner, type EventCommand } from '../src/rpg/EventRunner.ts';
-import { WindowStack } from '../src/ui/WindowStack.ts';
-import { loadTiledMap, type TiledMapData } from '../src/rpg/TiledMap.ts';
-import { SpriteSheet } from '../src/render/SpriteSheet.ts';
-import { EMPTY, tileFrame, tileFrameSheet, tileFrameIndex } from '../src/render/TileMap.ts';
+
+/**
+ * The event interpreter no longer builds a widget to say a line, so these tests no longer
+ * need a `WindowStack` (and, through it, a renderer) to check control flow at all.
+ */
+const silent = async () => undefined;
+import { loadTiledMap, type TiledMapData } from '../src/two-d/render/TiledMap.ts';
+import { SpriteSheet } from '../src/two-d/render/SpriteSheet.ts';
+import { EMPTY, tileFrame, tileFrameSheet, tileFrameIndex } from '../src/two-d/render/TileMap.ts';
 import { GridMover } from '../src/rpg/GridMover.ts';
-import { AnimatedSprite } from '../src/render/AnimatedSprite.ts';
+import { AnimatedSprite } from '../src/two-d/render/AnimatedSprite.ts';
 import { Texture, TextureSource } from 'pixi.js';
 
 test('switches and variables default to false/0, and round-trip through JSON', () => {
@@ -56,7 +61,7 @@ test('activePage returns undefined when no page matches', () => {
 
 test('EventRunner sets and reads switches and variables', async () => {
 	const state = new GameState();
-	const runner = new EventRunner({ windows: new WindowStack(), game: state });
+	const runner = new EventRunner({ present: silent, game: state });
 
 	await runner.run([
 		{ setSwitch: 'doorOpen', value: true },
@@ -70,7 +75,7 @@ test('EventRunner sets and reads switches and variables', async () => {
 
 test('EventRunner branches on a condition', async () => {
 	const state = new GameState();
-	const runner = new EventRunner({ windows: new WindowStack(), game: state });
+	const runner = new EventRunner({ present: silent, game: state });
 	state.setSwitch('hasKey', true);
 
 	const commands: EventCommand[] = [
@@ -86,7 +91,7 @@ test('EventRunner branches on a condition', async () => {
 
 test('EventRunner runs a call command with the shared state', async () => {
 	const state = new GameState();
-	const runner = new EventRunner({ windows: new WindowStack(), game: state });
+	const runner = new EventRunner({ present: silent, game: state });
 
 	let sawGame: GameState | undefined;
 	await runner.run([{ call: (s) => void (sawGame = s.game) }]);
@@ -96,7 +101,7 @@ test('EventRunner runs a call command with the shared state', async () => {
 
 test('EventRunner stops running once cancelled', async () => {
 	const state = new GameState();
-	const runner = new EventRunner({ windows: new WindowStack(), game: state });
+	const runner = new EventRunner({ present: silent, game: state });
 
 	await runner.run([
 		{ call: () => runner.cancel() },

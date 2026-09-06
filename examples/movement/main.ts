@@ -1,7 +1,8 @@
-import { Game, Scene, Input } from '../../src/core/index.ts';
-import { Camera, TileMap, SpriteSheet, AnimatedSprite, EMPTY, registerColorTransform } from '../../src/render/index.ts';
+import { Input } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
+import { Camera, TileMap, SpriteSheet, AnimatedSprite, EMPTY, registerColorTransform } from '../../src/two-d/render/index.ts';
 import { GridMover } from '../../src/rpg/index.ts';
-import { Label, theme } from '../../src/ui/index.ts';
+import { Label, theme } from '../../src/two-d/ui/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 import tileset from '../assets/tiles.json' with { type: 'json' };
 
@@ -29,7 +30,7 @@ const MOVES: Record<string, { x: number; y: number }> = {
 	right: { x: 1, y: 0 },
 };
 
-class MovementScene extends Scene {
+class MovementScene extends Scene2D {
 	private camera!: Camera;
 	private map!: TileMap;
 	private player!: GridMover;

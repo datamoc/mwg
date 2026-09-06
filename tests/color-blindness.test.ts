@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { COLOR_BLINDNESS_MATRICES } from '../src/render/ColorBlindness.ts';
+import { COLOR_BLINDNESS_MATRICES } from '../src/two-d/render/ColorBlindness.ts';
 
 //`createColorBlindnessFilter` itself needs a real WebGL context even to construct (like
 //`BitmapText`), so this verifies the matrix data directly instead - see ColorBlindness.ts

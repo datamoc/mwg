@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { bitmapLabelStyle } from '../src/ui/BitmapLabel.ts';
-import { defaultTheme } from '../src/ui/theme.ts';
+import { bitmapLabelStyle } from '../src/two-d/ui/BitmapLabel.ts';
+import { defaultTheme } from '../src/two-d/ui/theme.ts';
 
 //BitmapText needs a real DOM `document` even to construct (unlike Pixi's Text, which only
 //fails on measurement), so this tests the pure style-mapping logic BitmapLabel builds its

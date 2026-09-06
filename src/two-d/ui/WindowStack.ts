@@ -1,6 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
-import * as Input from '../core/Input.ts';
-import type { Action } from '../core/Input.ts';
+import * as Input from '../../core/Input.ts';
+import type { Action } from '../../core/Input.ts';
 import type { Window } from './Window.ts';
 import { theme, themeChanged } from './theme.ts';
 

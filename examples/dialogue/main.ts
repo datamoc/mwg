@@ -1,7 +1,7 @@
-import { Game, Scene } from '../../src/core/index.ts';
-import { SpriteSheet, registerColorTransform } from '../../src/render/index.ts';
-import { WindowStack, MessageBox } from '../../src/ui/index.ts';
-import { DialogueStage, StageScript, type StageCommand } from '../../src/stage/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
+import { SpriteSheet, registerColorTransform } from '../../src/two-d/render/index.ts';
+import { WindowStack, MessageBox } from '../../src/two-d/ui/index.ts';
+import { DialogueStage, StageScript, type StageCommand } from '../../src/two-d/stage/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 import tileset from '../assets/tiles.json' with { type: 'json' };
 
@@ -54,7 +54,7 @@ const SCENE: StageCommand[] = [
 	{ say: 'They went out through the back, and the door stayed open behind them.' },
 ];
 
-class DialogueScene extends Scene {
+class DialogueScene extends Scene2D {
 	private windows = new WindowStack();
 	private dialogue!: DialogueStage;
 	private script: StageScript | null = null;

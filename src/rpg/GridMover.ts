@@ -1,4 +1,4 @@
-import type { AnimatedSprite } from '../render/AnimatedSprite.ts';
+import type { MovableSprite } from './MovableSprite.ts';
 
 export type Direction4 = 'up' | 'down' | 'left' | 'right';
 
@@ -30,7 +30,7 @@ export class GridMover {
 	y: number;
 	facing: Direction4 = 'down';
 
-	private sprite: AnimatedSprite;
+	private sprite: MovableSprite;
 	private tileWidth: number;
 	private tileHeight: number;
 	private speed: number;
@@ -41,7 +41,7 @@ export class GridMover {
 	private target: { x: number; y: number } | null = null;
 	private progress = 0;
 
-	constructor(sprite: AnimatedSprite, x: number, y: number, options: GridMoverOptions) {
+	constructor(sprite: MovableSprite, x: number, y: number, options: GridMoverOptions) {
 		this.sprite = sprite;
 		this.x = this.fromX = x;
 		this.y = this.fromY = y;
@@ -84,7 +84,7 @@ export class GridMover {
 	}
 
 	update(dt: number): void {
-		this.sprite.update(dt);
+		this.sprite.update?.(dt);
 		if (!this.target) return;
 
 		this.progress = Math.min(1, this.progress + this.speed * dt);
@@ -106,12 +106,12 @@ export class GridMover {
 
 	private playWalk(): void {
 		const name = this.options.walkAnimation?.(this.facing);
-		if (name && this.sprite.has(name)) this.sprite.play(name);
+		if (name && this.sprite.has?.(name)) this.sprite.play?.(name);
 	}
 
 	private playIdle(): void {
 		const name = this.options.idleAnimation?.(this.facing);
-		if (name && this.sprite.has(name)) this.sprite.play(name);
+		if (name && this.sprite.has?.(name)) this.sprite.play?.(name);
 	}
 }
 

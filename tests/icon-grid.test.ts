@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Container } from 'pixi.js';
 
-import { IconGrid, type IconGridItem } from '../src/ui/IconGrid.ts';
-import { setTheme, defaultTheme } from '../src/ui/theme.ts';
+import { IconGrid, type IconGridItem } from '../src/two-d/ui/IconGrid.ts';
+import { setTheme, defaultTheme } from '../src/two-d/ui/theme.ts';
 
 function icon(): Container {
 	return new Container();

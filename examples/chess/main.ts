@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
-import { Board, Game, Input, Scene } from '../../src/index.ts';
+import { Board, Game, Input, Scene2D } from '../../src/index.ts';
 
 const LIGHT = 0xd8c6a1;
 const DARK = 0x765b49;
@@ -13,7 +13,7 @@ const PIECES: Record<string, string> = {
 const REPEAT_DELAY = 0.4;
 const REPEAT_RATE = 0.12;
 
-class ChessScene extends Scene {
+class ChessScene extends Scene2D {
 	private state = Board.startingChess();
 	private cursor = Board.sq('e2');
 	private selected: Board.ChessSquare | null = null;

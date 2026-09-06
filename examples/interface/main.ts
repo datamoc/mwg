@@ -1,6 +1,7 @@
-import { Container } from 'pixi.js';
-import { Game, Scene, Input } from '../../src/core/index.ts';
-import { TintedSprite, SpriteSheet, registerColorTransform, Minimap, createColorBlindnessFilter, type ColorBlindnessType } from '../../src/render/index.ts';
+import { Container, Graphics, type Texture } from 'pixi.js';
+import { Input } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
+import { TintedSprite, SpriteSheet, registerColorTransform, Minimap, createColorBlindnessFilter, type ColorBlindnessType } from '../../src/two-d/render/index.ts';
 import {
 	Window,
 	WindowStack,
@@ -10,12 +11,13 @@ import {
 	BitmapLabel,
 	RebindScreen,
 	Button,
+	type ButtonSkin,
 	Bar,
 	FloatingText,
 	HelpScreen,
 	Toast,
 	theme,
-} from '../../src/ui/index.ts';
+} from '../../src/two-d/ui/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 import tileset from '../assets/tiles.json' with { type: 'json' };
 
@@ -30,7 +32,33 @@ import tileset from '../assets/tiles.json' with { type: 'json' };
 const TILES = 'tiles.png';
 const { tiles, tileSize } = tileset;
 
-class InterfaceScene extends Scene {
+let cachedButtonSkinTexture: Texture | undefined;
+
+/**
+ * A small rounded panel with a distinct border band, generated once and reused by every
+ * `Button` that asks for it - the same "draw with `Graphics`, bake to a texture" approach
+ * `tools/make-example-assets.mjs` uses offline, done here at runtime instead since a
+ * `ButtonSkin` only ever needs a live `Texture`, not a file on disk.
+ */
+function buttonSkin(): ButtonSkin {
+	if (!cachedButtonSkinTexture) {
+		//plain white, rounded at the corners only - a nine-patch's own slicing keeps those
+		//corners from stretching, and a flat white fill lets `tints` recolour the whole
+		//button per state rather than fighting a baked-in colour
+		const border = 6;
+		const size = border * 2 + 4;
+		const graphics = new Graphics().roundRect(0, 0, size, size, border).fill(0xffffff);
+		cachedButtonSkinTexture = Game.current.app.renderer.generateTexture(graphics);
+		graphics.destroy();
+	}
+	return {
+		texture: cachedButtonSkinTexture,
+		border: 6,
+		tints: { idle: 0x6a8fd8, hover: 0x86a6e6, pressed: 0x4f6fb0, disabled: 0x555555 },
+	};
+}
+
+class InterfaceScene extends Scene2D {
 	private windows = new WindowStack();
 	private sheet!: SpriteSheet;
 	private status!: Label;
@@ -48,7 +76,9 @@ class InterfaceScene extends Scene {
 
 		this.drawBackdrop();
 
-		this.status = new Label({ color: theme().color.textDim });
+		//a dark stroke so the caption stays readable sitting straight over the tiled backdrop
+		//below, rather than only over a Window's own opaque panel like every other Label here
+		this.status = new Label({ color: theme().color.textDim, stroke: { color: 0x000000, width: 3 } });
 		this.status.x = 12;
 		this.status.y = 12;
 		this.stage.addChild(this.status);
@@ -174,6 +204,20 @@ class InterfaceScene extends Scene {
 		toastButton.x = 528;
 		toastButton.y = -6;
 		hud.addChild(toastButton);
+
+		//a per-button nine-patch skin, independent of the window theme's own panel - the
+		//texture is generated here rather than downloaded, following this project's own
+		//never-borrow-art rule the same way `tools/make-example-assets.mjs` does offline
+		const skinned = new Button({
+			width: 80,
+			height: 22,
+			text: 'Skinned',
+			skin: buttonSkin(),
+			onClick: () => this.showToast(),
+		});
+		skinned.x = 604;
+		skinned.y = -6;
+		hud.addChild(skinned);
 
 		//a corner minimap, synced from the same tile pattern drawBackdrop already drew -
 		//no roguelike Level in this example, so the "explored" set is just every cell

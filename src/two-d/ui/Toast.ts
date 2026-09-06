@@ -1,5 +1,5 @@
 import { Container } from 'pixi.js';
-import { Easing } from '../core/Tween.ts';
+import { Easing } from '../../core/Tween.ts';
 
 export interface ToastOptions {
 	/** seconds to pop in; defaults to 0.25 */

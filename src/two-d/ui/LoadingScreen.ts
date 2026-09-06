@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
-import type { LoadQueue, LoadSnapshot } from '../core/Loading.ts';
+import type { LoadQueue, LoadSnapshot } from '../../core/Loading.ts';
 import { Bar } from './Bar.ts';
 import { Label } from './Label.ts';
 import { theme } from './theme.ts';

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Camera, snapZoom } from '../src/render/Camera.ts';
+import { Camera, snapZoom } from '../src/two-d/render/Camera.ts';
 
 test('view matches the actual bounds-clamped render position, not the raw unclamped centre', () => {
 	const camera = new Camera({ zoom: 1 });

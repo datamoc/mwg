@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Projectile } from '../src/render/Projectile.ts';
+import { Projectile } from '../src/two-d/render/Projectile.ts';
 
 test('a projectile starts at "from" and reaches exactly "to"', () => {
 	const sprite = { x: 0, y: 0 };

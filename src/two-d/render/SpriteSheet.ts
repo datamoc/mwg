@@ -1,5 +1,5 @@
 import { Rectangle, Texture } from 'pixi.js';
-import * as Resources from '../assets/index.ts';
+import * as Resources from '../../assets/index.ts';
 
 /**
  * A texture cut into numbered frames.

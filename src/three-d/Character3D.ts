@@ -8,7 +8,7 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh.js';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
 import type { Scene } from '@babylonjs/core/scene.js';
 
-import { resolve } from '../assets/index.ts';
+import { resolve } from '../assets/paths.ts';
 
 export interface Billboard3DOptions {
 	/**

@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Texture } from 'pixi.js';
 
-import { AnimatedSprite } from '../src/render/AnimatedSprite.ts';
-import { ActorAnimator } from '../src/render/ActorAnimator.ts';
+import { AnimatedSprite } from '../src/two-d/render/AnimatedSprite.ts';
+import { ActorAnimator } from '../src/two-d/render/ActorAnimator.ts';
 
 function name(state: string, variant: string): string {
 	return variant ? `${state}-${variant}` : state;

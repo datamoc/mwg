@@ -1,4 +1,4 @@
-import type { AnimatedSprite } from '../render/AnimatedSprite.ts';
+import type { MovableSprite } from './MovableSprite.ts';
 
 export interface FreeMoverOptions {
 	/** world units crossed per second */
@@ -30,12 +30,12 @@ export class FreeMover {
 	/** radians; unchanged while not moving, so a stopped unit keeps facing where it last went */
 	facing = 0;
 
-	private sprite: AnimatedSprite;
+	private sprite: MovableSprite;
 	private speed: number;
 	private options: FreeMoverOptions;
 	private moving = false;
 
-	constructor(sprite: AnimatedSprite, x: number, y: number, options: FreeMoverOptions = {}) {
+	constructor(sprite: MovableSprite, x: number, y: number, options: FreeMoverOptions = {}) {
 		this.sprite = sprite;
 		this.x = x;
 		this.y = y;
@@ -72,7 +72,7 @@ export class FreeMover {
 		}
 
 		this.place();
-		this.sprite.update(dt);
+		this.sprite.update?.(dt);
 	}
 
 	/** faces a direction without moving, the free-movement equivalent of `GridMover.turnTo` */
@@ -89,11 +89,11 @@ export class FreeMover {
 
 	private playWalk(): void {
 		const name = this.options.walkAnimation?.(this.facing);
-		if (name && this.sprite.has(name)) this.sprite.play(name);
+		if (name && this.sprite.has?.(name)) this.sprite.play?.(name);
 	}
 
 	private playIdle(): void {
 		const name = this.options.idleAnimation?.(this.facing);
-		if (name && this.sprite.has(name)) this.sprite.play(name);
+		if (name && this.sprite.has?.(name)) this.sprite.play?.(name);
 	}
 }

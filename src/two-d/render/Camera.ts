@@ -1,6 +1,6 @@
 import { Container } from 'pixi.js';
-import { Game } from '../core/Game.ts';
-import * as Random from '../core/Random.ts';
+import { Game } from '../Game.ts';
+import * as Random from '../../core/Random.ts';
 
 /**
  * A view onto a world larger than the screen.

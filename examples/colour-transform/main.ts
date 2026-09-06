@@ -1,6 +1,7 @@
 import { Rectangle, Texture, Text, Container } from 'pixi.js';
-import { Game, Scene, Random } from '../../src/core/index.ts';
-import { TintedSprite, registerColorTransform } from '../../src/render/index.ts';
+import { Random } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
+import { TintedSprite, registerColorTransform } from '../../src/two-d/render/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 import tileset from '../assets/tiles.json' with { type: 'json' };
 
@@ -18,7 +19,7 @@ const { tileSize, columns, tiles } = tileset;
 const TILES_PNG = 'tiles.png';
 const GEM_SVG = 'icon_gem.svg';
 
-class ColourTransformScene extends Scene {
+class ColourTransformScene extends Scene2D {
 	private sheet!: Texture;
 	private pulsing: TintedSprite[] = [];
 	private elapsed = 0;

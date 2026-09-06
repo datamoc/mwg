@@ -1,6 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
-import { Signal } from '../core/Signal.ts';
-import type { Action } from '../core/Input.ts';
+import { Signal } from '../../core/Signal.ts';
+import type { Action } from '../../core/Input.ts';
 import { NinePatch } from './NinePatch.ts';
 import { Label } from './Label.ts';
 import { theme, themeChanged } from './theme.ts';

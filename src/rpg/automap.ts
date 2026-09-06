@@ -1,4 +1,27 @@
-import { EMPTY, type TileMap } from '../render/TileMap.ts';
+/**
+ * The slice of a tile map automapping reads and writes, named rather than imported.
+ *
+ * Automapping is a grid transform: it matches patterns of tile indices and writes tile
+ * indices back. Naming `render.TileMap` for that pulled a whole 2D renderer into `mwg/rpg`
+ * for two method signatures, which is why this is an interface instead - a real `TileMap`
+ * satisfies it structurally, and so does any other grid a game keeps its own way.
+ */
+export interface AutomapTarget {
+	readonly widthInTiles: number;
+	readonly heightInTiles: number;
+	getTile(layer: string | number, x: number, y: number): number;
+	setTile(layer: string | number, x: number, y: number, value: number): void;
+}
+
+/**
+ * The wildcard: an `input` cell holding it constrains nothing, an `output` cell holding it
+ * leaves the target alone.
+ *
+ * Deliberately the same value as `two-d/render`'s own `EMPTY`, declared here rather than
+ * imported so this module needs no renderer. `tests/automap.test.ts` asserts the two stay
+ * equal, the same way the version test pins `version.ts` to `package.json`.
+ */
+export const EMPTY = -1;
 import { int } from '../core/Random.ts';
 
 /**
@@ -40,7 +63,7 @@ export interface AutomapOptions {
  * where they would hang past the map edge are skipped. Returns how many times rules
  * matched (origins times rules), for tests and debug overlays.
  */
-export function automap(map: TileMap, rules: readonly AutomapRule[], options: AutomapOptions = {}): number {
+export function automap(map: AutomapTarget, rules: readonly AutomapRule[], options: AutomapOptions = {}): number {
 	const pick = options.pick ?? int;
 	let matches = 0;
 
@@ -93,7 +116,7 @@ function checkRule(rule: AutomapRule, label: string): void {
 }
 
 /** every origin where the whole pattern fits and every constrained cell agrees */
-function findMatches(map: TileMap, rule: AutomapRule): Array<[number, number]> {
+function findMatches(map: AutomapTarget, rule: AutomapRule): Array<[number, number]> {
 	const out: Array<[number, number]> = [];
 	for (let oy = 0; oy + rule.height <= map.heightInTiles; oy++) {
 		for (let ox = 0; ox + rule.width <= map.widthInTiles; ox++) {
@@ -103,7 +126,7 @@ function findMatches(map: TileMap, rule: AutomapRule): Array<[number, number]> {
 	return out;
 }
 
-function matchesAt(map: TileMap, rule: AutomapRule, ox: number, oy: number): boolean {
+function matchesAt(map: AutomapTarget, rule: AutomapRule, ox: number, oy: number): boolean {
 	for (const [layer, cells] of Object.entries(rule.input)) {
 		for (let dy = 0; dy < rule.height; dy++) {
 			for (let dx = 0; dx < rule.width; dx++) {

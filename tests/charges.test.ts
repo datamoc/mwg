@@ -55,3 +55,12 @@ test('spending after partial regeneration keeps the banked progress towards the 
 	charges.advance(1); //completes the 4-turn bank
 	assert.equal(charges.current, 1);
 });
+
+test('refund restores charges directly, capped at max', () => {
+	const charges = new Charges({ max: 3, current: 0, regenRate: 5 });
+	assert.equal(charges.refund(2), 2);
+	assert.equal(charges.current, 2);
+	assert.equal(charges.refund(5), 1, 'only one more fits before max');
+	assert.equal(charges.current, 3);
+	assert.equal(charges.refund(1), 0, 'already full');
+});

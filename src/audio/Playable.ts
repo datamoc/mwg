@@ -1,4 +1,4 @@
-import * as Resources from '../assets/index.ts';
+import * as Resources from '../assets/paths.ts';
 
 /**
  * The surface `mwg/audio` needs from a playing sound - exactly what `HTMLAudioElement`

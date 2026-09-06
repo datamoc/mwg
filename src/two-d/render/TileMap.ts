@@ -3,7 +3,7 @@ import type { Texture } from 'pixi.js';
 import { TintedSprite } from './TintedSprite.ts';
 import type { SpriteSheet } from './SpriteSheet.ts';
 import type { Camera } from './Camera.ts';
-import { hexToPixel, pixelToHex } from '../core/Hex.ts';
+import { hexToPixel, pixelToHex } from '../../core/Hex.ts';
 
 /** the frame value meaning "nothing here"; a cell holding it gets no sprite at all */
 export const EMPTY = -1;

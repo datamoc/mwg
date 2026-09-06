@@ -1,6 +1,6 @@
-import { Game, Scene } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
 import { runScenario, advanceToInput, type TurnRules } from '../../src/simulation/index.ts';
-import { Button, Label, theme } from '../../src/ui/index.ts';
+import { Button, Label, theme } from '../../src/two-d/ui/index.ts';
 
 /**
  * `mwg/simulation` on its own: no sprites, no map, because neither runner touches rendering
@@ -15,7 +15,7 @@ interface Position {
 	x: number;
 }
 
-class HeadlessScene extends Scene {
+class HeadlessScene extends Scene2D {
 	private log!: Label;
 	private lines: string[] = [];
 

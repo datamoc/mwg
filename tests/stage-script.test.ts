@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { StageScript } from '../src/stage/script.ts';
-import type { StageCommand } from '../src/stage/script.ts';
+import { StageScript } from '../src/two-d/stage/script.ts';
+import type { StageCommand } from '../src/two-d/stage/script.ts';
 
 /**
  * The script runner, tested without a browser.

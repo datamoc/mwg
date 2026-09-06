@@ -1,14 +1,14 @@
 import { Graphics, Text } from 'pixi.js';
-import { Game, Scene } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
 
 /**
  * The smallest thing `mwg` can show: a `Game` owning one `Scene`, a sprite, and `update(dt)`
  * moving it every frame. Nothing here reads input, loads an asset, or manages state - see
  * `movement`, `tilemap`, and the rest of the tutorial-sized examples for those, one concept
- * at a time. This is the shape every one of them builds on: `class extends Scene { create()
+ * at a time. This is the shape every one of them builds on: `class extends Scene2D { create()
  * ... }`, then `new Game(...).start(TheScene)`.
  */
-class HelloScene extends Scene {
+class HelloScene extends Scene2D {
 	private square!: Graphics;
 	private elapsed = 0;
 

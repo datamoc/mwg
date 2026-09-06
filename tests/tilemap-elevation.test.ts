@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { Container, Graphics, Texture, TextureSource } from 'pixi.js';
-import { TileMap, EMPTY } from '../src/render/TileMap.ts';
-import { SpriteSheet } from '../src/render/SpriteSheet.ts';
+import { TileMap, EMPTY } from '../src/two-d/render/TileMap.ts';
+import { SpriteSheet } from '../src/two-d/render/SpriteSheet.ts';
 
 /** diamond tiles, the isometric proportion: twice as wide as tall */
 function diamondSheet(): SpriteSheet {

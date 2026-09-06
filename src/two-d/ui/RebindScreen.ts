@@ -1,6 +1,6 @@
 import { Container } from 'pixi.js';
-import * as Input from '../core/Input.ts';
-import type { Action } from '../core/Input.ts';
+import * as Input from '../../core/Input.ts';
+import type { Action } from '../../core/Input.ts';
 import { ListView, type ListItem } from './ListView.ts';
 
 export interface RebindScreenOptions {

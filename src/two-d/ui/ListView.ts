@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
-import type { Action } from '../core/Input.ts';
+import type { Action } from '../../core/Input.ts';
 import { Label } from './Label.ts';
 import { theme, themeChanged } from './theme.ts';
 

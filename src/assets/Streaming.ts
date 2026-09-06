@@ -1,5 +1,5 @@
-import { load, release } from './index.ts';
-import type { AssetProgress } from './index.ts';
+import { load, release } from './loader.ts';
+import type { AssetProgress } from './paths.ts';
 
 export interface AssetBundle {
 	id: string;

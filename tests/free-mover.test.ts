@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { FreeMover } from '../src/rpg/FreeMover.ts';
-import type { AnimatedSprite } from '../src/render/AnimatedSprite.ts';
+import type { AnimatedSprite } from '../src/two-d/render/AnimatedSprite.ts';
 
 function fakeSprite(known: readonly string[] = ['walk', 'idle']): AnimatedSprite & { played: string[] } {
 	const played: string[] = [];

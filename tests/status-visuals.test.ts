@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { StatusVisuals } from '../src/render/StatusVisuals.ts';
+import { StatusVisuals } from '../src/two-d/render/StatusVisuals.ts';
 
 function fakeTarget() {
 	const calls: { method: 'lerpTint' | 'resetColor'; args: number[] }[] = [];

@@ -1,6 +1,6 @@
 import type { Texture } from 'pixi.js';
-import type { Direction } from '../i18n/index.ts';
-import { Signal } from '../core/Signal.ts';
+import type { Direction } from '../../i18n/index.ts';
+import { Signal } from '../../core/Signal.ts';
 
 /**
  * How the interface looks.

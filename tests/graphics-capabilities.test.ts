@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { inspectGraphicsCapabilities, detectWebGpu, RENDERING_DECISIONS } from '../src/render/Capabilities.ts';
+import { inspectGraphicsCapabilities, detectWebGpu, RENDERING_DECISIONS } from '../src/two-d/render/Capabilities.ts';
 
 test('inspectGraphicsCapabilities reports available graphics APIs', () => {
 	const capabilities = inspectGraphicsCapabilities({

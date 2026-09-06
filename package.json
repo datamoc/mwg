@@ -1,7 +1,7 @@
 {
   "name": "@datamoc/mw_games",
-  "version": "0.3.1",
-  "description": "A local-file game framework for 2D top-down games, with optional 3D, mobile, and desktop packaging.",
+  "version": "0.4.0",
+  "description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
   "license": "MPL-2.0",
   "repository": {
     "type": "git",
@@ -28,7 +28,10 @@
     "local-file"
   ],
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/three-d/Models.js",
+    "./dist/three-d/TileGrid3D.js"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -43,23 +46,79 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./simulation": "./dist/simulation/index.js",
-    "./core": "./dist/core/index.js",
-    "./render": "./dist/render/index.js",
-    "./roguelike": "./dist/roguelike/index.js",
-    "./assets": "./dist/assets/index.js",
+    "./3d": {
+      "types": "./dist/three-d/index.d.ts",
+      "import": "./dist/three-d/index.js"
+    },
+    "./3d/models": {
+      "types": "./dist/three-d/Models.d.ts",
+      "import": "./dist/three-d/Models.js"
+    },
+    "./actors": {
+      "types": "./dist/actors/index.d.ts",
+      "import": "./dist/actors/index.js"
+    },
+    "./assets": {
+      "types": "./dist/assets/index.d.ts",
+      "import": "./dist/assets/index.js"
+    },
+    "./assets/paths": {
+      "types": "./dist/assets/paths.d.ts",
+      "import": "./dist/assets/paths.js"
+    },
+    "./audio": {
+      "types": "./dist/audio/index.d.ts",
+      "import": "./dist/audio/index.js"
+    },
+    "./battle": {
+      "types": "./dist/battle/index.d.ts",
+      "import": "./dist/battle/index.js"
+    },
+    "./board": {
+      "types": "./dist/board/index.d.ts",
+      "import": "./dist/board/index.js"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./i18n": {
+      "types": "./dist/i18n/index.d.ts",
+      "import": "./dist/i18n/index.js"
+    },
+    "./roguelike": {
+      "types": "./dist/roguelike/index.d.ts",
+      "import": "./dist/roguelike/index.js"
+    },
+    "./rpg": {
+      "types": "./dist/rpg/index.d.ts",
+      "import": "./dist/rpg/index.js"
+    },
+    "./simulation": {
+      "types": "./dist/simulation/index.d.ts",
+      "import": "./dist/simulation/index.js"
+    },
     "./tools/compile-resources": "./tools/compile-resources.mjs",
-    "./ui": "./dist/ui/index.js",
-    "./stage": "./dist/stage/index.js",
-    "./i18n": "./dist/i18n/index.js",
-    "./actors": "./dist/actors/index.js",
-    "./world": "./dist/world/index.js",
-    "./rpg": "./dist/rpg/index.js",
-    "./battle": "./dist/battle/index.js",
-    "./board": "./dist/board/index.js",
-    "./audio": "./dist/audio/index.js",
-    "./3d": "./dist/three-d/index.js",
-    "./3d/models": "./dist/three-d/Models.js"
+    "./two-d": {
+      "types": "./dist/two-d/index.d.ts",
+      "import": "./dist/two-d/index.js"
+    },
+    "./two-d/render": {
+      "types": "./dist/two-d/render/index.d.ts",
+      "import": "./dist/two-d/render/index.js"
+    },
+    "./two-d/stage": {
+      "types": "./dist/two-d/stage/index.d.ts",
+      "import": "./dist/two-d/stage/index.js"
+    },
+    "./two-d/ui": {
+      "types": "./dist/two-d/ui/index.d.ts",
+      "import": "./dist/two-d/ui/index.js"
+    },
+    "./world": {
+      "types": "./dist/world/index.d.ts",
+      "import": "./dist/world/index.js"
+    }
   },
   "scripts": {
     "build": "npm run build:pkg && npm run build:global",
@@ -116,6 +175,7 @@
     "graphics:capabilities": "node tools/graphics-capabilities.mjs",
     "webpage:examples": "node tools/build-webpage-examples.mjs",
     "webpage:docs": "node tools/build-webpage-docs.mjs",
+    "webpage:diagrams": "node tools/make-example-diagrams.mjs && node tools/make-architecture-diagrams.mjs",
     "mobile:build": "npm run example:tower-defense:build",
     "cap:cli": "node --require ./tools/capacitor-node-workaround.cjs ./node_modules/@capacitor/cli/bin/capacitor",
     "cap:add:android": "npm run mobile:build && npm run cap:cli -- add android",

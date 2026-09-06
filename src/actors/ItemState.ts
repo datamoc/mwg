@@ -1,4 +1,5 @@
 import type { InventoryItem } from './Inventory.ts';
+import { removeAffix } from './Affix.ts';
 
 /**
  * The three item-shaped states `Inventory` only had fields for, not behaviour: identification,
@@ -12,9 +13,21 @@ export function identify(item: InventoryItem): void {
 	item.identified = true;
 }
 
-/** raises (or, given a negative delta, lowers) an item's enchantment/upgrade level */
-export function enchant(item: InventoryItem, delta: number): number {
+/** whether an upgrade leaves an item's affix as it is, or strips it */
+export type AffixUpgradePolicy = 'keep' | 'remove';
+
+/**
+ * Raises (or, given a negative delta, lowers) an item's enchantment/upgrade level.
+ *
+ * @param affixPolicy `'keep'` (the default, and the only behaviour before this option
+ * existed) leaves whatever affix the item carries untouched; `'remove'` strips it - some
+ * upgrade paths only preserve an enchantment past a certain rarity tier, a game's own rule
+ * this only ever applies when asked to
+ */
+export function enchant(item: InventoryItem, delta: number, affixPolicy: AffixUpgradePolicy = 'keep'): number {
+	if (!Number.isFinite(delta)) return item.level ?? 0;
 	item.level = (item.level ?? 0) + delta;
+	if (affixPolicy === 'remove') removeAffix(item);
 	return item.level;
 }
 
@@ -26,6 +39,7 @@ export function enchant(item: InventoryItem, delta: number): number {
  */
 export function damageItem(item: InventoryItem, amount: number): boolean {
 	if (item.maxDurability === undefined) return false;
+	if (!Number.isFinite(amount) || amount <= 0) return (item.durability ?? item.maxDurability) <= 0;
 
 	item.durability = Math.max(0, (item.durability ?? item.maxDurability) - amount);
 	return item.durability <= 0;
@@ -34,5 +48,6 @@ export function damageItem(item: InventoryItem, amount: number): boolean {
 /** restores durability, capped at `maxDurability`; a no-op for an item with none set */
 export function repairItem(item: InventoryItem, amount: number): void {
 	if (item.maxDurability === undefined) return;
+	if (!Number.isFinite(amount) || amount <= 0) return;
 	item.durability = Math.min(item.maxDurability, (item.durability ?? item.maxDurability) + amount);
 }

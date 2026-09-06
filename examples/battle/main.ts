@@ -1,6 +1,7 @@
-import { Game, Scene, Random } from '../../src/core/index.ts';
-import { SpriteSheet, TintedSprite, registerColorTransform } from '../../src/render/index.ts';
-import { Label, theme, Window, WindowStack, ListView, MessageBox } from '../../src/ui/index.ts';
+import { Random } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
+import { SpriteSheet, TintedSprite, registerColorTransform } from '../../src/two-d/render/index.ts';
+import { Label, theme, Window, WindowStack, ListView, MessageBox } from '../../src/two-d/ui/index.ts';
 import {
 	Creature,
 	TypeMatrix,
@@ -66,7 +67,7 @@ function damage(attacker: Creature, defender: Creature, move: Move<DamageEffect>
 	return Math.max(1, Math.round(base * multiplier));
 }
 
-class BattleScene extends Scene {
+class BattleScene extends Scene2D {
 	private windows = new WindowStack();
 
 	private player!: Creature;

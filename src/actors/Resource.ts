@@ -1,4 +1,5 @@
 import type { StatBlock } from './StatBlock.ts';
+import type { Charges } from './Charges.ts';
 
 /**
  * One spendable cost: `amount` of the `stat` pool, the way a spell costs mana.
@@ -47,4 +48,26 @@ export function spend(stats: StatBlock, cost: ResourceCost | readonly ResourceCo
 	if (![...combined].every(([stat, amount]) => stats.base(stat) >= amount)) return false;
 	for (const [stat, amount] of combined) stats.setBase(stat, stats.base(stat) - amount);
 	return true;
+}
+
+/**
+ * Refunds a previously spent cost - a missed cast, an ability that returns part of its own
+ * cost on a kill - the mirror of `spend`, without `spend`'s all-or-nothing check since there
+ * is nothing to check on the way back in. `fraction` scales every cost in `cost` at once
+ * (`0.5` for "half back").
+ */
+export function refund(stats: StatBlock, cost: ResourceCost | readonly ResourceCost[], fraction = 1): void {
+	for (const [stat, amount] of totals(all(cost))) stats.setBase(stat, stats.base(stat) + amount * fraction);
+}
+
+/**
+ * Spends `cost` from a `StatBlock` pool and converts it into charges of a different resource
+ * at `rate` per charge - "channel mana into a battery" - all-or-nothing the same way `spend`
+ * itself is: nothing is spent, and no charge is gained, unless the full cost is affordable.
+ *
+ * @returns the charges actually gained, capped by `charges`' own `max` (0 when the spend failed)
+ */
+export function convertToCharges(stats: StatBlock, cost: ResourceCost, charges: Charges, rate: number): number {
+	if (!spend(stats, cost)) return 0;
+	return charges.refund(Math.floor(cost.amount / rate));
 }

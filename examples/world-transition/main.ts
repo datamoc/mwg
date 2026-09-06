@@ -1,8 +1,9 @@
-import { Game, Scene, Input } from '../../src/core/index.ts';
-import { Camera, TileMap, SpriteSheet, TintedSprite, AnimatedSprite, registerColorTransform } from '../../src/render/index.ts';
+import { Input } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
+import { Camera, TileMap, SpriteSheet, TintedSprite, AnimatedSprite, registerColorTransform } from '../../src/two-d/render/index.ts';
 import { World } from '../../src/world/World.ts';
 import { GridMover } from '../../src/rpg/index.ts';
-import { Label, theme } from '../../src/ui/index.ts';
+import { Label, theme } from '../../src/two-d/ui/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 import tileset from '../assets/tiles.json' with { type: 'json' };
 
@@ -41,7 +42,7 @@ function buildMap(name: string, floorTile: number, sheet: SpriteSheet): MapData 
 	return { name, map, coinTaken: false };
 }
 
-class WorldTransitionScene extends Scene {
+class WorldTransitionScene extends Scene2D {
 	private camera!: Camera;
 	private world = new World<MapData>();
 	private sheet!: SpriteSheet;

@@ -1,6 +1,6 @@
-import { Game, Scene } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
 import * as I18n from '../../src/i18n/index.ts';
-import { Button, Label, setTheme, theme } from '../../src/ui/index.ts';
+import { Button, Label, setTheme, theme } from '../../src/two-d/ui/index.ts';
 
 /**
  * `mwg/i18n` on its own: `t()` resolving a key against whichever `Catalog` is `setActive`,
@@ -39,7 +39,7 @@ const CATALOGS: Record<string, I18n.Catalog> = {
 	},
 };
 
-class I18nScene extends Scene {
+class I18nScene extends Scene2D {
 	private greeting!: Label;
 	private gemCount = 1;
 	private gems!: Label;

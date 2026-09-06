@@ -7,9 +7,9 @@ import { hexNeighbors, hexDistance, hexLine, hexRange, hexToPixel, pixelToHex } 
 import { Level } from '../src/roguelike/Level.ts';
 import { Pathfinder } from '../src/roguelike/Pathfinder.ts';
 import { FieldOfView } from '../src/roguelike/FieldOfView.ts';
-import { TileMap } from '../src/render/TileMap.ts';
-import { SpriteSheet } from '../src/render/SpriteSheet.ts';
-import type { Camera } from '../src/render/Camera.ts';
+import { TileMap } from '../src/two-d/render/TileMap.ts';
+import { SpriteSheet } from '../src/two-d/render/SpriteSheet.ts';
+import type { Camera } from '../src/two-d/render/Camera.ts';
 
 const HEX_KINDS = [
 	{ passable: false, transparent: false },

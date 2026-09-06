@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Viewport, splitScreenHalves } from '../src/render/Viewport.ts';
+import { Viewport, splitScreenHalves } from '../src/two-d/render/Viewport.ts';
 
 test('a Viewport wires its camera to the given screen region', () => {
 	const viewport = new Viewport({ x: 100, y: 0, width: 200, height: 300, zoom: 1 });

@@ -1,12 +1,12 @@
-export { loadTiledMap } from './TiledMap.ts';
-export type { TiledMapData, TiledLayer, TiledObject, LoadedTiledMap, TilesetSheet, TiledTilesetData } from './TiledMap.ts';
 export { automap } from './automap.ts';
-export type { AutomapRule, AutomapOptions } from './automap.ts';
+export type { AutomapRule, AutomapOptions, AutomapTarget } from './automap.ts';
+export { EMPTY as AUTOMAP_EMPTY } from './automap.ts';
+export type { MovableSprite } from './MovableSprite.ts';
 export { GameState } from './GameState.ts';
 export { activePage, conditionHolds } from './Event.ts';
 export type { EventTrigger, EventCondition, EventPage, MapEvent } from './Event.ts';
 export { EventRunner } from './EventRunner.ts';
-export type { EventCommand, EventRunnerState, EventRunnerOptions, MoveStep } from './EventRunner.ts';
+export type { EventCommand, EventRunnerState, EventRunnerOptions, MoveStep, DialoguePresenter, DialogueRequest, EventChoice } from './EventRunner.ts';
 export { GridMover } from './GridMover.ts';
 export type { GridMoverOptions, Direction4 } from './GridMover.ts';
 export { FreeMover } from './FreeMover.ts';

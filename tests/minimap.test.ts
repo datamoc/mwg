@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { newlyRevealed } from '../src/render/Minimap.ts';
+import { newlyRevealed } from '../src/two-d/render/Minimap.ts';
 
 test('reports every explored cell not already drawn', () => {
 	const explored = new Set([1, 2, 3, 5]);

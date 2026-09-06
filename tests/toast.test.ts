@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { Container } from 'pixi.js';
-import { Toast } from '../src/ui/Toast.ts';
+import { Toast } from '../src/two-d/ui/Toast.ts';
 
 test('show pops content in immediately when idle: alpha eases from 0 to 1 over the fade-in duration', () => {
 	const toast = new Toast({ fadeIn: 1, hold: 1, fadeOut: 1 });

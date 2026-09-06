@@ -1,5 +1,5 @@
 import { Container, Graphics, RenderTexture, Sprite } from 'pixi.js';
-import { Game } from '../core/Game.ts';
+import { Game } from '../Game.ts';
 
 /** the cell indices in `explored` not yet baked into a minimap's texture - pure, so it can
  * be tested without a renderer */

@@ -1,5 +1,5 @@
 import { Container, Sprite, type Texture } from 'pixi.js';
-import type { Action } from '../core/Input.ts';
+import type { Action } from '../../core/Input.ts';
 import { Window } from './Window.ts';
 import { Label } from './Label.ts';
 import { ListView, type ListItem } from './ListView.ts';

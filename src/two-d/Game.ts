@@ -1,15 +1,16 @@
 import { Application, TextureSource } from 'pixi.js';
-import type { Scene, SceneClass } from './Scene.ts';
-import { SceneStack } from './SceneStack.ts';
-import { Signal } from './Signal.ts';
-import * as Input from './Input.ts';
+import type { Scene2D } from './Scene2D.ts';
+import type { SceneClass } from '../core/Scene.ts';
+import { SceneStack } from '../core/SceneStack.ts';
+import { Signal } from '../core/Signal.ts';
+import * as Input from '../core/Input.ts';
 
 const PIXEL_ART_CLASS = 'mwg-pixel-art';
 
 /** one queued scene change, applied in order at the start of the next frame */
 type SceneRequest =
-	| { kind: 'switch'; next: SceneClass }
-	| { kind: 'push'; next: SceneClass }
+	| { kind: 'switch'; next: SceneClass<Scene2D> }
+	| { kind: 'push'; next: SceneClass<Scene2D> }
 	| { kind: 'pop'; result: unknown };
 
 /**
@@ -126,7 +127,7 @@ export class Game {
 	private hitStopRemaining = 0;
 	private hitStopScale = 0;
 
-	private stack = new SceneStack();
+	private stack = new SceneStack<Scene2D>();
 	private pending: SceneRequest[] = [];
 	private options: Required<GameOptions>;
 	private started = false;
@@ -173,7 +174,7 @@ export class Game {
 		return Game.instance;
 	}
 
-	async start(first: SceneClass): Promise<void> {
+	async start(first: SceneClass<Scene2D>): Promise<void> {
 		if (this.started) throw new Error('this Game has already been started');
 		this.started = true;
 
@@ -240,7 +241,7 @@ export class Game {
 	 * The whole stack goes: every scene is destroyed, suspended or not, and the
 	 * new one starts alone. For a scene that returns, push it instead.
 	 */
-	switchScene(next: SceneClass): void {
+	switchScene(next: SceneClass<Scene2D>): void {
 		this.pending.push({ kind: 'switch', next });
 	}
 
@@ -251,7 +252,7 @@ export class Game {
 	 * keeps rendering, so the new scene can layer over it or replace it
 	 * outright, and `popScene` resumes exactly where play left off.
 	 */
-	pushScene(next: SceneClass): void {
+	pushScene(next: SceneClass<Scene2D>): void {
 		this.pending.push({ kind: 'push', next });
 	}
 
@@ -265,7 +266,7 @@ export class Game {
 	}
 
 	/** the scene currently updating: the top of the stack */
-	get currentScene(): Scene | null {
+	get currentScene(): Scene2D | null {
 		return this.stack.current;
 	}
 
@@ -342,12 +343,12 @@ export class Game {
 		Input.endFrame();
 	}
 
-	private switchNow(next: SceneClass): void {
+	private switchNow(next: SceneClass<Scene2D>): void {
 		this.applySwitch(next);
 	}
 
 	/** a new scene alone: everything else is destroyed, the clocks restart */
-	private applySwitch(next: SceneClass): void {
+	private applySwitch(next: SceneClass<Scene2D>): void {
 		const scene = new next();
 		this.stack.replace(scene);
 		this.app.stage.removeChildren();
@@ -361,7 +362,7 @@ export class Game {
 	}
 
 	/** a new scene over the current one, which suspends but survives underneath */
-	private applyPush(next: SceneClass): void {
+	private applyPush(next: SceneClass<Scene2D>): void {
 		const scene = new next();
 		this.stack.push(scene);
 		this.app.stage.addChild(scene.stage);

@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { Texture, Graphics } from 'pixi.js';
-import { Bar } from '../src/ui/Bar.ts';
-import { setTheme, defaultTheme } from '../src/ui/theme.ts';
+import { Bar } from '../src/two-d/ui/Bar.ts';
+import { setTheme, defaultTheme } from '../src/two-d/ui/theme.ts';
 
 function fillWidth(bar: Bar): number {
 	return (bar as unknown as { fill: Graphics }).fill.width;

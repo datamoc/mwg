@@ -1,6 +1,7 @@
-import { Game, Scene, Input } from '../../src/core/index.ts';
-import { Camera, TileMap, SpriteSheet, TintedSprite, AnimatedSprite, registerColorTransform } from '../../src/render/index.ts';
-import { Label, WindowStack, theme } from '../../src/ui/index.ts';
+import { Input } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
+import { Camera, TileMap, SpriteSheet, TintedSprite, AnimatedSprite, registerColorTransform } from '../../src/two-d/render/index.ts';
+import { Label, WindowStack, theme, messageBoxPresenter } from '../../src/two-d/ui/index.ts';
 import {
 	GameState,
 	activePage,
@@ -42,7 +43,7 @@ const MOVES: Record<string, { x: number; y: number }> = {
 	right: { x: 1, y: 0 },
 };
 
-class VillageScene extends Scene {
+class VillageScene extends Scene2D {
 	private camera!: Camera;
 	private map!: TileMap;
 	private windows = new WindowStack();
@@ -197,7 +198,7 @@ class VillageScene extends Scene {
 	}
 
 	private async runCutscene(commands: readonly EventCommand[]): Promise<void> {
-		this.runner = new EventRunner({ windows: this.windows, game: this.game });
+		this.runner = new EventRunner({ present: messageBoxPresenter(this.windows), game: this.game });
 		await this.runner.run(commands);
 		this.runner = null;
 		this.updateStatus();

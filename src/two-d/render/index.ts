@@ -25,6 +25,12 @@ export { LayeredSprite } from './LayeredSprite.ts';
 export { Projectile } from './Projectile.ts';
 export type { ProjectilePoint, ProjectileOptions } from './Projectile.ts';
 
+export { ParticleEmitter } from './Particles.ts';
+export type { Particle, ParticleRange, ParticleEmitterOptions } from './Particles.ts';
+
+export { ScreenEffects } from './ScreenEffects.ts';
+export type { ScreenEffectPhase, ScreenEffectsOptions } from './ScreenEffects.ts';
+
 export { ActorAnimator } from './ActorAnimator.ts';
 export type { ActorAnimationState, ActorAnimatorOptions } from './ActorAnimator.ts';
 
@@ -36,3 +42,6 @@ export type { NeighborMask } from './Autotile.ts';
 
 export { inspectGraphicsCapabilities, detectWebGpu, RENDERING_DECISIONS } from './Capabilities.ts';
 export type { GraphicsCapabilities, GraphicsProbe, GraphicsWorkload, RenderingDecision, WebGpuDetection } from './Capabilities.ts';
+
+export { loadTiledMap } from './TiledMap.ts';
+export type { TiledMapData, TiledTilesetData, TilesetSheet, LoadedTiledMap, TiledObject, TiledLayer } from './TiledMap.ts';

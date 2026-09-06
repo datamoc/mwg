@@ -293,5 +293,5 @@ export class StageScript {
 
 /** the seen-set key for a line - text alone is ambiguous once two characters can say the same thing */
 function seenKey(as: string | undefined, text: string): string {
-	return `${as ?? ''} ${text}`;
+	return `${as ?? ''}\u0000${text}`;
 }

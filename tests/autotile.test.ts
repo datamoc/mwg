@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { blobIndex, autotileFrames, BLOB_SHAPES, type NeighborMask } from '../src/render/Autotile.ts';
-import { EMPTY } from '../src/render/TileMap.ts';
+import { blobIndex, autotileFrames, BLOB_SHAPES, type NeighborMask } from '../src/two-d/render/Autotile.ts';
+import { EMPTY } from '../src/two-d/render/TileMap.ts';
 
 const NONE: NeighborMask = { n: false, e: false, s: false, w: false, ne: false, se: false, sw: false, nw: false };
 const ALL: NeighborMask = { n: true, e: true, s: true, w: true, ne: true, se: true, sw: true, nw: true };

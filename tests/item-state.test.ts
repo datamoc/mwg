@@ -24,6 +24,31 @@ test('enchant accumulates, and a negative delta lowers it (a curse, a degrading 
 	assert.equal(item.level, -2);
 });
 
+test('enchant defaults to keeping whatever affix an item carries', () => {
+	const item: InventoryItem = { id: 'sword', quantity: 1, affix: 'keen' };
+	enchant(item, 1);
+	assert.equal(item.affix, 'keen');
+});
+
+test('enchant with affixPolicy "remove" strips the affix (and its curse mark)', () => {
+	const item: InventoryItem = { id: 'sword', quantity: 1, affix: 'doomed', cursed: true };
+	enchant(item, 1, 'remove');
+	assert.equal(item.affix, undefined);
+	assert.equal(item.cursed, false);
+});
+
+test('enchant with affixPolicy "remove" on an item with no affix is a no-op', () => {
+	const item: InventoryItem = { id: 'sword', quantity: 1 };
+	enchant(item, 1, 'remove');
+	assert.equal(item.affix, undefined);
+});
+
+test('non-finite enchantment deltas do not corrupt the item level', () => {
+	const item: InventoryItem = { id: 'sword', quantity: 1, level: 2 };
+	assert.equal(enchant(item, Number.NaN), 2);
+	assert.equal(item.level, 2);
+});
+
 test('damageItem is a no-op for an item with no maxDurability set', () => {
 	const item: InventoryItem = { id: 'rock', quantity: 1 };
 	assert.equal(damageItem(item, 100), false);
@@ -40,6 +65,16 @@ test('damageItem reports true once durability reaches zero, and never goes negat
 	const item: InventoryItem = { id: 'blade', quantity: 1, maxDurability: 10, durability: 3 };
 	assert.equal(damageItem(item, 5), true);
 	assert.equal(item.durability, 0);
+});
+
+test('damage and repair ignore invalid or non-positive amounts', () => {
+	const item: InventoryItem = { id: 'blade', quantity: 1, maxDurability: 10, durability: 5 };
+	assert.equal(damageItem(item, -2), false);
+	assert.equal(damageItem(item, Number.NaN), false);
+	assert.equal(item.durability, 5);
+	repairItem(item, -2);
+	repairItem(item, Number.POSITIVE_INFINITY);
+	assert.equal(item.durability, 5);
 });
 
 test('repairItem restores durability, capped at maxDurability', () => {

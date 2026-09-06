@@ -1,5 +1,5 @@
 import { Container, Graphics, type Texture } from 'pixi.js';
-import { Signal } from '../core/Signal.ts';
+import { Signal } from '../../core/Signal.ts';
 import { NinePatch, type NinePatchOptions } from './NinePatch.ts';
 import { Label, type LabelOptions } from './Label.ts';
 import { theme, themeChanged, type Theme } from './theme.ts';

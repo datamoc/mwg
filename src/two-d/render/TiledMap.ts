@@ -1,5 +1,5 @@
-import { TileMap, EMPTY, tileFrame } from '../render/TileMap.ts';
-import { SpriteSheet } from '../render/SpriteSheet.ts';
+import { TileMap, EMPTY, tileFrame } from './TileMap.ts';
+import { SpriteSheet } from './SpriteSheet.ts';
 
 /**
  * The subset of Tiled's JSON export this loader reads: embedded or external tilesets,

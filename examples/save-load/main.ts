@@ -1,6 +1,6 @@
-import { Game, Scene } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
 import { SaveSystem } from '../../src/core/Save.ts';
-import { Button, Label, theme } from '../../src/ui/index.ts';
+import { Button, Label, theme } from '../../src/two-d/ui/index.ts';
 
 /**
  * `core.SaveSystem` on its own: one `state` shape (a score), `save`/`load`/`delete`, and
@@ -12,7 +12,7 @@ interface GameState {
 	score: number;
 }
 
-class SaveLoadScene extends Scene {
+class SaveLoadScene extends Scene2D {
 	private saves = new SaveSystem<GameState>({ namespace: 'save-load-example', version: 1 });
 	private state: GameState = { score: 0 };
 	private status!: Label;

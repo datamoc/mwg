@@ -1,5 +1,6 @@
-import { Game, Scene, LoadQueue, type LoadTaskContext } from '../../src/core/index.ts';
-import { LoadingScreen, Button, Label, theme } from '../../src/ui/index.ts';
+import { LoadQueue, type LoadTaskContext } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
+import { LoadingScreen, Button, Label, theme } from '../../src/two-d/ui/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 import { AssetStream } from '../../src/assets/index.ts';
 
@@ -26,7 +27,7 @@ function wait(seconds: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }
 
-class LoadingScene extends Scene {
+class LoadingScene extends Scene2D {
 	private screen!: LoadingScreen;
 	private queue!: LoadQueue;
 	private stream = new AssetStream();
@@ -113,7 +114,7 @@ class LoadingScene extends Scene {
 	}
 }
 
-class ReadyScene extends Scene {
+class ReadyScene extends Scene2D {
 	override create(): void {
 		const game = Game.current;
 		const label = new Label({

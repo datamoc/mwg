@@ -3,6 +3,10 @@ import type { Scene } from './Scene.ts';
 /**
  * The stack of scenes a `Game` runs: exactly one updates, all render.
  *
+ * Generic over the scene type, and typed against `core.Scene`'s lifecycle rather than any
+ * display node, so a Pixi game uses `SceneStack<Scene2D>` and a Babylon game its own - this
+ * class only ever calls `create`, `destroy`, `resize`, `update`, `onSuspend` and `onResume`.
+ *
  * `switchScene` replaces the whole stack, for moving between screens.
  * `pushScene` suspends the current scene and starts another on top of it - a
  * minigame over the dungeon, a pause menu over play - and `popScene` destroys
@@ -13,11 +17,11 @@ import type { Scene } from './Scene.ts';
  * Takes instances, never classes: constructing scenes is the `Game`'s job, and
  * keeping it out is what keeps this testable without a browser.
  */
-export class SceneStack {
-	private scenes: Scene[] = [];
+export class SceneStack<T extends Scene = Scene> {
+	private scenes: T[] = [];
 
 	/** the scene that updates, or null when the stack is empty */
-	get current(): Scene | null {
+	get current(): T | null {
 		return this.scenes.length === 0 ? null : this.scenes[this.scenes.length - 1];
 	}
 
@@ -26,14 +30,14 @@ export class SceneStack {
 	}
 
 	/** replaces everything with one scene, destroying what was there */
-	replace(scene: Scene): void {
+	replace(scene: T): void {
 		for (const old of this.scenes) old.destroy();
 		this.scenes = [scene];
 		scene.create();
 	}
 
 	/** suspends the current scene and starts another above it */
-	push(scene: Scene): void {
+	push(scene: T): void {
 		this.current?.onSuspend();
 		this.scenes.push(scene);
 		scene.create();

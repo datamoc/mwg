@@ -1,10 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { TileMap, EMPTY } from '../src/render/TileMap.ts';
-import { SpriteSheet } from '../src/render/SpriteSheet.ts';
+import { TileMap, EMPTY } from '../src/two-d/render/TileMap.ts';
+import { SpriteSheet } from '../src/two-d/render/SpriteSheet.ts';
 import { Texture, TextureSource } from 'pixi.js';
 import { automap, type AutomapRule } from '../src/rpg/automap.ts';
+import { EMPTY as AUTOMAP_EMPTY } from '../src/rpg/automap.ts';
+import { EMPTY as TILEMAP_EMPTY } from '../src/two-d/render/TileMap.ts';
 
 function sheet(): SpriteSheet {
 	const source = new TextureSource({ width: 64, height: 64 });
@@ -118,4 +120,10 @@ test('a misshapen rule is an authoring error', () => {
 		/no outputs/
 	);
 	assert.throws(() => automap(map, [{ width: 0, height: 1, input: {}, outputs: [{}] }]), /positive width/);
+});
+
+test('the automap wildcard stays equal to the render module own EMPTY', () => {
+	//AUTOMAP_EMPTY is declared in rpg rather than imported, so that automapping needs no
+	//renderer. That is only safe while the two values agree, which is what this pins.
+	assert.equal(AUTOMAP_EMPTY, TILEMAP_EMPTY);
 });

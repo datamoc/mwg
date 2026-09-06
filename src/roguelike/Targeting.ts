@@ -166,6 +166,39 @@ export function chainTargets(candidates: readonly Step[], origin: Step, jumps: n
 }
 
 /**
+ * A damage/effect multiplier keyed to range band - the "melee bonus, falls off at range" or
+ * "point-blank penalty on a ranged weapon" family of modifiers many games attach to an attack
+ * once its distance is known. `mwg` supplies no default bands or multipliers, only the lookup:
+ * bands are checked in order, the first whose `max` is at or above `distance` applies, and a
+ * distance past every band's `max` falls back to `beyond`.
+ */
+export interface RangeBand {
+	/** the greatest distance this band covers */
+	max: number;
+	multiplier: number;
+}
+
+export function rangeMultiplier(distance: number, bands: readonly RangeBand[], beyond = 1): number {
+	for (const band of bands) {
+		if (distance <= band.max) return band.multiplier;
+	}
+	return beyond;
+}
+
+/**
+ * A per-target multiplier for an area effect hitting several targets at once, stepping down
+ * (or up) by how many targets were already resolved before this one - "full damage to the
+ * first target hit, half to every one after" is `areaFalloffMultiplier(index, [1, 0.5])`.
+ * `index` is the target's zero-based order among everyone the area shape hit (`resolveArea`'s
+ * own returned order is a natural source); an index past the end of `steps` repeats the last
+ * step rather than falling back to full strength.
+ */
+export function areaFalloffMultiplier(index: number, steps: readonly number[]): number {
+	if (steps.length === 0) return 1;
+	return steps[Math.min(index, steps.length - 1)];
+}
+
+/**
  * The cells something shoved from `from` along `direction` (a unit step, one of the 8)
  * travels: every passable cell up to `distance`, stopping before the first impassable
  * one. The game moves the shoved actor to the last cell returned - or nowhere, when the

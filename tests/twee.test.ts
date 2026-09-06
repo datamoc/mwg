@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { importTwee } from '../src/stage/twee.ts';
+import { importTwee } from '../src/two-d/stage/twee.ts';
 
 test('links become a closing ask, and the last line becomes its prompt', () => {
 	const { story, start } = importTwee(`:: Start

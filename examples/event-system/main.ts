@@ -1,7 +1,7 @@
-import { Game, Scene } from '../../src/core/index.ts';
+import { Game, Scene2D } from '../../src/two-d/index.ts';
 import { GameState, activePage, EventRunner, type MapEvent } from '../../src/rpg/index.ts';
 import { StatBlock, Inventory, EquipmentSlots, type InventoryItem, type EquippableItem } from '../../src/actors/index.ts';
-import { Button, Label, WindowStack, theme } from '../../src/ui/index.ts';
+import { Button, Label, WindowStack, theme, messageBoxPresenter } from '../../src/two-d/ui/index.ts';
 
 /**
  * `mwg/rpg`'s data-driven event model - `GameState` (switches/variables), `activePage` (the
@@ -73,7 +73,7 @@ function grantGift(): void {
 	equipment.equip('weapon', GIFT);
 }
 
-class EventSystemScene extends Scene {
+class EventSystemScene extends Scene2D {
 	private windows = new WindowStack();
 	private runner: EventRunner | null = null;
 	private status!: Label;
@@ -103,7 +103,7 @@ class EventSystemScene extends Scene {
 		const page = activePage(EVENT, state);
 		if (!page) return;
 
-		this.runner = new EventRunner({ windows: this.windows, game: state });
+		this.runner = new EventRunner({ present: messageBoxPresenter(this.windows), game: state });
 		await this.runner.run(page.commands);
 		this.runner = null;
 		this.refreshStatus();

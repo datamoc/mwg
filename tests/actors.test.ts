@@ -138,6 +138,69 @@ test('stackable items merge into one slot', () => {
 	assert.equal(bag.find('arrow')?.quantity, 15);
 });
 
+test('stackable items with different instanceIds stay in separate slots', () => {
+	const bag = new Inventory();
+	bag.add({ id: 'sword', quantity: 1, stackable: true, instanceId: 'enchanted' });
+	bag.add({ id: 'sword', quantity: 1, stackable: true, instanceId: 'plain' });
+
+	assert.equal(bag.items.length, 2, 'same id, different instances, must not merge');
+});
+
+test('stackable items with the same instanceId still merge', () => {
+	const bag = new Inventory();
+	bag.add({ id: 'arrow', quantity: 10, stackable: true, instanceId: 'blessed' });
+	bag.add({ id: 'arrow', quantity: 5, stackable: true, instanceId: 'blessed' });
+
+	assert.equal(bag.items.length, 1);
+	assert.equal(bag.items[0].quantity, 15);
+});
+
+test('find and remove can target one item instance without touching its siblings', () => {
+	const bag = new Inventory();
+	bag.add({ id: 'sword', quantity: 1, stackable: true, instanceId: 'flame' });
+	bag.add({ id: 'sword', quantity: 1, stackable: true, instanceId: 'frost' });
+
+	assert.equal(bag.find('sword', 'frost')?.instanceId, 'frost');
+	bag.remove('sword', 1, 'flame');
+
+	assert.equal(bag.find('sword', 'flame'), undefined);
+	assert.equal(bag.find('sword', 'frost')?.instanceId, 'frost');
+});
+
+test('take splits a stack while preserving the item instance state', () => {
+	const bag = new Inventory();
+	bag.add({ id: 'arrow', quantity: 10, stackable: true, instanceId: 'poisoned', affix: 'venom', level: 2 });
+
+	const taken = bag.take('arrow', 3, 'poisoned');
+	assert.deepEqual(taken, { id: 'arrow', quantity: 3, stackable: true, instanceId: 'poisoned', affix: 'venom', level: 2 });
+	assert.equal(bag.find('arrow', 'poisoned')?.quantity, 7);
+});
+
+test('remove and take ignore invalid non-positive quantities', () => {
+	const bag = new Inventory();
+	bag.add({ id: 'arrow', quantity: 4, stackable: true, instanceId: 'plain' });
+
+	bag.remove('arrow', -2, 'plain');
+	assert.equal(bag.find('arrow', 'plain')?.quantity, 4);
+	assert.equal(bag.take('arrow', 0.5, 'plain'), undefined);
+	assert.equal(bag.find('arrow', 'plain')?.quantity, 4);
+});
+
+test('add rejects invalid quantities without creating a slot', () => {
+	const bag = new Inventory();
+	assert.equal(bag.add({ id: 'bad-zero', quantity: 0 }), false);
+	assert.equal(bag.add({ id: 'bad-negative', quantity: -1 }), false);
+	assert.equal(bag.add({ id: 'bad-nan', quantity: Number.NaN }), false);
+	assert.equal(bag.items.length, 0);
+});
+
+test('add rejects invalid weights without changing the inventory', () => {
+	const bag = new Inventory({ capacity: 10 });
+	assert.equal(bag.add({ id: 'heavy', quantity: 1, weight: -1 }), false);
+	assert.equal(bag.add({ id: 'unknown', quantity: 1, weight: Number.NaN }), false);
+	assert.equal(bag.totalWeight, 0);
+});
+
 test('non-stackable items each get their own slot', () => {
 	const bag = new Inventory();
 	bag.add({ id: 'sword', quantity: 1 });

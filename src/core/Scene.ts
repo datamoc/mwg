@@ -1,16 +1,18 @@
-import { Container } from 'pixi.js';
 import { Signal } from './Signal.ts';
 
 /**
  * One screen of the game: a title, a menu, the dungeon itself.
  *
- * A scene owns a Pixi container and everything in it. Switching scenes destroys the old
- * one, so a scene may hold whatever state it likes without cleaning up by hand.
+ * This is the lifecycle half only, and owns no renderer: `create`, `update`, `resize`, the
+ * suspend/resume pair a pushed scene needs, and a destroy that fires once. `two-d.Scene2D`
+ * adds the Pixi container a 2D game draws into; a Babylon game supplies its own equivalent.
+ * The split exists so `SceneStack` - which never touches a display node, only these methods -
+ * works for either, rather than scene management being something only a Pixi game gets.
+ *
+ * Switching scenes destroys the old one, so a scene may hold whatever state it likes without
+ * cleaning up by hand.
  */
 export abstract class Scene {
-	/** everything this scene draws hangs off here */
-	readonly stage = new Container();
-
 	/** fires when the scene is torn down, for listeners that need to detach */
 	readonly onDestroy = new Signal<void>();
 
@@ -56,7 +58,17 @@ export abstract class Scene {
 
 		this.onDestroy.dispatch();
 		this.onDestroy.removeAll();
-		this.stage.destroy({ children: true });
+		this.teardown();
+	}
+
+	/**
+	 * Renderer-owned resources this scene holds, released exactly once as it is destroyed.
+	 *
+	 * The base owns none, because it owns no renderer; `two-d.Scene2D` destroys its container
+	 * here. A subclass overriding it does not need to call `super.teardown()`.
+	 */
+	protected teardown(): void {
+		//nothing renderer-shaped at this level
 	}
 
 	get isDestroyed(): boolean {
@@ -64,4 +76,4 @@ export abstract class Scene {
 	}
 }
 
-export type SceneClass = new () => Scene;
+export type SceneClass<T extends Scene = Scene> = new () => T;

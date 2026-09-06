@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Texture, TextureSource } from 'pixi.js';
 
-import { LayeredSprite } from '../src/render/LayeredSprite.ts';
+import { LayeredSprite } from '../src/two-d/render/LayeredSprite.ts';
 
 function blankTexture(): Texture {
 	return new Texture({ source: new TextureSource({ width: 8, height: 8 }) });

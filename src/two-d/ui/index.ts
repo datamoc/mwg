@@ -42,6 +42,9 @@ export type { FloatingTextOptions } from './FloatingText.ts';
 export { Toast } from './Toast.ts';
 export type { ToastOptions } from './Toast.ts';
 
+export { Tooltip } from './Tooltip.ts';
+export type { TooltipOptions } from './Tooltip.ts';
+
 export { HelpScreen } from './HelpScreen.ts';
 export type { HelpScreenOptions, HelpTopic } from './HelpScreen.ts';
 
@@ -50,3 +53,6 @@ export type { StatsScreenOptions, StatRow } from './StatsScreen.ts';
 
 export { LoadingScreen } from './LoadingScreen.ts';
 export type { LoadingScreenOptions } from './LoadingScreen.ts';
+
+export { messageBoxPresenter } from './EventDialogue.ts';
+export type { MessageBoxPresenterOptions } from './EventDialogue.ts';
