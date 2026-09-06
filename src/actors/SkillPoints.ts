@@ -75,4 +75,22 @@ export class SkillPoints {
 		const cost = this.costFor(stat, rank + 1);
 		return this.available >= cost ? cost : null;
 	}
+
+	/**
+	 * The unspent ledger, and only that.
+	 *
+	 * Spent points are already saved: `spend` raises a stat's *base* value on the `StatBlock`,
+	 * so restoring that block restores every rank ever bought. Recording them a second time
+	 * here would be state kept in two places, which is exactly the kind of pair that drifts
+	 * the first time one path forgets to update the other.
+	 */
+	toJSON(): { points: number } {
+		return { points: this.available };
+	}
+
+	static fromJSON(stats: StatBlock, options: SkillPointsOptions, data: { points: number }): SkillPoints {
+		const ledger = new SkillPoints(stats, options);
+		ledger.available = data.points;
+		return ledger;
+	}
 }

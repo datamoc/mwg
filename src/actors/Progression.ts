@@ -52,4 +52,13 @@ export class Progression {
 		}
 		return gained;
 	}
+
+	/** level and experience; the curve itself is a definition, supplied fresh on load */
+	toJSON(): { level: number; experience: number } {
+		return { level: this.level, experience: this.experience };
+	}
+
+	static fromJSON(curve: GrowthCurve, data: { level: number; experience: number }): Progression {
+		return new Progression(curve, data);
+	}
 }

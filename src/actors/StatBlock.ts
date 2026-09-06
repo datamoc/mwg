@@ -119,4 +119,27 @@ export class StatBlock {
 	private modifiersFor(stat: string): Modifier[] {
 		return this.modifiers.filter((m) => m.stat === stat);
 	}
+
+	/**
+	 * Base attribute values, and deliberately nothing else.
+	 *
+	 * Modifiers are not saved, because every one of them is owned by whatever applied it: a
+	 * worn item through `EquipmentSlots`, a timed effect through `applyStatusEffect`, an
+	 * adjacency bonus through `AuraField`. Each of those reapplies its own on load, tagged
+	 * with its own `source`, so saving them here as well would double every bonus the instant
+	 * a restored character re-equipped what it was already wearing. Derived stats are
+	 * definitions, supplied fresh on load like every other definition in this framework.
+	 */
+	toJSON(): { base: Stats } {
+		return { base: { ...this.baseValues } };
+	}
+
+	static fromJSON(options: StatBlockOptions, data: { base: Stats }): StatBlock {
+		const stats = new StatBlock(options);
+		//the saved values win, but a stat added to the game since the save was written keeps
+		//the definition's starting value rather than vanishing
+		stats.baseValues = { ...options.base, ...data.base };
+		stats.cache = null;
+		return stats;
+	}
 }

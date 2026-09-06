@@ -52,11 +52,16 @@ export class EquipmentSlots<Slot extends string, Item extends EquippableItem> {
 		if (this.isLocked(slot)) return undefined;
 		const previous = this.unequip(slot);
 
+		this.wear(slot, item);
+		return previous;
+	}
+
+	/** puts an item on and applies its modifiers, with no lock check - the shared half of `equip` and `fromJSON` */
+	private wear(slot: Slot, item: Item): void {
 		this.worn.set(slot, item);
 		for (const modifier of item.modifiers ?? []) {
 			this.stats?.addModifier({ ...modifier, source: item });
 		}
-		return previous;
 	}
 
 	/** @returns the removed item, or undefined for an empty slot - or a locked one, which stays put */
@@ -77,4 +82,48 @@ export class EquipmentSlots<Slot extends string, Item extends EquippableItem> {
 	private assertSlot(slot: Slot): void {
 		if (!this.names.has(slot)) throw new Error(`no such equipment slot: "${slot}"`);
 	}
+
+	/**
+	 * Which slot holds which item, by whatever id `identify` gives each one.
+	 *
+	 * An item is a game's own object here (`Item` is a type parameter, and `EquippableItem`
+	 * requires only `modifiers`), so this framework has no idea what identifies one. The
+	 * caller says, usually with the same id its item table is keyed by.
+	 */
+	toJSON(identify: (item: Item) => string): SavedEquipment<Slot> {
+		return { worn: [...this.worn].map(([slot, item]) => [slot, identify(item)]) };
+	}
+
+	/**
+	 * Rebuilds the slots and re-equips everything, so each item's modifiers land back on the
+	 * `StatBlock` exactly as they were.
+	 *
+	 * That reapplication is the point: `StatBlock.toJSON` deliberately saves no modifiers,
+	 * precisely because whatever applied them puts them back on load. A locked item is
+	 * restored rather than refused - a cursed ring the character was already wearing is still
+	 * on their finger after a reload, and `equip`'s refusal is about *putting one on*, which
+	 * is not what this is doing.
+	 */
+	static fromJSON<Slot extends string, Item extends EquippableItem>(
+		defs: {
+			slots: readonly Slot[];
+			/** turns a saved id back into the game's own item object */
+			resolve: (id: string) => Item;
+			stats?: StatBlock | null;
+			locked?: (slot: Slot, item: Item) => boolean;
+		},
+		data: SavedEquipment<Slot>
+	): EquipmentSlots<Slot, Item> {
+		const equipment = new EquipmentSlots<Slot, Item>(defs.slots, defs.stats ?? null, { locked: defs.locked });
+
+		for (const [slot, id] of data.worn) {
+			equipment.assertSlot(slot);
+			equipment.wear(slot, defs.resolve(id));
+		}
+		return equipment;
+	}
+}
+
+export interface SavedEquipment<Slot extends string> {
+	worn: [Slot, string][];
 }

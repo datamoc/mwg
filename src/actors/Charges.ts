@@ -45,6 +45,18 @@ export class Charges {
 		return true;
 	}
 
+	/**
+	 * Restores charges directly, outside the normal regen path - a killing blow or a crit
+	 * refunding one on the spot. Capped at `max`.
+	 *
+	 * @returns how many were actually added, which is less than `amount` once `max` is hit
+	 */
+	refund(amount = 1): number {
+		const added = Math.min(amount, this.max - this.value);
+		this.value += added;
+		return added;
+	}
+
 	/** banks `turns` of regeneration time, converting whole `regenRate`-sized chunks into charges */
 	advance(turns = 1): void {
 		if (this.value >= this.max) return;
@@ -57,5 +69,22 @@ export class Charges {
 
 		//full again: no point banking further progress towards a charge there is no room for
 		if (this.value >= this.max) this.progress = 0;
+	}
+
+	/**
+	 * Charges held, and progress banked towards the next one.
+	 *
+	 * The banked progress matters as much as the count: without it, saving and loading part
+	 * way to a recharge would silently reset that wait, so a player could refresh a wand a
+	 * little faster by reloading. `max` and `regenRate` are definitions, supplied fresh.
+	 */
+	toJSON(): { current: number; progress: number } {
+		return { current: this.value, progress: this.progress };
+	}
+
+	static fromJSON(options: ChargesOptions, data: { current: number; progress: number }): Charges {
+		const charges = new Charges({ ...options, current: data.current });
+		charges.progress = data.progress;
+		return charges;
 	}
 }
