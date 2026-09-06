@@ -20,9 +20,15 @@ jobs:
       # which is what a classic automation token still hit) needed at all
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v6
+      # must be v7, not v6: v6 exports a dummy NODE_AUTH_TOKEN fallback (defaulting to
+      # github.token, a GitHub API token) into .npmrc even when no npm token is configured.
+      # npm then tries that bogus credential against registry.npmjs.org before ever
+      # attempting the OIDC exchange, and fails with E401 - which is exactly what every run
+      # of this workflow did under v6. v7 removed that fallback for precisely this reason:
+      # "npm Trusted Publishing (OIDC) is not affected, since it does not use NODE_AUTH_TOKEN."
+      - uses: actions/setup-node@v7
         with:
           node-version: '26'
           # never cache in a release build: a stale package-manager cache is exactly the
