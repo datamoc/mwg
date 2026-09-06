@@ -28,13 +28,44 @@
 			margin-bottom: 0.5rem;
 		}
 
-		.example-nav {
+		.example-nav-top {
 			display: flex;
 			justify-content: space-between;
-			gap: 1rem;
-			margin-top: 1.25rem;
+			align-items: center;
+			gap: 0.75rem;
+			flex-wrap: wrap;
+			margin-bottom: 1rem;
+		}
+
+		.example-frame-wrap {
+			position: relative;
+		}
+
+		.example-activate {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.5rem;
+			background: rgba(5, 7, 10, 0.72);
+			color: var(--paper);
+			border: 1px solid var(--line-strong);
 			font-family: var(--font-display);
-			font-size: 0.85rem;
+			font-size: 0.95rem;
+			letter-spacing: 0.02em;
+			cursor: pointer;
+		}
+
+		.example-activate:hover {
+			border-color: var(--add);
+			color: var(--add);
+		}
+
+		.example-activate[hidden] {
+			display: none;
 		}
 
 		.controls {
@@ -95,9 +126,9 @@
 		<div class="wrap">
 			<a class="brand" href="../index.html"><span class="dot"></span>mwg</a>
 			<nav class="site-nav">
+				<a href="./index.html" aria-current="page">Examples</a>
 				<a href="../getting-started/index.html">Getting started</a>
 				<a href="../documentation/index.html">Documentation</a>
-				<a href="./index.html" aria-current="page">Examples</a>
 				<a href="../design/index.html">Design</a>
 				<a href="../faq/index.html">FAQ</a>
 				<a href="https://github.com/datamoc/mwg">GitHub</a>
@@ -108,25 +139,29 @@
 	<main>
 		<section>
 			<div class="wrap">
-				<p class="eyebrow"><a href="./index.html">&larr; all examples</a></p>
+				<nav class="example-nav-top">
+					<a class="btn" id="example-prev" href="#">&larr; <span id="example-prev-label">Previous</span></a>
+					<a class="btn" href="./index.html">All examples</a>
+					<a class="btn" id="example-next" href="#"><span id="example-next-label">Next</span> &rarr;</a>
+				</nav>
 				<div class="panel example" style="padding: 1.25rem">
 					<div class="example-head">
 						<h1 id="example-title" style="margin: 0"></h1>
 						<a class="btn" id="example-fullscreen" href="#">Open full screen</a>
 					</div>
 					<p id="example-description"></p>
-					<iframe class="example-frame" id="example-frame" title="mwg example" loading="eager"></iframe>
+					<div class="example-frame-wrap">
+						<iframe class="example-frame" id="example-frame" title="mwg example" loading="eager"></iframe>
+						<button class="example-activate" id="example-activate" type="button">
+							&#9654; Click to start &amp; enable keyboard controls
+						</button>
+					</div>
 					<p class="controls" id="example-controls" hidden></p>
 					<p class="build-note" id="example-build-note" hidden></p>
 					<img class="example-diagram" id="example-diagram" alt="" hidden />
 					<p class="example-source-heading" id="example-source-heading" hidden>Source</p>
 					<pre class="example-source" id="example-source" hidden><code id="example-source-code"></code></pre>
 				</div>
-
-				<nav class="example-nav">
-					<a id="example-prev" href="#">&larr; previous</a>
-					<a id="example-next" href="#">next &rarr;</a>
-				</nav>
 			</div>
 		</section>
 	</main>
@@ -192,9 +227,19 @@
 		var prevLink = document.getElementById('example-prev');
 		var nextLink = document.getElementById('example-next');
 		prevLink.href = './view.html?ex=' + encodeURIComponent(prevExample.id);
-		prevLink.textContent = '← ' + prevExample.title;
+		document.getElementById('example-prev-label').textContent = prevExample.title;
 		nextLink.href = './view.html?ex=' + encodeURIComponent(nextExample.id);
-		nextLink.textContent = nextExample.title + ' →';
+		document.getElementById('example-next-label').textContent = nextExample.title;
+
+		//an iframed game gets no keyboard events at all until the frame itself has focus, and a
+		//plain click into it does not reliably grab that focus in every browser the way clicking
+		//an ordinary page element does - so this is a real, functional fix, not just a hint
+		var activate = document.getElementById('example-activate');
+		var frame = document.getElementById('example-frame');
+		activate.addEventListener('click', function () {
+			frame.focus();
+			activate.hidden = true;
+		});
 	</script>
 </body>
 </html>
