@@ -40,7 +40,7 @@ export class BossPhases {
 	 * a game fires each phase's enter-hook exactly once; a single massive hit can enter
 	 * several at once, and all of them are reported
 	 */
-	update(hpFraction: number): number[] {
+	check(hpFraction: number): number[] {
 		let phase = 0;
 		while (phase < this.thresholds.length && hpFraction <= this.thresholds[phase]) phase++;
 
@@ -69,7 +69,7 @@ export class BossPhases {
 }
 
 /**
- * One ability per named slot, each with its own cooldown in turns: `tick()` counts every
+ * One ability per named slot, each with its own cooldown in turns: `advance()` counts every
  * cooldown down by one turn, `ready()` lists whatever may fire now, and `use(id)` spends
  * one - resetting its full cooldown - reporting whether it was actually ready, so a game
  * can tell "fired" from "still waiting" without tracking the counters itself.
@@ -82,11 +82,11 @@ export class AbilityCycle {
 		this.cooldowns = new Map(Object.entries(cooldowns));
 	}
 
-	/** counts every cooling-down ability one turn closer to ready */
-	tick(): void {
+	/** counts every cooling-down ability `turns` closer to ready */
+	advance(turns = 1): void {
 		for (const [id, left] of this.remaining) {
-			if (left <= 1) this.remaining.delete(id);
-			else this.remaining.set(id, left - 1);
+			if (left <= turns) this.remaining.delete(id);
+			else this.remaining.set(id, left - turns);
 		}
 	}
 

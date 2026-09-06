@@ -36,12 +36,12 @@ export class Field {
 		return [...this.conditions.values()];
 	}
 
-	/** ticks every timed condition down by one round, clearing any that just ran out */
-	advance(): void {
+	/** ticks every timed condition down by `rounds`, clearing any that just ran out */
+	advance(rounds = 1): void {
 		for (const [id, condition] of this.conditions) {
 			if (condition.duration === undefined) continue;
 
-			condition.duration -= 1;
+			condition.duration -= rounds;
 			if (condition.duration <= 0) this.conditions.delete(id);
 		}
 	}

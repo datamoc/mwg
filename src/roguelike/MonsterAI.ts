@@ -79,7 +79,7 @@ export function decideMonsterAI(
 /** a random open neighbour, or null when boxed in - wandering needs no path, just a step */
 function wanderStep(level: Level, self: Step, options: PathOptions): Step | null {
 	const open = openNeighbours(level, self, options);
-	return open.length > 0 ? Random.element(open)! : null;
+	return Random.element(open);
 }
 
 /** the open neighbour furthest from the target - moving away needs no path either */

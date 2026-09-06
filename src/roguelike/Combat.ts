@@ -1,3 +1,5 @@
+import { HookRegistry } from '../core/Hooks.ts';
+
 export type CombatEvent = 'beforeAttack' | 'beforeDamage' | 'afterDamage' | 'onKill' | string;
 
 export interface DamageContext<C> {
@@ -8,28 +10,14 @@ export interface DamageContext<C> {
 	[kind: string]: unknown;
 }
 
-export interface CombatHook<C> {
-	event: CombatEvent;
-	handler: (context: DamageContext<C>) => void;
-	source?: unknown;
-}
-
-/** Generic combat lifecycle hooks; the game owns HP, formulas, and when each event fires. */
-export class CombatHooks<C> {
-	private hooks: CombatHook<C>[] = [];
-
-	on(event: CombatEvent, handler: (context: DamageContext<C>) => void, source?: unknown): void {
-		this.hooks.push({ event, handler, source });
-	}
-
-	offSource(source: unknown): void {
-		this.hooks = this.hooks.filter((hook) => hook.source !== source);
-	}
-
-	emit(event: CombatEvent, context: DamageContext<C>): void {
-		for (const hook of this.hooks) if (hook.event === event) hook.handler(context);
-	}
-
+/**
+ * Generic combat lifecycle hooks; the game owns HP, formulas, and when each event fires.
+ *
+ * The registry is `core.HookRegistry`, the same one `battle.BattleHooks` uses - these were two
+ * copies of one class for a while. What is combat-specific is that a handler receives a single
+ * mutable `DamageContext`, and the `modifyDamage` seam below built on it.
+ */
+export class CombatHooks<C> extends HookRegistry<[context: DamageContext<C>]> {
 	/** Runs the pre-damage seam and clamps the resulting amount at zero. */
 	modifyDamage(attacker: C, defender: C, amount: number): DamageContext<C> {
 		const context: DamageContext<C> = { attacker, defender, amount, prevented: false };
@@ -39,3 +27,5 @@ export class CombatHooks<C> {
 		return context;
 	}
 }
+
+export type { Hook as CombatHook } from '../core/Hooks.ts';

@@ -23,7 +23,7 @@ test('support progress cannot fall below zero and round-trips', () => {
 	support.add('a', 'b', 4);
 	support.add('a', 'b', -10);
 	assert.equal(support.get('a', 'b'), 0);
-	const restored = SupportLedger.restore(levels, support.save());
+	const restored = SupportLedger.fromJSON(levels, support.toJSON());
 	assert.equal(restored.get('b', 'a'), 0);
 });
 

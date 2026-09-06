@@ -57,7 +57,7 @@ export class SupportLedger {
 		return { a, b, points, previousLevel, level: this.level(a, b) };
 	}
 
-	save(): SupportSave {
+	toJSON(): SupportSave {
 		const pairs = [...this.points].map(([key, points]) => {
 			const [a, b] = key.split('\u0000');
 			return [a, b, points] as [string, string, number];
@@ -65,7 +65,7 @@ export class SupportLedger {
 		return { pairs };
 	}
 
-	static restore(levels: readonly SupportLevel[], data: SupportSave): SupportLedger {
+	static fromJSON(levels: readonly SupportLevel[], data: SupportSave): SupportLedger {
 		const ledger = new SupportLedger(levels);
 		for (const [a, b, points] of data.pairs) {
 			if (!a || !b || a === b || !Number.isFinite(points) || points < 0) throw new Error('invalid support save data');

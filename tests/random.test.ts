@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Generator, withSeed, int, normalRange, weighted, shuffle, reset } from '../src/core/Random.ts';
+import { Generator, withSeed, int, normalRange, weighted, weightedKey, element, shuffle, reset } from '../src/core/Random.ts';
 
 test('the same seed produces the same stream', () => {
 	const a = new Generator(12345);
@@ -136,7 +136,7 @@ test('weighted draws in proportion to the weights', () => {
 	const draws = 200_000;
 	const counts = [0, 0, 0];
 
-	for (let i = 0; i < draws; i++) counts[weighted(weights)]++;
+	for (let i = 0; i < draws; i++) counts[weighted(weights)!]++;
 
 	const total = weights.reduce((a, b) => a + b, 0);
 	weights.forEach((w, i) => {
@@ -145,9 +145,12 @@ test('weighted draws in proportion to the weights', () => {
 	});
 });
 
-test('weighted returns -1 when every weight is zero', () => {
-	assert.equal(weighted([0, 0, 0]), -1);
-	assert.equal(weighted([]), -1);
+test('every "pick one" function reports nothing to pick as null, not -1 or undefined', () => {
+	assert.equal(weighted([0, 0, 0]), null);
+	assert.equal(weighted([]), null);
+	assert.equal(element([]), null);
+	assert.equal(weightedKey(new Map()), null);
+	assert.equal(weightedKey(new Map([['a', 0]])), null);
 });
 
 test('shuffle sends every value to every position equally often', () => {

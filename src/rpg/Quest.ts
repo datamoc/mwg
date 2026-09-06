@@ -131,9 +131,14 @@ export class QuestLog {
 	 * the next one would also already be satisfied; call it again (a fresh turn, a fresh
 	 * check) to walk through several at once.
 	 *
+	 * Named `advanceStage` rather than `advance`, because everything else called `advance` in
+	 * this framework ticks a clock forward by whole turns (`TurnClock`, `Charges`, `Field`,
+	 * `Barrier`, `AbilityCycle`). This advances a quest through its stage list, which is not
+	 * time passing at all, and sharing the word made both harder to read.
+	 *
 	 * @returns true if a stage (or the whole quest) completed this call
 	 */
-	advance(id: string, state: GameState): boolean {
+	advanceStage(id: string, state: GameState): boolean {
 		if (!this.stageSatisfied(id, state)) return false;
 
 		this.stageIndex.set(id, this.stageIndex.get(id)! + 1);

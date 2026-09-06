@@ -27,7 +27,7 @@ export function rollLoot(table: LootTable): { id: string; quantity: number } | n
 	if (!Random.chance(table.chance ?? 1)) return null;
 
 	const index = Random.weighted(table.entries.map((entry) => entry.weight));
-	if (index === -1) return null;
+	if (index === null) return null;
 
 	const entry = table.entries[index];
 	return { id: entry.id, quantity: entry.quantity ?? 1 };

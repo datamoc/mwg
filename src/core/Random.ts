@@ -166,15 +166,25 @@ export function chance(probability: number): boolean {
 	return current().float() < probability;
 }
 
-export function element<T>(items: readonly T[]): T | undefined {
-	return items.length > 0 ? items[current().int(items.length)] : undefined;
+/**
+ * Every "pick one" function here reports "there was nothing to pick" as `null`, never as
+ * `-1` or `undefined`.
+ *
+ * `weighted` used to return `-1` and the two functions built on it returned `undefined`,
+ * which meant one call chain carried three different spellings of the same outcome and two
+ * separate hand-written translations between them. One sentinel, checked one way.
+ */
+
+/** a random element, or `null` for an empty list */
+export function element<T>(items: readonly T[]): T | null {
+	return items.length > 0 ? items[current().int(items.length)] : null;
 }
 
-/** an index into `weights`, each index drawn in proportion to its weight */
-export function weighted(weights: readonly number[]): number {
+/** an index into `weights` drawn in proportion to its weight, or `null` if nothing has any */
+export function weighted(weights: readonly number[]): number | null {
 	let total = 0;
 	for (const w of weights) total += w;
-	if (total <= 0) return -1;
+	if (total <= 0) return null;
 
 	let value = current().float() * total;
 	for (let i = 0; i < weights.length; i++) {
@@ -184,11 +194,11 @@ export function weighted(weights: readonly number[]): number {
 	return weights.length - 1;
 }
 
-/** a key from `weights`, drawn in proportion to the value it maps to */
-export function weightedKey<K>(weights: ReadonlyMap<K, number>): K | undefined {
+/** a key from `weights`, drawn in proportion to the value it maps to, or `null` if none has any */
+export function weightedKey<K>(weights: ReadonlyMap<K, number>): K | null {
 	const keys = [...weights.keys()];
 	const index = weighted(keys.map((k) => weights.get(k) ?? 0));
-	return index === -1 ? undefined : keys[index];
+	return index === null ? null : keys[index];
 }
 
 /** Fisher-Yates, in place */

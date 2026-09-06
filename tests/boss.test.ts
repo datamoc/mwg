@@ -10,43 +10,43 @@ test('thresholds must descend', () => {
 test('a fresh fight sits at phase 0 and reports nothing new', () => {
 	const phases = new BossPhases([0.66, 0.33]);
 	assert.equal(phases.phase, 0);
-	assert.deepEqual(phases.update(1), []);
+	assert.deepEqual(phases.check(1), []);
 	assert.equal(phases.phase, 0);
 });
 
 test('crossing one threshold enters exactly that phase', () => {
 	const phases = new BossPhases([0.66, 0.33]);
-	assert.deepEqual(phases.update(0.5), [1]);
+	assert.deepEqual(phases.check(0.5), [1]);
 	assert.equal(phases.phase, 1);
-	assert.deepEqual(phases.update(0.5), [], 'same fraction twice fires nothing');
+	assert.deepEqual(phases.check(0.5), [], 'same fraction twice fires nothing');
 });
 
 test('a massive hit enters every skipped phase at once, in order', () => {
 	const phases = new BossPhases([0.66, 0.33]);
-	assert.deepEqual(phases.update(0.1), [1, 2]);
+	assert.deepEqual(phases.check(0.1), [1, 2]);
 });
 
 test('healing back up never leaves a phase', () => {
 	const phases = new BossPhases([0.66]);
-	phases.update(0.5);
-	phases.update(1);
+	phases.check(0.5);
+	phases.check(1);
 	assert.equal(phases.phase, 1);
 });
 
 test('reset restarts the ladder for a rematch', () => {
 	const phases = new BossPhases([0.66]);
-	phases.update(0.1);
+	phases.check(0.1);
 	phases.reset();
 	assert.equal(phases.phase, 0);
-	assert.deepEqual(phases.update(0.1), [1]);
+	assert.deepEqual(phases.check(0.1), [1]);
 });
 
 test('save and restore keeps the current phase', () => {
 	const phases = new BossPhases([0.66, 0.33]);
-	phases.update(0.5);
+	phases.check(0.5);
 	const restored = BossPhases.fromJSON([0.66, 0.33], phases.toJSON());
 	assert.equal(restored.phase, 1);
-	assert.deepEqual(restored.update(0.1), [2]);
+	assert.deepEqual(restored.check(0.1), [2]);
 });
 
 test('everything starts ready, use spends a cooldown, tick counts it down', () => {
@@ -54,10 +54,10 @@ test('everything starts ready, use spends a cooldown, tick counts it down', () =
 	assert.deepEqual(cycle.ready(), ['slam', 'summon']);
 	assert.equal(cycle.use('slam'), true);
 	assert.deepEqual(cycle.ready(), ['summon']);
-	cycle.tick();
-	cycle.tick();
+	cycle.advance();
+	cycle.advance();
 	assert.deepEqual(cycle.ready(), ['summon'], 'still cooling down');
-	cycle.tick();
+	cycle.advance();
 	assert.deepEqual(cycle.ready(), ['slam', 'summon']);
 });
 
@@ -79,8 +79,8 @@ test('save and restore keeps the remaining cooldowns', () => {
 	cycle.use('slam');
 	const restored = AbilityCycle.fromJSON({ slam: 3 }, cycle.toJSON());
 	assert.deepEqual(restored.ready(), []);
-	restored.tick();
-	restored.tick();
-	restored.tick();
+	restored.advance();
+	restored.advance();
+	restored.advance();
 	assert.deepEqual(restored.ready(), ['slam']);
 });

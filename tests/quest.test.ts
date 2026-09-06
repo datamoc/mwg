@@ -40,7 +40,7 @@ test('a quest becomes available once its prerequisite completes', () => {
 	assert.equal(log.status('b'), 'unavailable');
 
 	state.setSwitch('doneA', true);
-	assert.equal(log.advance('a', state), true);
+	assert.equal(log.advanceStage('a', state), true);
 	assert.equal(log.status('a'), 'complete');
 	assert.equal(log.status('b'), 'available');
 	assert.equal(log.canStart('b'), true);
@@ -52,7 +52,7 @@ test('advance does nothing while the current stage condition is unmet', () => {
 	log.define({ id: 'q', stages: [{ condition: { switch: 'ready', equals: true } }] });
 	log.start('q');
 
-	assert.equal(log.advance('q', state), false);
+	assert.equal(log.advanceStage('q', state), false);
 	assert.equal(log.status('q'), 'active');
 });
 
@@ -64,10 +64,10 @@ test('a counter stage completes once the tracked variable reaches its target', (
 
 	state.setVariable('ratsKilled', 3);
 	assert.equal(log.progress('hunt', state), 0.6);
-	assert.equal(log.advance('hunt', state), false);
+	assert.equal(log.advanceStage('hunt', state), false);
 
 	state.setVariable('ratsKilled', 5);
-	assert.equal(log.advance('hunt', state), true);
+	assert.equal(log.advanceStage('hunt', state), true);
 	assert.equal(log.status('hunt'), 'complete');
 });
 
@@ -86,10 +86,10 @@ test('a stage with neither a condition nor a counter completes the instant it is
 	log.define({ id: 'q', stages: [{ description: 'milestone' }, {}] });
 	log.start('q');
 
-	assert.equal(log.advance('q', state), true);
+	assert.equal(log.advanceStage('q', state), true);
 	assert.equal(log.status('q'), 'active'); // second (also milestone) stage now current
 
-	assert.equal(log.advance('q', state), true);
+	assert.equal(log.advanceStage('q', state), true);
 	assert.equal(log.status('q'), 'complete');
 });
 
@@ -99,9 +99,9 @@ test('advancing a complete quest again does nothing further', () => {
 	log.define({ id: 'q', stages: [{}] });
 	log.start('q');
 
-	log.advance('q', state);
+	log.advanceStage('q', state);
 	assert.equal(log.status('q'), 'complete');
-	assert.equal(log.advance('q', state), false);
+	assert.equal(log.advanceStage('q', state), false);
 });
 
 test('a multi-stage quest advances one stage per call, even if two are already satisfied', () => {
@@ -116,9 +116,9 @@ test('a multi-stage quest advances one stage per call, even if two are already s
 	state.setSwitch('a', true);
 	state.setSwitch('b', true); // already true too, but only one stage should move per call
 
-	assert.equal(log.advance('q', state), true);
+	assert.equal(log.advanceStage('q', state), true);
 	assert.equal(log.status('q'), 'active');
-	assert.equal(log.advance('q', state), true);
+	assert.equal(log.advanceStage('q', state), true);
 	assert.equal(log.status('q'), 'complete');
 });
 
@@ -139,7 +139,7 @@ test('toJSON/fromJSON round-trips a quest log, definitions supplied fresh', () =
 	log.start('a');
 	const state = new GameState();
 	state.setSwitch('x', true);
-	log.advance('a', state);
+	log.advanceStage('a', state);
 
 	const restored = QuestLog.fromJSON(definitions, log.toJSON());
 	assert.equal(restored.status('a'), 'active');
@@ -205,7 +205,7 @@ test('tracking a quest exposes its current stage location; clearing or completin
 	assert.equal(log.trackedQuest(), 'fetch');
 	assert.deepEqual(log.trackedLocation(), { x: 3, y: 4 });
 
-	log.advance('fetch', state);
+	log.advanceStage('fetch', state);
 	assert.equal(log.status('fetch'), 'complete');
 	assert.equal(log.trackedQuest(), null, 'a completed quest is no longer the tracked one');
 	assert.equal(log.trackedLocation(), null);

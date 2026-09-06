@@ -50,10 +50,18 @@ export class EnvironmentClock {
 	}
 	get night(): boolean { return this.phase === 'night'; }
 
-	advance(seconds: number): EnvironmentSnapshot {
-		if (!Number.isFinite(seconds) || seconds < 0) throw new Error(`environment advance must be non-negative, got ${seconds}`);
-		this.seconds_ += seconds;
-		const snapshot = this.snapshot();
+	/**
+	 * Advances the clock by `dt` real seconds.
+	 *
+	 * `update(dt)` rather than `advance()`, because this is the one clock here measured in real
+	 * time rather than turns: everything named `advance` in this framework takes whole turns or
+	 * rounds (`TurnClock`, `Charges`, `Field`, `Barrier`, `AbilityCycle`), and everything named
+	 * `update` takes `dt` seconds, as it already did throughout `render`, `ui` and `audio`.
+	 */
+	update(dt: number): EnvironmentSnapshot {
+		if (!Number.isFinite(dt) || dt < 0) throw new Error(`environment update must be non-negative, got ${dt}`);
+		this.seconds_ += dt;
+		const snapshot = this.toJSON();
 		this.changed.dispatch(snapshot);
 		return snapshot;
 	}
@@ -61,16 +69,17 @@ export class EnvironmentClock {
 	setWeather(weather: string): EnvironmentSnapshot {
 		if (!weather) throw new Error('weather needs a non-empty id');
 		this.weather_ = weather;
-		const snapshot = this.snapshot();
+		const snapshot = this.toJSON();
 		this.changed.dispatch(snapshot);
 		return snapshot;
 	}
 
-	snapshot(): EnvironmentSnapshot {
+	/** the current conditions, which are also the whole of this clock's save data */
+	toJSON(): EnvironmentSnapshot {
 		return { day: this.day, seconds: this.seconds_, phase: this.phase, weather: this.weather_ };
 	}
 
-	static restore(options: EnvironmentOptions, snapshot: EnvironmentSnapshot): EnvironmentClock {
-		return new EnvironmentClock({ ...options, startSeconds: snapshot.seconds, startWeather: snapshot.weather });
+	static fromJSON(options: EnvironmentOptions, data: EnvironmentSnapshot): EnvironmentClock {
+		return new EnvironmentClock({ ...options, startSeconds: data.seconds, startWeather: data.weather });
 	}
 }

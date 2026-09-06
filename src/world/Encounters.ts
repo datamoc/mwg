@@ -25,5 +25,5 @@ export function rollEncounter<T>(table: EncounterTable<T>): T | null {
 	if (table.entries.length === 0 || !Random.chance(table.rate)) return null;
 
 	const index = Random.weighted(table.entries.map((entry) => entry.weight));
-	return index === -1 ? null : table.entries[index].value;
+	return index === null ? null : table.entries[index].value;
 }
