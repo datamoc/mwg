@@ -1,6 +1,6 @@
 import { Random } from '../../src/core/index.ts';
 import { Game, Scene2D } from '../../src/two-d/index.ts';
-import { SpriteSheet, TintedSprite, registerColorTransform } from '../../src/two-d/render/index.ts';
+import { SpriteSheet, TintedSprite } from '../../src/two-d/render/index.ts';
 import { Label, theme, Window, WindowStack, ListView, MessageBox } from '../../src/two-d/ui/index.ts';
 import {
 	Creature,
@@ -239,7 +239,6 @@ async function main(): Promise<void> {
 	const game = new Game({
 		canvas: document.getElementById('game') as HTMLCanvasElement,
 		background: 0x1a1420,
-		extensions: [registerColorTransform],
 	});
 
 	await Resources.load([TILES]);

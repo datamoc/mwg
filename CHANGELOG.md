@@ -7,6 +7,59 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-09-07
+
+A study of `mwg-pixel-dungeon` (a reference game, not in this repo) recommended closing the
+PixiJS boundary the rest of the way, a formal simulation runtime, stable entity identity, and
+semantic messaging as framework primitives. All of it landed this release, plus the eight
+architecture decisions it proposed, recorded in the new `ADR.md`.
+
+### Added
+- `core.EntityRegistry`/`EntityId` - assigns and looks up stable string ids for live objects,
+  so events, saves, AI targets and buffs can name a creature or item without holding it.
+  `idOf` is what a game passes as `Scheduler.toJSON`'s or `SimulationRuntime.snapshot`'s
+  `actorId`.
+- `core.PresentationQueue` - plays a batch of simulation events one at a time, each waiting on
+  its own `play()`-returned duration, freed of any renderer - the presentation-side
+  counterpart to a `SimulationRuntime.dispatch()`/`runScenario()` result.
+- `simulation.SimulationRuntime`/`SimulationContext`/`SimulationOutcome`/
+  `SimulationRuntimeRule`/`SimulationSnapshot` - a facade over one state + one
+  `roguelike.Scheduler` + one `core.Generator` for the interactive half of a turn-based
+  simulation: `dispatch` runs a single command, threading `random`/`scheduler` as context and
+  charging any returned cost; `snapshot`/`restore` capture and rebuild the whole triple.
+  Composes with the existing `advanceToInput`/`runScenario` rather than replacing them.
+  `simulation` also re-exports `Scheduler`/`Actor`/`SchedulerSnapshot` from `roguelike`.
+- `roguelike.Scheduler` gained `postpone` (delaying an actor other than the current one) and
+  `toJSON`/`restore` (a deterministic snapshot keyed by a caller-supplied actor id), making it
+  the sole, serialisable authority on logical time.
+- `i18n.SemanticMessage`/`MessageChannel`/`MessageFormatter`/`createCatalogFormatter` - a
+  typed `{ type, params }` communication intent rendered differently per channel (log/
+  compact/accessibility/debug) from the same catalog, built on the existing `t()`/plural/
+  Fluent machinery rather than a parallel implementation.
+- `i18n.formatNumber`/`formatDate`/`formatList` - locale-aware `Intl` formatting for a message
+  that needs more than `{token}` substitution.
+- `i18n.diffCatalogKeys`/`validateCatalog` - catalog consistency checks: two catalogs' key
+  sets compared, and one catalog's own empty messages/incomplete plural forms flagged.
+- `two-d.render.Container2D`/`Texture2D`/`Rect`/`TextureRegion`/`rectOf` - plain,
+  renderer-free public types in place of `pixi.js`'s own `Container`/`Texture`/`Rectangle`;
+  `Scene2D.stage` is now typed `Container2D`, `SpriteSheet.region` returns a `TextureRegion`.
+- `two-d.render.Node2D`/`Shape2D`/`Text2D`/`TiledSprite`/`Gradient` - bare, MWG-named
+  re-exports of Pixi's `Container`/`Graphics`/`Text`/`TilingSprite`/`FillGradient`, so a game
+  never has to name `pixi.js` for a plain layer, vector drawing, one-off text, a scrolling
+  tile, or a gradient fill.
+- `two-d.pixi-interop` - the one sanctioned, explicit escape hatch for the rare Pixi-specific
+  need the facade above does not cover.
+- `TintedSprite` (and everything built on it - `AnimatedSprite`, `TileMap`, `DialogueStage`)
+  now registers its own colour-transform Pixi pipe automatically on import; a game no longer
+  passes `{ extensions: [registerColorTransform] }` to `Game`.
+- `ADR.md` - the eight architecture decisions from the `mwg-pixel-dungeon` study, each
+  recorded against the code and tests that enforce it.
+
+### Fixed
+- `ButtonSkin.texture`, `ButtonOptions.icon`, `IconGridItem.icon`, `ListItem.icon`, and
+  `Theme.panel` were still typed as raw `pixi.js` `Texture`/`Container` in public interfaces;
+  all retyped to `Texture2D`/`Container2D` (the same underlying type, not a breaking change).
+
 ## [0.4.0] - 2026-09-06
 
 **The reshaping release, and intended to be the last one.**

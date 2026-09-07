@@ -1,5 +1,6 @@
 import { Container } from 'pixi.js';
 import { Scene } from '../core/Scene.ts';
+import type { Container2D } from './render/Types2D.ts';
 
 /**
  * A scene that draws through Pixi: `core.Scene`'s lifecycle plus the container everything
@@ -13,7 +14,7 @@ import { Scene } from '../core/Scene.ts';
  */
 export abstract class Scene2D extends Scene {
 	/** everything this scene draws hangs off here */
-	readonly stage = new Container();
+	readonly stage: Container2D = new Container();
 
 	protected override teardown(): void {
 		this.stage.destroy({ children: true });

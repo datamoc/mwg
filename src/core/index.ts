@@ -52,3 +52,7 @@ export { UndoHistory } from './UndoHistory.ts';
 export type { UndoHistoryOptions } from './UndoHistory.ts';
 export { LoadQueue } from './Loading.ts';
 export type { LoadStatus, LoadTask, LoadTaskContext, LoadSnapshot } from './Loading.ts';
+export { EntityRegistry } from './Entity.ts';
+export type { EntityId } from './Entity.ts';
+export { PresentationQueue } from './Presentation.ts';
+export type { PresentationQueueOptions } from './Presentation.ts';

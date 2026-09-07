@@ -441,9 +441,14 @@ let registered = false;
 /**
  * Registers the colour-transform batcher and the `TintedSprite` pipe with Pixi.
  *
- * Called automatically the first time a `TintedSprite` is rendered is not possible, because
- * registration has to happen before the renderer is created. A game passes it through
- * `GameOptions.extensions`, and it is exported for anyone building their own renderer.
+ * `TintedSprite.ts` calls this itself, at module scope, the moment anything imports it
+ * (directly, or transitively through `AnimatedSprite`/`TileMap`/`DialogueStage`, all built on
+ * it) - registration has to happen before the renderer is created, and an ES module's
+ * top-level code always runs before whatever imports it goes on to call `new Game()`/
+ * `Game.start()`, so a game never has to know this pipe exists, let alone pass it through
+ * `GameOptions.extensions` itself. This stays exported, idempotent (`registered` guards a
+ * second call from double-adding it), and public for the rare case of a game building its
+ * own renderer setup outside `Game`.
  */
 export function registerColorTransform(): void {
 	if (registered) return;

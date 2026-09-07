@@ -1,6 +1,6 @@
 {
   "name": "@datamoc/mw_games",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
   "license": "MPL-2.0",
   "repository": {
@@ -30,7 +30,8 @@
   "type": "module",
   "sideEffects": [
     "./dist/three-d/Models.js",
-    "./dist/three-d/TileGrid3D.js"
+    "./dist/three-d/TileGrid3D.js",
+    "./dist/two-d/render/TintedSprite.js"
   ],
   "publishConfig": {
     "access": "public"

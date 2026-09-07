@@ -1,4 +1,5 @@
-import { Container, NineSliceSprite, Texture } from 'pixi.js';
+import { Container, NineSliceSprite } from 'pixi.js';
+import type { Texture2D } from '../render/Types2D.ts';
 
 export interface NinePatchOptions {
 	/** how many pixels of the texture are the fixed border, per side */
@@ -19,7 +20,7 @@ export interface NinePatchOptions {
 export class NinePatch extends Container {
 	private sprite: NineSliceSprite;
 
-	constructor(texture: Texture, options: NinePatchOptions) {
+	constructor(texture: Texture2D, options: NinePatchOptions) {
 		super();
 
 		const b = typeof options.border === 'number'

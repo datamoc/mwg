@@ -1,4 +1,4 @@
-import { Graphics, Text } from 'pixi.js';
+import { Shape2D, Text2D } from '../../src/two-d/render/index.ts';
 import { Game, Scene2D } from '../../src/two-d/index.ts';
 
 /**
@@ -9,11 +9,11 @@ import { Game, Scene2D } from '../../src/two-d/index.ts';
  * ... }`, then `new Game(...).start(TheScene)`.
  */
 class HelloScene extends Scene2D {
-	private square!: Graphics;
+	private square!: Shape2D;
 	private elapsed = 0;
 
 	override create(): void {
-		const label = new Text({
+		const label = new Text2D({
 			text: 'Hello, mwg!\nThis square moves because update(dt) runs every frame.',
 			style: { fill: 0xd8dae6, fontFamily: 'monospace', fontSize: 16, align: 'center' },
 		});
@@ -21,7 +21,7 @@ class HelloScene extends Scene2D {
 		label.position.set(Game.current.width / 2, 24);
 		this.stage.addChild(label);
 
-		this.square = new Graphics().rect(-20, -20, 40, 40).fill(0x6fb1ff);
+		this.square = new Shape2D().rect(-20, -20, 40, 40).fill(0x6fb1ff);
 		this.square.position.set(Game.current.width / 2, Game.current.height / 2);
 		this.stage.addChild(this.square);
 	}

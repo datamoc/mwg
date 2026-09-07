@@ -2,10 +2,11 @@ import { Container, Graphics } from 'pixi.js';
 import type { Action } from '../../core/Input.ts';
 import { Label } from './Label.ts';
 import { theme, themeChanged } from './theme.ts';
+import type { Container2D } from '../render/Types2D.ts';
 
 export interface IconGridItem {
 	/** the icon drawn in the cell, sized to fit it */
-	icon: Container;
+	icon: Container2D;
 
 	/** a greyed-out cell can be looked at but not chosen */
 	disabled?: boolean;

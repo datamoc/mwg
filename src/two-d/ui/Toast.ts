@@ -1,5 +1,6 @@
 import { Container } from 'pixi.js';
 import { Easing } from '../../core/Tween.ts';
+import type { Container2D } from '../render/Types2D.ts';
 
 export interface ToastOptions {
 	/** seconds to pop in; defaults to 0.25 */
@@ -47,7 +48,7 @@ export class Toast extends Container {
 	}
 
 	/** queues `content` to show next, or immediately if nothing is currently showing */
-	show(content: Container): void {
+	show(content: Container2D): void {
 		this.queue.push(content);
 		if (!this.current) this.start(this.queue.shift()!);
 	}

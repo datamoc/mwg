@@ -1,7 +1,7 @@
-import { Container, Graphics, type Texture } from 'pixi.js';
+import { Node2D, Shape2D, type Texture2D } from '../../src/two-d/render/index.ts';
 import { Input } from '../../src/core/index.ts';
 import { Game, Scene2D } from '../../src/two-d/index.ts';
-import { TintedSprite, SpriteSheet, registerColorTransform, Minimap, createColorBlindnessFilter, type ColorBlindnessType } from '../../src/two-d/render/index.ts';
+import { TintedSprite, SpriteSheet, Minimap, createColorBlindnessFilter, type ColorBlindnessType } from '../../src/two-d/render/index.ts';
 import {
 	Window,
 	WindowStack,
@@ -32,13 +32,13 @@ import tileset from '../assets/tiles.json' with { type: 'json' };
 const TILES = 'tiles.png';
 const { tiles, tileSize } = tileset;
 
-let cachedButtonSkinTexture: Texture | undefined;
+let cachedButtonSkinTexture: Texture2D | undefined;
 
 /**
  * A small rounded panel with a distinct border band, generated once and reused by every
  * `Button` that asks for it - the same "draw with `Graphics`, bake to a texture" approach
  * `tools/make-example-assets.mjs` uses offline, done here at runtime instead since a
- * `ButtonSkin` only ever needs a live `Texture`, not a file on disk.
+ * `ButtonSkin` only ever needs a live `Texture2D`, not a file on disk.
  */
 function buttonSkin(): ButtonSkin {
 	if (!cachedButtonSkinTexture) {
@@ -47,7 +47,7 @@ function buttonSkin(): ButtonSkin {
 		//button per state rather than fighting a baked-in colour
 		const border = 6;
 		const size = border * 2 + 4;
-		const graphics = new Graphics().roundRect(0, 0, size, size, border).fill(0xffffff);
+		const graphics = new Shape2D().roundRect(0, 0, size, size, border).fill(0xffffff);
 		cachedButtonSkinTexture = Game.current.app.renderer.generateTexture(graphics);
 		graphics.destroy();
 	}
@@ -64,7 +64,7 @@ class InterfaceScene extends Scene2D {
 	private status!: Label;
 
 	private hp!: Bar;
-	private popups = new Container();
+	private popups = new Node2D();
 	private minimap!: Minimap;
 	private clock!: BitmapLabel;
 	private elapsed = 0;
@@ -117,7 +117,7 @@ class InterfaceScene extends Scene2D {
 
 	/** something behind the windows, so the dimming layer has an effect to see */
 	private drawBackdrop(): void {
-		const layer = new Container();
+		const layer = new Node2D();
 		const options = [tiles.FLOOR, tiles.FLOOR_WORN, tiles.WALL, tiles.GRASS, tiles.WATER];
 
 		for (let y = 0; y < 24; y++) {
@@ -139,7 +139,7 @@ class InterfaceScene extends Scene2D {
 	 * alongside gameplay rather than pause it.
 	 */
 	private buildHud(): void {
-		const hud = new Container();
+		const hud = new Node2D();
 		hud.x = 12;
 		hud.y = 36;
 		this.stage.addChild(hud);
@@ -312,7 +312,7 @@ class InterfaceScene extends Scene2D {
 	private openInventory(): void {
 		const window = new Window({ width: 260, height: 200, title: 'Bag' });
 
-		const icon = (frame: number): Container => {
+		const icon = (frame: number): Node2D => {
 			const sprite = new TintedSprite(this.sheet.get(frame));
 			//icons are sized to the row, whatever the theme's line height is
 			sprite.scale.set(0.9);
@@ -422,7 +422,6 @@ async function main(): Promise<void> {
 	const game = new Game({
 		canvas: document.getElementById('game') as HTMLCanvasElement,
 		background: 0x14141a,
-		extensions: [registerColorTransform],
 	});
 
 	await Resources.load([TILES]);

@@ -1,5 +1,6 @@
 import { Rectangle, Texture } from 'pixi.js';
 import * as Resources from '../../assets/index.ts';
+import { rectOf, type TextureRegion, type Texture2D } from './Types2D.ts';
 
 /**
  * A texture cut into numbered frames.
@@ -10,7 +11,7 @@ import * as Resources from '../../assets/index.ts';
  * a texture and stay in one batch.
  */
 export class SpriteSheet {
-	readonly texture: Texture;
+	readonly texture: Texture2D;
 	readonly frameWidth: number;
 	readonly frameHeight: number;
 	readonly columns: number;
@@ -19,7 +20,7 @@ export class SpriteSheet {
 	private frames = new Map<number, Texture>();
 	private names = new Map<string, number>();
 
-	private constructor(texture: Texture, frameWidth: number, frameHeight: number) {
+	private constructor(texture: Texture2D, frameWidth: number, frameHeight: number) {
 		this.texture = texture;
 		this.frameWidth = frameWidth;
 		this.frameHeight = frameHeight;
@@ -36,7 +37,7 @@ export class SpriteSheet {
 		return new SpriteSheet(Resources.texture(path), frameWidth, frameHeight);
 	}
 
-	static fromTexture(texture: Texture, frameWidth: number, frameHeight = frameWidth): SpriteSheet {
+	static fromTexture(texture: Texture2D, frameWidth: number, frameHeight = frameWidth): SpriteSheet {
 		return new SpriteSheet(texture, frameWidth, frameHeight);
 	}
 
@@ -62,7 +63,7 @@ export class SpriteSheet {
 		return index;
 	}
 
-	get(frame: number | string): Texture {
+	get(frame: number | string): Texture2D {
 		const index = typeof frame === 'string' ? this.indexOf(frame) : frame;
 
 		const cached = this.frames.get(index);
@@ -86,15 +87,22 @@ export class SpriteSheet {
 		return texture;
 	}
 
+	/** the texture and frame rectangle together, as plain MWG types rather than `pixi.js`'s
+	 * `Texture`/`Rectangle` - for a game that needs the geometry, not just the cut texture */
+	region(frame: number | string): TextureRegion {
+		const texture = this.get(frame);
+		return { texture, frame: rectOf(texture.frame) };
+	}
+
 	/** a run of consecutive frames, the usual way an animation is laid out */
-	range(from: number, to: number): Texture[] {
+	range(from: number, to: number): Texture2D[] {
 		const out: Texture[] = [];
 		for (let i = from; i <= to; i++) out.push(this.get(i));
 		return out;
 	}
 
 	/** specific frames, for an animation that holds or ping-pongs */
-	pick(...frames: Array<number | string>): Texture[] {
+	pick(...frames: Array<number | string>): Texture2D[] {
 		return frames.map((frame) => this.get(frame));
 	}
 }

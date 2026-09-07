@@ -1,6 +1,6 @@
 import { Input } from '../../src/core/index.ts';
 import { Game, Scene2D } from '../../src/two-d/index.ts';
-import { Camera, TileMap, SpriteSheet, AnimatedSprite, EMPTY, registerColorTransform } from '../../src/two-d/render/index.ts';
+import { Camera, TileMap, SpriteSheet, AnimatedSprite, EMPTY } from '../../src/two-d/render/index.ts';
 import { GridMover } from '../../src/rpg/index.ts';
 import { Label, theme } from '../../src/two-d/ui/index.ts';
 import * as Resources from '../../src/assets/index.ts';
@@ -128,7 +128,6 @@ async function main(): Promise<void> {
 	const game = new Game({
 		canvas: document.getElementById('game') as HTMLCanvasElement,
 		background: 0x101018,
-		extensions: [registerColorTransform],
 	});
 	await Resources.load([TILES]);
 	await game.start(MovementScene);

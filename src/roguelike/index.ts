@@ -25,7 +25,7 @@ export { Pathfinder, neighbourOffsets } from './Pathfinder.ts';
 export type { Step, PathOptions } from './Pathfinder.ts';
 
 export { Scheduler } from './Scheduler.ts';
-export type { Actor } from './Scheduler.ts';
+export type { Actor, SchedulerSnapshot } from './Scheduler.ts';
 
 export { decideMonsterAI } from './MonsterAI.ts';
 export type { AIState, AIDecision, MonsterAIOptions, Disposition } from './MonsterAI.ts';

@@ -93,6 +93,90 @@ test('an empty scheduler is safe to poll', () => {
 	assert.doesNotThrow(() => scheduler.spend(1));
 });
 
+test('postpone delays a specific actor without disturbing the others', () => {
+	const scheduler = new Scheduler<Creature>();
+	const a = { name: 'a' };
+	const b = { name: 'b' };
+	const c = { name: 'c' };
+	scheduler.add(a);
+	scheduler.add(b);
+	scheduler.add(c);
+
+	//b is not the current head, but is still reachable to postpone (a stun landing elsewhere)
+	scheduler.postpone(b, 5);
+
+	//b is pushed far enough back that a and c each act again before it comes up
+	assert.deepEqual(order(scheduler, 3), ['a', 'c', 'a']);
+});
+
+test('spend(0) is a free action: no time cost, but still goes behind ties', () => {
+	const scheduler = new Scheduler<Creature>();
+	const a = { name: 'a' };
+	const b = { name: 'b' };
+	scheduler.add(a);
+	scheduler.add(b);
+
+	const before = scheduler.now;
+	scheduler.peek();
+	scheduler.spend(0);
+	assert.equal(scheduler.now, before);
+	assert.deepEqual(order(scheduler, 3), ['b', 'a', 'b']);
+});
+
+test('an actor can be removed and another added mid-resolution without upsetting the queue', () => {
+	const scheduler = new Scheduler<Creature>();
+	const a = { name: 'a' };
+	const b = { name: 'b' };
+	scheduler.add(a);
+	scheduler.add(b);
+
+	const head = scheduler.peek();
+	assert.equal(head, a);
+	scheduler.remove(a); //the current head dies mid-action
+	const spawned = { name: 'spawned' };
+	scheduler.add(spawned, 0.5); //something else spawns in its place
+
+	assert.deepEqual(order(scheduler, 3), ['b', 'spawned', 'b']);
+});
+
+test('determinism: two independently built schedulers given the same actions agree exactly', () => {
+	function build(): Scheduler<Creature> {
+		const scheduler = new Scheduler<Creature>();
+		scheduler.add({ name: 'a', speed: 1.5 });
+		scheduler.add({ name: 'b' });
+		scheduler.add({ name: 'c', speed: 0.75 });
+		return scheduler;
+	}
+
+	const first = build();
+	const second = build();
+
+	const firstOrder = order(first, 40);
+	const secondOrder = order(second, 40);
+
+	assert.deepEqual(firstOrder, secondOrder);
+	assert.equal(first.now, second.now);
+});
+
+test('toJSON/restore round-trips the queue: the same actions produce the same order after', () => {
+	const scheduler = new Scheduler<Creature>();
+	const a = { name: 'a', speed: 2 };
+	const b = { name: 'b' };
+	scheduler.add(a);
+	scheduler.add(b);
+	order(scheduler, 5); //churn the queue so time/sequence are non-trivial
+
+	const byName = new Map([
+		['a', a],
+		['b', b],
+	]);
+	const snapshot = scheduler.toJSON((actor) => actor.name);
+	const restored = Scheduler.restore<Creature>(snapshot, (id) => byName.get(id)!);
+
+	assert.equal(restored.now, scheduler.now);
+	assert.deepEqual(order(restored, 10), order(scheduler, 10));
+});
+
 // ----------------------------------------------------------------- generation
 
 test('the same seed produces the same dungeon', () => {

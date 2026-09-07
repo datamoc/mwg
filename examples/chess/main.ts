@@ -1,4 +1,5 @@
-import { Container, Graphics, Rectangle, Text } from 'pixi.js';
+import { Rectangle } from '../../src/two-d/pixi-interop.ts';
+import { Node2D, Shape2D, Text2D } from '../../src/two-d/render/index.ts';
 import { Board, Game, Input, Scene2D } from '../../src/index.ts';
 
 const LIGHT = 0xd8c6a1;
@@ -17,14 +18,14 @@ class ChessScene extends Scene2D {
 	private state = Board.startingChess();
 	private cursor = Board.sq('e2');
 	private selected: Board.ChessSquare | null = null;
-	private board = new Container();
-	private status!: Text;
+	private board = new Node2D();
+	private status!: Text2D;
 	private boardSize = 0;
 	private heldFor: Record<string, number> = { up: 0, down: 0, left: 0, right: 0 };
 
 	override create(): void {
 		this.stage.addChild(this.board);
-		this.status = new Text({ text: '', style: { fill: 0xd0cedb, fontFamily: 'monospace', fontSize: 15, align: 'center' } });
+		this.status = new Text2D({ text: '', style: { fill: 0xd0cedb, fontFamily: 'monospace', fontSize: 15, align: 'center' } });
 		this.status.anchor.set(0.5);
 		this.stage.addChild(this.status);
 		this.resize(Game.current.width, Game.current.height);
@@ -112,7 +113,7 @@ class ChessScene extends Scene2D {
 			const file = square & 7;
 			const rank = square >> 3;
 			const color = square === this.cursor || square === this.selected ? HIGHLIGHT : (file + rank) % 2 === 0 ? LIGHT : DARK;
-			const tileSquare = new Container();
+			const tileSquare = new Node2D();
 			tileSquare.position.set(file * cell, (7 - rank) * cell);
 			//an explicit hitArea makes the whole cell one hit target, so a dot or
 			//piece glyph drawn on top of it never steals the click
@@ -120,11 +121,11 @@ class ChessScene extends Scene2D {
 			tileSquare.eventMode = 'static';
 			tileSquare.cursor = 'pointer';
 			tileSquare.on('pointertap', () => this.clickSquare(square));
-			tileSquare.addChild(new Graphics().rect(0, 0, cell, cell).fill(color));
-			if (targets.has(square)) tileSquare.addChild(new Graphics().circle(cell / 2, cell / 2, cell * 0.13).fill(0x49362f));
+			tileSquare.addChild(new Shape2D().rect(0, 0, cell, cell).fill(color));
+			if (targets.has(square)) tileSquare.addChild(new Shape2D().circle(cell / 2, cell / 2, cell * 0.13).fill(0x49362f));
 			const piece = this.state.board[square];
 			if (piece) {
-				const glyph = new Text({ text: PIECES[`${piece.side}${piece.kind[0].toUpperCase()}${piece.kind.slice(1)}`] ?? '?', style: { fill: piece.side === 'white' ? 0xf8f1df : 0x17151c, fontFamily: 'serif', fontSize: cell * 0.72 } });
+				const glyph = new Text2D({ text: PIECES[`${piece.side}${piece.kind[0].toUpperCase()}${piece.kind.slice(1)}`] ?? '?', style: { fill: piece.side === 'white' ? 0xf8f1df : 0x17151c, fontFamily: 'serif', fontSize: cell * 0.72 } });
 				glyph.anchor.set(0.5);
 				glyph.position.set(cell / 2, cell / 2);
 				tileSquare.addChild(glyph);

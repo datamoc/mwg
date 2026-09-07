@@ -2,6 +2,7 @@ import { Container, Graphics } from 'pixi.js';
 import type { Action } from '../../core/Input.ts';
 import { Label } from './Label.ts';
 import { theme, themeChanged } from './theme.ts';
+import type { Container2D } from '../render/Types2D.ts';
 
 export interface ListItem {
 	/** what the row reads */
@@ -14,7 +15,7 @@ export interface ListItem {
 	value?: unknown;
 
 	/** an icon drawn to the left of the text; sized to the row height */
-	icon?: Container;
+	icon?: Container2D;
 }
 
 export interface ListViewOptions {

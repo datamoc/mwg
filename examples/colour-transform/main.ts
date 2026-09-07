@@ -1,7 +1,8 @@
-import { Rectangle, Texture, Text, Container } from 'pixi.js';
+import { Rectangle, Texture } from '../../src/two-d/pixi-interop.ts';
+import { Node2D, Text2D } from '../../src/two-d/render/index.ts';
 import { Random } from '../../src/core/index.ts';
 import { Game, Scene2D } from '../../src/two-d/index.ts';
-import { TintedSprite, registerColorTransform } from '../../src/two-d/render/index.ts';
+import { TintedSprite } from '../../src/two-d/render/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 import tileset from '../assets/tiles.json' with { type: 'json' };
 
@@ -41,7 +42,7 @@ class ColourTransformScene extends Scene2D {
 			const y = 40 + row * (tileSize * scale + 34);
 
 			this.stage.addChild(
-				new Text({
+				new Text2D({
 					text: label,
 					style: { fill: 0xd0d0d8, fontFamily: 'monospace', fontSize: 13 },
 					x: 20,
@@ -71,7 +72,7 @@ class ColourTransformScene extends Scene2D {
 	 */
 	private addSvgRow(y: number, scale: number): void {
 		this.stage.addChild(
-			new Text({
+			new Text2D({
 				text: 'icon_gem.svg: an SVG texture, loaded and tinted the same as a PNG one',
 				style: { fill: 0xd0d0d8, fontFamily: 'monospace', fontSize: 13 },
 				x: 20,
@@ -97,7 +98,7 @@ class ColourTransformScene extends Scene2D {
 	/** the same lerp, animated, which is what a "poisoned" or "burning" state looks like */
 	private addPulsingRow(y: number, scale: number): void {
 		this.stage.addChild(
-			new Text({
+			new Text2D({
 				text: 'animated: the additive term driven per frame',
 				style: { fill: 0xd0d0d8, fontFamily: 'monospace', fontSize: 13 },
 				x: 20,
@@ -124,13 +125,13 @@ class ColourTransformScene extends Scene2D {
 	 * render-texture passes.
 	 */
 	private addStressTest(): void {
-		const layer = new Container();
+		const layer = new Node2D();
 		layer.x = 480;
 		layer.y = 40;
 		this.stage.addChild(layer);
 
 		this.stage.addChild(
-			new Text({
+			new Text2D({
 				text: '4000 sprites, each with its own colour transform',
 				style: { fill: 0x808088, fontFamily: 'monospace', fontSize: 12 },
 				x: 480,
@@ -176,7 +177,6 @@ async function main(): Promise<void> {
 	const game = new Game({
 		canvas: document.getElementById('game') as HTMLCanvasElement,
 		background: 0x14141a,
-		extensions: [registerColorTransform],
 	});
 
 	//no base is needed: the dev server publishes examples/assets at its root, and a built

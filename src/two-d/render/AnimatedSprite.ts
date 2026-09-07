@@ -1,5 +1,5 @@
-import type { Texture } from 'pixi.js';
 import { TintedSprite } from './TintedSprite.ts';
+import type { Texture2D } from './Types2D.ts';
 
 export interface AnimationOptions {
 	/** frames per second */
@@ -10,11 +10,11 @@ export interface AnimationOptions {
 }
 
 export class Animation {
-	readonly frames: readonly Texture[];
+	readonly frames: readonly Texture2D[];
 	readonly frameDuration: number;
 	readonly loop: boolean;
 
-	constructor(frames: readonly Texture[], { fps = 10, loop = true }: AnimationOptions = {}) {
+	constructor(frames: readonly Texture2D[], { fps = 10, loop = true }: AnimationOptions = {}) {
 		if (frames.length === 0) throw new Error('an animation needs at least one frame');
 		this.frames = frames;
 		this.frameDuration = 1 / fps;
@@ -57,7 +57,7 @@ export class AnimatedSprite extends TintedSprite {
 
 	paused = false;
 
-	add(name: string, frames: readonly Texture[], options?: AnimationOptions): this {
+	add(name: string, frames: readonly Texture2D[], options?: AnimationOptions): this {
 		this.animations.set(name, new Animation(frames, options));
 		return this;
 	}

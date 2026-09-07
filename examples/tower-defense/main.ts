@@ -1,4 +1,4 @@
-import { Graphics, Text } from 'pixi.js';
+import { Shape2D, Text2D } from '../../src/two-d/render/index.ts';
 import { Spawner } from '../../src/core/index.ts';
 import { Game, Scene2D } from '../../src/two-d/index.ts';
 
@@ -8,7 +8,7 @@ const CELL = 48;
 const PATH_ROW = 4;
 
 interface Enemy {
-	view: Graphics;
+	view: Shape2D;
 	x: number;
 	hp: number;
 	maxHp: number;
@@ -16,7 +16,7 @@ interface Enemy {
 }
 
 interface Tower {
-	view: Graphics;
+	view: Shape2D;
 	x: number;
 	y: number;
 	cooldown: number;
@@ -28,17 +28,17 @@ class TowerDefenseScene extends Scene2D {
 	private spawner!: Spawner<'scout' | 'armoured'>;
 	private lives = 10;
 	private gold = 100;
-	private status!: Text;
+	private status!: Text2D;
 
 	create(): void {
-		const background = new Graphics().rect(0, 0, COLS * CELL, ROWS * CELL).fill(0x17202b);
+		const background = new Shape2D().rect(0, 0, COLS * CELL, ROWS * CELL).fill(0x17202b);
 		this.stage.addChild(background);
 		this.drawBoard();
 		this.addTower(4, 2);
 		this.addTower(9, 6);
 		this.addTower(12, 2);
 
-		this.status = new Text({ text: '', style: { fill: 0xf4f0d0, fontSize: 18 } });
+		this.status = new Text2D({ text: '', style: { fill: 0xf4f0d0, fontSize: 18 } });
 		this.status.x = 12;
 		this.status.y = 12;
 		this.stage.addChild(this.status);
@@ -55,17 +55,17 @@ class TowerDefenseScene extends Scene2D {
 
 	private drawBoard(): void {
 		for (let x = 0; x < COLS; x++) {
-			const tile = new Graphics().rect(x * CELL, PATH_ROW * CELL, CELL - 2, CELL - 2).fill(0x6a543d);
+			const tile = new Shape2D().rect(x * CELL, PATH_ROW * CELL, CELL - 2, CELL - 2).fill(0x6a543d);
 			this.stage.addChild(tile);
 		}
 		for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
 			if (y === PATH_ROW) continue;
-			this.stage.addChild(new Graphics().rect(x * CELL, y * CELL, CELL - 2, CELL - 2).fill(0x243544));
+			this.stage.addChild(new Shape2D().rect(x * CELL, y * CELL, CELL - 2, CELL - 2).fill(0x243544));
 		}
 	}
 
 	private addTower(x: number, y: number): void {
-		const view = new Graphics().circle(CELL / 2, CELL / 2, 15).fill(0x5bb6a9).circle(CELL / 2, CELL / 2, 6).fill(0xdceca3);
+		const view = new Shape2D().circle(CELL / 2, CELL / 2, 15).fill(0x5bb6a9).circle(CELL / 2, CELL / 2, 6).fill(0xdceca3);
 		view.x = x * CELL;
 		view.y = y * CELL;
 		this.stage.addChild(view);
@@ -74,7 +74,7 @@ class TowerDefenseScene extends Scene2D {
 
 	private spawn(kind: 'scout' | 'armoured'): void {
 		const maxHp = kind === 'armoured' ? 12 : 5;
-		const view = new Graphics().circle(0, 0, kind === 'armoured' ? 14 : 10).fill(kind === 'armoured' ? 0xd9825b : 0xf0c75e);
+		const view = new Shape2D().circle(0, 0, kind === 'armoured' ? 14 : 10).fill(kind === 'armoured' ? 0xd9825b : 0xf0c75e);
 		view.x = -CELL;
 		view.y = PATH_ROW * CELL + CELL / 2;
 		this.stage.addChild(view);

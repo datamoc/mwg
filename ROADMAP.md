@@ -2382,3 +2382,124 @@ rather than someone else's build.
      diagrams and confirming every one was byte-identical, so nothing about the established
      look changed. `npm run webpage:diagrams` rebuilds both sets, and CLAUDE.md/AGENTS.md now
      carry the rule that these are generated rather than drawn
+
+164. ~~a study of `mwg-pixel-dungeon` (not in this repo) recommended closing the PixiJS
+     boundary the rest of the way, a formal simulation runtime, and the scheduler as sole
+     time authority; item 162's own closure left `Scene2D.stage` typed as raw `pixi.js`
+     `Container`, and every one of the 7 local examples imported `pixi.js` directly for
+     `Graphics`/`Text`/`Container` construction, which `two-d` has never wrapped~~ -
+     `two-d/render/Types2D.ts` adds `Container2D`/`Texture2D`/`Rect`/`TextureRegion` (plain
+     aliases/types, not new classes) so `Scene2D.stage`, `SpriteSheet.region`, and
+     `TintedSprite`/`AnimatedSprite`/`NinePatch`/`LayeredSprite`'s public signatures no longer
+     force a game to name a `pixi.js` type; `two-d/pixi-interop.ts` is the one sanctioned,
+     visible escape hatch for the classes still worth constructing that `two-d` doesn't wrap
+     (`Container`, `Graphics`, `Text`, `Sprite`, `Texture`, `Rectangle`), and all 7 examples
+     now import through it instead of `pixi.js` directly - a new
+     `renderer-isolation.test.ts` case enforces that for every example going forward.
+     `roguelike.Scheduler` gained `postpone` (delaying an actor other than the current one)
+     and `toJSON`/`restore` (a deterministic snapshot keyed by a caller-supplied actor id),
+     making it the sole, serialisable authority on logical time the doc asked for; fractional
+     costs and deterministic tie-breaks already existed. `simulation.SimulationRuntime` is
+     the new interactive-dispatch facade the doc's `Simulation<State,Command,Event>` shape
+     called for - one object over state + scheduler + RNG, composing with the existing
+     `advanceToInput`/`runScenario` rather than replacing them. Deliberately deferred, in the
+     same doc but past this pass's scope: `Shape2D`/`Graphics2D` and gradient/fill
+     primitives (what would let the interop hatch close entirely), a `Text2D`/label-based
+     replacement for raw `PIXI.Text`, `EntityId`/`EntityRegistry`, a `SimulationSnapshot`
+     wired through `core.SaveSystem` rather than assembled ad hoc, a named, enforced
+     `SimulationContext` banning `Math.random()` in simulation code, semantic-messaging/
+     i18n as a framework primitive, and a look at `battle.BattleHooks`' mutable-context
+     pattern against the doc's "events are output, not a rules bus" principle - add these as
+     their own items rather than reopening this one
+
+165. ~~item 164 deferred the same doc's P1 items: `EntityId`/`EntityRegistry`, a
+     `SimulationSnapshot` proven to compose with `core.SaveSystem` rather than just typed to,
+     the `Math.random()` discipline `SimulationContext` implies, the doc's remaining
+     section-15 architecture tests, and semantic messaging as a framework primitive~~ -
+     `core/Entity.ts` adds `EntityRegistry`/`EntityId`: `idOf` is what a game now passes as
+     `Scheduler.toJSON`'s or `SimulationRuntime`'s `actorId`, without changing either
+     signature. A new `simulation.test.ts` case saves a `SimulationRuntime.snapshot()`
+     through an actual `SaveSystem<SimulationSnapshot<...>>`, loads it back, and continues
+     dispatching identically - not just checking the types line up. `renderer-isolation.
+     test.ts` gained three cases: no file under `simulation/` calls `Math.random()` directly
+     (`core/Random.ts`'s own bootstrap call is outside that directory and untouched); a
+     public-API Pixi-type scan over `two-d/render`/`two-d/ui`'s exported signatures, which
+     caught two leaks item 164 missed - `SpriteSheet`'s `get`/`range`/`pick`/`fromTexture`
+     and the `texture` field were still raw `pixi.js` `Texture`, and `Toast.show` took a raw
+     `Container` - both retyped to `Texture2D`/`Container2D`; and a scheduler determinism
+     case alongside a headless-equivalence one in `simulation.test.ts` (the same rule through
+     `SimulationRuntime.dispatch` and through `runScenario` produces identical events).
+     `i18n/SemanticMessage.ts` adds `SemanticMessage`/`MessageChannel`/`MessageFormatter`/
+     `createCatalogFormatter`, built on the existing `t()`/`Catalog`/plural/Fluent machinery
+     rather than reimplementing interpolation: one typed message renders on
+     log/compact/accessibility/debug channels by looking up `${type}.${channel}`, falling
+     back to `${type}` alone, exactly like `t()`'s own key-fallback contract. One file, not
+     the doc's suggested `renderers/*.ts` tree, which its own section 10.5 calls secondary.
+     Still deferred, and still P2 in the source doc: `Shape2D`/`Graphics2D` and gradient
+     primitives, `Text2D`, migrating the interop hatch away entirely, the `battle.
+     BattleHooks` mutable-context review, the presentation-event helpers, and the 8 ADRs -
+     add these as their own item rather than reopening this one
+
+166. ~~items 164/165 deferred the same doc's P2 items: clarifying GameEvent/Hook/Signal's
+     three separate roles (reviewing `battle.BattleHooks`' mutable-context pattern against
+     "events are output, not a rules bus") and the presentation-event helpers; the escape
+     hatch and interop item was already done in item 164~~ - reviewing `BattleHooks` found
+     it already fits the doc's own taxonomy: a Hook is "a point of modification a rule
+     consults while it runs", and mutating a shared `{ skip: false }` context for "can this
+     creature act" is exactly that, not a rules-driving event bus - no refactor was needed,
+     only writing the taxonomy down, which REFERENCE.md's `core` section now does explicitly
+     (GameEvent = a rule's ordered output, realised as `simulation`'s `Event` type parameter;
+     Hook = mid-calculation modification, `HookRegistry`; Signal = a bearing-on-nothing
+     notification). `core/Presentation.ts` adds `PresentationQueue`: plays a batch of
+     simulation events one at a time, each waiting however long its own `play(event)` call
+     says to before the next starts - the same queued/timed shape `two-d.ui.Toast` already
+     used, generalised to any event type and freed of `Toast`'s own Pixi container, since
+     sequencing which event plays next needs no renderer. This closes out the
+     `mwg-pixel-dungeon` study from items 164-166: the doc's P0/P1/P2 items are done except
+     the 8 ADRs (skipped - this repo has no ADR convention, and the decisions are already on
+     the record here and in REFERENCE.md) and what item 164 marked P2-adjacent and still
+     genuinely open: `Shape2D`/`Graphics2D`, `Text2D`, and migrating the `pixi-interop`
+     escape hatch away entirely once those exist
+
+167. ~~item 166 left a real list of open ends and skipped the 8 ADRs; a closer look at the
+     doc's own remaining acceptance criteria found more: `TintedSprite`'s colour-transform
+     pipe still needed a game to pass `{ extensions: [registerColorTransform] }` itself,
+     `roguelike.Scheduler` wasn't re-exported from `simulation` despite the doc naming that
+     explicitly, `i18n` had no locale-aware number/date/list formatting or catalog
+     validation, nothing tested that changing a presentation's timing leaves simulation
+     results untouched, no test compiled a consumer against the real published paths rather
+     than this repo's own relative imports, and nothing enforced the reverse of item 162's
+     Pixi isolation (a 2D game pulling in Babylon)~~ - `TintedSprite.ts` now calls
+     `registerColorTransform()` at module scope, so importing it (directly, or through
+     `AnimatedSprite`/`TileMap`/`DialogueStage`) registers the pipe with no `GameOptions.
+     extensions` needed; `package.json`'s `sideEffects` allowlist was updated so a
+     downstream bundler cannot tree-shake that call away. `simulation` re-exports `Scheduler`/
+     `Actor`/`SchedulerSnapshot` from `roguelike`. `i18n/Format.ts` adds `formatNumber`/
+     `formatDate`/`formatList` over `Intl`; `i18n/Validate.ts` adds `diffCatalogKeys` (two
+     catalogs' key sets compared) and `validateCatalog` (empty messages, plural forms missing
+     `other`) - deliberately not a parameter schema validator, since `SemanticMessage<TType,
+     TParams>`'s own generics are the primary mechanism the source document itself names.
+     `two-d/render/Shape2D.ts` adds `Node2D`/`Shape2D`/`Text2D`/`TiledSprite`/`Gradient` -
+     bare MWG-named re-exports of `Container`/`Graphics`/`Text`/`TilingSprite`/`FillGradient`,
+     deliberately not new wrapper APIs, since Pixi's own shape for these was already right;
+     this let all 7 examples migrate off `pixi-interop` for `Graphics`/`Text`/plain-`Container`
+     construction, leaving only 2 (`chess`, `colour-transform`) still using it, for genuinely
+     exotic needs (`Rectangle` hit-areas, manual texture-frame construction) the doc's own
+     escape-hatch clause anticipates. Broadening `renderer-isolation.test.ts`'s public-API
+     scan from method signatures to plain property declarations caught four more leaks this
+     pass had missed: `SpriteSheet`'s already-fixed methods aside, `ButtonSkin.texture`,
+     `ButtonOptions.icon`, `IconGridItem.icon`, `ListItem.icon`, and `Theme.panel` were all
+     still raw Pixi types - all retyped to `Texture2D`/`Container2D`. New tests: presentation
+     independence (`tests/simulation.test.ts`, three different presentation-duration
+     functions over the same commands produce identical simulation results), a genuinely
+     external consumer (`tests/consumer-app.test.ts`, a minimal game compiled against
+     `@datamoc/mw_games`'s real published paths, never naming a renderer), and the reverse
+     Babylon-isolation direction (`renderer-isolation.test.ts`). `examples/headless` gained a
+     third demo dispatching through `SimulationRuntime`/`Scheduler`/`EntityRegistry`/
+     `PresentationQueue` together, so the newer facade has a working, visible example rather
+     than only unit-test coverage. `ADR.md` records the 8 decisions from the source
+     document's section 19, framed explicitly as a one-time record rather than a new ongoing
+     convention - REFERENCE.md and this file's own item log remain how decisions get written
+     down here day to day. What's left, now genuinely and only: nothing from the source
+     document - the two remaining `pixi-interop` uses are the escape hatch working as
+     designed, not a gap

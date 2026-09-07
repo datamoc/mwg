@@ -29,6 +29,13 @@ export interface Actor {
 	speed?: number;
 }
 
+/** A serialisable record of a scheduler's queue, keyed by caller-supplied actor ids. */
+export interface SchedulerSnapshot {
+	now: number;
+	sequence: number;
+	entries: Array<{ id: string; time: number; sequence: number }>;
+}
+
 interface Entry<A> {
 	actor: A;
 	/** when this actor next acts */
@@ -91,7 +98,9 @@ export class Scheduler<A extends Actor> {
 	/**
 	 * Charges the current actor for what it did, and hands the turn on.
 	 *
-	 * @param cost time the action took at speed 1; divided by the actor's speed
+	 * @param cost time the action took at speed 1; divided by the actor's speed. A cost of 0
+	 * is a free action: the actor keeps its place at `now` but still goes behind any other
+	 * actor already tied with it, since its sequence number is refreshed like any other spend.
 	 */
 	spend(cost: number): void {
 		const entry = this.entries[0];
@@ -104,9 +113,53 @@ export class Scheduler<A extends Actor> {
 		this.sort();
 	}
 
+	/**
+	 * Pushes a specific actor's next turn back, independent of whose turn it currently is -
+	 * a stun or slow effect landing on someone other than the current actor, for instance.
+	 *
+	 * @param delay time added to that actor's next scheduled turn
+	 */
+	postpone(actor: A, delay: number): void {
+		const entry = this.entries.find((entry) => entry.actor === actor);
+		if (!entry) return;
+
+		entry.time += delay;
+		entry.sequence = this.sequence++;
+		this.sort();
+	}
+
 	/** the time at which an actor next acts, for a debug view or an interface */
 	timeOf(actor: A): number | null {
 		return this.entries.find((entry) => entry.actor === actor)?.time ?? null;
+	}
+
+	/**
+	 * Captures the queue as plain data, identifying each actor by whatever id the caller
+	 * assigns it - the scheduler holds actor references, not ids, so it cannot invent one
+	 * itself.
+	 */
+	toJSON(actorId: (actor: A) => string): SchedulerSnapshot {
+		return {
+			now: this.now,
+			sequence: this.sequence,
+			entries: this.entries.map((entry) => ({ id: actorId(entry.actor), time: entry.time, sequence: entry.sequence })),
+		};
+	}
+
+	/**
+	 * Rebuilds a scheduler from a snapshot taken by `toJSON`, restoring `now` and the
+	 * sequence counter so that ties among actors added afterwards resolve exactly as they
+	 * would have if the scheduler had never been serialised.
+	 *
+	 * @param actorOf resolves a snapshot id back to the live actor object it names
+	 */
+	static restore<A extends Actor>(snapshot: SchedulerSnapshot, actorOf: (id: string) => A): Scheduler<A> {
+		const scheduler = new Scheduler<A>();
+		scheduler.now = snapshot.now;
+		scheduler.sequence = snapshot.sequence;
+		scheduler.entries = snapshot.entries.map((entry) => ({ actor: actorOf(entry.id), time: entry.time, sequence: entry.sequence }));
+		scheduler.sort();
+		return scheduler;
 	}
 
 	private sort(): void {

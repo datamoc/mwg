@@ -1,13 +1,14 @@
-import { Container, Graphics, type Texture } from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
 import { Signal } from '../../core/Signal.ts';
 import { NinePatch, type NinePatchOptions } from './NinePatch.ts';
 import { Label, type LabelOptions } from './Label.ts';
 import { theme, themeChanged, type Theme } from './theme.ts';
+import type { Container2D, Texture2D } from '../render/Types2D.ts';
 
 export type ButtonState = 'idle' | 'hover' | 'pressed' | 'disabled';
 
 export interface ButtonSkin {
-	texture: Texture;
+	texture: Texture2D;
 	border: NinePatchOptions['border'];
 	/** Missing states retain the standard button tint. */
 	tints?: Partial<Record<ButtonState, number>>;
@@ -22,7 +23,7 @@ export interface ButtonOptions {
 	text?: string;
 
 	/** drawn to one side of the text, or centred alone if `text` is omitted */
-	icon?: Container;
+	icon?: Container2D;
 
 	/** Per-button chrome, independent of the window theme. Textures remain caller-owned. */
 	skin?: ButtonSkin;

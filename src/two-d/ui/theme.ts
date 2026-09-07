@@ -1,6 +1,6 @@
-import type { Texture } from 'pixi.js';
 import type { Direction } from '../../i18n/index.ts';
 import { Signal } from '../../core/Signal.ts';
+import type { Texture2D } from '../render/Types2D.ts';
 
 /**
  * How the interface looks.
@@ -11,7 +11,7 @@ import { Signal } from '../../core/Signal.ts';
  */
 export interface Theme {
 	/** the panel texture behind windows; without one, windows draw a flat rectangle */
-	panel?: Texture;
+	panel?: Texture2D;
 
 	/** how many pixels of `panel` are its fixed border */
 	panelBorder: number;

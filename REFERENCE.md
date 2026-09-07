@@ -68,12 +68,28 @@ other `mwg` module and no renderer at all.
   the scene type and typed against the lifecycle above, so it drives a 3D game just as well.
 - `Logger` - categories, four severity levels, a filter, and a sink tests can capture,
   instead of bare `console.log`/`console.error`.
+Three shapes cover what "an event" means here, kept deliberately distinct rather than folded
+into one bus: a **GameEvent** is a rule's ordered *output* - what happened, described after the
+fact - realised as the generic `Event` type parameter `simulation`'s `SimulationRule`/
+`SimulationRuntimeRule` already return, never something a handler reacts to mid-calculation. A
+**Hook** (`HookRegistry`, below) is a point of *modification* a rule consults while it runs -
+`modifyDamage`, "can this creature act this turn" - synchronous, and read back by the same rule
+that asked. A **Signal** is a plain *notification* with no bearing on any rule - `sceneChanged`,
+`saveCompleted`. Reaching for a global bus that several `AttackRequested`/`DamageCalculated`/
+`HpChanged`-style events all dispatch onto, each triggering the next, is the shape to avoid: it
+turns a rule's synchronous, readable logic into a chain no single function owns.
+
 - `Signal` - a typed event emitter: one event, one payload, LIFO listeners, and a listener
   can consume it.
 - `HookRegistry`/`Hook` - many events keyed by name, dispatched in registration order, with a
   `source` tag so everything one ability or worn item registered comes off in a single
   `offSource` call. `battle.BattleHooks` and `roguelike.CombatHooks` are both this with their
   argument types fixed; they were two copies of one class until they were merged.
+- `PresentationQueue` - plays a batch of simulation events one at a time, at whatever pace
+  `play(event)` (a tween, a sound, a floating number) says to wait before the next - the
+  presentation-side counterpart to a `SimulationRuntime.dispatch()`/`runScenario()` result, kept
+  out of the logical commit that already happened. The same queued/timed shape as `two-d.ui.
+  Toast`, generalised to any event type and needing no renderer.
 - `Random` (namespace) - seeded RNG: `int`, `float`, `weighted`, `element`, `shuffle` and the
   rest; every "pick one" returns `null` when there is nothing to pick.
 - `Generator` - the seeded RNG class `Random` wraps directly, for a game that wants its own instance.
@@ -116,6 +132,10 @@ other `mwg` module and no renderer at all.
 - `UndoHistory` - gameplay-level undo/redo over pushed, reference-held states.
 - `LoadQueue` - a reusable loading-screen lifecycle: named tasks, aggregate progress,
   cancellation.
+- `EntityRegistry`/`EntityId` - assigns and looks up stable string ids for live objects, so
+  events, saves, AI targets and buffs can name a creature or item without holding it; not an
+  ECS, and distinct from `Collection`'s persisted, queryable records. `idOf` is what a game
+  passes as `roguelike.Scheduler.toJSON`'s or `simulation.SimulationRuntime`'s `actorId`.
 
 ## `two-d`
 
@@ -166,6 +186,16 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   reduction of 8-neighbour terrain matches.
 - `inspectGraphicsCapabilities`/`detectWebGpu`/`RENDERING_DECISIONS` - checks
   WebGL/WebGPU/WGSL support and records this project's own rendering-backend decisions.
+- `Container2D`/`Texture2D`/`Rect`/`TextureRegion`/`rectOf` - the plain, renderer-free public
+  types a game names in place of `pixi.js`'s own `Container`/`Texture`/`Rectangle` (`Scene2D.
+  stage` is typed `Container2D`; `SpriteSheet.region` returns a `TextureRegion`). For the rare
+  need `two-d`'s own facade doesn't cover, `two-d/pixi-interop` re-exports the underlying Pixi
+  classes explicitly, rather than a game importing `pixi.js` itself.
+- `Node2D`/`Shape2D`/`Text2D`/`TiledSprite`/`Gradient` - bare, MWG-named re-exports of Pixi's
+  `Container`/`Graphics`/`Text`/`TilingSprite`/`FillGradient`: a plain grouping layer, vector
+  drawing, one-off text, a repeating/scrolling texture, and a gradient fill/stroke, none of
+  which needed new behaviour, only a name a game can import without naming `pixi.js` itself.
+  Prefer `ui.Label`/`BitmapLabel` over `Text2D` for anything styled through `ui.theme()`.
 
 ## `assets`
 
@@ -343,7 +373,9 @@ the dungeon-crawl half of the capability spec.
 - `Elevation` - whole-level height per cell, read by `FieldOfView`/`Pathfinder`.
 - `Pathfinder`/`neighbourOffsets` - A*(square)/Dijkstra(hex or elevation-aware) pathing,
   `distanceMap`/`descend`/`autoExplore`, an optional climb limit.
-- `Scheduler`/`Actor` - energy-cost turn order.
+- `Scheduler`/`Actor`/`SchedulerSnapshot` - energy-cost turn order, the sole authority on
+  logical time; fractional costs, `postpone` (delaying an actor other than the current one),
+  and `toJSON`/`restore` for a deterministic snapshot keyed by a caller-supplied actor id.
 - `decideMonsterAI`/`AIState`/`AIDecision`/`Disposition` - wander/hunt/flee built on
   `FieldOfView`/`Pathfinder`/`Scheduler`; peaceful/neutral/hostile disposition, provoked
   override.
@@ -409,6 +441,16 @@ live game loop.
   rule set until the next input is due.
 - `runScenario`/`Scenario`/`ScenarioResult` - a bounded, scripted simulation run against a
   set of expectations.
+- `SimulationRuntime`/`SimulationContext`/`SimulationOutcome`/`SimulationRuntimeRule`/
+  `SimulationSnapshot` - a facade over one state + one `roguelike.Scheduler` + one `core.
+  Generator`, for the interactive half of a turn-based simulation: `dispatch` runs a single
+  command through the game's rule, threading `random`/`scheduler` as context and charging any
+  returned cost; `snapshot`/`restore` capture and rebuild the whole triple. Composes with
+  `advanceToInput` against the same scheduler for the automatic-actor loop, rather than
+  replacing it.
+- `Scheduler`/`Actor`/`SchedulerSnapshot` - re-exported here from `roguelike` (its real home),
+  since every `SimulationRuntime` needs one; a simulation-first game need not import a second
+  module just to construct the class its own runtime is built around.
 
 ### `two-d/stage`
 
@@ -503,3 +545,21 @@ Message tables, plurals, interpolation, and direction - pure logic, no Pixi depe
 - `has` - whether a key resolves to something real, in either language.
 - `parseFTL`/`FluentOptions` - parses Project Fluent `.ftl` message resources into the same
   `Catalog`/`t()` surface, with variables, exact and plural variants.
+- `SemanticMessage`/`MessageChannel`/`MessageFormatter`/`createCatalogFormatter` - a typed
+  `{ type, params }` communication intent rendered differently per channel (log/compact/
+  accessibility/debug) from the same underlying catalog: `createCatalogFormatter` looks up
+  `${type}.${channel}`, falling back to `${type}` alone, then formats through `t()`. A
+  simulation emits the message once; the channel is a presentation choice, not a rule.
+- `EntityTextResolver`/`GrammaticalEntity` - type contracts a game uses while building a
+  `SemanticMessage`'s params (resolving an id to display text, or carrying gender/number/
+  proper-noun metadata for its own catalog's grammar); MWG never calls or interprets either.
+- `formatNumber`/`formatDate`/`formatList` - locale-aware `Intl.NumberFormat`/
+  `DateTimeFormat`/`ListFormat` wrappers reading the active locale from `locale()`, for a
+  message that needs more than `{token}` substitution - a game calls these while building a
+  `t()`/`SemanticMessage` param, the same way it resolves an entity id to display text.
+- `diffCatalogKeys`/`validateCatalog`/`CatalogKeyDiff`/`CatalogIssue` - catalog consistency
+  checks: `diffCatalogKeys` compares two catalogs' key sets (a base language against a
+  translation); `validateCatalog` flags empty messages and plural forms missing their
+  `other` branch within one catalog. Deliberately not a parameter schema validator - a
+  `SemanticMessage<TType, TParams>`'s own generics already give a game compile-time
+  parameter safety, which is the primary mechanism the source document calls for.

@@ -1,5 +1,5 @@
 import { Game, Scene2D } from '../../src/two-d/index.ts';
-import { SpriteSheet, registerColorTransform } from '../../src/two-d/render/index.ts';
+import { SpriteSheet } from '../../src/two-d/render/index.ts';
 import { WindowStack, MessageBox } from '../../src/two-d/ui/index.ts';
 import { DialogueStage, StageScript, type StageCommand } from '../../src/two-d/stage/index.ts';
 import * as Resources from '../../src/assets/index.ts';
@@ -135,7 +135,6 @@ async function main(): Promise<void> {
 	const game = new Game({
 		canvas: document.getElementById('game') as HTMLCanvasElement,
 		background: 0x0d0d12,
-		extensions: [registerColorTransform],
 	});
 
 	await Resources.load([BACKDROP, ALICE, BOB]);

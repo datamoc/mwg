@@ -1,4 +1,4 @@
-import { Graphics, Text } from 'pixi.js';
+import { Shape2D, Text2D } from '../../src/two-d/render/index.ts';
 import { Input } from '../../src/core/index.ts';
 import { Game, Scene2D } from '../../src/two-d/index.ts';
 
@@ -9,7 +9,7 @@ const TARGET_START = -0.42;
 const TARGET_SIZE = 0.72;
 
 class RoomScene extends Scene2D {
-	private status!: Text;
+	private status!: Text2D;
 	private input = (action: string): boolean => {
 		if (action !== 'confirm') return false;
 		Game.current.pushScene(LockpickScene);
@@ -19,22 +19,22 @@ class RoomScene extends Scene2D {
 	override create(): void {
 		const width = Game.current.width;
 		const height = Game.current.height;
-		this.stage.addChild(new Graphics().rect(0, 0, width, height).fill(0x101018));
+		this.stage.addChild(new Shape2D().rect(0, 0, width, height).fill(0x101018));
 
-		const title = new Text({ text: 'THE OLD WATCHTOWER', style: { fill: 0xe8d7a5, fontFamily: 'monospace', fontSize: 24 } });
+		const title = new Text2D({ text: 'THE OLD WATCHTOWER', style: { fill: 0xe8d7a5, fontFamily: 'monospace', fontSize: 24 } });
 		title.anchor.set(0.5);
 		title.position.set(width / 2, height * 0.28);
 		this.stage.addChild(title);
 
-		const chest = new Graphics().roundRect(-110, -65, 220, 130, 12).fill(0x70452f).stroke({ color: 0xc58a46, width: 5 });
+		const chest = new Shape2D().roundRect(-110, -65, 220, 130, 12).fill(0x70452f).stroke({ color: 0xc58a46, width: 5 });
 		chest.position.set(width / 2, height * 0.53);
 		this.stage.addChild(chest);
 
-		const lock = new Graphics().circle(0, 0, 24).fill(0x17151b).stroke({ color: 0xe0b15d, width: 4 });
+		const lock = new Shape2D().circle(0, 0, 24).fill(0x17151b).stroke({ color: 0xe0b15d, width: 4 });
 		lock.position.set(width / 2, height * 0.53);
 		this.stage.addChild(lock);
 
-		this.status = new Text({ text: 'Press Enter to pick the lock', style: { fill: 0xb7b4c6, fontFamily: 'monospace', fontSize: 15, align: 'center' } });
+		this.status = new Text2D({ text: 'Press Enter to pick the lock', style: { fill: 0xb7b4c6, fontFamily: 'monospace', fontSize: 15, align: 'center' } });
 		this.status.anchor.set(0.5);
 		this.status.position.set(width / 2, height * 0.78);
 		this.stage.addChild(this.status);
@@ -61,8 +61,8 @@ class RoomScene extends Scene2D {
 class LockpickScene extends Scene2D {
 	private needle = 0;
 	private attempts = 3;
-	private dial!: Graphics;
-	private prompt!: Text;
+	private dial!: Shape2D;
+	private prompt!: Text2D;
 	private input = (action: string): boolean => {
 		if (action === 'cancel') {
 			Game.current.popScene({ canceled: true } satisfies LockpickResult);
@@ -78,12 +78,12 @@ class LockpickScene extends Scene2D {
 	override create(): void {
 		const width = Game.current.width;
 		const height = Game.current.height;
-		this.stage.addChild(new Graphics().rect(0, 0, width, height).fill({ color: 0x090910, alpha: 0.94 }));
-		this.prompt = new Text({ text: '', style: { fill: 0xf3ead2, fontFamily: 'monospace', fontSize: 18, align: 'center' } });
+		this.stage.addChild(new Shape2D().rect(0, 0, width, height).fill({ color: 0x090910, alpha: 0.94 }));
+		this.prompt = new Text2D({ text: '', style: { fill: 0xf3ead2, fontFamily: 'monospace', fontSize: 18, align: 'center' } });
 		this.prompt.anchor.set(0.5);
 		this.prompt.position.set(width / 2, height * 0.18);
 		this.stage.addChild(this.prompt);
-		this.dial = new Graphics();
+		this.dial = new Shape2D();
 		this.dial.position.set(width / 2, height * 0.52);
 		this.stage.addChild(this.dial);
 		this.drawDial();

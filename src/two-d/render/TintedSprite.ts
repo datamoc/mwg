@@ -1,8 +1,14 @@
 import { Sprite } from 'pixi.js';
-import type { Texture, SpriteOptions } from 'pixi.js';
-import { TINTED_SPRITE_PIPE, packColorAdd, packTintAdd } from './ColorTransformBatcher.ts';
+import type { SpriteOptions } from 'pixi.js';
+import { TINTED_SPRITE_PIPE, packColorAdd, packTintAdd, registerColorTransform } from './ColorTransformBatcher.ts';
+import type { Texture2D } from './Types2D.ts';
 
 export { registerColorTransform } from './ColorTransformBatcher.ts';
+
+//registers the pipe the moment anything imports this file - see registerColorTransform's own
+//doc comment for why a module-scope call, rather than "on first render", is what makes this
+//genuinely automatic
+registerColorTransform();
 
 /**
  * A sprite that can be pulled *towards* a colour, not just darkened.
@@ -23,7 +29,7 @@ export { registerColorTransform } from './ColorTransformBatcher.ts';
 export class TintedSprite extends Sprite {
 	private _colorAdd = 0;
 
-	constructor(options?: SpriteOptions | Texture) {
+	constructor(options?: SpriteOptions | Texture2D) {
 		super(options as SpriteOptions);
 
 		//Sprite's constructor points this at Pixi's own pipe; redirect it to ours, which

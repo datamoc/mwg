@@ -29,6 +29,24 @@
  *
  * reset(); // back to unset, for the next test or a language switch from scratch
  * ```
+ *
+ * `createCatalogFormatter` (`SemanticMessage.ts`) sits on top of the same catalog: a
+ * simulation emits one typed `SemanticMessage` and a game renders it differently per channel
+ * (log line, compact HUD, accessibility, debug) without touching the message itself.
+ * ```ts
+ * import { setBase, createCatalogFormatter, type SemanticMessage } from '@datamoc/mw_games/i18n';
+ *
+ * setBase({
+ *   locale: 'en',
+ *   direction: 'ltr',
+ *   messages: { 'combat.damage.log': 'The {target} takes {amount} damage.', 'combat.damage.compact': '-{amount} HP' },
+ * });
+ *
+ * const formatter = createCatalogFormatter();
+ * const message: SemanticMessage = { type: 'combat.damage', params: { target: 'gnoll', amount: 7 } };
+ * console.log(formatter.format(message, 'log'), formatter.format(message, 'compact'));
+ * // 'The gnoll takes 7 damage.' '-7 HP'
+ * ```
  */
 
 /** left-to-right is the default; right-to-left is the other case `mwg/ui` mirrors against */
@@ -154,3 +172,11 @@ export function reset(): void {
 
 export { parseFTL } from './Fluent.ts';
 export type { FluentOptions } from './Fluent.ts';
+
+export { createCatalogFormatter } from './SemanticMessage.ts';
+export type { SemanticMessage, EntityTextResolver, GrammaticalEntity, MessageChannel, MessageFormatter } from './SemanticMessage.ts';
+
+export { formatNumber, formatDate, formatList } from './Format.ts';
+
+export { diffCatalogKeys, validateCatalog } from './Validate.ts';
+export type { CatalogKeyDiff, CatalogIssue } from './Validate.ts';

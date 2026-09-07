@@ -1,6 +1,6 @@
 import { Container } from 'pixi.js';
-import type { Texture } from 'pixi.js';
 import { TintedSprite } from './TintedSprite.ts';
+import type { Texture2D } from './Types2D.ts';
 
 interface Layer {
 	sprite: TintedSprite;
@@ -23,7 +23,7 @@ export class LayeredSprite extends Container {
 	 *
 	 * @param order stacking order, higher drawn on top; equal order keeps insertion order
 	 */
-	addLayer(name: string, texture: Texture, order = 0): TintedSprite {
+	addLayer(name: string, texture: Texture2D, order = 0): TintedSprite {
 		this.removeLayer(name);
 
 		const sprite = new TintedSprite(texture);
@@ -50,7 +50,7 @@ export class LayeredSprite extends Container {
 	}
 
 	/** swaps a layer's texture without touching its tint, order, or identity - gear changing */
-	setTexture(name: string, texture: Texture): void {
+	setTexture(name: string, texture: Texture2D): void {
 		const layer = this.layers.get(name);
 		if (layer) layer.sprite.texture = texture;
 	}

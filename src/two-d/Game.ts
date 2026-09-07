@@ -86,18 +86,15 @@ export interface GameOptions {
 	resizeTo?: HTMLElement | Window;
 
 	/**
-	 * Pixi extension registrations to run before the renderer is built, such as
-	 * `mwg/render`'s `registerColorTransform` for `TintedSprite`.
+	 * Pixi extension registrations to run before the renderer is built.
 	 *
-	 * `mwg/core` does not import `mwg/render` itself - a game that only ever imports
-	 * `mwg/core` should not find the whole render module compiled in regardless. A game
-	 * that does use `TintedSprite` (directly, or through `TileMap`/`DialogueStage`/
-	 * `AnimatedSprite`, which are all built on it) passes its registration function here:
-	 *
-	 * ```ts
-	 * import { registerColorTransform } from 'mw_games/render';
-	 * new Game({ extensions: [registerColorTransform] });
-	 * ```
+	 * `TintedSprite` (and everything built on it - `AnimatedSprite`, `TileMap`,
+	 * `DialogueStage`) registers its own colour-transform pipe automatically, at module
+	 * scope, the moment a game imports it; a game never has to pass anything here for that.
+	 * This stays as an escape hatch for a game defining its own Pixi extension - a custom
+	 * render pipe, its own batcher - which still has to be registered before `app.init()`
+	 * builds the renderer, the same constraint `registerColorTransform` works around by
+	 * self-registering on import instead of needing a caller to remember it.
 	 */
 	extensions?: readonly (() => void)[];
 }

@@ -1,9 +1,9 @@
 import { advanceToInput } from '../../src/simulation/index.ts';
 import { resolveAttack } from './combat.ts';
-import { Container, Graphics } from 'pixi.js';
+import { Node2D, Shape2D } from '../../src/two-d/render/index.ts';
 import { Input, Random, SaveSystem } from '../../src/core/index.ts';
 import { Game, Scene2D } from '../../src/two-d/index.ts';
-import { TintedSprite, SpriteSheet, TileMap, Camera, Projectile, registerColorTransform } from '../../src/two-d/render/index.ts';
+import { TintedSprite, SpriteSheet, TileMap, Camera, Projectile } from '../../src/two-d/render/index.ts';
 import { Label, theme, Window, WindowStack, IconGrid, type IconGridItem } from '../../src/two-d/ui/index.ts';
 import {
 	StatBlock,
@@ -166,7 +166,7 @@ class DungeonScene extends Scene2D {
 	private hero!: Creature;
 	private stairs: Step = { x: 0, y: 0 };
 	private stairsSprite!: TintedSprite;
-	private creatureLayer = new Container();
+	private creatureLayer = new Node2D();
 	private groundItems: GroundItem[] = [];
 
 	private heroStats!: StatBlock;
@@ -774,14 +774,14 @@ class DungeonScene extends Scene2D {
 	}
 
 	/** a coin sprite tinted to the item, plus a small corner mark for whichever is worn */
-	private itemIcon(def: Item, worn: boolean): Container {
-		const icon = new Container();
+	private itemIcon(def: Item, worn: boolean): Node2D {
+		const icon = new Node2D();
 		const coin = new TintedSprite(this.sheet.get(tiles.COIN));
 		coin.tint = ITEM_TINT[def.id] ?? 0xffffff;
 		icon.addChild(coin);
 
 		if (worn) {
-			const mark = new Graphics().rect(0, 0, 5, 5).fill({ color: theme().color.textHighlight });
+			const mark = new Shape2D().rect(0, 0, 5, 5).fill({ color: theme().color.textHighlight });
 			icon.addChild(mark);
 		}
 
@@ -972,7 +972,6 @@ async function main(): Promise<void> {
 	const game = new Game({
 		canvas: document.getElementById('game') as HTMLCanvasElement,
 		background: 0x08080c,
-		extensions: [registerColorTransform],
 	});
 
 	//descending and searching are their own actions, so they can be rebound like everything else
