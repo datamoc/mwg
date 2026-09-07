@@ -44,7 +44,18 @@ export interface ChessState {
 
 export type ChessResult = 'ongoing' | 'white-wins' | 'black-wins' | 'stalemate';
 
-/** 'e4' to 28 and back - tests read `sq('e4')` rather than bare numbers */
+/**
+ * 'e4' to 28 and back - tests read `sq('e4')` rather than bare numbers.
+ *
+ * @example
+ * ```ts
+ * import { sq } from '@datamoc/mw_games/board';
+ *
+ * console.log(sq('a1')); // 0
+ * console.log(sq('e4')); // 28
+ * console.log(sq('h8')); // 63
+ * ```
+ */
 export function sq(name: string): ChessSquare {
 	const file = name.charCodeAt(0) - 97;
 	const rank = name.charCodeAt(1) - 49;
@@ -54,6 +65,18 @@ export function sq(name: string): ChessSquare {
 	return rank * 8 + file;
 }
 
+/**
+ * The inverse of `sq`: an index 0-63 back to its algebraic name.
+ *
+ * @example
+ * ```ts
+ * import { squareName } from '@datamoc/mw_games/board';
+ *
+ * console.log(squareName(0)); // 'a1'
+ * console.log(squareName(28)); // 'e4'
+ * console.log(squareName(63)); // 'h8'
+ * ```
+ */
 export function squareName(sq: ChessSquare): string {
 	return String.fromCharCode(97 + (sq & 7)) + String.fromCharCode(49 + (sq >> 3));
 }
@@ -64,6 +87,17 @@ export function squareName(sq: ChessSquare): string {
  * Placement, side to move, castling rights and the en passant square are read;
  * the halfmove clock and move number are not (draw claims are out of scope),
  * and both kings must be present or there is nothing to judge.
+ *
+ * @example
+ * ```ts
+ * import { parseFen, sq } from '@datamoc/mw_games/board';
+ *
+ * // Scholar's mate position, black to move, every castling right still on the books
+ * const state = parseFen('r1bqkbnr/pppp1Qpp/2n5/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4');
+ *
+ * console.log(state.turn); // 'black'
+ * console.log(state.board[sq('f7')]?.side); // 'white' - the queen that just gave check
+ * ```
  */
 export function parseFen(fen: string): ChessState {
 	const parts = fen.trim().split(/\s+/);
@@ -131,7 +165,18 @@ function onBoard(file: number, rank: number): boolean {
 	return file >= 0 && file < 8 && rank >= 0 && rank < 8;
 }
 
-/** the standard opening array, white to move with every right intact */
+/**
+ * The standard opening array, white to move with every right intact.
+ *
+ * @example
+ * ```ts
+ * import { startingChess, legalMoves } from '@datamoc/mw_games/board';
+ *
+ * const state = startingChess();
+ * console.log(state.turn); // 'white'
+ * console.log(legalMoves(state).length); // 20 - 16 pawn moves, 4 knight moves
+ * ```
+ */
 export function startingChess(): ChessState {
 	const back: ChessKind[] = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
 	const board: Array<ChessPiece | null> = new Array(64).fill(null);
@@ -150,6 +195,19 @@ export function startingChess(): ChessState {
 }
 
 /** an independent copy, for searching a move without playing it */
+/**
+ * A deep copy, safe to mutate (via `applyMove`) without touching the original - what
+ * `legalMoves` uses to try a move and check it does not leave the mover in check.
+ *
+ * @example
+ * ```ts
+ * import { startingChess, cloneChess } from '@datamoc/mw_games/board';
+ *
+ * const state = startingChess();
+ * const trial = cloneChess(state);
+ * console.log(trial !== state, trial.turn); // true 'white'
+ * ```
+ */
 export function cloneChess(state: ChessState): ChessState {
 	return {
 		board: state.board.map((p) => (p ? { side: p.side, kind: p.kind } : null)),
@@ -250,6 +308,14 @@ function findKing(board: Array<ChessPiece | null>, side: ChessSide): ChessSquare
 	return king;
 }
 
+/**
+ * @example
+ * ```ts
+ * import { startingChess, inCheck } from '@datamoc/mw_games/board';
+ *
+ * console.log(inCheck(startingChess(), 'white')); // false - nobody is in check at the start
+ * ```
+ */
 export function inCheck(state: ChessState, side: ChessSide): boolean {
 	return attacks(state.board, findKing(state.board, side), other(side));
 }
@@ -262,7 +328,15 @@ interface RawMove {
 	enPassantTake?: ChessSquare;
 }
 
-/** every move the piece could make ignoring its own king - checks filter later */
+/** every move the piece could make ignoring its own king - checks filter later
+ *
+ * @example
+ * ```ts
+ * import { startingChess, legalMoves } from '@datamoc/mw_games/board';
+ *
+ * console.log(legalMoves(startingChess()).length); // 20 - the opening position's own count
+ * ```
+ */
 function pseudoMoves(state: ChessState, from: ChessSquare): RawMove[] {
 	const piece = state.board[from];
 	if (!piece || piece.side !== state.turn) return [];
@@ -458,6 +532,16 @@ export function legalMoves(state: ChessState): ChessMove[] {
 /**
  * Plays a move, mutating the position. Refuses anything `legalMoves` would not
  * list - a silent illegal move is how a minigame corrupts its own board.
+ *
+ * @example
+ * ```ts
+ * import { startingChess, sq, applyMove } from '@datamoc/mw_games/board';
+ *
+ * const state = startingChess();
+ * applyMove(state, { from: sq('e2'), to: sq('e4') });
+ * console.log(state.turn); // 'black'
+ * console.log(state.board[sq('e4')]); // { side: 'white', kind: 'pawn' }
+ * ```
  */
 export function applyMove(state: ChessState, move: ChessMove): void {
 	const piece = state.board[move.from];
@@ -476,7 +560,15 @@ export function applyMove(state: ChessState, move: ChessMove): void {
 	playRaw(state, raw);
 }
 
-/** mate, stalemate, or more game: whoever just moved is judged through the side to play */
+/** mate, stalemate, or more game: whoever just moved is judged through the side to play
+ *
+ * @example
+ * ```ts
+ * import { startingChess, gameResult } from '@datamoc/mw_games/board';
+ *
+ * console.log(gameResult(startingChess())); // 'ongoing'
+ * ```
+ */
 export function gameResult(state: ChessState): ChessResult {
 	if (legalMoves(state).length > 0) return 'ongoing';
 	if (inCheck(state, state.turn)) return state.turn === 'white' ? 'black-wins' : 'white-wins';

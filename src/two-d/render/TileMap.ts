@@ -5,7 +5,20 @@ import type { SpriteSheet } from './SpriteSheet.ts';
 import type { Camera } from './Camera.ts';
 import { hexToPixel, pixelToHex } from '../../core/Hex.ts';
 
-/** the frame value meaning "nothing here"; a cell holding it gets no sprite at all */
+/**
+ * The frame value meaning "nothing here"; a cell holding it gets no sprite at all.
+ *
+ * @example
+ * ```ts
+ * import { EMPTY, TileMap, SpriteSheet } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const sheet: SpriteSheet;
+ *
+ * const map = new TileMap({ width: 10, height: 10, sheet });
+ * map.addLayer('ground');
+ * console.log(map.getTile('ground', 0, 0)); // EMPTY - nothing set there yet
+ * ```
+ */
 export const EMPTY = -1;
 
 /** the faces of a raised block are shaded, the way light falls on the classic block look */
@@ -18,6 +31,15 @@ const RIGHT_FACE_FILL = 0x9a9a9a;
  *
  * Single-sheet maps never need this: a plain frame index already decodes as
  * sheet 0, so every existing call site keeps working unchanged.
+ *
+ * @example
+ * ```ts
+ * import { tileFrame, tileFrameSheet, tileFrameIndex } from '@datamoc/mw_games/two-d/render';
+ *
+ * const packed = tileFrame(1, 42); // frame 42 of the second sheet (index 1)
+ * console.log(tileFrameSheet(packed)); // 1
+ * console.log(tileFrameIndex(packed)); // 42
+ * ```
  */
 export function tileFrame(sheet: number, frame: number): number {
 	if (!Number.isInteger(sheet) || sheet < 0 || sheet >= 1 << 12) {
@@ -29,12 +51,32 @@ export function tileFrame(sheet: number, frame: number): number {
 	return (sheet << 20) | frame;
 }
 
-/** the sheet half of a `tileFrame` pack, or 0 for a plain frame index */
+/**
+ * The sheet half of a `tileFrame` pack, or 0 for a plain frame index.
+ *
+ * @example
+ * ```ts
+ * import { tileFrame, tileFrameSheet } from '@datamoc/mw_games/two-d/render';
+ *
+ * console.log(tileFrameSheet(tileFrame(2, 5))); // 2
+ * console.log(tileFrameSheet(5)); // 0 - a plain frame index reads as sheet 0
+ * ```
+ */
 export function tileFrameSheet(packed: number): number {
 	return packed >>> 20;
 }
 
-/** the frame half of a `tileFrame` pack, or the value itself for a plain index */
+/**
+ * The frame half of a `tileFrame` pack, or the value itself for a plain index.
+ *
+ * @example
+ * ```ts
+ * import { tileFrame, tileFrameIndex } from '@datamoc/mw_games/two-d/render';
+ *
+ * console.log(tileFrameIndex(tileFrame(2, 5))); // 5
+ * console.log(tileFrameIndex(5)); // 5 - a plain frame index passes through unchanged
+ * ```
+ */
 export function tileFrameIndex(packed: number): number {
 	return packed & ((1 << 20) - 1);
 }
@@ -106,6 +148,26 @@ interface Layer {
  * `heightStep` per level, and on the diamond projections (isometric, staggered) each
  * level grows two shaded side faces, the classic raised-block look. `tileCenter`
  * rides along, so whoever stands on the cell stands on top of it.
+ *
+ * @example
+ * ```ts
+ * import { TileMap, EMPTY, SpriteSheet, createCamera } from '@datamoc/mw_games/two-d/render';
+ *
+ * const sheet = SpriteSheet.grid('tiles/ground.png', 16);
+ *
+ * const map = new TileMap({ width: 20, height: 20, sheet });
+ * map.addLayer('ground', new Array(400).fill(0)); // frame 0 everywhere
+ * map.addLayer('objects'); // an empty layer, filled in with setTile later
+ *
+ * map.setTile('objects', 3, 3, 5);
+ * console.log(map.getTile('objects', 3, 3)); // 5
+ * console.log(map.getTile('objects', 0, 0)); // EMPTY - never set
+ *
+ * map.setCellColor(3, 3, 0x888888); // half-lit, remembered-but-not-visible fog of war
+ *
+ * const camera = createCamera();
+ * map.cull(camera); // once per frame, switches off chunks the camera cannot see
+ * ```
  */
 export class TileMap extends Container {
 	readonly widthInTiles: number;

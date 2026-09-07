@@ -24,6 +24,15 @@ export interface BitmapLabelOptions {
  * family/size/colour/weight combination is used (see `BitmapText`'s "Dynamic Bitmap Fonts"
  * behaviour) - nothing here downloads or ships a font file, keeping this the same
  * generated-not-borrowed shape as every other asset in this project.
+ *
+ * @example
+ * ```ts
+ * import { BitmapLabel } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const fps = new BitmapLabel({ text: '60 fps', size: 12 });
+ *
+ * fps.setText('59 fps'); // updated every frame, cheaply, unlike Label
+ * ```
  */
 export class BitmapLabel extends BitmapText {
 	private readonly opts: BitmapLabelOptions;
@@ -62,7 +71,20 @@ export class BitmapLabel extends BitmapText {
 	}
 }
 
-/** the pure style-mapping `BitmapLabel` builds its underlying `BitmapText` style from, exported for testing without constructing a `BitmapText` (which needs a real DOM `document`, unlike `Text`) */
+/**
+ * the pure style-mapping `BitmapLabel` builds its underlying `BitmapText` style from, exported
+ * for testing without constructing a `BitmapText` (which needs a real DOM `document`, unlike
+ * `Text`)
+ *
+ * @example
+ * ```ts
+ * import { bitmapLabelStyle } from '@datamoc/mw_games/two-d/ui';
+ * import { defaultTheme } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const style = bitmapLabelStyle({ text: 'Score', bold: true }, defaultTheme);
+ * console.log(style.fontWeight); // 'bold'
+ * ```
+ */
 export function bitmapLabelStyle(opts: BitmapLabelOptions, t: Theme): TextStyleOptions {
 	return {
 		fontFamily: t.font.family,

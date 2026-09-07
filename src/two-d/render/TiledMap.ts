@@ -118,10 +118,14 @@ export interface TilesetSheet {
  * tile size, since one grid of cells draws them all.
  *
  * Resolving an external tileset stays the caller's job - the map only names its
- * `source`, and fetching it is asset loading, which this pure parser never does:
+ * `source`, and fetching it is asset loading, which this pure parser never does.
  *
+ * @example
  * ```ts
- * const map = Resources.get('maps/village.json');
+ * import { loadTiledMap, SpriteSheet, type TiledMapData, type TiledTilesetData, type TilesetSheet } from '@datamoc/mw_games/two-d/render';
+ * import * as Resources from '@datamoc/mw_games/assets';
+ *
+ * const map: TiledMapData = Resources.get('maps/village.json');
  * const sheets: TilesetSheet[] = map.tilesets.map((ref) => {
  * 	if (ref.source === undefined) {
  * 		return { firstgid: ref.firstgid, sheet: SpriteSheet.grid('tiles/ground.png', map.tilewidth, map.tileheight) };
@@ -129,7 +133,9 @@ export interface TilesetSheet {
  * 	const tileset: TiledTilesetData = Resources.get(ref.source);
  * 	return { firstgid: ref.firstgid, sheet: SpriteSheet.grid(tileset.image, tileset.tilewidth, tileset.tileheight) };
  * });
- * loadTiledMap(map, sheets);
+ *
+ * const { map: tileMap, objects } = loadTiledMap(map, sheets);
+ * console.log(objects[0]?.tileX); // an objectgroup entry's tile coordinate, if the map has one
  * ```
  */
 export function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSheet[]): LoadedTiledMap {

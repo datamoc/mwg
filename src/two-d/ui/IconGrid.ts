@@ -55,6 +55,29 @@ export interface IconGridOptions {
  * none of the drag-threshold and global-pointer-tracking fragility an actually-followed ghost
  * sprite would - and unlike a live drag, every step of it is a plain method call a test can
  * drive without simulating pointer events at all.
+ *
+ * @example
+ * ```ts
+ * import { IconGrid } from '@datamoc/mw_games/two-d/ui';
+ * import { Shape2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * const potionIcon = new Shape2D().rect(0, 0, 16, 16).fill(0x66cc66);
+ * const swordIcon = new Shape2D().rect(0, 0, 16, 16).fill(0xcccccc);
+ *
+ * const bag = new IconGrid({
+ * 	width: 160,
+ * 	height: 80,
+ * 	columns: 4,
+ * 	items: [
+ * 		{ icon: potionIcon, quantity: 3 },
+ * 		{ icon: swordIcon },
+ * 	],
+ * 	onSelect: (item, index) => console.log('used', index, item.value),
+ * });
+ *
+ * bag.handleAction('right'); // moves the highlight to the sword
+ * bag.handleAction('confirm'); // fires onSelect for the highlighted cell
+ * ```
  */
 export class IconGrid extends Container {
 	private items: IconGridItem[] = [];

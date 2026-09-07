@@ -37,6 +37,18 @@ export interface WindowOptions {
  *
  * Contents go in `content`, whose origin is already inset past the frame and padding, so a
  * child placed at 0,0 sits correctly whatever the theme's border is.
+ *
+ * @example
+ * ```ts
+ * import { Window, Label } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const confirm = new Window({ width: 200, height: 100, title: 'Leave?', anchor: 'center' });
+ * confirm.content.addChild(new Label({ text: 'Progress since your last save will be lost.' }));
+ * confirm.onClose.add(() => console.log('window closed'));
+ *
+ * confirm.place(800, 600); // centres it in an 800x600 viewport
+ * confirm.handleAction('cancel'); // closable defaults to true, so this closes it
+ * ```
  */
 export class Window extends Container {
 	readonly content = new Container();

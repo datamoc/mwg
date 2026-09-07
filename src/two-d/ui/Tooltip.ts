@@ -31,6 +31,20 @@ export interface TooltipOptions {
  * Positioning is the other half: a tooltip near the right or bottom edge flips back inside the
  * viewport instead of being cut off, which is why `setViewport` has to be called from the
  * owning scene's own `resize`.
+ *
+ * @example
+ * ```ts
+ * import { Tooltip } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const tooltip = new Tooltip({ delay: 0 });
+ * tooltip.setViewport(800, 600);
+ *
+ * tooltip.hover('Strength: raises attack', 120, 80);
+ * // called every frame from the scene's own update(dt); returns true once, the frame it appears
+ * console.log(tooltip.update(1 / 60)); // true - delay is 0, so it shows on the first frame
+ *
+ * tooltip.leave(); // the pointer moved off the stat row
+ * ```
  */
 export class Tooltip extends Container {
 	private readonly delay: number;

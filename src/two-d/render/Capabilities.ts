@@ -34,6 +34,14 @@ export interface RenderingDecision {
  * The framework's rendering choices by workload. This is data, not a global renderer switch:
  * each game imports only the module it uses and keeps 2D Pixi and optional 3D Babylon paths
  * independent.
+ *
+ * @example
+ * ```ts
+ * import { RENDERING_DECISIONS } from '@datamoc/mw_games/two-d/render';
+ *
+ * const particles = RENDERING_DECISIONS.find((d) => d.workload === 'particles');
+ * console.log(particles?.preferred); // 'PixiJS for 2D, Babylon.js for 3D'
+ * ```
  */
 export const RENDERING_DECISIONS: readonly RenderingDecision[] = [
 	{ workload: 'sprites', preferred: 'PixiJS WebGL/WebGPU batcher', fallback: 'PixiJS WebGL', reason: 'high-volume textured 2D batches' },
@@ -55,6 +63,22 @@ export const RENDERING_DECISIONS: readonly RenderingDecision[] = [
  * of that is asynchronous. Rather than assume WGSL works just because `navigator.gpu`
  * exists (a browser can expose WebGPU behind a still-broken or disabled implementation),
  * this stays `false` unless a caller supplies a real result through `probe.wgsl`.
+ *
+ * @example
+ * ```ts
+ * import { inspectGraphicsCapabilities } from '@datamoc/mw_games/two-d/render';
+ *
+ * // reads the real browser when no probe is given
+ * const here = inspectGraphicsCapabilities();
+ *
+ * // a fake probe, for a test or a host integration with no DOM
+ * const capabilities = inspectGraphicsCapabilities({
+ * 	createCanvas: () => ({ getContext: (kind) => (kind === 'webgl2' ? {} : null) }),
+ * 	webgpu: false,
+ * });
+ * console.log(capabilities.webgl2); // true
+ * console.log(capabilities.webgpu); // false
+ * ```
  */
 export function inspectGraphicsCapabilities(probe: GraphicsProbe = {}): GraphicsCapabilities {
 	const canvas = probe.createCanvas?.() ?? (typeof document === 'undefined' ? null : document.createElement('canvas'));
@@ -74,6 +98,15 @@ export interface WebGpuDetection {
  * synchronously: requests an actual adapter and device, then compiles an actual shader
  * module and reads back its compilation diagnostics. Feed the result to
  * `inspectGraphicsCapabilities` via `probe.webgpu`/`probe.wgsl` once resolved.
+ *
+ * @example
+ * ```ts
+ * import { detectWebGpu, inspectGraphicsCapabilities } from '@datamoc/mw_games/two-d/render';
+ *
+ * const detected = await detectWebGpu();
+ * const capabilities = inspectGraphicsCapabilities({ webgpu: detected.webgpu, wgsl: detected.wgsl });
+ * console.log(capabilities.wgsl); // true only if a real WGSL shader actually compiled
+ * ```
  */
 export async function detectWebGpu(): Promise<WebGpuDetection> {
 	const gpu = (globalThis.navigator as Navigator & { gpu?: GPU } | undefined)?.gpu;

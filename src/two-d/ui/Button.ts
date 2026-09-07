@@ -47,6 +47,21 @@ export interface ButtonOptions {
  *
  * `icon` alone (no `text`) is the icon-only button a title screen commonly reaches for -
  * rankings, badges, settings - where a caption would only repeat what the icon already says.
+ *
+ * @example
+ * ```ts
+ * import { Button } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const start = new Button({
+ * 	width: 160,
+ * 	height: 32,
+ * 	text: 'Start',
+ * 	onClick: () => console.log('start pressed'),
+ * });
+ *
+ * start.setDisabled(true); // greys it out and stops pointer events
+ * console.log(start.disabled); // true
+ * ```
  */
 export class Button extends Container {
 	readonly onClick = new Signal<void>();

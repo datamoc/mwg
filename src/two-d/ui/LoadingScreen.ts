@@ -12,7 +12,30 @@ export interface LoadingScreenOptions {
 	onCancel?: () => void;
 }
 
-/** A themed loading view driven by `LoadQueue.snapshot`, with game-owned retry/cancel hooks. */
+/**
+ * A themed loading view driven by `LoadQueue.snapshot`, with game-owned retry/cancel hooks.
+ *
+ * @example
+ * ```ts
+ * import { LoadingScreen } from '@datamoc/mw_games/two-d/ui';
+ * import { LoadQueue } from '@datamoc/mw_games/core';
+ *
+ * const queue = new LoadQueue();
+ * queue.add({ id: 'tileset', run: async () => { await Promise.resolve(); } });
+ *
+ * const screen = new LoadingScreen({
+ * 	width: 320,
+ * 	height: 200,
+ * 	title: 'Loading',
+ * 	onRetry: () => queue.retry(),
+ * 	onCancel: () => queue.cancel(),
+ * });
+ *
+ * const unbind = screen.bind(queue); // starts tracking queue.changed
+ * await queue.start();
+ * unbind(); // call when the loading scene closes
+ * ```
+ */
 export class LoadingScreen extends Container {
 	private readonly backdrop = new Graphics();
 	private readonly title: Label;

@@ -18,6 +18,21 @@ export interface StatsScreenOptions {
  * navigation or selection here: a stats readout has nothing to pick, unlike `HelpScreen`'s
  * topic list, so this is just a `Label` wrapping a game's own aggregate (`core.PlayerStats`,
  * typically) formatted into rows.
+ *
+ * @example
+ * ```ts
+ * import { StatsScreen } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const screen = new StatsScreen({
+ * 	width: 200,
+ * 	stats: [
+ * 		{ label: 'Runs completed', value: '12' },
+ * 		{ label: 'Best depth', value: '7' },
+ * 	],
+ * });
+ *
+ * screen.setStats([{ label: 'Runs completed', value: '13' }]); // a new run just ended
+ * ```
  */
 export class StatsScreen extends Container {
 	private text: Label;

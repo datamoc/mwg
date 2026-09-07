@@ -1,9 +1,10 @@
-import { Container, Sprite, type Texture } from 'pixi.js';
+import { Container, Sprite } from 'pixi.js';
 import type { Action } from '../../core/Input.ts';
 import { Window } from './Window.ts';
 import { Label } from './Label.ts';
 import { ListView, type ListItem } from './ListView.ts';
 import { theme, themeChanged } from './theme.ts';
+import type { Texture2D } from '../render/Types2D.ts';
 
 export interface MessagePage {
 	text: string;
@@ -12,7 +13,7 @@ export interface MessagePage {
 	speaker?: string;
 
 	/** a portrait drawn to the left of the text */
-	portrait?: Texture;
+	portrait?: Texture2D;
 }
 
 export interface Choice {
@@ -68,6 +69,25 @@ export interface MessageBoxOptions {
  *
  * This is the one window that is not closable by `cancel`: a conversation ends when it
  * ends, or a cutscene would be left half-run.
+ *
+ * @example
+ * ```ts
+ * import { MessageBox } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const box = new MessageBox({
+ * 	width: 400,
+ * 	height: 120,
+ * 	pages: [
+ * 		{ text: 'The old door creaks open.' },
+ * 		{ speaker: 'Guard', text: 'Who goes there?' },
+ * 	],
+ * 	choices: [{ text: 'A friend' }, { text: 'None of your business' }],
+ * 	onDone: (chosen) => console.log('player answered', chosen),
+ * });
+ *
+ * box.handleAction('confirm'); // reveals the rest of the first page instantly
+ * box.handleAction('confirm'); // advances to the second page
+ * ```
  */
 export class MessageBox extends Window {
 	private pages: MessagePage[];

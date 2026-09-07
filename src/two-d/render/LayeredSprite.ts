@@ -14,6 +14,25 @@ interface Layer {
  * another layer added on top, not a redrawn sprite for every gear combination a game might
  * have. `tools/make-example-assets.mjs` already draws its characters this way; this is the
  * runtime counterpart that keeps the layers together as one sprite that moves as a unit.
+ *
+ * @example
+ * ```ts
+ * import { LayeredSprite } from '@datamoc/mw_games/two-d/render';
+ * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const skinTexture: Texture2D;
+ * declare const hairTexture: Texture2D;
+ * declare const swordTexture: Texture2D;
+ *
+ * const hero = new LayeredSprite();
+ * hero.addLayer('skin', skinTexture, 0);
+ * hero.addLayer('hair', hairTexture, 1);
+ * hero.addLayer('weapon', swordTexture, 2);
+ *
+ * hero.layer('hair')?.lerpTint(0x8b4513, 1); // dye it brown
+ * hero.setTexture('weapon', swordTexture); // equip a different sword later
+ * console.log(hero.hasLayer('weapon')); // true
+ * ```
  */
 export class LayeredSprite extends Container {
 	private layers = new Map<string, Layer>();

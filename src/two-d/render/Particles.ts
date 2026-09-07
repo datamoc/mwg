@@ -1,5 +1,6 @@
-import { Container, Sprite, type Texture } from 'pixi.js';
+import { Container, Sprite } from 'pixi.js';
 import * as Random from '../../core/Random.ts';
+import type { Texture2D } from './Types2D.ts';
 
 /**
  * One live particle. Exposed as plain readable state rather than hidden inside the emitter,
@@ -36,7 +37,7 @@ export type ParticleRange = number | readonly [number, number];
 
 export interface ParticleEmitterOptions {
 	/** drawn per particle; omit for a pure simulation that renders nothing (tests, headless) */
-	texture?: Texture;
+	texture?: Texture2D;
 
 	/** how many particles can live at once. The pool is allocated once at this size and never grows */
 	max?: number;
@@ -86,6 +87,29 @@ function pick(range: ParticleRange): number {
  * Every random draw goes through `mwg/core`'s seeded `Random`, so a replayed or
  * seeded run produces the same spray, rather than particles being the one thing on screen
  * that a deterministic replay cannot reproduce.
+ *
+ * @example
+ * ```ts
+ * import { ParticleEmitter, type Texture2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const sparkTexture: Texture2D;
+ *
+ * const sparks = new ParticleEmitter({
+ * 	texture: sparkTexture,
+ * 	max: 64,
+ * 	life: [0.2, 0.4],
+ * 	speed: [80, 160],
+ * 	gravity: { x: 0, y: 300 },
+ * 	scale: [1, 0.2],
+ * 	alpha: [1, 0],
+ * });
+ * sparks.x = 100;
+ * sparks.y = 60;
+ *
+ * sparks.burst(12); // a sword hit: 12 particles at once, fewer if the pool is nearly full
+ * sparks.update(1 / 60); // steps physics and, since a texture was given, the sprites too
+ * console.log(sparks.activeCount); // 12 - still alive right after the burst
+ * ```
  */
 export class ParticleEmitter extends Container {
 	private readonly pool: Particle[] = [];

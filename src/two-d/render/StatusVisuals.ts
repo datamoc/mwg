@@ -31,6 +31,28 @@ export interface StatusVisualsOptions {
  * holding steady. This owns none of the sprite's other colour state; a caller mixing in an
  * unrelated `tint` write (a damage flash, standing in shade) will fight this the same way two
  * direct writers to any shared field would.
+ *
+ * @example
+ * ```ts
+ * import { StatusVisuals, TintedSprite, type Texture2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const ratTexture: Texture2D;
+ * const rat = new TintedSprite(ratTexture);
+ *
+ * const visuals = new StatusVisuals(rat, {
+ * 	styles: {
+ * 		poisoned: { color: 0x00ff00, strength: 0.5 },
+ * 		burning: { color: 0xff6600, strength: 0.6, pulseRate: 2 },
+ * 	},
+ * });
+ *
+ * visuals.set('poisoned', true);
+ * visuals.update(1 / 60); // tints rat towards green
+ * console.log(visuals.has('poisoned')); // true
+ *
+ * visuals.set('poisoned', false);
+ * visuals.update(1 / 60); // no status left active: resets rat's colour
+ * ```
  */
 export class StatusVisuals {
 	private target: TintTarget;

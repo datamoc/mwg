@@ -9,6 +9,18 @@ export interface AnimationOptions {
 	loop?: boolean;
 }
 
+/**
+ * @example
+ * ```ts
+ * import { Animation } from '@datamoc/mw_games/two-d/render';
+ * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const frames: Texture2D[];
+ *
+ * const walk = new Animation(frames, { fps: 10 });
+ * console.log(walk.duration); // frames.length / 10, in seconds
+ * ```
+ */
 export class Animation {
 	readonly frames: readonly Texture2D[];
 	readonly frameDuration: number;
@@ -30,18 +42,26 @@ export class Animation {
  * A sprite that plays named animations, and can still be tinted.
  *
  * Animations are registered once and played by name, which is how a character ends up
- * reading as `hero.play('walk')` rather than juggling frame arrays:
+ * reading as `hero.play('walk')` rather than juggling frame arrays.
  *
+ * Nothing advances on its own: call `update(dt)` from the scene, or add the sprite to a
+ * `SpriteGroup`, so that pausing the game pauses the animations with it.
+ *
+ * @example
  * ```ts
+ * import { AnimatedSprite, SpriteSheet } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const sheet: SpriteSheet;
+ *
  * const hero = new AnimatedSprite();
  * hero.add('idle', sheet.pick(0, 0, 0, 1), { fps: 2 });
  * hero.add('walk', sheet.range(6, 10), { fps: 10 });
  * hero.add('die', sheet.range(11, 14), { fps: 10, loop: false });
  * hero.play('idle');
- * ```
  *
- * Nothing advances on its own: call `update(dt)` from the scene, or add the sprite to a
- * `SpriteGroup`, so that pausing the game pauses the animations with it.
+ * hero.onFinish = (name) => console.log(`${name} finished`);
+ * hero.update(1 / 60); // advance one frame's worth of time
+ * ```
  */
 export class AnimatedSprite extends TintedSprite {
 	private animations = new Map<string, Animation>();

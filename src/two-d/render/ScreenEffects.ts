@@ -25,6 +25,21 @@ export interface ScreenEffectsOptions {
  *
  * Add the container last, or to a layer above the world: this draws over whatever is beneath
  * it in the display list and nothing else about draw order is its business.
+ *
+ * @example
+ * ```ts
+ * import { ScreenEffects } from '@datamoc/mw_games/two-d/render';
+ *
+ * const effects = new ScreenEffects({ width: 640, height: 360 });
+ * // add effects last: game.stage.addChild(effects);
+ *
+ * effects.flash(0.2, 0xffffff); // a critical hit
+ * const done = effects.update(1 / 60);
+ * console.log(done); // false - still mid-flash
+ * console.log(effects.isBusy); // true
+ *
+ * effects.setTint(0x336633, 0.3); // held green cast while poisoned
+ * ```
  */
 export class ScreenEffects extends Container {
 	private readonly overlay = new Graphics();

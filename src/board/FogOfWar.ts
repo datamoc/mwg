@@ -3,6 +3,26 @@ export interface VisionCell { x: number; y: number; }
 /**
  * Unions the visible cells of several units for each faction and retains explored memory.
  * The caller supplies visibility because board games differ in terrain, range, and blockers.
+ *
+ * @example
+ * ```ts
+ * import { FactionFog } from '@datamoc/mw_games/board';
+ *
+ * const fog = new FactionFog(10, 10);
+ *
+ * const sources = [{ x: 2, y: 2 }];
+ * fog.sync('blue', sources, (source) => [
+ * 	source,
+ * 	{ x: source.x + 1, y: source.y },
+ * ]);
+ *
+ * console.log(fog.isVisible('blue', 3, 2)); // true - lit by the scout right now
+ * console.log(fog.isVisible('blue', 5, 5)); // false - never seen
+ *
+ * fog.sync('blue', [], () => []); // the scout moved away, nothing visible this turn
+ * console.log(fog.isVisible('blue', 3, 2)); // false - no longer in sight
+ * console.log(fog.isExplored('blue', 3, 2)); // true - stays remembered after leaving
+ * ```
  */
 export class FactionFog {
 	readonly width: number;

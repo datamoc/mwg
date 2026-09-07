@@ -1,5 +1,38 @@
 import { hexDistance, hexNeighbors } from '../core/Hex.ts';
 
+/**
+ * A tactical action-point battle layer: a grid or hex board where units spend action points to
+ * move and attack, with overwatch reactions and turn order rotating by owner. Distances and
+ * neighbours follow `shape`, reusing `core.Hex` for hex boards.
+ *
+ * @example
+ * ```ts
+ * import {
+ * 	startingTactics,
+ * 	addTacticalUnit,
+ * 	tacticalMoves,
+ * 	moveTacticalUnit,
+ * 	setTacticalOverwatch,
+ * 	triggerTacticalOverwatch,
+ * 	tacticalAttack,
+ * 	endTacticalTurn,
+ * } from '@datamoc/mw_games/board';
+ *
+ * const state = startingTactics(6, 6, 'square');
+ * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ * addTacticalUnit(state, { id: 'raider', owner: 'red', x: 3, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ *
+ * const moves = tacticalMoves(state, 'ranger'); // reachable cells within 2 action points
+ * moveTacticalUnit(state, moves[0]);
+ *
+ * setTacticalOverwatch(state, 'ranger'); // spends the rest of blue's turn watching
+ * endTacticalTurn(state); // hands the turn to red
+ *
+ * const reactions = triggerTacticalOverwatch(state, 'raider', 4); // ranger fires if raider is in range
+ * const result = tacticalAttack(state, 'raider', 'ranger', 3); // red's own attack, 3 damage minus cover
+ * console.log(result.killed); // false - ranger has hp left
+ * ```
+ */
 export type TacticalShape = 'square' | 'hex';
 export interface TacticalCell { passable: boolean; cover?: number; }
 export interface TacticalUnit { id: string; owner: string; x: number; y: number; hp: number; maxHp: number; actions: number; overwatch?: boolean; }
@@ -7,22 +40,71 @@ export interface TacticalState { width: number; height: number; shape: TacticalS
 export interface TacticalMove { unit: string; x: number; y: number; cost: number; }
 export interface TacticalAttack { attacker: string; defender: string; damage: number; cover: number; killed: boolean; }
 
+/**
+ * @example
+ * ```ts
+ * import { startingTactics } from '@datamoc/mw_games/board';
+ *
+ * const state = startingTactics(6, 6, 'square');
+ * console.log(state.width, state.height, state.round); // 6 6 1
+ * ```
+ */
 export function startingTactics(width: number, height: number, shape: TacticalShape = 'hex'): TacticalState {
 	if (width < 1 || height < 1) throw new Error('a tactical map needs positive dimensions');
 	return { width, height, shape, cells: Array.from({ length: width * height }, () => ({ passable: true, cover: 0 })), units: [], turn: '', round: 1 };
 }
 
-/** whether a unit could be placed at (x, y) right now - on the map, and not already occupied */
+/** whether a unit could be placed at (x, y) right now - on the map, and not already occupied
+ *
+ * @example
+ * ```ts
+ * import { startingTactics, addTacticalUnit, canPlaceTacticalUnit } from '@datamoc/mw_games/board';
+ *
+ * const state = startingTactics(6, 6, 'square');
+ * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ *
+ * console.log(canPlaceTacticalUnit(state, 1, 1)); // true
+ * console.log(canPlaceTacticalUnit(state, 0, 0)); // false - ranger is already there
+ * ```
+ */
 export function canPlaceTacticalUnit(state: TacticalState, x: number, y: number): boolean {
 	return tacticalInside(state, x, y) && !occupied(state, x, y);
 }
 
+/**
+ * Places a unit; the first unit added decides whose turn it is.
+ *
+ * @example
+ * ```ts
+ * import { startingTactics, addTacticalUnit } from '@datamoc/mw_games/board';
+ *
+ * const state = startingTactics(6, 6, 'square');
+ * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ * console.log(state.turn); // 'blue'
+ * ```
+ */
 export function addTacticalUnit(state: TacticalState, unit: TacticalUnit): void {
 	if (!canPlaceTacticalUnit(state, unit.x, unit.y)) throw new Error('tactical unit cannot be placed there');
 	state.units.push({ ...unit });
 	if (!state.turn) state.turn = unit.owner;
 }
 
+/**
+ * Every cell a unit can reach with its remaining action points, respecting terrain,
+ * occupancy, and enemy zones of control.
+ *
+ * @example
+ * ```ts
+ * import { startingTactics, addTacticalUnit, tacticalMoves } from '@datamoc/mw_games/board';
+ *
+ * const state = startingTactics(6, 6, 'square');
+ * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ * addTacticalUnit(state, { id: 'raider', owner: 'red', x: 3, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ *
+ * const moves = tacticalMoves(state, 'ranger');
+ * console.log(moves.length, moves[0]); // 5 { unit: 'ranger', x: 1, y: 0, cost: 1 }
+ * ```
+ */
 export function tacticalMoves(state: TacticalState, unitId: string): TacticalMove[] {
 	const unit = getUnit(state, unitId);
 	if (unit.owner !== state.turn || unit.actions <= 0) return [];
@@ -40,6 +122,19 @@ export function tacticalMoves(state: TacticalState, unitId: string): TacticalMov
 	return out;
 }
 
+/**
+ * @example
+ * ```ts
+ * import { startingTactics, addTacticalUnit, tacticalMoves, moveTacticalUnit } from '@datamoc/mw_games/board';
+ *
+ * const state = startingTactics(6, 6, 'square');
+ * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ * addTacticalUnit(state, { id: 'raider', owner: 'red', x: 3, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ *
+ * moveTacticalUnit(state, tacticalMoves(state, 'ranger')[0]);
+ * console.log(state.units.find((unit) => unit.id === 'ranger')); // { ..., x: 1, y: 0, actions: 1 }
+ * ```
+ */
 export function moveTacticalUnit(state: TacticalState, move: TacticalMove): void {
 	const legal = tacticalMoves(state, move.unit).find((candidate) => candidate.x === move.x && candidate.y === move.y);
 	if (!legal) throw new Error('illegal tactical move');
@@ -49,6 +144,21 @@ export function moveTacticalUnit(state: TacticalState, move: TacticalMove): void
 	unit.actions -= legal.cost;
 }
 
+/**
+ * Spends the rest of a unit's turn watching, so it can react through
+ * `triggerTacticalOverwatch` when an enemy moves nearby.
+ *
+ * @example
+ * ```ts
+ * import { startingTactics, addTacticalUnit, setTacticalOverwatch } from '@datamoc/mw_games/board';
+ *
+ * const state = startingTactics(6, 6, 'square');
+ * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ *
+ * setTacticalOverwatch(state, 'ranger');
+ * console.log(state.units[0].overwatch); // true
+ * ```
+ */
 export function setTacticalOverwatch(state: TacticalState, unitId: string): void {
 	const unit = getUnit(state, unitId);
 	if (unit.owner !== state.turn || unit.actions <= 0) throw new Error('only an active unit can enter overwatch');
@@ -56,6 +166,23 @@ export function setTacticalOverwatch(state: TacticalState, unitId: string): void
 	unit.overwatch = true;
 }
 
+/**
+ * Fires every enemy overwatch reaction in range of the moving unit.
+ *
+ * @example
+ * ```ts
+ * import { startingTactics, addTacticalUnit, setTacticalOverwatch, endTacticalTurn, triggerTacticalOverwatch } from '@datamoc/mw_games/board';
+ *
+ * const state = startingTactics(6, 6, 'square');
+ * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 1, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ * addTacticalUnit(state, { id: 'raider', owner: 'red', x: 3, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ * setTacticalOverwatch(state, 'ranger');
+ * endTacticalTurn(state);
+ *
+ * const reactions = triggerTacticalOverwatch(state, 'raider', 4); // raider steps into range
+ * console.log(reactions); // [{ attacker: 'ranger', defender: 'raider', damage: 4, cover: 0, killed: false }]
+ * ```
+ */
 export function triggerTacticalOverwatch(state: TacticalState, movingUnitId: string, damage: number): TacticalAttack[] {
 	const moving = getUnit(state, movingUnitId);
 	const reactions: TacticalAttack[] = [];
@@ -71,6 +198,20 @@ export function triggerTacticalOverwatch(state: TacticalState, movingUnitId: str
 	return reactions;
 }
 
+/**
+ * @example
+ * ```ts
+ * import { startingTactics, addTacticalUnit, endTacticalTurn, tacticalAttack } from '@datamoc/mw_games/board';
+ *
+ * const state = startingTactics(6, 6, 'square');
+ * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ * addTacticalUnit(state, { id: 'raider', owner: 'red', x: 1, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ * endTacticalTurn(state); // it's blue's turn until someone ends it
+ *
+ * const result = tacticalAttack(state, 'raider', 'ranger', 3);
+ * console.log(result); // { attacker: 'raider', defender: 'ranger', damage: 3, cover: 0, killed: false }
+ * ```
+ */
 export function tacticalAttack(state: TacticalState, attackerId: string, defenderId: string, damage: number): TacticalAttack {
 	const attacker = getUnit(state, attackerId);
 	const defender = getUnit(state, defenderId);
@@ -84,6 +225,22 @@ export function tacticalAttack(state: TacticalState, attackerId: string, defende
 	return { attacker: attackerId, defender: defenderId, damage: dealt, cover, killed };
 }
 
+/**
+ * Hands the turn to the next owner with units on the board, refreshing their action points
+ * and clearing overwatch.
+ *
+ * @example
+ * ```ts
+ * import { startingTactics, addTacticalUnit, endTacticalTurn } from '@datamoc/mw_games/board';
+ *
+ * const state = startingTactics(6, 6, 'square');
+ * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ * addTacticalUnit(state, { id: 'raider', owner: 'red', x: 3, y: 0, hp: 10, maxHp: 10, actions: 2 });
+ *
+ * endTacticalTurn(state);
+ * console.log(state.turn, state.round); // 'red' 1
+ * ```
+ */
 export function endTacticalTurn(state: TacticalState): void {
 	const owners = [...new Set(state.units.map((unit) => unit.owner))];
 	if (owners.length === 0) return;

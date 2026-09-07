@@ -23,6 +23,16 @@ export interface LabelOptions {
  * repeating a style object. Pixi renders text to its own texture, so changing the string
  * costs a re-render: cheap enough for a label, wasteful for something updated every
  * frame, where a value that only changes on whole numbers should be guarded.
+ *
+ * @example
+ * ```ts
+ * import { Label } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const gold = new Label({ text: 'Gold: 0', color: 0xffe680 });
+ *
+ * gold.setText('Gold: 50'); // skips the re-render if the string is unchanged
+ * gold.setColor(0xff4444); // flash red on a loss, say
+ * ```
  */
 export class Label extends Text {
 	private readonly opts: LabelOptions;

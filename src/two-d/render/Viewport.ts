@@ -16,6 +16,19 @@ export interface ViewportOptions extends CameraOptions {
  * the screen. A game with a single `Viewport` covering the whole canvas behaves exactly like
  * a game using a bare `Camera` directly - this adds a screen region and a mask around it,
  * nothing else.
+ *
+ * @example
+ * ```ts
+ * import { Viewport, splitScreenHalves } from '@datamoc/mw_games/two-d/render';
+ *
+ * const [left, right] = splitScreenHalves(640, 360);
+ * const player1 = new Viewport({ ...left, zoom: 2 });
+ * const player2 = new Viewport({ ...right, zoom: 2 });
+ * // add both containers: game.stage.addChild(player1.container, player2.container);
+ *
+ * player1.camera.follow({ x: 50, y: 50 });
+ * player1.update(1 / 60);
+ * ```
  */
 export class Viewport {
 	readonly camera: Camera;
@@ -50,6 +63,15 @@ export class Viewport {
  * game hands straight to two `Viewport`s (or to `resize` on a resize event). Not the only
  * reasonable split, so not baked into `Viewport` itself: a game wanting an L-shaped, uneven,
  * or three/four-player layout lays out its own rectangles the same way.
+ *
+ * @example
+ * ```ts
+ * import { splitScreenHalves } from '@datamoc/mw_games/two-d/render';
+ *
+ * const [top, bottom] = splitScreenHalves(400, 600); // taller than wide: stacks vertically
+ * console.log(top); // { x: 0, y: 0, width: 400, height: 300 }
+ * console.log(bottom); // { x: 0, y: 300, width: 400, height: 300 }
+ * ```
  */
 export function splitScreenHalves(
 	width: number,

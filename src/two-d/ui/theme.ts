@@ -53,6 +53,17 @@ export interface Theme {
 	direction: Direction;
 }
 
+/**
+ * The palette every widget starts with, before a game calls `setTheme`.
+ *
+ * @example
+ * ```ts
+ * import { defaultTheme } from '@datamoc/mw_games/two-d/ui';
+ *
+ * console.log(defaultTheme.color.text); // 0xe8e8f0
+ * console.log(defaultTheme.padding); // 8
+ * ```
+ */
 export const defaultTheme: Theme = {
 	panelBorder: 4,
 	padding: 8,
@@ -84,6 +95,13 @@ export const defaultTheme: Theme = {
  * `ui.HelpScreen` already is over `Window`/`ListView`/`Label`. `setTheme(highContrastTheme)`
  * applies it; a game with its own colours can still start from this and override just what
  * it wants to keep, the same as any partial object `setTheme` accepts.
+ *
+ * @example
+ * ```ts
+ * import { setTheme, highContrastTheme } from '@datamoc/mw_games/two-d/ui';
+ *
+ * setTheme(highContrastTheme); // an accessibility toggle in the settings screen
+ * ```
  */
 export const highContrastTheme: Theme = {
 	panelBorder: 6,
@@ -109,6 +127,14 @@ export const highContrastTheme: Theme = {
 
 let current: Theme = defaultTheme;
 
+/**
+ * @example
+ * ```ts
+ * import { theme } from '@datamoc/mw_games/two-d/ui';
+ *
+ * console.log(theme().color.text); // 0xe8e8f0 - the default, until a game calls setTheme
+ * ```
+ */
 export function theme(): Theme {
 	return current;
 }
@@ -121,10 +147,28 @@ export function theme(): Theme {
  * a day/night palette swap or a light/dark toggle subscribes here and reapplies its own style
  * from the value passed in, the same shape `i18n`'s `direction` already flows into
  * `theme.direction` from a game's own glue code. Every built-in widget already does this.
+ *
+ * @example
+ * ```ts
+ * import { themeChanged } from '@datamoc/mw_games/two-d/ui';
+ *
+ * themeChanged.add((next) => console.log('theme changed, text colour is now', next.color.text));
+ * ```
  */
 export const themeChanged = new Signal<Theme>();
 
-/** replaces the theme; partial objects are merged over the default */
+/**
+ * Replaces the theme; partial objects are merged over the default.
+ *
+ * @example
+ * ```ts
+ * import { setTheme, theme } from '@datamoc/mw_games/two-d/ui';
+ *
+ * setTheme({ color: { ...theme().color, textHighlight: 0x66ff66 } });
+ * console.log(theme().color.textHighlight); // 0x66ff66
+ * console.log(theme().padding); // 8 - everything else stays at the default
+ * ```
+ */
 export function setTheme(next: Partial<Theme>): void {
 	current = {
 		...defaultTheme,

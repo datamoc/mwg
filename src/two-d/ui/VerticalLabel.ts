@@ -27,6 +27,15 @@ const DEFAULT_ROTATE = /[A-Za-z0-9]/;
  * Columns run right to left, each one top to bottom, which is the traditional order for
  * vertical Japanese and Chinese. `\n` in the source text forces a new column, the same way
  * it forces a new line in horizontal text.
+ *
+ * @example
+ * ```ts
+ * import { layoutVertical } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const glyphs = layoutVertical('AB', { lineHeight: 10, columnHeight: 100 });
+ * console.log(glyphs[0]); // { char: 'A', x: -5, y: 5, rotate: true } - Latin letters rotate by default
+ * console.log(glyphs[1]); // { char: 'B', x: -5, y: 15, rotate: true }
+ * ```
  */
 export function layoutVertical(text: string, options: VerticalLayoutOptions): GlyphLayout[] {
 	const { lineHeight, columnHeight } = options;
@@ -81,6 +90,15 @@ export interface VerticalLabelOptions {
  * within one column instead of rotating whole characters), and it does not reposition
  * punctuation to a cell's corner the way professionally typeset Japanese does. Both are
  * real refinements a native reader would want on top of this, not included here.
+ *
+ * @example
+ * ```ts
+ * import { VerticalLabel } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const sign = new VerticalLabel({ text: '出口', columnHeight: 200, size: 24 });
+ * sign.x = 400;
+ * sign.y = 40;
+ * ```
  */
 export class VerticalLabel extends Container {
 	private readonly opts: VerticalLabelOptions;

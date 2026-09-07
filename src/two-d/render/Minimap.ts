@@ -2,7 +2,18 @@ import { Container, Graphics, RenderTexture, Sprite } from 'pixi.js';
 import { Game } from '../Game.ts';
 
 /** the cell indices in `explored` not yet baked into a minimap's texture - pure, so it can
- * be tested without a renderer */
+ * be tested without a renderer
+ *
+ * @example
+ * ```ts
+ * import { newlyRevealed } from '@datamoc/mw_games/two-d/render';
+ *
+ * const explored = new Set([4, 9, 12]);
+ * const alreadyDrawn = new Set([4]);
+ *
+ * console.log(newlyRevealed(explored, alreadyDrawn)); // [9, 12]
+ * ```
+ */
 export function newlyRevealed(explored: ReadonlySet<number>, alreadyDrawn: ReadonlySet<number>): number[] {
 	const result: number[] = [];
 	for (const index of explored) {
@@ -36,6 +47,19 @@ export interface MinimapOptions {
  * whole map from scratch on every call, which is the one open engineering question this
  * item named: how an explored-cell set becomes a small texture without becoming a
  * per-frame cost that grows with how much of the level has been seen.
+ *
+ * @example
+ * ```ts
+ * import { Minimap } from '@datamoc/mw_games/two-d/render';
+ *
+ * const minimap = new Minimap({ widthInCells: 40, heightInCells: 24, cellSize: 2 });
+ *
+ * const explored = new Set([0, 1, 40]);
+ * minimap.sync(explored, (x, y) => ((x + y) % 2 === 0 ? 0x3a3a2a : 0x2f5a2f));
+ * minimap.setMarker(0, 0, Math.PI / 2); // the hero, facing down
+ *
+ * console.log(minimap.exploredCount); // 3
+ * ```
  */
 export class Minimap extends Container {
 	private readonly widthInCells: number;

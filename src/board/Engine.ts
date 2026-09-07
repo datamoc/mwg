@@ -39,11 +39,34 @@ const PIECE_VALUE: Record<ChessPiece['kind'], number> = {
  * positions, orders captures and promotions first, and evaluates material only. It has
  * no opening book, transposition table, clock, or repetition scoring, which keeps it
  * deterministic and small enough to run synchronously in a browser minigame.
+ *
+ * @example
+ * ```ts
+ * import { chooseMove } from '@datamoc/mw_games/board';
+ * import { startingChess, applyMove } from '@datamoc/mw_games/board';
+ *
+ * const state = startingChess();
+ * const move = chooseMove(state, { depth: 2 });
+ * if (move) applyMove(state, move); // the engine's own reply, played for it
+ * ```
  */
 export function chooseMove(state: ChessState, options: ChessEngineOptions = {}): ChessMove | null {
 	return search(state, options).move;
 }
 
+/**
+ * The full negamax result behind `chooseMove` - the move it would play, its evaluation, and
+ * how many positions it visited to get there.
+ *
+ * @example
+ * ```ts
+ * import { search, startingChess } from '@datamoc/mw_games/board';
+ *
+ * const result = search(startingChess(), { depth: 2 });
+ * console.log(result.move !== null); // true - the opening position always has legal moves
+ * console.log(typeof result.score, typeof result.nodes); // 'number' 'number'
+ * ```
+ */
 export function search(state: ChessState, options: ChessEngineOptions = {}): ChessSearchResult {
 	const depth = Math.max(1, Math.floor(options.depth ?? 3));
 	const maxNodes = options.maxNodes === undefined ? Infinity : Math.max(1, Math.floor(options.maxNodes));

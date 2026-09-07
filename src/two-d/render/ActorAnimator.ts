@@ -3,6 +3,17 @@ import type { AnimatedSprite } from './AnimatedSprite.ts';
 /** the three states any character's animation ever needs to be in */
 export type ActorAnimationState = 'idle' | 'move' | 'action';
 
+/**
+ * @example
+ * ```ts
+ * import type { ActorAnimatorOptions } from '@datamoc/mw_games/two-d/render';
+ *
+ * const options: ActorAnimatorOptions = {
+ * 	animationName: (state, facing) => `${state}-${facing}`,
+ * 	variant: 'down',
+ * };
+ * ```
+ */
 export interface ActorAnimatorOptions {
 	/**
 	 * Names a state's animation, given whatever varies it - a facing direction for a grid
@@ -34,6 +45,27 @@ export interface ActorAnimatorOptions {
  *
  * This owns the sprite's `onFinish` hook entirely; a game driving one through
  * `ActorAnimator` should not also set `onFinish` itself.
+ *
+ * @example
+ * ```ts
+ * import { ActorAnimator, AnimatedSprite, SpriteSheet } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const sheet: SpriteSheet;
+ *
+ * const hero = new AnimatedSprite();
+ * hero.add('idle-down', sheet.pick(0), { fps: 2 });
+ * hero.add('move-down', sheet.range(1, 4), { fps: 10 });
+ * hero.add('action-down', sheet.range(5, 7), { fps: 12, loop: false });
+ *
+ * const animator = new ActorAnimator(hero, {
+ * 	animationName: (state, facing) => `${state}-${facing}`,
+ * 	variant: 'down',
+ * });
+ *
+ * animator.setMoving(true); // walk cycle starts
+ * animator.playAction(); // an attack swing cuts in over the walk cycle
+ * console.log(animator.state); // 'action' - overrides idle/move while it plays
+ * ```
  */
 export class ActorAnimator {
 	private sprite: AnimatedSprite;

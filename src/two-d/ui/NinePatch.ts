@@ -16,6 +16,18 @@ export interface NinePatchOptions {
  * Pixi has this built in; the wrapper exists so that a `border` can be given as one number,
  * which is the case for almost every panel, and so that resizing reads the same as it does
  * on the framework's other widgets.
+ *
+ * @example
+ * ```ts
+ * import { NinePatch } from '@datamoc/mw_games/two-d/ui';
+ * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const panelTexture: Texture2D;
+ *
+ * const panel = new NinePatch(panelTexture, { border: 8 });
+ * panel.resize(200, 120);
+ * console.log(panel.border); // { left: 8, top: 8, right: 8, bottom: 8 }
+ * ```
  */
 export class NinePatch extends Container {
 	private sprite: NineSliceSprite;

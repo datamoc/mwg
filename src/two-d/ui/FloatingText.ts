@@ -18,6 +18,21 @@ export interface FloatingTextOptions {
  * `Label`'s job of a static, positioned string. This is animation over a label, timed rather
  * than laid out - a game positions one instance per pop-up at the world point it should
  * appear over, then drives it with `update(dt)` the same way `core.Spawner` is `dt`-driven.
+ *
+ * @example
+ * ```ts
+ * import { FloatingText } from '@datamoc/mw_games/two-d/ui';
+ * import type { Container2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const worldLayer: Container2D;
+ *
+ * const popup = new FloatingText({ text: '-12', color: 0xff4444 });
+ * popup.position.set(64, 96);
+ * worldLayer.addChild(popup);
+ *
+ * popup.update(0.5); // advance the rise/fade by half a second
+ * if (popup.finished) console.log('already removed and destroyed itself');
+ * ```
  */
 export class FloatingText extends Container {
 	private readonly duration: number;

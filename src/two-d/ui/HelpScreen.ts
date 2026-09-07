@@ -23,6 +23,22 @@ export interface HelpScreenOptions {
  * highlighted, over the same `ListView`/`Label` a game already builds every other menu
  * from - a recipe, not a new primitive, the way `RebindScreen` composes `ListView` rather
  * than inventing its own row widget.
+ *
+ * @example
+ * ```ts
+ * import { HelpScreen } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const help = new HelpScreen({
+ * 	width: 320,
+ * 	height: 200,
+ * 	topics: [
+ * 		{ title: 'Movement', body: 'Arrow keys or WASD to move.' },
+ * 		{ title: 'Combat', body: 'Walk into an enemy to attack it.' },
+ * 	],
+ * });
+ *
+ * help.handleAction('down'); // highlights "Combat" and shows its body
+ * ```
  */
 export class HelpScreen extends Container {
 	private list: ListView;

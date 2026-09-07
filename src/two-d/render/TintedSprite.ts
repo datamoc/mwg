@@ -14,13 +14,20 @@ registerColorTransform();
  * A sprite that can be pulled *towards* a colour, not just darkened.
  *
  * `tint` multiplies, as it does on any Pixi sprite. `colorAdd` is added on top, which is
- * what makes effects like these possible:
+ * what makes effects like these possible.
  *
+ * @example
  * ```ts
+ * import { TintedSprite } from '@datamoc/mw_games/two-d/render';
+ * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const texture: Texture2D;
+ *
  * const rat = new TintedSprite({ texture });
  * rat.lerpTint(0x00ff00, 0.5);   // half-way to green: poisoned
- * rat.flash(0xffffff, 0.8);      // nearly white: just took a hit
+ * rat.lerpTint(0xffffff, 0.8);   // nearly white: just took a hit
  * rat.tint = 0x404060;           // plain multiply: standing in the dark
+ * rat.silhouette(0x000000);      // a solid black shape, keeping only the sprite's outline
  * ```
  *
  * Both terms ride in the same batch, so a screen full of tinted sprites is still one draw

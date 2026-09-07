@@ -171,6 +171,16 @@ class ColorTransformGeometry extends Geometry {
  *
  * Anything drawn through this batcher may set `colorAdd` on itself; anything that does not
  * is packed with zero and renders exactly as it would have with the default batcher.
+ *
+ * @example
+ * ```ts
+ * import type { HasColorAdd } from '@datamoc/mw_games/two-d/render';
+ * import { packColorAdd } from '@datamoc/mw_games/two-d/render';
+ *
+ * function tintTowardsWhite(renderable: HasColorAdd, strength: number): void {
+ * 	renderable.colorAdd = packColorAdd(strength, strength, strength);
+ * }
+ * ```
  */
 export interface HasColorAdd {
 	/** additive colour, packed as 0xAABBGGRR to match the attribute's byte order */
@@ -210,6 +220,19 @@ function writeQuadCorner(
 	uint32View[index + 6] = colorAdd;
 }
 
+/**
+ * The Pixi batcher extension `TintedSprite` (and everything built on it) renders through -
+ * see the module doc comment above for what it adds and why.
+ *
+ * @example
+ * ```ts
+ * import { ColorTransformBatcher } from '@datamoc/mw_games/two-d/render';
+ *
+ * // registered automatically by TintedSprite.ts; naming the class directly is only ever
+ * // needed to check which batcher an object ended up in, or in Pixi extension diagnostics
+ * console.log(ColorTransformBatcher.extension.name); // 'mwg-color-transform'
+ * ```
+ */
 export class ColorTransformBatcher extends Batcher {
 	/** @internal */
 	static extension = {
@@ -449,6 +472,17 @@ let registered = false;
  * `GameOptions.extensions` itself. This stays exported, idempotent (`registered` guards a
  * second call from double-adding it), and public for the rare case of a game building its
  * own renderer setup outside `Game`.
+ *
+ * @example
+ * ```ts
+ * import { registerColorTransform } from '@datamoc/mw_games/two-d/render';
+ *
+ * // a game that assembles its own Pixi renderer extensions manually, instead of going
+ * // through `Game`/`GameOptions.extensions`, registers the batcher itself before creating
+ * // that renderer - importing `TintedSprite` (directly or transitively) already does this,
+ * // so most games never call it
+ * registerColorTransform();
+ * ```
  */
 export function registerColorTransform(): void {
 	if (registered) return;
@@ -465,6 +499,16 @@ export function registerColorTransform(): void {
  * @param g green, 0 to 1
  * @param b blue, 0 to 1
  * @param a how much to add to the sprite's own alpha, 0 to 1; usually 0
+ *
+ * @example
+ * ```ts
+ * import { packColorAdd } from '@datamoc/mw_games/two-d/render';
+ * import { TintedSprite } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const rat: TintedSprite;
+ *
+ * rat.colorAdd = packColorAdd(0, 1, 0); // pull the sprite towards pure green
+ * ```
  */
 export function packColorAdd(r: number, g: number, b: number, a = 0): number {
 	//unorm8x4 reads the four bytes in memory order, and the view is little-endian, so the
@@ -474,7 +518,18 @@ export function packColorAdd(r: number, g: number, b: number, a = 0): number {
 	);
 }
 
-/** the additive half of `lerp(texel, colour, strength)`; pair with a tint of `1 - strength` */
+/** the additive half of `lerp(texel, colour, strength)`; pair with a tint of `1 - strength`
+ *
+ * @example
+ * ```ts
+ * import { packTintAdd, TintedSprite } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const rat: TintedSprite;
+ *
+ * rat.colorAdd = packTintAdd(0x00ff00, 0.5); // half-way to green, the additive half of lerpTint
+ * rat.tint = 0x808080; // pair with 1 - strength (here 0.5) for the multiply half
+ * ```
+ */
 export function packTintAdd(color: number, strength: number): number {
 	return packColorAdd(
 		(((color >> 16) & 0xff) / 255) * strength,
@@ -487,4 +542,15 @@ function clamp255(value: number): number {
 	return Math.max(0, Math.min(255, Math.round(value * 255)));
 }
 
+/** the packed value of no additive colour at all - what an untinted sprite carries.
+ *
+ * @example
+ * ```ts
+ * import { NO_COLOR_ADD, TintedSprite } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const rat: TintedSprite;
+ *
+ * console.log(rat.colorAdd === NO_COLOR_ADD); // true - fresh sprites start with no additive colour
+ * ```
+ */
 export const NO_COLOR_ADD = NO_ADD;

@@ -27,6 +27,18 @@ type Phase = 'fadeIn' | 'hold' | 'fadeOut';
  * rather than chained tweens: a single frame boundary between phases keeps the whole
  * sequence exactly reproducible one `update` call at a time, which a test can drive without
  * waiting on any promise microtask to settle.
+ *
+ * @example
+ * ```ts
+ * import { Toast } from '@datamoc/mw_games/two-d/ui';
+ * import { Text2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * const toast = new Toast({ fadeIn: 0.2, hold: 1.5, fadeOut: 0.5 });
+ * toast.show(new Text2D({ text: 'Achievement unlocked: First Blood' }));
+ *
+ * console.log(toast.isBusy); // true - popping in
+ * toast.update(1 / 60); // called every frame from the scene's own update(dt)
+ * ```
  */
 export class Toast extends Container {
 	private readonly fadeIn: number;

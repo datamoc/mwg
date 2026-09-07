@@ -40,6 +40,25 @@ export interface ListViewOptions {
  *
  * Rows that are `disabled` are skipped when moving, so holding a direction never lands on
  * something unusable.
+ *
+ * @example
+ * ```ts
+ * import { ListView } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const menu = new ListView({
+ * 	width: 160,
+ * 	height: 96,
+ * 	items: [
+ * 		{ text: 'Attack' },
+ * 		{ text: 'Item' },
+ * 		{ text: 'Flee', disabled: true },
+ * 	],
+ * 	onSelect: (item, index) => console.log('chose', item.text, index),
+ * });
+ *
+ * menu.handleAction('down'); // highlights "Item"
+ * menu.handleAction('confirm'); // fires onSelect for the highlighted row
+ * ```
  */
 export class ListView extends Container {
 	private items: ListItem[] = [];

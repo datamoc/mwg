@@ -39,6 +39,21 @@ export interface RebindScreenOptions {
  * Pressing the physical Escape key while capturing cancels it rather than binding Escape
  * itself - the same reservation `DEFAULT_BINDINGS` already makes for `'cancel'`, and the only
  * way to back out of a capture once started.
+ *
+ * @example
+ * ```ts
+ * import { RebindScreen } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const screen = new RebindScreen({
+ * 	width: 200,
+ * 	height: 120,
+ * 	actions: ['moveUp', 'moveDown', 'confirm'],
+ * 	label: (action) => action, // a game usually maps this to a translated string
+ * });
+ *
+ * screen.handleAction('confirm'); // starts capturing a new key for the highlighted action
+ * console.log(screen.isCapturing); // true
+ * ```
  */
 export class RebindScreen extends Container {
 	private list: ListView;

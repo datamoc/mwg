@@ -26,8 +26,20 @@ export interface TextureRegion {
 	frame: Rect;
 }
 
-/** Converts a `pixi.js` `Rectangle` to the plain `Rect` shape public APIs use. Internal to
- * `two-d`; a game never constructs a `pixi.js` `Rectangle` to call this. */
+/**
+ * Converts a `pixi.js` `Rectangle` to the plain `Rect` shape public APIs use. Internal to
+ * `two-d`; a game never constructs a `pixi.js` `Rectangle` to call this.
+ *
+ * @example
+ * ```ts
+ * import { rectOf, type Texture2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const texture: Texture2D;
+ *
+ * const frame = rectOf(texture.frame);
+ * console.log(frame); // { x: 0, y: 0, width: 32, height: 32 }, or whatever the texture was cut to
+ * ```
+ */
 export function rectOf(rectangle: Rectangle): Rect {
 	return { x: rectangle.x, y: rectangle.y, width: rectangle.width, height: rectangle.height };
 }

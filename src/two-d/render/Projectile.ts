@@ -20,6 +20,20 @@ export interface ProjectileOptions {
  * before a `Projectile` is ever created. What is here is just "this point moves to that
  * point over time", because a thrown potion and a wand bolt both need exactly that and
  * nothing about the game's own arithmetic.
+ *
+ * @example
+ * ```ts
+ * import { Projectile } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const boltSprite: { x: number; y: number };
+ *
+ * const bolt = new Projectile(boltSprite, { x: 0, y: 0 }, { x: 200, y: 0 }, { speed: 400 });
+ *
+ * const arrived = bolt.update(1 / 60);
+ * console.log(bolt.progress); // small, just past 0 - one frame into the flight
+ * console.log(arrived); // false - not there yet
+ * console.log(boltSprite.x); // moved partway from 0 towards 200
+ * ```
  */
 export class Projectile {
 	private sprite: ProjectilePoint;

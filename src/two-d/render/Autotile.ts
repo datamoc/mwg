@@ -27,6 +27,14 @@ export interface NeighborMask {
  * different engine's autotile layout will need its frames reordered into this one. What is
  * guaranteed: `BLOB_SHAPES` lists all 47 shapes in the exact order `blobIndex` returns them
  * in, so a tool (or a person, reading it once) can draw or arrange frames against it directly.
+ *
+ * @example
+ * ```ts
+ * import { BLOB_SHAPES } from '@datamoc/mw_games/two-d/render';
+ *
+ * console.log(BLOB_SHAPES.length); // 47
+ * console.log(BLOB_SHAPES[0]); // { n: false, e: false, s: false, w: false, ne: false, se: false, sw: false, nw: false }
+ * ```
  */
 export const BLOB_SHAPES: readonly NeighborMask[] = buildBlobShapes();
 
@@ -96,7 +104,20 @@ function buildBlobShapes(): NeighborMask[] {
 	return shapes.map((entry) => entry.shape);
 }
 
-/** the blob index (0 to 46) for one cell's 8-neighbour membership test */
+/**
+ * the blob index (0 to 46) for one cell's 8-neighbour membership test
+ *
+ * @example
+ * ```ts
+ * import { blobIndex } from '@datamoc/mw_games/two-d/render';
+ *
+ * const surroundedOnAllSides = blobIndex({
+ * 	n: true, e: true, s: true, w: true,
+ * 	ne: true, se: true, sw: true, nw: true,
+ * });
+ * console.log(surroundedOnAllSides); // 46 - the fully-interior shape
+ * ```
+ */
 export function blobIndex(neighbors: NeighborMask): number {
 	return blobIndexByMask.get(maskOf(neighbors))!;
 }
@@ -110,6 +131,17 @@ export function blobIndex(neighbors: NeighborMask): number {
  * @param frames the 47 frames a `blobIndex` of 0 to 46 selects between, drawn (or arranged)
  * against `BLOB_SHAPES`
  * @returns one frame index per cell, row-major, `EMPTY` wherever `sameTerrain` is false
+ *
+ * @example
+ * ```ts
+ * import { autotileFrames, BLOB_SHAPES } from '@datamoc/mw_games/two-d/render';
+ *
+ * const water = new Set([0, 1, 10, 11]); // a 2x2 pond in a wider grid
+ * const frames = Array.from({ length: BLOB_SHAPES.length }, (_, index) => index); // frame N = shape N
+ *
+ * const cellFrames = autotileFrames(10, 10, (x, y) => water.has(y * 10 + x), frames);
+ * console.log(cellFrames[0]); // the blob frame for the pond's top-left corner
+ * ```
  */
 export function autotileFrames(
 	width: number,

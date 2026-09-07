@@ -10,6 +10,23 @@ import * as Random from '../../core/Random.ts';
  * anything that should stay put on screen (the HUD, a dialogue box) goes outside it.
  *
  * Positions are in world units. At `zoom = 3` a 16px tile is 48 screen pixels.
+ *
+ * @example
+ * ```ts
+ * import { Camera, createCamera } from '@datamoc/mw_games/two-d/render';
+ * import type { Container2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const stage: Container2D;
+ * declare const hero: { x: number; y: number };
+ *
+ * const camera = createCamera({ zoom: 3, deadzone: 0.3, pixelPerfectTileSize: 16 });
+ * stage.addChild(camera.world);
+ * camera.follow(hero);
+ *
+ * function onFrame(dt: number): void {
+ * 	camera.update(dt);
+ * }
+ * ```
  */
 export interface CameraOptions {
 	/** screen pixels per world unit */
@@ -39,6 +56,25 @@ export interface CameraOptions {
 	pixelPerfectTileSize?: number;
 }
 
+/**
+ * @example
+ * ```ts
+ * import { Camera } from '@datamoc/mw_games/two-d/render';
+ * import type { Container2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const stage: Container2D;
+ *
+ * const camera = new Camera({ zoom: 2 });
+ * camera.setViewport(960, 540);
+ * stage.addChild(camera.world);
+ *
+ * camera.snapTo(160, 160); // jump to the start room, no easing
+ * camera.follow({ x: 176, y: 160 }); // then ease towards wherever the hero is
+ * camera.update(1 / 60);
+ *
+ * const screenPoint = camera.toScreen(160, 160);
+ * ```
+ */
 export class Camera {
 	/** put the map and everything in it here */
 	readonly world = new Container();
@@ -237,13 +273,29 @@ function clamp(value: number, min: number, max: number): number {
  * The nearest zoom to `zoom` at which `tileSize * zoom` is a whole number of screen pixels -
  * the pure math behind `CameraOptions.pixelPerfectTileSize`, exported so a game can snap a
  * zoom value (from a slider, say) before ever handing it to a `Camera`.
+ *
+ * @example
+ * ```ts
+ * import { snapZoom } from '@datamoc/mw_games/two-d/render';
+ *
+ * console.log(snapZoom(2.4, 16)); // 2.375 - 16 * 2.375 = 38, a whole number of pixels
+ * ```
  */
 export function snapZoom(zoom: number, tileSize: number): number {
 	const pixels = Math.max(1, Math.round(zoom * tileSize));
 	return pixels / tileSize;
 }
 
-/** a camera sized to the running game's viewport, updated on every frame */
+/**
+ * a camera sized to the running game's viewport, updated on every frame
+ *
+ * @example
+ * ```ts
+ * import { createCamera } from '@datamoc/mw_games/two-d/render';
+ *
+ * const camera = createCamera({ zoom: 2 }); // sized to Game.current automatically
+ * ```
+ */
 export function createCamera(options: CameraOptions = {}): Camera {
 	const camera = new Camera(options);
 	const game = Game.current;

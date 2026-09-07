@@ -3,10 +3,19 @@ import type { ColorMatrix } from 'pixi.js';
 
 export type ColorBlindnessType = 'protanopia' | 'deuteranopia' | 'tritanopia';
 
-//Brettel/Viénot-derived simulation matrices, the same values widely used by colourblindness
-//simulators - a 5x4 (20-value) row-major RGBA matrix, Pixi's own `ColorMatrixFilter` format.
-//Exported so the matrix data itself can be tested without constructing a `ColorMatrixFilter`,
-//which (like `BitmapText`) needs a real WebGL context even to construct.
+/**
+ * Brettel/Viénot-derived simulation matrices, the same values widely used by colourblindness
+ * simulators - a 5x4 (20-value) row-major RGBA matrix, Pixi's own `ColorMatrixFilter` format.
+ * Exported so the matrix data itself can be tested without constructing a `ColorMatrixFilter`,
+ * which (like `BitmapText`) needs a real WebGL context even to construct.
+ *
+ * @example
+ * ```ts
+ * import { COLOR_BLINDNESS_MATRICES } from '@datamoc/mw_games/two-d/render';
+ *
+ * console.log(COLOR_BLINDNESS_MATRICES.deuteranopia.length); // 20
+ * ```
+ */
 export const COLOR_BLINDNESS_MATRICES: Record<ColorBlindnessType, ColorMatrix> = {
 	protanopia: [
 		0.567, 0.433, 0, 0, 0,
@@ -37,6 +46,16 @@ export const COLOR_BLINDNESS_MATRICES: Record<ColorBlindnessType, ColorMatrix> =
  * first step toward choosing a palette that reads clearly for them. It does not correct an
  * existing palette automatically; that would need the source colours' own intent (which one
  * is the "danger" colour, say), not just their RGB values.
+ *
+ * @example
+ * ```ts
+ * import { createColorBlindnessFilter } from '@datamoc/mw_games/two-d/render';
+ * import type { Container2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const stage: Container2D;
+ *
+ * stage.filters = [createColorBlindnessFilter('deuteranopia')];
+ * ```
  */
 export function createColorBlindnessFilter(type: ColorBlindnessType): ColorMatrixFilter {
 	const filter = new ColorMatrixFilter();

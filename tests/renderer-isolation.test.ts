@@ -197,7 +197,7 @@ test('two-d/render and two-d/ui do not leak raw Pixi types into public signature
 			const file = resolvePath(absolute, entry);
 			const source = readFileSync(file, 'utf8');
 			const pixiImports = [...source.matchAll(/^\s*import\s+(?:type\s+)?\{([^}]+)\}\s*from\s*['"]pixi\.js['"]/gm)]
-				.flatMap((match) => match[1].split(',').map((name) => name.replace(/^type\s+/, '').trim()))
+				.flatMap((match) => match[1].split(',').map((name) => name.trim().replace(/^type\s+/, '')))
 				.filter((name) => PIXI_TYPE_NAMES.includes(name));
 			if (pixiImports.length === 0) continue;
 

@@ -1,5 +1,6 @@
-import { Container, Graphics, type Texture } from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
 import { theme, themeChanged } from './theme.ts';
+import type { Texture2D } from '../render/Types2D.ts';
 
 export interface BarOptions {
 	width: number;
@@ -13,10 +14,10 @@ export interface BarOptions {
 	max?: number;
 
 	/** the fill's own art, stretched to the filled width; a plain colour rect (the default) when omitted */
-	fillTexture?: Texture;
+	fillTexture?: Texture2D;
 
 	/** the track's own art; a plain colour rect (the theme's panel fill) when omitted */
-	backgroundTexture?: Texture;
+	backgroundTexture?: Texture2D;
 
 	/**
 	 * Rounds the filled width up to the next whole pixel instead of a fractional one, so a
@@ -33,6 +34,18 @@ export interface BarOptions {
  * Closer to a small, focused primitive than a general-purpose progress-bar widget: it draws
  * a background track and a foreground fill sized to `value / max`, and nothing else. Colour
  * follows the theme the way `Label` does, unless a game gives one of its own.
+ *
+ * @example
+ * ```ts
+ * import { Bar } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const hp = new Bar({ width: 120, height: 8, color: 0xcc3333, value: 30, max: 30 });
+ *
+ * hp.setValue(18, 30); // took damage
+ * console.log(hp.value); // 0.6
+ *
+ * hp.resize(160, 8); // the window around it grew
+ * ```
  */
 export class Bar extends Container {
 	private track = new Graphics();
@@ -43,8 +56,8 @@ export class Bar extends Container {
 	private readonly explicitColor: boolean;
 	private color: number;
 	private fraction: number;
-	private readonly fillTexture?: Texture;
-	private readonly backgroundTexture?: Texture;
+	private readonly fillTexture?: Texture2D;
+	private readonly backgroundTexture?: Texture2D;
 	private readonly roundUpToPixel: boolean;
 
 	private readonly themeListener = () => this.draw();
