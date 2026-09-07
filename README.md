@@ -1,4 +1,4 @@
-# mwg
+# 🟦🟨mwg
 
 A framework for building tile games that run **from a local file**: no server, no install,
 no runtime to download. The game logic depends on no renderer at all, so a game draws through

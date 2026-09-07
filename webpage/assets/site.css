@@ -91,22 +91,14 @@ canvas {
 }
 
 .brand {
-	font-family: var(--font-display);
-	font-weight: 700;
-	font-size: 1rem;
-	letter-spacing: 0.02em;
-	text-decoration: none;
 	display: flex;
 	align-items: center;
-	gap: 0.5rem;
 }
 
-.brand .dot {
-	width: 0.55em;
-	height: 0.55em;
-	background: var(--add);
-	display: inline-block;
-	box-shadow: 0.55em 0 0 var(--multiply);
+.brand img {
+	height: 1.75rem;
+	width: auto;
+	display: block;
 }
 
 .site-nav {
