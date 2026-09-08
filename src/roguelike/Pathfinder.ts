@@ -173,19 +173,19 @@ export class Pathfinder {
 			const cy = this.level.yOf(cell);
 			const next = distances[cell] + 1;
 
-			for (const n of this.level.neighbors(cx, cy, options.topology ?? 8)) {
+			this.level.forEachNeighbor(cx, cy, options.topology ?? 8, (nx, ny) => {
 				//reversed: the flood expands away from the target, but travel runs
 				//towards it, and a climb limit reads differently each way. Checking
 				//the travel direction keeps every distance exact, so descend() can
 				//never strand on a cell with no legal step downhill.
-				if (!canStep(n.x, n.y, cx, cy)) continue;
+				if (!canStep(nx, ny, cx, cy)) return;
 
-				const neighbour = this.level.index(n.x, n.y);
-				if (distances[neighbour] !== -1) continue;
+				const neighbour = this.level.index(nx, ny);
+				if (distances[neighbour] !== -1) return;
 
 				distances[neighbour] = next;
 				queue.push(neighbour);
-			}
+			});
 		}
 
 		return distances;
@@ -200,15 +200,15 @@ export class Pathfinder {
 		let best: Step | null = null;
 		let bestDistance = here;
 
-		for (const n of this.level.neighbors(from.x, from.y, options.topology ?? 8)) {
-			if (!canStep(from.x, from.y, n.x, n.y)) continue;
+		this.level.forEachNeighbor(from.x, from.y, options.topology ?? 8, (nx, ny) => {
+			if (!canStep(from.x, from.y, nx, ny)) return;
 
-			const distance = distances[this.level.index(n.x, n.y)];
+			const distance = distances[this.level.index(nx, ny)];
 			if (distance !== -1 && distance < bestDistance) {
 				bestDistance = distance;
-				best = n;
+				best = { x: nx, y: ny };
 			}
-		}
+		});
 
 		return best;
 	}
@@ -237,16 +237,16 @@ export class Pathfinder {
 				return this.reconstruct(cameFrom, current);
 			}
 
-			for (const next of this.level.neighbors(current.x, current.y, options.topology ?? 8)) {
-				if (!canStep(current.x, current.y, next.x, next.y)) continue;
+			this.level.forEachNeighbor(current.x, current.y, options.topology ?? 8, (nx, ny) => {
+				if (!canStep(current.x, current.y, nx, ny)) return;
 
-				const index = this.level.index(next.x, next.y);
-				if (visited.has(index)) continue;
+				const index = this.level.index(nx, ny);
+				if (visited.has(index)) return;
 
 				visited.add(index);
 				cameFrom.set(index, current);
-				queue.push(next);
-			}
+				queue.push({ x: nx, y: ny });
+			});
 		}
 
 		return [];

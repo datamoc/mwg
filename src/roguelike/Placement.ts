@@ -28,7 +28,7 @@ export function candidateCells(level: Level, filter: PlacementFilter = {}): numb
 	});
 }
 
-/** Cells within `radius` neighbour-steps of `center` (via `Level.neighbors`, so hex and square both work), never including `center` itself. */
+/** Cells within `radius` neighbour-steps of `center` (via `Level.forEachNeighbor`, so hex and square both work), never including `center` itself. */
 export function cellsNear(level: Level, center: number, radius: number): number[] {
 	const seen = new Set<number>([center]);
 	let frontier = [center];
@@ -36,13 +36,13 @@ export function cellsNear(level: Level, center: number, radius: number): number[
 	for (let step = 0; step < Math.max(0, radius); step++) {
 		const next: number[] = [];
 		for (const cell of frontier) {
-			for (const { x, y } of level.neighbors(level.xOf(cell), level.yOf(cell))) {
-				if (!level.inside(x, y)) continue;
+			level.forEachNeighbor(level.xOf(cell), level.yOf(cell), 8, (x, y) => {
+				if (!level.inside(x, y)) return;
 				const neighbor = level.index(x, y);
-				if (seen.has(neighbor)) continue;
+				if (seen.has(neighbor)) return;
 				seen.add(neighbor);
 				next.push(neighbor);
-			}
+			});
 		}
 		frontier = next;
 	}

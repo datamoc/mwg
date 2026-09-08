@@ -1,4 +1,4 @@
-import type { MovableSprite } from './MovableSprite.ts';
+import { type MovableSprite, playMoverAnimation } from './MovableSprite.ts';
 
 export interface FreeMoverOptions {
 	/** world units crossed per second */
@@ -102,12 +102,10 @@ export class FreeMover {
 	}
 
 	private playWalk(): void {
-		const name = this.options.walkAnimation?.(this.facing);
-		if (name && this.sprite.has?.(name)) this.sprite.play?.(name);
+		playMoverAnimation(this.sprite, this.options.walkAnimation?.(this.facing));
 	}
 
 	private playIdle(): void {
-		const name = this.options.idleAnimation?.(this.facing);
-		if (name && this.sprite.has?.(name)) this.sprite.play?.(name);
+		playMoverAnimation(this.sprite, this.options.idleAnimation?.(this.facing));
 	}
 }

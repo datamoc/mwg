@@ -27,6 +27,30 @@ export interface StatusEffectHandle {
 }
 
 /**
+ * The half both `applyStatusEffect` and `applyItemStatusEffect` share: register `onExpire`
+ * with `clock` for `duration` turns, and hand back a `cancel()` that unregisters early and
+ * still runs `onExpire` once. Lives here rather than in a third file because this module
+ * already owns `EffectClock`, the only type it needs.
+ */
+export function leaseClock(
+	clock: EffectClock,
+	options: { duration: number; tick?: (turn: number) => void; onExpire: () => void }
+): StatusEffectHandle {
+	const id = clock.add({
+		duration: options.duration,
+		tick: (turn) => options.tick?.(turn),
+		onExpire: options.onExpire,
+	});
+
+	return {
+		cancel: () => {
+			clock.remove(id);
+			options.onExpire();
+		},
+	};
+}
+
+/**
  * A temporary buff or debuff: applies `modifiers` to `stats` and registers their expiry with
  * `clock`, so a game never has to remember to remove what it added. The seam `TurnClock` and
  * `StatBlock` never had on their own - `TurnClock` ticks and expires effects, `StatBlock`
@@ -62,16 +86,9 @@ export function applyStatusEffect(
 	const source = Symbol('statusEffect');
 	for (const modifier of options.modifiers) stats.addModifier({ ...modifier, source });
 
-	const id = clock.add({
+	return leaseClock(clock, {
 		duration: options.duration,
-		tick: (turn) => options.tick?.(turn),
+		tick: options.tick,
 		onExpire: () => stats.removeModifiersFrom(source),
 	});
-
-	return {
-		cancel: () => {
-			clock.remove(id);
-			stats.removeModifiersFrom(source);
-		},
-	};
 }

@@ -1,4 +1,5 @@
 import { defaultStorage, type SaveStorage } from './Save.ts';
+import { StoredValue } from './StoredValue.ts';
 
 export interface PlayerStatsOptions<T, S = T> {
 	/** namespaces the stored total, so two games sharing an origin never collide */
@@ -34,33 +35,30 @@ export interface PlayerStatsOptions<T, S = T> {
  * ```
  */
 export class PlayerStats<T, S = T> {
-	private readonly storage: SaveStorage;
-	private readonly key: string;
+	private readonly store: StoredValue<T>;
 	private readonly initial: T;
 	private readonly combine: (total: T, summary: S) => T;
 
 	constructor(options: PlayerStatsOptions<T, S>) {
-		this.storage = options.storage ?? defaultStorage();
-		this.key = `mwg-stats:${options.namespace}`;
+		this.store = new StoredValue<T>(options.storage ?? defaultStorage(), `mwg-stats:${options.namespace}`);
 		this.initial = options.initial;
 		this.combine = options.combine;
 	}
 
 	/** the current lifetime total, `initial` if nothing has been recorded yet */
 	get(): T {
-		const raw = this.storage.read(this.key);
-		return raw ? (JSON.parse(raw) as T) : this.initial;
+		return this.store.read(this.initial);
 	}
 
 	/** folds `summary` into the running total and persists it, returning the new total */
 	record(summary: S): T {
 		const next = this.combine(this.get(), summary);
-		this.storage.write(this.key, JSON.stringify(next));
+		this.store.write(next);
 		return next;
 	}
 
 	/** back to `initial`, as a new save file or a "reset stats" option should */
 	reset(): void {
-		this.storage.remove(this.key);
+		this.store.remove();
 	}
 }

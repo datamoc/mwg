@@ -12,25 +12,55 @@ import { hexNeighbors } from '../core/Hex.ts';
 /** the grid a `Level` reasons over - a parameter, not a forked class, per the roadmap */
 export type LevelShape = 'square' | 'hex';
 
+//one frozen table per topology, shared by every caller: these sit inside the hottest loops
+//here (a flood fill calls `neighbors` per cell), so a fresh array per call was pure GC churn
+const OFFSET_4: ReadonlyArray<readonly [number, number]> = [
+	[0, -1],
+	[1, 0],
+	[0, 1],
+	[-1, 0],
+];
+
+const OFFSET_8: ReadonlyArray<readonly [number, number]> = [
+	[0, -1],
+	[1, -1],
+	[1, 0],
+	[1, 1],
+	[0, 1],
+	[-1, 1],
+	[-1, 0],
+	[-1, -1],
+];
+
+/**
+ * The six hex offsets, split by column parity: the odd-q scheme pushes odd columns half a
+ * row down, so "same direction, one row over" depends on which column starts the step.
+ * Derived from the cube directions in `core/Hex.ts` (same order, so floods visit cells in
+ * the same sequence `hexNeighbors` would), and locked to it by the parity test in
+ * `tests/hex.test.ts` - if either table ever disagrees there, the table is wrong, not the
+ * cube math.
+ */
+const HEX_OFFSETS_EVEN: ReadonlyArray<readonly [number, number]> = [
+	[1, 0],
+	[1, -1],
+	[0, -1],
+	[-1, -1],
+	[-1, 0],
+	[0, 1],
+];
+
+const HEX_OFFSETS_ODD: ReadonlyArray<readonly [number, number]> = [
+	[1, 1],
+	[1, 0],
+	[0, -1],
+	[-1, 0],
+	[-1, 1],
+	[0, 1],
+];
+
 /** the four or eight cell offsets around a point, shared by every square-grid algorithm here */
 export function neighbourOffsets(topology: 4 | 8): ReadonlyArray<readonly [number, number]> {
-	return topology === 4
-		? [
-				[0, -1],
-				[1, 0],
-				[0, 1],
-				[-1, 0],
-			]
-		: [
-				[0, -1],
-				[1, -1],
-				[1, 0],
-				[1, 1],
-				[0, 1],
-				[-1, 1],
-				[-1, 0],
-				[-1, -1],
-			];
+	return topology === 4 ? OFFSET_4 : OFFSET_8;
 }
 
 export interface TerrainKind {
@@ -115,6 +145,26 @@ export class Level {
 	neighbors(x: number, y: number, topology: 4 | 8 = 8): Array<{ x: number; y: number }> {
 		if (this.shape === 'hex') return hexNeighbors(x, y);
 		return neighbourOffsets(topology).map(([dx, dy]) => ({ x: x + dx, y: y + dy }));
+	}
+
+	/**
+	 * The same neighbourhood as `neighbors`, but calling `visit(nx, ny)` per cell instead
+	 * of building an array of them - the flood fills in `Pathfinder` call this per popped
+	 * cell, where the array plus one object per neighbour was the hottest GC churn in the
+	 * module (tens of thousands of short-lived objects per map). Anything that keeps a
+	 * neighbour past the call still wants `neighbors`; this is for visit-and-forget loops.
+	 *
+	 * @param topology ignored on a hex `Level` - it only has the one neighbourhood shape
+	 */
+	forEachNeighbor(
+		x: number,
+		y: number,
+		topology: 4 | 8,
+		visit: (nx: number, ny: number) => void
+	): void {
+		const offsets =
+			this.shape === 'hex' ? ((x & 1) === 0 ? HEX_OFFSETS_EVEN : HEX_OFFSETS_ODD) : neighbourOffsets(topology);
+		for (const [dx, dy] of offsets) visit(x + dx, y + dy);
 	}
 
 	/**

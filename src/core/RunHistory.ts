@@ -1,4 +1,5 @@
 import { defaultStorage, type SaveStorage } from './Save.ts';
+import { StoredValue } from './StoredValue.ts';
 
 /**
  * A personal, local record of completed runs - what `core.Session` (launch count) and
@@ -37,19 +38,19 @@ export interface RunHistoryOptions {
 }
 
 export class RunHistory<T> {
-	private readonly storage: SaveStorage;
+	private readonly store: StoredValue<RunHistoryEntry<T>[]>;
 	private readonly limit?: number;
-	private readonly key: string;
 
 	constructor(options: RunHistoryOptions) {
-		this.storage = options.storage ?? defaultStorage();
+		this.store = new StoredValue<RunHistoryEntry<T>[]>(
+			options.storage ?? defaultStorage(),
+			`mwg-runs:${options.namespace}`
+		);
 		this.limit = options.limit;
-		this.key = `mwg-runs:${options.namespace}`;
 	}
 
 	private readAll(): RunHistoryEntry<T>[] {
-		const raw = this.storage.read(this.key);
-		return raw ? (JSON.parse(raw) as RunHistoryEntry<T>[]) : [];
+		return this.store.read([]);
 	}
 
 	/** appends a completed run's summary, oldest first; drops the oldest entry once `limit` is exceeded */
@@ -58,7 +59,7 @@ export class RunHistory<T> {
 		const entry: RunHistoryEntry<T> = { id: `${Date.now()}-${entries.length}`, endedAt: Date.now(), summary };
 		entries.push(entry);
 		if (this.limit !== undefined && entries.length > this.limit) entries.splice(0, entries.length - this.limit);
-		this.storage.write(this.key, JSON.stringify(entries));
+		this.store.write(entries);
 		return entry;
 	}
 
@@ -80,6 +81,6 @@ export class RunHistory<T> {
 
 	/** drops every recorded run */
 	clear(): void {
-		this.storage.remove(this.key);
+		this.store.remove();
 	}
 }

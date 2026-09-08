@@ -7,6 +7,43 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-09-08
+
+A simplification pass across storage, selection, and text options, one pathfinding
+allocation fix, a new opt-in build tool, and an interactive architecture diagram on the
+website.
+
+### Added
+- `tools/compress-dist.mjs` (`@datamoc/mw_games/tools/compress-dist`) - writes precompressed
+  `.gz`/`.br` siblings (optionally `.xz` via a system `xz` binary) next to a build's text
+  files, for a server that can negotiate `Content-Encoding`; the originals are untouched, so
+  a `file://` page keeps working unchanged. Wired into `tools/emit-page.mjs`'s example build
+  step (`--no-compress`/`MWG_NO_COMPRESS=1` to skip, `--xz` to also archive).
+- `webpage/design/architecture-explorer.html` - an interactive, pannable/searchable diagram
+  of `mwg`'s real module dependency graph (which modules reach `core`, which reach a
+  renderer), generated from `src/`'s own import graph rather than hand-drawn, linked from
+  the design page's "Module boundaries" section.
+
+### Changed
+- `core.StoredValue` - the read-with-fallback/write/remove trio `PlayerStats`, `RunHistory`
+  and `NewsSeenTracker` each hand-rolled slightly differently now share one implementation.
+- `core.NewsClient` is rebuilt on the shared `HttpTransport` every other injectable HTTPS
+  client here already used, rather than its own hand-rolled timeout/abort handling.
+- `two-d/ui.SelectionModel` - the highlight/select/confirm/wrap-at-both-ends contract
+  `ListView` and `IconGrid` had begun to implement slightly differently now lives in one
+  place; each widget keeps only what actually differs (1-D rows vs. 2-D cells).
+- `two-d/ui`'s `Label`/`BitmapLabel` share their text-option shape and RTL-aware default
+  alignment through a new internal `themedText` helper instead of two copies.
+- `rpg`'s `FreeMover`/`GridMover` share their "play this animation if the sprite has it"
+  guard; `actors`'s `applyStatusEffect`/`applyItemStatusEffect` share their clock-lease/
+  cancel logic. Both were identical code living in two places.
+- `vite.lib.config.ts` and the examples' shared Vite config turn off `reportCompressedSize`:
+  the estimate cost a full in-memory gzip of the bundle for a number `tools/compress-dist.mjs`
+  reports for real now.
+- `roguelike.Level` gained `forEachNeighbor` (visits a cell's neighbours via callback instead
+  of allocating an array), used by `Pathfinder`'s flood fills and `Placement.cellsNear` - the
+  hottest per-cell allocation in map generation, now gone.
+
 ## [0.4.2] - 2026-09-08
 
 A roadmap-management pass alongside three real capability gaps closed: deterministic dungeon

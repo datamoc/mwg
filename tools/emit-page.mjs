@@ -1,6 +1,7 @@
 import { readFile, writeFile, rm, readdir } from 'node:fs/promises';
 import { join, resolve as resolvePath } from 'node:path';
 import { compileResources } from './compile-resources.mjs';
+import { compressDist } from './compress-dist.mjs';
 
 /**
  * Turns a vite build into a folder that opens by double-clicking.
@@ -15,7 +16,13 @@ import { compileResources } from './compile-resources.mjs';
  *   - the assets have to be compiled into scripts and listed in the page, because a
  *     `file://` page cannot read a directory to discover them.
  *
- * usage: node tools/emit-page.mjs <example folder>
+ * usage: node tools/emit-page.mjs <example folder> [--no-compress] [--xz]
+ *
+ * After the page is rewritten, precompressed `.gz`/`.br` siblings are written next to
+ * the text files (see `tools/compress-dist.mjs`): the `file://` page keeps loading the
+ * originals, while a server in front of the same folder can serve the smaller files.
+ * `--no-compress` (or `MWG_NO_COMPRESS=1`) skips that pass; `--xz` also writes `.xz`
+ * archives where the system `xz` binary exists.
  */
 
 const exampleDir = process.argv[2];
@@ -62,3 +69,17 @@ const kb = (n) => (n / 1024).toFixed(1) + ' KB';
 console.log(`\n  ${dist}`);
 console.log(`  index.html + ${entry ?? 'bundle'} + ${groups.length} asset script(s), ${kb(rawBytes)} of assets`);
 console.log('  open index.html directly - no server needed');
+
+const skipCompress = process.argv.includes('--no-compress') || process.env.MWG_NO_COMPRESS === '1';
+if (!skipCompress) {
+	const rows = await compressDist(dist, { xz: process.argv.includes('--xz') });
+	for (const row of rows) {
+		const parts = [`${row.file}: ${kb(row.raw)}`];
+		if (row.gzip) parts.push(`gz ${kb(row.gzip)}`);
+		if (row.brotli) parts.push(`br ${kb(row.brotli)}`);
+		if (row.xz) parts.push(`xz ${kb(row.xz)}`);
+		console.log('  ' + parts.join(', '));
+	}
+} else {
+	console.log('  (compression skipped)');
+}

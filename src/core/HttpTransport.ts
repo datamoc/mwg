@@ -6,7 +6,7 @@ export interface HttpTransportOptions {
 
 /**
  * The constructor validation and timeout-wrapped fetch shared by every injectable HTTPS
- * transport here (`FeedbackClient`, `SaveSyncClient`, `TelemetryClient`) - each one is a
+ * transport here (`FeedbackClient`, `NewsClient`, `SaveSyncClient`, `TelemetryClient`) - each one is a
  * plain request/response against a game's own endpoint, differing only in what they send and
  * expect back, not in how the endpoint/timeout/fetch options are validated or how a request
  * is aborted after `timeoutMs`. `label` names the concrete client in its own error messages

@@ -1,6 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import type { Action } from '../../core/Input.ts';
 import { Label } from './Label.ts';
+import { SelectionModel } from './SelectionModel.ts';
 import { theme, themeChanged } from './theme.ts';
 import type { Container2D } from '../render/Types2D.ts';
 
@@ -80,7 +81,10 @@ export interface IconGridOptions {
  * ```
  */
 export class IconGrid extends Container {
-	private items: IconGridItem[] = [];
+	private readonly selection = new SelectionModel<IconGridItem>({
+		onChange: () => this.refresh(),
+		onHighlight: (item, index) => this.onHighlight?.(item, index),
+	});
 	private cells: Container[] = [];
 
 	private cellsLayer = new Container();
@@ -94,7 +98,6 @@ export class IconGrid extends Container {
 	private cellSize: number;
 	private longPressDuration: number;
 
-	private index = 0;
 	private scrollRow = 0;
 
 	/** the cell a first tap picked up, awaiting a second tap to swap with */
@@ -112,11 +115,12 @@ export class IconGrid extends Container {
 	 * Recolours quantity badges in place rather than through `setItems`: an item's `icon` is
 	 * a `Container` the caller owns, and `setItems`'s teardown destroys a cell's children on
 	 * the way out (see `swapCells`'s own doc comment) - routing a restyle through it would
-	 * destroy the very icons still referenced by `this.items`.
+	 * destroy the very icons still referenced by the selection's items.
 	 */
 	private readonly themeListener = () => {
 		const t = theme();
-		this.items.forEach((item, i) => {
+		const items = this.selection.items;
+		items.forEach((item, i) => {
 			const cell = this.cells[i];
 			if (!cell) return;
 			cell.x = this.columnX(i % this.columns);
@@ -181,23 +185,22 @@ export class IconGrid extends Container {
 	}
 
 	get rows(): number {
-		return Math.max(1, Math.ceil(this.items.length / this.columns));
+		return Math.max(1, Math.ceil(this.selection.length / this.columns));
 	}
 
 	get selectedIndex(): number {
-		return this.index;
+		return this.selection.selectedIndex;
 	}
 
 	get selected(): IconGridItem | null {
-		return this.items[this.index] ?? null;
+		return this.selection.selected;
 	}
 
 	get length(): number {
-		return this.items.length;
+		return this.selection.length;
 	}
 
 	setItems(items: IconGridItem[]): void {
-		this.items = items;
 		this.pickedUp = null;
 		this.pressedIndex = null;
 
@@ -240,8 +243,7 @@ export class IconGrid extends Container {
 			this.cellsLayer.addChild(cell);
 		});
 
-		this.index = this.items.findIndex((item) => !item.disabled);
-		if (this.index === -1) this.index = 0;
+		this.selection.reset(items);
 		this.scrollRow = 0;
 		this.refresh();
 	}
@@ -250,7 +252,7 @@ export class IconGrid extends Container {
 		if (this.pressedIndex !== index) return;
 		this.pressedIndex = null;
 		//still under the long-press threshold when released - a tap, not a quickslot
-		if (!this.items[index]?.disabled) this.tapCell(index);
+		if (!this.selection.items[index]?.disabled) this.tapCell(index);
 	}
 
 	resize(width: number, height: number): void {
@@ -274,16 +276,17 @@ export class IconGrid extends Container {
 		const index = this.pressedIndex;
 		this.pressedIndex = null; //fires once; releasing afterwards is not also a tap
 
-		const item = this.items[index];
+		const item = this.selection.items[index];
 		if (item && !item.disabled) this.onQuickslot?.(item, index);
 	}
 
 	/** first tap on a cell picks it up; a second tap on another swaps the two */
 	tapCell(index: number): void {
-		if (index < 0 || index >= this.items.length) return;
+		const items = this.selection.items;
+		if (index < 0 || index >= items.length) return;
 
 		if (this.pickedUp === null) {
-			if (this.items[index].disabled) return;
+			if (items[index].disabled) return;
 			this.pickedUp = index;
 			this.refresh();
 			return;
@@ -309,7 +312,8 @@ export class IconGrid extends Container {
 	 * badge survive together, wherever the swap sends them.
 	 */
 	private swapCells(a: number, b: number): void {
-		[this.items[a], this.items[b]] = [this.items[b], this.items[a]];
+		const items = this.selection.items;
+		this.selection.swap(a, b);
 
 		const cellA = this.cells[a];
 		const cellB = this.cells[b];
@@ -318,8 +322,8 @@ export class IconGrid extends Container {
 		for (const child of childrenB) cellA.addChild(child);
 		for (const child of childrenA) cellB.addChild(child);
 
-		cellA.cursor = this.items[a].disabled ? 'default' : 'pointer';
-		cellB.cursor = this.items[b].disabled ? 'default' : 'pointer';
+		cellA.cursor = items[a].disabled ? 'default' : 'pointer';
+		cellB.cursor = items[b].disabled ? 'default' : 'pointer';
 	}
 
 	/** cancels a pending pick-up without swapping anything - what `cancel` should do */
@@ -335,41 +339,24 @@ export class IconGrid extends Container {
 	 * each; a caller wanting arrow-key navigation passes `(±1, 0)` or `(0, ±1)`.
 	 */
 	move(dx: number, dy: number): boolean {
-		if (this.items.length === 0) return false;
-
-		const total = this.items.length;
 		const rows = this.rows;
-		let row = Math.floor(this.index / this.columns);
-		let col = this.index % this.columns;
-
-		//at most one full pass over the grid, so an all-disabled grid terminates
-		for (let step = 0; step < rows * this.columns; step++) {
-			col = (col + dx + this.columns) % this.columns;
-			row = (row + dy + rows) % rows;
-			const next = row * this.columns + col;
-
-			if (next < total && !this.items[next].disabled) {
-				this.index = next;
-				this.refresh();
-				this.onHighlight?.(this.items[next], next);
-				return true;
-			}
-		}
-		return false;
+		const columns = this.columns;
+		return this.selection.step(
+			(from) => {
+				const row = (Math.floor(from / columns) + dy + rows) % rows;
+				const col = ((from % columns) + dx + columns) % columns;
+				return row * columns + col;
+			},
+			rows * columns
+		);
 	}
 
 	select(index: number): void {
-		if (index < 0 || index >= this.items.length || this.items[index].disabled) return;
-		this.index = index;
-		this.refresh();
-		this.onHighlight?.(this.items[index], index);
+		this.selection.select(index);
 	}
 
 	confirm(): boolean {
-		const item = this.selected;
-		if (!item || item.disabled) return false;
-		this.onSelect?.(item, this.index);
-		return true;
+		return this.selection.confirm(this.onSelect);
 	}
 
 	/** @returns true when the action was used */
@@ -404,7 +391,8 @@ export class IconGrid extends Container {
 
 	private refresh(): void {
 		const visible = this.visibleRows;
-		const selectedRow = Math.floor(this.index / this.columns);
+		const index = this.selection.selectedIndex;
+		const selectedRow = Math.floor(index / this.columns);
 		if (selectedRow < this.scrollRow) {
 			this.scrollRow = selectedRow;
 		} else if (selectedRow >= this.scrollRow + visible) {
@@ -424,8 +412,8 @@ export class IconGrid extends Container {
 		}
 
 		this.highlight.clear();
-		if (this.items.length > 0) {
-			const { x, y } = this.cellRect(this.index);
+		if (this.selection.length > 0) {
+			const { x, y } = this.cellRect(index);
 			this.highlight.rect(x, y, this.cellSize, this.cellSize).fill({ color: t.color.selection });
 		}
 	}

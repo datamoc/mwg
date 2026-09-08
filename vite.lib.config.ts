@@ -22,6 +22,9 @@ export default defineConfig({
 		outDir: 'dist',
 		emptyOutDir: false,
 		target: 'es2022',
+		//the estimate vite prints costs a full in-memory gzip of the bundle; the size that
+		//matters is reported by tools/compress-dist.mjs instead
+		reportCompressedSize: false,
 		//pixi and rot.js are bundled in: the point of this build is that it needs nothing else
 		rollupOptions: {},
 	},

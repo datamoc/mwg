@@ -1,4 +1,4 @@
-import type { EffectClock } from './StatusEffect.ts';
+import { type EffectClock, leaseClock } from './StatusEffect.ts';
 
 export interface ItemStatusEffectOptions<T> {
 	/** fields applied to the item for the duration, restored to their prior value on expiry */
@@ -56,16 +56,5 @@ export function applyItemStatusEffect<T extends object>(
 		for (const [key, value] of previous) item[key] = value;
 	};
 
-	const id = clock.add({
-		duration: options.duration,
-		tick: (turn) => options.tick?.(turn),
-		onExpire: restore,
-	});
-
-	return {
-		cancel: () => {
-			clock.remove(id);
-			restore();
-		},
-	};
+	return leaseClock(clock, { duration: options.duration, tick: options.tick, onExpire: restore });
 }

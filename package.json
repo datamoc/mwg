@@ -1,6 +1,6 @@
 {
   "name": "@datamoc/mw_games",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
   "license": "MPL-2.0",
   "repository": {
@@ -39,6 +39,8 @@
   "files": [
     "dist",
     "tools/compile-resources.mjs",
+    "tools/compress-dist.mjs",
+    "tools/compress-dist.d.mts",
     "LICENSE",
     "README.md"
   ],
@@ -104,6 +106,7 @@
       "import": "./dist/simulation/index.js"
     },
     "./tools/compile-resources": "./tools/compile-resources.mjs",
+    "./tools/compress-dist": "./tools/compress-dist.mjs",
     "./two-d": {
       "types": "./dist/two-d/index.d.ts",
       "import": "./dist/two-d/index.js"

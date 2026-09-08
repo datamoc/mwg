@@ -37,7 +37,7 @@ export const DEFAULT_MIME = {
 	'.txt': 'text/plain',
 };
 
-async function* walk(dir) {
+export async function* walk(dir) {
 	let entries;
 	try {
 		entries = await readdir(dir, { withFileTypes: true });

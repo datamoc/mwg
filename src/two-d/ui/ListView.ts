@@ -1,6 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import type { Action } from '../../core/Input.ts';
 import { Label } from './Label.ts';
+import { SelectionModel } from './SelectionModel.ts';
 import { theme, themeChanged } from './theme.ts';
 import type { Container2D } from '../render/Types2D.ts';
 
@@ -61,7 +62,10 @@ export interface ListViewOptions {
  * ```
  */
 export class ListView extends Container {
-	private items: ListItem[] = [];
+	private readonly selection = new SelectionModel<ListItem>({
+		onChange: () => this.refresh(),
+		onHighlight: (item, index) => this.onHighlight?.(item, index),
+	});
 	private rows: Container[] = [];
 
 	private rowsLayer = new Container();
@@ -73,7 +77,6 @@ export class ListView extends Container {
 	private rowHeight: number;
 	private readonly explicitRowHeight: boolean;
 
-	private index = 0;
 	private scroll = 0;
 
 	private readonly themeListener = () => this.restyle();
@@ -116,8 +119,8 @@ export class ListView extends Container {
 	 * Recolours rows and the default row height from the new theme in place, rather than
 	 * through `setItems`: a row's optional `icon` is a `Container` the caller owns, and
 	 * `setItems`'s teardown destroys a row's children on the way out - routing a restyle
-	 * through it would destroy the very icons still referenced by `this.items`, the same
-	 * trap `IconGrid.swapCells`'s own doc comment describes for its cells.
+	 * through it would destroy the very icons still referenced by the selection's items,
+	 * the same trap `IconGrid.swapCells`'s own doc comment describes for its cells.
 	 */
 	private restyle(): void {
 		const t = theme();
@@ -125,10 +128,11 @@ export class ListView extends Container {
 			this.rowHeight = Math.ceil(t.font.size * t.font.lineHeight) + t.spacing;
 		}
 		const rtl = t.direction === 'rtl';
+		const items = this.selection.items;
 
 		this.rows.forEach((row, i) => {
 			row.y = i * this.rowHeight;
-			const item = this.items[i];
+			const item = items[i];
 
 			const label = row.children.find((child): child is Label => child instanceof Label);
 			if (label) {
@@ -159,20 +163,18 @@ export class ListView extends Container {
 	}
 
 	get selectedIndex(): number {
-		return this.index;
+		return this.selection.selectedIndex;
 	}
 
 	get selected(): ListItem | null {
-		return this.items[this.index] ?? null;
+		return this.selection.selected;
 	}
 
 	get length(): number {
-		return this.items.length;
+		return this.selection.length;
 	}
 
 	setItems(items: ListItem[]): void {
-		this.items = items;
-
 		for (const row of this.rows) row.destroy({ children: true });
 		this.rows = [];
 		this.rowsLayer.removeChildren();
@@ -215,8 +217,7 @@ export class ListView extends Container {
 			this.rowsLayer.addChild(row);
 		});
 
-		this.index = this.items.findIndex((item) => !item.disabled);
-		if (this.index === -1) this.index = 0;
+		this.selection.reset(items);
 		this.scroll = 0;
 		this.refresh();
 	}
@@ -235,34 +236,18 @@ export class ListView extends Container {
 	 * nothing selectable to move to, so a caller can beep rather than doing nothing.
 	 */
 	move(delta: number): boolean {
-		if (this.items.length === 0) return false;
-
-		let next = this.index;
-		//at most one full pass, so a list of entirely disabled rows terminates
-		for (let step = 0; step < this.items.length; step++) {
-			next = (next + delta + this.items.length) % this.items.length;
-			if (!this.items[next].disabled) {
-				this.index = next;
-				this.refresh();
-				this.onHighlight?.(this.items[next], next);
-				return true;
-			}
-		}
-		return false;
+		return this.selection.step(
+			(from, count) => (from + delta + count) % count,
+			this.selection.length
+		);
 	}
 
 	select(index: number): void {
-		if (index < 0 || index >= this.items.length || this.items[index].disabled) return;
-		this.index = index;
-		this.refresh();
-		this.onHighlight?.(this.items[index], index);
+		this.selection.select(index);
 	}
 
 	confirm(): boolean {
-		const item = this.selected;
-		if (!item || item.disabled) return false;
-		this.onSelect?.(item, this.index);
-		return true;
+		return this.selection.confirm(this.onSelect);
 	}
 
 	/** @returns true when the action was used */
@@ -283,24 +268,26 @@ export class ListView extends Container {
 		//scroll only as far as needed to bring the selection back into view, so the list
 		//stays put while the highlight moves within it
 		const visible = this.visibleRows;
-		if (this.index < this.scroll) {
-			this.scroll = this.index;
-		} else if (this.index >= this.scroll + visible) {
-			this.scroll = this.index - visible + 1;
+		const index = this.selection.selectedIndex;
+		const length = this.selection.length;
+		if (index < this.scroll) {
+			this.scroll = index;
+		} else if (index >= this.scroll + visible) {
+			this.scroll = index - visible + 1;
 		}
-		this.scroll = Math.max(0, Math.min(this.scroll, Math.max(0, this.items.length - visible)));
+		this.scroll = Math.max(0, Math.min(this.scroll, Math.max(0, length - visible)));
 
 		this.rowsLayer.y = -this.scroll * this.rowHeight;
 
 		const t = theme();
-		if (this.items.length === 0) {
+		if (length === 0) {
 			this.highlight.clear();
 			return;
 		}
 
 		this.highlight
 			.clear()
-			.rect(0, (this.index - this.scroll) * this.rowHeight, this.viewWidth, this.rowHeight)
+			.rect(0, (index - this.scroll) * this.rowHeight, this.viewWidth, this.rowHeight)
 			.fill({ color: t.color.selection });
 	}
 }

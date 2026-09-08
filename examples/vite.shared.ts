@@ -21,6 +21,10 @@ export function exampleConfig(dir: string) {
 			outDir: 'dist',
 			emptyOutDir: true,
 			target: 'es2022',
+			//real `.gz`/`.br` files are written by tools/emit-page.mjs, so vite skips sizing
+			//them in memory (which stalls the build on a multi-megabyte bundle just to print
+			//an estimate) and only reports raw sizes
+			reportCompressedSize: false,
 			//assets are compiled into scripts instead, so vite must not emit them itself
 			assetsInlineLimit: 0,
 			rollupOptions: {

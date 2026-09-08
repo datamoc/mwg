@@ -1,16 +1,10 @@
 import { BitmapText } from 'pixi.js';
 import type { TextStyleOptions } from 'pixi.js';
 import { theme, themeChanged, type Theme } from './theme.ts';
+import { normalizeTextOptions, themedAlign, type ThemedTextOptions } from './themedText.ts';
 
-export interface BitmapLabelOptions {
-	text?: string;
-	color?: number;
-	size?: number;
-	/** wraps at this width in pixels; omit for a single unwrapped line */
-	wrapWidth?: number;
-	align?: 'left' | 'center' | 'right';
-	bold?: boolean;
-}
+/** today exactly the shared themed-text fields; a distinct name so bitmap-specific options have somewhere to land later */
+export type BitmapLabelOptions = ThemedTextOptions;
 
 /**
  * A piece of text baked into a glyph-atlas texture instead of rasterised fresh on every
@@ -39,7 +33,7 @@ export class BitmapLabel extends BitmapText {
 	private readonly themeListener = (t: Theme) => this.restyle(t);
 
 	constructor(options: BitmapLabelOptions | string = {}) {
-		const opts = typeof options === 'string' ? { text: options } : options;
+		const opts = normalizeTextOptions(options);
 		const t = theme();
 
 		super({
@@ -91,7 +85,7 @@ export function bitmapLabelStyle(opts: BitmapLabelOptions, t: Theme): TextStyleO
 		fontSize: opts.size ?? t.font.size,
 		fontWeight: opts.bold ? 'bold' : 'normal',
 		fill: opts.color ?? t.color.text,
-		align: opts.align ?? (t.direction === 'rtl' ? 'right' : 'left'),
+		align: themedAlign(opts, t),
 		wordWrap: opts.wrapWidth !== undefined,
 		wordWrapWidth: opts.wrapWidth ?? 0,
 		breakWords: true,

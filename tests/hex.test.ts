@@ -54,6 +54,30 @@ test('distance to self is zero', () => {
 	assert.equal(hexDistance({ x: 5, y: -3 }, { x: 5, y: -3 }), 0);
 });
 
+test('forEachNeighbor visits exactly the hexNeighbors cells, in the same order', () => {
+	const level = openHexLevel();
+	for (let x = -4; x <= 8; x++) {
+		for (let y = -4; y <= 8; y++) {
+			const visited: Array<{ x: number; y: number }> = [];
+			level.forEachNeighbor(x, y, 8, (nx, ny) => visited.push({ x: nx, y: ny }));
+			assert.deepEqual(visited, hexNeighbors(x, y), `parity-table mismatch at (${x},${y})`);
+		}
+	}
+});
+
+test('forEachNeighbor visits exactly the square neighbors cells, in the same order', () => {
+	const level = new Level(9, 9, HEX_KINDS, 1, 'square');
+	for (const topology of [4, 8] as const) {
+		for (let x = 0; x < 9; x++) {
+			for (let y = 0; y < 9; y++) {
+				const visited: Array<{ x: number; y: number }> = [];
+				level.forEachNeighbor(x, y, topology, (nx, ny) => visited.push({ x: nx, y: ny }));
+				assert.deepEqual(visited, level.neighbors(x, y, topology));
+			}
+		}
+	}
+});
+
 test('distance is symmetric', () => {
 	const a = { x: 1, y: 2 };
 	const b = { x: -3, y: 4 };

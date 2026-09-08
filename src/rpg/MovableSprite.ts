@@ -25,3 +25,12 @@ export interface MovableSprite {
 	/** switches to a registered animation */
 	play?(animation: string): void;
 }
+
+/**
+ * Plays `name` on `sprite` when it names an animation the sprite actually has - the guard
+ * both movers share around their walk/idle callbacks, so a missing animation (or a sprite
+ * with no animation support at all) is a silent no-op rather than a throw.
+ */
+export function playMoverAnimation(sprite: MovableSprite, name: string | undefined): void {
+	if (name && sprite.has?.(name)) sprite.play?.(name);
+}

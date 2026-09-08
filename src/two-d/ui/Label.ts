@@ -1,14 +1,8 @@
 import { Text, TextStyle } from 'pixi.js';
 import { theme, themeChanged, type Theme } from './theme.ts';
+import { normalizeTextOptions, themedAlign, type ThemedTextOptions } from './themedText.ts';
 
-export interface LabelOptions {
-	text?: string;
-	color?: number;
-	size?: number;
-	/** wraps at this width in pixels; omit for a single unwrapped line */
-	wrapWidth?: number;
-	align?: 'left' | 'center' | 'right';
-	bold?: boolean;
+export interface LabelOptions extends ThemedTextOptions {
 	/** Outline in texture pixels, useful for text over artwork. */
 	stroke?: { color: number; width: number };
 	/** Text texture resolution; omit to use the renderer default. */
@@ -39,7 +33,7 @@ export class Label extends Text {
 	private readonly themeListener = (t: Theme) => this.restyle(t);
 
 	constructor(options: LabelOptions | string = {}) {
-		const opts = typeof options === 'string' ? { text: options } : options;
+		const opts = normalizeTextOptions(options);
 		const t = theme();
 
 		super({
@@ -53,7 +47,7 @@ export class Label extends Text {
 				fontWeight: opts.bold ? 'bold' : 'normal',
 				fill: opts.color ?? t.color.text,
 				lineHeight: (opts.size ?? t.font.size) * t.font.lineHeight,
-				align: opts.align ?? (t.direction === 'rtl' ? 'right' : 'left'),
+				align: themedAlign(opts, t),
 				wordWrap: opts.wrapWidth !== undefined,
 				wordWrapWidth: opts.wrapWidth ?? 0,
 				//without this a long unbroken word overflows its window instead of wrapping
@@ -87,7 +81,7 @@ export class Label extends Text {
 			this.style.fontSize = t.font.size;
 			this.style.lineHeight = t.font.size * t.font.lineHeight;
 		}
-		if (this.opts.align === undefined) this.style.align = t.direction === 'rtl' ? 'right' : 'left';
+		if (this.opts.align === undefined) this.style.align = themedAlign(this.opts, t);
 	}
 
 	override destroy(options?: Parameters<Text['destroy']>[0]): void {
