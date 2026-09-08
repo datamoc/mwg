@@ -108,7 +108,10 @@ export class Bar extends Container {
 		if (this.fraction > 0) {
 			const rawWidth = this.width_ * this.fraction;
 			const width = this.roundUpToPixel ? Math.ceil(rawWidth) : rawWidth;
-			this.fill.rect(0, 0, width, this.height_);
+			//rtl fills from the reading-start edge, which is the right one, rather than always
+			//growing from x=0 the way a ltr bar (health, mana, a loading bar) reads naturally
+			const x = t.direction === 'rtl' ? this.width_ - width : 0;
+			this.fill.rect(x, 0, width, this.height_);
 			//an explicit colour tints art the same way it recolours a flat fill; an
 			//untinted texture is left to its own colours when none was given
 			this.fill.fill(

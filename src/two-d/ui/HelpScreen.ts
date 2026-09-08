@@ -50,7 +50,10 @@ export class HelpScreen extends Container {
 		this.topics = options.topics;
 
 		const listWidth = options.listWidth ?? Math.floor(options.width / 3);
-		const bodyLeft = listWidth + theme().spacing;
+		const bodyWidth = options.width - listWidth - theme().spacing;
+		//rtl mirrors which pane sits on which side - the topic list stays reading-start,
+		//which is the right edge in rtl, with the body filling the reading-end side
+		const rtl = theme().direction === 'rtl';
 
 		this.list = new ListView({
 			width: listWidth,
@@ -59,10 +62,11 @@ export class HelpScreen extends Container {
 			onHighlight: (_item, index) => this.showBody(index),
 			onSelect: (_item, index) => this.showBody(index),
 		});
+		this.list.x = rtl ? options.width - listWidth : 0;
 		this.addChild(this.list);
 
-		this.body = new Label({ wrapWidth: options.width - bodyLeft });
-		this.body.x = bodyLeft;
+		this.body = new Label({ wrapWidth: bodyWidth });
+		this.body.x = rtl ? 0 : listWidth + theme().spacing;
 		this.addChild(this.body);
 
 		if (this.topics.length > 0) this.showBody(this.list.selectedIndex);

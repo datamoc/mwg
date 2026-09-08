@@ -1,3 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>ROADMAP.md progress</title>
+<style>
+	html, body { margin: 0; padding: 0; background: #14161c; width: 100%; height: 100%; overflow: hidden; }
+	canvas { display: block; }
+	#mwg-roadmap-app { display: flex; width: 100%; height: 100%; font-family: -apple-system, Segoe UI, sans-serif; }
+	#mwg-roadmap-canvas-wrap { width: 520px; height: 100%; flex: none; }
+	#mwg-roadmap-panel { flex: 1; min-width: 0; height: 100%; overflow-y: auto; background: #1c1f27; color: #ddd; box-sizing: border-box; padding: 12px 16px; }
+	.mwg-rp-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; }
+	.mwg-rp-search { flex: 1; min-width: 160px; background: #14161c; color: #eee; border: 1px solid #444; border-radius: 4px; padding: 4px 8px; }
+	.mwg-rp-check { display: flex; align-items: center; gap: 4px; font-size: 13px; white-space: nowrap; }
+	.mwg-rp-select-wrap { font-size: 13px; display: flex; align-items: center; gap: 4px; }
+	.mwg-rp-select-wrap select, .mwg-rp-row-controls select { background: #14161c; color: #eee; border: 1px solid #444; border-radius: 4px; padding: 2px 4px; }
+	.mwg-rp-summary { font-size: 13px; color: #f78c6c; margin-bottom: 8px; }
+	.mwg-rp-list { display: flex; flex-direction: column; gap: 6px; }
+	.mwg-rp-row { background: #23273080; border: 1px solid #333844; border-radius: 6px; padding: 8px 10px; }
+	.mwg-rp-row-done { opacity: 0.55; }
+	.mwg-rp-row-head { font-size: 13px; color: #ffd166; margin-bottom: 6px; }
+	.mwg-rp-row-text { color: #ddd; font-weight: normal; }
+	.mwg-rp-row-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+	.mwg-rp-assignee-input { background: #14161c; color: #eee; border: 1px solid #444; border-radius: 4px; padding: 2px 6px; width: 120px; }
+	.mwg-rp-io { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+	.mwg-rp-io button { align-self: flex-start; background: #118ab2; color: #fff; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+	.mwg-rp-io-area { width: 100%; box-sizing: border-box; height: 160px; background: #14161c; color: #ddd; border: 1px solid #444; font-family: monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+<!-- Standalone mwg build: global window.mw_games build without a bundler.
+     When served via HTTP, fetch('../ROADMAP.md') is loaded live.
+     When opened directly via file://, run 'npm run roadmap:progress -- --embed'
+     to inline the markdown inside the script tag below.
+     The right-hand panel (#mwg-roadmap-panel) is local item-management triage: search,
+     "only open items", priority/status/assignee - all kept in this browser's localStorage,
+     never written back into ROADMAP.md itself (see CLAUDE.md's roadmap process). -->
+<div id="mwg-roadmap-app">
+<div id="mwg-roadmap-canvas-wrap"></div>
+<div id="mwg-roadmap-panel"></div>
+</div>
+<script src="../dist/mw_games.global.js"></script>
+<script id="roadmap-data" type="text/plain">
 # Roadmap
 
 Each module ships in the order below - later ones build on the modules before them. Order
@@ -2624,3 +2667,8 @@ rather than someone else's build.
      `HelpScreen`'s fix could not get a unit test the same way - like `ListView` itself, it
      constructs real Pixi `Text` and has no test today, since measuring it needs a canvas
      this headless suite has none of - verified by type-check and code review instead
+
+</script>
+<script src="./roadmapProgress.js"></script>
+</body>
+</html>

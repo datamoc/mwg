@@ -1,6 +1,6 @@
 {
   "name": "@datamoc/mw_games",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
   "license": "MPL-2.0",
   "repository": {
@@ -66,6 +66,10 @@
     "./assets/paths": {
       "types": "./dist/assets/paths.d.ts",
       "import": "./dist/assets/paths.js"
+    },
+    "./assets/binary": {
+      "types": "./dist/assets/binary.d.ts",
+      "import": "./dist/assets/binary.js"
     },
     "./audio": {
       "types": "./dist/audio/index.d.ts",
@@ -186,7 +190,9 @@
     "cap:open:ios": "npm run cap:cli -- open ios",
     "desktop:build": "npm run mobile:build && dotnet build desktop/MwgDesktopHost",
     "desktop:run": "npm run mobile:build && dotnet run --project desktop/MwgDesktopHost",
-    "multiplayer:server": "node tools/multiplayer-server.mjs"
+    "multiplayer:server": "node tools/multiplayer-server.mjs",
+    "roadmap:progress": "node tools/roadmap-progress.mjs",
+    "roadmap:browser": "node tools/roadmap-progress.mjs --browser"
   },
   "dependencies": {
     "pixi.js": "^8.20.1",

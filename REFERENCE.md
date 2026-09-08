@@ -202,15 +202,22 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
 The `file://` story: a compiled build resolves paths through a `data:` URI map; dev mode
 serves them normally. Load once per scene; everything after is synchronous.
 
-Split in two: `assets/paths.ts` resolves paths and needs no renderer, `assets/loader.ts`
-fetches and decodes through Pixi. The `assets` barrel exposes both; a game rendering through
-something else imports `@datamoc/mw_games/assets/paths` and pays nothing for Pixi, which is
-how `3d` and `audio` reach the compiled asset map without it.
+Split by renderer specificity: `assets/paths.ts` resolves paths and needs no renderer,
+`assets/binary.ts` caches raw bytes just as renderer-free, `assets/loader.ts` fetches and
+decodes *textures* through Pixi. The `assets` barrel exposes all three; a game rendering
+through something else imports `@datamoc/mw_games/assets/paths` or
+`@datamoc/mw_games/assets/binary` and pays nothing for Pixi, which is how `3d` and `audio`
+reach the compiled asset map without it.
 
 - `setBase`/`isCompiled`/`paths`/`has`/`resolve` - dev-vs-compiled path resolution, renderer-free
   (also its own entry point, `@datamoc/mw_games/assets/paths`).
 - `load`/`texture`/`get`/`isLoaded`/`release` - load assets by path, read them back
   synchronously, and free GPU memory once a zone is no longer needed.
+- `loadBinary`/`getBinary`/`isBinaryLoaded`/`releaseBinary` - the renderer-free counterpart
+  to `load`/`texture`/.../`release`, caching raw `ArrayBuffer`s instead of Pixi textures
+  (also its own entry point, `@datamoc/mw_games/assets/binary`); `3d/models`' `Vox.parseVox`
+  is the direct consumer, taking bytes this now fetches and caches instead of a game doing
+  it by hand.
 - `AssetStream`/`AssetBundle` - preloads likely-next bundles with LRU eviction under a
   byte budget, for progressive loading between scenes.
 - `fetchWithByteProgress`/`ByteProgress`/`OnByteProgress` - real cumulative byte-progress
@@ -364,6 +371,13 @@ the dungeon-crawl half of the capability spec.
 - `rollRoster` - a variant-spawn/content-roll API: weighted regular entries, rare additions,
   per-entry alternative swaps, and a shuffle, in that order; every roll (including an
   explicitly disabled rare entry's non-roll) is traced for parity tests.
+- `candidateCells`/`cellsNear`/`selectDistinctCells` - deterministic content placement over a
+  `Level`: `candidateCells` filters by terrain kind, occupancy and an optional region;
+  `cellsNear` walks outward by radius for a cluster anchor; `selectDistinctCells` shuffles and
+  slices a de-duplicated pool, bounded to however many candidates exist rather than throwing.
+  Composes for neighbouring-item clusters, scattered decorations, and single room/branch
+  rewards; nothing is placed until the caller commits, and the returned trace is plain
+  JSON-safe data for `DungeonArtifacts.content` or a save file.
 - `compareDungeonArtifacts`/`checkDeterminism` - a dungeon parity/test harness: diffs a
   seeded run's room graph, retries, terrain, features and content rolls against a reference
   or golden fixture, tagging every mismatch `'graph'` or `'paint'`; `checkDeterminism` repeats
@@ -477,6 +491,13 @@ this module.
 - `Character3D` - moves an imported mesh or a camera-facing billboard sprite through
   continuous world coordinates; `playAnimation` plays a clip an imported model carries.
 - `parseVox`/`createVoxModel3D` - MagicaVoxel `.vox` import, batched by colour.
+- `loadModel3D`/`loadModelContainer3D`/`isModelContainerLoaded`/`releaseModelContainer`
+  (`@datamoc/mw_games/3d/models`, kept out of the main `3d` barrel so a scene that never
+  imports a model pays nothing for the loader) - glTF/GLB import. `loadModel3D` imports
+  straight into the scene, for one copy; `loadModelContainer3D` fetches and parses a source
+  once, caches the `AssetContainer`, and a game calls `instantiateModelsToScene()` on it for
+  each independent, unaliased copy it wants placed - Babylon's own answer to "load once,
+  place many" without a second network fetch.
 - `createHeightmapTerrain3D` - a continuous displaced-mesh terrain from a greyscale
   heightmap image, alongside `createTileGrid3D`'s stepped floors.
 - `buildHeightIndex`/`cellAt`/`heightAt`/`resolveCapsuleAgainstGrid` - horizontal collision
@@ -541,7 +562,14 @@ Message tables, plurals, interpolation, and direction - pure logic, no Pixi depe
   direction `ui`'s `Theme.direction` reads from; `reset` clears both back to unset.
 - `t`/`MessageParams` - resolves a key, selecting a plural form via `Intl.PluralRules` and
   interpolating `{token}`s; falls back to the base language, then to the raw key.
-- `typographic` - locale-aware curly-apostrophe substitution (French/Italian/Dutch elisions).
+- `typographic` - locale-aware curly-apostrophe substitution (French/Italian/Dutch elisions);
+  for French, also a narrow no-break space before `; ! ? :` and around `« »`, and a plain
+  no-break space between a numbering word and its number ("Chapitre 3"); for German, a
+  no-break space between a number and its unit ("5 kg") and after a small set of
+  abbreviations ("Nr. 3", "Dr. Müller").
+- `nonBreakingUnit` - joins a value and a game-defined unit ("pièces d'or", "points de vie")
+  with whichever no-break space French/German typography calls for; the unit's own text is
+  always the game's vocabulary, never MWG's.
 - `has` - whether a key resolves to something real, in either language.
 - `parseFTL`/`FluentOptions` - parses Project Fluent `.ftl` message resources into the same
   `Catalog`/`t()` surface, with variables, exact and plural variants.
@@ -563,3 +591,16 @@ Message tables, plurals, interpolation, and direction - pure logic, no Pixi depe
   `other` branch within one catalog. Deliberately not a parameter schema validator - a
   `SemanticMessage<TType, TParams>`'s own generics already give a game compile-time
   parameter safety, which is the primary mechanism the source document calls for.
+- `messageText`/`levenshteinDistance`/`findSimilarMessages` - content-management over a
+  catalog's actual message text rather than only its key shape: `messageText` reduces any
+  `MessageValue` to plain comparable text, `levenshteinDistance` is the classic edit-distance
+  primitive, and `findSimilarMessages` surfaces near-duplicate messages worth merging by
+  similarity threshold, most-similar first.
+- `catalogUsage`/`catalogCompleteness`/`pluralFormCoverage` - catalog statistics:
+  `catalogUsage` compares a catalog's keys against a caller-supplied referenced-keys list
+  (mwg has no view into a game's own source) for used/unused counts; `catalogCompleteness`
+  is a 0-1 translated fraction built on `diffCatalogKeys`; `pluralFormCoverage` tallies which
+  CLDR plural categories a catalog's plural-form messages actually define.
+- `mergeCatalogKeys` - drops a merged key from one catalog, keeping the surviving key's text
+  untouched; rewriting call sites that used the merged key stays the caller's own job, the
+  same boundary `catalogUsage`'s `referencedKeys` already draws.

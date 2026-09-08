@@ -117,12 +117,22 @@ export class IconGrid extends Container {
 	private readonly themeListener = () => {
 		const t = theme();
 		this.items.forEach((item, i) => {
+			const cell = this.cells[i];
+			if (!cell) return;
+			cell.x = this.columnX(i % this.columns);
+
 			if ((item.quantity ?? 1) <= 1) return;
-			const badge = this.cells[i]?.children.find((child): child is Label => child instanceof Label);
+			const badge = cell.children.find((child): child is Label => child instanceof Label);
 			badge?.setColor(t.color.textHighlight);
 		});
 		this.refresh();
 	};
+
+	/** a column's x, mirrored under `theme().direction === 'rtl'` so column 0 sits at the reading-start edge */
+	private columnX(col: number): number {
+		const rtl = theme().direction === 'rtl';
+		return (rtl ? this.columns - 1 - col : col) * this.cellSize;
+	}
 
 	constructor(options: IconGridOptions) {
 		super();
@@ -202,7 +212,7 @@ export class IconGrid extends Container {
 			const col = i % this.columns;
 
 			const cell = new Container();
-			cell.x = col * this.cellSize;
+			cell.x = this.columnX(col);
 			cell.y = row * this.cellSize;
 			cell.eventMode = 'static';
 			cell.cursor = item.disabled ? 'default' : 'pointer';
@@ -370,9 +380,9 @@ export class IconGrid extends Container {
 			case 'down':
 				return this.move(0, 1);
 			case 'left':
-				return this.move(-1, 0);
+				return this.move(theme().direction === 'rtl' ? 1 : -1, 0);
 			case 'right':
-				return this.move(1, 0);
+				return this.move(theme().direction === 'rtl' ? -1 : 1, 0);
 			case 'confirm':
 				return this.confirm();
 			case 'cancel':
@@ -387,7 +397,7 @@ export class IconGrid extends Container {
 	/** the pixel rect a cell index occupies within `cellsLayer` */
 	private cellRect(index: number): { x: number; y: number } {
 		return {
-			x: (index % this.columns) * this.cellSize,
+			x: this.columnX(index % this.columns),
 			y: Math.floor(index / this.columns) * this.cellSize,
 		};
 	}

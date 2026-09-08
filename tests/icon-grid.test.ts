@@ -233,3 +233,58 @@ test('destroying a grid unsubscribes it - a later theme change touches nothing d
 	assert.doesNotThrow(() => setTheme({ spacing: 5 }));
 	setTheme(defaultTheme);
 });
+
+// ------------------------------------------------------------------- rtl mirroring
+
+function cellX(grid: IconGrid, index: number): number {
+	return (grid as unknown as { cells: Container[] }).cells[index].x;
+}
+
+test('ltr lays column 0 at the left edge, columns increasing rightward', () => {
+	const grid = new IconGrid({ width: 90, height: 30, columns: 3, cellSize: 30, items: items(3) });
+	assert.equal(cellX(grid, 0), 0);
+	assert.equal(cellX(grid, 1), 30);
+	assert.equal(cellX(grid, 2), 60);
+});
+
+test('rtl mirrors column layout: column 0 sits at the right edge', () => {
+	try {
+		setTheme({ direction: 'rtl' });
+		const grid = new IconGrid({ width: 90, height: 30, columns: 3, cellSize: 30, items: items(3) });
+		assert.equal(cellX(grid, 0), 60);
+		assert.equal(cellX(grid, 1), 30);
+		assert.equal(cellX(grid, 2), 0);
+	} finally {
+		setTheme(defaultTheme);
+	}
+});
+
+test('rtl flips which physical action moves the highlight visually left vs. right', () => {
+	try {
+		setTheme({ direction: 'rtl' });
+		const grid = new IconGrid({ width: 90, height: 30, columns: 3, cellSize: 30, items: items(3) });
+
+		assert.equal(grid.selectedIndex, 0);
+		grid.handleAction('left'); //visually moves toward the reading-start edge (the right)
+		assert.equal(grid.selectedIndex, 1);
+		grid.handleAction('right');
+		assert.equal(grid.selectedIndex, 0);
+	} finally {
+		setTheme(defaultTheme);
+	}
+});
+
+test('a later theme change repositions existing cells without rebuilding items', () => {
+	const grid = new IconGrid({ width: 90, height: 30, columns: 3, cellSize: 30, items: items(3) });
+	assert.equal(cellX(grid, 0), 0);
+
+	try {
+		setTheme({ direction: 'rtl' });
+		assert.equal(cellX(grid, 0), 60);
+		assert.equal(cellX(grid, 2), 0);
+	} finally {
+		setTheme(defaultTheme);
+	}
+
+	assert.equal(cellX(grid, 0), 0, 'flips back once the theme reverts to ltr');
+});

@@ -1,7 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { reset, setBase, setActive, t, has, direction, locale, typographic, createCatalogFormatter, formatNumber, formatDate, formatList, diffCatalogKeys, validateCatalog, type SemanticMessage, type Catalog } from '../src/i18n/index.ts';
+import { reset, setBase, setActive, t, has, direction, locale, typographic, nonBreakingUnit, createCatalogFormatter, formatNumber, formatDate, formatList, diffCatalogKeys, validateCatalog, type SemanticMessage, type Catalog } from '../src/i18n/index.ts';
+
+const THIN_NBSP = ' ';
+const NBSP = ' ';
 
 test('active language wins over base when both have the key', () => {
 	setBase({ locale: 'en', direction: 'ltr', messages: { greeting: 'Hello' } });
@@ -66,6 +69,56 @@ test('direction() and locale() fall back from active to base, and default when n
 	reset();
 });
 
+test('French: a narrow no-break space goes before ; ! ?, whether or not one was already there', () => {
+	assert.equal(typographic('Vraiment ?', 'fr'), `Vraiment${THIN_NBSP}?`);
+	assert.equal(typographic('Attention !', 'fr'), `Attention${THIN_NBSP}!`);
+	assert.equal(typographic('Un choix ; un seul', 'fr'), `Un choix${THIN_NBSP}; un seul`);
+	assert.equal(typographic('Vraiment?', 'fr'), `Vraiment${THIN_NBSP}?`, 'inserted even with no space at all');
+});
+
+test('French: a narrow no-break space goes before a colon after a letter, not after a digit', () => {
+	assert.equal(typographic('Attention : danger', 'fr'), `Attention${THIN_NBSP}: danger`);
+	assert.equal(typographic('12:30', 'fr'), '12:30', 'a clock time is left alone');
+});
+
+test('French: a narrow no-break space sits inside French guillemets', () => {
+	assert.equal(typographic('«Bonjour»', 'fr'), `«${THIN_NBSP}Bonjour${THIN_NBSP}»`);
+	assert.equal(typographic('« Bonjour »', 'fr'), `«${THIN_NBSP}Bonjour${THIN_NBSP}»`, 'an ordinary space is upgraded, not doubled');
+});
+
+test('French: an ordinary no-break space sits between a numbering word and its number', () => {
+	assert.equal(typographic('Chapitre 3', 'fr'), `Chapitre${NBSP}3`);
+	assert.equal(typographic('Niveau 12 termine', 'fr'), `Niveau${NBSP}12 termine`);
+	assert.equal(typographic('Le chapitre suivant', 'fr'), 'Le chapitre suivant', 'lowercase mid-sentence is left alone');
+});
+
+test('French typography is idempotent: running it twice changes nothing further', () => {
+	const once = typographic('Vraiment ? «Chapitre 3» !', 'fr');
+	assert.equal(typographic(once, 'fr'), once);
+});
+
+test('German: a no-break space sits between a number and its unit', () => {
+	assert.equal(typographic('5 kg', 'de'), `5${NBSP}kg`);
+	assert.equal(typographic('100 %', 'de'), `100${NBSP}%`);
+	assert.equal(typographic('5kg', 'de'), '5kg', 'no space to begin with is left alone');
+});
+
+test('German: a no-break space follows a small set of abbreviations', () => {
+	assert.equal(typographic('Nr. 3', 'de'), `Nr.${NBSP}3`);
+	assert.equal(typographic('Dr. Müller', 'de'), `Dr.${NBSP}Müller`);
+});
+
+test('other locales are left untouched by the French/German spacing rules', () => {
+	assert.equal(typographic('Really ? Chapter 3', 'en'), 'Really ? Chapter 3');
+	assert.equal(typographic('5 kg', 'es'), '5 kg');
+});
+
+test('nonBreakingUnit picks the space by locale, leaving the unit itself untouched', () => {
+	assert.equal(nonBreakingUnit(12, "pièces d'or", 'fr'), `12${THIN_NBSP}pièces d'or`);
+	assert.equal(nonBreakingUnit(5, 'kg', 'de'), `5${NBSP}kg`);
+	assert.equal(nonBreakingUnit(3, 'gold', 'en'), '3 gold');
+});
+
 test('typographic apostrophes apply to French, Italian, and Dutch elisions', () => {
 	assert.equal(typographic("aujourd'hui dell'anno z'n", 'fr-FR'), 'aujourd’hui dell’anno z’n');
 	assert.equal(typographic("today's text", 'en'), "today's text");
@@ -73,7 +126,7 @@ test('typographic apostrophes apply to French, Italian, and Dutch elisions', () 
 
 test('translation applies typography after interpolation and allows opting out', () => {
 	setBase({ locale: 'fr', direction: 'ltr', messages: { greeting: "Bonjour, {name}! Aujourd'hui." } });
-	assert.equal(t('greeting', { name: "l'ami" }), 'Bonjour, l’ami! Aujourd’hui.');
+	assert.equal(t('greeting', { name: "l'ami" }), `Bonjour, l’ami${THIN_NBSP}! Aujourd’hui.`);
 	setActive({ locale: 'fr', direction: 'ltr', typography: false, messages: { greeting: "Salut, {name}!" } });
 	assert.equal(t('greeting', { name: "l'ami" }), "Salut, l'ami!");
 	reset();

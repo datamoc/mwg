@@ -52,3 +52,6 @@ export { TriggerTracker } from './TriggerTracker.ts';
 
 export { MultiStageAbility } from './MultiStageAbility.ts';
 export type { AbilityStage } from './MultiStageAbility.ts';
+
+export { candidateCells, cellsNear, selectDistinctCells } from './Placement.ts';
+export type { PlacementFilter, PlacementResult, PlacementTraceEntry } from './Placement.ts';

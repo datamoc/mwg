@@ -7,6 +7,47 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-09-08
+
+A roadmap-management pass alongside three real capability gaps closed: deterministic dungeon
+content placement, i18n catalog content tooling, and 2D/3D asset loading unified where it
+correctly can be.
+
+### Added
+- `tools/roadmap-progress.mjs`/`roadmapProgress.js` gained an item-management panel: search,
+  "only open items", and local (never committed to `ROADMAP.md`) priority/status/assignee
+  triage per item, with export/import.
+- `roguelike.candidateCells`/`cellsNear`/`selectDistinctCells` - deterministic content
+  placement over a `Level`: terrain/occupancy/region filters, radius-based clustering, and
+  bounded distinct-cell selection with a JSON-safe roll trace, composing for neighbouring
+  items, scattered decorations, and single room/branch rewards.
+- `i18n.messageText`/`levenshteinDistance`/`findSimilarMessages` - near-duplicate catalog
+  message detection by edit distance.
+- `i18n.catalogUsage`/`catalogCompleteness`/`pluralFormCoverage` - catalog statistics: used
+  vs. unused keys against a caller-supplied reference list, translated-fraction completion,
+  and CLDR plural-category coverage.
+- `i18n.mergeCatalogKeys` - drops a merged key from a catalog, keeping the surviving key's
+  text; rewriting call sites stays the caller's own job.
+- `assets.loadBinary`/`getBinary`/`isBinaryLoaded`/`releaseBinary` (also its own
+  `@datamoc/mw_games/assets/binary` entry point) - a renderer-free raw-byte cache, the
+  direct fix for `three-d`'s `Vox.parseVox` needing a game to fetch bytes itself.
+- `3d/models`' `loadModelContainer3D`/`isModelContainerLoaded`/`releaseModelContainer` -
+  loads a glTF/GLB source once, caching the Babylon `AssetContainer`; a game calls the
+  container's own `instantiateModelsToScene()` for each independent, unaliased copy it
+  wants placed, rather than importing (and re-fetching) the same model every time.
+
+### Fixed
+- `two-d/ui`'s right-to-left mirroring was incomplete: `Bar`'s fill always grew from the
+  left, `IconGrid` always laid its columns left-to-right and never swapped what the
+  `'left'`/`'right'` actions meant, and `HelpScreen` always put its topic list on the left.
+  All three now mirror under `theme().direction === 'rtl'`, matching `Window`/`ListView`/
+  `Button`/`Label`, which already did.
+- `ROADMAP.md` had two items both numbered 161, a genuine duplicate; the misplaced one was
+  renumbered and moved to the true end of the list before being implemented.
+- `tools/build-webpage-docs.mjs`'s nested `npm install` could fail when the caller's own
+  global `~/.npmrc` set an `allow-scripts` value npm rejects for a project-scoped install;
+  that env var is now explicitly cleared for the nested call.
+
 ## [0.4.1] - 2026-09-07
 
 A study of `mwg-pixel-dungeon` (a reference game, not in this repo) recommended closing the

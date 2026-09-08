@@ -19,7 +19,12 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const docsDir = join(root, 'tools', 'docs');
 
 console.log('installing tools/docs dependencies (isolated typescript for TypeDoc)...');
-execFileSync('npm', ['install', '--no-audit', '--no-fund'], { cwd: docsDir, stdio: 'inherit', shell: true });
+// `npm run` forwards the caller's own npm config as npm_config_* env vars, including a
+// global `allow-scripts` value from the developer's own ~/.npmrc (set for unrelated tools);
+// npm refuses that value for this nested project's own install ("not allowed in
+// project-scoped installs"), so it has to be cleared here rather than assumed absent.
+const { npm_config_allow_scripts: _unused, ...envWithoutAllowScripts } = process.env;
+execFileSync('npm', ['install', '--no-audit', '--no-fund'], { cwd: docsDir, stdio: 'inherit', shell: true, env: envWithoutAllowScripts });
 
 console.log('generating API reference...');
 execFileSync('node', ['node_modules/typedoc/bin/typedoc', '--options', 'typedoc.json'], {

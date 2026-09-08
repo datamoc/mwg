@@ -97,3 +97,41 @@ test('a fillTexture still respects the fraction and rounding, same as the flat-c
 	bar.setValue(1, 3);
 	assert.equal(fillWidth(bar), 34);
 });
+
+// ------------------------------------------------------------------- rtl mirroring
+
+function fillX(bar: Bar): number {
+	return (bar as unknown as { fill: Graphics }).fill.getLocalBounds().minX;
+}
+
+test('ltr fills from the left edge, growing rightward', () => {
+	const bar = new Bar({ width: 100, height: 10 });
+	bar.setValue(0.4);
+	assert.equal(fillX(bar), 0);
+	assert.ok(Math.abs(fillWidth(bar) - 40) < 1e-9);
+});
+
+test('rtl fills from the right edge, growing leftward, same total width as ltr', () => {
+	setTheme({ direction: 'rtl' });
+	const bar = new Bar({ width: 100, height: 10 });
+	bar.setValue(0.4);
+
+	//asserted before resetting the theme: Bar redraws on every theme change (correctly - a
+	//live rtl toggle should restyle it), so resetting first would flip the fill back to ltr
+	assert.ok(Math.abs(fillWidth(bar) - 40) < 1e-9);
+	assert.ok(Math.abs(fillX(bar) - 60) < 1e-9); // 100 - 40
+
+	bar.destroy();
+	setTheme({ direction: 'ltr' });
+});
+
+test('rtl still reflects a later setValue call, not just the constructor-time theme', () => {
+	setTheme({ direction: 'rtl' });
+	const bar = new Bar({ width: 200, height: 10 });
+	bar.setValue(0.25);
+
+	assert.ok(Math.abs(fillX(bar) - 150) < 1e-9); // 200 - 50
+
+	bar.destroy();
+	setTheme({ direction: 'ltr' });
+});

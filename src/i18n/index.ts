@@ -128,14 +128,107 @@ export function t(key: string, params?: MessageParams): string {
 	return direction() === 'rtl' ? `${RLI}${resolved}${PDI}` : resolved;
 }
 
+/** espace fine insécable - narrow no-break space, U+202F */
+const THIN_NBSP = ' ';
+/** espace insécable - ordinary no-break space, U+00A0 */
+const NBSP = ' ';
+
+/** words a French document commonly numbers - generic document/narrative structure, not any
+ * one game's own vocabulary, the same way `t()`'s plural categories are language structure
+ * rather than content */
+const FR_NUMBERING_WORDS = [
+	'Chapitre', 'Tome', 'Livre', 'Partie', 'Section', 'Article', 'Acte', 'Scène',
+	'Niveau', 'Manche', 'Round', 'Étape', 'Volume', 'Figure', 'Page', 'Numéro',
+];
+
+/** German abbreviations that keep a no-break space before whatever follows them (Duden K 116) */
+const DE_ABBREVIATIONS = ['Nr', 'Dr', 'Bd', 'Kap', 'Art', 'Abb', 'Str', 'Tel'];
+/** units a no-break space keeps glued to the number in front of them (Duden K 117) */
+const DE_UNITS = ['kg', 'g', 'mg', 't', 'km', 'm', 'cm', 'mm', 'l', 'ml', 'h', 'min', 's', '%', '°C', '€'];
+
 /**
- * Replaces apostrophes between letters for locales whose ordinary elisions use a curly
- * apostrophe. English and other locales are left untouched, as a straight apostrophe can
- * be intentional punctuation there.
+ * Locale-specific punctuation/spacing conventions, applied on top of interpolation - the
+ * things a translator would type by hand if this project asked every catalog to carry
+ * literal U+202F/U+00A0 characters, which no one would ever remember to do consistently.
+ *
+ * French (Imprimerie nationale's rules, `Lexique des règles typographiques`): a narrow
+ * no-break space before `; : ! ?` and around `« »`, and an ordinary no-break space between a
+ * numbering word and the number following it ("Chapitre 3"). Also replaces apostrophes
+ * between letters with a curly one, for French, Italian, and Dutch elisions - English and
+ * other locales are left untouched, as a straight apostrophe can be intentional punctuation
+ * there.
+ *
+ * German (Duden K 116/117): a no-break space between a number and its unit ("5 kg"), and
+ * after a small set of abbreviations before whatever follows ("Nr. 3", "Dr. Müller").
+ *
+ * Deliberately not attempted here: a *game's own* units ("pièces d'or", "points de vie") -
+ * `mwg` cannot know a game's vocabulary any more than it knows its item names, so gluing a
+ * value to a game-specific unit is `nonBreakingUnit`'s job, not this function's.
  */
 export function typographic(text: string, language = locale()): string {
-	if (!/^(fr|it|nl)(?:-|$)/i.test(language)) return text;
-	return text.replace(/([\p{L}])'(?=[\p{L}])/gu, '$1’');
+	const lang = language.split('-')[0].toLowerCase();
+	let result = text;
+
+	if (lang === 'fr' || lang === 'it' || lang === 'nl') {
+		result = result.replace(/([\p{L}])'(?=[\p{L}])/gu, '$1’');
+	}
+
+	if (lang === 'fr') result = frenchSpacing(result);
+	if (lang === 'de') result = germanSpacing(result);
+
+	return result;
+}
+
+/** joins a value and its unit with whatever space French/German typography requires to keep
+ * them from breaking across a line - the unit's own text ("pièces d'or", "points de vie",
+ * "kg") is always the game's own vocabulary; this only picks the space that glues it to the
+ * value in front of it, the same division `SemanticMessage`/`EntityTextResolver` already draw
+ * between mechanism and content.
+ *
+ * @example
+ * ```ts
+ * import { nonBreakingUnit } from '@datamoc/mw_games/i18n';
+ *
+ * console.log(nonBreakingUnit(12, 'pièces d\'or', 'fr')); // '12 pièces d\'or'
+ * console.log(nonBreakingUnit(5, 'kg', 'de')); // '5 kg'
+ * console.log(nonBreakingUnit(3, 'gold', 'en')); // '3 gold'
+ * ```
+ */
+export function nonBreakingUnit(value: string | number, unit: string, language = locale()): string {
+	const lang = language.split('-')[0].toLowerCase();
+	const space = lang === 'fr' ? THIN_NBSP : lang === 'de' ? NBSP : ' ';
+	return `${value}${space}${unit}`;
+}
+
+/** idempotent on purpose: `\s` already matches U+202F/U+00A0, so re-running this on
+ * already-spaced text leaves it unchanged rather than stacking a second space */
+function frenchSpacing(text: string): string {
+	let result = text
+		.replace(/\s?([;!?])/g, `${THIN_NBSP}$1`)
+		.replace(/«\s?/g, `«${THIN_NBSP}`)
+		.replace(/\s?»/g, `${THIN_NBSP}»`);
+
+	// `:` is excluded from clock times ("12:30") and URLs ("https://") by requiring a letter,
+	// not a digit, immediately before it - a heuristic good enough for translated dialogue/UI
+	// text, not a general-purpose text parser
+	result = result.replace(/(\p{L})\s?:/gu, `$1${THIN_NBSP}:`);
+
+	const numbering = new RegExp(`\\b(${FR_NUMBERING_WORDS.join('|')})\\s+(?=\\d)`, 'g');
+	return result.replace(numbering, `$1${NBSP}`);
+}
+
+function germanSpacing(text: string): string {
+	// `\b` after a symbol like `%`/`€` never matches (neither side of that boundary is a "word"
+	// character), so the next-character check is spelled out directly instead: not a letter or
+	// digit, which also rules out matching "kg" as a false-positive prefix of a longer word
+	const units = new RegExp(`(\\d)\\s+(?=(?:${DE_UNITS.map(escapeRegExp).join('|')})(?![\\p{L}\\p{N}]))`, 'gu');
+	const abbreviations = new RegExp(`\\b(${DE_ABBREVIATIONS.join('|')})\\.\\s+`, 'g');
+
+	return text.replace(units, `$1${NBSP}`).replace(abbreviations, `$1.${NBSP}`);
+}
+
+function escapeRegExp(literal: string): string {
+	return literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /** true when `key` resolves to something other than itself, in either language */
@@ -180,3 +273,14 @@ export { formatNumber, formatDate, formatList } from './Format.ts';
 
 export { diffCatalogKeys, validateCatalog } from './Validate.ts';
 export type { CatalogKeyDiff, CatalogIssue } from './Validate.ts';
+
+export {
+	messageText,
+	levenshteinDistance,
+	findSimilarMessages,
+	catalogUsage,
+	catalogCompleteness,
+	pluralFormCoverage,
+	mergeCatalogKeys,
+} from './Content.ts';
+export type { SimilarMessagePair, CatalogUsageStats, PluralCoverage } from './Content.ts';
