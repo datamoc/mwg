@@ -32,7 +32,15 @@ interface Layer {
  * hero.layer('hair')?.lerpTint(0x8b4513, 1); // dye it brown
  * hero.setTexture('weapon', swordTexture); // equip a different sword later
  * console.log(hero.hasLayer('weapon')); // true
+ *
+ * hero.alpha = 0.5; // the whole assembled character turns translucent, every layer at once
  * ```
+ *
+ * `LayeredSprite` is a plain Pixi `Container`, not itself a `TintedSprite`: its own `alpha`
+ * still fades every layer together, since Pixi composes a container's alpha into each
+ * child's when rendering, the same way it would for any other container of sprites. A
+ * single layer can still be faded on its own through `layer(name)`, which returns the
+ * `TintedSprite` directly.
  */
 export class LayeredSprite extends Container {
 	private layers = new Map<string, Layer>();

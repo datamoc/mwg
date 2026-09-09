@@ -28,10 +28,22 @@ registerColorTransform();
  * rat.lerpTint(0xffffff, 0.8);   // nearly white: just took a hit
  * rat.tint = 0x404060;           // plain multiply: standing in the dark
  * rat.silhouette(0x000000);      // a solid black shape, keeping only the sprite's outline
+ *
+ * const ghost = new TintedSprite({ texture });
+ * ghost.alpha = 0.5;             // translucent: a spectral/ghost-type enemy
+ * ghost.lerpTint(0x8080ff, 0.3); // both compose freely: a pale, faintly-blue-tinted ghost
  * ```
  *
  * Both terms ride in the same batch, so a screen full of tinted sprites is still one draw
  * call. See ColorTransformBatcher for how, and for the caveat about Pixi internals.
+ *
+ * `alpha` (inherited from Pixi's own `Sprite`) composes with both terms for free: this class
+ * only *adds* one vertex attribute (`colorAdd`) onto Pixi's own colour+alpha packing
+ * (`groupColorAlpha`), it never replaces or shadows it, so ordinary translucency - a
+ * see-through ghost, a fade-in/out, a cloaking preview - needs no extra API here. Verified
+ * live, not just by reading the packing code: a `TintedSprite` with `alpha = 0.35` renders
+ * genuinely see-through (the texture behind it shows through), the same as any plain Pixi
+ * `Sprite`.
  */
 export class TintedSprite extends Sprite {
 	private _colorAdd = 0;

@@ -2815,3 +2815,24 @@ rather than someone else's build.
      save shape genuinely varies per game, and this item's own text already named that as the
      open question a concrete look would have to answer; entities built through `buildEntity`
      are the one shape `mwg` itself defines closely enough to save generically.
+
+183. ~~Raised from a reference game (`mwg-pixel-dungeon`) wanting alpha/translucency for a
+     spectral-type enemy sprite and assuming `TintedSprite`/`ColorTransformBatcher` needed a
+     new capability for it.~~ Checked first rather than built blind: `TintedSprite` only *adds*
+     one vertex attribute (`colorAdd`) onto Pixi's own colour+alpha packing
+     (`groupColorAlpha`), never replacing or shadowing it, so plain `sprite.alpha` already
+     composes correctly with both `tint` and `colorAdd` - confirmed live in the reference
+     game, not just by reading the packing code (a `TintedSprite` at `alpha = 0.35` rendered
+     genuinely see-through). No new capability needed; `TintedSprite`'s own doc comment now
+     has a worked alpha/ghost example plus a paragraph stating this explicitly, since a reader
+     had no way to know it without reading the batcher's packing code themselves. Followed
+     with the documentation-completeness survey this item originally left open, over the rest
+     of the render path built on or wrapping `TintedSprite`: `AnimatedSprite` (extends
+     `TintedSprite` directly, so gets the same worked example plus a pointer back), and
+     `LayeredSprite`/`TileMap`/`NinePatch` (each a `Container` wrapping one or more sprites
+     rather than a sprite itself, so each now says explicitly that its own `alpha` still fades
+     everything inside it, since Pixi composes a container's alpha into its children when
+     rendering regardless of whether the container forwards `tint` by hand the way these do).
+     `Camera` turned out not to belong on this list once actually read: it holds no sprite and
+     has no colour concept of its own, only a `Container` used as a positional grouping, so
+     there was nothing there to document.

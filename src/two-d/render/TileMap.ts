@@ -168,6 +168,13 @@ interface Layer {
  * const camera = createCamera();
  * map.cull(camera); // once per frame, switches off chunks the camera cannot see
  * ```
+ *
+ * `TileMap` is a `Container` of layer `Container`s of `TintedSprite` tiles, not a sprite
+ * itself: setting `map.alpha` still fades the whole map, since Pixi composes a container's
+ * alpha into every descendant's when rendering. There is no per-cell alpha alongside
+ * `setCellColor`'s tint/add - a see-through *tile* (as opposed to a translucent creature
+ * standing on one, which is `TintedSprite`'s own case) is not something any reference game
+ * has asked for yet.
  */
 export class TileMap extends Container {
 	readonly widthInTiles: number;

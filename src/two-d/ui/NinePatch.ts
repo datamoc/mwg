@@ -27,6 +27,8 @@ export interface NinePatchOptions {
  * const panel = new NinePatch(panelTexture, { border: 8 });
  * panel.resize(200, 120);
  * console.log(panel.border); // { left: 8, top: 8, right: 8, bottom: 8 }
+ *
+ * panel.alpha = 0.6; // fading the panel needs no extra API, unlike width/height/tint above
  * ```
  */
 export class NinePatch extends Container {
@@ -69,5 +71,7 @@ export class NinePatch extends Container {
 	}
 
 	//width, height and tint are not redeclared: Container already derives its size from the
-	//slice sprite, which is its only child, and its tint reaches the sprite the same way
+	//slice sprite, which is its only child, and its tint reaches the sprite the same way.
+	//alpha needs no such forwarding: Pixi composes a container's own alpha into its child's
+	//when rendering, so it already reaches the slice sprite without NinePatch doing anything.
 }

@@ -47,6 +47,10 @@ export class Animation {
  * Nothing advances on its own: call `update(dt)` from the scene, or add the sprite to a
  * `SpriteGroup`, so that pausing the game pauses the animations with it.
  *
+ * Extends `TintedSprite` directly, so `alpha` composes with `tint`/`colorAdd` the same
+ * way here too - a translucent, animated ghost is `alpha = 0.5` plus whatever tint, no
+ * different from a still one (see `TintedSprite`'s own doc comment).
+ *
  * @example
  * ```ts
  * import { AnimatedSprite, SpriteSheet } from '@datamoc/mw_games/two-d/render';
