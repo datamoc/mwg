@@ -1,7 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildEntity, buildEntities, type EntityTemplateRow, type EntityTemplateCatalog } from '../src/actors/EntityTemplate.ts';
+import {
+	buildEntity,
+	buildEntities,
+	toEntitySaveState,
+	fromEntitySaveState,
+	type EntityTemplateRow,
+	type EntityTemplateCatalog,
+} from '../src/actors/EntityTemplate.ts';
 import { parseCSV } from '../src/core/Csv.ts';
 
 const CATALOG: EntityTemplateCatalog = {
@@ -99,4 +106,32 @@ test('buildEntities maps over every row, the shape a whole file loads as', () =>
 
 	fireling.reactions.check({ hp: 1, maxHp: 10 });
 	assert.deepEqual(fired, ['fireling']);
+});
+
+test('toEntitySaveState/fromEntitySaveState round-trip mutated stats, progression and item', () => {
+	const row: EntityTemplateRow = { id: 'fireling', attack: 10, growth: 'steep', startingItem: 'ember_charm' };
+	const original = buildEntity(row, CATALOG);
+	original.stats.setBase('attack', 12);
+	original.progression?.addExperience(500);
+
+	const saved = toEntitySaveState(original);
+	const restored = fromEntitySaveState(row, CATALOG, saved);
+
+	assert.equal(restored.stats.get('attack'), 12);
+	assert.equal(restored.progression?.level, original.progression?.level);
+	assert.equal(restored.progression?.experience, original.progression?.experience);
+	assert.equal(restored.item?.id, 'ember_charm');
+});
+
+test('toEntitySaveState omits progression and item when the entity has neither', () => {
+	const saved = toEntitySaveState(buildEntity({ id: 'plain', attack: 1 }, {}));
+	assert.equal(saved.progression, undefined);
+	assert.equal(saved.item, undefined);
+});
+
+test('fromEntitySaveState with progression data but no growth column throws', () => {
+	assert.throws(
+		() => fromEntitySaveState({ id: 'plain' }, {}, { stats: { base: {} }, progression: { level: 2, experience: 10 } }),
+		/save data has progression but the row names no growth curve/,
+	);
 });

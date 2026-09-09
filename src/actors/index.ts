@@ -41,5 +41,5 @@ export { AuraField } from './Aura.ts';
 export type { AuraDef, AuraParticipant } from './Aura.ts';
 export { SupportLedger } from './Support.ts';
 export type { SupportLevel, SupportChange, SupportSave } from './Support.ts';
-export { buildEntity, buildEntities } from './EntityTemplate.ts';
-export type { EntityTemplateRow, EntityTemplateCatalog, BuiltEntity } from './EntityTemplate.ts';
+export { buildEntity, buildEntities, toEntitySaveState, fromEntitySaveState } from './EntityTemplate.ts';
+export type { EntityTemplateRow, EntityTemplateCatalog, BuiltEntity, EntitySaveState } from './EntityTemplate.ts';

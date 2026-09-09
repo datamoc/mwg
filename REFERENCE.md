@@ -66,6 +66,15 @@ other `mwg` module and no renderer at all.
 - `SceneStack` - `push`/`pop`/`replace`: suspends the current scene, layers another over or
   instead of it, and resumes with a result once it pops (minigames, pause menus). Generic over
   the scene type and typed against the lifecycle above, so it drives a 3D game just as well.
+- `SceneComponentHost`/`SceneComponent` - composes a scene out of named sections (map logic,
+  encounter logic, UI wiring), each its own module implementing whichever `Scene` lifecycle
+  hooks it needs, instead of one scene class accreting every responsibility. A scene owns one
+  host and forwards `update`/`resize`/`onSuspend`/`onResume`/`destroy` to it - composition, not
+  a base class, so it works the same whether the scene extends `Scene` or `two-d.Scene2D`.
+- `Registry` - a named lookup registered once and read back by name: `register`/`get`/`has`/
+  `list`, throwing on a duplicate or missing name by that name. The dispatch primitive
+  underneath a catalog of factories or handlers (`SceneComponentHost` uses one internally) -
+  a game still imports and registers each entry itself, no auto-discovery.
 - `Logger` - categories, four severity levels, a filter, and a sink tests can capture,
   instead of bare `console.log`/`console.error`.
 Three shapes cover what "an event" means here, kept deliberately distinct rather than folded
@@ -372,6 +381,10 @@ on. This is the *shape* - a game names its own attributes and formulas.
   against a named growth curve, a starting item carrying a named starting affix, and a
   `ReactionTable` already holding a low-HP rule if the row names a threshold. What each named
   growth curve/affix/item actually is stays the game's own `EntityTemplateCatalog`.
+- `toEntitySaveState`/`fromEntitySaveState`/`EntitySaveState` - a `BuiltEntity`'s mutable state
+  (base stat values, level/experience, the carried item) in the same "definitions supplied
+  fresh on load" shape `StatBlock`/`Progression` already draw. `fromEntitySaveState` rebuilds
+  via `buildEntity` from the same row and catalog, then overlays the saved state on top.
 
 ## `roguelike`
 
@@ -467,6 +480,10 @@ the classic top-down RPG half.
 - `QuestLog`/`QuestStage`/`QuestDefinition`/`QuestMarker` - quest stages advanced one at a
   time by `advanceStage`, prerequisites, `markerFor` deriving `'offer'`/`'turnIn'`/`'none'`,
   and a tracked-quest pointer/location.
+- `questsFromRows`/`QuestStageRow` - groups a flat table of stage rows (typically a
+  `core.parseCSV` result, one row per stage sharing a `questId`) into `QuestDefinition`s a
+  `QuestLog` can `define` - a content designer edits a spreadsheet instead of a hand-written
+  `.ts` object literal nesting each quest's stage array.
 - `decodeMarshal`/`encodeMarshal`/`RubySymbol` - Ruby `Marshal` 4.8 binary serialization
   (the container format RPG Maker's own `.rxdata` saves use).
 - `hashDefaultOf`/`withHashDefault` - reads and attaches a Ruby hash's default value, which

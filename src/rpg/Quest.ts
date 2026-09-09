@@ -194,3 +194,103 @@ export class QuestLog {
 		return log;
 	}
 }
+
+/** one row of a flat quest-stage table - typically a `core.parseCSV` result, one row per stage */
+export interface QuestStageRow {
+	questId: string;
+
+	/** prerequisite quest ids; only read off a quest's first row (see `questsFromRows`) */
+	requires?: string[];
+
+	conditionSwitch?: string;
+	conditionEquals?: boolean;
+	conditionVariable?: string;
+	conditionAtLeast?: number;
+
+	counterVariable?: string;
+	counterTarget?: number;
+
+	description?: string;
+	locationMap?: string;
+	locationX?: number;
+	locationY?: number;
+}
+
+/**
+ * Groups a flat table of stage rows into `QuestDefinition`s a `QuestLog` can `define` - the
+ * same relational shape `core.parseCSV` already models for a flat table (`actors.AffixTable`,
+ * `actors.buildEntities`): a content designer edits two spreadsheet columns (which quest,
+ * which stage) instead of a hand-written `.ts` object literal nesting every quest's stage
+ * array. Row order is preserved as stage order within a quest, and first-seen order across
+ * the table as quest order.
+ *
+ * `requires` is only read off a quest's first row - a quest cannot require something
+ * different depending on which of its own stage rows a spreadsheet author happened to fill
+ * it in on, so only the first counts and a later row's `requires` is ignored.
+ *
+ * @example
+ * ```ts
+ * import { parseCSV } from '@datamoc/mw_games/core';
+ * import { questsFromRows, QuestLog, type QuestStageRow } from '@datamoc/mw_games/rpg';
+ *
+ * const csv = `questId,counterVariable,counterTarget,description
+ * rats,ratsKilled,5,Kill 5 rats
+ * rats,,,Report back to the innkeeper`;
+ *
+ * const rows = parseCSV<QuestStageRow>(csv, { columns: { counterTarget: 'number' } });
+ * const quests = questsFromRows(rows);
+ *
+ * const log = new QuestLog();
+ * for (const quest of quests) log.define(quest);
+ * ```
+ */
+export function questsFromRows(rows: readonly QuestStageRow[]): QuestDefinition[] {
+	const order: string[] = [];
+	const byId = new Map<string, QuestDefinition>();
+
+	for (const row of rows) {
+		let quest = byId.get(row.questId);
+		if (!quest) {
+			quest = { id: row.questId, stages: [] };
+			if (row.requires !== undefined) quest.requires = row.requires;
+			byId.set(row.questId, quest);
+			order.push(row.questId);
+		}
+		quest.stages.push(stageFromRow(quest.id, row));
+	}
+
+	return order.map((id) => byId.get(id)!);
+}
+
+function stageFromRow(questId: string, row: QuestStageRow): QuestStage {
+	if (row.conditionSwitch !== undefined && row.conditionVariable !== undefined) {
+		throw new Error(`quest "${questId}": a stage row cannot name both a condition switch and a condition variable`);
+	}
+
+	const stage: QuestStage = {};
+
+	if (row.conditionSwitch !== undefined) {
+		if (row.conditionEquals === undefined) throw new Error(`quest "${questId}": conditionSwitch needs a conditionEquals`);
+		stage.condition = { switch: row.conditionSwitch, equals: row.conditionEquals };
+	} else if (row.conditionVariable !== undefined) {
+		if (row.conditionAtLeast === undefined) throw new Error(`quest "${questId}": conditionVariable needs a conditionAtLeast`);
+		stage.condition = { variable: row.conditionVariable, atLeast: row.conditionAtLeast };
+	}
+
+	if (row.counterVariable !== undefined) {
+		if (row.counterTarget === undefined) throw new Error(`quest "${questId}": counterVariable needs a counterTarget`);
+		stage.counter = { variable: row.counterVariable, target: row.counterTarget };
+	}
+
+	if (row.description !== undefined) stage.description = row.description;
+
+	if (row.locationMap !== undefined || row.locationX !== undefined || row.locationY !== undefined) {
+		if (row.locationX === undefined || row.locationY === undefined) {
+			throw new Error(`quest "${questId}": a stage location needs both locationX and locationY`);
+		}
+		stage.location = { x: row.locationX, y: row.locationY };
+		if (row.locationMap !== undefined) stage.location.map = row.locationMap;
+	}
+
+	return stage;
+}

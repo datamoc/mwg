@@ -75,6 +75,13 @@ export interface BuiltEntity {
 	reactions: ReactionTable<{ hp: number; maxHp: number }>;
 }
 
+/** what a `BuiltEntity` actually needs saved - everything else is the row/catalog, definitions supplied fresh on load */
+export interface EntitySaveState {
+	stats: { base: Stats };
+	progression?: { level: number; experience: number };
+	item?: InventoryItem;
+}
+
 const RESERVED_KEYS = new Set(['id', 'growth', 'level', 'startingAffix', 'startingItem', 'lowHpReaction']);
 
 /**
@@ -91,9 +98,7 @@ export function buildEntity(row: EntityTemplateRow, catalog: EntityTemplateCatal
 
 	let progression: Progression | undefined;
 	if (row.growth !== undefined) {
-		const curve = catalog.growthCurves?.[row.growth];
-		if (!curve) throw new Error(`entity template "${row.id}": unknown growth curve "${row.growth}"`);
-		progression = new Progression(curve, { level: row.level ?? 1 });
+		progression = new Progression(growthCurveFor(row, catalog), { level: row.level ?? 1 });
 	}
 
 	let item: InventoryItem | undefined;
@@ -125,6 +130,67 @@ export function buildEntity(row: EntityTemplateRow, catalog: EntityTemplateCatal
 /** `buildEntity` over every row - the usual shape once a whole file's worth loads at once */
 export function buildEntities(rows: readonly EntityTemplateRow[], catalog: EntityTemplateCatalog = {}, onLowHp?: (entity: BuiltEntity) => void): BuiltEntity[] {
 	return rows.map((row) => buildEntity(row, catalog, onLowHp));
+}
+
+/**
+ * A `BuiltEntity`'s mutable state, in the same "definitions supplied fresh on load" shape
+ * `StatBlock.toJSON`/`Progression.toJSON` already draw: base stat values, level and
+ * experience, and the carried item, never the row or catalog that produced them.
+ *
+ * @example
+ * ```ts
+ * import { buildEntity, toEntitySaveState, fromEntitySaveState, type EntityTemplateCatalog } from '@datamoc/mw_games/actors';
+ *
+ * const catalog: EntityTemplateCatalog = {
+ *   growthCurves: { steep: { maxLevel: 20, experienceFor: (level) => level * level * 10 } },
+ * };
+ *
+ * const row = { id: 'fireling', growth: 'steep', attack: 10 };
+ * const fireling = buildEntity(row, catalog);
+ * fireling.stats.setBase('attack', 12);
+ * fireling.progression?.addExperience(500);
+ *
+ * const saved = toEntitySaveState(fireling); // JSON.stringify this into a save slot
+ * const restored = fromEntitySaveState(row, catalog, saved);
+ * restored.stats.get('attack'); // 12, not the row's original 10
+ * ```
+ */
+export function toEntitySaveState(entity: BuiltEntity): EntitySaveState {
+	const state: EntitySaveState = { stats: entity.stats.toJSON() };
+	if (entity.progression) state.progression = entity.progression.toJSON();
+	if (entity.item) state.item = entity.item;
+	return state;
+}
+
+/**
+ * Rebuilds a `BuiltEntity` the same way `buildEntity` does - same row, same catalog, so the
+ * reactions and item lookups stay validated the same way - then overlays the saved base
+ * stats, level/experience, and carried item on top of the fresh one.
+ */
+export function fromEntitySaveState(
+	row: EntityTemplateRow,
+	catalog: EntityTemplateCatalog,
+	data: EntitySaveState,
+	onLowHp?: (entity: BuiltEntity) => void,
+): BuiltEntity {
+	const entity = buildEntity(row, catalog, onLowHp);
+	entity.stats = StatBlock.fromJSON({ base: statsFrom(row) }, data.stats);
+
+	if (data.progression !== undefined) {
+		if (!entity.progression) {
+			throw new Error(`entity template "${row.id}": save data has progression but the row names no growth curve`);
+		}
+		entity.progression = Progression.fromJSON(growthCurveFor(row, catalog), data.progression);
+	}
+
+	if (data.item !== undefined) entity.item = data.item;
+	return entity;
+}
+
+function growthCurveFor(row: EntityTemplateRow, catalog: EntityTemplateCatalog): GrowthCurve {
+	const curve = catalog.growthCurves?.[row.growth ?? ''];
+	if (!curve) throw new Error(`entity template "${row.id}": unknown growth curve "${row.growth}"`);
+	return curve;
 }
 
 function statsFrom(row: EntityTemplateRow): Stats {

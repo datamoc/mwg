@@ -7,6 +7,33 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-09-09
+
+Closes ROADMAP items 178-182, five ideas raised against a reference game whose `main.ts` had
+grown to roughly 7,800 lines. 178 and 181 turned out to describe the same mechanism and were
+built as one primitive rather than two.
+
+### Added
+- `core.Registry` (roadmap item 180) - a named lookup registered once and read back by name,
+  the dispatch primitive underneath a catalog of factories or handlers, in place of a
+  hand-written `if`/`switch` cascade. No auto-discovery: a game still imports and registers
+  each entry itself.
+- `core.SceneComponentHost`/`SceneComponent` (roadmap items 178, 181) - composes a scene out
+  of named sections (map logic, encounter logic, UI wiring), each its own module with
+  whichever `Scene` lifecycle hooks it needs, instead of one scene class accreting every
+  responsibility. Composition, not a base class, so it works whether a scene extends `Scene`
+  or `two-d.Scene2D`; uses `core.Registry` internally for its by-name lookup.
+- `rpg.questsFromRows`/`QuestStageRow` (roadmap item 179) - groups a flat table of stage rows
+  (typically a `core.parseCSV` result, one row per stage sharing a `questId`) into
+  `QuestDefinition`s a `QuestLog` can `define`, the same relational shape `core.parseCSV`
+  already models elsewhere, in place of a hand-written `.ts` object literal nesting each
+  quest's stage array.
+- `actors.toEntitySaveState`/`fromEntitySaveState`/`EntitySaveState` (roadmap item 182) - a
+  `BuiltEntity`'s mutable state (base stat values, level/experience, the carried item) in the
+  same "definitions supplied fresh on load" shape `StatBlock`/`Progression` already draw;
+  `fromEntitySaveState` rebuilds via `buildEntity` from the same row and catalog, then
+  overlays the saved state on top.
+
 ## [0.5.1] - 2026-09-09
 
 Closes ROADMAP item 148 (the last item open before this pass) and corrects an overstated

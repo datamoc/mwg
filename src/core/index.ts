@@ -1,6 +1,9 @@
 export { Scene } from './Scene.ts';
 export type { SceneClass } from './Scene.ts';
 export { SceneStack } from './SceneStack.ts';
+export { Registry } from './Registry.ts';
+export { SceneComponentHost } from './SceneComponents.ts';
+export type { SceneComponent } from './SceneComponents.ts';
 export { Logger } from './Log.ts';
 export type { LogLevel, LogEntry, LoggerOptions } from './Log.ts';
 export { Signal } from './Signal.ts';
