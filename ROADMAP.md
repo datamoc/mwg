@@ -2112,7 +2112,28 @@ process - appended at low priority, not argued into or out of existence on the s
      omitting `instanceId`) and stay apart the moment either sets a distinguishing one. 12 new
      unit tests across the four; the full existing suite passes unchanged
 
-148. Wesnoth-style hex skirmishes expose a gap between `board.Tactics`' generic action-point/cover model and a reusable army-game rules layer: weighted terrain movement and defence per unit, adjacent attack exchanges with retaliation and hit chances, village ownership/healing, and per-side turn income. `wesnoth-1.19.27/mwg` keeps these rules as an original game-side prototype for now, wired to `mwg`'s hex geometry and faction fog; evaluate a small, data-driven `board.HexSkirmish` API once a second game needs the same combination. It must provide mechanisms rather than any reference game's units, maps, probabilities, or economy values.
+148. ~~Wesnoth-style hex skirmishes expose a gap between `board.Tactics`' generic
+     action-point/cover model and a reusable army-game rules layer: weighted terrain
+     movement and defence per unit, adjacent attack exchanges with retaliation and hit
+     chances, village ownership/healing, and per-side turn income. `wesnoth-1.19.27/mwg`
+     kept these rules as an original game-side prototype, wired to `mwg`'s hex geometry and
+     faction fog; this evaluates a small, data-driven `board.HexSkirmish` API now that a
+     second consumer (this item's own write-up, revisited) makes the shape worth
+     generalising~~ - `board/HexSkirmish.ts` adds `startingSkirmish`/`setSkirmishTerrain`/
+     `canPlaceSkirmishUnit`/`addSkirmishUnit`/`skirmishMoves`/`moveSkirmishUnit`/
+     `skirmishAttack`/`skirmishIncome`/`endSkirmishTurn`. Distinct from `board.Tactics` on
+     purpose: a `SkirmishTerrain` carries its own `moveCost` (weighted Dijkstra over
+     `core.Hex` neighbours, not `Tactics`' uniform one-step BFS) and `defense` (a 0-1 bonus
+     for whoever is standing on it while defending); combat is adjacency-only with no zone
+     of control, and `skirmishAttack` always lets a surviving defender strike back in the
+     same call rather than needing a second, separate action. A village is a cell flag -
+     `moveSkirmishUnit` sets its `owner` the moment a unit steps onto one, `skirmishIncome`
+     counts an owner's villages toward a flat base rate, and `endSkirmishTurn` heals units
+     standing on a village they own. Every number (move cost, defence, attack, hit chance,
+     income rate) is the game's own data, the same policy `board.Army`'s `armyIncome`
+     already follows - nothing here is a Wesnoth number. 11 unit tests, including a forced
+     detour around an impassable terrain kind, a guaranteed-kill leaving no retaliation, and
+     terrain defence pushed to a guaranteed miss for a deterministic assertion
 
 149. ~~Add the reusable dungeon-content primitives exposed by the Shattered Pixel Dungeon port:
     deterministic seeded floor generation with room graphs and retry reporting; regional
@@ -2639,3 +2660,93 @@ rather than someone else's build.
      more general (an arbitrary predicate, not just an HP fraction), and deliberately in
      `core` rather than `actors`, so the same table watches a character's stats or an
      inanimate object's state without either module depending on the other. 8 unit tests
+
+173. ~~item 167 closed the `mwg-pixel-dungeon` study claiming "nothing left... not a gap",
+     and ADR-001 records the renderer boundary as flatly Accepted; a closer look at what
+     that actually covers found the claim overstated~~ - `two-d/render/Shape2D.ts` gives a
+     game an MWG-owned *type* for a container/shape/text (`Node2D`/`Shape2D`/`Text2D`), but
+     no bare, constructible `Sprite2D` exists - only `TintedSprite`, which adds
+     colour-transform behaviour rather than standing in as a neutral sprite. `two-d/
+     pixi-interop.ts` is itself a literal `export { Container, Sprite, ... } from 'pixi.js'`,
+     so reaching it still means `pixi.js` is present at the value level, and `package.json`'s
+     `dependencies` still lists `pixi.js` directly - removing it today would still break the
+     build. What item 167 got right: every *type* position across the public API genuinely
+     no longer names a `pixi.js` type, which is what `renderer-isolation.test.ts`'s scans
+     actually check. ADR-001 corrected to say exactly that distinction rather than a flat
+     "Accepted". Not fixed here - a `Sprite2D` and a real look at what removing `pixi.js`
+     from `dependencies` would take are their own item, not folded into this correction
+
+174. ~~item 172 added `core.ReactionTable` to replace a game's own cascade of `if HP < n`
+     checks; before assuming it was worth using anywhere, surveyed every latch/transition
+     site across the reference games it was meant to help (70 sites: warn/flee state
+     machines, boss phase gates, ability cooldowns, one-shot rage triggers) and sketched the
+     conversion rather than asserting from memory~~ - every site surveyed was already a
+     minimal single boolean or inline check; converting any of them to a `ReactionTable`
+     costs net lines (the rules object, the `check()` call site, re-supplying rules to
+     `fromJSON` at every load site), and the one two-stage case (a shopkeeper's warn-then-flee)
+     would additionally need one rule's `when` to read another rule's `isActive` - strictly
+     uglier than the six lines it replaces. Nothing converted: this repository already
+     deletes speculative framework-shaped scaffolding on sight, and retrofitting working code
+     for neutral-to-negative benefit violates that same standard. `ReactionTable` stays
+     available for a game that actually has many rules over one state, which is what it was
+     designed for - this item records that the existing reference games are not that case,
+     so a future session does not re-run the same survey
+
+175. Item 173 corrected ADR-001/item 167's overstated "renderer boundary fully closed" claim
+     and, while adding `two-d/render/Shape2D.ts`'s `Sprite2D` closed the "no bare
+     constructible sprite" half of that gap, left the actual dependency-shape question
+     explicitly unresolved: `package.json`'s `dependencies` still lists `pixi.js` directly
+     (not `peerDependencies`, unlike `@babylonjs/core`'s already-established optional-peer
+     treatment for `three-d`), and moving it would change the published package's install
+     contract for a version already live on the npm registry (`0.5.0`, confirmed via `npm
+     view`) - a real breaking-change decision, not a same-session mechanical edit. Needs,
+     before it can move: confirming `npm install`'s behaviour is unchanged for a consumer
+     under npm 7+'s auto-installed-required-peer-dependency handling (both the `npm install
+     @datamoc/mw_games vite` path and the `.tgz` fallback CLAUDE.md's own getting-started
+     verification section names), rerunning that getting-started verification from an empty
+     directory once the shape actually changes, and deciding whether this is a `0.5.x` patch
+     or belongs bundled with a larger breaking-change release. Left open on purpose rather
+     than rushed through under a goal-completion pass - confirmed directly: asked whether to
+     implement it now or leave it open, and the answer was to leave it open.
+
+176. ~~requested directly: a game's own data tables (`actors.AffixTable` and the like) are
+     hand-written `.ts` object literals today, which means a content designer without
+     TypeScript has to touch source to add or tweak an entry - author them as CSV instead,
+     readable by both a spreadsheet and the framework~~ - `core.parseCSV` turns a header-row
+     CSV string into an array of typed row objects; `columns` names which fields coerce to
+     `'number'`/`'boolean'`/`'list'` (semicolon-separated, for a field shaped like
+     `AffixDef.kinds`) or `'map'` (semicolon-separated `key=value` pairs, for a per-row
+     property bag), and an undeclared column stays a plain string. An empty cell omits that
+     field entirely, the same as an optional property never set. RFC 4180-shaped tokenizing
+     (char by char, not `split(',')`) survives a quoted field containing the delimiter, a
+     newline, or an escaped `""`, which a real description column eventually will. Takes a
+     raw string with no opinion on how it was loaded - the same boundary `i18n.parseFTL`
+     already draws, and deliberately not wired into `assets.load`/`tools/compile-resources`,
+     since Pixi's own text-asset handling for an arbitrary extension was never verified here
+     and a small table already fits a `.ts` template literal while a larger one has a
+     bundler's own raw-text import (Vite's `?raw` suffix) to reach for. Explicitly does not
+     and cannot hold a `core.ReactionTable` rule's `when`/`action`, which are executable
+     code, not data - a CSV row can drive *which* reactions a game builds at startup (an id,
+     a comparison string, a threshold number), never the rule's own logic, the same
+     `AffixDef.id` boundary already draws. 12 unit tests, including a round-trip of a real
+     `AffixTable` shape and quoted fields surviving an embedded comma, an escaped quote, and
+     an embedded newline.
+
+177. ~~requested directly: a dev should be able to hand the engine a hero or monster "file"
+     and have it read and apply the rules, rather than the per-entity glue code item 176's
+     own consultation showed (subclass/affix `if`-cascades). Given the choice between a file
+     that supplies only base data (composed by the game's own code, as shown that same
+     session) and one row wiring a complete entity in a single call, the fuller shape was
+     requested directly~~ - `actors.buildEntity`/`buildEntities` turn one `core.parseCSV` row
+     into a `StatBlock` (every non-reserved column is a base stat, so a game's own stat names
+     need no declaring), an optional `Progression` against a named growth curve, a starting
+     item carrying a named starting affix, and a `core.ReactionTable` already holding a
+     low-HP rule if the row names a threshold. Every named reference (`growth`, `startingAffix`,
+     `startingItem`) resolves through a game-supplied `EntityTemplateCatalog` - `mwg` reads
+     which name a row asks for, never invents what the name means, the same boundary
+     `AffixDef.id` already draws; a `lowHpReaction` threshold with no `onLowHp` callback
+     supplied throws rather than silently doing nothing. Deliberately one low-HP threshold
+     per row, not an arbitrary reaction list - a second one is a second column and a second
+     `ReactionRule` in a game's own code once actually needed, not speculative. 12 unit
+     tests, including a full CSV-row round-trip (parse a file's own row shape straight into
+     a wired entity) and every reserved-column/unknown-reference error path.

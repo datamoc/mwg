@@ -12,7 +12,9 @@ merely describe it.
 
 **Decision**: A game consumes `mwg`, not PixiJS or Babylon.js directly, in ordinary use.
 
-**Status**: Accepted.
+**Status**: Accepted at the type level; narrower than "Accepted" alone implies at the value
+level - see the gap noted below, corrected after ROADMAP item 167 overstated this as fully
+closed.
 
 **Where**: `two-d/render/Types2D.ts` (`Container2D`/`Texture2D`/`Rect`/`TextureRegion`),
 `two-d/render/Shape2D.ts` (`Node2D`/`Shape2D`/`Text2D`/`TiledSprite`/`Gradient`), and
@@ -21,6 +23,15 @@ Enforced by `tests/renderer-isolation.test.ts` (both directions: nothing under `
 Babylon, nothing under `three-d` reaches Pixi, no example names `pixi.js`/`@babylonjs/*`
 directly) and `tests/consumer-app.test.ts` (a minimal game compiles against the real published
 paths without naming a renderer).
+
+**Known gap**: no bare, constructible `Sprite2D` exists - only `TintedSprite` (which adds
+colour-transform behaviour, not a neutral pass-through), so a game wanting a plain untinted
+sprite still has no `two-d`-owned way to construct one. `pixi-interop.ts` itself is a literal
+`export { Container, Sprite, Texture, Graphics, Rectangle, Text } from 'pixi.js'`, so using it
+still means `pixi.js` is present at the value level, and `package.json`'s `dependencies` still
+lists `pixi.js` directly - removing it today would break the build. "A game consumes `mwg`, not
+PixiJS... directly" holds for every *type* position across the public API (enforced by the
+scans above) but not yet for every *value* a game might construct.
 
 ## ADR-002 - Simulation authority
 

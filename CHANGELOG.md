@@ -7,6 +7,45 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-09-09
+
+Closes ROADMAP item 148 (the last item open before this pass) and corrects an overstated
+renderer-boundary claim found while auditing the roadmap for anything still open.
+
+### Added
+- `board.HexSkirmish` (roadmap item 148) - `startingSkirmish`/`setSkirmishTerrain`/
+  `canPlaceSkirmishUnit`/`addSkirmishUnit`/`skirmishMoves`/`moveSkirmishUnit`/
+  `skirmishAttack`/`skirmishIncome`/`endSkirmishTurn`, a Wesnoth-style hex army-game rules
+  layer distinct from `board.Tactics`: per-terrain movement cost and defence, adjacency-only
+  attacks where a surviving defender always strikes back, capturable villages that grant
+  income and heal their owner's units, no zone of control.
+- `two-d/render.Sprite2D` - a bare, untinted, MWG-named re-export of Pixi's `Sprite`,
+  alongside the existing `Node2D`/`Shape2D`/`Text2D`. Closes half the gap ADR-001 and
+  ROADMAP item 167 had overstated as fully closed (see Fixed below); prefer
+  `render.TintedSprite` the moment a colour transform is needed.
+- `core.parseCSV` (roadmap item 176) - a header-row CSV string into an array of typed row
+  objects, so a table shaped like `actors.AffixTable` can be authored as a spreadsheet
+  instead of a hand-written `.ts` object literal. `columns` coerces named fields to
+  `'number'`/`'boolean'`/`'list'`/`'map'`; an empty cell omits that field entirely, the same
+  as an optional property never set. Takes a raw string with no opinion on how it was
+  loaded, the same boundary `i18n.parseFTL` already draws.
+- `actors.buildEntity`/`buildEntities` (roadmap item 177) - one hero/monster file row
+  (typically a `core.parseCSV` result) into a fully wired entity: a `StatBlock` of base
+  stats (every non-reserved column), an optional `Progression` against a named growth
+  curve, a starting item carrying a named starting affix, and a `core.ReactionTable`
+  already holding a low-HP rule if the row names a threshold. Every named reference
+  resolves through a game-supplied `EntityTemplateCatalog` - `mwg` never invents what a
+  name means, the same boundary `AffixDef.id` already draws.
+
+### Fixed
+- `ADR.md`'s ADR-001 and ROADMAP item 167 claimed the renderer boundary was fully closed
+  ("nothing left... not a gap"). Corrected (ROADMAP item 173): every *type* position across
+  the public API genuinely no longer names a `pixi.js` type, but `two-d/pixi-interop.ts` is
+  itself a literal re-export from `pixi.js`, and `package.json`'s `dependencies` still lists
+  `pixi.js` directly - a real, still-open gap at the value level, tracked as ROADMAP item
+  175 rather than rushed through as a breaking dependency-shape change to an
+  already-published version.
+
 ## [0.5.0] - 2026-09-09
 
 A declarative reactions primitive, closing the "branch cascade of `if HP < n`" gap named

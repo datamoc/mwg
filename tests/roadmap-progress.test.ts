@@ -117,9 +117,11 @@ test('parses repository ROADMAP.md correctly', () => {
 	assert.ok(result.sections.length >= 6, `expected at least 6 milestone batches, got ${result.sections.length}`);
 	assert.ok(result.openItems.length > 0, 'expected at least one open item');
 
-	// Open items should contain the known open item 148 (gated on real second-game demand)
+	// Open items should contain the known open item 175 (a breaking dependency-shape change
+	// left for a deliberate future decision, not a same-session mechanical edit - item 148,
+	// this test's previous example, was closed by board.HexSkirmish)
 	const openNums = result.openItems.map((i) => i.num);
-	assert.ok(openNums.includes(148), 'expected open items to include 148');
+	assert.ok(openNums.includes(175), 'expected open items to include 175');
 });
 
 test('allItems exposes every parsed item in document order, for item management filtering', () => {

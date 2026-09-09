@@ -1,4 +1,4 @@
-import { Container, Graphics, Text, TilingSprite, FillGradient } from 'pixi.js';
+import { Container, Graphics, Text, TilingSprite, FillGradient, Sprite } from 'pixi.js';
 
 /**
  * A plain grouping container under an MWG-owned name, for the common "just group some
@@ -56,6 +56,28 @@ export class Shape2D extends Graphics {}
  * ```
  */
 export class Text2D extends Text {}
+
+/**
+ * A plain, untinted sprite under an MWG-owned name - the neutral case `TintedSprite` is not:
+ * that class exists to add the per-sprite multiply-and-add colour transform, so it is the
+ * wrong reach for a sprite that needs no colour effect at all. Until this existed, that one
+ * ordinary case had no `two-d`-owned way to construct it, and a game reached for
+ * `two-d/pixi-interop.ts`'s `Sprite` (or `pixi.js` directly) even for the single most common
+ * sprite there is.
+ *
+ * @example
+ * ```ts
+ * import { Sprite2D } from '@datamoc/mw_games/two-d/render';
+ * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const heroTexture: Texture2D;
+ *
+ * const hero = new Sprite2D(heroTexture);
+ * hero.x = 40;
+ * hero.y = 60;
+ * ```
+ */
+export class Sprite2D extends Sprite {}
 
 /**
  * A texture that repeats/scrolls to fill a shape, rather than stretching - a parallax

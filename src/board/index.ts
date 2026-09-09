@@ -74,3 +74,23 @@ export { FactionFog } from './FogOfWar.ts';
 export type { VisionCell } from './FogOfWar.ts';
 export { startingArmy, recruit, recall, bankUnit, armyIncome, applyUpkeep } from './Army.ts';
 export type { UnitTemplate, ArmyState, UpkeepRates } from './Army.ts';
+export {
+	startingSkirmish,
+	setSkirmishTerrain,
+	canPlaceSkirmishUnit,
+	addSkirmishUnit,
+	skirmishMoves,
+	moveSkirmishUnit,
+	skirmishAttack,
+	skirmishIncome,
+	endSkirmishTurn,
+} from './HexSkirmish.ts';
+export type {
+	SkirmishTerrain,
+	SkirmishCell,
+	SkirmishUnit,
+	SkirmishState,
+	SkirmishMove,
+	SkirmishStrike,
+	SkirmishExchange,
+} from './HexSkirmish.ts';

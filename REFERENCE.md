@@ -90,6 +90,13 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   presentation-side counterpart to a `SimulationRuntime.dispatch()`/`runScenario()` result, kept
   out of the logical commit that already happened. The same queued/timed shape as `two-d.ui.
   Toast`, generalised to any event type and needing no renderer.
+- `parseCSV`/`CsvOptions`/`CsvColumnType` - a header-row CSV into an array of typed row
+  objects, so a content designer edits a spreadsheet instead of a `.ts` object literal for a
+  table shaped like `actors.AffixTable`. `columns` names which fields coerce to
+  `'number'`/`'boolean'`/`'list'` (semicolon-separated)/`'map'` (semicolon-separated
+  `key=value` pairs); an empty cell omits that field entirely, the same as an optional
+  property never set. Takes a raw string with no opinion on how it was loaded, the same
+  boundary `i18n.parseFTL` already draws.
 - `Random` (namespace) - seeded RNG: `int`, `float`, `weighted`, `element`, `shuffle` and the
   rest; every "pick one" returns `null` when there is nothing to pick.
 - `Generator` - the seeded RNG class `Random` wraps directly, for a game that wants its own instance.
@@ -196,11 +203,13 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   stage` is typed `Container2D`; `SpriteSheet.region` returns a `TextureRegion`). For the rare
   need `two-d`'s own facade doesn't cover, `two-d/pixi-interop` re-exports the underlying Pixi
   classes explicitly, rather than a game importing `pixi.js` itself.
-- `Node2D`/`Shape2D`/`Text2D`/`TiledSprite`/`Gradient` - bare, MWG-named re-exports of Pixi's
-  `Container`/`Graphics`/`Text`/`TilingSprite`/`FillGradient`: a plain grouping layer, vector
-  drawing, one-off text, a repeating/scrolling texture, and a gradient fill/stroke, none of
-  which needed new behaviour, only a name a game can import without naming `pixi.js` itself.
-  Prefer `ui.Label`/`BitmapLabel` over `Text2D` for anything styled through `ui.theme()`.
+- `Node2D`/`Shape2D`/`Text2D`/`Sprite2D`/`TiledSprite`/`Gradient` - bare, MWG-named
+  re-exports of Pixi's `Container`/`Graphics`/`Text`/`Sprite`/`TilingSprite`/`FillGradient`:
+  a plain grouping layer, vector drawing, one-off text, a plain untinted sprite, a
+  repeating/scrolling texture, and a gradient fill/stroke, none of which needed new
+  behaviour, only a name a game can import without naming `pixi.js` itself. Prefer
+  `ui.Label`/`BitmapLabel` over `Text2D` for anything styled through `ui.theme()`, and
+  `render.TintedSprite` over `Sprite2D` the moment a colour transform is needed.
 
 ## `assets`
 
@@ -288,6 +297,12 @@ borrowed from any licensed game.
 - **army** (`Army.ts`): `startingArmy`/`recruit`/`recall`/`bankUnit`/`armyIncome`/
   `applyUpkeep` - recruiting/recalling units against a currency total, per-turn income and
   upkeep, no specific rate baked in.
+- **hex skirmish** (`HexSkirmish.ts`): `startingSkirmish`/`setSkirmishTerrain`/
+  `canPlaceSkirmishUnit`/`addSkirmishUnit`/`skirmishMoves`/`moveSkirmishUnit`/
+  `skirmishAttack`/`skirmishIncome`/`endSkirmishTurn` - a Wesnoth-style hex army-game rules
+  layer distinct from `tactics` above: per-terrain movement cost and defence, adjacency-only
+  attacks where a surviving defender always strikes back, capturable villages that grant
+  income and heal whoever owns them, no zone of control.
 - `BoardPiece` (type, from `Classics.ts`) - a generic owned/countable/capturable/promotable
   token distinct from `roguelike`'s `Creature`-shaped actors; every game above builds on it.
 
@@ -351,6 +366,12 @@ on. This is the *shape* - a game names its own attributes and formulas.
   whoever is currently adjacent, diffing rather than reapplying every tick.
 - `SupportLedger` - a pair-order-independent, thresholded bond/support relationship between
   two units, growing through proximity or shared battles; `toJSON`/`fromJSON` round-trip it.
+- `buildEntity`/`buildEntities`/`EntityTemplateRow`/`EntityTemplateCatalog`/`BuiltEntity` - one
+  row of a hero or monster file (typically a `core.parseCSV` result) into a fully wired
+  entity: a `StatBlock` of base stats (every non-reserved column), an optional `Progression`
+  against a named growth curve, a starting item carrying a named starting affix, and a
+  `ReactionTable` already holding a low-HP rule if the row names a threshold. What each named
+  growth curve/affix/item actually is stays the game's own `EntityTemplateCatalog`.
 
 ## `roguelike`
 
