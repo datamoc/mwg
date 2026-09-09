@@ -136,6 +136,11 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   events, saves, AI targets and buffs can name a creature or item without holding it; not an
   ECS, and distinct from `Collection`'s persisted, queryable records. `idOf` is what a game
   passes as `roguelike.Scheduler.toJSON`'s or `simulation.SimulationRuntime`'s `actorId`.
+- `ReactionTable`/`ReactionRule` - declarative `when`/`action` rules checked against any
+  state shape (a `StatBlock`'s values, a plain object's own fields), firing edge-triggered
+  so a still-true condition never re-fires; `once` retires a rule after its first firing. The
+  generic alternative to a branch cascade of `if HP < n` checks in game code, and works the
+  same for a character or an inanimate object such as an item's durability.
 
 ## `two-d`
 

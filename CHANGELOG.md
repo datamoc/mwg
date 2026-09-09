@@ -7,6 +7,28 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-09
+
+A declarative reactions primitive, closing the "branch cascade of `if HP < n`" gap named
+directly, plus a new website page collecting the framework's original, non-obvious
+mechanisms for a game-developer audience.
+
+### Added
+- `core.ReactionTable`/`ReactionRule` (roadmap item 172) - named `when`/`action` rules
+  checked against any state shape (a `StatBlock`'s values, or a plain object's own fields
+  such as an item's durability), firing `action` the moment `when` turns true and staying
+  quiet while it remains true - edge-triggered the same way `roguelike.BossPhases` tracks
+  entered phases. A `once` rule retires after firing; the default re-fires on the next
+  rising edge. Lives in `core`, not `actors`, so the same table watches a character or an
+  inanimate object without either module depending on the other.
+- `webpage/features/index.html` - ten specific, original mwg mechanisms (declarative
+  reactions, the per-sprite multiply-and-add colour transform, `Barrier`'s outermost-first
+  layered absorption, `Advancement`'s unified points/branch/capstone track, `Affix`'s
+  trigger-routed curse-derived enchantments, `TriggerTracker`'s turn-window streaks, i18n's
+  bidi-isolate/typographic rules, `StatStages`'s bounded ladder as one modifier, `Scramble`'s
+  honestly-scoped obfuscation, and the deliberate `Scheduler`/`TurnClock` split), linked from
+  every hand-authored page's nav.
+
 ## [0.4.3] - 2026-09-08
 
 A simplification pass across storage, selection, and text options, one pathfinding

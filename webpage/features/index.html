@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Features - mwg</title>
+	<meta name="description" content="Specific, original mechanisms in mwg conceived by game developers for game developers: declarative reactions, layered barrier absorption, trigger-routed affixes, bidi-safe text, and more." />
+	<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+	<link rel="stylesheet" href="../assets/site.css" />
+
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="mwg" />
+	<meta property="og:url" content="https://datamoc.github.io/mwg/features/index.html" />
+	<meta property="og:title" content="Features - mwg" />
+	<meta property="og:description" content="Specific, original mechanisms in mwg conceived by game developers for game developers: declarative reactions, layered barrier absorption, trigger-routed affixes, bidi-safe text, and more." />
+	<meta property="og:image" content="https://datamoc.github.io/mwg/assets/og-image.png" />
+	<meta property="og:image:width" content="1080" />
+	<meta property="og:image:height" content="567" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Features - mwg" />
+	<meta name="twitter:description" content="Specific, original mechanisms in mwg conceived by game developers for game developers: declarative reactions, layered barrier absorption, trigger-routed affixes, bidi-safe text, and more." />
+	<meta name="twitter:image" content="https://datamoc.github.io/mwg/assets/og-image.png" />
+
+	<style>
+		.feature-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+			gap: 1.1rem;
+			margin-top: 1.75rem;
+		}
+
+		.feature-card {
+			padding: 1.25rem;
+			display: flex;
+			flex-direction: column;
+			gap: 0.6rem;
+		}
+
+		.feature-card h2 {
+			margin: 0;
+			font-size: 1.05rem;
+		}
+
+		.feature-card .module-tag {
+			font-family: var(--font-display);
+			font-size: 0.72rem;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			color: var(--muted);
+		}
+
+		.feature-card p {
+			margin: 0;
+			font-size: 0.92rem;
+		}
+
+		.feature-card .the-trick {
+			color: var(--paper);
+		}
+
+		.feature-card pre {
+			margin: 0.2rem 0 0;
+			font-size: 0.8rem;
+		}
+	</style>
+</head>
+<body>
+	<header class="site-header">
+		<div class="wrap">
+			<a class="brand" href="../index.html"><img src="../assets/logo.svg" alt="mwg" /></a>
+			<nav class="site-nav">
+				<a href="../examples/index.html">Examples</a>
+				<a href="../getting-started/index.html">Getting started</a>
+				<a href="../documentation/index.html">Documentation</a>
+				<a href="../design/index.html">Design</a>
+				<a href="./index.html" aria-current="page">Features</a>
+				<a href="../faq/index.html">FAQ</a>
+				<a href="https://github.com/datamoc/mwg">GitHub</a>
+			</nav>
+		</div>
+	</header>
+
+	<main>
+		<section style="padding-bottom: 1rem">
+			<div class="wrap">
+				<p class="eyebrow">by game developers, for game developers</p>
+				<h1>Features</h1>
+				<p class="lede">
+					Most of mwg is the shape you'd expect from any 2D framework: sprites, tile maps,
+					stat blocks, save slots. This page is the other part - the specific, non-obvious
+					mechanisms that exist because a real problem came up while building one of the
+					reference games, and the fix turned out to be a small, reusable primitive rather
+					than a one-off patch. Each one names the problem it solves, the trick that makes it
+					work, and a short example of using it.
+				</p>
+			</div>
+		</section>
+
+		<section class="design-section" style="border-bottom: none; padding-top: 0">
+			<div class="wrap">
+				<div class="feature-grid">
+
+					<article class="panel feature-card">
+						<p class="module-tag">mwg/core</p>
+						<h2>Declarative reactions, not an <code>if</code> cascade</h2>
+						<p>
+							Without a way to react to a stat crossing a threshold, a game ends up writing
+							its own branch cascade - one <code>if</code> per reaction, scattered through
+							the update loop, harder to keep straight as more reactions pile up.
+						</p>
+						<p class="the-trick">
+							<code>ReactionTable</code> checks a list of named <code>when</code>/<code>action</code>
+							rules against any state shape, firing <code>action</code> the instant
+							<code>when</code> turns true and staying quiet while it stays true - edge-triggered,
+							so a still-true condition never re-fires every frame. A <code>once</code> rule
+							retires after firing; the default re-fires on the next rising edge. The same
+							table watches a character's stats or a plain object's own fields (an item's
+							durability, a door's open flag) - nothing about it assumes an actor.
+						</p>
+						<pre><code>const reactions = new ReactionTable([
+  { id: 'critical', when: s =&gt; s.hp / s.maxHp &lt;= 0.25,
+    action: () =&gt; playLowHpAlarm() },
+  { id: 'shattered', when: s =&gt; s.hp &lt;= 0,
+    action: () =&gt; breakItem(), once: true },
+]);
+reactions.check({ hp: 20, maxHp: 100 }); // ['critical']</code></pre>
+					</article>
+
+					<article class="panel feature-card">
+						<p class="module-tag">mwg/two-d/render</p>
+						<h2>Per-sprite colour transform: multiply <em>and</em> add</h2>
+						<p>
+							Pixi's built-in <code>tint</code> only multiplies a sprite's colour, so it can
+							darken but never <em>pull toward</em> a colour - a poison-green tint or a white
+							hit-flash is a lerp, which needs an add term tint alone cannot express.
+						</p>
+						<p class="the-trick">
+							<code>ColorTransformBatcher</code> rides an extra vertex attribute through
+							Pixi's existing sprite batch, computing <code>texel &times; M + A</code> in the
+							batch shader itself - one vertex attribute per sprite, not a render-texture
+							filter pass per sprite. Every batcher/high-shader detail this needs is confined
+							to this one file by project convention, so a Pixi upgrade that breaks the
+							assumption fails a pinned test loudly instead of mis-rendering silently.
+						</p>
+						<pre><code>sprite.colorTransform = { multiply: 0xffffff, add: 0x552200 };
+// a slow burn: unaffected saturation, warmed toward orange</code></pre>
+					</article>
+
+					<article class="panel feature-card">
+						<p class="module-tag">mwg/actors</p>
+						<h2>A barrier that always breaks outermost-first</h2>
+						<p>
+							A shield cast on top of an already-standing ward should break before the ward
+							underneath does, regardless of which order they were cast in - a property a
+							plain stat modifier can't express, since it has no notion of layers.
+						</p>
+						<p class="the-trick">
+							<code>Barrier</code> holds independent layers stacked in cast order, each with
+							its own <code>decayPerTick</code>; <code>absorb(amount)</code> drains the
+							most-recently-added layer first and spills into the next once it empties, so
+							"last cast, first broken" holds without the game tracking cast order itself.
+						</p>
+						<pre><code>barrier.add(20);       // a standing shield
+barrier.add(10, 2);     // a ward, decaying 2/tick, cast after
+barrier.absorb(15);     // drains the ward first, then the shield</code></pre>
+					</article>
+
+					<article class="panel feature-card">
+						<p class="module-tag">mwg/actors</p>
+						<h2>One track shape for talent trees <em>and</em> gear slots</h2>
+						<p>
+							A subclass talent tree and "equip one of three armor abilities" read as
+							unrelated systems - until the actual difference between them turns out to be
+							only what a point buys, not how points are earned or spent.
+						</p>
+						<p class="the-trick">
+							<code>Advancement</code> types each tier <code>'points' | 'branch' |
+							'capstone'</code>: most tiers add to a spendable ledger, one tier forces a
+							permanent, mutually-exclusive <code>choose(tier, option, level)</code> that
+							throws on re-choice, and a late tier is a single capstone pick. What a point or
+							a choice actually grants is left entirely to the game.
+						</p>
+					</article>
+
+					<article class="panel feature-card">
+						<p class="module-tag">mwg/actors</p>
+						<h2>Item affixes routed by trigger, curse derived not tracked</h2>
+						<p>
+							Enchantment systems usually end up hard-coding what "flaming" or "cursed" means
+							inside the item system itself, coupling item data to combat logic that should
+							own that interpretation instead.
+						</p>
+						<p class="the-trick">
+							An <code>AffixDef</code> carries only a <code>trigger</code>
+							(<code>'strike' | 'defend' | 'passive'</code>), an optional kind restriction, a
+							weight, and a curse bit; <code>matchesContext</code> decides whether it should
+							fire, and what it <em>does</em> stays game code. <code>applyAffix</code>/
+							<code>removeAffix</code> derive the item's <code>cursed</code> flag from
+							whatever affix is currently installed, so swapping a cursed affix for a benign
+							one can never leave an item stuck locked.
+						</p>
+					</article>
+
+					<article class="panel feature-card">
+						<p class="module-tag">mwg/roguelike</p>
+						<h2>Streaks and combos as one turn-window primitive</h2>
+						<p>
+							Kill streaks, combo counters, and "stays stealthed as long as you keep landing
+							sneak attacks" are the same shape - a count that extends within a window and
+							resets outside it - usually reimplemented separately for each.
+						</p>
+						<p class="the-trick">
+							<code>TriggerTracker.trigger(turn)</code> extends the streak when
+							<code>turn - lastTurn &lt;= window</code>, otherwise restarts it at 1;
+							<code>isActive(turn)</code> checks whether the window still holds without
+							triggering it. mwg supplies only the window arithmetic - what a streak length
+							unlocks is entirely the game's own design.
+						</p>
+					</article>
+
+					<article class="panel feature-card">
+						<p class="module-tag">mwg/i18n</p>
+						<h2>Bidi isolates, because Canvas text ignores direction</h2>
+						<p>
+							Canvas 2D's <code>fillText</code> always resolves bidi runs as if the paragraph
+							were left-to-right - nothing reads <code>context.direction</code> - so a
+							right-to-left string with a leading digit or an interpolated Latin name gets its
+							runs misordered on screen.
+						</p>
+						<p class="the-trick">
+							mwg's <code>t()</code> wraps a resolved right-to-left string in the Unicode
+							bidi-isolate controls RLI/PDI (U+2067/U+2069) - a formatting-control fix, not a
+							locale heuristic, so it holds regardless of the canvas's own settings.
+							<code>typographic()</code> applies real French Imprimerie-nationale spacing
+							(a thin no-break space before <code>;:!?</code>, around guillemets) and Duden
+							German number/unit spacing, idempotently, so calling it twice never doubles a
+							space.
+						</p>
+					</article>
+
+					<article class="panel feature-card">
+						<p class="module-tag">mwg/battle</p>
+						<h2>A bounded stage ladder as one modifier, not one per stage</h2>
+						<p>
+							A naive "+1/-1 stat stage" system adds a new modifier on every stage change,
+							leaving stray modifiers behind unless the game remembers to remove exactly the
+							right ones - and stage count and applied multiplier can quietly drift apart.
+						</p>
+						<p class="the-trick">
+							<code>StatStages.change(stat, delta)</code> clamps to <code>&plusmn;max</code>
+							and replaces the single tracked modifier for that stat, so the stage and its
+							multiplier can never disagree; <code>resetAll()</code> clears every stage at
+							once for a switch-out. The stage-to-multiplier curve itself is a function the
+							game supplies, not a fixed table mwg imposes.
+						</p>
+					</article>
+
+					<article class="panel feature-card">
+						<p class="module-tag">mwg/core</p>
+						<h2>Save obfuscation honestly scoped to what it actually stops</h2>
+						<p>
+							Every "encrypted save" scheme built on a simple XOR is only ever obfuscation,
+							not real encryption - a distinction games routinely blur, then get called out
+							for by the first player who reads the source.
+						</p>
+						<p class="the-trick">
+							<code>Scramble</code>'s own doc comment says outright that it is not encryption
+							and must never be presented as such to a player - its only job is stopping
+							casual save-file editing in a text editor, accepting the classic
+							known-plaintext XOR weakness on purpose rather than pretending otherwise.
+							<code>unscramble</code> throws on a wrong key via a fatal <code>TextDecoder</code>
+							instead of silently handing back garbage.
+						</p>
+					</article>
+
+					<article class="panel feature-card">
+						<p class="module-tag">mwg/roguelike + mwg/world</p>
+						<h2>Two clocks, deliberately not one reused twice</h2>
+						<p>
+							Turn order and elapsed-time effects look similar enough that it's tempting to
+							build one "timing" abstraction and stretch it to cover both - until the two
+							questions turn out to need different answers.
+						</p>
+						<p class="the-trick">
+							<code>roguelike.Scheduler</code> answers "who acts next": cost divided by a
+							per-actor <code>speed</code>, sorted by time then insertion order for
+							reproducible tie-breaks. <code>world.TurnClock</code> answers a different
+							question - how many turns have elapsed - and ticks long-running effects
+							(hunger, poison) with an optional duration and <code>onExpire</code>,
+							independent of who acted this turn. Kept as two small types instead of one
+							overloaded one.
+						</p>
+					</article>
+
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<footer class="site-footer">
+		<div class="wrap">
+			<p>mwg is licensed under the MPL-2.0.</p>
+		</div>
+	</footer>
+</body>
+</html>

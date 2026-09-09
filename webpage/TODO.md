@@ -49,6 +49,18 @@
 - **FAQ**: 8 real questions (status, editor, licensing/provenance, the
   `file://` build requirement, i18n status, Node-as-dev-tool, what it's built
   on).
+- **Features** (`features/index.html`): ten specific, original mechanisms
+  conceived while building the reference games, one card per feature (problem,
+  the trick, a short example) - `core.ReactionTable` (declarative reactions
+  to any state crossing a condition, added this session), the per-sprite
+  multiply-and-add colour transform, `Barrier`'s outermost-first layered
+  absorption, `Advancement`'s unified points/branch/capstone track,
+  `Affix`'s trigger-routed curse-derived enchantments, `TriggerTracker`'s
+  turn-window streaks, i18n's bidi-isolate/typographic rules, `StatStages`'
+  bounded ladder as one modifier, `Scramble`'s honestly-scoped obfuscation,
+  and the deliberate `Scheduler`/`TurnClock` split. Deliberately not a
+  restatement of the capability spec - each entry is a design decision a
+  fellow game developer would find non-obvious, not a feature-list line.
 - **Deployed**: live at https://datamoc.github.io/mwg/ via
   `.github/workflows/deploy-pages.yml`, which builds the examples and
   TypeDoc reference and deploys `webpage/` on every push to `main`.

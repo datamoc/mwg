@@ -2624,3 +2624,18 @@ rather than someone else's build.
      `HelpScreen`'s fix could not get a unit test the same way - like `ListView` itself, it
      constructs real Pixi `Text` and has no test today, since measuring it needs a canvas
      this headless suite has none of - verified by type-check and code review instead
+
+172. ~~requested directly: without a declarative way to react to a stat crossing a
+     threshold, a game ends up writing its own cascade of `if HP < n` checks, one per
+     reaction, scattered through its update loop and hard to keep straight as more
+     reactions pile up~~ - `core.ReactionTable`/`ReactionRule` checks a list of named
+     `when`/`action` rules against any state shape a game passes in (an actor's
+     `StatBlock` values, or a plain object's own fields such as an item's durability),
+     firing `action` the moment `when` turns true and staying quiet while it remains
+     true, edge-triggered the same way `roguelike.BossPhases` already tracks entered
+     phases. A `once` rule retires after firing; the default re-fires on the next
+     rising edge, for a recurring warning rather than a single milestone. Deliberately
+     narrower than `BossPhases` (no thresholds-must-descend ordering, no phase index) and
+     more general (an arbitrary predicate, not just an HP fraction), and deliberately in
+     `core` rather than `actors`, so the same table watches a character's stats or an
+     inanimate object's state without either module depending on the other. 8 unit tests

@@ -135,6 +135,7 @@ only some do.
 | | signals and listeners | `mwg/core` |
 | | deterministic seeded RNG, reproducible across machines | `mwg/core` |
 | | named, versioned save slots with a preview | `mwg/core` |
+| | declarative reactions to any state crossing a condition, in place of an `if` cascade | `mwg/core` |
 | **render** | sprite batching at thousands of tiles | PixiJS |
 | | per-sprite colour transform: multiply **and** add | `mwg/two-d/render` |
 | | animated sprites driven by named frame sets | `mwg/two-d/render` |
