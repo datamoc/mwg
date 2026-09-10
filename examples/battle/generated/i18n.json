@@ -1,0 +1,10 @@
+{
+	"locale": "en",
+	"direction": "ltr",
+	"messages": {
+		"Creature battle": "Creature battle",
+		"royal slime": "royal slime",
+		"slime": "slime",
+		"wolf": "wolf"
+	}
+}

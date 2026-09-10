@@ -7,6 +7,19 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-09-10
+
+### Added
+
+- MWL content-directory builds now generate game data, i18n, and asset manifests, with the
+  battle example consuming generated MWL content.
+- `extract:html` extracts inline scripts, styles, data URLs, CSS data URLs, and `srcset`
+  resources from a self-contained HTML file.
+
+### Changed
+
+- MWL generated-source diagnostics now use deterministic relative paths.
+
 ## [0.7.0] - 2026-09-10
 
 ### Added

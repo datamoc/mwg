@@ -1,0 +1,13 @@
+[map]
+id=training-ground
+name=_ "Training ground"
+terrain="Gg,Gg,Gg\nGg,Ch,Gg\nGg,Gg,Gg"
+[/map]
+[event]
+id=opening
+on=start
+[message]
+speaker=scout
+text=_ "The training begins."
+[/message]
+[/event]

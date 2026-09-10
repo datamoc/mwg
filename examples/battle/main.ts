@@ -13,14 +13,17 @@ import {
 	type EvolutionRule,
 } from '../../src/battle/index.ts';
 import * as Resources from '../../src/assets/index.ts';
+import { contentCatalog } from '../../src/mwl/index.ts';
+import { gameData } from './generated/game-data.ts';
 import tileset from '../assets/tiles.json' with { type: 'json' };
 
 /**
  * A creature battle: one slime against one wolf, exercising `mwg/battle` end to end -
  * `Creature` (itself built on `mwg/actors`' `StatBlock`/`Progression`), `TypeMatrix`,
  * `Party`, `battleOrder`, and `checkEvolution` on a win. As with the other examples, the
- * damage formula and move data here are this example's own invention, not something `mwg`
- * prescribes - the README is explicit that the framework supplies the shape, not a formula.
+ * damage formula here is this example's own invention, not something `mwg` prescribes. The
+ * species, moves, type matchups, and evolution are authored in `content/battle.mwl` and
+ * compiled before this module is bundled.
  */
 
 const TILES = 'tiles.png';
@@ -30,27 +33,35 @@ interface DamageEffect {
 	power: number;
 }
 
-const SLIME: Species = { id: 'slime', types: ['ooze'], baseStats: { attack: 6, defense: 5, speed: 5, maxHp: 24 } };
-const WOLF: Species = { id: 'wolf', types: ['beast'], baseStats: { attack: 7, defense: 4, speed: 6, maxHp: 20 } };
-const ROYAL_SLIME: Species = {
-	id: 'royal slime',
-	types: ['ooze'],
-	baseStats: { attack: 10, defense: 8, speed: 6, maxHp: 36 },
-};
-
-const TACKLE: Move<DamageEffect> = { id: 'tackle', type: 'normal', target: 'single-enemy', effects: { power: 5 } };
-const OOZE_SLAM: Move<DamageEffect> = { id: 'ooze slam', type: 'ooze', target: 'single-enemy', effects: { power: 7 } };
+const CONTENT = contentCatalog(gameData);
+const speciesById = new Map<string, Species>(CONTENT.monsters.map((monster) => [monster.id, {
+	id: monster.id,
+	types: monster.types ?? [],
+	baseStats: { ...(monster.baseStats ?? {}), maxHp: monster.hp },
+}]));
+const moveById = new Map<string, Move<DamageEffect>>(CONTENT.moves.map((move) => [move.id, {
+	id: move.id,
+	type: move.type,
+	target: move.target,
+	effects: { power: move.power ?? 5 },
+}]));
+const species = (id: string): Species => speciesById.get(id) ?? (() => { throw new Error(`unknown battle species: ${id}`); })();
+const move = (id: string): Move<DamageEffect> => moveById.get(id) ?? (() => { throw new Error(`unknown battle move: ${id}`); })();
+const SLIME = species('slime');
+const WOLF = species('wolf');
+const TACKLE = move('tackle');
+const OOZE_SLAM = move('ooze_slam');
 const PLAYER_MOVES: Move<DamageEffect>[] = [TACKLE, OOZE_SLAM];
-
-const BITE: Move<DamageEffect> = { id: 'bite', type: 'beast', target: 'single-enemy', effects: { power: 8 } };
-const HOWL: Move<DamageEffect> = { id: 'howl', type: 'beast', target: 'single-enemy', effects: { power: 4 } };
+const BITE = move('bite');
+const HOWL = move('howl');
 const ENEMY_MOVES: Move<DamageEffect>[] = [BITE, HOWL];
 
 const TYPES = new TypeMatrix();
-TYPES.set('ooze', 'beast', 1.5);
-TYPES.set('beast', 'ooze', 0.75);
+for (const matchup of CONTENT.typeMatchups) TYPES.set(matchup.attacker, matchup.defender, matchup.multiplier);
 
-const EVOLUTION: EvolutionRule<Species>[] = [{ at: (level) => level >= 3, into: ROYAL_SLIME }];
+const EVOLUTION: EvolutionRule<Species>[] = CONTENT.evolutions
+	.filter((rule) => speciesById.has(rule.from) && speciesById.has(rule.into))
+	.map((rule) => ({ at: (level) => level >= rule.level, into: species(rule.into) }));
 
 /** a modest 15%-per-level growth, applied to every base stat alike */
 function growthRule(base: Readonly<Record<string, number>>, level: number): Record<string, number> {

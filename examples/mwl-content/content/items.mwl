@@ -1,0 +1,10 @@
+[item]
+id=healing-herb
+name=_ "Healing herb"
+stackable=true
+weight=0.1
+[effect]
+apply_to=missing_hp_fraction
+add=1
+[/effect]
+[/item]

@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.7.0",
+	"version": "0.7.1",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -39,6 +39,8 @@
 	"files": [
 		"dist",
 		"tools/compile-resources.mjs",
+		"tools/extract-html.mjs",
+		"tools/extract-html.d.mts",
 		"tools/compress-dist.mjs",
 		"tools/compress-dist.d.mts",
 		"tools/mwl.mjs",
@@ -158,6 +160,7 @@
 		"assets": "node tools/make-example-assets.mjs",
 		"examples:build": "npm run assets && node tools/build-all-examples.mjs",
 		"extract:rgssad": "node tools/extract-rgssad.mjs",
+		"extract:html": "node tools/extract-html.mjs",
 		"i18n:edit": "node tools/i18n-edit.mjs",
 		"i18n:check": "node tools/i18n-edit.mjs --check",
 		"example:ui": "vite --config examples/interface/vite.config.ts",
@@ -169,7 +172,7 @@
 		"example:village": "vite --config examples/village/vite.config.ts",
 		"example:village:build": "vite build --config examples/village/vite.config.ts && node tools/emit-page.mjs examples/village",
 		"example:battle": "vite --config examples/battle/vite.config.ts",
-		"example:battle:build": "vite build --config examples/battle/vite.config.ts && node tools/emit-page.mjs examples/battle",
+		"example:battle:build": "npm run mwl -- build examples/battle/content -o examples/battle/generated && vite build --config examples/battle/vite.config.ts && node tools/emit-page.mjs examples/battle",
 		"example:minigame": "vite --config examples/minigame/vite.config.ts",
 		"example:minigame:build": "vite build --config examples/minigame/vite.config.ts && node tools/emit-page.mjs examples/minigame",
 		"example:chess": "vite --config examples/chess/vite.config.ts",
@@ -198,6 +201,8 @@
 		"example:event-system:build": "vite build --config examples/event-system/vite.config.ts && node tools/emit-page.mjs examples/event-system",
 		"example:headless": "vite --config examples/headless/vite.config.ts",
 		"example:headless:build": "vite build --config examples/headless/vite.config.ts && node tools/emit-page.mjs examples/headless",
+		"example:mwl-content": "vite --config examples/mwl-content/vite.config.ts",
+		"example:mwl-content:build": "npm run mwl -- build examples/mwl-content/content -o examples/mwl-content/generated && vite build --config examples/mwl-content/vite.config.ts && node tools/emit-page.mjs examples/mwl-content",
 		"benchmark:browser": "npm run example:dungeon:build && node tools/benchmark-browser.mjs",
 		"benchmark:3d": "npm run example:3d:build && node tools/benchmark-browser.mjs examples/three-d/dist/index.html",
 		"benchmark:tower-defense": "npm run example:tower-defense:build && node tools/benchmark-browser.mjs examples/tower-defense/dist/index.html",

@@ -1,0 +1,8 @@
+[unit_type]
+id=scout
+name=_ "Scout"
+image=units/scout.png
+profile=portraits/scout.png
+hitpoints=12
+movement=5
+[/unit_type]

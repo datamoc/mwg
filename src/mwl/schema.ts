@@ -48,6 +48,9 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			'status',
 			'loot',
 			'turn_clock',
+			'battle_move',
+			'type_matchup',
+			'evolution',
 		],
 	},
 	terrain_type: {
@@ -138,7 +141,20 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	schedule: { attributes: { id: 'id' }, children: ['time'] },
 	time: { attributes: { id: 'id', name: 'string', lawful_bonus: 'number' } },
 	event: {
-		attributes: { id: 'id', on: 'id', trigger: 'id' },
+		attributes: {
+			id: 'id',
+			on: 'id',
+			trigger: 'id',
+			// `on=moveto` filters. All optional: `[event] on=moveto unit=scout` fires
+			// for any hex that unit reaches, `x`/`y` narrow it to one hex.
+			x: 'integer',
+			y: 'integer',
+			side: 'integer',
+			unit: 'string',
+			// Defaults to true for moveto (a story beat fires once) and false for
+			// start/turn (a per-turn event has to repeat).
+			once: 'boolean',
+		},
 		children: [
 			'condition',
 			'filter',
@@ -255,7 +271,10 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			'hook',
 		],
 	},
-	message: { attributes: { speaker: 'id', text: 'string', value: 'string' } },
+	message: {
+		// `speaker` is a display name, so it may contain spaces ("Orcish Grunt").
+		attributes: { speaker: 'string', text: 'string', value: 'string', portrait: 'string', side: 'integer' },
+	},
 	teleport: { attributes: { unit: 'string', target: 'string', x: 'integer', y: 'integer' } },
 	end_turn: { attributes: {} },
 	win: { attributes: { side: 'integer' } },
@@ -280,6 +299,10 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			id: 'string',
 			name: 'string',
 			hp: 'integer',
+			types: 'string',
+			attack: 'number',
+			defense: 'number',
+			speed: 'number',
 			accuracy: 'number',
 			evasion: 'number',
 			damage_min: 'integer',
@@ -295,6 +318,11 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	status: { attributes: { id: 'id', name: 'string', duration: 'integer', tick: 'string', modifiers: 'string' } },
 	loot: { attributes: { item: 'id', chance: 'number', quantity: 'integer', weight: 'number' } },
 	turn_clock: { attributes: { id: 'id', tick: 'number', hunger: 'number' } },
+	ai: { attributes: { id: 'id', strategy: 'id', target: 'id', difficulty: 'number' }, children: ['behavior'] },
+	behavior: { attributes: { id: 'id', when: 'string', action: 'string', hook: 'string' } },
+	battle_move: { attributes: { id: 'id', type: 'id', target: 'id', power: 'number', cost: 'number' } },
+	type_matchup: { attributes: { attacker: 'id', defender: 'id', multiplier: 'number' } },
+	evolution: { attributes: { from: 'id', into: 'id', level: 'integer' } },
 	effect: {
 		attributes: {
 			apply_to: 'id',

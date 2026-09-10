@@ -1865,7 +1865,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.7.0";
+    export declare const version = "0.7.1";
 
 ### `VerticalLabel` (class)
 
@@ -3953,6 +3953,10 @@ build instead.
 ### `compileNodes` (function)
 
     export declare function compileNodes(nodes: readonly MwlNode[], options?: MwlCompileOptions): MwlCompiledGame;
+
+### `compileSources` (function)
+
+    export declare function compileSources(files: readonly MwlSourceFile[], options?: MwlCompileOptions): MwlCompiledGame;
 
 ### `contentCatalog` (function)
 

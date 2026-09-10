@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 import {
 	collectHookReferences,
 	compile,
+	compileSources,
 	emitHooksDeclaration,
 	emitModule,
 	extractCatalog,
@@ -36,22 +37,25 @@ if (!command || !input || !commands.includes(command)) {
 	console.error('Usage: mwl <validate|compile|extract-i18n|assets|hooks|build> input.mwl [-o output] [--manifest hooks.json]');
 	process.exitCode = 2;
 } else {
-	const source = fs.readFileSync(input, 'utf8');
+	const files = fs.statSync(input).isDirectory()
+		? collectSources(input)
+		: [{ file: sourceLabel(input), source: fs.readFileSync(input, 'utf8') }];
 	if (command === 'validate') {
-		const diagnostics = validate(parse(preprocess(source, { file: input }), input));
+		const diagnostics = files.flatMap((file) => validate(parse(preprocess(file.source, { file: file.file }), file.file)));
 		if (diagnostics.length) {
 			for (const diagnostic of diagnostics)
-				console.error(
-					`${diagnostic.location.file}:${diagnostic.location.line}:${diagnostic.location.column}: ${diagnostic.message}`,
-				);
+				console.error(`${diagnostic.location.file}:${diagnostic.location.line}:${diagnostic.location.column}: ${diagnostic.message}`);
 			process.exitCode = 1;
-		} else console.log(`${input}: valid MWL`);
+		} else {
+			try { compileSources(files); console.log(`${input}: valid MWL`); }
+			catch (error) { console.error(error instanceof Error ? error.message : String(error)); process.exitCode = 1; }
+		}
 	} else if (command === 'hooks') {
-		await hooks(source);
+		await hooks(files);
 	} else if (command === 'build') {
-		build(source);
+		build(files);
 	} else {
-		const result = compile(source, { file: input });
+		const result = compileSources(files);
 		const values =
 			command === 'extract-i18n' ? extractCatalog(result) : command === 'assets' ? result.assets : result;
 		const text = command === 'compile' ? emitModule(result) : `${JSON.stringify(values, null, '\t')}\n`;
@@ -62,9 +66,33 @@ if (!command || !input || !commands.includes(command)) {
 	}
 }
 
+function collectSources(directory) {
+	const files = [];
+	const root = path.resolve(directory);
+	const label = sourceLabel(root);
+	const visit = (current) => {
+		for (const entry of fs.readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0)) {
+			const full = path.join(current, entry.name);
+			if (entry.isDirectory()) visit(full);
+			else if (/\.mwl$/i.test(entry.name)) {
+				const relative = path.relative(root, full);
+				files.push({ file: path.join(label, relative).split(path.sep).join('/'), source: fs.readFileSync(full, 'utf8') });
+			}
+		}
+	};
+	visit(root);
+	if (!files.length) throw new Error(`no .mwl files found in ${directory}`);
+	return files;
+}
+
+function sourceLabel(file) {
+	const relative = path.relative(process.cwd(), path.resolve(file));
+	return (relative || path.basename(path.resolve(file))).split(path.sep).join('/');
+}
+
 /** One deterministic build step for the three files every MWL game consumes. */
-function build(source) {
-	const game = compile(source, { file: input });
+function build(files) {
+	const game = compileSources(files);
 	const directory = path.resolve(output ?? 'generated');
 	fs.mkdirSync(directory, { recursive: true });
 	fs.writeFileSync(path.join(directory, 'game-data.ts'), emitModule(game));
@@ -79,8 +107,8 @@ function build(source) {
  * each reference against the manifest, bundles the hook sources with esbuild,
  * and writes the matching declaration next to the bundle.
  */
-async function hooks(source) {
-	const game = compile(source, { file: input });
+async function hooks(files) {
+	const game = compileSources(files);
 	const references = collectHookReferences(game);
 	if (!output) {
 		process.stdout.write(

@@ -2998,6 +2998,44 @@ rather than someone else's build.
      full motion animates, an emulated `reduce` before load stops it, and a flip while the page
      is open is reported and stops the running slide. CI runs it in the visual-smoke job.
 
+203. ~~MWL as the default content boundary for complete games: assets, maps, scenarios, units,
+     items, dialogue, rules data, schedules, and AI configuration should be authored in
+     structured CFG/MWL files (with JSON or another explicit data format only where it is a
+     better fit), parsed and validated by MWL, and compiled at build time. Game TypeScript
+     should provide the generic engine, rendering and input code, plus explicit hooks for
+     genuinely executable game rules; it should not embed authored content as object literals
+     or ad-hoc constants. The roadmap work includes a first-class content-file layout, generated
+     typed modules/manifests, source-location diagnostics, deterministic build integration, and
+     examples covering assets, scenarios and AI. This is an architectural boundary, not a
+     request to put any Wesnoth or other game's content into MWG. The first slice is now
+     implemented: `mwl build` accepts one file or a recursive content directory, sorts source
+     paths deterministically, validates and merges them, and emits the compiled module,
+     translation catalog, and asset manifest. Wesnoth keeps its native `.cfg` files as source
+     and routes them through its port-owned WML front end and MWL adapter. Generic item,
+     expression, hook, persistence, and game-neutral AI catalog contracts are published; complete game migrations remain
+     open work. `examples/mwl-content/` now provides the reference layout with separate game,
+     unit, item, scenario, and AI files, is consumed by an executable page through its generated
+     module, and is validated by the same directory build command. `examples/battle/` now also
+     migrates its species, moves, type matchups, and evolution to `content/battle.mwl`; its
+     TypeScript contains only the battle loop and game-specific damage formula. Generated source
+     locations are relative and stable across machines.~~ - `examples/battle` is now a complete
+     reference game using MWL-generated species, moves, type matchups, and evolution data; the
+     remaining extraction work is tracked separately in item 204.
+
+204. ~~MWG content extraction from a large self-contained HTML file: on the first run, inspect
+     inline scripts, styles, data URIs, and embedded resources, write them to a deterministic
+     asset directory, and rewrite the HTML or emit a manifest that references those extracted
+     files. The command must be safe to rerun, preserve resource MIME types and ordering, and
+     report resources it cannot extract without silently changing them. Initial implementation:
+     `tools/extract-html.mjs` provides `extract-html input.html -o output/`: it writes a copy,
+     extracted assets, and a fingerprinted manifest, preserves source order, deduplicates
+     identical resources, keeps the input untouched, and warns about moved module imports.
+     CSS `url(data:...)` and HTML `srcset` candidates are also extracted. Integration with
+     the website build and less common embedded-resource forms remain open.~~ -
+     `tools/extract-html.mjs` is shipped with the package and its `extract:html` command is
+     usable by website and game build scripts; four tests cover scripts, styles, HTML data URLs,
+     CSS data URLs, `srcset`, deduplication, ordering, and module warnings.
+
 ### Parked decisions
 
 Not open work, and not forgotten: these are decisions this project has deliberately

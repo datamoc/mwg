@@ -1,0 +1,12 @@
+[ai]
+id=basic
+strategy=balanced
+target=enemy
+difficulty=1
+[behavior]
+id=advance
+when=enemy_visible
+action=move_toward_enemy
+hook=ai:advance
+[/behavior]
+[/ai]

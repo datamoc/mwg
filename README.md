@@ -11,7 +11,7 @@ of their own; improvements to `mwg`'s own files are shared back.
 **[Live examples and API docs](https://datamoc.github.io/mwg/)**: every example below,
 playable in the browser with no download, plus the generated API reference.
 
-> **Status: pre-alpha (v0.7.0).** Every module in the shared floor below, plus optional
+> **Status: pre-alpha (v0.7.1).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
 > [ROADMAP.md](ROADMAP.md) for the full, numbered history.
 >
@@ -394,14 +394,29 @@ npm run mwl -- extract-i18n game.mwl -o generated/i18n.json
 npm run mwl -- hooks game.mwl --manifest hooks.json -o generated/hooks.mjs
 ```
 
+The input may also be a content directory. `mwl build content/ -o generated/`
+reads every `.mwl` file recursively in stable path order and emits one merged,
+validated catalog. Diagnostics retain each source file and line, so a game can
+organize assets, units, items, scenarios, dialogue, and AI data as separate files.
+
 `mwl build` is the normal game command: it produces `game-data.ts`, `i18n.json`,
 and `assets.json` in one build-time step. The game imports the generated module;
 it never calls `Mwl.compile()` at runtime. MWG also provides generic helpers for
 turning item effects into `actors` modifiers and for versioned, migratable MWL
 saves. Asset attributes such as `image`, `image_icon`, `profile`, `icon`, `file`,
 `sound`, and `*_sound` are collected into the manifest, including comma-separated
-sound lists and Wesnoth `~` image modifiers. Item slots, formulas, hooks, and
-business rules remain defined by the game.
+sound lists, Wesnoth sound ranges such as `human-hit-[1~5].ogg`, and image
+modifiers. Nested transform arguments are not mistaken for separate assets.
+Item slots, formulas, hooks, and business rules remain defined by the game.
+
+For a large self-contained HTML page, `npm run extract:html -- page.html -o extracted/`
+writes a rewritten `index.html`, an `assets/` directory, and a deterministic
+`manifest.json`. Inline scripts, styles, and supported `data:` URLs are extracted in
+source order. The original page is never overwritten, and unsupported data forms are
+reported as warnings. The output directory is safe to regenerate: its extracted
+`assets/` directory is replaced, while unrelated files are kept.
+CSS `url(data:...)` values and HTML `srcset` candidates are handled too, including
+their density descriptors.
 
 Translation messages are the values marked `_ "..."` in the source; the
 extracted catalog matches `@datamoc/mw_games/i18n`. Hooks are referenced as

@@ -1,0 +1,11 @@
+{
+	"locale": "en",
+	"direction": "ltr",
+	"messages": {
+		"Healing herb": "Healing herb",
+		"MWL content example": "MWL content example",
+		"Scout": "Scout",
+		"The training begins.": "The training begins.",
+		"Training ground": "Training ground"
+	}
+}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>mwg: MWL content example</title>
+	<style>
+		:root { color-scheme: dark; font: 16px/1.5 system-ui, sans-serif; }
+		body { margin: 0; background: #10131b; color: #e8ecf5; }
+		main { max-width: 58rem; margin: 0 auto; padding: 2rem; }
+		h1 { margin-top: 0; color: #9dd7ff; }
+		.card { margin: 1rem 0; padding: 1rem; border: 1px solid #354052; border-radius: .6rem; background: #181e2a; }
+		.card h2 { margin: 0 0 .4rem; font-size: 1.1rem; color: #ffd88a; }
+		code { color: #aee8c2; }
+		#not-built { padding: 2rem; }
+	</style>
+	<script>
+		addEventListener('DOMContentLoaded', function () {
+			if (location.protocol !== 'file:' || window.__MWG_ASSETS__) return;
+			document.body.innerHTML = '<div id="not-built"><strong>This is the source page, not the built game.</strong><p>Run <code>npm run example:mwl-content:build</code>, then open <code>dist/index.html</code>.</p></div>';
+		});
+	</script>
+</head>
+<body>
+	<main id="app"></main>
+	<script type="module" src="./main.ts"></script>
+</body>
+</html>

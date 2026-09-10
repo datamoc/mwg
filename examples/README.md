@@ -57,7 +57,7 @@ npm run example:audio          # Music.playTracks + Sound, dev server
 npm run example:audio:build
 
 npm run example:battle          # a creature battle, dev server
-npm run example:battle:build    # battle, then open its dist/index.html
+npm run example:battle:build    # MWL battle data plus the game, then open its dist/index.html
 
 npm run example:minigame          # lockpicking timing game, dev server
 npm run example:minigame:build    # lockpicking, then open its dist/index.html
@@ -87,6 +87,9 @@ npm run example:3d:build    # 3D scene, then open its dist/index.html
 
 npm run example:headless          # mwg/simulation's two runners, no rendering at all, dev server
 npm run example:headless:build
+
+npm run example:mwl-content          # build-time MWL content consumed by a small game page
+npm run example:mwl-content:build
 ```
 
 Opening an example's own `index.html` from disk shows a note telling you this, rather than

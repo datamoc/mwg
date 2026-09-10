@@ -1,0 +1,6 @@
+[game]
+schema=0.1
+title=_ "MWL content example"
+data_root=content
+start_scene=opening
+[/game]

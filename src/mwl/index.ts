@@ -2,8 +2,8 @@ export { MwlSyntaxError, isGettext, parse, parseValue, preprocess } from './gram
 export type { MwlDiagnostic, MwlLocation, MwlNode, MwlPreprocessOptions } from './grammar.ts';
 export { schema01, validate } from './schema.ts';
 export type { MwlTagSchema, MwlValueType } from './schema.ts';
-export { compile, compileNodes, emitModule, extractCatalog } from './compiler.ts';
-export type { MwlCatalog, MwlCatalogOptions, MwlCompileOptions, MwlCompiledGame, MwlCompiledNode } from './compiler.ts';
+export { compile, compileNodes, compileSources, emitModule, extractCatalog } from './compiler.ts';
+export type { MwlCatalog, MwlCatalogOptions, MwlCompileOptions, MwlCompiledGame, MwlCompiledNode, MwlSourceFile } from './compiler.ts';
 export {
 	collectHookReferences,
 	emitHooksDeclaration,
@@ -26,11 +26,13 @@ export type {
 	PredicateHook,
 } from './hooks.ts';
 export { createWorld, execute, MwlRuntime, parseTerrain } from './runtime.ts';
-export type { MwlCommand, MwlHookRegistry, MwlMap, MwlMapStart, MwlRuntimeOptions, MwlWorld } from './runtime.ts';
+export type { MwlCommand, MwlHookRegistry, MwlMap, MwlMapStart, MwlMessage, MwlRuntimeOptions, MwlWorld } from './runtime.ts';
 export { contentCatalog } from './content.ts';
 export type {
 	MwlContentCatalog,
 	MwlEffectDefinition,
+	MwlAiDefinition,
+	MwlBehaviorDefinition,
 	MwlItemDefinition,
 	MwlLootDefinition,
 	MwlMonsterDefinition,
