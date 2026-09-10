@@ -15,9 +15,9 @@ playable in the browser with no download, plus the generated API reference.
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
 > [ROADMAP.md](ROADMAP.md) for the full, numbered history.
 >
-> 0.4.0 is the reshaping release: the renderer moved out of `mwg/core`, `render`/`ui`/`stage`
+> 0.4.0 was the reshaping release: the renderer moved out of `mwg/core`, `render`/`ui`/`stage`
 > became `mwg/two-d`, and a set of names that meant several things each were made to mean one.
-> It is deliberately the last such release planned before 1.0. Still `0.y.z` until then, but
+> It was deliberately the last such release planned before 1.0. Still `0.y.z` until then, but
 > the intent from here is additions rather than renames.
 >
 > **Versioning:** `0.y.z` until 1.0, so the public API can still change between minor versions.
