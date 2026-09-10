@@ -4,7 +4,7 @@
  * `render.Camera`'s shake decay each used to hand-roll this same shape under a different
  * name; this is that shape, pulled out once.
  */
-import { reducedMotion } from './Motion.ts';
+import { motionDuration, reducedMotion, type MotionIntent } from './Motion.ts';
 
 export type Easing = (t: number) => number;
 
@@ -22,12 +22,34 @@ export const Easing: Record<
 	easeInOutCubic: (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2),
 };
 
+export interface TweenOptions {
+	/** defaults to `Easing.linear` */
+	ease?: Easing;
+
+	/**
+	 * What the motion is for. `decorative` (the default: a slide, spin, zoom or anything
+	 * large or peripheral) collapses under reduced motion; `meaningful` is shortened
+	 * instead, so state that motion conveys is still readable. See `core.MotionIntent`.
+	 */
+	intent?: MotionIntent;
+
+	/**
+	 * A non-vestibular variant to run instead of `apply` under reduced motion, for the case
+	 * the preference asks for rather than removal: `(t) => (sprite.alpha = t)` beside an
+	 * `apply` that slides and fades. It runs over the shortened duration, not the full one.
+	 * Not used when the preference is off.
+	 */
+	alternate?: (t: number) => void;
+}
+
 interface ActiveTween {
 	elapsed: number;
 	duration: number;
 	ease: Easing;
 	apply: (t: number) => void;
 	resolve: () => void;
+	/** a decorative motion finishes at once if the preference arrives mid-flight */
+	finishOnReduced: boolean;
 }
 
 /**
@@ -52,15 +74,36 @@ export class Tweener {
 	/**
 	 * Runs `apply` with progress eased from 0 to 1 over `duration` seconds, resolving once it
 	 * reaches 1. A non-positive duration applies the end state at once rather than waiting a
-	 * frame for it, and so does reduced motion (`core.reducedMotion`).
+	 * frame for it, and so does a `decorative` motion under reduced motion
+	 * (`core.reducedMotion`); a `meaningful` one is shortened instead, and an `alternate`
+	 * replaces it outright. See `TweenOptions`.
 	 */
-	tween(duration: number, apply: (t: number) => void, ease: Easing = Easing.linear): Promise<void> {
-		if (reducedMotion() || !(duration > 0)) {
-			apply(1);
+	tween(duration: number, apply: (t: number) => void, options: Easing | TweenOptions = Easing.linear): Promise<void> {
+		const {
+			ease = Easing.linear,
+			intent = 'decorative',
+			alternate,
+		} = typeof options === 'function' ? { ease: options } : options;
+
+		//the alternate *replaces* the motion, so it runs even though the original is a trigger
+		const substituting = reducedMotion() && alternate !== undefined;
+		const run = substituting ? alternate : apply;
+		const effective = motionDuration(duration, substituting ? 'meaningful' : intent);
+
+		if (!(effective > 0)) {
+			run(1);
 			return Promise.resolve();
 		}
+
 		return new Promise((resolve) => {
-			this.tweens.push({ elapsed: 0, duration, apply, ease, resolve });
+			this.tweens.push({
+				elapsed: 0,
+				duration: effective,
+				ease,
+				apply: run,
+				resolve,
+				finishOnReduced: !substituting && intent === 'decorative',
+			});
 		});
 	}
 
@@ -70,6 +113,15 @@ export class Tweener {
 		//iterate a copy: a tween's resolve may start another, which must not be advanced
 		//again within this same update
 		for (const tween of [...this.tweens]) {
+			//the preference can arrive while this is running; a decorative motion has no
+			//reason to keep moving once it does
+			if (tween.finishOnReduced && reducedMotion()) {
+				this.tweens.splice(this.tweens.indexOf(tween), 1);
+				tween.apply(1);
+				tween.resolve();
+				continue;
+			}
+
 			tween.elapsed += dt;
 			const t = Math.min(1, tween.elapsed / tween.duration);
 			tween.apply(tween.ease(t));

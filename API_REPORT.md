@@ -903,6 +903,10 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `motionDuration` (function)
+
+    export declare function motionDuration(duration: number, intent?: MotionIntent): number;
+
 ### `newlyRevealed` (function)
 
     export declare function newlyRevealed(explored: ReadonlySet<number>, alreadyDrawn: ReadonlySet<number>): number[];
@@ -1818,7 +1822,7 @@ build instead.
     export declare class Tweener {
         private tweens;
         
-        tween(duration: number, apply: (t: number) => void, ease?: Easing): Promise<void>;
+        tween(duration: number, apply: (t: number) => void, options?: Easing | TweenOptions): Promise<void>;
         update(dt: number): void;
         
         get isBusy(): boolean;
@@ -1882,6 +1886,10 @@ build instead.
         resize(x: number, y: number, width: number, height: number): void;
         update(dt: number): void;
     }
+
+### `watchReducedMotion` (function)
+
+    export declare function watchReducedMotion(listener: (reduced: boolean) => void): () => void;
 
 ### `Window` (class)
 
@@ -3310,6 +3318,10 @@ build instead.
         private write;
     }
 
+### `motionDuration` (function)
+
+    export declare function motionDuration(duration: number, intent?: MotionIntent): number;
+
 ### `NewsClient` (class)
 
     export declare class NewsClient extends HttpTransport {
@@ -3672,7 +3684,7 @@ build instead.
     export declare class Tweener {
         private tweens;
         
-        tween(duration: number, apply: (t: number) => void, ease?: Easing): Promise<void>;
+        tween(duration: number, apply: (t: number) => void, options?: Easing | TweenOptions): Promise<void>;
         update(dt: number): void;
         
         get isBusy(): boolean;
@@ -3708,6 +3720,10 @@ build instead.
 ### `validateSchema` (function)
 
     export declare function validateSchema(value: unknown, schema: Schema, path?: string): void;
+
+### `watchReducedMotion` (function)
+
+    export declare function watchReducedMotion(listener: (reduced: boolean) => void): () => void;
 
 ## `./i18n`
 

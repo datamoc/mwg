@@ -47,6 +47,12 @@ export class Animation {
  * Nothing advances on its own: call `update(dt)` from the scene, or add the sprite to a
  * `SpriteGroup`, so that pausing the game pauses the animations with it.
  *
+ * Reduced motion deliberately does not pause this. A frame cycle is usually game state - a
+ * walking enemy that freezes when the player has asked for less motion is a bug, not an
+ * accommodation, and the article's own "Don't Reduce Too Much" is about exactly this. A game
+ * whose loops are purely decorative (torches, rippling water) can stop those itself through
+ * `paused`, or not add the sprite at all.
+ *
  * Extends `TintedSprite` directly, so `alpha` composes with `tint`/`colorAdd` the same
  * way here too - a translucent, animated ghost is `alpha = 0.5` plus whatever tint, no
  * different from a still one (see `TintedSprite`'s own doc comment).

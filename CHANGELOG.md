@@ -7,6 +7,16 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+- Reduced motion beyond the media feature (roadmap items 199-202): `MotionIntent` and
+  `motionDuration` let a caller say whether a motion is decorative or meaningful, so a trigger
+  can be replaced by a fade rather than deleted; `Tweener.tween` takes `{ intent, alternate }`;
+  camera follow and `FloatingText`'s rise now respect the preference (and `AnimatedSprite`
+  documents why it deliberately does not); `watchReducedMotion` reports a change while a game is
+  running, so an in-flight tween, burst or fade stops instead of finishing; and the interface
+  example gained a motion demo that `npm run motion:smoke` opens three ways (no preference,
+  `prefers-reduced-motion: reduce` before load, and a flip mid-session) in a real browser.
+
 ## [0.5.5] - 2026-09-10
 
 Accessibility reaches the framework floor: a reduced-motion switch the tween, particle, camera

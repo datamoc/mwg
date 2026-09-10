@@ -1,5 +1,5 @@
 import { Node2D, Shape2D, type Texture2D } from '../../src/two-d/render/index.ts';
-import { Input } from '../../src/core/index.ts';
+import { Input, Tweener, reducedMotion, setReducedMotion, watchReducedMotion } from '../../src/core/index.ts';
 import { Game, Scene2D } from '../../src/two-d/index.ts';
 import {
 	TintedSprite,
@@ -26,6 +26,13 @@ import {
 } from '../../src/two-d/ui/index.ts';
 import * as Resources from '../../src/assets/index.ts';
 import tileset from '../assets/tiles.json' with { type: 'json' };
+
+declare global {
+	interface Window {
+		/** the reduced-motion demo's state, read by `tools/motion-smoke.mjs` (roadmap item 202) */
+		__MWG_MOTION__?: { reduced: boolean; animatedFrames: number; changes: number };
+	}
+}
 
 /**
  * The interface layer, exercised.
@@ -77,6 +84,15 @@ class InterfaceScene extends Scene2D {
 	private colorBlindnessIndex = 0;
 	private toast!: Toast;
 
+	//the reduced-motion demo (roadmap item 202), and the state motion-smoke reads off `window`
+	private motionDot!: Shape2D;
+	private motionLabel!: Label;
+	private motionTweener = new Tweener();
+	private motionFrames: number[] = [];
+	private motionDirection = -1;
+	private motionChanges = 0;
+	private stopWatchingMotion: () => void = () => {};
+
 	override create(): void {
 		this.sheet = SpriteSheet.grid(TILES, tileSize);
 
@@ -91,6 +107,7 @@ class InterfaceScene extends Scene2D {
 
 		this.stage.addChild(this.windows);
 		this.buildHud();
+		this.buildMotionDemo();
 		this.stage.addChild(this.popups);
 
 		this.toast = new Toast({ fadeIn: 0.2, hold: 1.2, fadeOut: 0.5 });
@@ -239,6 +256,88 @@ class InterfaceScene extends Scene2D {
 		this.minimap.sync(explored, (x, y) => colors[(x * 7 + y * 3) % colors.length]);
 		this.minimap.setMarker(20, 12, 0);
 		this.stage.addChild(this.minimap);
+	}
+
+	/**
+	 * A visible reduced-motion demo (roadmap item 202): a diamond slides along a short track on
+	 * a decorative tween, a label reports the effective preference, and the button forces it on
+	 * or off on top of the OS setting. `tools/motion-smoke.mjs` opens this page three ways (no
+	 * preference, `prefers-reduced-motion: reduce` before load, and a flip while it is running)
+	 * and reads `window.__MWG_MOTION__`, which `updateMotion` keeps current.
+	 */
+	private buildMotionDemo(): void {
+		const row = new Node2D();
+		row.x = 12;
+		row.y = 64;
+		this.stage.addChild(row);
+
+		const track = new Shape2D().rect(0, 0, 96, 4).fill(0x33333d);
+		track.y = 10;
+		row.addChild(track);
+
+		this.motionDot = new Shape2D().rect(0, 0, 12, 12).fill(0x6fb1ff);
+		this.motionDot.y = 6;
+		row.addChild(this.motionDot);
+
+		this.motionLabel = new Label({ color: theme().color.textDim, stroke: { color: 0x000000, width: 3 } });
+		this.motionLabel.x = 112;
+		this.motionLabel.y = 8;
+		row.addChild(this.motionLabel);
+
+		const toggle = new Button({
+			width: 96,
+			height: 22,
+			text: 'Motion',
+			onClick: () => setReducedMotion(!reducedMotion()),
+		});
+		toggle.x = 340;
+		toggle.y = 1;
+		row.addChild(toggle);
+
+		this.refreshMotionLabel();
+		//the OS setting can change while the page is open, so the label follows it; the smoke
+		//proves this fired by flipping the emulated media after load
+		this.stopWatchingMotion = watchReducedMotion(() => {
+			this.motionChanges++;
+			this.refreshMotionLabel();
+		});
+		this.onDestroy.add(() => this.stopWatchingMotion());
+	}
+
+	private refreshMotionLabel(): void {
+		this.motionLabel.setText(
+			reducedMotion() ? 'reduced motion: on, so the diamond stays put' : 'reduced motion: off',
+		);
+	}
+
+	/**
+	 * One decorative tween at a time. Under reduced motion none is ever started, and an
+	 * in-flight one finishes at once, so `motionFrames` empties; `motionFrames` is a
+	 * one-second sliding window, which makes the reading phase-independent: full motion keeps
+	 * it near the frame rate whatever moment the smoke samples it.
+	 */
+	private updateMotion(dt: number): void {
+		this.motionTweener.update(dt);
+
+		if (!this.motionTweener.isBusy && !reducedMotion()) {
+			this.motionDirection = -this.motionDirection;
+			const from = this.motionDot.x;
+			const to = this.motionDirection > 0 ? 84 : 0;
+			void this.motionTweener.tween(0.5, (t) => {
+				this.motionDot.x = from + (to - from) * t;
+			});
+		}
+
+		if (this.motionTweener.isBusy) this.motionFrames.push(this.elapsed);
+		while (this.motionFrames.length > 0 && this.elapsed - this.motionFrames[0] > 1) {
+			this.motionFrames.shift();
+		}
+
+		window.__MWG_MOTION__ = {
+			reduced: reducedMotion(),
+			animatedFrames: this.motionFrames.length,
+			changes: this.motionChanges,
+		};
 	}
 
 	private takeHit(): void {
@@ -420,6 +519,7 @@ class InterfaceScene extends Scene2D {
 		this.elapsed += dt;
 		this.clock.setText(this.elapsed.toFixed(1) + 's');
 		this.toast.update(dt);
+		this.updateMotion(dt);
 	}
 }
 

@@ -261,6 +261,9 @@ export class ParticleEmitter extends Container {
 			}
 		}
 
+		//read once per frame rather than once per particle; the preference can arrive mid-burst
+		const frozen = reducedMotion();
+
 		for (const particle of this.pool) {
 			if (!particle.active) continue;
 
@@ -270,8 +273,16 @@ export class ParticleEmitter extends Container {
 				continue;
 			}
 
-			particle.vx += this.gravityX * dt;
-			particle.vy += this.gravityY * dt;
+			if (frozen) {
+				//stop the travel and spin where the particles are, keep the fade: the puff
+				//still appears and goes, it just does not move across the screen
+				particle.vx = 0;
+				particle.vy = 0;
+				particle.spin = 0;
+			} else {
+				particle.vx += this.gravityX * dt;
+				particle.vy += this.gravityY * dt;
+			}
 			particle.x += particle.vx * dt;
 			particle.y += particle.vy * dt;
 			particle.rotation += particle.spin * dt;

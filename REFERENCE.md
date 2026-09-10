@@ -149,12 +149,18 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   moves volume around). `seed` adds to a cell, `clear` zeroes one cell and leaves its
   neighbours alone, and `cellsAbove` lists what a game applies its effect on; what a volume
   means (fire, gas, ooze, water) stays the game's own reading.
-- `reducedMotion`/`setReducedMotion`/`prefersReducedMotion` - the one answer to "should this
-  animate": the OS `prefers-reduced-motion` preference, overridable per game. `Tweener`,
-  `Camera`, `ScreenEffects` and `ParticleEmitter` already consult it, so a game that calls
-  nothing still respects the preference on the paths it uses.
-- `Tweener`/`Easing` - a generic `tween(duration, apply, ease?)` plus a small
-  linear/quad/cubic easing-curve set.
+- `reducedMotion`/`setReducedMotion`/`prefersReducedMotion`/`watchReducedMotion` - the one
+  answer to "should this animate": the OS `prefers-reduced-motion` preference, overridable per
+  game, with a change subscription for something long-lived that has to stop mid-flight.
+  `motionDuration(duration, intent)` is the policy built on it, and `MotionIntent` is the
+  caller's declaration: a `decorative` motion (the default) collapses, a `meaningful` one is
+  shortened rather than deleted, because a change that motion conveys stays readable. `Tweener`,
+  `Camera` (shake and follow), `ScreenEffects`, `ParticleEmitter` and `FloatingText` consult it.
+  `AnimatedSprite` deliberately does not: a frame cycle is usually game state.
+- `Tweener`/`Easing`/`TweenOptions` - a generic `tween(duration, apply, ease?)` plus a small
+  linear/quad/cubic easing-curve set. The third argument also takes `{ ease, intent, alternate }`:
+  `alternate` is the non-vestibular variant to run instead under reduced motion (a fade where a
+  slide was), and it is ignored while the preference is off.
 - `UndoHistory` - gameplay-level undo/redo over pushed, reference-held states.
 - `LoadQueue` - a reusable loading-screen lifecycle: named tasks, aggregate progress,
   cancellation.

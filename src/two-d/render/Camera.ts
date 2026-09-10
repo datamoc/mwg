@@ -200,9 +200,13 @@ export class Camera {
 			dx = dx > deadX ? dx - deadX : dx < -deadX ? dx + deadX : 0;
 			dy = dy > deadY ? dy - deadY : dy < -deadY ? dy + deadY : 0;
 
-			//framerate-independent easing: the same fraction is covered per second however
-			//long the frame was, so a slow frame does not lag the camera behind
-			const t = 1 - Math.exp(-this.followIntensity * dt);
+			//a camera gliding after the player is multi-directional peripheral movement,
+			//the trigger WebKit's "Responsive Design for Motion" names. Reduced motion
+			//keeps the camera on the player but moves it in cuts - only when the target
+			//leaves the deadzone - instead of easing continuously. Otherwise this is
+			//framerate-independent easing: the same fraction is covered per second
+			//however long the frame was, so a slow frame does not lag the camera behind
+			const t = reducedMotion() ? 1 : 1 - Math.exp(-this.followIntensity * dt);
 			this.x += dx * t;
 			this.y += dy * t;
 		}

@@ -22,6 +22,7 @@ npm run examples:build   # build every example page, not just the benchmarked on
 npm run visual:smoke     # screenshot one built example from file:// and check it rendered
 npm run visual:smoke:ui  # build the interface example first, then smoke it
 npm run package:smoke    # npm pack + install + open both published paths from file:// (run build first)
+npm run motion:smoke     # open the interface example with reduced motion, and with it flipped at runtime
 npm run benchmark:animation # CSS/SVG element animation vs Pixi sprites, measured (run build first)
 npm run webpage:examples # rebuild playable example pages for the website
 npm run webpage:docs     # rebuild the generated API documentation

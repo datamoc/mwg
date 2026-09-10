@@ -28,18 +28,14 @@ where those live.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** 199-202, one reduced-motion cluster requested before
-0.6.0: 202 first (a demo consumer plus a browser smoke that emulates the media, so everything
-built after it is verified where it runs rather than against a mock), then 199 (replace trigger
-motion with alternates instead of cutting it), 200 (the trigger paths item 192 missed) and 201
-(reacting to a preference change mid-session). Everything before 199 has shipped, including the
-former priority cluster (28, 30, 41, 45) and the verification and accessibility tail (192-197).
-Numbers are never reassigned once given - the list is an append-only history, including for what
-is not done yet - so priority order lives in prose, rather than in the list's own sequence. What
-remains before 1.0 is recorded in the [1.0 exit checklist](#10-exit-checklist) at the end of
-this file; the few deliberate non-decisions (which reference title, if any, a future genre pick
-should study) are parked in [Parked decisions](#parked-decisions) rather than left as phantom
-open items.
+**Priority order among what's still open:** none. Every numbered item has shipped, including the
+former priority cluster (28, 30, 41, 45), the verification and accessibility tail (192-197), the
+SVG and benchmark follow-up (198) and the reduced-motion cluster (199-202). Numbers are never
+reassigned once given - the list is an append-only history, including for what is not done yet -
+so priority order lives in prose, rather than in the list's own sequence. What remains before 1.0
+is recorded in the [1.0 exit checklist](#10-exit-checklist) at the end of this file; the few
+deliberate non-decisions (which reference title, if any, a future genre pick should study) are
+parked in [Parked decisions](#parked-decisions) rather than left as phantom open items.
 
 17. ~~`mwg/render` + `mwg/roguelike` - hexagonal tile maps, and FOV/pathfinding over a hex
     grid~~ - flat-top, matching Wesnoth. `Level` and `TileMap` both gained a `shape` option
@@ -2974,34 +2970,33 @@ rather than someone else's build.
      is limited by the DOM side, so browser-native element animation stays an asset-format win
      and a possible handful-of-chrome-elements escape hatch, not a world renderer.
 
-199. requested directly, from WebKit's "Responsive Design for Motion" (item 192 shipped the
-     media feature itself): the reduced path is binary and blunt. `Tweener` jumps straight to
-     the end state, so a reveal, a slide or a scale that carried meaning is deleted rather than
-     replaced, while the article's central advice is the opposite, "Don't Reduce Too Much":
-     keep motion that is not a vestibular trigger, and give a trigger a simpler alternate, a
-     fade where there was a slide, a still frame where there was a zoom. Let a caller say what a
-     motion is for (meaningful or user-driven versus decorative or trigger) and let the reduced
-     path shorten or substitute instead of always cutting.
+199. ~~requested directly, from WebKit's "Responsive Design for Motion" (item 192 shipped the
+     media feature itself): the reduced path is binary and blunt~~ - `MotionIntent` and
+     `motionDuration` now let a caller declare a motion `decorative` (collapses, the old
+     behaviour) or `meaningful` (shortened, not deleted), and `Tweener.tween` takes
+     `{ intent, alternate }` so a trigger can be replaced by a fade instead of cut outright.
 
-200. requested directly, same article: 192 wired four paths (`Tweener`, `Camera.shake`,
-     `ScreenEffects`, `ParticleEmitter`) and missed the triggers the article actually names.
-     `Camera.panTo`/`follow` smoothing is multi-directional peripheral movement; a zoom or scale
-     transition is its scaling trigger; `FloatingText` rises; `AnimatedSprite` loops a frame
-     cycle forever beside text. Decide each one: reduce, replace, or deliberately keep
-     (user-driven movement such as `GridMover`'s own step, and direct manipulation, stay).
+200. ~~requested directly, same article: 192 wired four paths (`Tweener`, `Camera.shake`,
+     `ScreenEffects`, `ParticleEmitter`) and missed the triggers the article actually names~~ -
+     `Camera.panTo`/`follow` now cut to the target instead of easing (the multi-directional
+     peripheral trigger), `FloatingText` keeps its fade and drops its rise, and `AnimatedSprite`
+     is a documented keep: a frame cycle is usually game state, not decoration, with `paused`
+     there for a game whose loops are purely decorative. `GridMover`'s own step stays, being
+     user-driven.
 
-201. requested directly, same article: `reducedMotion()` reads `MediaQueryList.matches` live, so
-     the next query is correct, but nothing is notified when the user flips the setting, so a
-     particle burst, screen effect or camera follow already in flight keeps running. Add a
-     `watchReducedMotion`/`Signal` seam (the webpage's own architecture explorer already
-     registers a `change` listener this way) and have long-lived animators subscribe to it.
+201. ~~requested directly, same article: `reducedMotion()` reads `MediaQueryList.matches` live, so
+     the next query is correct, but nothing is notified when the user flips the setting~~ -
+     `watchReducedMotion(listener)` returns an unsubscribe and fires both on a real media change
+     (with the deprecated `addListener` spelling supported) and on `setReducedMotion`. `Tweener`,
+     `ParticleEmitter` and `ScreenEffects` finish or freeze an in-flight motion when the
+     preference appears, and the interface example's demo subscribes to update its label.
 
-202. requested directly, same article: nothing in the repo exercises the preference outside unit
-     tests. No example or webpage toggles it and the browser tools never emulate it, so the
-     reduced path has never been seen in a browser. Add a demo consumer and a smoke that opens
-     it with `page.emulateMedia({ reducedMotion: 'reduce' })` as well as without, extending
-     `tools/browser-smoke.mjs`, so the reduced path is verified where it runs rather than
-     asserted against a mock.
+202. ~~requested directly, same article: nothing in the repo exercises the preference outside
+     unit tests~~ - the interface example gained a motion demo (a sliding diamond, a label, a
+     toggle button) publishing its state on `window.__MWG_MOTION__`, and
+     `tools/motion-smoke.mjs` opens it three ways through `page.emulateMedia`, asserting that
+     full motion animates, an emulated `reduce` before load stops it, and a flip while the page
+     is open is reported and stops the running slide. CI runs it in the visual-smoke job.
 
 ### Parked decisions
 

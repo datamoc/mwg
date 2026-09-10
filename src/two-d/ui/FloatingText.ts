@@ -1,5 +1,6 @@
 import { Container } from 'pixi.js';
 import { Label } from './Label.ts';
+import { reducedMotion } from '../../core/Motion.ts';
 
 export interface FloatingTextOptions {
 	text: string;
@@ -62,7 +63,9 @@ export class FloatingText extends Container {
 
 		this.elapsed = Math.min(this.duration, this.elapsed + dt);
 		const t = this.duration > 0 ? this.elapsed / this.duration : 1;
-		this.y = -this.rise * t;
+		//the rise is peripheral movement beside whatever the player is reading; reduced
+		//motion keeps the fade and drops the travel, so the number still appears and goes
+		this.y = (reducedMotion() ? 0 : -this.rise) * t;
 		this.alpha = 1 - t;
 
 		if (t >= 1) {

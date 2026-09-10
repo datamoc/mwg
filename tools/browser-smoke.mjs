@@ -16,13 +16,29 @@ import { launchChrome } from './find-chrome.mjs';
  * scheduled browser benchmark records for keeping its fps history off the per-push path.
  *
  * `MWG_VISUAL_CHROME_ARGS` carries machine-specific flags, as on a runner with no GPU.
+ *
+ * Three optional extras let a caller check more than "it rendered":
+ *
+ *   - `reducedMotion`: `'reduce'` or `'no-preference'`, emulated before the page loads;
+ *   - `probe`: a JavaScript expression evaluated in the page after it settles, returned as
+ *     `state.probe` (the reduced-motion smoke reads `window.__MWG_MOTION__` this way);
+ *   - `after`: an async hook run once the page has settled and `keyToPress` has fired, for a
+ *     scenario that changes something while the page is open (flipping the emulated media).
  */
-export async function smokePage({ url, screenshot, keyToPress = null }) {
+export async function smokePage({
+	url,
+	screenshot,
+	keyToPress = null,
+	reducedMotion = null,
+	probe = null,
+	after = null,
+}) {
 	await mkdir(dirname(screenshot), { recursive: true });
 	const browser = await launchChrome({ argsEnv: 'MWG_VISUAL_CHROME_ARGS' });
 
 	try {
 		const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
+		if (reducedMotion) await page.emulateMedia({ reducedMotion });
 		const pageErrors = [];
 		page.on('pageerror', (error) => pageErrors.push(error.message));
 		page.on('console', (message) => {
@@ -49,6 +65,7 @@ export async function smokePage({ url, screenshot, keyToPress = null }) {
 			//give whatever the key opened time to lay itself out and draw
 			await page.waitForTimeout(250);
 		}
+		if (after) await after(page);
 
 		const state = await page.evaluate(() => {
 			const canvas = document.querySelector('canvas');
@@ -80,6 +97,8 @@ export async function smokePage({ url, screenshot, keyToPress = null }) {
 		});
 
 		await page.screenshot({ path: screenshot, type: 'png' });
+		const probed =
+			probe === null ? null : await page.evaluate((source) => new Function(`return (${source})`)(), probe);
 
 		if (!state.gameReady || state.canvas.width === 0 || state.canvas.height === 0) {
 			throw new Error(`page did not render a ready game canvas: ${url}`);
@@ -93,7 +112,7 @@ export async function smokePage({ url, screenshot, keyToPress = null }) {
 			throw new Error(`canvas looks blank on ${url}: ${JSON.stringify(sample)}`);
 		}
 
-		return { url, keyToPress, screenshot, pageErrors, ...state };
+		return { url, keyToPress, reducedMotion, screenshot, pageErrors, ...state, probe: probed };
 	} finally {
 		await browser.close();
 	}

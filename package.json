@@ -200,6 +200,7 @@
 		"benchmark:animation": "node tools/benchmark-animation.mjs",
 		"visual:smoke": "node tools/visual-smoke.mjs",
 		"visual:smoke:ui": "npm run example:ui:build && node tools/visual-smoke.mjs examples/interface/dist/index.html Tab",
+		"motion:smoke": "npm run example:ui:build && node tools/motion-smoke.mjs",
 		"package:smoke": "node tools/package-smoke.mjs",
 		"graphics:capabilities": "node tools/graphics-capabilities.mjs",
 		"webpage:examples": "node tools/build-webpage-examples.mjs",

@@ -76,12 +76,21 @@ jobs:
           MWG_VISUAL_CHROME_ARGS: '--use-gl=angle --use-angle=swiftshader --disable-dev-shm-usage'
         run: npm run visual:smoke:ui
 
-      # kept even when the smoke fails, so a reviewer can see what the page actually drew
+      # the same example three ways (no preference, `reduce` before load, and a flip while
+      # the page is open), reading the demo's own state: the one check a unit test cannot make
+      - name: Smoke the reduced-motion path
+        env:
+          MWG_VISUAL_CHROME_ARGS: '--use-gl=angle --use-angle=swiftshader --disable-dev-shm-usage'
+        run: npm run motion:smoke
+
+      # kept even when a smoke fails, so a reviewer can see what each page actually drew
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: visual-smoke
-          path: benchmark-results/visual-smoke/
+          path: |
+            benchmark-results/visual-smoke/
+            benchmark-results/motion-smoke/
           if-no-files-found: warn
 
   # The central promise, checked rather than assumed: `npm pack`, install the tarball in a

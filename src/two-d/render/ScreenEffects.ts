@@ -163,6 +163,14 @@ export class ScreenEffects extends Container {
 	update(dt: number): boolean {
 		if (this.phase === 'idle') return false;
 
+		//the preference can arrive while an effect is in flight; a fade or a flash is a
+		//trigger, so finish it at once rather than letting the running one play out
+		if (reducedMotion()) {
+			this.overlay.alpha = this.phase === 'flash' ? 0 : this.toAlpha;
+			this.phase = 'idle';
+			return true;
+		}
+
 		this.elapsed += dt;
 		const t = Math.min(1, this.elapsed / this.duration);
 
