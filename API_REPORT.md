@@ -907,6 +907,10 @@ build instead.
 
     export declare function motionDuration(duration: number, intent?: MotionIntent): number;
 
+### `Mwl` (namespace)
+
+    export * as Mwl from './mwl/index.ts'
+
 ### `newlyRevealed` (function)
 
     export declare function newlyRevealed(explored: ReadonlySet<number>, alreadyDrawn: ReadonlySet<number>): number[];
@@ -1861,7 +1865,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.6.0";
+    export declare const version = "0.7.0";
 
 ### `VerticalLabel` (class)
 
@@ -3935,6 +3939,177 @@ build instead.
 ### `validateMessageAudio` (function)
 
     export declare function validateMessageAudio(catalog: Catalog): AudioIssue[];
+
+## `./mwl`
+
+### `collectHookReferences` (function)
+
+    export declare function collectHookReferences(game: MwlCompiledGame): HookReference[];
+
+### `compile` (function)
+
+    export declare function compile(source: string, options?: MwlCompileOptions): MwlCompiledGame;
+
+### `compileNodes` (function)
+
+    export declare function compileNodes(nodes: readonly MwlNode[], options?: MwlCompileOptions): MwlCompiledGame;
+
+### `contentCatalog` (function)
+
+    export declare function contentCatalog(game: MwlCompiledGame): MwlContentCatalog;
+
+### `createWorld` (function)
+
+    export declare function createWorld(): MwlWorld;
+
+### `decodeSave` (function)
+
+    export declare function decodeSave(snapshot: string, options: MwlPersistenceOptions): MwlWorld;
+
+### `effectToModifier` (function)
+
+    export declare function effectToModifier(effect: MwlEffectDefinition, context?: MwlExpressionContext): Modifier;
+
+### `emitHooksDeclaration` (function)
+
+    export declare function emitHooksDeclaration(references: readonly HookReference[]): string;
+
+### `emitModule` (function)
+
+    export declare function emitModule(game: MwlCompiledGame, variable?: string): string;
+
+### `encodeSave` (function)
+
+    export declare function encodeSave(world: MwlWorld, options: MwlPersistenceOptions): string;
+
+### `evaluateExpression` (function)
+
+    export declare function evaluateExpression(expression: MwlExpression | string, context: MwlExpressionContext): number;
+
+### `execute` (function)
+
+    export declare function execute(world: MwlWorld, command: MwlCommand): void;
+
+### `extractCatalog` (function)
+
+    export declare function extractCatalog(game: MwlCompiledGame, options?: MwlCatalogOptions): MwlCatalog;
+
+### `hookTypes` (const)
+
+    export declare const hookTypes: readonly HookType[];
+
+### `inventoryItem` (function)
+
+    export declare function inventoryItem(item: MwlActorItem, quantity?: number): InventoryItem;
+
+### `isGettext` (function)
+
+    export declare function isGettext(raw: string): boolean;
+
+### `itemDefinition` (function)
+
+    export declare function itemDefinition(item: MwlItemDefinition, context?: MwlExpressionContext): MwlActorItem;
+
+### `MwlRuntime` (class)
+
+    export declare class MwlRuntime {
+        readonly game: MwlCompiledGame;
+        readonly world: MwlWorld;
+        private readonly onMessage?;
+        private readonly resolveMap?;
+        private readonly hooks?;
+        private readonly persistence;
+        private readonly unitTypes;
+        private schedule;
+        constructor(game: MwlCompiledGame, options?: MwlRuntimeOptions);
+        run(trigger: string): void;
+        
+        evaluate(): MwlWorld['status'];
+        save(): string;
+        snapshot(): string;
+        restore(snapshot: string): void;
+        private loadUnitTypes;
+        private loadSchedule;
+        private loadInitialContent;
+        private buildMap;
+        private loadInitialUnits;
+        private loadLeaders;
+        private unitAt;
+        private executeNode;
+        private runHook;
+        private applyMove;
+        private spawnUnit;
+        private killUnit;
+        private addGold;
+        private endTurn;
+        private advanceSchedule;
+        private resetMoves;
+        private filterMatches;
+        private conditionMatches;
+        private conditionMet;
+        private checkObjectives;
+        private worldView;
+        private emit;
+        private attack;
+        private nodes;
+    }
+
+### `MwlSyntaxError` (class)
+
+    export declare class MwlSyntaxError extends Error {
+        readonly diagnostic: MwlDiagnostic;
+        constructor(diagnostic: MwlDiagnostic);
+    }
+
+### `parse` (function)
+
+    export declare function parse(source: string, file?: string): MwlNode[];
+
+### `parseExpression` (function)
+
+    export declare function parseExpression(source: string): MwlExpression;
+
+### `parseHookReference` (function)
+
+    export declare function parseHookReference(value: string): {
+        type: HookType;
+
+### `parseTerrain` (function)
+
+    export declare function parseTerrain(text: string): {
+        width: number;
+
+### `parseValue` (function)
+
+    export declare function parseValue(raw: string, location: MwlLocation, lineText?: string): string;
+
+### `preprocess` (function)
+
+    export declare function preprocess(source: string, options?: MwlPreprocessOptions): string;
+
+### `schema01` (const)
+
+    export declare const schema01: Readonly<Record<string, MwlTagSchema>>;
+
+### `validate` (function)
+
+    export declare function validate(nodes: readonly MwlNode[], schemas?: Readonly<Record<string, MwlTagSchema>>): MwlDiagnostic[];
+
+### `validateCatalog` (function)
+
+    export declare function validateCatalog(game: MwlCompiledGame, options?: MwlValidationOptions): MwlDiagnostic[];
+
+### `validateCatalogNodes` (function)
+
+    export declare function validateCatalogNodes(nodes: readonly MwlNode[], options?: MwlValidationOptions): MwlDiagnostic[];
+
+### `validateHookReferences` (function)
+
+    export declare function validateHookReferences(references: readonly HookReference[], available: Iterable<string>): MwlDiagnostic[];
+
+### `validateWorld` (function)
+
+    export declare function validateWorld(value: unknown): MwlWorld;
 
 ## `./roguelike`
 

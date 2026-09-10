@@ -1,0 +1,581 @@
+{
+	"schema": "0.1",
+	"roots": [
+		{
+			"tag": "game",
+			"attributes": {
+				"schema": "0.1",
+				"title": "Example Skirmish",
+				"start_scene": "skirmish",
+				"default_schedule": "default"
+			},
+			"children": [],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 1,
+				"column": 1
+			},
+			"gettext": [
+				"title"
+			]
+		},
+		{
+			"tag": "terrain_type",
+			"attributes": {
+				"id": "meadow",
+				"string": "Gg",
+				"aliasof": "flat",
+				"base_tile": "terrain/grass/green.png"
+			},
+			"children": [],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 9,
+				"column": 1
+			},
+			"gettext": []
+		},
+		{
+			"tag": "terrain_type",
+			"attributes": {
+				"id": "village",
+				"string": "^Ve",
+				"aliasof": "_bas, village_base",
+				"default_base": "Gg",
+				"heals": "8",
+				"gives_income": "yes",
+				"overlay_tile": "terrain/village/camp-tile.png"
+			},
+			"children": [],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 16,
+				"column": 1
+			},
+			"gettext": []
+		},
+		{
+			"tag": "movetype",
+			"attributes": {
+				"name": "smallfoot"
+			},
+			"children": [
+				{
+					"tag": "movement_costs",
+					"attributes": {
+						"flat": "1",
+						"forest": "2",
+						"hills": "2",
+						"village": "1"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 28,
+						"column": 5
+					},
+					"gettext": []
+				},
+				{
+					"tag": "defense",
+					"attributes": {
+						"flat": "60",
+						"forest": "50",
+						"hills": "50",
+						"village": "40"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 34,
+						"column": 5
+					},
+					"gettext": []
+				},
+				{
+					"tag": "resistance",
+					"attributes": {
+						"blade": "100",
+						"pierce": "100",
+						"impact": "100",
+						"arcane": "90"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 40,
+						"column": 5
+					},
+					"gettext": []
+				}
+			],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 26,
+				"column": 1
+			},
+			"gettext": []
+		},
+		{
+			"tag": "weapon_special",
+			"attributes": {
+				"id": "firststrike",
+				"name": "firststrike"
+			},
+			"children": [],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 48,
+				"column": 1
+			},
+			"gettext": [
+				"name"
+			]
+		},
+		{
+			"tag": "unit_type",
+			"attributes": {
+				"id": "Spearman",
+				"name": "Spearman",
+				"image": "units/humans/spearman.png",
+				"hitpoints": "36",
+				"movement_type": "smallfoot",
+				"movement": "5",
+				"experience": "42",
+				"level": "1",
+				"alignment": "lawful",
+				"cost": "14"
+			},
+			"children": [
+				{
+					"tag": "attack",
+					"attributes": {
+						"name": "spear",
+						"description": "spear",
+						"type": "pierce",
+						"range": "melee",
+						"damage": "7",
+						"number": "3",
+						"specials": "firststrike"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 64,
+						"column": 5
+					},
+					"gettext": [
+						"description"
+					]
+				}
+			],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 53,
+				"column": 1
+			},
+			"gettext": [
+				"name"
+			]
+		},
+		{
+			"tag": "side",
+			"attributes": {
+				"id": "1",
+				"controller": "human",
+				"gold": "75",
+				"income_base": "2",
+				"income_per_village": "1",
+				"recruit": "Spearman",
+				"leader": "Spearman",
+				"color": "#f6d365"
+			},
+			"children": [],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 75,
+				"column": 1
+			},
+			"gettext": []
+		},
+		{
+			"tag": "side",
+			"attributes": {
+				"id": "2",
+				"controller": "ai",
+				"gold": "75",
+				"recruit": "Spearman",
+				"color": "#b3a6dd"
+			},
+			"children": [],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 86,
+				"column": 1
+			},
+			"gettext": []
+		},
+		{
+			"tag": "map",
+			"attributes": {
+				"name": "Example",
+				"file": "maps/example.map"
+			},
+			"children": [],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 94,
+				"column": 1
+			},
+			"gettext": []
+		},
+		{
+			"tag": "schedule",
+			"attributes": {
+				"id": "default"
+			},
+			"children": [
+				{
+					"tag": "time",
+					"attributes": {
+						"id": "dawn",
+						"name": "Dawn",
+						"lawful_bonus": "0"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 102,
+						"column": 5
+					},
+					"gettext": [
+						"name"
+					]
+				},
+				{
+					"tag": "time",
+					"attributes": {
+						"id": "morning",
+						"name": "Morning",
+						"lawful_bonus": "25"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 107,
+						"column": 5
+					},
+					"gettext": [
+						"name"
+					]
+				},
+				{
+					"tag": "time",
+					"attributes": {
+						"id": "dusk",
+						"name": "Dusk",
+						"lawful_bonus": "0"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 112,
+						"column": 5
+					},
+					"gettext": [
+						"name"
+					]
+				},
+				{
+					"tag": "time",
+					"attributes": {
+						"id": "night",
+						"name": "Night",
+						"lawful_bonus": "-25"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 117,
+						"column": 5
+					},
+					"gettext": [
+						"name"
+					]
+				}
+			],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 100,
+				"column": 1
+			},
+			"gettext": []
+		},
+		{
+			"tag": "event",
+			"attributes": {
+				"id": "victory_on_leader_death",
+				"on": "die"
+			},
+			"children": [
+				{
+					"tag": "filter",
+					"attributes": {
+						"side": "2",
+						"can_recruit": "yes"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 127,
+						"column": 5
+					},
+					"gettext": []
+				},
+				{
+					"tag": "win",
+					"attributes": {
+						"side": "1"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 131,
+						"column": 5
+					},
+					"gettext": []
+				}
+			],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 124,
+				"column": 1
+			},
+			"gettext": []
+		},
+		{
+			"tag": "event",
+			"attributes": {
+				"id": "first_contact",
+				"on": "moveto"
+			},
+			"children": [
+				{
+					"tag": "filter",
+					"attributes": {
+						"side": "1",
+						"x": "3",
+						"y": "2"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 139,
+						"column": 5
+					},
+					"gettext": []
+				},
+				{
+					"tag": "dialogue",
+					"attributes": {
+						"ref": "first_contact"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 144,
+						"column": 5
+					},
+					"gettext": []
+				}
+			],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 136,
+				"column": 1
+			},
+			"gettext": []
+		},
+		{
+			"tag": "dialogue",
+			"attributes": {
+				"id": "first_contact"
+			},
+			"children": [
+				{
+					"tag": "say",
+					"attributes": {
+						"speaker": "Spearman",
+						"text": "The village is ours. Hold this line."
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 151,
+						"column": 5
+					},
+					"gettext": [
+						"text"
+					]
+				},
+				{
+					"tag": "choice",
+					"attributes": {
+						"text": "Advance"
+					},
+					"children": [
+						{
+							"tag": "branch",
+							"attributes": {},
+							"children": [
+								{
+									"tag": "message",
+									"attributes": {
+										"speaker": "narrator",
+										"text": "The line moves forward."
+									},
+									"children": [],
+									"location": {
+										"file": "skirmish.mwl",
+										"line": 158,
+										"column": 13
+									},
+									"gettext": [
+										"text"
+									]
+								}
+							],
+							"location": {
+								"file": "skirmish.mwl",
+								"line": 157,
+								"column": 9
+							},
+							"gettext": []
+						},
+						{
+							"tag": "branch",
+							"attributes": {
+								"text": "Hold"
+							},
+							"children": [
+								{
+									"tag": "message",
+									"attributes": {
+										"speaker": "narrator",
+										"text": "The line holds."
+									},
+									"children": [],
+									"location": {
+										"file": "skirmish.mwl",
+										"line": 165,
+										"column": 13
+									},
+									"gettext": [
+										"text"
+									]
+								}
+							],
+							"location": {
+								"file": "skirmish.mwl",
+								"line": 163,
+								"column": 9
+							},
+							"gettext": [
+								"text"
+							]
+						}
+					],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 155,
+						"column": 5
+					},
+					"gettext": [
+						"text"
+					]
+				}
+			],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 149,
+				"column": 1
+			},
+			"gettext": []
+		},
+		{
+			"tag": "objectives",
+			"attributes": {},
+			"children": [
+				{
+					"tag": "victory",
+					"attributes": {
+						"side": "1",
+						"condition": "units_dead",
+						"side_filter": "2"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 174,
+						"column": 5
+					},
+					"gettext": []
+				},
+				{
+					"tag": "defeat",
+					"attributes": {
+						"side": "1",
+						"condition": "units_dead",
+						"side_filter": "1"
+					},
+					"children": [],
+					"location": {
+						"file": "skirmish.mwl",
+						"line": 179,
+						"column": 5
+					},
+					"gettext": []
+				}
+			],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 173,
+				"column": 1
+			},
+			"gettext": []
+		},
+		{
+			"tag": "save",
+			"attributes": {
+				"version": "1",
+				"fields": "units,sides,gold,schedule_index,variables"
+			},
+			"children": [],
+			"location": {
+				"file": "skirmish.mwl",
+				"line": 186,
+				"column": 1
+			},
+			"gettext": []
+		}
+	],
+	"assets": [
+		"maps/example.map",
+		"units/humans/spearman.png"
+	],
+	"messages": [
+		"Advance",
+		"Dawn",
+		"Dusk",
+		"Example Skirmish",
+		"Hold",
+		"Morning",
+		"Night",
+		"Spearman",
+		"The line holds.",
+		"The line moves forward.",
+		"The village is ours. Hold this line.",
+		"firststrike",
+		"spear"
+	]
+}

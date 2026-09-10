@@ -11,7 +11,7 @@ of their own; improvements to `mwg`'s own files are shared back.
 **[Live examples and API docs](https://datamoc.github.io/mwg/)**: every example below,
 playable in the browser with no download, plus the generated API reference.
 
-> **Status: pre-alpha (v0.6.0).** Every module in the shared floor below, plus optional
+> **Status: pre-alpha (v0.7.0).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
 > [ROADMAP.md](ROADMAP.md) for the full, numbered history.
 >
@@ -372,6 +372,56 @@ with `advanceToInput`.
 
 See [ROADMAP.md](ROADMAP.md) for the full, numbered build order and implementation notes.
 The optional 3D group is now implemented without changing the existing 2D entry point.
+
+## MWL
+
+MWL is the framework's declarative, WML-inspired authoring layer. It describes
+game data and commands while `mwg` remains responsible for execution, rendering,
+input, audio, and saves. MWL is a new language, not a WML compatibility layer.
+The Wesnoth port can nevertheless use its native `.cfg` files as build inputs:
+the port-owned WML front end parses them, the adapter converts the supported
+nodes to MWL, and the normal MWL compiler emits the runtime module.
+
+The framework exposes the parser, validator, compiler, runtime, i18n extraction,
+and the hook contract through `@datamoc/mw_games/mwl`. Compile source at build
+time with:
+
+```sh
+npm run mwl -- validate game.mwl
+npm run mwl -- build game.mwl -o generated/
+npm run mwl -- compile game.mwl -o generated/game-data.ts
+npm run mwl -- extract-i18n game.mwl -o generated/i18n.json
+npm run mwl -- hooks game.mwl --manifest hooks.json -o generated/hooks.mjs
+```
+
+`mwl build` is the normal game command: it produces `game-data.ts`, `i18n.json`,
+and `assets.json` in one build-time step. The game imports the generated module;
+it never calls `Mwl.compile()` at runtime. MWG also provides generic helpers for
+turning item effects into `actors` modifiers and for versioned, migratable MWL
+saves. Asset attributes such as `image`, `image_icon`, `profile`, `icon`, `file`,
+`sound`, and `*_sound` are collected into the manifest, including comma-separated
+sound lists and Wesnoth `~` image modifiers. Item slots, formulas, hooks, and
+business rules remain defined by the game.
+
+Translation messages are the values marked `_ "..."` in the source; the
+extracted catalog matches `@datamoc/mw_games/i18n`. Hooks are referenced as
+`type:name`, declared in a manifest, and bundled with esbuild, which a game
+project installs itself (`npm install --save-dev esbuild`). The framework does
+not depend on esbuild, so a game without hooks pays nothing for the feature.
+
+`MwlRuntime` runs compiled content: it loads the map, sides, units, and leaders
+(leaders spawn on their keep with stats from `[unit_type]`), runs `on=` events
+with filters and conditions, tracks movement points, advances the `[schedule]`
+on `[end_turn]`, evaluates `[objectives]`, hosts command and predicate hooks,
+and saves and restores the world. Pathfinding and combat formulas stay in a
+game's engine adapter, because they need that game's real data. A command hook
+receives the `[hook]` attributes as its context; a `condition=hook` objective
+receives its other attributes, so content can parameterize an engine predicate
+(`value` is the generic integer parameter).
+
+The generated data is plain TypeScript and works with the same local-file build
+pipeline as the rest of the framework. Wesnoth-specific MWL source belongs in
+the Wesnoth port, not in this framework package.
 
 ## Licence and provenance
 

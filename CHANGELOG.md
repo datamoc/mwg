@@ -7,6 +7,16 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-09-10
+
+### Added
+
+- MWL build-time compilation with one command producing compiled data, i18n, and asset manifests.
+- Generic MWL item adapters for inventory, equipment slots, and stat modifiers.
+- Catalog validation for duplicate ids, slots, effects, and hook references, with source locations.
+- Game-provided numeric expressions and versioned MWL save migrations.
+- Wesnoth CFG asset fields including images, profiles, icons, and sounds.
+
 ## [0.6.0] - 2026-09-10
 
 This is a pre-alpha, not an "early release" any more, and the project says so in README. The

@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.6.0",
+	"version": "0.7.0",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -41,6 +41,7 @@
 		"tools/compile-resources.mjs",
 		"tools/compress-dist.mjs",
 		"tools/compress-dist.d.mts",
+		"tools/mwl.mjs",
 		"LICENSE",
 		"README.md"
 	],
@@ -105,6 +106,10 @@
 			"types": "./dist/simulation/index.d.ts",
 			"import": "./dist/simulation/index.js"
 		},
+		"./mwl": {
+			"types": "./dist/mwl/index.d.ts",
+			"import": "./dist/mwl/index.js"
+		},
 		"./tools/compile-resources": "./tools/compile-resources.mjs",
 		"./tools/compress-dist": "./tools/compress-dist.mjs",
 		"./two-d": {
@@ -141,6 +146,7 @@
 		"format:check": "prettier --check .",
 		"api:report": "npm run build:pkg && node tools/api-report.mjs",
 		"api:check": "node tools/api-report.mjs --check",
+		"mwl": "npm run build:pkg && node tools/mwl.mjs",
 		"size:check": "node tools/bundle-size.mjs",
 		"size:update": "node tools/bundle-size.mjs --update",
 		"audit": "npm audit --audit-level=high",

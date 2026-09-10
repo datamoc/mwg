@@ -1,0 +1,219 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import test from 'node:test';
+import { compile } from '../src/mwl/compiler.ts';
+import { MwlRuntime, parseTerrain } from '../src/mwl/runtime.ts';
+
+const ARENA_MAP = ['1 Kh,Gg,Gg', 'Gg,Gg,Gg', 'Gg,Gg,2 Kh'].join('\n');
+
+const ARENA = `[game]
+schema=0.1
+[unit_type]
+id=Swordsman
+hitpoints=10
+movement=3
+[/unit_type]
+[unit_type]
+id=Archer
+hitpoints=6
+movement=3
+[/unit_type]
+[side]
+id=1
+controller=human
+gold=20
+leader=Swordsman
+[/side]
+[side]
+id=2
+controller=ai
+gold=20
+leader=Archer
+[/side]
+[map]
+id=arena
+file=arena.map
+[/map]
+[schedule]
+id=default
+[time]
+id=dawn
+lawful_bonus=0
+[/time]
+[time]
+id=night
+lawful_bonus=-25
+[/time]
+[/schedule]
+[event]
+id=start
+on=start
+[message]
+text=_ "Begin"
+[/message]
+[/event]
+[event]
+id=advance
+on=advance
+[move]
+unit=Swordsman 1 (0,0)
+x=1
+y=0
+[/move]
+[/event]
+[event]
+id=strike
+on=strike
+[attack]
+defender=Archer 2 (2,2)
+amount=6
+[/attack]
+[/event]
+[event]
+id=doomed
+on=doomed
+[attack]
+defender=Swordsman 1 (0,0)
+amount=10
+[/attack]
+[/event]
+[event]
+id=wait
+on=wait
+[end_turn]
+[/end_turn]
+[/event]
+[objectives]
+[victory]
+side=1
+condition=units_dead
+side_filter=2
+[/victory]
+[defeat]
+side=1
+condition=units_dead
+side_filter=1
+[/defeat]
+[/objectives]
+[/game]
+`;
+
+const arena = () => new MwlRuntime(compile(ARENA), { resolveMap: () => ARENA_MAP });
+
+test('parseTerrain reads rows, keep markers, and pads short rows', () => {
+  const parsed = parseTerrain('Gg,Gg,1 Kh\nGg,Gg,Gg');
+  assert.equal(parsed.width, 3);
+  assert.equal(parsed.height, 2);
+  assert.deepEqual(parsed.codes, ['Gg', 'Gg', 'Kh', 'Gg', 'Gg', 'Gg']);
+  assert.deepEqual(parsed.starts, { 1: [{ x: 2, y: 0 }] });
+});
+
+test('MWL runtime loads the map, sides, and leaders', () => {
+  const runtime = arena();
+  assert.equal(runtime.world.map?.width, 3);
+  assert.equal(runtime.world.map?.height, 3);
+  assert.deepEqual(runtime.world.map?.starts, { 1: [{ x: 0, y: 0 }], 2: [{ x: 2, y: 2 }] });
+  assert.equal(runtime.world.sides['1'].leader, 'Swordsman');
+  assert.equal(runtime.world.sides['1'].gold, 20);
+  assert.equal(runtime.world.timeOfDay, 'dawn');
+
+  const units = Object.values(runtime.world.units);
+  assert.equal(units.length, 2);
+  const swordsman = units.find((unit) => unit.type === 'Swordsman');
+  assert.deepEqual(swordsman, { hp: 10, x: 0, y: 0, alive: true, type: 'Swordsman', side: 1, moves: 3 });
+  const archer = units.find((unit) => unit.type === 'Archer');
+  assert.deepEqual(archer, { hp: 6, x: 2, y: 2, alive: true, type: 'Archer', side: 2, moves: 3 });
+});
+
+test('MWL runtime runs events, moves a unit, and spends its moves', () => {
+  const messages: string[] = [];
+  const runtime = new MwlRuntime(compile(ARENA), {
+    resolveMap: () => ARENA_MAP,
+    onMessage: (text) => messages.push(text),
+  });
+  runtime.run('start');
+  assert.deepEqual(messages, ['Begin']);
+
+  runtime.run('advance');
+  const swordsman = Object.values(runtime.world.units).find((unit) => unit.type === 'Swordsman');
+  assert.deepEqual({ x: swordsman?.x, y: swordsman?.y, moves: swordsman?.moves }, { x: 1, y: 0, moves: 2 });
+
+  runtime.run('advance');
+  runtime.run('advance');
+  assert.equal(Object.values(runtime.world.units).find((unit) => unit.type === 'Swordsman')?.moves, 0);
+  assert.throws(() => runtime.run('advance'), /no moves left/);
+});
+
+test('MWL runtime resolves win and lose objectives', () => {
+  const won = arena();
+  won.run('strike');
+  assert.equal(won.world.status, 'won');
+
+  const lost = arena();
+  lost.run('doomed');
+  assert.equal(lost.world.status, 'lost');
+
+  // A game that resolves its own actions writes the result and asks for a check.
+  const checked = arena();
+  for (const unit of Object.values(checked.world.units)) if (unit.side === 2) unit.alive = false;
+  assert.equal(checked.evaluate(), 'won');
+});
+
+test('MWL runtime ends the turn, advances the schedule, and resets moves', () => {
+  const runtime = arena();
+  runtime.run('wait');
+  assert.equal(runtime.world.turn, 2);
+  assert.equal(runtime.world.timeOfDay, 'night');
+  const swordsman = Object.values(runtime.world.units).find((unit) => unit.type === 'Swordsman');
+  assert.equal(swordsman?.moves, 3);
+});
+
+test('MWL runtime saves and restores the world', () => {
+  const runtime = arena();
+  const saved = runtime.save();
+  runtime.run('advance');
+  assert.equal(Object.values(runtime.world.units).find((unit) => unit.type === 'Swordsman')?.x, 1);
+  runtime.restore(saved);
+  assert.equal(Object.values(runtime.world.units).find((unit) => unit.type === 'Swordsman')?.x, 0);
+  assert.equal(runtime.world.timeOfDay, 'dawn');
+});
+
+test('MWL runtime loads the EXAMPLES skirmish and spawns its leader on the keep', () => {
+  const source = readFileSync(new URL('./fixtures/mwl/skirmish.mwl', import.meta.url), 'utf8');
+  const runtime = new MwlRuntime(compile(source, { file: 'skirmish.mwl' }), {
+    resolveMap: () =>
+      ['Gg,Gg,Gg,Gg,Gg,Gg,Gg', 'Gg,Gg,1 Kh,Gg,Gg,Gg,Gg', 'Gg,Ch,Ch,Ch,Ch,Gg,Gg', 'Gg,Gg,Gg,Gg,Gg,Gg,Gg', 'Gg,Gg,2 Kh,Gg,Gg,Gg,Gg'].join(
+        '\n',
+      ),
+  });
+  assert.equal(runtime.world.map?.width, 7);
+  assert.equal(runtime.world.map?.height, 5);
+  assert.deepEqual(runtime.world.map?.starts, { 1: [{ x: 2, y: 1 }], 2: [{ x: 2, y: 4 }] });
+  assert.deepEqual(Object.keys(runtime.world.sides).sort(), ['1', '2']);
+  assert.equal(runtime.world.timeOfDay, 'dawn');
+
+  const units = Object.values(runtime.world.units);
+  assert.equal(units.length, 1, 'only side 1 declares a leader');
+  assert.deepEqual(units[0], { hp: 36, x: 2, y: 1, alive: true, type: 'Spearman', side: 1, moves: 5 });
+  assert.equal(runtime.world.status, 'playing');
+});
+
+test('MWL runtime passes objective attributes to predicate hooks', () => {
+  const game = compile(
+    '[game]\nschema=0.1\n[unit]\nid=hero\nhp=1\nside=1\n[/unit]\n[objectives]\n[victory]\nside=1\ncondition=hook\nhook=predicate:holds\nvalue=3\n[/victory]\n[/objectives]\n[/game]',
+  );
+  const seen: Record<string, string>[] = [];
+  const runtime = new MwlRuntime(game, {
+    hooks: {
+      predicate: {
+        'predicate:holds': (_world, context) => {
+          seen.push({ ...context });
+          return Number(context.value) === 3;
+        },
+      },
+    },
+  });
+  assert.equal(runtime.evaluate(), 'won');
+  assert.equal(seen.length, 1);
+  assert.deepEqual(seen[0], { side: '1', value: '3' });
+});

@@ -1,5 +1,4 @@
 import { Game, Scene2D } from '../../src/two-d/index.ts';
-import { Input } from '../../src/core/index.ts';
 import * as I18n from '../../src/i18n/index.ts';
 import { Sound } from '../../src/audio/index.ts';
 import { Button, Label, RichLabel, theme } from '../../src/two-d/ui/index.ts';
@@ -20,11 +19,11 @@ const BASE: I18n.Catalog = {
 	locale: 'en',
 	direction: 'ltr',
 	messages: {
-		'player.hit.log': "You're *hit* {sound:hit.wav}. You loose {HP_loose}. {sound:blip.wav}You **die**!",
+		'player.hit.log': "You're *hit* {sound:hit.wav}. You loose {HP_loose} HP. {sound:blip.wav}You **die**!",
 	},
 };
 
-const FRENCH_DEFAULT = "T'es *touché* {sound:hit.wav}. Tu perds {HP_loose}. {sound:blip.wav}Tu **meurs** !";
+const FRENCH_DEFAULT = "T'es *touché* {sound:hit.wav}. Tu perds {HP_loose} HP. {sound:blip.wav}Tu **meurs** !";
 
 const CUES: ReadonlyArray<string | null> = ['hit.wav', 'blip.wav', 'pickup.wav', null];
 
@@ -34,6 +33,10 @@ class StringEditorScene extends Scene2D {
 	private previewLocale: 'en' | 'fr' = 'fr';
 	private cueIndex = 0;
 	private editing = false;
+	private editorInput!: HTMLTextAreaElement;
+	private previewCues: I18n.InlineSoundCue[] = [];
+	private nextPreviewCue = 0;
+	private previewElapsed = 0;
 
 	private enPane!: Label;
 	private frPane!: Label;
@@ -46,7 +49,21 @@ class StringEditorScene extends Scene2D {
 
 	private sounds = new Map<string, Sound>();
 	private formatter = I18n.createCatalogFormatter();
-	private onKeyTyped = (event: KeyboardEvent): void => this.typeKey(event);
+	private onEditorInput = (): void => {
+		this.fr.messages['player.hit.log'] = this.editorInput.value;
+		this.refresh();
+	};
+	private onEditorKeyDown = (event: KeyboardEvent): void => {
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			this.setEditing(false);
+		} else if (event.key === 'Enter') {
+			event.preventDefault();
+		}
+	};
+	private onEditorKeyUp = (): void => {
+		if (this.editing) this.refresh();
+	};
 
 	override create(): void {
 		I18n.setBase(BASE);
@@ -85,6 +102,22 @@ class StringEditorScene extends Scene2D {
 		this.frPane.cursor = 'text';
 		this.frPane.on('pointerdown', () => this.setEditing(true));
 		this.stage.addChild(this.frPane);
+
+		this.editorInput = document.createElement('textarea');
+		this.editorInput.setAttribute('aria-label', 'French translation editor');
+		Object.assign(this.editorInput.style, {
+			position: 'fixed',
+			left: '-10000px',
+			top: '0',
+			width: '1px',
+			height: '1px',
+			opacity: '0',
+			pointerEvents: 'none',
+		});
+		this.editorInput.addEventListener('input', this.onEditorInput);
+		this.editorInput.addEventListener('keydown', this.onEditorKeyDown);
+		this.editorInput.addEventListener('keyup', this.onEditorKeyUp);
+		document.body.appendChild(this.editorInput);
 
 		const previewHead = new Label({ text: 'Rendered preview', color: theme().color.textDim, size: 13 });
 		previewHead.position.set(margin, 132);
@@ -129,24 +162,30 @@ class StringEditorScene extends Scene2D {
 		addButton('pickup', margin + 604, 274, () => this.sounds.get('pickup.wav')?.play(), 80);
 
 		const hint = new Label({
-			text: 'Type in the FR pane (Esc stops). Play reveals the line and fires its inline cues.',
+			text: 'Type, use arrows, or paste Unicode text into the FR pane (Esc stops). Play matches each cue to its sentence.',
 			color: theme().color.textDim,
 			size: 13,
 		});
 		hint.position.set(margin, 312);
 		this.stage.addChild(hint);
 
-		Input.onKey.add(this.onKeyTyped);
 		this.refresh();
 	}
 
 	override destroy(): void {
-		Input.onKey.remove(this.onKeyTyped);
+		this.editorInput.removeEventListener('input', this.onEditorInput);
+		this.editorInput.removeEventListener('keydown', this.onEditorKeyDown);
+		this.editorInput.removeEventListener('keyup', this.onEditorKeyUp);
+		this.editorInput.remove();
 		super.destroy();
 	}
 
 	override update(dt: number): void {
 		this.preview.updateReveal(dt);
+		if (this.previewCues.length > 0) {
+			this.previewElapsed += dt;
+			this.playPreviewCues(Math.floor(this.previewElapsed * 60));
+		}
 	}
 
 	private message(): I18n.SemanticMessage {
@@ -158,10 +197,20 @@ class StringEditorScene extends Scene2D {
 	}
 
 	private refresh(): void {
+		this.previewCues = [];
+		this.nextPreviewCue = 0;
+		this.previewElapsed = 0;
 		I18n.setActive(this.previewLocale === 'fr' ? this.fr : BASE);
 		this.enPane.setText(BASE.messages['player.hit.log'] as string);
 		const frText = this.fr.messages['player.hit.log'] as string;
-		this.frPane.setText(frText + (this.editing ? '▌' : ''));
+		if (this.editing) {
+			if (this.editorInput.value !== frText) this.editorInput.value = frText;
+			const caret = Math.max(0, Math.min(this.editorInput.selectionStart ?? frText.length, frText.length));
+			this.editorInput.setSelectionRange(caret, caret);
+			this.frPane.setText(`${frText.slice(0, caret)}▌${frText.slice(caret)}`);
+		} else {
+			this.frPane.setText(frText);
+		}
 		this.preview.setText(I18n.parseSoundMarkers(this.rendered()).text);
 
 		const drift = I18n.diffPlaceholders(BASE.messages['player.hit.log'] as string, frText);
@@ -204,30 +253,31 @@ class StringEditorScene extends Scene2D {
 
 	private setEditing(editing: boolean): void {
 		this.editing = editing;
+		if (editing) {
+			const text = this.fr.messages['player.hit.log'] as string;
+			this.editorInput.value = text;
+			this.editorInput.focus();
+			this.editorInput.setSelectionRange(text.length, text.length);
+		} else {
+			this.editorInput.blur();
+		}
 		this.refresh();
 	}
 
 	private playLine(): void {
 		const parsed = I18n.parseSoundMarkers(this.rendered());
 		this.preview.showProgressive(parsed.text, 60);
-		for (const cue of parsed.cues) this.sounds.get(cue.path)?.play();
+		this.previewCues = parsed.cues;
+		this.nextPreviewCue = 0;
+		this.previewElapsed = 0;
+		this.playPreviewCues(0);
 	}
 
-	private typeKey(event: KeyboardEvent): void {
-		if (!this.editing) return;
-		if (event.key === 'Escape') {
-			this.setEditing(false);
-			return;
-		}
-		if (event.key === 'Backspace') {
-			const text = this.fr.messages['player.hit.log'] as string;
-			this.fr.messages['player.hit.log'] = text.slice(0, -1);
-			this.refresh();
-			return;
-		}
-		if (event.key.length === 1) {
-			this.fr.messages['player.hit.log'] = (this.fr.messages['player.hit.log'] as string) + event.key;
-			this.refresh();
+	private playPreviewCues(visibleCharacters: number): void {
+		while (this.nextPreviewCue < this.previewCues.length && this.previewCues[this.nextPreviewCue].index <= visibleCharacters) {
+			const cue = this.previewCues[this.nextPreviewCue];
+			this.sounds.get(cue.path)?.play();
+			this.nextPreviewCue++;
 		}
 	}
 }
