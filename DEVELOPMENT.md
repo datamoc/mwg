@@ -8,6 +8,8 @@ in [REFERENCE.md](REFERENCE.md), and the capability scope is documented in [READ
 
 ```text
 npm run check            # typecheck src, examples, tools and tests
+npm run format           # format code with Prettier
+npm run format:check     # verify formatting without writing
 npm test                 # run the Node test suite
 npm run coverage         # the same suite with Node's built-in coverage report
 npm run build            # build the npm package and standalone global IIFE
@@ -25,11 +27,15 @@ npm run example:<name>       # start its Vite development server
 npm run example:<name>:build # build a self-contained page for file://
 ```
 
-There is no lint script. The normal verification loop is `npm run check`, `npm test`,
-`npm run build`, then opening a built example and looking at it. Rendering and layout bugs
-are not visible to the typechecker. `npm run coverage` reuses the same suite with Node's
-built-in `--experimental-test-coverage`, so coverage costs no dependency; use it in the
-simplify pass to find untested branches and exports nothing imports any more.
+Formatting is Prettier over `src`, `tests`, `examples` and `tools` (`npm run format`,
+checked in CI with `npm run format:check`; config in `.prettierrc.json`, generated output
+and prose ignored in `.prettierignore`). There is no ESLint rule set on top: formatting keeps
+diffs reviewable without a second list of opinions to maintain. The normal verification loop
+is `npm run check`, `npm test`, `npm run build`, then opening a built example and looking at
+it. Rendering and layout bugs are not visible to the typechecker. `npm run coverage` reuses
+the same suite with Node's built-in `--experimental-test-coverage`, so coverage costs no
+dependency; use it in the simplify pass to find untested branches and exports nothing imports
+any more.
 
 ## Architecture boundaries
 

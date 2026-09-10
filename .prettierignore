@@ -1,0 +1,17 @@
+node_modules
+dist
+examples/*/dist
+examples/assets
+benchmark-results
+.example-check
+.scratch-check
+webpage
+android
+desktop
+tools/vendored
+tools/docs
+package-lock.json
+*.md
+*.html
+*.yml
+*.yaml

@@ -137,6 +137,8 @@
     "build:pkg": "tsc -p tsconfig.build.json",
     "build:global": "vite build --config vite.lib.config.ts",
     "check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "api:report": "npm run build:pkg && node tools/api-report.mjs",
     "api:check": "node tools/api-report.mjs --check",
     "audit": "npm audit --audit-level=high",
@@ -240,6 +242,7 @@
     "@types/node": "^26.4.1",
     "@types/ws": "^8.18.1",
     "playwright-core": "^1.62.1",
+    "prettier": "^3.9.6",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",
     "ws": "^8.21.3"

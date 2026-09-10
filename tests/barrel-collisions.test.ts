@@ -38,7 +38,15 @@ function exportedNames(file: string, seen: Set<string> = new Set()): Map<string,
 	const nextSeen = new Set(seen);
 	nextSeen.add(file);
 
-	const source = readFileSync(file, 'utf8').replace(/\/\*\*?[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+	// Prettier wraps a long `export { a, b, ... } from './x.ts'` across lines, so collapse
+	// each such block back onto one line before the per-line patterns below run
+	const source = readFileSync(file, 'utf8')
+		.replace(/\/\*\*?[\s\S]*?\*\//g, '')
+		.replace(/\/\/.*$/gm, '')
+		.replace(
+			/export\s+(type\s+)?\{([\s\S]*?)\}\s*from/g,
+			(_match, keyword: string | undefined, body: string) => `export ${keyword ?? ''}{ ${body.replace(/\s+/g, ' ').trim()} } from`,
+		);
 	const names = new Map<string, string>();
 
 	function add(name: string, from: string): void {
