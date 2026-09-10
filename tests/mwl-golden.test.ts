@@ -19,5 +19,5 @@ test('the example skirmish compiles to its checked-in golden output', () => {
 		writeFileSync(golden, actual);
 		return;
 	}
-	assert.equal(actual, readFileSync(golden, 'utf8'));
+	assert.deepEqual(JSON.parse(readFileSync(golden, 'utf8')), game);
 });

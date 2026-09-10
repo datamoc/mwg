@@ -114,7 +114,10 @@ export function contentCatalog(game: MwlCompiledGame): MwlContentCatalog {
 				experience: integer(node, 'experience'),
 				maxLevel: integer(node, 'max_level'),
 				image: node.attributes.image,
-				types: node.attributes.types?.split(',').map((type) => type.trim()).filter(Boolean),
+				types: node.attributes.types
+					?.split(',')
+					.map((type) => type.trim())
+					.filter(Boolean),
 				baseStats: ['attack', 'defense', 'speed', 'hp'].reduce<Record<string, number>>((stats, name) => {
 					const value = num(node, name);
 					if (value !== undefined) stats[name === 'hp' ? 'maxHp' : name] = value;
@@ -148,20 +151,38 @@ export function contentCatalog(game: MwlCompiledGame): MwlContentCatalog {
 				strategy: node.attributes.strategy,
 				target: node.attributes.target,
 				difficulty: num(node, 'difficulty'),
-				behaviors: node.children.filter((child) => child.tag === 'behavior').map((child) => ({
-					id: required(child, 'id'), when: child.attributes.when, action: child.attributes.action, hook: child.attributes.hook,
-				})),
+				behaviors: node.children
+					.filter((child) => child.tag === 'behavior')
+					.map((child) => ({
+						id: required(child, 'id'),
+						when: child.attributes.when,
+						action: child.attributes.action,
+						hook: child.attributes.hook,
+					})),
 			})),
-		moves: nodes.filter((node) => node.tag === 'battle_move').map((node) => ({
-			id: required(node, 'id'), type: required(node, 'type'), target: required(node, 'target'),
-			power: num(node, 'power'), cost: num(node, 'cost'),
-		})),
-		typeMatchups: nodes.filter((node) => node.tag === 'type_matchup').map((node) => ({
-			attacker: required(node, 'attacker'), defender: required(node, 'defender'), multiplier: num(node, 'multiplier') ?? 1,
-		})),
-		evolutions: nodes.filter((node) => node.tag === 'evolution').map((node) => ({
-			from: required(node, 'from'), into: required(node, 'into'), level: integer(node, 'level', 1)!,
-		})),
+		moves: nodes
+			.filter((node) => node.tag === 'battle_move')
+			.map((node) => ({
+				id: required(node, 'id'),
+				type: required(node, 'type'),
+				target: required(node, 'target'),
+				power: num(node, 'power'),
+				cost: num(node, 'cost'),
+			})),
+		typeMatchups: nodes
+			.filter((node) => node.tag === 'type_matchup')
+			.map((node) => ({
+				attacker: required(node, 'attacker'),
+				defender: required(node, 'defender'),
+				multiplier: num(node, 'multiplier') ?? 1,
+			})),
+		evolutions: nodes
+			.filter((node) => node.tag === 'evolution')
+			.map((node) => ({
+				from: required(node, 'from'),
+				into: required(node, 'into'),
+				level: integer(node, 'level', 1)!,
+			})),
 	};
 }
 

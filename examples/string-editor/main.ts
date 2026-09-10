@@ -274,7 +274,10 @@ class StringEditorScene extends Scene2D {
 	}
 
 	private playPreviewCues(visibleCharacters: number): void {
-		while (this.nextPreviewCue < this.previewCues.length && this.previewCues[this.nextPreviewCue].index <= visibleCharacters) {
+		while (
+			this.nextPreviewCue < this.previewCues.length &&
+			this.previewCues[this.nextPreviewCue].index <= visibleCharacters
+		) {
 			const cue = this.previewCues[this.nextPreviewCue];
 			this.sounds.get(cue.path)?.play();
 			this.nextPreviewCue++;

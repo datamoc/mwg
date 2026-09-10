@@ -207,9 +207,12 @@ export class MwlRuntime {
 
 	/** A `moveto` event is a story beat: it fires once unless told otherwise. */
 	private claimEvent(event: MwlCompiledNode): boolean {
-		const once = event.attributes.once === undefined ? event.attributes.on === 'moveto' : event.attributes.once !== 'false';
+		const once =
+			event.attributes.once === undefined ? event.attributes.on === 'moveto' : event.attributes.once !== 'false';
 		if (!once) return true;
-		const key = event.attributes.id ?? `${event.attributes.on ?? event.attributes.trigger ?? 'event'}@${event.location?.line ?? 0}`;
+		const key =
+			event.attributes.id ??
+			`${event.attributes.on ?? event.attributes.trigger ?? 'event'}@${event.location?.line ?? 0}`;
 		const fired = (this.world.firedEvents ??= []);
 		if (fired.includes(key)) return false;
 		fired.push(key);
@@ -218,14 +221,16 @@ export class MwlRuntime {
 
 	private eventFiltersMatch(event: MwlCompiledNode): boolean {
 		const condition = event.children.find((child) => child.tag === 'condition');
-		if (condition && this.world.variables[condition.attributes.variable] !== condition.attributes.equals) return false;
+		if (condition && this.world.variables[condition.attributes.variable] !== condition.attributes.equals)
+			return false;
 		const filter = event.children.find((child) => child.tag === 'filter');
 		return !filter || this.filterMatches(filter);
 	}
 
 	private executeEvent(event: MwlCompiledNode): void {
 		for (const command of event.children.filter(
-			(child) => child.tag !== 'condition' && child.tag !== 'filter' && child.tag !== 'dialogue' && child.tag !== 'say',
+			(child) =>
+				child.tag !== 'condition' && child.tag !== 'filter' && child.tag !== 'dialogue' && child.tag !== 'say',
 		))
 			this.executeNode(command);
 	}
@@ -386,7 +391,11 @@ export class MwlRuntime {
 				);
 				break;
 			case 'move':
-				this.applyMove(node.attributes.unit ?? required(node, 'target'), integer(node, 'x', 0), integer(node, 'y', 0));
+				this.applyMove(
+					node.attributes.unit ?? required(node, 'target'),
+					integer(node, 'x', 0),
+					integer(node, 'y', 0),
+				);
 				break;
 			case 'kill':
 				this.killUnit(node.attributes.unit ?? required(node, 'target'));
@@ -447,7 +456,8 @@ export class MwlRuntime {
 		if (!unit || !unit.alive) throw new Error(`MWL unit is not alive: ${id}`);
 		const map = this.world.map ?? null;
 		if (map) {
-			if (x < 0 || y < 0 || x >= map.width || y >= map.height) throw new Error(`MWL move out of bounds: ${x},${y}`);
+			if (x < 0 || y < 0 || x >= map.width || y >= map.height)
+				throw new Error(`MWL move out of bounds: ${x},${y}`);
 			const occupant = this.unitAt(x, y);
 			if (occupant && occupant !== unit) throw new Error(`MWL move onto an occupied cell: ${x},${y}`);
 		}
@@ -603,7 +613,9 @@ export class MwlRuntime {
 		return {
 			move: (unit, x, y) => this.applyMove(unit, x, y),
 			attack: (_attacker, _defender, _weapon) => {
-				throw new Error('MWL hook attack is not available in the framework runtime; the engine adapter owns combat');
+				throw new Error(
+					'MWL hook attack is not available in the framework runtime; the engine adapter owns combat',
+				);
 			},
 			spawn: (type, side, x, y) => this.spawnUnit(type, side, x, y),
 			kill: (unit) => this.killUnit(unit),

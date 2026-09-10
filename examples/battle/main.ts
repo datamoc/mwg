@@ -34,19 +34,37 @@ interface DamageEffect {
 }
 
 const CONTENT = contentCatalog(gameData);
-const speciesById = new Map<string, Species>(CONTENT.monsters.map((monster) => [monster.id, {
-	id: monster.id,
-	types: monster.types ?? [],
-	baseStats: { ...(monster.baseStats ?? {}), maxHp: monster.hp },
-}]));
-const moveById = new Map<string, Move<DamageEffect>>(CONTENT.moves.map((move) => [move.id, {
-	id: move.id,
-	type: move.type,
-	target: move.target,
-	effects: { power: move.power ?? 5 },
-}]));
-const species = (id: string): Species => speciesById.get(id) ?? (() => { throw new Error(`unknown battle species: ${id}`); })();
-const move = (id: string): Move<DamageEffect> => moveById.get(id) ?? (() => { throw new Error(`unknown battle move: ${id}`); })();
+const speciesById = new Map<string, Species>(
+	CONTENT.monsters.map((monster) => [
+		monster.id,
+		{
+			id: monster.id,
+			types: monster.types ?? [],
+			baseStats: { ...(monster.baseStats ?? {}), maxHp: monster.hp },
+		},
+	]),
+);
+const moveById = new Map<string, Move<DamageEffect>>(
+	CONTENT.moves.map((move) => [
+		move.id,
+		{
+			id: move.id,
+			type: move.type,
+			target: move.target,
+			effects: { power: move.power ?? 5 },
+		},
+	]),
+);
+const species = (id: string): Species =>
+	speciesById.get(id) ??
+	(() => {
+		throw new Error(`unknown battle species: ${id}`);
+	})();
+const move = (id: string): Move<DamageEffect> =>
+	moveById.get(id) ??
+	(() => {
+		throw new Error(`unknown battle move: ${id}`);
+	})();
 const SLIME = species('slime');
 const WOLF = species('wolf');
 const TACKLE = move('tackle');

@@ -27,12 +27,22 @@ export function inventoryItem(item: MwlActorItem, quantity = 1): InventoryItem {
 
 export function effectToModifier(effect: MwlEffectDefinition, context: MwlExpressionContext = {}): Modifier {
 	const operation = effect.operation;
-	if (operation !== 'add' && operation !== 'sub' && operation !== 'multiply' && operation !== 'divide' && operation !== 'set')
+	if (
+		operation !== 'add' &&
+		operation !== 'sub' &&
+		operation !== 'multiply' &&
+		operation !== 'divide' &&
+		operation !== 'set'
+	)
 		throw new Error(`MWL effect operation "${operation ?? ''}" is not a StatBlock modifier`);
 	const raw = effect.value;
 	if (raw === undefined) throw new Error('MWL effect has no value');
 	const value = evaluateExpression(raw, context);
-	return { stat: effect.applyTo, op: operation === 'sub' ? 'add' : operation === 'divide' ? 'multiply' : operation, value: operation === 'sub' ? -value : operation === 'divide' ? 1 / value : value };
+	return {
+		stat: effect.applyTo,
+		op: operation === 'sub' ? 'add' : operation === 'divide' ? 'multiply' : operation,
+		value: operation === 'sub' ? -value : operation === 'divide' ? 1 / value : value,
+	};
 }
 
 export type MwlEquipment<Slot extends string> = EquipmentSlots<Slot, MwlActorItem>;

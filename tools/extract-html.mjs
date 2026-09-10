@@ -40,10 +40,14 @@ export async function extractHtml(inputFile, outputDirectory) {
 	const dataUri = /(\b(?:src|href|poster|content)\s*=\s*["'])(data:([^"']+?))["']/gi;
 	const srcset = /(\bsrcset\s*=\s*["'])([^"']+)(["'])/gi;
 	const inlineMatches = [...source.matchAll(inlineBlocks)];
-	const dataMatches = [...source.matchAll(dataUri)].filter((match) => !inlineMatches.some((block) => match.index >= block.index && match.index < block.index + block[0].length));
+	const dataMatches = [...source.matchAll(dataUri)].filter(
+		(match) =>
+			!inlineMatches.some((block) => match.index >= block.index && match.index < block.index + block[0].length),
+	);
 	const srcsetMatches = [...source.matchAll(srcset)].filter((match) => match[2].includes('data:'));
-	const occurrences = [...inlineMatches.filter((match) => match[3].trim()), ...dataMatches, ...srcsetMatches]
-		.sort((a, b) => a.index - b.index);
+	const occurrences = [...inlineMatches.filter((match) => match[3].trim()), ...dataMatches, ...srcsetMatches].sort(
+		(a, b) => a.index - b.index,
+	);
 	const order = new Map(occurrences.map((match, index) => [match.index, index + 1]));
 	let nextId = occurrences.length + 1;
 	const usedIds = new Set();
@@ -79,9 +83,20 @@ export async function extractHtml(inputFile, outputDirectory) {
 		const body = match[3];
 		if (!body.trim()) continue;
 		const type = attributeValue(attributes, 'type');
-		const mime = tag === 'style' ? 'text/css' : type?.toLowerCase() === 'application/json' ? 'application/json' : 'text/javascript';
+		const mime =
+			tag === 'style'
+				? 'text/css'
+				: type?.toLowerCase() === 'application/json'
+					? 'application/json'
+					: 'text/javascript';
 		const kind = tag === 'style' ? 'style' : mime === 'application/json' ? 'json' : 'script';
-		const path = await writeResource({ kind, mime, data: Buffer.from(body), sourceOffset: match.index, sourceValue: `<${tag}>` });
+		const path = await writeResource({
+			kind,
+			mime,
+			data: Buffer.from(body),
+			sourceOffset: match.index,
+			sourceValue: `<${tag}>`,
+		});
 		if (tag === 'style') {
 			let css = body;
 			const cssDataUri = /url\(\s*(["']?)(data:[^\)"']+)\1\s*\)/gi;
@@ -91,7 +106,13 @@ export async function extractHtml(inputFile, outputDirectory) {
 					warnings.push(`unsupported CSS data URI at offset ${match.index + cssMatch.index}`);
 					continue;
 				}
-				const assetPath = await writeResource({ kind: 'css-data-uri', mime: parsed.mime, data: parsed.data, sourceOffset: match.index + cssMatch.index, sourceValue: 'data:' });
+				const assetPath = await writeResource({
+					kind: 'css-data-uri',
+					mime: parsed.mime,
+					data: parsed.data,
+					sourceOffset: match.index + cssMatch.index,
+					sourceValue: 'data:',
+				});
 				css = css.replace(cssMatch[2], `./${assetPath.slice('assets/'.length)}`);
 			}
 			if (css !== body) await writeFile(join(assetDirectory, path.slice('assets/'.length)), css);
@@ -99,9 +120,10 @@ export async function extractHtml(inputFile, outputDirectory) {
 		if (kind === 'script' && type?.toLowerCase() === 'module' && /(?:^|[^\w])(?:import|export)\s/.test(body)) {
 			warnings.push(`inline module at offset ${match.index} was moved under assets/; verify relative imports`);
 		}
-		const replacement = tag === 'style'
-			? `<link${copyStyleAttributes(attributes)} rel="stylesheet" href="./${path}">`
-			: `<script${copyScriptAttributes(attributes)} src="./${path}"></script>`;
+		const replacement =
+			tag === 'style'
+				? `<link${copyStyleAttributes(attributes)} rel="stylesheet" href="./${path}">`
+				: `<script${copyScriptAttributes(attributes)} src="./${path}"></script>`;
 		replacements.push({ start: match.index, end: match.index + match[0].length, replacement });
 	}
 	for (const match of dataMatches) {
@@ -110,8 +132,18 @@ export async function extractHtml(inputFile, outputDirectory) {
 			warnings.push(`unsupported data URI at offset ${match.index}`);
 			continue;
 		}
-		const path = await writeResource({ kind: 'data-uri', mime: parsed.mime, data: parsed.data, sourceOffset: match.index, sourceValue: 'data:' });
-		replacements.push({ start: match.index + match[1].length, end: match.index + match[0].length - 1, replacement: `./${path}` });
+		const path = await writeResource({
+			kind: 'data-uri',
+			mime: parsed.mime,
+			data: parsed.data,
+			sourceOffset: match.index,
+			sourceValue: 'data:',
+		});
+		replacements.push({
+			start: match.index + match[1].length,
+			end: match.index + match[0].length - 1,
+			replacement: `./${path}`,
+		});
 	}
 	for (const match of srcsetMatches) {
 		const candidates = [];
@@ -123,12 +155,23 @@ export async function extractHtml(inputFile, outputDirectory) {
 				candidates.push(candidate);
 				continue;
 			}
-			const path = await writeResource({ kind: 'data-uri', mime: parsed.mime, data: parsed.data, sourceOffset: match.index, sourceValue: 'data:' });
+			const path = await writeResource({
+				kind: 'data-uri',
+				mime: parsed.mime,
+				data: parsed.data,
+				sourceOffset: match.index,
+				sourceValue: 'data:',
+			});
 			candidates.push([`./${path}`, ...parts].join(' '));
 		}
-		replacements.push({ start: match.index + match[1].length, end: match.index + match[0].length - 1, replacement: candidates.join(', ') });
+		replacements.push({
+			start: match.index + match[1].length,
+			end: match.index + match[0].length - 1,
+			replacement: candidates.join(', '),
+		});
 	}
-	for (const replacement of replacements.sort((a, b) => b.start - a.start)) html = html.slice(0, replacement.start) + replacement.replacement + html.slice(replacement.end);
+	for (const replacement of replacements.sort((a, b) => b.start - a.start))
+		html = html.slice(0, replacement.start) + replacement.replacement + html.slice(replacement.end);
 
 	resources.sort((a, b) => a.sourceOffset - b.sourceOffset || (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 	const manifest = {
@@ -168,7 +211,10 @@ function decodeDataUri(value) {
 	const fields = header.split(';');
 	const mime = fields.shift() || 'text/plain';
 	try {
-		return { mime, data: fields.includes('base64') ? Buffer.from(payload, 'base64') : Buffer.from(decodeURIComponent(payload)) };
+		return {
+			mime,
+			data: fields.includes('base64') ? Buffer.from(payload, 'base64') : Buffer.from(decodeURIComponent(payload)),
+		};
 	} catch {
 		return null;
 	}

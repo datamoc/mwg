@@ -34,21 +34,32 @@ const manifestFlag = args.indexOf('--manifest');
 const manifestPath = manifestFlag === -1 ? undefined : args[manifestFlag + 1];
 
 if (!command || !input || !commands.includes(command)) {
-	console.error('Usage: mwl <validate|compile|extract-i18n|assets|hooks|build> input.mwl [-o output] [--manifest hooks.json]');
+	console.error(
+		'Usage: mwl <validate|compile|extract-i18n|assets|hooks|build> input.mwl [-o output] [--manifest hooks.json]',
+	);
 	process.exitCode = 2;
 } else {
 	const files = fs.statSync(input).isDirectory()
 		? collectSources(input)
 		: [{ file: sourceLabel(input), source: fs.readFileSync(input, 'utf8') }];
 	if (command === 'validate') {
-		const diagnostics = files.flatMap((file) => validate(parse(preprocess(file.source, { file: file.file }), file.file)));
+		const diagnostics = files.flatMap((file) =>
+			validate(parse(preprocess(file.source, { file: file.file }), file.file)),
+		);
 		if (diagnostics.length) {
 			for (const diagnostic of diagnostics)
-				console.error(`${diagnostic.location.file}:${diagnostic.location.line}:${diagnostic.location.column}: ${diagnostic.message}`);
+				console.error(
+					`${diagnostic.location.file}:${diagnostic.location.line}:${diagnostic.location.column}: ${diagnostic.message}`,
+				);
 			process.exitCode = 1;
 		} else {
-			try { compileSources(files); console.log(`${input}: valid MWL`); }
-			catch (error) { console.error(error instanceof Error ? error.message : String(error)); process.exitCode = 1; }
+			try {
+				compileSources(files);
+				console.log(`${input}: valid MWL`);
+			} catch (error) {
+				console.error(error instanceof Error ? error.message : String(error));
+				process.exitCode = 1;
+			}
 		}
 	} else if (command === 'hooks') {
 		await hooks(files);
@@ -71,12 +82,17 @@ function collectSources(directory) {
 	const root = path.resolve(directory);
 	const label = sourceLabel(root);
 	const visit = (current) => {
-		for (const entry of fs.readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0)) {
+		for (const entry of fs
+			.readdirSync(current, { withFileTypes: true })
+			.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
 			const full = path.join(current, entry.name);
 			if (entry.isDirectory()) visit(full);
 			else if (/\.mwl$/i.test(entry.name)) {
 				const relative = path.relative(root, full);
-				files.push({ file: path.join(label, relative).split(path.sep).join('/'), source: fs.readFileSync(full, 'utf8') });
+				files.push({
+					file: path.join(label, relative).split(path.sep).join('/'),
+					source: fs.readFileSync(full, 'utf8'),
+				});
 			}
 		}
 	};

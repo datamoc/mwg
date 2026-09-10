@@ -10,10 +10,16 @@ test('extract-html writes inline resources and rewrites a copy', async () => {
 	try {
 		const input = join(directory, 'page.html');
 		const output = join(directory, 'extracted');
-		await writeFile(input, '<!doctype html><style>.hero{color:red}</style><img src="data:image/svg+xml,%3Csvg%3E%3C/svg%3E"><script>window.EXTRACTED=1</script>');
+		await writeFile(
+			input,
+			'<!doctype html><style>.hero{color:red}</style><img src="data:image/svg+xml,%3Csvg%3E%3C/svg%3E"><script>window.EXTRACTED=1</script>',
+		);
 		const result = await extractHtml(input, output);
 		assert.equal(result.resources.length, 3);
-		assert.deepEqual(result.resources.map((resource) => resource.kind), ['style', 'data-uri', 'script']);
+		assert.deepEqual(
+			result.resources.map((resource) => resource.kind),
+			['style', 'data-uri', 'script'],
+		);
 		const html = await readFile(join(output, 'index.html'), 'utf8');
 		assert.match(html, /href="\.\/assets\/inline-0001\.css"/);
 		assert.match(html, /src="\.\/assets\/inline-0002\.svg"/);
@@ -30,7 +36,10 @@ test('extract-html deduplicates identical data resources and reports module relo
 	try {
 		const input = join(directory, 'page.html');
 		const output = join(directory, 'extracted');
-		await writeFile(input, '<script type="module">import "./dep.js"</script><img src="data:text/plain,hello"><img src="data:text/plain,hello">');
+		await writeFile(
+			input,
+			'<script type="module">import "./dep.js"</script><img src="data:text/plain,hello"><img src="data:text/plain,hello">',
+		);
 		const result = await extractHtml(input, output);
 		assert.equal(result.resources.length, 2);
 		assert.equal(result.warnings.length, 1);
@@ -50,7 +59,10 @@ test('extract-html rewrites data URLs inside inline CSS', async () => {
 		const result = await extractHtml(input, output);
 		assert.equal(result.resources.length, 2);
 		assert.equal(result.resources[1].kind, 'css-data-uri');
-		assert.match(await readFile(join(output, 'assets', 'inline-0001.css'), 'utf8'), /url\("\.\/inline-0002\.png"\)/);
+		assert.match(
+			await readFile(join(output, 'assets', 'inline-0001.css'), 'utf8'),
+			/url\("\.\/inline-0002\.png"\)/,
+		);
 	} finally {
 		await rm(directory, { recursive: true, force: true });
 	}
@@ -64,7 +76,10 @@ test('extract-html rewrites every data candidate in srcset', async () => {
 		await writeFile(input, '<img srcset="data:image/png;base64,YQ== 1x, data:image/png;base64,Yg== 2x">');
 		const result = await extractHtml(input, output);
 		assert.equal(result.resources.length, 2);
-		assert.match(await readFile(join(output, 'index.html'), 'utf8'), /inline-0001\.png 1x, \.\/assets\/inline-0002\.png 2x/);
+		assert.match(
+			await readFile(join(output, 'index.html'), 'utf8'),
+			/inline-0001\.png 1x, \.\/assets\/inline-0002\.png 2x/,
+		);
 	} finally {
 		await rm(directory, { recursive: true, force: true });
 	}

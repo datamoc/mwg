@@ -1,6 +1,3 @@
 {
-	"assets": [
-		"portraits/scout.png",
-		"units/scout.png"
-	]
+	"assets": ["portraits/scout.png", "units/scout.png"]
 }

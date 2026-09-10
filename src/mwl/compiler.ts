@@ -35,7 +35,7 @@ export interface MwlSourceFile {
 /** Compiles a deterministic set of content files as one catalog. */
 export function compileSources(files: readonly MwlSourceFile[], options: MwlCompileOptions = {}): MwlCompiledGame {
 	const nodes: MwlNode[] = [];
-	for (const file of [...files].sort((a, b) => a.file < b.file ? -1 : a.file > b.file ? 1 : 0)) {
+	for (const file of [...files].sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0))) {
 		const expanded = preprocess(file.source, { ...options, file: file.file });
 		nodes.push(...parse(expanded, file.file));
 	}
@@ -58,7 +58,9 @@ export function compileNodes(nodes: readonly MwlNode[], options: MwlCompileOptio
 	const convert = (node: MwlNode): MwlCompiledNode => {
 		for (const [key, value] of Object.entries(node.attributes)) {
 			if (isAssetAttribute(key)) {
-				for (const asset of splitAssetReferences(value).map((part) => part.trim()).filter(isAssetReference))
+				for (const asset of splitAssetReferences(value)
+					.map((part) => part.trim())
+					.filter(isAssetReference))
 					assets.add(stripAssetTransform(asset));
 			}
 		}
@@ -88,11 +90,24 @@ export function compileNodes(nodes: readonly MwlNode[], options: MwlCompileOptio
 
 /** Common WML asset attributes, including the sound/image aliases used by CFG macros. */
 function isAssetAttribute(name: string): boolean {
-	return name === 'file' || name === 'image' || name === 'image_icon' || name === 'icon' || name === 'profile' || name === 'sound' || name.endsWith('_sound') || name.endsWith('_image');
+	return (
+		name === 'file' ||
+		name === 'image' ||
+		name === 'image_icon' ||
+		name === 'icon' ||
+		name === 'profile' ||
+		name === 'sound' ||
+		name.endsWith('_sound') ||
+		name.endsWith('_image')
+	);
 }
 
 function isAssetReference(value: string): boolean {
-	return value.includes('/') || /\.(?:png|jpg|jpeg|gif|svg|webp|wav|ogg|mp3|flac|glb|gltf|vox|map|cfg)$/i.test(value) || value.startsWith('data:');
+	return (
+		value.includes('/') ||
+		/\.(?:png|jpg|jpeg|gif|svg|webp|wav|ogg|mp3|flac|glb|gltf|vox|map|cfg)$/i.test(value) ||
+		value.startsWith('data:')
+	);
 }
 
 function splitAssetReferences(value: string): string[] {

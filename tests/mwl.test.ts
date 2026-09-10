@@ -50,12 +50,17 @@ test('MWL compiles a directory-shaped source set in stable file order', () => {
 		{ file: 'content/z.mwl', source: '[item]\nid=z\nname=_ "Z"\n[/item]' },
 		{ file: 'content/a.mwl', source: '[item]\nid=a\nname=_ "A"\n[/item]' },
 	]);
-	assert.deepEqual(game.roots.map((node) => node.attributes.id), ['a', 'z']);
+	assert.deepEqual(
+		game.roots.map((node) => node.attributes.id),
+		['a', 'z'],
+	);
 	assert.deepEqual(game.messages, ['A', 'Z']);
 });
 
 test('MWL asset extraction accepts native CFG image and sound attributes', () => {
-	const game = compile('[unit_type]\nid=hero\nimage=units/hero.png~FL(horiz)\nprofile=portraits/hero.png\n[/unit_type]\n[attack]\nid=hit\nsound=audio/hit.wav,audio/hit.ogg\n[/attack]');
+	const game = compile(
+		'[unit_type]\nid=hero\nimage=units/hero.png~FL(horiz)\nprofile=portraits/hero.png\n[/unit_type]\n[attack]\nid=hit\nsound=audio/hit.wav,audio/hit.ogg\n[/attack]',
+	);
 	assert.deepEqual(game.assets, ['audio/hit.ogg', 'audio/hit.wav', 'portraits/hero.png', 'units/hero.png']);
 });
 
@@ -75,7 +80,9 @@ test('MWL asset extraction does not split bracketed asset lists', () => {
 });
 
 test('MWL asset extraction ignores numeric sound parameters', () => {
-	const game = compile('[unit_type]\nid=hero\nimage=units/hero.png\n[/unit_type]\n[attack]\nid=hit\nsound=-20\n[/attack]');
+	const game = compile(
+		'[unit_type]\nid=hero\nimage=units/hero.png\n[/unit_type]\n[attack]\nid=hit\nsound=-20\n[/attack]',
+	);
 	assert.deepEqual(game.assets, ['units/hero.png']);
 });
 
@@ -210,21 +217,47 @@ test('MWL still rejects unknown attributes on closed tags', () => {
 
 test('MWL expressions and item effects stay game-defined', () => {
 	assert.ok(Math.abs(evaluateExpression('1.3^level', { level: 2 }) - 1.69) < 1e-12);
-	assert.deepEqual(effectToModifier({ applyTo: 'attack', operation: 'add', value: 'missing_hp_fraction' }, { missing_hp_fraction: 4 }), {
-		stat: 'attack', op: 'add', value: 4,
-	});
+	assert.deepEqual(
+		effectToModifier(
+			{ applyTo: 'attack', operation: 'add', value: 'missing_hp_fraction' },
+			{ missing_hp_fraction: 4 },
+		),
+		{
+			stat: 'attack',
+			op: 'add',
+			value: 4,
+		},
+	);
 });
 
 test('MWL catalog validation catches duplicate ids, slots, effects, and hooks', () => {
-	const game = compile('[item]\nid=ring\nname=Ring\nslot=finger\n[effect]\nadd=1\n[/effect]\n[/item]\n[item]\nid=ring\nname=Other\n[/item]\n[hook]\nname=bad-hook\n[/hook]');
-	const codes = validateCatalog(game, { slots: ['weapon'], hooks: ['command:known'] }).map((diagnostic) => diagnostic.code);
+	const game = compile(
+		'[item]\nid=ring\nname=Ring\nslot=finger\n[effect]\nadd=1\n[/effect]\n[/item]\n[item]\nid=ring\nname=Other\n[/item]\n[hook]\nname=bad-hook\n[/hook]',
+	);
+	const codes = validateCatalog(game, { slots: ['weapon'], hooks: ['command:known'] }).map(
+		(diagnostic) => diagnostic.code,
+	);
 	assert.deepEqual(codes, ['MWL_UNKNOWN_SLOT', 'MWL_INCOMPLETE_EFFECT', 'MWL_DUPLICATE_ID', 'MWL_INVALID_HOOK']);
 });
 
 test('MWL saves are versioned and migrated, while legacy snapshots remain readable', () => {
-	const world = { turn: 1, variables: {}, units: {}, sides: {}, maps: {}, gold: {}, status: 'playing' as const, map: null, timeOfDay: '', scheduleIndex: 0 };
+	const world = {
+		turn: 1,
+		variables: {},
+		units: {},
+		sides: {},
+		maps: {},
+		gold: {},
+		status: 'playing' as const,
+		map: null,
+		timeOfDay: '',
+		scheduleIndex: 0,
+	};
 	const snapshot = encodeSave(world, { version: 1 });
-	const restored = decodeSave(snapshot, { version: 2, migrations: { 2: (value) => ({ ...value, turn: value.turn + 1 }) } });
+	const restored = decodeSave(snapshot, {
+		version: 2,
+		migrations: { 2: (value) => ({ ...value, turn: value.turn + 1 }) },
+	});
 	assert.equal(restored.turn, 2);
 	assert.equal(decodeSave(JSON.stringify(world), { version: 1 }).turn, 1);
 });
@@ -259,10 +292,15 @@ test('MWL compileNodes validates and compiles a programmatic node tree', () => {
 });
 
 test('MWL content catalog exposes game-neutral AI behaviors', () => {
-	const game = compile('[ai]\nid=basic\nstrategy=balanced\n[behavior]\nid=advance\nwhen=enemy_visible\naction=move_toward_enemy\nhook=ai:advance\n[/behavior]\n[/ai]');
+	const game = compile(
+		'[ai]\nid=basic\nstrategy=balanced\n[behavior]\nid=advance\nwhen=enemy_visible\naction=move_toward_enemy\nhook=ai:advance\n[/behavior]\n[/ai]',
+	);
 	const catalog = contentCatalog(game);
 	assert.deepEqual(catalog.ai[0], {
-		id: 'basic', strategy: 'balanced', target: undefined, difficulty: undefined,
+		id: 'basic',
+		strategy: 'balanced',
+		target: undefined,
+		difficulty: undefined,
 		behaviors: [{ id: 'advance', when: 'enemy_visible', action: 'move_toward_enemy', hook: 'ai:advance' }],
 	});
 });

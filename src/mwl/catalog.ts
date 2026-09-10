@@ -19,33 +19,72 @@ export function validateCatalog(game: MwlCompiledGame, options: MwlValidationOpt
 		if (id) {
 			const key = `${node.tag}:${id}`;
 			const previous = ids.get(key);
-			if (previous) diagnostics.push(diagnostic('MWL_DUPLICATE_ID', `duplicate ${node.tag} id "${id}"`, node.location ?? previous.location));
+			if (previous)
+				diagnostics.push(
+					diagnostic(
+						'MWL_DUPLICATE_ID',
+						`duplicate ${node.tag} id "${id}"`,
+						node.location ?? previous.location,
+					),
+				);
 			else ids.set(key, node);
 		}
-		if (node.tag === 'item' && options.slots && node.attributes.slot && !options.slots.includes(node.attributes.slot))
-			diagnostics.push(diagnostic('MWL_UNKNOWN_SLOT', `unknown equipment slot "${node.attributes.slot}"`, node.location));
-		if (node.tag === 'effect') {
-			const operations = ['add', 'sub', 'multiply', 'divide', 'set', 'increase', 'increase_total', 'increase_damage'].filter(
-				(key) => node.attributes[key] !== undefined,
+		if (
+			node.tag === 'item' &&
+			options.slots &&
+			node.attributes.slot &&
+			!options.slots.includes(node.attributes.slot)
+		)
+			diagnostics.push(
+				diagnostic('MWL_UNKNOWN_SLOT', `unknown equipment slot "${node.attributes.slot}"`, node.location),
 			);
+		if (node.tag === 'effect') {
+			const operations = [
+				'add',
+				'sub',
+				'multiply',
+				'divide',
+				'set',
+				'increase',
+				'increase_total',
+				'increase_damage',
+			].filter((key) => node.attributes[key] !== undefined);
 			if (!node.attributes.apply_to || operations.length !== 1)
-				diagnostics.push(diagnostic('MWL_INCOMPLETE_EFFECT', 'an effect needs apply_to and exactly one operation', node.location));
+				diagnostics.push(
+					diagnostic(
+						'MWL_INCOMPLETE_EFFECT',
+						'an effect needs apply_to and exactly one operation',
+						node.location,
+					),
+				);
 		}
 	}
 	const references = collectHookReferences(game);
 	const knownHooks = new Set(options.hooks ?? []);
 	for (const node of nodes) {
 		const raw = node.attributes.hook ?? (node.tag === 'hook' ? node.attributes.name : undefined);
-		if (raw !== undefined && !parseHookReference(raw)) diagnostics.push(diagnostic('MWL_INVALID_HOOK', `invalid hook reference "${raw}"`, node.location));
+		if (raw !== undefined && !parseHookReference(raw))
+			diagnostics.push(diagnostic('MWL_INVALID_HOOK', `invalid hook reference "${raw}"`, node.location));
 	}
-	if (options.hooks) for (const reference of references) if (!knownHooks.has(`${reference.type}:${reference.name}`))
-		diagnostics.push(diagnostic('MWL_UNKNOWN_HOOK', `hook ${reference.type}:${reference.name} is not declared by the game`, reference.location));
+	if (options.hooks)
+		for (const reference of references)
+			if (!knownHooks.has(`${reference.type}:${reference.name}`))
+				diagnostics.push(
+					diagnostic(
+						'MWL_UNKNOWN_HOOK',
+						`hook ${reference.type}:${reference.name} is not declared by the game`,
+						reference.location,
+					),
+				);
 	return diagnostics;
 }
 
 function flatten(roots: readonly MwlCompiledNode[]): MwlCompiledNode[] {
 	const result: MwlCompiledNode[] = [];
-	const visit = (node: MwlCompiledNode): void => { result.push(node); node.children.forEach(visit); };
+	const visit = (node: MwlCompiledNode): void => {
+		result.push(node);
+		node.children.forEach(visit);
+	};
 	roots.forEach(visit);
 	return result;
 }
