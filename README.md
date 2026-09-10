@@ -11,7 +11,7 @@ of their own; improvements to `mwg`'s own files are shared back.
 **[Live examples and API docs](https://datamoc.github.io/mwg/)**: every example below,
 playable in the browser with no download, plus the generated API reference.
 
-> **Status: early release (v0.5.3).** Every module in the shared floor below, plus optional
+> **Status: early release (v0.5.4).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
 > [ROADMAP.md](ROADMAP.md) for the full, numbered history.
 >
@@ -155,7 +155,7 @@ only some do.
 | | left-to-right, right-to-left and vertical writing | `mwg/i18n` |
 | | interface mirrored for right-to-left languages | `mwg/two-d/ui` |
 | | a missing translation falls back rather than showing a key | `mwg/i18n` |
-| | per-message sound cues as an `audio` channel, edited in a split-screen CLI | `mwg/i18n` + `tools/i18n-edit` |
+| | per-message sound cues as an `audio` channel, plus inline `{sound:path}` markers for timed dialogue cues | `mwg/i18n` + `mwg/two-d/ui` |
 | **audio** | sound effects with pooling, music with crossfade | `mwg/audio` |
 
 ### World

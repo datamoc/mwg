@@ -6,6 +6,7 @@ import { ListView, type ListItem } from './ListView.ts';
 import { theme, themeChanged } from './theme.ts';
 import { startReveal, advanceReveal, completeReveal, revealComplete, type RevealState } from './reveal.ts';
 import type { Texture2D } from '../render/Types2D.ts';
+import { parseSoundMarkers, type InlineSoundCue } from '../../i18n/index.ts';
 
 export interface MessagePage {
 	text: string;
@@ -36,6 +37,9 @@ export interface MessageBoxOptions {
 
 	/** called with the chosen value, or undefined when there were no choices */
 	onDone?: (chosen: unknown) => void;
+
+	/** called when `{sound:path}` reaches the visible typewriter position */
+	onSound?: (path: string) => void;
 
 	/** dim the world behind; false when the scene behind is the point, as in a dialogue */
 	dims?: boolean;
@@ -79,11 +83,12 @@ export interface MessageBoxOptions {
  * 	width: 400,
  * 	height: 120,
  * 	pages: [
- * 		{ text: 'The old door creaks open.' },
+ * 		{ text: 'The old door creaks open. {sound:door-creak.wav}' },
  * 		{ speaker: 'Guard', text: 'Who goes there?' },
  * 	],
  * 	choices: [{ text: 'A friend' }, { text: 'None of your business' }],
  * 	onDone: (chosen) => console.log('player answered', chosen),
+ * 	onSound: (path) => console.log('play sound', path),
  * });
  *
  * box.handleAction('confirm'); // reveals the rest of the first page instantly
@@ -96,6 +101,9 @@ export class MessageBox extends Window {
 
 	private speed: number;
 	private reveal: RevealState = startReveal(0);
+	private pageText = '';
+	private pageCues: InlineSoundCue[] = [];
+	private nextCue = 0;
 	private mode: 'adv' | 'nvl';
 
 	private body: Label;
@@ -108,6 +116,7 @@ export class MessageBox extends Window {
 	private choiceList: ListView | null = null;
 
 	private onDone: ((chosen: unknown) => void) | null;
+	private onSound: ((path: string) => void) | null;
 	private finished = false;
 
 	private autoAdvance?: number;
@@ -131,6 +140,7 @@ export class MessageBox extends Window {
 		this.autoAdvance = options.autoAdvance;
 		this.choices = options.choices ?? [];
 		this.onDone = options.onDone ?? null;
+		this.onSound = options.onSound ?? null;
 
 		const t = theme();
 
@@ -194,8 +204,13 @@ export class MessageBox extends Window {
 		this.body.y = this.mode === 'adv' && page.speaker !== undefined ? this.speakerLabel.height + t.spacing : 0;
 		this.body.style.wordWrapWidth = Math.max(16, textWidth);
 
-		this.reveal = startReveal(page.text.length, this.speed);
+		const parsed = parseSoundMarkers(page.text);
+		this.pageText = parsed.text;
+		this.pageCues = parsed.cues;
+		this.nextCue = 0;
+		this.reveal = startReveal(this.pageText.length, this.speed);
 		this.autoAdvanceElapsed = 0;
+		this.playRevealedSounds();
 		this.renderBody();
 
 		this.prompt.visible = false;
@@ -206,20 +221,28 @@ export class MessageBox extends Window {
 	/** the current page's revealed slice, formatted with its speaker inline in nvl mode */
 	private renderBody(): void {
 		if (this.mode === 'adv') {
-			this.body.setText(this.pages[this.pageIndex].text.slice(0, Math.floor(this.reveal.revealed)));
+			this.body.setText(this.pageText.slice(0, Math.floor(this.reveal.revealed)));
 			return;
 		}
 
 		//every earlier page is already fully revealed and stays on screen; only the newest
 		//page's own reveal is still in progress
-		const lines = this.pages.slice(0, this.pageIndex).map((page) => this.formatLine(page, page.text));
+		const lines = this.pages.slice(0, this.pageIndex).map((page) => this.formatLine(page, parseSoundMarkers(page.text).text));
 		const current = this.pages[this.pageIndex];
-		lines.push(this.formatLine(current, current.text.slice(0, Math.floor(this.reveal.revealed))));
+		lines.push(this.formatLine(current, this.pageText.slice(0, Math.floor(this.reveal.revealed))));
 		this.body.setText(lines.join('\n\n'));
 	}
 
 	private formatLine(page: MessagePage, text: string): string {
 		return page.speaker !== undefined ? `${page.speaker}: ${text}` : text;
+	}
+
+	private playRevealedSounds(): void {
+		const visible = Math.floor(this.reveal.revealed);
+		while (this.nextCue < this.pageCues.length && this.pageCues[this.nextCue].index <= visible) {
+			this.onSound?.(this.pageCues[this.nextCue].path);
+			this.nextCue++;
+		}
 	}
 
 	private get pageComplete(): boolean {
@@ -231,6 +254,7 @@ export class MessageBox extends Window {
 
 		if (!this.pageComplete) {
 			advanceReveal(this.reveal, dt);
+			this.playRevealedSounds();
 			this.renderBody();
 			return;
 		}
@@ -259,6 +283,7 @@ export class MessageBox extends Window {
 		//also skip the page, or fast readers lose lines
 		if (!this.pageComplete) {
 			completeReveal(this.reveal);
+			this.playRevealedSounds();
 			this.renderBody();
 			return true;
 		}

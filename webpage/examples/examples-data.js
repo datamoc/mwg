@@ -69,9 +69,9 @@ window.MWG_EXAMPLES = [
 		diagram: '20_string_editor.svg',
 		title: 'String editor',
 		description:
-			'A reference string beside its editable translation, rendered live through <code>RichLabel</code> with a <code>{HP_loose}</code> variable, placeholder-drift warnings, and a sound cue per string (<code>blip</code>/<code>hit</code>/<code>pickup</code>).',
+			'A reference string beside its editable translation, rendered live through <code>RichLabel</code> with a <code>{HP_loose}</code> variable, placeholder-drift warnings, and inline <code>{sound:path}</code> markers.',
 		controls:
-			'click the FR pane and type &nbsp;&middot;&nbsp; <kbd>Esc</kbd> stops editing &nbsp;&middot;&nbsp; <kbd>HP -</kbd>/<kbd>HP +</kbd> change the variable &nbsp;&middot;&nbsp; Play reveals the line and fires its cue',
+			'click the FR pane and type &nbsp;&middot;&nbsp; <kbd>Esc</kbd> stops editing &nbsp;&middot;&nbsp; <kbd>HP -</kbd>/<kbd>HP +</kbd> change the variable &nbsp;&middot;&nbsp; Play reveals the line and fires its inline cues',
 	},
 	{
 		id: 'dialogue',

@@ -7,6 +7,12 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-09-10
+
+Inline sound markers now travel with translated dialogue strings and fire at their visible
+position during `MessageBox` reveals. The reference docs, webpage features, and string-editor
+example now document and demonstrate `{sound:path}` markers.
+
 ## [0.5.3] - 2026-09-10
 
 Closes ROADMAP items 184-190, the string stack requested directly across one session:

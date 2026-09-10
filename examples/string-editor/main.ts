@@ -9,23 +9,22 @@ import * as Resources from '../../src/assets/index.ts';
  * The string editor as a playable page: a reference English string on the left, an
  * editable French translation on the right, and a rendered preview underneath - the
  * same split screen as `tools/i18n-edit`, with markdown, a live `{HP_loose}` variable,
- * and three auditionable sound cues instead of a terminal.
+ * and an inline sound marker instead of a terminal.
  *
  * Click the French pane (or the Edit button) and type: the preview re-renders through
  * `RichLabel`, placeholder drift against the reference is flagged on the spot, and the
- * Play button reveals the line progressively while firing its cue.
+ * Play button reveals the line progressively while firing the `{sound:path}` cue in it.
  */
 
 const BASE: I18n.Catalog = {
 	locale: 'en',
 	direction: 'ltr',
 	messages: {
-		'player.hit.log': "You're *hit*. You loose {HP_loose}. You **die**!",
-		'player.hit.audio': 'hit.wav',
+		'player.hit.log': "You're *hit* {sound:hit.wav}. You loose {HP_loose}. {sound:blip.wav}You **die**!",
 	},
 };
 
-const FRENCH_DEFAULT = "T'es *touché*. Tu perds {HP_loose}. Tu **meurs** !";
+const FRENCH_DEFAULT = "T'es *touché* {sound:hit.wav}. Tu perds {HP_loose}. {sound:blip.wav}Tu **meurs** !";
 
 const CUES: ReadonlyArray<string | null> = ['hit.wav', 'blip.wav', 'pickup.wav', null];
 
@@ -121,7 +120,7 @@ class StringEditorScene extends Scene2D {
 		addButton('pickup', margin + 604, 274, () => this.sounds.get('pickup.wav')?.play(), 80);
 
 		const hint = new Label({
-			text: 'Type in the FR pane (Esc stops). Play reveals the line and fires its cue.',
+			text: 'Type in the FR pane (Esc stops). Play reveals the line and fires its inline cues.',
 			color: theme().color.textDim,
 			size: 13,
 		});
@@ -149,17 +148,12 @@ class StringEditorScene extends Scene2D {
 		return this.formatter.format(this.message(), 'log');
 	}
 
-	private cuePath(): string | null {
-		const cue = this.formatter.format(this.message(), 'audio');
-		return cue === '' ? null : cue;
-	}
-
 	private refresh(): void {
 		I18n.setActive(this.previewLocale === 'fr' ? this.fr : BASE);
 		this.enPane.setText(BASE.messages['player.hit.log'] as string);
 		const frText = this.fr.messages['player.hit.log'] as string;
 		this.frPane.setText(frText + (this.editing ? '▌' : ''));
-		this.preview.setText(this.rendered());
+		this.preview.setText(I18n.parseSoundMarkers(this.rendered()).text);
 
 		const drift = I18n.diffPlaceholders(BASE.messages['player.hit.log'] as string, frText);
 		const problems = [
@@ -176,7 +170,7 @@ class StringEditorScene extends Scene2D {
 		}
 
 		this.hpLabel.setText(`HP_loose = ${this.hp}`);
-		this.cueButton.setText(`cue: ${CUES[this.cueIndex] ?? 'none'}`);
+		this.cueButton.setText(`inline cue: ${CUES[this.cueIndex] ?? 'none'}`);
 		this.localeButton.setText(`show: ${this.previewLocale.toUpperCase()}`);
 		this.editButton.setText(this.editing ? 'Stop editing' : 'Edit translation');
 	}
@@ -194,8 +188,8 @@ class StringEditorScene extends Scene2D {
 	private cycleCue(): void {
 		this.cueIndex = (this.cueIndex + 1) % CUES.length;
 		const cue = CUES[this.cueIndex];
-		if (cue === null) delete this.fr.messages['player.hit.audio'];
-		else this.fr.messages['player.hit.audio'] = cue;
+		const text = this.fr.messages['player.hit.log'] as string;
+		this.fr.messages['player.hit.log'] = text.replace(/\{sound:[^{}]+\}/, cue === null ? '' : `{sound:${cue}}`);
 		this.refresh();
 	}
 
@@ -205,9 +199,9 @@ class StringEditorScene extends Scene2D {
 	}
 
 	private playLine(): void {
-		this.preview.showProgressive(this.rendered(), 60);
-		const cue = this.cuePath();
-		if (cue !== null) this.sounds.get(cue)?.play();
+		const parsed = I18n.parseSoundMarkers(this.rendered());
+		this.preview.showProgressive(parsed.text, 60);
+		for (const cue of parsed.cues) this.sounds.get(cue.path)?.play();
 	}
 
 	private typeKey(event: KeyboardEvent): void {

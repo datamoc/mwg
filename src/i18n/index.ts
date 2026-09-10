@@ -241,7 +241,9 @@ function frenchSpacing(text: string): string {
 	// `:` is excluded from clock times ("12:30") and URLs ("https://") by requiring a letter,
 	// not a digit, immediately before it - a heuristic good enough for translated dialogue/UI
 	// text, not a general-purpose text parser
-	result = result.replace(/(\p{L})\s?:/gu, `$1${THIN_NBSP}:`);
+	// Keep the colon in an inline `{sound:path}` marker byte-for-byte intact so the
+	// presentation layer can still recognize it after locale formatting.
+	result = result.replace(/(?<!\{soun)(\p{L})\s?:/gu, `$1${THIN_NBSP}:`);
 
 	const numbering = new RegExp(`\\b(${FR_NUMBERING_WORDS.join('|')})\\s+(?=\\d)`, 'g');
 	return result.replace(numbering, `$1${NBSP}`);
@@ -329,6 +331,9 @@ export function reset(): void {
 
 export { parseFTL } from './Fluent.ts';
 export type { FluentOptions } from './Fluent.ts';
+
+export { parseSoundMarkers, stripSoundMarkers } from './SoundMarkers.ts';
+export type { InlineSoundCue, ParsedSoundText } from './SoundMarkers.ts';
 
 export { createCatalogFormatter } from './SemanticMessage.ts';
 export type { SemanticMessage, EntityTextResolver, GrammaticalEntity, MessageChannel, MessageFormatter } from './SemanticMessage.ts';

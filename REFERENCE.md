@@ -576,7 +576,7 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
 - `IconGrid` - a multi-column icon-grid inventory view; tap-then-tap "drag and drop",
   frame-driven long-press for a quickslot.
 - `MessageBox` - dialogue text box: paged reveal, choices, ADV/NVL display modes,
-  `autoAdvance`.
+  `autoAdvance`, and timed `{sound:path}` markers delivered through `onSound`.
 - `messageBoxPresenter` - wires `rpg.EventRunner`'s dialogue to a `MessageBox` on a
   `WindowStack`, in one argument: `present: messageBoxPresenter(this.windows)`.
 - `VerticalLabel`/`layoutVertical` - vertical writing layout, with CJK glyph rotation.
@@ -626,6 +626,10 @@ Message tables, plurals, interpolation, and direction - pure logic, no Pixi depe
   added, or reshaped tokens) for `tools/i18n-edit` to surface. `tRaw`
   skips the display-text decoration (typographic spacing, RTL wrapping) for catalog values
   that are not shown to the player, such as a sound path.
+- `parseSoundMarkers`/`stripSoundMarkers`/`InlineSoundCue`/`ParsedSoundText` - extracts
+  `{sound:path}` markers from translated text, returning marker-free display text and each
+  cue's visible-character offset. `MessageBox` consumes these markers during its reveal;
+  `t()` and `tRaw()` preserve them for the presentation layer.
 - `typographic` - locale-aware curly-apostrophe substitution (French/Italian/Dutch elisions);
   for French, also a narrow no-break space before `; ! ? :` and around `« »`, and a plain
   no-break space between a numbering word and its number ("Chapitre 3"); for German, a

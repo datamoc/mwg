@@ -9,10 +9,34 @@ import {
 	tRaw,
 	createCatalogFormatter,
 	validateMessageAudio,
+	parseSoundMarkers,
+	stripSoundMarkers,
 	type SemanticMessage,
 } from '../src/i18n/index.ts';
 
 const THIN_NBSP = ' ';
+
+test('inline sound markers are removed and keep visible positions', () => {
+	const parsed = parseSoundMarkers('Hit! {sound:sounds/hit.wav} Take {amount} damage. {sound:blip.wav}');
+	assert.equal(parsed.text, 'Hit!  Take {amount} damage. ');
+	assert.deepEqual(parsed.cues, [
+		{ path: 'sounds/hit.wav', index: 5 },
+		{ path: 'blip.wav', index: 28 },
+	]);
+	assert.equal(stripSoundMarkers('A {sound:a.wav} B'), 'A  B');
+});
+
+test('inline sound markers are not counted as translation placeholders', () => {
+	setBase({ locale: 'en', direction: 'ltr', messages: { hit: 'Hit {sound:hit.wav} for {amount}.' } });
+	assert.equal(t('hit', { amount: 7 }), 'Hit {sound:hit.wav} for 7.');
+	reset();
+});
+
+test('French typography preserves inline sound markers', () => {
+	setBase({ locale: 'fr', direction: 'ltr', messages: { hit: 'Touché {sound:hit.wav} !' } });
+	assert.equal(t('hit'), `Touché {sound:hit.wav}${THIN_NBSP}!`);
+	reset();
+});
 
 test('the audio channel resolves <type>.audio to its sound path', () => {
 	setBase({
