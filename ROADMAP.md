@@ -28,8 +28,9 @@ where those live.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** none. Every numbered item has shipped,
-including the former priority cluster (28, 30, 41, 45) and everything placed around it.
+**Priority order among what's still open:** none. Every numbered item has shipped except
+192, an accessibility idea deliberately recorded at the tail rather than folded into 1.0;
+everything before it shipped, including the former priority cluster (28, 30, 41, 45).
 Numbers are never reassigned once given - the list is an append-only history, including
 for what is not done yet - so priority order lives in prose, rather than in the list's
 own sequence. What remains before 1.0 is recorded in the
@@ -2920,6 +2921,17 @@ rather than someone else's build.
      `seed` and `clear` all repeated is one private `index` helper. 8 unit tests, including
      the add/clear round-trip and a cleared cell dropping out of `cellsAbove`.
 
+192. requested directly: accessibility stops short of what a redistributable framework should
+     cover, and this list never named the gap. Colour-blindness filters, captions, the `i18n`
+     accessibility channel, input rebinding, RTL and a `highContrastTheme` example already
+     ship, but three holes remain: the canvas is one opaque element to a screen reader, so
+     `ui` widgets expose no text; nothing honours `prefers-reduced-motion` in the tween,
+     particle or screen-effect paths; and a `theme` palette is never contrast-checked. Add
+     the holes without committing to their shape yet - an accessible text/ARIA layer for
+     windowed widgets, a reduced-motion switch those paths consult, and a contrast helper or
+     documented rule for palettes - and decide scope and priority with the game or release
+     that needs them.
+
 ### Parked decisions
 
 Not open work, and not forgotten: these are decisions this project has deliberately
@@ -2947,6 +2959,10 @@ every numbered capability in the list above has already shipped.
       declarations exactly.
 - [ ] `npm publish --dry-run` shows the intended package contents and no `tools/docs`
       leakage (the getting-started page's own hazard, re-checked each release).
+- [ ] The npm package's map files are decided explicitly, not left to drift: `dist` ships a
+      `.js.map` and `.d.ts.map` beside most modules (422 of its 845 files, though a much
+      smaller share of the bytes), a deliberate debuggability choice. Keep or drop them for
+      1.0 and re-check the package contents with `npm publish --dry-run` either way.
 - [ ] The getting-started tutorial is followed from scratch, in an empty directory
       outside this repo, once for each documented path: `npm install @datamoc/mw_games
       vite`, the `npm pack` + install-by-path `.tgz` fallback, and the no-install
@@ -2957,6 +2973,8 @@ every numbered capability in the list above has already shipped.
 - [ ] The public API gets a `DEPRECATED` convention and release notes call out every
       breaking change, so 1.0 is the last release where renames happen silently.
 - [ ] A browser smoke check opens one built example from `file://` and looks at it:
-      the class of layout bug 1.0 must not ship is invisible to every check above.
+      `npm run visual:smoke:ui` runs the check and writes a screenshot, but a human still
+      has to look at it - the class of layout bug 1.0 must not ship is invisible to every
+      automated check above.
 - [ ] CHANGELOG, REFERENCE.md and the website's documentation page are regenerated or
       updated for whatever changed since the last release.

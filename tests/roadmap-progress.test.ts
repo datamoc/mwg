@@ -115,9 +115,17 @@ test('parses repository ROADMAP.md correctly', () => {
 	assert.ok(result.overallTotal >= 160, `expected at least 160 items, got ${result.overallTotal}`);
 	assert.ok(result.overallDone >= 160, `expected at least 160 done items, got ${result.overallDone}`);
 	assert.ok(result.sections.length >= 6, `expected at least 6 milestone batches, got ${result.sections.length}`);
-	// every numbered item has shipped; the 1.0 exit checklist is prose, deliberately not
-	// numbered items, so it must not show up here as open work
-	assert.equal(result.openItems.length, 0, 'expected no open numbered items');
+	// The numbered list is append-only, so a recorded but not-yet-built idea sits at the
+	// tail, after every shipped item, never interleaved with history. Item 192 (accessibility)
+	// is the one such item right now; asserting the ordering rather than a fixed open set
+	// means the next recorded idea needs no test edit. The 1.0 exit checklist stays prose
+	// (checks to run, not items), so it must not show up here as open work.
+	const openNumbers = result.openItems.map((item) => item.num ?? 0);
+	const closedNumbers = result.allItems.filter((item) => item.done).map((item) => item.num ?? 0);
+	assert.ok(
+		openNumbers.every((open) => closedNumbers.every((closed) => open > closed)),
+		'open numbered items must sit at the end of the append-only list',
+	);
 
 	// Item 175 (the pixi.js dependency-shape decision) is closed by decision, not left open
 	const item175 = result.allItems.find((item) => item.num === 175);

@@ -8,6 +8,11 @@ the public API may still change between minor versions.
 ## [Unreleased]
 
 ### Added
+- `npm run coverage` and `npm run visual:smoke:ui`. Coverage reuses the existing Node test
+  suite through `--experimental-test-coverage`, so measuring it costs no dependency. The
+  visual smoke builds the interface example, opens it from `file://` in headless Chrome, and
+  fails when the page errors or the canvas paints nothing, attaching the screenshot as a
+  GitHub artifact; CI runs it on every pull request.
 - `core.Blob` gained a per-cell `clear(x, y)` (roadmap item 191): it zeroes one cell's
   volume and leaves its neighbours alone, so a game can douse a single tile, seal a breach,
   or put out one patch of fire without rebuilding the field.
@@ -23,6 +28,12 @@ the public API may still change between minor versions.
   escape hatch ADR-001 already documented.
 
 ### Changed
+- ROADMAP.md: item 192 records the accessibility gaps the list had never named (screen-reader
+  text for `ui` widgets, `prefers-reduced-motion`, palette contrast) as one open backlog item
+  at the tail; the roadmap-progress test now guards that open items sit after every shipped
+  one rather than forbidding them, so a recorded idea needs no test edit. The 1.0 exit
+  checklist now decides the published `dist` map files explicitly instead of leaving them to
+  drift.
 - **Breaking: `Blob` moved from `mwg/roguelike` to `mwg/core`.** A grid of volumes is not a
   dungeon-crawl concern, so the field now lives in the renderer-free `core` module (still
   reachable at the top level from `mw_games`) and imports nothing. Import it from

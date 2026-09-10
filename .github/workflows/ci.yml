@@ -32,6 +32,51 @@ jobs:
       # the committed API_REPORT.md must match the declarations the build just emitted
       - run: npm run api:check
 
+  # The check no typechecker can make: one layout-heavy example is built, opened from
+  # file:// in a real Chrome, and screenshotted, so a canvas that paints nothing (or a page
+  # that throws on load) fails the pull request instead of shipping. It is a coarse smoke,
+  # not a pixel baseline, deliberately: font and anti-aliasing differences between a
+  # developer's machine and the runner would make a diff gate fail for the renderer rather
+  # than for the change, the same reason the browser benchmark stays off the per-push path.
+  visual-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '26'
+          cache: npm
+
+      - run: npm ci
+
+      # the example assets are generated, never downloaded (tools/make-example-assets.mjs)
+      - run: npm run assets
+
+      - name: Locate Chrome
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$chrome" ]; then
+            echo "no Chrome on this runner; visual-smoke.mjs cannot run" >&2
+            exit 1
+          fi
+          echo "CHROME_PATH=$chrome" >> "$GITHUB_ENV"
+          "$chrome" --version
+
+      - name: Build and smoke the interface example
+        env:
+          # no GPU on a runner: keep Pixi on a real WebGL path via ANGLE's software backend
+          MWG_VISUAL_CHROME_ARGS: '--use-gl=angle --use-angle=swiftshader --disable-dev-shm-usage'
+        run: npm run visual:smoke:ui
+
+      # kept even when the smoke fails, so a reviewer can see what the page actually drew
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-smoke
+          path: benchmark-results/visual-smoke/
+          if-no-files-found: warn
+
   # The one benchmark that needs no browser, no GPU and no example build: pure Node
   # throughput for mwg/simulation. Safe on every push because of what it does NOT do - it
   # starts from an empty benchmark-results/ every run, so there is no history to compare
