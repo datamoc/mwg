@@ -11,7 +11,7 @@ import {
 import { createWorld, execute, MwlRuntime } from '../src/mwl/runtime.ts';
 import { validate } from '../src/mwl/schema.ts';
 import { contentCatalog } from '../src/mwl/content.ts';
-import { effectToModifier } from '../src/mwl/actors.ts';
+import { effectToModifier, inventoryItem, itemDefinition } from '../src/mwl/actors.ts';
 import { evaluateExpression } from '../src/mwl/expression.ts';
 import { validateCatalog } from '../src/mwl/catalog.ts';
 import { decodeSave, encodeSave } from '../src/mwl/persistence.ts';
@@ -218,9 +218,9 @@ test('MWL still rejects unknown attributes on closed tags', () => {
 test('MWL expressions and item effects stay game-defined', () => {
 	assert.ok(Math.abs(evaluateExpression('1.3^level', { level: 2 }) - 1.69) < 1e-12);
 	assert.equal(evaluateExpression('(1+2)*3-4/2', {}), 7);
-	assert.throws(() => evaluateExpression('1/0'));
-	assert.throws(() => evaluateExpression('level'));
-	assert.throws(() => evaluateExpression('('));
+	assert.throws(() => evaluateExpression('1/0', {}));
+	assert.throws(() => evaluateExpression('level', {}));
+	assert.throws(() => evaluateExpression('(', {}));
 	assert.deepEqual(
 		effectToModifier(
 			{ applyTo: 'attack', operation: 'add', value: 'missing_hp_fraction' },
