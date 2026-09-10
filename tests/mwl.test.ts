@@ -217,6 +217,10 @@ test('MWL still rejects unknown attributes on closed tags', () => {
 
 test('MWL expressions and item effects stay game-defined', () => {
 	assert.ok(Math.abs(evaluateExpression('1.3^level', { level: 2 }) - 1.69) < 1e-12);
+	assert.equal(evaluateExpression('(1+2)*3-4/2', {}), 7);
+	assert.throws(() => evaluateExpression('1/0'));
+	assert.throws(() => evaluateExpression('level'));
+	assert.throws(() => evaluateExpression('('));
 	assert.deepEqual(
 		effectToModifier(
 			{ applyTo: 'attack', operation: 'add', value: 'missing_hp_fraction' },
@@ -228,6 +232,16 @@ test('MWL expressions and item effects stay game-defined', () => {
 			value: 4,
 		},
 	);
+});
+
+test('MWL actor adapters translate every supported modifier operation', () => {
+	assert.equal(effectToModifier({ applyTo: 'attack', operation: 'sub', value: '2' }).value, -2);
+	assert.equal(effectToModifier({ applyTo: 'speed', operation: 'divide', value: '2' }).value, 0.5);
+	assert.equal(effectToModifier({ applyTo: 'hp', operation: 'set', value: '7' }).op, 'set');
+	assert.throws(() => effectToModifier({ applyTo: 'hp', operation: 'unknown', value: '1' }));
+	assert.throws(() => effectToModifier({ applyTo: 'hp', operation: 'add' }));
+	const item = itemDefinition({ id: 'potion', name: 'Potion', stackable: true, weight: 1, effects: [] });
+	assert.deepEqual(inventoryItem(item, 3), { id: 'potion', quantity: 3, stackable: true, weight: 1 });
 });
 
 test('MWL catalog validation catches duplicate ids, slots, effects, and hooks', () => {

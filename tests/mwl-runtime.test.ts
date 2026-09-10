@@ -285,6 +285,7 @@ id=arriving
 on=moveto
 side=2
 [message]
+side=2
 text=_ "A grunt arrives."
 [/message]
 [/event]
@@ -337,6 +338,7 @@ test('a game engine can report a move it resolved itself', () => {
 		messages.map((message) => message.text),
 		['The ford is guarded.', 'A grunt arrives.'],
 	);
+	assert.equal(messages[1].side, 2);
 });
 
 test('a spent moveto event stays spent across a save and restore', () => {
@@ -348,4 +350,125 @@ test('a spent moveto event stays spent across a save and restore', () => {
 	runtime.restore(saved);
 	runtime.run('advance');
 	assert.equal(messages.length, 1, 'restoring keeps one-shot events spent');
+});
+
+test('runtime applies command defaults and skips a false conditional', () => {
+	const messages: MwlMessage[] = [];
+	const runtime = new MwlRuntime(
+		compile(`[game]
+[event]
+on=defaults
+[message]
+value=_ "Fallback"
+[/message]
+[spawn]
+x=2
+y=3
+[/spawn]
+[if]
+[condition]
+variable=missing
+equals=yes
+[/condition]
+[message]
+text=_ "Skipped"
+[/message]
+[/if]
+[/event]
+[/game]`),
+		{ onMessage: (message) => messages.push(message) },
+	);
+	runtime.run('defaults');
+	assert.deepEqual(messages, [{ text: 'Fallback' }]);
+	assert.deepEqual(runtime.world.units['unit#0@2,3'], { hp: 1, x: 2, y: 3, alive: true });
+});
+
+test('moveto supports repeatable events and ignores invalid arrivals', () => {
+	const messages: MwlMessage[] = [];
+	const runtime = new MwlRuntime(
+		compile(`[game]
+[map]
+id=plain
+terrain=Gg
+[start]
+side=1
+x=0
+y=0
+[/start]
+[start]
+[/start]
+[/map]
+[unit]
+id=runner
+x=0
+y=0
+side=1
+[/unit]
+[event]
+on=moveto
+once=false
+x=0
+y=0
+[message]
+text=_ "Again"
+[/message]
+[/event]
+[event]
+on=moveto
+once=true
+x=0
+y=0
+[message]
+text=_ "Once"
+[/message]
+[/event]
+[/game]`),
+		{ onMessage: (message) => messages.push(message) },
+	);
+	runtime.fireMoveto('missing');
+	runtime.world.units.runner.alive = false;
+	runtime.fireMoveto('runner');
+	runtime.world.units.runner.alive = true;
+	runtime.fireMoveto('runner');
+	runtime.fireMoveto('runner');
+	assert.deepEqual(messages, [{ text: 'Again' }, { text: 'Once' }, { text: 'Again' }]);
+});
+
+test('runtime executes the remaining event command forms', () => {
+	const messages: MwlMessage[] = [];
+	let mark = '';
+	const source = `[game]
+[unit]
+id=victim
+hp=2
+[/unit]
+[event]
+on=commands
+[kill]
+target=victim
+[/kill]
+[else]
+[message]
+text=_ "Else"
+[/message]
+[/else]
+[hook]
+name=command:mark
+value=ok
+[/hook]
+[/event]
+[/game]`;
+	const runtime = new MwlRuntime(compile(source), {
+		onMessage: (message) => messages.push(message),
+		hooks: { command: { 'command:mark': (_world, _emit, context) => (mark = context.value ?? '') } },
+	});
+	runtime.run('commands');
+	assert.equal(runtime.world.units.victim.alive, false);
+	assert.deepEqual(messages, [{ text: 'Else' }]);
+	assert.equal(mark, 'ok');
+
+	const outcome = (tag: 'win' | 'lose'): MwlRuntime =>
+		new MwlRuntime(compile(`[game]\n[event]\non=outcome\n[${tag}]\n[/${tag}]\n[/event]\n[/game]`));
+	assert.equal(outcome('win').evaluate(), 'won');
+	assert.equal(outcome('lose').evaluate(), 'lost');
 });
