@@ -17,21 +17,25 @@ level - see the gap noted below, corrected after ROADMAP item 167 overstated thi
 closed.
 
 **Where**: `two-d/render/Types2D.ts` (`Container2D`/`Texture2D`/`Rect`/`TextureRegion`),
-`two-d/render/Shape2D.ts` (`Node2D`/`Shape2D`/`Text2D`/`TiledSprite`/`Gradient`), and
-`two-d/pixi-interop.ts` as the one sanctioned, visible escape hatch for what those don't cover.
+`two-d/render/Shape2D.ts` (`Node2D`/`Shape2D`/`Text2D`/`Sprite2D`/`TiledSprite`/`Gradient`),
+and `two-d/pixi-interop.ts` as the one sanctioned, visible escape hatch (published at
+`@datamoc/mw_games/two-d/pixi-interop`) for what those don't cover.
 Enforced by `tests/renderer-isolation.test.ts` (both directions: nothing under `two-d` reaches
 Babylon, nothing under `three-d` reaches Pixi, no example names `pixi.js`/`@babylonjs/*`
 directly) and `tests/consumer-app.test.ts` (a minimal game compiles against the real published
 paths without naming a renderer).
 
-**Known gap**: no bare, constructible `Sprite2D` exists - only `TintedSprite` (which adds
-colour-transform behaviour, not a neutral pass-through), so a game wanting a plain untinted
-sprite still has no `two-d`-owned way to construct one. `pixi-interop.ts` itself is a literal
-`export { Container, Sprite, Texture, Graphics, Rectangle, Text } from 'pixi.js'`, so using it
-still means `pixi.js` is present at the value level, and `package.json`'s `dependencies` still
-lists `pixi.js` directly - removing it today would break the build. "A game consumes `mwg`, not
-PixiJS... directly" holds for every *type* position across the public API (enforced by the
-scans above) but not yet for every *value* a game might construct.
+**Known gap, narrowed since this ADR was written**: `Sprite2D` now closes the "no bare
+constructible sprite" half - a game can construct plain sprites, shapes, text, and containers
+without naming Pixi. What remains is the dependency-shape question, not the type surface:
+`pixi-interop.ts` is a literal `export { Container, Sprite, Texture, Graphics, Rectangle, Text }
+from 'pixi.js'`, so using the escape hatch still means `pixi.js` is present at the value level,
+and `package.json`'s `dependencies` still lists `pixi.js` directly. ROADMAP item 175 decides that
+question: it stays a direct dependency for the 0.x line and moves to an optional peer dependency
+(the `@babylonjs/core` treatment) as part of the 1.0 release, with the verification steps carried
+in ROADMAP's 1.0 exit checklist. "A game consumes `mwg`, not PixiJS... directly" holds for every
+*type* position across the public API (enforced by the scans above); the value-level exception is
+now exactly one documented file, not every ordinary sprite.
 
 ## ADR-002 - Simulation authority
 

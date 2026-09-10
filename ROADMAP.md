@@ -28,38 +28,14 @@ where those live.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** 28 → 30 → 41 → 45 (everything placed above
-has shipped and is no longer part of this ordering). Items 37 (quests) and 39 (skills)
-move up from their append position - both are small, unblocked `mwg/actors`/`mwg/rpg`
-capabilities that already-committed reference games (ADOM's own row names quests explicitly;
-levelling is implicit in nearly all of them) demand directly, unlike several later entries
-that are either blocked on hex (28, 41) or still deciding which genre or mechanic to commit
-to at all (30, 38). 40 (crafting) is pulled up alongside them for the same reason, sharing
-37/39's shape: small, unblocked, already-demanded. 42 (action recording and replay) follows
-right after - not demanded by any reference game, but the fastest way to make every item
-above and below it faster to verify, and cheap: most of its determinism already exists
-(`Random`, `Game.step`). Numbers themselves are never reassigned once given - the list is
-an append-only history, including for what is not done yet - so priority order lives here, in
-prose, rather than in the list's own sequence.
-
-Reassessment with 43/44/45 placed: 43 (a spendable per-use resource) joins the top
-cluster - its entry already scopes it to the one genuinely missing bit, which is small
-(`craft()`-shaped), unblocked, and demanded across the references (MP/mana pools; item
-48's `Charges` covers per-move uses, not pools). 44 (discrete elevation) sits mid-list:
-concrete and scoped, but no committed reference demands height yet and it cuts across
-`FieldOfView`, `Pathfinder` and draw order, so it costs more than its current demand
-justifies placing higher. At that point, 45 (true 3D) went last because it was very low
-priority and against the project's stated 2D purpose. 36 (structured logging) sinks below
-all demanded work on its own entry's admission of marginal value. 28 stays low even
-though hex (item 17) shipping removed its blocker - it is still an undecided reference
-rather than demanded work.
-
-Everything placed has since shipped (42, 32, 43, 31, 34, 33, 35, 44 with its TileMap
-rendering half, 38, 36 - plus 37, 39, 40, 46-56 before them). What remains is decisions,
-not demanded work: 28 and 30 are reference picks no capability waits on, and 41 waits on
-30's pick by its own entry's admission. The formerly gated 45 has since shipped as optional
-Babylon.js support, without changing the 2D default.
-and needs a project-level yes before any code.
+**Priority order among what's still open:** none. Every numbered item has shipped,
+including the former priority cluster (28, 30, 41, 45) and everything placed around it.
+Numbers are never reassigned once given - the list is an append-only history, including
+for what is not done yet - so priority order lives in prose, rather than in the list's
+own sequence. What remains before 1.0 is recorded in the
+[1.0 exit checklist](#10-exit-checklist) at the end of this file; the few deliberate
+non-decisions (which reference title, if any, a future genre pick should study) are parked
+in [Parked decisions](#parked-decisions) rather than left as phantom open items.
 
 17. ~~`mwg/render` + `mwg/roguelike` - hexagonal tile maps, and FOV/pathfinding over a hex
     grid~~ - flat-top, matching Wesnoth. `Level` and `TileMap` both gained a `shape` option
@@ -2692,7 +2668,7 @@ rather than someone else's build.
      designed for - this item records that the existing reference games are not that case,
      so a future session does not re-run the same survey
 
-175. Item 173 corrected ADR-001/item 167's overstated "renderer boundary fully closed" claim
+175. ~~Item 173 corrected ADR-001/item 167's overstated "renderer boundary fully closed" claim
      and, while adding `two-d/render/Shape2D.ts`'s `Sprite2D` closed the "no bare
      constructible sprite" half of that gap, left the actual dependency-shape question
      explicitly unresolved: `package.json`'s `dependencies` still lists `pixi.js` directly
@@ -2707,7 +2683,13 @@ rather than someone else's build.
      directory once the shape actually changes, and deciding whether this is a `0.5.x` patch
      or belongs bundled with a larger breaking-change release. Left open on purpose rather
      than rushed through under a goal-completion pass - confirmed directly: asked whether to
-     implement it now or leave it open, and the answer was to leave it open.
+     implement it now or leave it open, and the answer was to leave it open.~~ - Closed by
+     decision rather than code change: `pixi.js` stays in `dependencies` for the rest of the
+     0.x line. Moving it to optional `peerDependencies` (the `@babylonjs/core` treatment) is
+     a real install-contract change for a live published package, so it belongs bundled with
+     1.0's breaking changes, and the [1.0 exit checklist](#10-exit-checklist) below carries
+     the verification steps this entry named (npm-install and `.tgz` paths, from an empty
+     directory).
 
 176. ~~requested directly: a game's own data tables (`actors.AffixTable` and the like) are
      hand-written `.ts` object literals today, which means a content designer without
@@ -2930,3 +2912,44 @@ rather than someone else's build.
      website's features page, in that page's problem/trick/example voice. Browser-verified
      from `file://`, including typing, HP changes, cue cycling, the reveal, and the
      features-to-example link chain.~~
+
+### Parked decisions
+
+Not open work, and not forgotten: these are decisions this project has deliberately
+deferred, each with a note on what would un-park it. They stay out of the numbered list
+until someone actually picks them up, because the list records shipped capabilities, not
+standing intentions.
+
+- **Items 28/30: the next reference pick.** Every genre the capability spec committed to
+  is covered by the shipped `mwg/board` work (hex tactics, action points, cover,
+  overwatch, shared turns, generic pieces). Picking another reference title is only worth
+  doing when a game project actually needs a capability no current reference demands;
+  the pick itself is a project decision, not framework work.
+- **Item 41: board-game semantics beyond the generic piece.** `BoardGrid`/`BoardPiece`
+  shipped the primitive shape. What "owned", "captured" and "promoted" should mean is
+  tied to whichever board game item 30 eventually picks, so it un-parks together with 28/30.
+
+### 1.0 exit checklist
+
+The definition of done for 1.0. Each line is a check to run, not a feature to build;
+every numbered capability in the list above has already shipped.
+
+- [ ] `npm run check`, `npm test`, `npm run build`, and `npm run audit` are all green on
+      the release commit.
+- [ ] `npm run api:check` passes: the committed `API_REPORT.md` matches the built
+      declarations exactly.
+- [ ] `npm publish --dry-run` shows the intended package contents and no `tools/docs`
+      leakage (the getting-started page's own hazard, re-checked each release).
+- [ ] The getting-started tutorial is followed from scratch, in an empty directory
+      outside this repo, once for each documented path: `npm install @datamoc/mw_games
+      vite`, the `npm pack` + install-by-path `.tgz` fallback, and the no-install
+      `mw_games.global.js` script tag. All three reach a working `file://` page.
+- [ ] `pixi.js` moves from `dependencies` to optional `peerDependencies` (item 175's
+      decision) and the two npm paths above are re-verified under that new install
+      contract before the move ships.
+- [ ] The public API gets a `DEPRECATED` convention and release notes call out every
+      breaking change, so 1.0 is the last release where renames happen silently.
+- [ ] A browser smoke check opens one built example from `file://` and looks at it:
+      the class of layout bug 1.0 must not ship is invisible to every check above.
+- [ ] CHANGELOG, REFERENCE.md and the website's documentation page are regenerated or
+      updated for whatever changed since the last release.

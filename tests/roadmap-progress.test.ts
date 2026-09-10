@@ -115,13 +115,14 @@ test('parses repository ROADMAP.md correctly', () => {
 	assert.ok(result.overallTotal >= 160, `expected at least 160 items, got ${result.overallTotal}`);
 	assert.ok(result.overallDone >= 160, `expected at least 160 done items, got ${result.overallDone}`);
 	assert.ok(result.sections.length >= 6, `expected at least 6 milestone batches, got ${result.sections.length}`);
-	assert.ok(result.openItems.length > 0, 'expected at least one open item');
+	// every numbered item has shipped; the 1.0 exit checklist is prose, deliberately not
+	// numbered items, so it must not show up here as open work
+	assert.equal(result.openItems.length, 0, 'expected no open numbered items');
 
-	// Open items should contain the known open item 175 (a breaking dependency-shape change
-	// left for a deliberate future decision, not a same-session mechanical edit - item 148,
-	// this test's previous example, was closed by board.HexSkirmish)
-	const openNums = result.openItems.map((i) => i.num);
-	assert.ok(openNums.includes(175), 'expected open items to include 175');
+	// Item 175 (the pixi.js dependency-shape decision) is closed by decision, not left open
+	const item175 = result.allItems.find((item) => item.num === 175);
+	assert.ok(item175, 'expected item 175 in the numbered history');
+	assert.equal(item175.done, true, 'expected item 175 to be closed');
 });
 
 test('allItems exposes every parsed item in document order, for item management filtering', () => {
