@@ -725,6 +725,12 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 - `parse`/`compile`/`validate`/`extractI18n` - the programmatic compiler surface exported from
   `@datamoc/mw_games/mwl`; games provide their own hook implementations and interpret
   game-specific effects.
+- Public MWL exports - `MwlRuntime`, `MwlSyntaxError`, `collectHookReferences`, `compileNodes`,
+  `compileSources`, `contentCatalog`, `createWorld`, `decodeSave`, `effectToModifier`,
+  `emitHooksDeclaration`, `emitModule`, `encodeSave`, `evaluateExpression`, `execute`,
+  `extractCatalog`, `hookTypes`, `inventoryItem`, `isGettext`, `itemDefinition`,
+  `parseExpression`, `parseHookReference`, `parseTerrain`, `parseValue`, `preprocess`,
+  `schema01`, `validateCatalogNodes`, `validateHookReferences`, and `validateWorld`.
 
 Typical build-time usage:
 
