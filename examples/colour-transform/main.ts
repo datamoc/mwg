@@ -79,6 +79,8 @@ class ColourTransformScene extends Scene2D {
 	 * SVG textures, tinted the same way a PNG one is - roadmap item 15: verifying that an
 	 * SVG loads through the compiled file:// path (a data:image/svg+xml URI reached by an
 	 * aliased path with no .svg on the URL itself), not only that the path resolves.
+	 * `load([GEM_SVG], { resolution: 2 })` rasterizes it at 2x, so scaling it up the way
+	 * this row does stays crisp instead of soft (roadmap item 198).
 	 */
 	private addSvgRow(y: number, scale: number): void {
 		this.stage.addChild(
@@ -191,7 +193,9 @@ async function main(): Promise<void> {
 
 	//no base is needed: the dev server publishes examples/assets at its root, and a built
 	//page resolves the same path to a compiled data: URI
-	await Resources.load([TILES_PNG, GEM_SVG]);
+	await Resources.load([TILES_PNG]);
+	//the gem is a vector source, so ask for a 2x rasterization: the row above scales it up
+	await Resources.load([GEM_SVG], { resolution: 2 });
 	await game.start(ColourTransformScene);
 }
 

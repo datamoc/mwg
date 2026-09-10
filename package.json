@@ -197,6 +197,7 @@
 		"benchmark:tower-defense": "npm run example:tower-defense:build && node tools/benchmark-browser.mjs examples/tower-defense/dist/index.html",
 		"benchmark:ui": "npm run example:ui:build && node tools/benchmark-browser.mjs examples/interface/dist/index.html",
 		"benchmark:simulation": "node tools/benchmark-simulation.mjs",
+		"benchmark:animation": "node tools/benchmark-animation.mjs",
 		"visual:smoke": "node tools/visual-smoke.mjs",
 		"visual:smoke:ui": "npm run example:ui:build && node tools/visual-smoke.mjs examples/interface/dist/index.html Tab",
 		"package:smoke": "node tools/package-smoke.mjs",

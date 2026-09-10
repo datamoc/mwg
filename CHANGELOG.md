@@ -8,6 +8,13 @@ the public API may still change between minor versions.
 ## [Unreleased]
 
 ### Added
+- `assets.load(paths, { resolution })` (roadmap item 198): rasterizes a vector source (SVG)
+  at a multiple of its intrinsic size instead of only at intrinsic size, so a game that zooms
+  into an icon asks for `2` or `3` rather than shipping a soft bitmap. Passing `onProgress`
+  alone still works. The colour-transform example loads its gem SVG at 2x.
+- `npm run benchmark:animation`: measures CSS/SVG element animation against Pixi sprites (and
+  both at once) at increasing counts, sampling rAF intervals in headless Chrome. On an RTX
+  3070, 4000 composer-animated SVG elements fell to ~14 fps while 4000 Pixi sprites held 60.
 - Accessibility (roadmap item 192): `core.reducedMotion`/`setReducedMotion`/
   `prefersReducedMotion` (the OS `prefers-reduced-motion` preference with a per-game override,
   consulted by `Tweener`, `Camera`, `ScreenEffects` and `ParticleEmitter`),

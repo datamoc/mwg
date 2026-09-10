@@ -27,6 +27,7 @@ by double-clicking. Run from the repo root.
 | --- | --- | --- |
 | `benchmark-browser` | Builds an example and measures rendering/FPS in headless Chrome | `npm run benchmark:browser` |
 | `benchmark-simulation` | Headless throughput for `mwg/simulation` (no frame, canvas, or Pixi involved) | `npm run benchmark:simulation` |
+| `benchmark-animation` | CSS/SVG element animation vs Pixi sprites vs both, at increasing counts, sampling rAF intervals in headless Chrome. A measurement, not a gate | `npm run benchmark:animation` |
 | `graphics-capabilities` | Probes the host's WebGL capabilities headless | `npm run graphics:capabilities` |
 | `visual-smoke` | Opens one built example from `file://` in headless Chrome, fails on a page error or a blank canvas, and writes a screenshot. Runs per pull request in CI | `npm run visual:smoke:ui` |
 | `package-smoke` | `npm pack`, installs the tarball outside the repo, builds the tutorial's tiny game and opens both that and the standalone global from `file://` | `npm run package:smoke` |

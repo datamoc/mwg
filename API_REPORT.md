@@ -2488,7 +2488,7 @@ build instead.
 
 ### `load` (function)
 
-    export declare function load(paths: string[], onProgress?: AssetProgress): Promise<void>;
+    export declare function load(paths: string[], options?: AssetProgress | LoadAssetsOptions): Promise<void>;
 
 ### `loadBinary` (function)
 

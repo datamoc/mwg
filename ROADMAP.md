@@ -2959,6 +2959,18 @@ rather than someone else's build.
      shared assets, and CI runs it as its own job, so a vite/`emit-page`/`compile-resources`
      regression in any example fails the pull request.
 
+198. ~~requested directly: SVG loads as a texture source (item 15) but only rasterizes at its
+     intrinsic size, so a game that zooms into an icon ships a soft bitmap~~ -
+     `assets.load(paths, { resolution })` passes a resolution through to the loader, which
+     rasterizes a vector source at that multiple of its intrinsic size; the colour-transform
+     example loads its gem SVG at 2x, and the descriptor's pass-through is unit-tested. A
+     companion measurement, `npm run benchmark:animation`, compares CSS/SVG element animation
+     against Pixi sprites at increasing counts. On an RTX 3070 it settled the question the
+     same way for every count measured: 4000 composer-animated `<svg>` elements fall to
+     ~14 fps while 4000 Pixi sprites hold 60, and running both at once is limited by the DOM
+     side, so browser-native element animation stays an asset-format win and a possible
+     handful-of-chrome-elements escape hatch, not a world renderer.
+
 ### Parked decisions
 
 Not open work, and not forgotten: these are decisions this project has deliberately
