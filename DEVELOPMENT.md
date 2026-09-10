@@ -90,6 +90,10 @@ Do not replace this with a server-only solution for convenience.
    gh release create vX.Y.Z --title "vX.Y.Z" --generate-notes
    ```
 
+A major release (`x.0.0`) also takes its name from the alphabetical list in README's versioning
+note (1.0 an A name, 2.0 a B name, and so on). None are chosen yet, so today this is a reminder
+rather than a value to fill in; README is where a chosen name should be recorded.
+
 The GitHub release triggers the npm publishing workflow. If npm staging is enabled, the
 repository owner completes the final 2FA approval with `npm stage list` and
 `npm stage approve <stage-id>`.

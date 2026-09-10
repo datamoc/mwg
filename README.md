@@ -11,7 +11,7 @@ of their own; improvements to `mwg`'s own files are shared back.
 **[Live examples and API docs](https://datamoc.github.io/mwg/)**: every example below,
 playable in the browser with no download, plus the generated API reference.
 
-> **Status: early release (v0.5.5).** Every module in the shared floor below, plus optional
+> **Status: pre-alpha (v0.6.0).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
 > [ROADMAP.md](ROADMAP.md) for the full, numbered history.
 >
@@ -19,6 +19,11 @@ playable in the browser with no download, plus the generated API reference.
 > became `mwg/two-d`, and a set of names that meant several things each were made to mean one.
 > It is deliberately the last such release planned before 1.0. Still `0.y.z` until then, but
 > the intent from here is additions rather than renames.
+>
+> **Versioning:** `0.y.z` until 1.0, so the public API can still change between minor versions.
+> Each future major version is meant to carry a name, one per letter of the alphabet: 1.0 takes
+> a name beginning with A, 2.0 one beginning with B, and so on. None of the names are chosen
+> yet, and nothing depends on them until they are.
 
 ## What it is for
 

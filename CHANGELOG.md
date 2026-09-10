@@ -7,6 +7,14 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-10
+
+This is a pre-alpha, not an "early release" any more, and the project says so in README. The
+same note records the naming plan for future major versions: 1.0 takes a name beginning with A,
+2.0 one beginning with B, and so on, none of them chosen yet. Code-wise this release is the
+reduced-motion cluster from WebKit's "Responsive Design for Motion", done properly rather than
+as a single media query.
+
 ### Added
 - Reduced motion beyond the media feature (roadmap items 199-202): `MotionIntent` and
   `motionDuration` let a caller say whether a motion is decorative or meaningful, so a trigger
