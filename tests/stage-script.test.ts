@@ -192,7 +192,7 @@ test('runStory follows a goto into the named passage', async () => {
 			start: [{ say: 'one' }, { goto: 'end' }, { say: 'skipped' }],
 			end: [{ say: 'two' }],
 		},
-		'start'
+		'start',
 	);
 	await tick();
 	s.answer();
@@ -202,7 +202,7 @@ test('runStory follows a goto into the named passage', async () => {
 
 	assert.deepEqual(
 		s.lines.map((l) => l.text),
-		['one', 'two']
+		['one', 'two'],
 	);
 	assert.deepEqual(state.answers, {});
 });
@@ -221,7 +221,7 @@ test('a choice with a goto jumps to its passage, and passages can loop back', as
 			],
 			left: [{ say: 'went left' }, { goto: 'start' }],
 		},
-		'start'
+		'start',
 	);
 
 	await tick();
@@ -235,7 +235,7 @@ test('a choice with a goto jumps to its passage, and passages can loop back', as
 
 	assert.deepEqual(
 		s.lines.map((l) => l.text),
-		['where?', 'went left', 'where?']
+		['where?', 'went left', 'where?'],
 	);
 	assert.equal(state.answers.where, 'stay');
 });
@@ -244,10 +244,7 @@ test('runStory refuses an unknown start or jump target', async () => {
 	const { script: s } = script();
 
 	await assert.rejects(s.runStory({ a: [] }, 'missing'), /no passage named "missing"/);
-	await assert.rejects(
-		s.runStory({ a: [{ goto: 'missing' }] }, 'a'),
-		/no passage named "missing"/
-	);
+	await assert.rejects(s.runStory({ a: [{ goto: 'missing' }] }, 'a'), /no passage named "missing"/);
 });
 
 test('a goto in a straight run is an error, not a silent skip', async () => {
@@ -274,7 +271,7 @@ test('history records every completed line in order, including a choice made', a
 		[
 			{ text: 'first line', chosen: undefined },
 			{ text: 'well?', chosen: 'yes' },
-		]
+		],
 	);
 });
 
@@ -303,7 +300,9 @@ test('an explicit speaker overrides displayName in history, the same as it does 
 test('showLast resolves false when nothing has been said yet, without touching a window', async () => {
 	const { script: s, windows } = script();
 	let pushed = false;
-	windows.push = () => { pushed = true; };
+	windows.push = () => {
+		pushed = true;
+	};
 
 	assert.equal(await s.showLast(), false);
 	assert.equal(pushed, false);

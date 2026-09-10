@@ -7,8 +7,11 @@ export interface SimulationStep<State, Event> {
 }
 
 /** The game owns state, rules, event types, and the random-source interface. */
-export type SimulationRule<State, Command, Event, Random> =
-	(state: State, command: Command, random: Random) => SimulationStep<State, Event>;
+export type SimulationRule<State, Command, Event, Random> = (
+	state: State,
+	command: Command,
+	random: Random,
+) => SimulationStep<State, Event>;
 
 export interface Scenario<State, Command, Event, Random> {
 	state: State;

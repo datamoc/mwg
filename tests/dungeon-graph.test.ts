@@ -71,7 +71,10 @@ test('onRoomPlaced and onCorridorCarved fire once per room and per corridor', ()
 				onCorridorCarved: (edge) => carvedEdges.push({ ...edge }),
 			},
 		});
-		assert.deepEqual(placedRooms, level.rooms.map((_, i) => i));
+		assert.deepEqual(
+			placedRooms,
+			level.rooms.map((_, i) => i),
+		);
 		assert.deepEqual(carvedEdges, graph);
 	} finally {
 		Random.pop();

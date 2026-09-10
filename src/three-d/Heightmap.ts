@@ -35,7 +35,11 @@ export interface HeightmapTerrain3DOptions {
  * of where its bytes came from and safe to call from `file://` without touching the network
  * itself.
  */
-export function createHeightmapTerrain3D(scene: Scene, source: HeightmapSource, options: HeightmapTerrain3DOptions = {}): GroundMesh {
+export function createHeightmapTerrain3D(
+	scene: Scene,
+	source: HeightmapSource,
+	options: HeightmapTerrain3DOptions = {},
+): GroundMesh {
 	if (!(source.width > 0) || !(source.height > 0)) throw new Error('heightmap source needs positive dimensions');
 	if (source.data.length < source.width * source.height * 4) {
 		throw new Error('heightmap source data is smaller than width * height * 4 (RGBA)');
@@ -52,6 +56,6 @@ export function createHeightmapTerrain3D(scene: Scene, source: HeightmapSource, 
 			maxHeight: options.maxHeight ?? 1,
 			updatable: false,
 		},
-		scene
+		scene,
 	);
 }

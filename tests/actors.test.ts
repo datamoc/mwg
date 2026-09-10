@@ -84,8 +84,14 @@ test('addExperience gains exactly the levels earned, and stops at the cap', () =
 });
 
 test('skillCheck compares value plus a roll against the difficulty', () => {
-	assert.equal(skillCheck(10, 15, () => 5), true); // 10 + 5 = 15, meets it
-	assert.equal(skillCheck(10, 16, () => 5), false);
+	assert.equal(
+		skillCheck(10, 15, () => 5),
+		true,
+	); // 10 + 5 = 15, meets it
+	assert.equal(
+		skillCheck(10, 16, () => 5),
+		false,
+	);
 });
 
 test('equipping a slot applies its modifiers, unequipping removes them', () => {
@@ -172,7 +178,14 @@ test('take splits a stack while preserving the item instance state', () => {
 	bag.add({ id: 'arrow', quantity: 10, stackable: true, instanceId: 'poisoned', affix: 'venom', level: 2 });
 
 	const taken = bag.take('arrow', 3, 'poisoned');
-	assert.deepEqual(taken, { id: 'arrow', quantity: 3, stackable: true, instanceId: 'poisoned', affix: 'venom', level: 2 });
+	assert.deepEqual(taken, {
+		id: 'arrow',
+		quantity: 3,
+		stackable: true,
+		instanceId: 'poisoned',
+		affix: 'venom',
+		level: 2,
+	});
 	assert.equal(bag.find('arrow', 'poisoned')?.quantity, 7);
 });
 

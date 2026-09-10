@@ -255,7 +255,10 @@ export function gamepadAxisCode(padIndex: number, axis: number, direction: 1 | -
 }
 
 export function bindButton(action: Action, padIndex: number, buttons: readonly number[]): void {
-	addBindings(action, buttons.map((button) => gamepadButtonCode(padIndex, button)));
+	addBindings(
+		action,
+		buttons.map((button) => gamepadButtonCode(padIndex, button)),
+	);
 }
 
 export function bindAxis(action: Action, padIndex: number, axis: number, direction: 1 | -1): void {
@@ -272,7 +275,7 @@ export function bindAxis(action: Action, padIndex: number, axis: number, directi
 export function pollGamepads(
 	//Node has exposed a global `navigator` since v21, with no `getGamepads` on it - guarding
 	//on the method itself, not just the object, is what actually detects a browser
-	pads: readonly (Gamepad | null)[] = typeof navigator?.getGamepads === 'function' ? navigator.getGamepads() : []
+	pads: readonly (Gamepad | null)[] = typeof navigator?.getGamepads === 'function' ? navigator.getGamepads() : [],
 ): void {
 	//reused rather than allocated fresh every call - this runs once a frame, on every frame
 	gamepadDown.clear();
@@ -319,7 +322,7 @@ export interface RumbleOptions {
 export function rumble(
 	padIndex: number,
 	options: RumbleOptions,
-	pads: readonly (Gamepad | null)[] = typeof navigator?.getGamepads === 'function' ? navigator.getGamepads() : []
+	pads: readonly (Gamepad | null)[] = typeof navigator?.getGamepads === 'function' ? navigator.getGamepads() : [],
 ): void {
 	const pad = pads[padIndex];
 	const actuator = (pad as unknown as { vibrationActuator?: HapticActuator })?.vibrationActuator;
@@ -379,14 +382,27 @@ export interface SwipeActions {
 }
 
 const DEFAULT_SWIPE_ACTIONS: Required<Omit<SwipeActions, 'tap'>> = {
-	up: 'up', down: 'down', left: 'left', right: 'right',
-	upLeft: 'upLeft', upRight: 'upRight', downLeft: 'downLeft', downRight: 'downRight',
+	up: 'up',
+	down: 'down',
+	left: 'left',
+	right: 'right',
+	upLeft: 'upLeft',
+	upRight: 'upRight',
+	downLeft: 'downLeft',
+	downRight: 'downRight',
 };
 
 //screen-space octant order starting at 0 radians (right) and going clockwise (since screen
 //y grows downward) - index matches `Math.round(angle / (PI/4))` folded into 0..7 by attachSwipe
 const SWIPE_OCTANTS: readonly (keyof SwipeActions)[] = [
-	'right', 'downRight', 'down', 'downLeft', 'left', 'upLeft', 'up', 'upRight',
+	'right',
+	'downRight',
+	'down',
+	'downLeft',
+	'left',
+	'upLeft',
+	'up',
+	'upRight',
 ];
 
 export interface SwipeOptions {
@@ -444,7 +460,7 @@ export function attachSwipe(target: EventTarget, options: SwipeOptions = {}): ()
 			return;
 		}
 
-		const octant = (Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8 + 8) % 8;
+		const octant = ((Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8) + 8) % 8;
 		const id = SWIPE_OCTANTS[octant];
 		if (actions[id]) pulse(id);
 	}

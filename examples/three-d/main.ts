@@ -30,7 +30,11 @@ for (let y = 0; y < 9; y++) {
 	}
 }
 createTileGrid3D(game.scene, squareCells, {
-	shape: 'square', tileSize: 1, heightStep: 0.7, tileColor: 0x679c68, columnColor: 0x395b42,
+	shape: 'square',
+	tileSize: 1,
+	heightStep: 0.7,
+	tileColor: 0x679c68,
+	columnColor: 0x395b42,
 });
 
 const hexCells: GridCell3D[] = [];
@@ -38,8 +42,12 @@ for (let x = 0; x < 5; x++) {
 	for (let y = 0; y < 5; y++) hexCells.push({ x, y, height: (x + y) % 4 === 0 ? 1 : 0 });
 }
 createTileGrid3D(game.scene, hexCells, {
-	shape: 'hex', tileSize: 0.7, heightStep: 0.55, origin: [10.5, 0, -1.5],
-	tileColor: 0x4c8299, columnColor: 0x315668,
+	shape: 'hex',
+	tileSize: 0.7,
+	heightStep: 0.55,
+	origin: [10.5, 0, -1.5],
+	tileColor: 0x4c8299,
+	columnColor: 0x315668,
 });
 
 //a rolling hill, generated rather than downloaded: greyscale pixel bytes from a sine field,
@@ -59,7 +67,7 @@ for (let y = 0; y < heightmapSize; y++) {
 const hill = createHeightmapTerrain3D(
 	game.scene,
 	{ data: heightmapData, width: heightmapSize, height: heightmapSize },
-	{ width: 8, depth: 8, minHeight: 0, maxHeight: 2.5 }
+	{ width: 8, depth: 8, minHeight: 0, maxHeight: 2.5 },
 );
 hill.position.set(-8, 0, 8);
 const hillMaterial = new StandardMaterial('hill-material', game.scene);
@@ -81,10 +89,16 @@ body.material = heroMaterial;
 //rpg.Collision stops a 2D mover at a solid tile's edge
 const squareHeights = buildHeightIndex(squareCells);
 const hero = new Character3D(heroRoot, [], (from, to) =>
-	resolveCapsuleAgainstGrid(from, to, { shape: 'square', heights: squareHeights, maxStepUp: 0 })
+	resolveCapsuleAgainstGrid(from, to, { shape: 'square', heights: squareHeights, maxStepUp: 0 }),
 );
 
-const path = [[1, 1], [8, 1], [8, 4], [2, 6], [1, 1]] as const;
+const path = [
+	[1, 1],
+	[8, 1],
+	[8, 4],
+	[2, 6],
+	[1, 1],
+] as const;
 //a TransformNode's default position, the world origin, lands exactly on grid cell (0, 0) -
 //an edge tile at height 1, not the interior floor the path below walks on. Left unset, the
 //hero spawns standing on top of that wall column and resolveCapsuleAgainstGrid's maxStepUp:0
@@ -101,9 +115,13 @@ function nextHeroTarget(): void {
 }
 nextHeroTarget();
 
-const markerSvg = btoa('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96"><path fill="#d8f2ff" stroke="#18364a" stroke-width="4" d="M32 3 59 31 48 88 16 88 5 31Z"/><circle cx="23" cy="37" r="5"/><circle cx="43" cy="37" r="5"/><path stroke="#18364a" stroke-width="4" d="M21 58q11 10 22 0"/></svg>');
+const markerSvg = btoa(
+	'<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96"><path fill="#d8f2ff" stroke="#18364a" stroke-width="4" d="M32 3 59 31 48 88 16 88 5 31Z"/><circle cx="23" cy="37" r="5"/><circle cx="43" cy="37" r="5"/><path stroke="#18364a" stroke-width="4" d="M21 58q11 10 22 0"/></svg>',
+);
 const billboard = Character3D.billboard(game.scene, {
-	texture: `data:image/svg+xml;base64,${markerSvg}`, width: 0.8, height: 1.2,
+	texture: `data:image/svg+xml;base64,${markerSvg}`,
+	width: 0.8,
+	height: 1.2,
 });
 billboard.node.position.copyFrom(new Vector3(12.5, 0.9, 1.5));
 

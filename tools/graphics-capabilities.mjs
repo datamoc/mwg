@@ -1,7 +1,7 @@
 import { chromium } from 'playwright-core';
 import { findChrome } from './find-chrome.mjs';
 
-const executablePath = process.env.CHROME_PATH ?? await findChrome();
+const executablePath = process.env.CHROME_PATH ?? (await findChrome());
 const browser = await chromium.launch({ executablePath, headless: true });
 
 try {

@@ -24,7 +24,8 @@ test('rejects pixel data shorter than width * height * 4 (RGBA)', () => {
 test('accepts exactly width * height * 4 bytes without throwing on the guard itself', () => {
 	const data = new Uint8Array(2 * 2 * 4);
 	//past this point it needs a real Scene; reaching that call (not the guard) is the pass condition
-	assert.throws(() => createHeightmapTerrain3D({} as never, { data, width: 2, height: 2 }), (error: unknown) =>
-		!(error instanceof Error) || !/positive dimensions|RGBA/.test(error.message)
+	assert.throws(
+		() => createHeightmapTerrain3D({} as never, { data, width: 2, height: 2 }),
+		(error: unknown) => !(error instanceof Error) || !/positive dimensions|RGBA/.test(error.message),
 	);
 });

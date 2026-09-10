@@ -21,7 +21,12 @@ function voxFixture(): Uint8Array {
 	const xyzi = chunk('XYZI', new Uint8Array([...uints(1), 1, 2, 3, 7]));
 	const children = new Uint8Array([...size, ...xyzi]);
 	const main = chunk('MAIN', new Uint8Array(), children.length);
-	return new Uint8Array([...'VOX '.split('').map((value) => value.charCodeAt(0)), ...uints(150), ...main, ...children]);
+	return new Uint8Array([
+		...'VOX '.split('').map((value) => value.charCodeAt(0)),
+		...uints(150),
+		...main,
+		...children,
+	]);
 }
 
 function chunk(id: string, content: Uint8Array, children = 0): Uint8Array {

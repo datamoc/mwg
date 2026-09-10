@@ -51,7 +51,9 @@ export function checkNoControlCharacters(text: string): void {
 		const code = text.charCodeAt(i);
 		if (code === 0x09 || code === 0x0a || code === 0x0d) continue; //tab, LF, CR
 		if (code <= 0x1f || code === 0x7f) {
-			throw new Error(`inbound data contains a control character (0x${code.toString(16).padStart(2, '0')}) at index ${i}`);
+			throw new Error(
+				`inbound data contains a control character (0x${code.toString(16).padStart(2, '0')}) at index ${i}`,
+			);
 		}
 	}
 }
@@ -92,7 +94,8 @@ export function validateSchema(value: unknown, schema: Schema, path = '$'): void
 			if (typeof value !== 'string') throw new Error(`${path} must be a string`);
 			return;
 		case 'number':
-			if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error(`${path} must be a finite number`);
+			if (typeof value !== 'number' || !Number.isFinite(value))
+				throw new Error(`${path} must be a finite number`);
 			if (schema.min !== undefined && value < schema.min) throw new Error(`${path} must be >= ${schema.min}`);
 			if (schema.max !== undefined && value > schema.max) throw new Error(`${path} must be <= ${schema.max}`);
 			return;
@@ -107,7 +110,8 @@ export function validateSchema(value: unknown, schema: Schema, path = '$'): void
 			value.forEach((item, index) => validateSchema(item, schema.items, `${path}[${index}]`));
 			return;
 		case 'object': {
-			if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new Error(`${path} must be an object`);
+			if (typeof value !== 'object' || value === null || Array.isArray(value))
+				throw new Error(`${path} must be an object`);
 			for (const key of Object.keys(value)) {
 				if (FORBIDDEN_KEYS.has(key)) throw new Error(`${path} contains a forbidden key "${key}"`);
 			}

@@ -44,7 +44,7 @@ export interface ItemStatusEffectHandle {
 export function applyItemStatusEffect<T extends object>(
 	item: T,
 	clock: EffectClock,
-	options: ItemStatusEffectOptions<T>
+	options: ItemStatusEffectOptions<T>,
 ): ItemStatusEffectHandle {
 	const previous = new Map<keyof T, T[keyof T]>();
 	for (const key of Object.keys(options.fields) as (keyof T)[]) {

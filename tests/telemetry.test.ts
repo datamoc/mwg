@@ -55,7 +55,10 @@ test('withdrawing consent stops further sends without needing to reconstruct the
 });
 
 test('validates input and rejects HTTP errors', async () => {
-	const client = new TelemetryClient({ endpoint: 'https://telemetry.invalid', fetch: async () => new Response(null, { status: 500 }) });
+	const client = new TelemetryClient({
+		endpoint: 'https://telemetry.invalid',
+		fetch: async () => new Response(null, { status: 500 }),
+	});
 	client.setConsent(true);
 	await assert.rejects(client.send({ name: '' }), /needs a name/);
 	await assert.rejects(client.send({ name: 'broken' }), /HTTP 500/);
@@ -63,5 +66,8 @@ test('validates input and rejects HTTP errors', async () => {
 
 test('requires a non-empty endpoint and a positive timeout', () => {
 	assert.throws(() => new TelemetryClient({ endpoint: '' }), /endpoint is required/);
-	assert.throws(() => new TelemetryClient({ endpoint: 'https://telemetry.invalid', timeoutMs: 0 }), /timeout must be positive/);
+	assert.throws(
+		() => new TelemetryClient({ endpoint: 'https://telemetry.invalid', timeoutMs: 0 }),
+		/timeout must be positive/,
+	);
 });

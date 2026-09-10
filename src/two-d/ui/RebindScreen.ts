@@ -135,7 +135,11 @@ export class RebindScreen extends Container {
 			return;
 		}
 
-		for (const other of previousOwners) Input.bind(other, Input.keysFor(other).filter((k) => k !== key));
+		for (const other of previousOwners)
+			Input.bind(
+				other,
+				Input.keysFor(other).filter((k) => k !== key),
+			);
 		Input.bind(action, [key]);
 		this.refresh();
 	}

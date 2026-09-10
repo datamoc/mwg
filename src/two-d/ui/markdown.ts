@@ -43,7 +43,11 @@ const ESCAPED_BACKSLASH = '';
 function hideEscapes(text: string): string {
 	let out = '';
 	for (let i = 0; i < text.length; i++) {
-		if (text[i] === '\\' && i + 1 < text.length && (text[i + 1] === '*' || text[i + 1] === '_' || text[i + 1] === '\\')) {
+		if (
+			text[i] === '\\' &&
+			i + 1 < text.length &&
+			(text[i + 1] === '*' || text[i + 1] === '_' || text[i + 1] === '\\')
+		) {
 			const next = text[i + 1];
 			out += next === '*' ? ESCAPED_STAR : next === '_' ? ESCAPED_UNDERSCORE : ESCAPED_BACKSLASH;
 			i++;
@@ -102,7 +106,14 @@ function markerPositions(text: string, char: '*' | '_', double: boolean): number
 }
 
 /** pairs one marker kind sequentially (0-1, 2-3); a trailing opener stays literal */
-function pairMarkers(text: string, char: '*' | '_', double: boolean, style: 'bold' | 'italic', ranges: StyleRange[], excluded: Excluded[]): void {
+function pairMarkers(
+	text: string,
+	char: '*' | '_',
+	double: boolean,
+	style: 'bold' | 'italic',
+	ranges: StyleRange[],
+	excluded: Excluded[],
+): void {
 	const positions = markerPositions(text, char, double);
 	const width = double ? 2 : 1;
 	for (let m = 0; m + 1 < positions.length; m += 2) {

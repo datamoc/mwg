@@ -21,12 +21,18 @@ class RoomScene extends Scene2D {
 		const height = Game.current.height;
 		this.stage.addChild(new Shape2D().rect(0, 0, width, height).fill(0x101018));
 
-		const title = new Text2D({ text: 'THE OLD WATCHTOWER', style: { fill: 0xe8d7a5, fontFamily: 'monospace', fontSize: 24 } });
+		const title = new Text2D({
+			text: 'THE OLD WATCHTOWER',
+			style: { fill: 0xe8d7a5, fontFamily: 'monospace', fontSize: 24 },
+		});
 		title.anchor.set(0.5);
 		title.position.set(width / 2, height * 0.28);
 		this.stage.addChild(title);
 
-		const chest = new Shape2D().roundRect(-110, -65, 220, 130, 12).fill(0x70452f).stroke({ color: 0xc58a46, width: 5 });
+		const chest = new Shape2D()
+			.roundRect(-110, -65, 220, 130, 12)
+			.fill(0x70452f)
+			.stroke({ color: 0xc58a46, width: 5 });
 		chest.position.set(width / 2, height * 0.53);
 		this.stage.addChild(chest);
 
@@ -34,7 +40,10 @@ class RoomScene extends Scene2D {
 		lock.position.set(width / 2, height * 0.53);
 		this.stage.addChild(lock);
 
-		this.status = new Text2D({ text: 'Press Enter to pick the lock', style: { fill: 0xb7b4c6, fontFamily: 'monospace', fontSize: 15, align: 'center' } });
+		this.status = new Text2D({
+			text: 'Press Enter to pick the lock',
+			style: { fill: 0xb7b4c6, fontFamily: 'monospace', fontSize: 15, align: 'center' },
+		});
 		this.status.anchor.set(0.5);
 		this.status.position.set(width / 2, height * 0.78);
 		this.stage.addChild(this.status);
@@ -79,7 +88,10 @@ class LockpickScene extends Scene2D {
 		const width = Game.current.width;
 		const height = Game.current.height;
 		this.stage.addChild(new Shape2D().rect(0, 0, width, height).fill({ color: 0x090910, alpha: 0.94 }));
-		this.prompt = new Text2D({ text: '', style: { fill: 0xf3ead2, fontFamily: 'monospace', fontSize: 18, align: 'center' } });
+		this.prompt = new Text2D({
+			text: '',
+			style: { fill: 0xf3ead2, fontFamily: 'monospace', fontSize: 18, align: 'center' },
+		});
 		this.prompt.anchor.set(0.5);
 		this.prompt.position.set(width / 2, height * 0.18);
 		this.stage.addChild(this.prompt);
@@ -111,15 +123,26 @@ class LockpickScene extends Scene2D {
 		this.dial.clear();
 		this.dial.circle(0, 0, 124).fill(0x1d1d2a).stroke({ color: 0x77738c, width: 4 });
 		this.dial.arc(0, 0, 105, TARGET_START, TARGET_START + TARGET_SIZE).stroke({ color: 0x69d391, width: 18 });
-		this.dial.moveTo(0, 0).lineTo(Math.cos(this.needle) * 112, Math.sin(this.needle) * 112).stroke({ color: 0xf2c14e, width: 7 });
+		this.dial
+			.moveTo(0, 0)
+			.lineTo(Math.cos(this.needle) * 112, Math.sin(this.needle) * 112)
+			.stroke({ color: 0xf2c14e, width: 7 });
 		this.dial.circle(0, 0, 12).fill(0xe8d7a5);
 		this.prompt.text = `ENTER: set the pin    ESC: leave    attempts ${this.attempts}`;
 	}
 
 	private tryPick(): void {
-		const distance = Math.abs(Math.atan2(Math.sin(this.needle - (TARGET_START + TARGET_SIZE / 2)), Math.cos(this.needle - (TARGET_START + TARGET_SIZE / 2))));
+		const distance = Math.abs(
+			Math.atan2(
+				Math.sin(this.needle - (TARGET_START + TARGET_SIZE / 2)),
+				Math.cos(this.needle - (TARGET_START + TARGET_SIZE / 2)),
+			),
+		);
 		if (distance <= TARGET_SIZE / 2) {
-			Game.current.popScene({ success: true, score: Math.max(1, Math.round(100 - distance / (TARGET_SIZE / 2) * 40)) } satisfies LockpickResult);
+			Game.current.popScene({
+				success: true,
+				score: Math.max(1, Math.round(100 - (distance / (TARGET_SIZE / 2)) * 40)),
+			} satisfies LockpickResult);
 			return;
 		}
 		this.attempts -= 1;
@@ -134,5 +157,8 @@ async function main(): Promise<void> {
 
 main().catch((error) => {
 	console.error(error);
-	document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`);
+	document.body.insertAdjacentHTML(
+		'afterbegin',
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
+	);
 });

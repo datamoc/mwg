@@ -6,7 +6,15 @@ export { GameState } from './GameState.ts';
 export { activePage, conditionHolds } from './Event.ts';
 export type { EventTrigger, EventCondition, EventPage, MapEvent } from './Event.ts';
 export { EventRunner } from './EventRunner.ts';
-export type { EventCommand, EventRunnerState, EventRunnerOptions, MoveStep, DialoguePresenter, DialogueRequest, EventChoice } from './EventRunner.ts';
+export type {
+	EventCommand,
+	EventRunnerState,
+	EventRunnerOptions,
+	MoveStep,
+	DialoguePresenter,
+	DialogueRequest,
+	EventChoice,
+} from './EventRunner.ts';
 export { GridMover } from './GridMover.ts';
 export type { GridMoverOptions, Direction4 } from './GridMover.ts';
 export { FreeMover } from './FreeMover.ts';

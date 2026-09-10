@@ -116,11 +116,7 @@ export class Player {
 	private readonly frames: Signal<number>;
 	private readonly onFrame: () => void;
 
-	constructor(
-		events: readonly ReplayEvent[],
-		dispatch: (action: string) => void,
-		frames: Signal<number>,
-	) {
+	constructor(events: readonly ReplayEvent[], dispatch: (action: string) => void, frames: Signal<number>) {
 		this.events = events;
 		this.dispatch = dispatch;
 		this.frames = frames;

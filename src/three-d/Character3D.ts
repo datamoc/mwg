@@ -43,7 +43,7 @@ function resolveSource(source: string): string {
  */
 export type CollideXZ = (
 	from: { x: number; z: number },
-	to: { x: number; z: number }
+	to: { x: number; z: number },
 ) => { x: number; z: number; blocked?: boolean };
 
 export class Character3D {
@@ -113,7 +113,9 @@ export class Character3D {
 		const distance = Vector3.Distance(this.node.position, this.target);
 		const reachesTarget = distance <= this.speed * deltaSeconds;
 		const rawDirection = this.target.subtract(this.node.position);
-		const intended = reachesTarget ? this.target : this.node.position.add(rawDirection.normalize().scale(this.speed * deltaSeconds));
+		const intended = reachesTarget
+			? this.target
+			: this.node.position.add(rawDirection.normalize().scale(this.speed * deltaSeconds));
 		if (!reachesTarget) this.node.rotation.y = Math.atan2(rawDirection.x, rawDirection.z);
 
 		if (this.collideXZ) {
@@ -146,7 +148,11 @@ export class Character3D {
 	}
 
 	static billboard(scene: Scene, options: Billboard3DOptions): Character3D {
-		const plane = CreatePlane('billboard-character', { width: options.width ?? 1, height: options.height ?? 1.5 }, scene);
+		const plane = CreatePlane(
+			'billboard-character',
+			{ width: options.width ?? 1, height: options.height ?? 1.5 },
+			scene,
+		);
 		plane.billboardMode = Mesh.BILLBOARDMODE_Y;
 		const material = new StandardMaterial('billboard-material', scene);
 		material.diffuseTexture = new Texture(resolveSource(options.texture), scene);

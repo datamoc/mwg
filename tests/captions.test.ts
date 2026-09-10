@@ -11,7 +11,9 @@ function fakeAudio(): Playable {
 
 test('a Sound with a caption dispatches onCaption every time it plays', () => {
 	const seen: CaptionEvent[] = [];
-	const listener = (event: CaptionEvent) => { seen.push(event); };
+	const listener = (event: CaptionEvent) => {
+		seen.push(event);
+	};
 	onCaption.add(listener);
 
 	try {
@@ -27,7 +29,9 @@ test('a Sound with a caption dispatches onCaption every time it plays', () => {
 
 test('a Sound with no caption never dispatches onCaption', () => {
 	let calls = 0;
-	const listener = () => { calls++; };
+	const listener = () => {
+		calls++;
+	};
 	onCaption.add(listener);
 
 	try {

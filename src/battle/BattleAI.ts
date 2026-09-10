@@ -32,7 +32,7 @@ export function chooseMove<M extends { type: string }>(
 	matrix: TypeMatrix,
 	opponentTypes: readonly string[],
 	score: (move: M, opponentTypes: readonly string[]) => number = (move, types) =>
-		matrix.multiplierFor(move.type, types)
+		matrix.multiplierFor(move.type, types),
 ): M | null {
 	if (moves.length === 0) return null;
 
@@ -60,7 +60,7 @@ export function chooseSwitch(
 	activeTypes: readonly string[],
 	bench: readonly { types: readonly string[] }[],
 	matrix: TypeMatrix,
-	opponentTypes: readonly string[]
+	opponentTypes: readonly string[],
 ): number | null {
 	let bestIndex: number | null = null;
 	let bestThreat = worstIncoming(activeTypes, matrix, opponentTypes);
@@ -77,6 +77,10 @@ export function chooseSwitch(
 }
 
 /** the most damaging multiplier any of `attackingTypes` lands against `defendingTypes` */
-function worstIncoming(defendingTypes: readonly string[], matrix: TypeMatrix, attackingTypes: readonly string[]): number {
+function worstIncoming(
+	defendingTypes: readonly string[],
+	matrix: TypeMatrix,
+	attackingTypes: readonly string[],
+): number {
 	return Math.max(...attackingTypes.map((type) => matrix.multiplierFor(type, defendingTypes)));
 }

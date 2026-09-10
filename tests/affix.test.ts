@@ -1,7 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { rollAffix, affixOf, applyAffix, removeAffix, copyAffix, matchesContext, type AffixTable } from '../src/actors/Affix.ts';
+import {
+	rollAffix,
+	affixOf,
+	applyAffix,
+	removeAffix,
+	copyAffix,
+	matchesContext,
+	type AffixTable,
+} from '../src/actors/Affix.ts';
 import type { InventoryItem } from '../src/actors/Inventory.ts';
 
 const table: AffixTable = {
@@ -119,9 +127,13 @@ test('matchesContext with no kinds fires for any attack kind', () => {
 	assert.equal(matchesContext(affix, { trigger: 'strike' }), true);
 });
 
-test('matchesContext restricts to the affix\'s own kinds when given', () => {
+test("matchesContext restricts to the affix's own kinds when given", () => {
 	const affix = { id: 'point-blank', trigger: 'strike', weight: 1, kinds: ['bow', 'thrown'] } as const;
 	assert.equal(matchesContext(affix, { trigger: 'strike', kind: 'bow' }), true);
 	assert.equal(matchesContext(affix, { trigger: 'strike', kind: 'melee' }), false);
-	assert.equal(matchesContext(affix, { trigger: 'strike' }), false, 'no kind given at all does not match a restricted affix');
+	assert.equal(
+		matchesContext(affix, { trigger: 'strike' }),
+		false,
+		'no kind given at all does not match a restricted affix',
+	);
 });

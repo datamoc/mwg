@@ -22,7 +22,10 @@ test('cellAt rejects non-positive tileSize', () => {
 });
 
 test('heightAt reads a cell height by world position, and is null off the grid', () => {
-	const cells: GridCell3D[] = [{ x: 0, y: 0, height: 0 }, { x: 1, y: 0, height: 2 }];
+	const cells: GridCell3D[] = [
+		{ x: 0, y: 0, height: 0 },
+		{ x: 1, y: 0, height: 2 },
+	];
 	const index = buildHeightIndex(cells);
 	assert.equal(heightAt(index, 'square', 0, 0), 0);
 	assert.equal(heightAt(index, 'square', 1, 0), 2);
@@ -36,7 +39,9 @@ test('a cell with no explicit height defaults to 0, same as createTileGrid3D its
 
 test('resolveCapsuleAgainstGrid passes straight through when every sampled cell is level ground', () => {
 	const index = buildHeightIndex([
-		{ x: 0, y: 0, height: 0 }, { x: 1, y: 0, height: 0 }, { x: 2, y: 0, height: 0 },
+		{ x: 0, y: 0, height: 0 },
+		{ x: 1, y: 0, height: 0 },
+		{ x: 2, y: 0, height: 0 },
 	]);
 	const result = resolveCapsuleAgainstGrid({ x: 0, z: 0 }, { x: 2, z: 0 }, { shape: 'square', heights: index });
 	assert.deepEqual(result, { x: 2, z: 0, blocked: false });
@@ -50,7 +55,11 @@ test('resolveCapsuleAgainstGrid stops at a raised column instead of clipping thr
 	for (let x = 0; x <= 4; x++) cells.push({ x, y: 0, height: x >= 3 ? 2 : 0 });
 	const index = buildHeightIndex(cells);
 
-	const result = resolveCapsuleAgainstGrid({ x: 0, z: 0 }, { x: 4, z: 0 }, { shape: 'square', heights: index, maxStepUp: 0, steps: 16 });
+	const result = resolveCapsuleAgainstGrid(
+		{ x: 0, z: 0 },
+		{ x: 4, z: 0 },
+		{ shape: 'square', heights: index, maxStepUp: 0, steps: 16 },
+	);
 
 	assert.equal(result.blocked, true);
 	assert.ok(result.x < 3, `expected to stop before the raised column at x=3, stopped at x=${result.x}`);
@@ -58,13 +67,24 @@ test('resolveCapsuleAgainstGrid stops at a raised column instead of clipping thr
 });
 
 test('resolveCapsuleAgainstGrid allows climbing a step within maxStepUp', () => {
-	const cells: GridCell3D[] = [{ x: 0, y: 0, height: 0 }, { x: 1, y: 0, height: 1 }];
+	const cells: GridCell3D[] = [
+		{ x: 0, y: 0, height: 0 },
+		{ x: 1, y: 0, height: 1 },
+	];
 	const index = buildHeightIndex(cells);
 
-	const blocked = resolveCapsuleAgainstGrid({ x: 0, z: 0 }, { x: 1, z: 0 }, { shape: 'square', heights: index, maxStepUp: 0 });
+	const blocked = resolveCapsuleAgainstGrid(
+		{ x: 0, z: 0 },
+		{ x: 1, z: 0 },
+		{ shape: 'square', heights: index, maxStepUp: 0 },
+	);
 	assert.equal(blocked.blocked, true, 'a step of 1 must block when maxStepUp is 0');
 
-	const allowed = resolveCapsuleAgainstGrid({ x: 0, z: 0 }, { x: 1, z: 0 }, { shape: 'square', heights: index, maxStepUp: 1 });
+	const allowed = resolveCapsuleAgainstGrid(
+		{ x: 0, z: 0 },
+		{ x: 1, z: 0 },
+		{ shape: 'square', heights: index, maxStepUp: 1 },
+	);
 	assert.deepEqual(allowed, { x: 1, z: 0, blocked: false });
 });
 
@@ -77,5 +97,8 @@ test('resolveCapsuleAgainstGrid stops at the edge of the grid, a hole blocking l
 
 test('resolveCapsuleAgainstGrid rejects a non-positive step count', () => {
 	const index = buildHeightIndex([{ x: 0, y: 0 }]);
-	assert.throws(() => resolveCapsuleAgainstGrid({ x: 0, z: 0 }, { x: 1, z: 0 }, { shape: 'square', heights: index, steps: 0 }), /positive/);
+	assert.throws(
+		() => resolveCapsuleAgainstGrid({ x: 0, z: 0 }, { x: 1, z: 0 }, { shape: 'square', heights: index, steps: 0 }),
+		/positive/,
+	);
 });

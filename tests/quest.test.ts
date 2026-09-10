@@ -155,7 +155,7 @@ test('markerFor reports an offer for a quest that could be started', () => {
 	assert.equal(log.markerFor(['fetch'], state), 'offer');
 });
 
-test('markerFor reports a turn-in once the active quest\'s current stage is satisfied', () => {
+test("markerFor reports a turn-in once the active quest's current stage is satisfied", () => {
 	const log = new QuestLog();
 	const state = new GameState();
 	log.define({ id: 'fetch', stages: [{ counter: { variable: 'rats', target: 5 } }] });

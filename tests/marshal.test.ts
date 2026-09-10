@@ -1,7 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { decodeMarshal, encodeMarshal, RubySymbol, hashDefaultOf, withHashDefault, type RubyObject } from '../src/rpg/Marshal.ts';
+import {
+	decodeMarshal,
+	encodeMarshal,
+	RubySymbol,
+	hashDefaultOf,
+	withHashDefault,
+	type RubyObject,
+} from '../src/rpg/Marshal.ts';
 
 /**
  * Fixtures below are real `Marshal.dump` output from Ruby itself (verified against Ruby's
@@ -53,13 +60,16 @@ test('decodes a Hash into a Map, preserving key order', () => {
 		new Map<unknown, unknown>([
 			['a', 1],
 			['b', 2],
-		])
+		]),
 	);
 	const decoded = decodeMarshal(encoded) as Map<unknown, unknown>;
-	assert.deepEqual([...decoded.entries()], [
-		['a', 1],
-		['b', 2],
-	]);
+	assert.deepEqual(
+		[...decoded.entries()],
+		[
+			['a', 1],
+			['b', 2],
+		],
+	);
 });
 
 test('decodes an Object into its class name and ivars', () => {
@@ -88,7 +98,11 @@ test('a repeated Float or Bignum registers an object link, the same as a repeate
 	]);
 	const decoded = decodeMarshal(bignumBytes) as number[];
 	assert.equal(decoded.length, 2);
-	assert.equal(decoded[0], decoded[1], 'the second element must be the same decoded value as the first, via the link, not independently re-read');
+	assert.equal(
+		decoded[0],
+		decoded[1],
+		'the second element must be the same decoded value as the first, via the link, not independently re-read',
+	);
 });
 
 test('decodes Hash.new(0) - a hash with a default value, kept out of the entries themselves', () => {
@@ -109,10 +123,13 @@ test('a real key equal to the old sentinel string is not swallowed by a hash def
 		0x69, 0x00,
 	]);
 	const decoded = decodeMarshal(bytes) as Map<unknown, unknown>;
-	assert.deepEqual([...decoded.entries()], [
-		[1, 5],
-		[2, 7],
-	]);
+	assert.deepEqual(
+		[...decoded.entries()],
+		[
+			[1, 5],
+			[2, 7],
+		],
+	);
 	assert.equal(hashDefaultOf(decoded), 0);
 });
 
@@ -122,14 +139,17 @@ test('withHashDefault round-trips a Hash.new(default) through encodeMarshal/deco
 			[1, 5],
 			[2, 7],
 		]),
-		0
+		0,
 	);
 
 	const decoded = decodeMarshal(encodeMarshal(hash)) as Map<unknown, unknown>;
-	assert.deepEqual([...decoded.entries()], [
-		[1, 5],
-		[2, 7],
-	]);
+	assert.deepEqual(
+		[...decoded.entries()],
+		[
+			[1, 5],
+			[2, 7],
+		],
+	);
 	assert.equal(hashDefaultOf(decoded), 0);
 });
 
@@ -172,10 +192,13 @@ test('round-trips nested arrays, hashes and objects', () => {
 	assert.equal(decoded.class, 'Game_Party');
 	assert.equal(decoded.ivars['@gold'], 500);
 	assert.deepEqual(decoded.ivars['@actors'], [1, 2, 3]);
-	assert.deepEqual([...(decoded.ivars['@items'] as Map<unknown, unknown>).entries()], [
-		[1, 5],
-		[7, 2],
-	]);
+	assert.deepEqual(
+		[...(decoded.ivars['@items'] as Map<unknown, unknown>).entries()],
+		[
+			[1, 5],
+			[7, 2],
+		],
+	);
 });
 
 test('encoding a value of an unsupported type throws rather than silently dropping it', () => {

@@ -147,9 +147,11 @@ export class DialogueStage extends Container {
 		}
 
 		sprite.alpha = 0;
-		return this.tweener.tween(fade, (t) => {
-			sprite.alpha = t;
-		}).then(settle);
+		return this.tweener
+			.tween(fade, (t) => {
+				sprite.alpha = t;
+			})
+			.then(settle);
 	}
 
 	private fitBackdrop(sprite: Sprite): void {
@@ -212,9 +214,11 @@ export class DialogueStage extends Container {
 			return Promise.resolve();
 		}
 
-		return this.tweener.tween(fade, (t) => {
-			actor.sprite.alpha = 1 - t;
-		}).then(() => actor.sprite.destroy());
+		return this.tweener
+			.tween(fade, (t) => {
+				actor.sprite.alpha = 1 - t;
+			})
+			.then(() => actor.sprite.destroy());
 	}
 
 	hideAll(fade = 0.25): Promise<void> {

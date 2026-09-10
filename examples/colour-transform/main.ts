@@ -35,7 +35,17 @@ class ColourTransformScene extends Scene2D {
 			['silhouette(0xff4040): shape only', (s) => s.silhouette(0xff4040)],
 		];
 
-		const shown = [tiles.FLOOR, tiles.WALL, tiles.WATER, tiles.GRASS, tiles.DOOR, tiles.COIN, tiles.HERO, tiles.RAT, tiles.BLOB];
+		const shown = [
+			tiles.FLOOR,
+			tiles.WALL,
+			tiles.WATER,
+			tiles.GRASS,
+			tiles.DOOR,
+			tiles.COIN,
+			tiles.HERO,
+			tiles.RAT,
+			tiles.BLOB,
+		];
 		const scale = 3;
 
 		rows.forEach(([label, style], row) => {
@@ -47,7 +57,7 @@ class ColourTransformScene extends Scene2D {
 					style: { fill: 0xd0d0d8, fontFamily: 'monospace', fontSize: 13 },
 					x: 20,
 					y: y - 20,
-				})
+				}),
 			);
 
 			shown.forEach((tile, index) => {
@@ -77,7 +87,7 @@ class ColourTransformScene extends Scene2D {
 				style: { fill: 0xd0d0d8, fontFamily: 'monospace', fontSize: 13 },
 				x: 20,
 				y: y - 20,
-			})
+			}),
 		);
 
 		const styles: Array<(sprite: TintedSprite) => void> = [
@@ -103,7 +113,7 @@ class ColourTransformScene extends Scene2D {
 				style: { fill: 0xd0d0d8, fontFamily: 'monospace', fontSize: 13 },
 				x: 20,
 				y: y - 20,
-			})
+			}),
 		);
 
 		const creatures = [tiles.HERO, tiles.RAT, tiles.BLOB, tiles.HERO, tiles.RAT, tiles.BLOB];
@@ -136,7 +146,7 @@ class ColourTransformScene extends Scene2D {
 				style: { fill: 0x808088, fontFamily: 'monospace', fontSize: 12 },
 				x: 480,
 				y: 20,
-			})
+			}),
 		);
 
 		const options = [tiles.FLOOR, tiles.FLOOR_WORN, tiles.WALL, tiles.GRASS, tiles.WATER];
@@ -189,6 +199,6 @@ main().catch((error) => {
 	console.error(error);
 	document.body.insertAdjacentHTML(
 		'afterbegin',
-		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
 	);
 });

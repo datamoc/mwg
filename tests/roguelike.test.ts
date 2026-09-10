@@ -180,8 +180,7 @@ test('toJSON/restore round-trips the queue: the same actions produce the same or
 // ----------------------------------------------------------------- generation
 
 test('the same seed produces the same dungeon', () => {
-	const build = () =>
-		withSeed(4242, () => generateDungeon({ width: 60, height: 40 })).terrain.join('');
+	const build = () => withSeed(4242, () => generateDungeon({ width: 60, height: 40 })).terrain.join('');
 
 	assert.equal(build(), build());
 });
@@ -248,7 +247,7 @@ test('every room is reachable from every other', () => {
 			assert.notEqual(
 				distances[level.index(centre.x, centre.y)],
 				-1,
-				`seed ${seed}: a room centre was unreachable`
+				`seed ${seed}: a room centre was unreachable`,
 			);
 		}
 	}

@@ -1,5 +1,13 @@
 import { Game, Scene2D } from '../../src/two-d/index.ts';
-import { runScenario, advanceToInput, SimulationRuntime, Scheduler, type TurnRules, type SimulationRuntimeRule, type Actor } from '../../src/simulation/index.ts';
+import {
+	runScenario,
+	advanceToInput,
+	SimulationRuntime,
+	Scheduler,
+	type TurnRules,
+	type SimulationRuntimeRule,
+	type Actor,
+} from '../../src/simulation/index.ts';
 import { EntityRegistry, PresentationQueue, Generator, type EntityId } from '../../src/core/index.ts';
 import { Button, Label, theme } from '../../src/two-d/ui/index.ts';
 
@@ -98,7 +106,10 @@ class HeadlessScene extends Scene2D {
 		};
 
 		const result = advanceToInput(rules, 10);
-		if (result.status === 'input') this.print(`advanceToInput: stopped for actor ${result.actor}'s own input after ${result.steps} automatic step(s)`);
+		if (result.status === 'input')
+			this.print(
+				`advanceToInput: stopped for actor ${result.actor}'s own input after ${result.steps} automatic step(s)`,
+			);
 		else this.print(`advanceToInput: ${result.status} after ${result.steps} step(s)`);
 	}
 
@@ -171,5 +182,8 @@ async function main(): Promise<void> {
 
 main().catch((error) => {
 	console.error(error);
-	document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`);
+	document.body.insertAdjacentHTML(
+		'afterbegin',
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
+	);
 });

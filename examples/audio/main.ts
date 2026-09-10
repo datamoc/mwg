@@ -65,7 +65,12 @@ class AudioScene extends Scene2D {
 		quieter.position.set(centerX + 5, row(2));
 		this.stage.addChild(quieter);
 
-		const playSfx = new Button({ width: 220, height: 30, text: 'Play pickup sound', onClick: () => this.pickup.play() });
+		const playSfx = new Button({
+			width: 220,
+			height: 30,
+			text: 'Play pickup sound',
+			onClick: () => this.pickup.play(),
+		});
 		playSfx.position.set(centerX - 110, row(3));
 		this.stage.addChild(playSfx);
 
@@ -98,5 +103,8 @@ async function main(): Promise<void> {
 
 main().catch((error) => {
 	console.error(error);
-	document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`);
+	document.body.insertAdjacentHTML(
+		'afterbegin',
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
+	);
 });

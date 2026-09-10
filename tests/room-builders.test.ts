@@ -25,13 +25,23 @@ test('eligibleBuilders checks minSize against the shorter side and maxSize again
 
 	//3 wide by 8 tall: shorter side 3, longer side 8
 	const narrow = room(0, 0, 2, 7);
-	assert.deepEqual(eligibleBuilders(builders, narrow).map((b) => b.id), ['any'], 'too narrow for big, too long for small');
+	assert.deepEqual(
+		eligibleBuilders(builders, narrow).map((b) => b.id),
+		['any'],
+		'too narrow for big, too long for small',
+	);
 
 	//6x6: shorter and longer both 6
-	assert.deepEqual(eligibleBuilders(builders, room(0, 0, 5, 5)).map((b) => b.id), ['big', 'any']);
+	assert.deepEqual(
+		eligibleBuilders(builders, room(0, 0, 5, 5)).map((b) => b.id),
+		['big', 'any'],
+	);
 
 	//3x3 fits small and any
-	assert.deepEqual(eligibleBuilders(builders, room(0, 0, 2, 2)).map((b) => b.id), ['small', 'any']);
+	assert.deepEqual(
+		eligibleBuilders(builders, room(0, 0, 2, 2)).map((b) => b.id),
+		['small', 'any'],
+	);
 });
 
 test('pickBuilder returns null when nothing fits, so the generator can fall back', () => {
@@ -96,7 +106,11 @@ test('a room no builder fits falls back to a hall rather than being left solid',
 	Random.push(7);
 	try {
 		//a builder that fits nothing this generator produces
-		const impossible: RoomBuilder = { id: 'impossible', minSize: 999, paint: () => assert.fail('should never run') };
+		const impossible: RoomBuilder = {
+			id: 'impossible',
+			minSize: 999,
+			paint: () => assert.fail('should never run'),
+		};
 		const { level, roomBuilders } = generateDungeonGraph({ width: 40, height: 40, builders: [impossible] });
 
 		assert.ok(roomBuilders.every((id) => id === 'hall'));

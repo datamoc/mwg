@@ -55,7 +55,11 @@ test('a disabled rare entry is deferred without consuming a roll', () => {
 test('an alternative at chance 1 always swaps, and is traced as swapped', () => {
 	Random.push(1);
 	try {
-		const { roster, trace } = rollRoster([{ value: 'rat', alternative: { value: 'albino rat', chance: 1 } }], [], false);
+		const { roster, trace } = rollRoster(
+			[{ value: 'rat', alternative: { value: 'albino rat', chance: 1 } }],
+			[],
+			false,
+		);
 		assert.deepEqual(roster, ['albino rat']);
 		assert.deepEqual(trace, [{ step: 'alternative', index: 0, outcome: 'swapped' }]);
 	} finally {
@@ -66,7 +70,11 @@ test('an alternative at chance 1 always swaps, and is traced as swapped', () => 
 test('an alternative at chance 0 keeps the regular value, traced as kept', () => {
 	Random.push(1);
 	try {
-		const { roster, trace } = rollRoster([{ value: 'rat', alternative: { value: 'albino rat', chance: 0 } }], [], false);
+		const { roster, trace } = rollRoster(
+			[{ value: 'rat', alternative: { value: 'albino rat', chance: 0 } }],
+			[],
+			false,
+		);
 		assert.deepEqual(roster, ['rat']);
 		assert.deepEqual(trace, [{ step: 'alternative', index: 0, outcome: 'kept' }]);
 	} finally {

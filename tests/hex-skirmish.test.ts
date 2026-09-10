@@ -14,7 +14,11 @@ import {
 } from '../src/board/HexSkirmish.ts';
 import type { SkirmishState, SkirmishUnit } from '../src/board/HexSkirmish.ts';
 
-const TERRAIN = { plain: { moveCost: 1, defense: 0 }, forest: { moveCost: 2, defense: 0.5 }, water: { moveCost: Infinity, defense: 0 } };
+const TERRAIN = {
+	plain: { moveCost: 1, defense: 0 },
+	forest: { moveCost: 2, defense: 0.5 },
+	water: { moveCost: Infinity, defense: 0 },
+};
 
 function unit(overrides: Partial<SkirmishUnit> & Pick<SkirmishUnit, 'id' | 'owner' | 'x' | 'y'>): SkirmishUnit {
 	return { hp: 10, maxHp: 10, moves: 4, attack: 4, hitChance: 1, ...overrides };
@@ -53,7 +57,10 @@ test('water is impassable regardless of budget', () => {
 	addSkirmishUnit(state, unit({ id: 'a', owner: 'blue', x: 0, y: 0, moves: 99 }));
 
 	assert.equal(canPlaceSkirmishUnit(state, 1, 0), false);
-	assert.equal(skirmishMoves(state, 'a').find((move) => move.x === 1 && move.y === 0), undefined);
+	assert.equal(
+		skirmishMoves(state, 'a').find((move) => move.x === 1 && move.y === 0),
+		undefined,
+	);
 });
 
 test('moving deducts the real cost and stepping onto a village captures it', () => {
@@ -76,7 +83,10 @@ test('an attack that kills the defender leaves no retaliation', () => {
 	const exchange = skirmishAttack(state, 'a', 'b');
 	assert.equal(exchange.strikes.length, 1);
 	assert.equal(exchange.strikes[0].killed, true);
-	assert.equal(state.units.some((candidate) => candidate.id === 'b'), false);
+	assert.equal(
+		state.units.some((candidate) => candidate.id === 'b'),
+		false,
+	);
 });
 
 test('a defender that survives strikes back', () => {
@@ -86,7 +96,10 @@ test('a defender that survives strikes back', () => {
 
 	const exchange = skirmishAttack(state, 'a', 'b');
 	assert.equal(exchange.strikes.length, 2);
-	assert.deepEqual(exchange.strikes.map((strike) => strike.attacker), ['a', 'b']);
+	assert.deepEqual(
+		exchange.strikes.map((strike) => strike.attacker),
+		['a', 'b'],
+	);
 	assert.equal(getUnit(state, 'a').hp, 7);
 });
 

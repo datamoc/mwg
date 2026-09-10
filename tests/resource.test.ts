@@ -34,7 +34,7 @@ test('several costs are all-or-nothing', () => {
 			{ stat: 'mana', amount: 4 },
 			{ stat: 'health', amount: 99 },
 		]),
-		false
+		false,
 	);
 	assert.equal(stats.base('mana'), 10, 'the affordable half must be rolled back');
 	assert.equal(stats.base('health'), 6);
@@ -44,7 +44,7 @@ test('several costs are all-or-nothing', () => {
 			{ stat: 'mana', amount: 4 },
 			{ stat: 'health', amount: 2 },
 		]),
-		true
+		true,
 	);
 	assert.equal(stats.base('mana'), 6);
 	assert.equal(stats.base('health'), 4);
@@ -61,7 +61,13 @@ test('two costs on the same stat are checked and spent against their combined to
 	assert.equal(spend(stats, cost), false);
 	assert.equal(stats.base('mana'), 10, 'untouched, never driven negative');
 
-	assert.equal(spend(stats, [{ stat: 'mana', amount: 6 }, { stat: 'mana', amount: 4 }]), true);
+	assert.equal(
+		spend(stats, [
+			{ stat: 'mana', amount: 6 },
+			{ stat: 'mana', amount: 4 },
+		]),
+		true,
+	);
 	assert.equal(stats.base('mana'), 0);
 });
 
@@ -119,7 +125,7 @@ test('convertToCharges spends nothing and gains nothing when the cost is unaffor
 	assert.equal(charges.current, 0);
 });
 
-test('convertToCharges caps the gain at the charge pool\'s own max', () => {
+test("convertToCharges caps the gain at the charge pool's own max", () => {
 	const stats = mage();
 	const charges = new Charges({ max: 2, current: 0, regenRate: 100 });
 

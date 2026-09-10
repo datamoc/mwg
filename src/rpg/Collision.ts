@@ -75,7 +75,12 @@ export interface ResolveTileMoveOptions {
  * already-resolved x) is the standard, simple choice for an axis-aligned tile grid - a full
  * swept-AABB solver buys nothing here since every tile edge is already axis-aligned.
  */
-export function resolveAabbAgainstTiles(box: AABB, dx: number, dy: number, options: ResolveTileMoveOptions): { x: number; y: number } {
+export function resolveAabbAgainstTiles(
+	box: AABB,
+	dx: number,
+	dy: number,
+	options: ResolveTileMoveOptions,
+): { x: number; y: number } {
 	const { tileSize, isSolid } = options;
 	if (!(tileSize > 0)) throw new Error('collision tileSize must be positive');
 
@@ -92,7 +97,7 @@ function sweepAxis(
 	delta: number,
 	tileSize: number,
 	isSolid: SolidTile,
-	horizontal: boolean
+	horizontal: boolean,
 ): number {
 	if (delta === 0) return horizontal ? x : y;
 

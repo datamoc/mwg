@@ -46,7 +46,14 @@ class TowerDefenseScene extends Scene2D {
 		this.spawner = new Spawner({
 			waves: [
 				{ delay: 1, entries: [{ kind: 'scout', count: 8 }], duration: 18 },
-				{ delay: 12, entries: [{ kind: 'scout', count: 8 }, { kind: 'armoured', count: 3 }], duration: 16 },
+				{
+					delay: 12,
+					entries: [
+						{ kind: 'scout', count: 8 },
+						{ kind: 'armoured', count: 3 },
+					],
+					duration: 16,
+				},
 				{ delay: 28, entries: [{ kind: 'armoured', count: 8 }], duration: 12 },
 			],
 			onSpawn: (kind) => this.spawn(kind),
@@ -58,14 +65,19 @@ class TowerDefenseScene extends Scene2D {
 			const tile = new Shape2D().rect(x * CELL, PATH_ROW * CELL, CELL - 2, CELL - 2).fill(0x6a543d);
 			this.stage.addChild(tile);
 		}
-		for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-			if (y === PATH_ROW) continue;
-			this.stage.addChild(new Shape2D().rect(x * CELL, y * CELL, CELL - 2, CELL - 2).fill(0x243544));
-		}
+		for (let y = 0; y < ROWS; y++)
+			for (let x = 0; x < COLS; x++) {
+				if (y === PATH_ROW) continue;
+				this.stage.addChild(new Shape2D().rect(x * CELL, y * CELL, CELL - 2, CELL - 2).fill(0x243544));
+			}
 	}
 
 	private addTower(x: number, y: number): void {
-		const view = new Shape2D().circle(CELL / 2, CELL / 2, 15).fill(0x5bb6a9).circle(CELL / 2, CELL / 2, 6).fill(0xdceca3);
+		const view = new Shape2D()
+			.circle(CELL / 2, CELL / 2, 15)
+			.fill(0x5bb6a9)
+			.circle(CELL / 2, CELL / 2, 6)
+			.fill(0xdceca3);
 		view.x = x * CELL;
 		view.y = y * CELL;
 		this.stage.addChild(view);
@@ -74,7 +86,9 @@ class TowerDefenseScene extends Scene2D {
 
 	private spawn(kind: 'scout' | 'armoured'): void {
 		const maxHp = kind === 'armoured' ? 12 : 5;
-		const view = new Shape2D().circle(0, 0, kind === 'armoured' ? 14 : 10).fill(kind === 'armoured' ? 0xd9825b : 0xf0c75e);
+		const view = new Shape2D()
+			.circle(0, 0, kind === 'armoured' ? 14 : 10)
+			.fill(kind === 'armoured' ? 0xd9825b : 0xf0c75e);
 		view.x = -CELL;
 		view.y = PATH_ROW * CELL + CELL / 2;
 		this.stage.addChild(view);

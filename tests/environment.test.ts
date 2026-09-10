@@ -18,7 +18,9 @@ test('environment clock exposes day phases and wraps across days', () => {
 test('environment weather and snapshots restore cleanly', () => {
 	const clock = new EnvironmentClock({ dayLength: 60 });
 	const seen: string[] = [];
-	clock.changed.add((snapshot) => { seen.push(`${snapshot.phase}:${snapshot.weather}`); });
+	clock.changed.add((snapshot) => {
+		seen.push(`${snapshot.phase}:${snapshot.weather}`);
+	});
 	clock.setWeather('rain');
 	clock.update(50);
 	const restored = EnvironmentClock.fromJSON({ dayLength: 60 }, clock.toJSON());

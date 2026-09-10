@@ -1,7 +1,13 @@
 import { Node2D, Shape2D, type Texture2D } from '../../src/two-d/render/index.ts';
 import { Input } from '../../src/core/index.ts';
 import { Game, Scene2D } from '../../src/two-d/index.ts';
-import { TintedSprite, SpriteSheet, Minimap, createColorBlindnessFilter, type ColorBlindnessType } from '../../src/two-d/render/index.ts';
+import {
+	TintedSprite,
+	SpriteSheet,
+	Minimap,
+	createColorBlindnessFilter,
+	type ColorBlindnessType,
+} from '../../src/two-d/render/index.ts';
 import {
 	Window,
 	WindowStack,
@@ -286,7 +292,7 @@ class InterfaceScene extends Scene2D {
 		this.status.setText(
 			this.windows.isEmpty
 				? 'Enter to talk to someone      Tab to open the bag      . to rebind keys'
-				: `Escape to close   (${this.windows.depth} window${this.windows.depth > 1 ? 's' : ''} open)`
+				: `Escape to close   (${this.windows.depth} window${this.windows.depth > 1 ? 's' : ''} open)`,
 		);
 	}
 
@@ -354,13 +360,9 @@ class InterfaceScene extends Scene2D {
 				width: 340,
 				height: 120,
 				pages: [{ speaker: 'You', text: `Drop ${what}? It might be worth keeping.` }],
-				choices: [
-					{ text: 'Drop it' },
-					{ text: 'Keep it' },
-					{ text: 'Think about it later', disabled: true },
-				],
+				choices: [{ text: 'Drop it' }, { text: 'Keep it' }, { text: 'Think about it later', disabled: true }],
 				onDone: () => this.updateStatus(),
-			})
+			}),
 		);
 		this.updateStatus();
 	}
@@ -373,7 +375,10 @@ class InterfaceScene extends Scene2D {
 				speed: 45,
 				pages: [
 					{ speaker: 'Shopkeeper', text: 'You again. Back so soon from the lower floors?' },
-					{ speaker: 'Shopkeeper', text: 'I heard something moved down there. Something that was not moving before.' },
+					{
+						speaker: 'Shopkeeper',
+						text: 'I heard something moved down there. Something that was not moving before.',
+					},
 					{ speaker: 'Shopkeeper', text: 'So. Buying, selling, or just dripping on my floor?' },
 				],
 				choices: [{ text: 'Buying' }, { text: 'Selling' }, { text: 'Dripping' }],
@@ -381,7 +386,7 @@ class InterfaceScene extends Scene2D {
 					if (chosen !== undefined) this.reply(String(chosen));
 					this.updateStatus();
 				},
-			})
+			}),
 		);
 		this.updateStatus();
 	}
@@ -399,7 +404,7 @@ class InterfaceScene extends Scene2D {
 				height: 110,
 				pages: [{ speaker: 'Shopkeeper', text: lines[chosen] ?? '...' }],
 				onDone: () => this.updateStatus(),
-			})
+			}),
 		);
 	}
 
@@ -433,6 +438,6 @@ main().catch((error) => {
 	console.error(error);
 	document.body.insertAdjacentHTML(
 		'afterbegin',
-		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
 	);
 });

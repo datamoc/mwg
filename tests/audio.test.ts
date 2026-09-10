@@ -65,7 +65,7 @@ test('Sound cycles through its pool round-robin, so overlapping plays do not ste
 
 	assert.deepEqual(
 		instances.map((a) => a.playCount),
-		[2, 1]
+		[2, 1],
 	);
 });
 

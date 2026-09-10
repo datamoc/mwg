@@ -34,7 +34,7 @@ test('messageText formats a FluentMessage with no params, and swallows a throw a
 				throw new Error('needs a param');
 			},
 		}),
-		''
+		'',
 	);
 });
 
@@ -45,7 +45,7 @@ test('levenshteinDistance is 0 for identical strings, including both empty', () 
 	assert.equal(levenshteinDistance('', ''), 0);
 });
 
-test('levenshteinDistance against an empty string is the other string\'s length', () => {
+test("levenshteinDistance against an empty string is the other string's length", () => {
 	assert.equal(levenshteinDistance('', 'abc'), 3);
 	assert.equal(levenshteinDistance('abc', ''), 3);
 });

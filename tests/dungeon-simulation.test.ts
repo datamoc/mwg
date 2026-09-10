@@ -8,12 +8,21 @@ type State = { hp: number; defense: number };
 type Event = { damage: number };
 const step: SimulationRule<State, 'attack', Event, Generator> = (state, _command, random) => {
 	const hit = resolveAttack({ damage: [3, 6] }, state, { range: (min, max) => min + random.int(max - min + 1) });
-	return { state: { ...state, hp: hit.hp }, events: [{ damage: hit.damage }], status: hit.hp <= 0 ? 'finished' : 'ready' };
+	return {
+		state: { ...state, hp: hit.hp },
+		events: [{ damage: hit.damage }],
+		status: hit.hp <= 0 ? 'finished' : 'ready',
+	};
 };
 
 test('dungeon scene damage rule can run to completion without loading its renderer', () => {
-	const run = () => runScenario({ state: { hp: 10, defense: 1 },
-		commands: Array<'attack'>(10).fill('attack'), random: new Generator(42), step });
+	const run = () =>
+		runScenario({
+			state: { hp: 10, defense: 1 },
+			commands: Array<'attack'>(10).fill('attack'),
+			random: new Generator(42),
+			step,
+		});
 	const result = run();
 	assert.deepEqual(run(), result);
 	assert.equal(result.status, 'finished');
@@ -22,5 +31,8 @@ test('dungeon scene damage rule can run to completion without loading its render
 });
 
 test('the example retains its minimum one damage through high defense', () => {
-	assert.deepEqual(resolveAttack({ damage: [3, 3] }, { hp: 10, defense: 99 }, { range: () => 3 }), { hp: 9, damage: 1 });
+	assert.deepEqual(resolveAttack({ damage: [3, 3] }, { hp: 10, defense: 99 }, { range: () => 3 }), {
+		hp: 9,
+		damage: 1,
+	});
 });

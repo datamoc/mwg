@@ -54,7 +54,8 @@ export class AssetStream {
 	/** loads one bundle now, then evicts older ready bundles if its budget requires it */
 	async preload(bundle: AssetBundle, onProgress?: AssetProgress): Promise<void> {
 		if (!bundle.id) throw new Error('asset bundle needs an id');
-		if (bundle.estimatedBytes !== undefined && bundle.estimatedBytes < 0) throw new Error('asset bundle size must not be negative');
+		if (bundle.estimatedBytes !== undefined && bundle.estimatedBytes < 0)
+			throw new Error('asset bundle size must not be negative');
 		const existing = this.entries.get(bundle.id);
 		if (existing?.ready) {
 			existing.lastUsed = ++this.clock;

@@ -5,12 +5,7 @@ import { Input, Random, SaveSystem } from '../../src/core/index.ts';
 import { Game, Scene2D } from '../../src/two-d/index.ts';
 import { TintedSprite, SpriteSheet, TileMap, Camera, Projectile } from '../../src/two-d/render/index.ts';
 import { Label, theme, Window, WindowStack, IconGrid, type IconGridItem } from '../../src/two-d/ui/index.ts';
-import {
-	StatBlock,
-	Inventory,
-	EquipmentSlots,
-	type EquippableItem,
-} from '../../src/actors/index.ts';
+import { StatBlock, Inventory, EquipmentSlots, type EquippableItem } from '../../src/actors/index.ts';
 import {
 	generateDungeon,
 	FieldOfView,
@@ -213,11 +208,7 @@ class DungeonScene extends Scene2D {
 		}
 
 		this.enterLevel();
-		this.say(
-			continuing
-				? 'Continuing your run.'
-				: 'A new run begins. There is no continuing after you die.'
-		);
+		this.say(continuing ? 'Continuing your run.' : 'A new run begins. There is no continuing after you die.');
 
 		Input.onAction.add((action) => this.onAction(action));
 	}
@@ -263,7 +254,7 @@ class DungeonScene extends Scene2D {
 		saves.save(
 			SAVE_SLOT,
 			this.toSaveData(),
-			`Floor ${this.depth}, HP ${Math.max(0, this.hero.hp)}/${this.hero.maxHp}`
+			`Floor ${this.depth}, HP ${Math.max(0, this.hero.hp)}/${this.hero.maxHp}`,
 		);
 	}
 
@@ -286,7 +277,7 @@ class DungeonScene extends Scene2D {
 				height: 40,
 				rooms: 12,
 				kinds: [{ passable: true, transparent: true }], //TRAP_KIND: passable, revealed by discovery
-			})
+			}),
 		);
 		this.secrets = new Secrets(this.level);
 
@@ -378,7 +369,7 @@ class DungeonScene extends Scene2D {
 			this.spawn(
 				tough
 					? { name: 'a blob', frame: tiles.BLOB, at, hp: 8 + this.depth, damage: [2, 4], speed: 0.6 }
-					: { name: 'a rat', frame: tiles.RAT, at, hp: 4 + this.depth, damage: [1, 3], speed: 1 }
+					: { name: 'a rat', frame: tiles.RAT, at, hp: 4 + this.depth, damage: [1, 3], speed: 1 },
 			);
 		}
 	}
@@ -424,9 +415,7 @@ class DungeonScene extends Scene2D {
 
 			const side = sides[Random.int(sides.length)];
 			const horizontal = side.step.y !== 0;
-			const along = horizontal
-				? Random.range(room.left, room.right)
-				: Random.range(room.top, room.bottom);
+			const along = horizontal ? Random.range(room.left, room.right) : Random.range(room.top, room.bottom);
 
 			const door = side.door(room, along);
 			const vault = { x: door.x + side.step.x, y: door.y + side.step.y };
@@ -484,7 +473,7 @@ class DungeonScene extends Scene2D {
 					'terrain',
 					this.vaultCell.x,
 					this.vaultCell.y,
-					Random.chance(0.15) ? tiles.FLOOR_WORN : tiles.FLOOR
+					Random.chance(0.15) ? tiles.FLOOR_WORN : tiles.FLOOR,
 				);
 			}
 			return;
@@ -548,12 +537,18 @@ class DungeonScene extends Scene2D {
 	 * turn-based game feel instant: nothing is animated between two monster moves.
 	 */
 	private runTurns(): void {
-		const result = advanceToInput({
-			scheduler: this.scheduler,
-			finished: () => this.gameOver,
-			needsInput: (actor) => !!actor.isHero,
-			act: (actor) => { this.takeMonsterTurn(actor); return 1; },
-		}, 1000);
+		const result = advanceToInput(
+			{
+				scheduler: this.scheduler,
+				finished: () => this.gameOver,
+				needsInput: (actor) => !!actor.isHero,
+				act: (actor) => {
+					this.takeMonsterTurn(actor);
+					return 1;
+				},
+			},
+			1000,
+		);
 		if (result.status === 'input') {
 			this.awaitingInput = true;
 			this.refresh();
@@ -642,9 +637,7 @@ class DungeonScene extends Scene2D {
 		}
 
 		const blocked = new Set(
-			this.creatures
-				.filter((c) => c !== monster && c !== this.hero)
-				.map((c) => this.level.index(c.x, c.y))
+			this.creatures.filter((c) => c !== monster && c !== this.hero).map((c) => this.level.index(c.x, c.y)),
 		);
 
 		//each monster judges the hero by its own sight, not the hero's - a wounded monster
@@ -873,9 +866,7 @@ class DungeonScene extends Scene2D {
 			if (!creature.isHero) creature.sprite.resetColor();
 		}
 		this.stairsSprite.visible = this.fov.isExplored(this.stairs.x, this.stairs.y);
-		this.stairsSprite.tint = this.fov.isVisible(this.stairs.x, this.stairs.y)
-			? LIGHT.visible
-			: LIGHT.remembered;
+		this.stairsSprite.tint = this.fov.isVisible(this.stairs.x, this.stairs.y) ? LIGHT.visible : LIGHT.remembered;
 
 		for (const ground of this.groundItems) {
 			ground.sprite.visible = this.fov.isVisible(ground.x, ground.y) || this.fov.isExplored(ground.x, ground.y);
@@ -886,7 +877,7 @@ class DungeonScene extends Scene2D {
 		this.statusLabel.setText(
 			`Floor ${this.depth}    HP ${Math.max(0, this.hero.hp)}/${this.hero.maxHp}    ` +
 				`ATK ${this.heroStats.get('attack')}  DEF ${this.heroStats.get('defense')}    ` +
-				`${weapon}, ${armor}    (Tab for inventory, F to search, T to throw)`
+				`${weapon}, ${armor}    (Tab for inventory, F to search, T to throw)`,
 		);
 	}
 
@@ -990,6 +981,6 @@ main().catch((error) => {
 	console.error(error);
 	document.body.insertAdjacentHTML(
 		'afterbegin',
-		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
 	);
 });

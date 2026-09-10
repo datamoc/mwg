@@ -236,10 +236,7 @@ export class ListView extends Container {
 	 * nothing selectable to move to, so a caller can beep rather than doing nothing.
 	 */
 	move(delta: number): boolean {
-		return this.selection.step(
-			(from, count) => (from + delta + count) % count,
-			this.selection.length
-		);
+		return this.selection.step((from, count) => (from + delta + count) % count, this.selection.length);
 	}
 
 	select(index: number): void {

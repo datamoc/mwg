@@ -119,7 +119,7 @@ export class Bar extends Container {
 					? this.explicitColor
 						? { texture: this.fillTexture, color: this.color }
 						: { texture: this.fillTexture }
-					: { color: this.color }
+					: { color: this.color },
 			);
 		}
 	}

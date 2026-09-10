@@ -185,7 +185,7 @@ export class QuestLog {
 	/** rebuilds a log from save data - `definitions` are supplied fresh, the same as `ITEMS` */
 	static fromJSON(
 		definitions: QuestDefinition[],
-		data: { stageIndex: [string, number][]; tracked?: string | null }
+		data: { stageIndex: [string, number][]; tracked?: string | null },
 	): QuestLog {
 		const log = new QuestLog();
 		for (const quest of definitions) log.define(quest);
@@ -270,15 +270,18 @@ function stageFromRow(questId: string, row: QuestStageRow): QuestStage {
 	const stage: QuestStage = {};
 
 	if (row.conditionSwitch !== undefined) {
-		if (row.conditionEquals === undefined) throw new Error(`quest "${questId}": conditionSwitch needs a conditionEquals`);
+		if (row.conditionEquals === undefined)
+			throw new Error(`quest "${questId}": conditionSwitch needs a conditionEquals`);
 		stage.condition = { switch: row.conditionSwitch, equals: row.conditionEquals };
 	} else if (row.conditionVariable !== undefined) {
-		if (row.conditionAtLeast === undefined) throw new Error(`quest "${questId}": conditionVariable needs a conditionAtLeast`);
+		if (row.conditionAtLeast === undefined)
+			throw new Error(`quest "${questId}": conditionVariable needs a conditionAtLeast`);
 		stage.condition = { variable: row.conditionVariable, atLeast: row.conditionAtLeast };
 	}
 
 	if (row.counterVariable !== undefined) {
-		if (row.counterTarget === undefined) throw new Error(`quest "${questId}": counterVariable needs a counterTarget`);
+		if (row.counterTarget === undefined)
+			throw new Error(`quest "${questId}": counterVariable needs a counterTarget`);
 		stage.counter = { variable: row.counterVariable, target: row.counterTarget };
 	}
 

@@ -58,7 +58,7 @@ test('save and restore keeps counts but announces nothing', () => {
 			{ id: 'slayer', counter: 'kills', target: 10 },
 			{ id: 'rich', counter: 'gold', target: 100 },
 		],
-		achievements.toJSON()
+		achievements.toJSON(),
 	);
 	assert.equal(restored.unlocked('slayer'), true);
 	assert.deepEqual(restored.drainNew(), []);

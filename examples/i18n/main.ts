@@ -22,7 +22,7 @@ const CATALOGS: Record<string, I18n.Catalog> = {
 		locale: 'fr',
 		direction: 'ltr',
 		messages: {
-			greeting: "Bonjour, {name}!",
+			greeting: 'Bonjour, {name}!',
 			gems: { one: '{count} gemme', other: '{count} gemmes' },
 		},
 	},
@@ -120,5 +120,8 @@ async function main(): Promise<void> {
 
 main().catch((error) => {
 	console.error(error);
-	document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`);
+	document.body.insertAdjacentHTML(
+		'afterbegin',
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
+	);
 });

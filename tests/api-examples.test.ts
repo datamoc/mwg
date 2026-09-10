@@ -143,7 +143,7 @@ test('every runtime export has a working @example somewhere under src/', () => {
 	assert.deepEqual(
 		missing,
 		[],
-		`these exports have no @example anywhere under src/ - add one to the doc comment on their declaration:\n${missing.join('\n')}`
+		`these exports have no @example anywhere under src/ - add one to the doc comment on their declaration:\n${missing.join('\n')}`,
 	);
 });
 
@@ -191,7 +191,7 @@ test('every @example fence actually compiles against the real public import path
 			//at the file to fix rather than an anonymous scratch path
 			const annotated = files.reduce(
 				(text, file, i) => text.split(file).join(`${examples[i].file} (example ${i})`),
-				output
+				output,
 			);
 			assert.fail(`one or more @example fences fail to compile:\n\n${annotated}`);
 		}

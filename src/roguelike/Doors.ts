@@ -35,11 +35,7 @@ export class Doors {
 	}
 
 	/** places a door at `(x, y)`, swapping between `open`/`closed` terrain kinds */
-	place(
-		x: number,
-		y: number,
-		options: { open: number; closed: number; locked?: string; startOpen?: boolean }
-	): void {
+	place(x: number, y: number, options: { open: number; closed: number; locked?: string; startOpen?: boolean }): void {
 		const cell = this.level.index(x, y);
 		this.openKind.set(cell, options.open);
 		this.closedKind.set(cell, options.closed);
@@ -116,7 +112,7 @@ export class Doors {
 	 */
 	static fromJSON(
 		level: Level,
-		data: { doors: { cell: number; open: number; closed: number; locked?: string; isOpen: boolean }[] }
+		data: { doors: { cell: number; open: number; closed: number; locked?: string; isOpen: boolean }[] },
 	): Doors {
 		const doors = new Doors(level);
 		for (const saved of data.doors) {

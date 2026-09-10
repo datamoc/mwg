@@ -121,7 +121,10 @@ test('SaveSyncClient.upload posts the payload as JSON to a slot-qualified URL an
 });
 
 test('SaveSyncClient.upload rejects a missing slot or an empty payload without making a request', async () => {
-	const client = new SaveSyncClient({ endpoint: 'https://example.test/save', fetch: (async () => fakeResponse({})) as typeof fetch });
+	const client = new SaveSyncClient({
+		endpoint: 'https://example.test/save',
+		fetch: (async () => fakeResponse({})) as typeof fetch,
+	});
 	await assert.rejects(client.upload('', 'payload'), /slot name is required/);
 	await assert.rejects(client.upload('profile-1', ''), /empty/);
 });
@@ -156,7 +159,7 @@ test('SaveSyncClient.download rejects a missing slot, and a response with no str
 	await assert.rejects(client.download('profile-1'), /missing a string payload/);
 });
 
-test('SaveSyncClient.list returns the endpoint\'s slot names, unqualified', async () => {
+test("SaveSyncClient.list returns the endpoint's slot names, unqualified", async () => {
 	const calls: string[] = [];
 	const client = new SaveSyncClient({
 		endpoint: 'https://example.test/save',
@@ -179,5 +182,8 @@ test('SaveSyncClient.list rejects a response with no string array of slots', asy
 
 test('SaveSyncClient requires a non-empty endpoint and a positive timeout', () => {
 	assert.throws(() => new SaveSyncClient({ endpoint: '' }), /endpoint is required/);
-	assert.throws(() => new SaveSyncClient({ endpoint: 'https://example.test', timeoutMs: 0 }), /timeout must be positive/);
+	assert.throws(
+		() => new SaveSyncClient({ endpoint: 'https://example.test', timeoutMs: 0 }),
+		/timeout must be positive/,
+	);
 });

@@ -72,7 +72,10 @@ test('height-aware sight works on a hex map too', () => {
 	//cliff sits on the line itself, not beside it.
 	const beyond = { x: 6, y: 3 };
 	const line = hexLine(viewer, beyond);
-	assert.ok(line.slice(1, -1).some((c) => c.x === 3 && c.y === 2), 'test setup: the line must cross the cliff');
+	assert.ok(
+		line.slice(1, -1).some((c) => c.x === 3 && c.y === 2),
+		'test setup: the line must cross the cliff',
+	);
 
 	const fov = new FieldOfView(level);
 	fov.update(viewer.x, viewer.y, 6, { heights });
@@ -93,7 +96,10 @@ test('a path climbs stairs but not cliffs', () => {
 
 	const over = paths.find({ x: 0, y: 1 }, { x: 4, y: 1 }, { heights, topology: 4 });
 	assert.ok(over.length > 0, 'the stairs route around the ridge');
-	assert.ok(over.some((s) => s.x === 2 && s.y === 2), 'the path goes through the stair cell');
+	assert.ok(
+		over.some((s) => s.x === 2 && s.y === 2),
+		'the path goes through the stair cell',
+	);
 	assert.ok(!over.some((s) => s.x === 2 && (s.y === 0 || s.y === 1)), 'never straight over the cliff');
 
 	const straight = paths.find({ x: 1, y: 0 }, { x: 3, y: 0 }, { heights, topology: 4, climb: 3 });

@@ -1,6 +1,12 @@
 import { Game, Scene2D } from '../../src/two-d/index.ts';
 import { GameState, activePage, EventRunner, type MapEvent } from '../../src/rpg/index.ts';
-import { StatBlock, Inventory, EquipmentSlots, type InventoryItem, type EquippableItem } from '../../src/actors/index.ts';
+import {
+	StatBlock,
+	Inventory,
+	EquipmentSlots,
+	type InventoryItem,
+	type EquippableItem,
+} from '../../src/actors/index.ts';
 import { Button, Label, WindowStack, theme, messageBoxPresenter } from '../../src/two-d/ui/index.ts';
 
 /**
@@ -23,7 +29,12 @@ interface Item extends InventoryItem, EquippableItem {
 	name: string;
 }
 
-const GIFT: Item = { id: 'dagger', name: 'a small dagger', quantity: 1, modifiers: [{ stat: 'attack', op: 'add', value: 2 }] };
+const GIFT: Item = {
+	id: 'dagger',
+	name: 'a small dagger',
+	quantity: 1,
+	modifiers: [{ stat: 'attack', op: 'add', value: 2 }],
+};
 
 const EVENT: MapEvent = {
 	id: 'stranger',
@@ -41,16 +52,16 @@ const EVENT: MapEvent = {
 		{
 			trigger: 'action',
 			conditions: [{ switch: 'metStranger', equals: true }],
-			commands: [
-				{ addVariable: 'timesMet', amount: 1 },
-				{ say: '"Back again? I don\'t have much to say."' },
-			],
+			commands: [{ addVariable: 'timesMet', amount: 1 }, { say: '"Back again? I don\'t have much to say."' }],
 		},
 		{
 			trigger: 'action',
 			//the last page whose conditions all hold wins - this overrides the plain
 			//"back again" page once timesMet crosses the threshold
-			conditions: [{ switch: 'metStranger', equals: true }, { variable: 'timesMet', atLeast: 3 }],
+			conditions: [
+				{ switch: 'metStranger', equals: true },
+				{ variable: 'timesMet', atLeast: 3 },
+			],
 			commands: [
 				{ addVariable: 'timesMet', amount: 1 },
 				{ setSwitch: 'friendly', value: true },
@@ -114,7 +125,7 @@ class EventSystemScene extends Scene2D {
 		this.status.setText(
 			`metStranger: ${state.switch('metStranger')}    friendly: ${state.switch('friendly')}    timesMet: ${state.variable('timesMet')}\n` +
 				`attack: ${stats.get('attack')}    weapon: ${weapon}    inventory: ${inventory.items.length} item(s)\n` +
-				'keep talking to unlock the friendly page at timesMet >= 3'
+				'keep talking to unlock the friendly page at timesMet >= 3',
 		);
 	}
 }
@@ -126,5 +137,8 @@ async function main(): Promise<void> {
 
 main().catch((error) => {
 	console.error(error);
-	document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`);
+	document.body.insertAdjacentHTML(
+		'afterbegin',
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
+	);
 });

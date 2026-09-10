@@ -39,7 +39,7 @@ export type OnByteProgress = (progress: ByteProgress) => void;
 export async function fetchWithByteProgress(
 	url: string,
 	onProgress?: OnByteProgress,
-	fetchFn: typeof fetch = fetch
+	fetchFn: typeof fetch = fetch,
 ): Promise<Blob> {
 	const response = await fetchFn(url);
 	if (!response.ok) throw new Error(`fetchWithByteProgress: ${url} responded ${response.status}`);

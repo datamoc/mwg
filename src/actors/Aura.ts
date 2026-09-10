@@ -46,7 +46,10 @@ export class AuraField {
 	//what source symbol - a unit inside two carriers' auras at once tracks both independently
 	private affected = new Map<AuraParticipant, Map<AuraParticipant, symbol>>();
 
-	update(participants: readonly AuraParticipant[], isAdjacent: (a: AuraParticipant, b: AuraParticipant) => boolean): void {
+	update(
+		participants: readonly AuraParticipant[],
+		isAdjacent: (a: AuraParticipant, b: AuraParticipant) => boolean,
+	): void {
 		const roster = new Set(participants);
 		const carriers = participants.filter((p): p is AuraParticipant & { aura: AuraDef } => !!p.aura);
 		const carrierSet = new Set<AuraParticipant>(carriers);
@@ -65,7 +68,8 @@ export class AuraField {
 
 				if (adjacent && !source) {
 					const newSource = Symbol(`aura:${carrier.aura.name}`);
-					for (const modifier of carrier.aura.modifiers) other.stats.addModifier({ ...modifier, source: newSource });
+					for (const modifier of carrier.aura.modifiers)
+						other.stats.addModifier({ ...modifier, source: newSource });
 					currentlyAffected.set(other, newSource);
 				} else if (!adjacent && source) {
 					other.stats.removeModifiersFrom(source);

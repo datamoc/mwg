@@ -24,7 +24,21 @@ import { walk } from './compile-resources.mjs';
  */
 
 const TEXT_EXTENSIONS = new Set(['.js', '.html', '.css', '.svg', '.json', '.txt', '.map']);
-const ALREADY_COMPRESSED = new Set(['.gz', '.br', '.xz', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.wav', '.ogg', '.mp3', '.ttf', '.woff2']);
+const ALREADY_COMPRESSED = new Set([
+	'.gz',
+	'.br',
+	'.xz',
+	'.png',
+	'.jpg',
+	'.jpeg',
+	'.webp',
+	'.gif',
+	'.wav',
+	'.ogg',
+	'.mp3',
+	'.ttf',
+	'.woff2',
+]);
 const MIN_BYTES = 1024;
 
 /** true when the system `xz` binary (LZMA2) is available for the opt-in archive pass */

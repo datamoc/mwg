@@ -96,7 +96,10 @@ export function bankUnit(army: ArmyState, board: TacticalState, unitId: string):
 	return true;
 }
 
-export interface UpkeepRates { incomePerUnit: number; upkeepPerUnit: number; }
+export interface UpkeepRates {
+	incomePerUnit: number;
+	upkeepPerUnit: number;
+}
 
 //net currency delta for one turn's income minus upkeep, purely a function of how many units
 //an owner controls on the board - no formula beyond that belongs here, per this project's

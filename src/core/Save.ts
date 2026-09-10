@@ -133,7 +133,12 @@ export class SaveSystem<T> {
 	 * guard against a truncated or hostile file, ahead of and distinct from validating
 	 * whatever shape `normalize` itself produces.
 	 */
-	importExternal(slot: string, externalBytes: Uint8Array, normalize: (bytes: Uint8Array) => unknown, preview?: unknown): void {
+	importExternal(
+		slot: string,
+		externalBytes: Uint8Array,
+		normalize: (bytes: Uint8Array) => unknown,
+		preview?: unknown,
+	): void {
 		checkSize(externalBytes);
 		let state: unknown = normalize(externalBytes);
 		for (let v = 0; v < this.version; v++) {

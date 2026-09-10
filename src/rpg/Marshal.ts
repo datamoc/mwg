@@ -110,7 +110,7 @@ class Reader {
 
 	/** Ruby's variable-length integer encoding - see the module doc for the byte layout */
 	private readFixnum(): number {
-		const c = this.byte() << 24 >> 24; // reinterpret as signed 8-bit
+		const c = (this.byte() << 24) >> 24; // reinterpret as signed 8-bit
 		if (c === 0) return 0;
 		if (c >= 5 && c <= 127) return c - 5;
 		if (c <= -5 && c >= -128) return c + 5;
@@ -291,7 +291,9 @@ class Reader {
 		const major = this.byte();
 		const minor = this.byte();
 		if (major !== MARSHAL_MAJOR || minor > MARSHAL_MINOR) {
-			throw new Error(`Marshal: unsupported version ${major}.${minor} (expected ${MARSHAL_MAJOR}.${MARSHAL_MINOR} or lower)`);
+			throw new Error(
+				`Marshal: unsupported version ${major}.${minor} (expected ${MARSHAL_MAJOR}.${MARSHAL_MINOR} or lower)`,
+			);
 		}
 		return this.readValue();
 	}
@@ -342,7 +344,10 @@ function writeValue(out: number[], value: unknown): void {
 			writeFixnum(out, value);
 		} else {
 			out.push(char('f'));
-			writeByteString(out, Number.isFinite(value) ? String(value) : value > 0 ? 'inf' : value < 0 ? '-inf' : 'nan');
+			writeByteString(
+				out,
+				Number.isFinite(value) ? String(value) : value > 0 ? 'inf' : value < 0 ? '-inf' : 'nan',
+			);
 		}
 	} else if (typeof value === 'string') {
 		out.push(char('"'));
@@ -413,7 +418,7 @@ function writeFixnum(out: number[], value: number): void {
 	} else {
 		for (let n = 1; n <= 4; n++) {
 			if (value >= -(2 ** (8 * n))) {
-				out.push((-n) & 0xff);
+				out.push(-n & 0xff);
 				const unsigned = value + 2 ** (8 * n);
 				for (let i = 0; i < n; i++) out.push((unsigned >>> (8 * i)) & 0xff);
 				return;

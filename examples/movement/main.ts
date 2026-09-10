@@ -117,7 +117,7 @@ class MovementScene extends Scene2D {
 	private updateStatus(): void {
 		this.status.setText(
 			(this.lastBlocked ? 'blocked - that tile is a wall\n' : '') +
-				`at (${this.player.x}, ${this.player.y})    arrow keys to move    Ctrl+wheel to zoom`
+				`at (${this.player.x}, ${this.player.y})    arrow keys to move    Ctrl+wheel to zoom`,
 		);
 	}
 }
@@ -135,5 +135,8 @@ async function main(): Promise<void> {
 
 main().catch((error) => {
 	console.error(error);
-	document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`);
+	document.body.insertAdjacentHTML(
+		'afterbegin',
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
+	);
 });

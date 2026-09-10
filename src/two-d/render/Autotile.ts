@@ -147,7 +147,7 @@ export function autotileFrames(
 	width: number,
 	height: number,
 	sameTerrain: (x: number, y: number) => boolean,
-	frames: readonly number[]
+	frames: readonly number[],
 ): Int32Array {
 	if (frames.length !== BLOB_SHAPES.length) {
 		throw new Error(`autotileFrames needs exactly ${BLOB_SHAPES.length} frames, got ${frames.length}`);

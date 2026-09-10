@@ -56,13 +56,15 @@ export class PlayerInput {
 
 	/** binds this player's own action to a button on their own `padIndex` */
 	bindButton(action: Action, buttons: readonly number[]): void {
-		if (this.padIndex === undefined) throw new Error(`player "${this.id}" has no padIndex to bind a gamepad button to`);
+		if (this.padIndex === undefined)
+			throw new Error(`player "${this.id}" has no padIndex to bind a gamepad button to`);
 		Input.bindButton(this.scoped(action), this.padIndex, buttons);
 	}
 
 	/** binds this player's own action to an axis direction on their own `padIndex` */
 	bindAxis(action: Action, axis: number, direction: 1 | -1): void {
-		if (this.padIndex === undefined) throw new Error(`player "${this.id}" has no padIndex to bind a gamepad axis to`);
+		if (this.padIndex === undefined)
+			throw new Error(`player "${this.id}" has no padIndex to bind a gamepad axis to`);
 		Input.bindAxis(this.scoped(action), this.padIndex, axis, direction);
 	}
 

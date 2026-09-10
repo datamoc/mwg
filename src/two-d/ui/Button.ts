@@ -37,7 +37,6 @@ export interface ButtonOptions {
 	onRelease?: () => void;
 }
 
-
 /**
  * A clickable region with idle/hover/pressed/disabled states, a label, an icon, or both.
  *
@@ -97,7 +96,10 @@ export class Button extends Container {
 		this.icon = options.icon ?? null;
 		if (this.icon) this.addChild(this.icon);
 
-		this.labelText = options.text !== undefined ? new Label({ align: 'center', ...this.labelOptions, text: options.text }) : null;
+		this.labelText =
+			options.text !== undefined
+				? new Label({ align: 'center', ...this.labelOptions, text: options.text })
+				: null;
 		if (this.labelText) this.addChild(this.labelText);
 
 		if (options.onClick) this.onClick.add(options.onClick);
@@ -234,7 +236,7 @@ export class Button extends Container {
 				.stroke({ color: t.color.panelBorder, width: 1 });
 		}
 
-		this.labelText?.setColor(this.disabled_ ? t.color.textDim : this.labelOptions.color ?? t.color.text);
+		this.labelText?.setColor(this.disabled_ ? t.color.textDim : (this.labelOptions.color ?? t.color.text));
 		if (this.icon) this.icon.alpha = this.disabled_ ? 0.4 : 1;
 		this.layoutContent();
 	}

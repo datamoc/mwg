@@ -43,7 +43,13 @@ export function cellAt(shape: GridShape3D, x: number, z: number, tileSize = 1): 
 }
 
 /** a cell's own `height` (grid-height units, before `heightStep` scaling), or `null` for a world position with no cell at all - a hole in the grid, blocking just like a wall would */
-export function heightAt(index: ReadonlyMap<string, number>, shape: GridShape3D, x: number, z: number, tileSize = 1): number | null {
+export function heightAt(
+	index: ReadonlyMap<string, number>,
+	shape: GridShape3D,
+	x: number,
+	z: number,
+	tileSize = 1,
+): number | null {
 	const cell = cellAt(shape, x, z, tileSize);
 	const key = cellKey(cell.x, cell.y);
 	return index.has(key) ? index.get(key)! : null;
@@ -79,7 +85,7 @@ export interface CapsuleGridMoveResult {
 export function resolveCapsuleAgainstGrid(
 	from: { x: number; z: number },
 	to: { x: number; z: number },
-	options: CapsuleGridMoveOptions
+	options: CapsuleGridMoveOptions,
 ): CapsuleGridMoveResult {
 	const { shape, heights, tileSize = 1, maxStepUp = 0, steps = 8 } = options;
 	if (!(steps > 0)) throw new Error('3D grid collision steps must be positive');

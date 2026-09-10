@@ -39,7 +39,9 @@ interface Ring extends EquippableItem {
 }
 
 test('a locked slot refuses unequip and reports itself, an unlocked one works', () => {
-	const slots = new EquipmentSlots<'finger', Ring>(['finger'], null, { locked: (_slot, item) => item.cursed === true });
+	const slots = new EquipmentSlots<'finger', Ring>(['finger'], null, {
+		locked: (_slot, item) => item.cursed === true,
+	});
 	const ring: Ring = { modifiers: [], cursed: false };
 	slots.equip('finger', ring);
 	assert.equal(slots.isLocked('finger'), false);
@@ -54,7 +56,9 @@ test('a locked slot refuses unequip and reports itself, an unlocked one works', 
 
 test('a locked slot also refuses a swap, leaving modifiers untouched', () => {
 	const stats = new StatBlock({ base: { evasion: 5 } });
-	const slots = new EquipmentSlots<'finger', Ring>(['finger'], stats, { locked: (_slot, item) => item.cursed === true });
+	const slots = new EquipmentSlots<'finger', Ring>(['finger'], stats, {
+		locked: (_slot, item) => item.cursed === true,
+	});
 	const cursed: Ring = { modifiers: [{ stat: 'evasion', op: 'add', value: 1 }], cursed: true };
 	slots.equip('finger', cursed);
 	assert.equal(slots.equip('finger', { modifiers: [{ stat: 'evasion', op: 'add', value: 99 }] }), undefined);

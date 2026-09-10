@@ -5,7 +5,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { parseMarkdown } from '../src/two-d/ui/markdown.ts';
-import { loadCatalogFile, serializeTarget, spansToAnsi, truncateAnsi, placeholderSummary, expectedPlaceholders, playerCandidates } from '../tools/i18n-edit.mjs';
+import {
+	loadCatalogFile,
+	serializeTarget,
+	spansToAnsi,
+	truncateAnsi,
+	placeholderSummary,
+	expectedPlaceholders,
+	playerCandidates,
+} from '../tools/i18n-edit.mjs';
 
 async function withTmpDir(fn: (dir: string) => Promise<void>): Promise<void> {
 	const dir = await mkdtemp(join(tmpdir(), 'mwg-i18n-edit-'));
@@ -98,9 +106,18 @@ test('placeholderSummary reports drift, expectedPlaceholders lists needs', () =>
 
 test('playerCandidates picks the OS player by extension, overridable by env', () => {
 	assert.deepEqual(playerCandidates('sounds/hit.wav', 'darwin'), [{ cmd: 'afplay', args: ['sounds/hit.wav'] }]);
-	assert.deepEqual(playerCandidates('sounds/hit.wav', 'linux').map((candidate) => candidate.cmd), ['aplay', 'paplay', 'ffplay']);
-	assert.deepEqual(playerCandidates('music/theme.mp3', 'linux').map((candidate) => candidate.cmd), ['ffplay', 'mpg123']);
-	assert.deepEqual(playerCandidates('sounds/hit.ogg', 'linux').map((candidate) => candidate.cmd), ['paplay', 'ffplay']);
+	assert.deepEqual(
+		playerCandidates('sounds/hit.wav', 'linux').map((candidate) => candidate.cmd),
+		['aplay', 'paplay', 'ffplay'],
+	);
+	assert.deepEqual(
+		playerCandidates('music/theme.mp3', 'linux').map((candidate) => candidate.cmd),
+		['ffplay', 'mpg123'],
+	);
+	assert.deepEqual(
+		playerCandidates('sounds/hit.ogg', 'linux').map((candidate) => candidate.cmd),
+		['paplay', 'ffplay'],
+	);
 
 	const wav = playerCandidates('sounds/hit.wav', 'win32');
 	assert.equal(wav.length, 1);
@@ -109,7 +126,9 @@ test('playerCandidates picks the OS player by extension, overridable by env', ()
 
 	process.env.MWG_SFX_PLAYER = 'ffplay -nodisp -autoexit';
 	try {
-		assert.deepEqual(playerCandidates('sounds/hit.wav', 'win32'), [{ cmd: 'ffplay -nodisp -autoexit', args: ['sounds/hit.wav'], shell: true }]);
+		assert.deepEqual(playerCandidates('sounds/hit.wav', 'win32'), [
+			{ cmd: 'ffplay -nodisp -autoexit', args: ['sounds/hit.wav'], shell: true },
+		]);
 	} finally {
 		delete process.env.MWG_SFX_PLAYER;
 	}

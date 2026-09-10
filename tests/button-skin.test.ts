@@ -9,9 +9,16 @@ import { setTheme } from '../src/two-d/ui/theme.ts';
 test('custom skin follows input, resize, disabled and theme changes', () => {
 	let clicks = 0;
 	const event = new FederatedPointerEvent(new EventBoundary());
-	const button = new Button({ width: 40, height: 20, skin: {
-		texture: Texture.WHITE, border: 0, tints: { pressed: 0x123456, hover: 0xabcdef },
-	}, onClick: () => clicks++ });
+	const button = new Button({
+		width: 40,
+		height: 20,
+		skin: {
+			texture: Texture.WHITE,
+			border: 0,
+			tints: { pressed: 0x123456, hover: 0xabcdef },
+		},
+		onClick: () => clicks++,
+	});
 	const panel = button.children[0] as NinePatch;
 	assert.ok(panel instanceof NinePatch);
 	button.emit('pointerdown', event);
@@ -23,13 +30,15 @@ test('custom skin follows input, resize, disabled and theme changes', () => {
 	assert.equal(panel.width, 80);
 	assert.equal(panel.height, 30);
 	button.setDisabled(true);
-	button.emit('pointerdown', event); button.emit('pointerup', event);
+	button.emit('pointerdown', event);
+	button.emit('pointerup', event);
 	assert.equal(clicks, 1);
 	assert.equal(panel.tint, 0x777777);
 	setTheme({});
 	assert.equal(button.children[0], panel);
 	button.setDisabled(false);
-	button.emit('pointerdown', event); button.emit('pointerupoutside', event);
+	button.emit('pointerdown', event);
+	button.emit('pointerupoutside', event);
 	assert.equal(panel.tint, 0xffffff);
 	assert.equal(clicks, 1);
 	button.destroy({ children: true });
@@ -42,7 +51,8 @@ test('onPress fires on pointerdown and onRelease on pointerup, independent of on
 	let clicks = 0;
 	const event = new FederatedPointerEvent(new EventBoundary());
 	const button = new Button({
-		width: 40, height: 20,
+		width: 40,
+		height: 20,
 		onPress: () => presses++,
 		onRelease: () => releases++,
 		onClick: () => clicks++,
@@ -94,5 +104,3 @@ test('label render options survive theme changes', () => {
 	assert.equal((label.style.stroke as { width: number }).width, 2);
 	label.destroy();
 });
-
-

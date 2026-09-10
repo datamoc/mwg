@@ -59,7 +59,11 @@ class StringEditorScene extends Scene2D {
 		const margin = 24;
 		const half = (game.width - margin * 2 - 16) / 2;
 
-		const title = new Label({ text: 'String editor: reference, translation, rendered line', color: theme().color.text, size: 17 });
+		const title = new Label({
+			text: 'String editor: reference, translation, rendered line',
+			color: theme().color.text,
+			size: 17,
+		});
 		title.position.set(margin, 12);
 		this.stage.addChild(title);
 
@@ -86,7 +90,12 @@ class StringEditorScene extends Scene2D {
 		previewHead.position.set(margin, 132);
 		this.stage.addChild(previewHead);
 
-		this.preview = new RichLabel({ text: '', color: theme().color.text, size: 19, wrapWidth: game.width - margin * 2 });
+		this.preview = new RichLabel({
+			text: '',
+			color: theme().color.text,
+			size: 19,
+			wrapWidth: game.width - margin * 2,
+		});
 		this.preview.position.set(margin, 152);
 		this.stage.addChild(this.preview);
 
@@ -231,5 +240,8 @@ async function main(): Promise<void> {
 
 main().catch((error) => {
 	console.error(error);
-	document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`);
+	document.body.insertAdjacentHTML(
+		'afterbegin',
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
+	);
 });

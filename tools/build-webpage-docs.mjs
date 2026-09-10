@@ -66,11 +66,7 @@ function headingId(rawText) {
 }
 
 function escapeHtml(text) {
-	return text
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;');
+	return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function prepareMarkdown(source) {
@@ -117,7 +113,11 @@ function renderToc(items) {
 		const cls = item.depth === 3 ? ' class="ref-toc-sub"' : '';
 		lines.push(`\t\t\t\t\t<li${cls}><a href="#${item.id}">${escapeHtml(item.label)}</a></li>`);
 	}
-	lines.push('\t\t\t\t</ul>', '\t\t\t\t<p class="ref-toc-api"><a href="./api/index.html">Generated API →</a></p>', '\t\t\t</nav>');
+	lines.push(
+		'\t\t\t\t</ul>',
+		'\t\t\t\t<p class="ref-toc-api"><a href="./api/index.html">Generated API →</a></p>',
+		'\t\t\t</nav>',
+	);
 	return lines.join('\n');
 }
 

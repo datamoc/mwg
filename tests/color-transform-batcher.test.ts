@@ -166,8 +166,18 @@ test('packQuadAttributes writes four seven-word vertices in the shared index buf
 
 	//(minX,minY), (maxX,minY), (maxX,maxY), (minX,maxY) - the order Pixi's shared quad index
 	//buffer expects, so a wrong corner here shows up as a torn sprite, not a wrong colour
-	const corners = [[0, 0], [10, 0], [10, 20], [0, 20]];
-	const uvs = [[0, 0], [1, 0], [1, 1], [0, 1]];
+	const corners = [
+		[0, 0],
+		[10, 0],
+		[10, 20],
+		[0, 20],
+	];
+	const uvs = [
+		[0, 0],
+		[1, 0],
+		[1, 1],
+		[0, 1],
+	];
 	for (let i = 0; i < 4; i++) {
 		const at = i * VERTEX_SIZE;
 		assert.deepEqual([floats[at], floats[at + 1]], corners[i], `corner ${i} position`);
@@ -183,7 +193,12 @@ test('packQuadAttributes applies the element transform to every corner', () => {
 	const transform = new Matrix().scale(2, 3).translate(5, 7);
 	packQuad(quadElement({ transform }), floats, uints, 0, 0);
 
-	for (const [i, [x, y]] of [[0, 0], [10, 0], [10, 20], [0, 20]].entries()) {
+	for (const [i, [x, y]] of [
+		[0, 0],
+		[10, 0],
+		[10, 20],
+		[0, 20],
+	].entries()) {
 		const at = i * VERTEX_SIZE;
 		assert.equal(floats[at], x * 2 + 5, `corner ${i} x`);
 		assert.equal(floats[at + 1], y * 3 + 7, `corner ${i} y`);

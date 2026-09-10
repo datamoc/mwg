@@ -30,8 +30,9 @@ the public API may still change between minor versions.
 ### Changed
 - Formatting is now gated: Prettier over `src`, `tests`, `examples` and `tools`
   (`.prettierrc.json`, `npm run format`/`format:check`, run in CI). No ESLint rule set comes
-  with it, and the reformat is whitespace-only; `barrel-collisions.test.ts` now tolerates
-  Prettier wrapping a long `export { ... } from './...'` across lines.
+  with it, and the reformat changes no behaviour (line wrapping, trailing commas and the
+  like); `barrel-collisions.test.ts` now tolerates Prettier wrapping a long
+  `export { ... } from './...'` across lines.
 - ROADMAP.md: item 192 records the accessibility gaps the list had never named (screen-reader
   text for `ui` widgets, `prefers-reduced-motion`, palette contrast) as one open backlog item
   at the tail; the roadmap-progress test now guards that open items sit after every shipped

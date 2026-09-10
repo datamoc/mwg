@@ -64,9 +64,7 @@ Go [[north->North]] now.
 Here.
 `);
 
-	assert.deepEqual(story['Start'], [
-		{ ask: 'Go now.', choices: [{ text: 'north', goto: 'North' }] },
-	]);
+	assert.deepEqual(story['Start'], [{ ask: 'Go now.', choices: [{ text: 'north', goto: 'North' }] }]);
 });
 
 test('StoryData names the start, and StoryTitle names the story', () => {
@@ -114,8 +112,5 @@ test('setter links and unclosed links are refused, not half-read', () => {
 test('a header without a name and a bad StoryData are refused', () => {
 	assert.throws(() => importTwee('::\nBody.\n'), /needs a name/);
 	assert.throws(() => importTwee(':: StoryData\nnot json\n\n:: A\nHere.\n'), /must be JSON/);
-	assert.throws(
-		() => importTwee(':: StoryData\n{"start":"Missing"}\n\n:: A\nHere.\n'),
-		/starts at "Missing"/
-	);
+	assert.throws(() => importTwee(':: StoryData\n{"start":"Missing"}\n\n:: A\nHere.\n'), /starts at "Missing"/);
 });

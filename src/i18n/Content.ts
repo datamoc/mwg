@@ -59,7 +59,7 @@ export function levenshteinDistance(a: string, b: string): number {
 			current[j] = Math.min(
 				previous[j] + 1, //deletion
 				current[j - 1] + 1, //insertion
-				previous[j - 1] + cost //substitution
+				previous[j - 1] + cost, //substitution
 			);
 		}
 		[previous, current] = [current, previous];

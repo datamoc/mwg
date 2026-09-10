@@ -115,7 +115,7 @@ function checkRule(rule: AutomapRule, label: string): void {
 	for (const [layer, cells] of Object.entries(rule.input)) {
 		if (cells.length !== size) {
 			throw new Error(
-				`automap rule "${label}" input "${layer}" has ${cells.length} cells, but the pattern is ${size}`
+				`automap rule "${label}" input "${layer}" has ${cells.length} cells, but the pattern is ${size}`,
 			);
 		}
 	}
@@ -123,7 +123,7 @@ function checkRule(rule: AutomapRule, label: string): void {
 		for (const [layer, cells] of Object.entries(output)) {
 			if (cells.length !== size) {
 				throw new Error(
-					`automap rule "${label}" output ${i + 1} "${layer}" has ${cells.length} cells, but the pattern is ${size}`
+					`automap rule "${label}" output ${i + 1} "${layer}" has ${cells.length} cells, but the pattern is ${size}`,
 				);
 			}
 		}

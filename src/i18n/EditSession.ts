@@ -105,7 +105,8 @@ function familyAudioKey(key: string): string | undefined {
 export function sessionRow(session: EditSession, key: string): EditRow {
 	const baseValue = session.base.messages[key];
 	const targetValue = session.target.messages[key];
-	const status = baseValue !== undefined && targetValue !== undefined ? 'ok' : baseValue === undefined ? 'extra' : 'missing';
+	const status =
+		baseValue !== undefined && targetValue !== undefined ? 'ok' : baseValue === undefined ? 'extra' : 'missing';
 	const cueKeys = [`${key}${AUDIO_SUFFIX}`];
 	const family = familyAudioKey(key);
 	if (family) cueKeys.push(family);
@@ -193,7 +194,8 @@ export function copyFromBase(session: EditSession, key: string): EditSession {
 }
 
 export function deleteTargetKey(session: EditSession, key: string): EditSession {
-	if (!(key in session.target.messages)) throw new Error(`deleteTargetKey: "${key}" is not a key in the target catalog`);
+	if (!(key in session.target.messages))
+		throw new Error(`deleteTargetKey: "${key}" is not a key in the target catalog`);
 	const messages = { ...session.target.messages };
 	delete messages[key];
 	return { ...session, target: { ...session.target, messages } };

@@ -81,7 +81,9 @@ export class Inventory {
 
 	/** Finds the first item of a kind, or the matching instance when `instanceId` is supplied. */
 	find(id: string, instanceId?: string): InventoryItem | undefined {
-		return this.slots.find((item) => item.id === id && (instanceId === undefined || item.instanceId === instanceId));
+		return this.slots.find(
+			(item) => item.id === id && (instanceId === undefined || item.instanceId === instanceId),
+		);
 	}
 
 	/**
@@ -97,7 +99,9 @@ export class Inventory {
 		}
 
 		if (item.stackable) {
-			const existing = this.slots.find((s) => s.id === item.id && s.stackable && s.instanceId === item.instanceId);
+			const existing = this.slots.find(
+				(s) => s.id === item.id && s.stackable && s.instanceId === item.instanceId,
+			);
 			if (existing) {
 				existing.quantity += item.quantity;
 				return true;
@@ -111,7 +115,9 @@ export class Inventory {
 	/** removes up to `quantity` (default: the whole stack); the slot disappears once empty */
 	remove(id: string, quantity?: number, instanceId?: string): void {
 		if (quantity !== undefined && (!Number.isFinite(quantity) || quantity <= 0)) return;
-		const index = this.slots.findIndex((item) => item.id === id && (instanceId === undefined || item.instanceId === instanceId));
+		const index = this.slots.findIndex(
+			(item) => item.id === id && (instanceId === undefined || item.instanceId === instanceId),
+		);
 		if (index === -1) return;
 
 		const item = this.slots[index];
@@ -125,7 +131,9 @@ export class Inventory {
 	 */
 	take(id: string, quantity = 1, instanceId?: string): InventoryItem | undefined {
 		if (!Number.isFinite(quantity) || quantity <= 0) return undefined;
-		const index = this.slots.findIndex((item) => item.id === id && (instanceId === undefined || item.instanceId === instanceId));
+		const index = this.slots.findIndex(
+			(item) => item.id === id && (instanceId === undefined || item.instanceId === instanceId),
+		);
 		if (index === -1) return undefined;
 
 		const item = this.slots[index];
@@ -186,7 +194,12 @@ export class Inventory {
 			//the definition first, then the saved instance state over it, with absent optional
 			//fields dropped rather than written as undefined - spreading those would overwrite
 			//the definition's own weight or stackable flag with nothing
-			const item: InventoryItem = { ...definition, ...stripUndefined(instance), id: saved.id, quantity: saved.quantity };
+			const item: InventoryItem = {
+				...definition,
+				...stripUndefined(instance),
+				id: saved.id,
+				quantity: saved.quantity,
+			};
 			if (contents) item.contents = Inventory.fromJSON(defs, contents);
 			return item;
 		});

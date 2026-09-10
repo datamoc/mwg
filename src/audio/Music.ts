@@ -96,7 +96,14 @@ export class Music {
 
 		incoming.volume = 0;
 		void Promise.resolve(incoming.play()).catch(() => {});
-		this.fades.push({ audio: incoming, elapsed: 0, duration: fadeDuration, from: 0, to: this.volume, stopAtEnd: false });
+		this.fades.push({
+			audio: incoming,
+			elapsed: 0,
+			duration: fadeDuration,
+			from: 0,
+			to: this.volume,
+			stopAtEnd: false,
+		});
 
 		if (previous) {
 			this.fades.push({

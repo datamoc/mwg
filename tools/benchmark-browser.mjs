@@ -25,7 +25,7 @@ if (!Number.isInteger(framesToMeasure) || framesToMeasure < 30) {
 	throw new Error('MWG_BENCHMARK_FRAMES must be an integer of at least 30');
 }
 
-const executablePath = process.env.CHROME_PATH ?? await findChrome();
+const executablePath = process.env.CHROME_PATH ?? (await findChrome());
 const screenshot = join(tmpdir(), `mwg-browser-benchmark-${process.pid}.png`);
 //A CI runner has no GPU, so Chrome there has to be told which software WebGL path to take
 //(`--use-gl=angle --use-angle=swiftshader`). That is a property of the machine, not of the
@@ -34,10 +34,7 @@ const extraChromeArgs = (process.env.MWG_BENCHMARK_CHROME_ARGS ?? '').split(' ')
 const browser = await chromium.launch({
 	executablePath,
 	headless: true,
-	args: [
-		'--allow-file-access-from-files',
-		...extraChromeArgs,
-	],
+	args: ['--allow-file-access-from-files', ...extraChromeArgs],
 });
 
 try {
@@ -48,10 +45,16 @@ try {
 		if (message.type() === 'error') pageErrors.push(message.text());
 	});
 	await page.goto(pageUrl, { waitUntil: 'load' });
-	await page.waitForFunction(() => {
-		const canvas = document.querySelector('canvas');
-		return Boolean(window.__MWG__ || window.__MWG_3D__) && Boolean(canvas && canvas.width > 0 && canvas.height > 0);
-	}, undefined, { timeout: 5000 });
+	await page.waitForFunction(
+		() => {
+			const canvas = document.querySelector('canvas');
+			return (
+				Boolean(window.__MWG__ || window.__MWG_3D__) && Boolean(canvas && canvas.width > 0 && canvas.height > 0)
+			);
+		},
+		undefined,
+		{ timeout: 5000 },
+	);
 
 	const state = await page.evaluate(() => {
 		const canvas = document.querySelector('canvas');
@@ -94,7 +97,14 @@ try {
 	}, framesToMeasure);
 
 	await page.screenshot({ path: screenshot, type: 'png' });
-	const result = { page: pageUrl, ...state, ...metrics, screenshot, pageErrors, thresholds: { minFps, maxP95FrameMs } };
+	const result = {
+		page: pageUrl,
+		...state,
+		...metrics,
+		screenshot,
+		pageErrors,
+		thresholds: { minFps, maxP95FrameMs },
+	};
 	console.log(JSON.stringify(result, null, 2));
 
 	if (!state.gameReady || state.canvas.width === 0 || state.canvas.height === 0) {
@@ -107,7 +117,7 @@ try {
 	if (metrics.fps < minFps || metrics.p95FrameMs > maxP95FrameMs) {
 		throw new Error(
 			`browser performance threshold failed: ${metrics.fps.toFixed(1)} FPS, ` +
-			`p95 ${metrics.p95FrameMs.toFixed(2)} ms`,
+				`p95 ${metrics.p95FrameMs.toFixed(2)} ms`,
 		);
 	}
 
@@ -125,7 +135,7 @@ try {
 	if (bestPriorFps !== null && metrics.fps < bestPriorFps * (1 - maxFpsRegression)) {
 		throw new Error(
 			`browser performance regressed against history: ${metrics.fps.toFixed(1)} FPS now vs ` +
-			`${bestPriorFps.toFixed(1)} FPS best-seen (${historyPath})`,
+				`${bestPriorFps.toFixed(1)} FPS best-seen (${historyPath})`,
 		);
 	}
 } finally {

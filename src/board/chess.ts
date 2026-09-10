@@ -126,7 +126,12 @@ export function parseFen(fen: string): ChessState {
 	});
 
 	if (parts[1] !== 'w' && parts[1] !== 'b') throw new Error(`a FEN side is "w" or "b": "${fen}"`);
-	const castling: ChessCastling = { whiteKingside: false, whiteQueenside: false, blackKingside: false, blackQueenside: false };
+	const castling: ChessCastling = {
+		whiteKingside: false,
+		whiteQueenside: false,
+		blackKingside: false,
+		blackQueenside: false,
+	};
 	if (parts[2] !== '-') {
 		for (const c of parts[2]) {
 			if (c === 'K') castling.whiteKingside = true;
@@ -395,7 +400,7 @@ function pseudoMoves(state: ChessState, from: ChessSquare): RawMove[] {
 						out.push({ from, to });
 					}
 				} else if (!found && to === state.enPassant) {
-					out.push({ from, to, enPassantTake: (rank * 8 + file + df) });
+					out.push({ from, to, enPassantTake: rank * 8 + file + df });
 				}
 			}
 			break;
@@ -499,8 +504,7 @@ function playRaw(state: ChessState, move: RawMove): void {
 	}
 
 	//a double pawn push leaves a square behind it; anything else clears the old one
-	state.enPassant =
-		piece.kind === 'pawn' && Math.abs(move.to - move.from) === 16 ? (move.from + move.to) / 2 : null;
+	state.enPassant = piece.kind === 'pawn' && Math.abs(move.to - move.from) === 16 ? (move.from + move.to) / 2 : null;
 	state.turn = other(piece.side);
 }
 
@@ -549,7 +553,7 @@ export function applyMove(state: ChessState, move: ChessMove): void {
 		throw new Error(`no ${state.turn} piece on ${squareName(move.from)} to move`);
 	}
 	const raw = pseudoMoves(state, move.from).find(
-		(m) => m.to === move.to && (m.promotion ?? null) === (move.promotion ?? null)
+		(m) => m.to === move.to && (m.promotion ?? null) === (move.promotion ?? null),
 	);
 	if (!raw) throw new Error(`${squareName(move.from)}-${squareName(move.to)} is not a legal move here`);
 	const trial = cloneChess(state);

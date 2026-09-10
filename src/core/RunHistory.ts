@@ -44,7 +44,7 @@ export class RunHistory<T> {
 	constructor(options: RunHistoryOptions) {
 		this.store = new StoredValue<RunHistoryEntry<T>[]>(
 			options.storage ?? defaultStorage(),
-			`mwg-runs:${options.namespace}`
+			`mwg-runs:${options.namespace}`,
 		);
 		this.limit = options.limit;
 	}

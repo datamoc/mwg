@@ -26,7 +26,7 @@ test('each new Session against the same storage counts one more launch', () => {
 	assert.equal(new Session({ storage }).launches, 3);
 });
 
-test('namespaces keep two games sharing storage from counting each other\'s launches', () => {
+test("namespaces keep two games sharing storage from counting each other's launches", () => {
 	const storage = memory();
 	assert.equal(new Session({ storage, namespace: 'game-a' }).launches, 1);
 	assert.equal(new Session({ storage, namespace: 'game-b' }).launches, 1);

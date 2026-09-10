@@ -44,7 +44,8 @@ export interface HeightSight {
  * console.log(fov.explored.has(level.index(6, 5))); // true - stays remembered after leaving
  * ```
  */
-export class FieldOfView {	private level: Level;
+export class FieldOfView {
+	private level: Level;
 	//rot.js exports FOV as an object of classes rather than a namespace, so the type of
 	//an instance has to be derived from the constructor
 	private fov: InstanceType<typeof FOV.PreciseShadowcasting> | null;
@@ -129,7 +130,8 @@ export class FieldOfView {	private level: Level;
 			for (const target of hexRange(center, radius)) {
 				if (!this.level.inside(target.x, target.y)) continue;
 				const line = hexLine(center, target);
-				if (this.heightBlocked(line, sight.heights, viewer, sight.heights.heightAt(target.x, target.y))) continue;
+				if (this.heightBlocked(line, sight.heights, viewer, sight.heights.heightAt(target.x, target.y)))
+					continue;
 				this.lightCell(target.x, target.y, line.length - 1, radius);
 			}
 			return;
@@ -156,7 +158,7 @@ export class FieldOfView {	private level: Level;
 		line: Array<{ x: number; y: number }>,
 		heights: Elevation,
 		viewer: number,
-		target: number
+		target: number,
 	): boolean {
 		const top = Math.max(viewer, target);
 		for (let i = 1; i < line.length - 1; i++) {

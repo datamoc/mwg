@@ -156,12 +156,7 @@ export class Level {
 	 *
 	 * @param topology ignored on a hex `Level` - it only has the one neighbourhood shape
 	 */
-	forEachNeighbor(
-		x: number,
-		y: number,
-		topology: 4 | 8,
-		visit: (nx: number, ny: number) => void
-	): void {
+	forEachNeighbor(x: number, y: number, topology: 4 | 8, visit: (nx: number, ny: number) => void): void {
 		const offsets =
 			this.shape === 'hex' ? ((x & 1) === 0 ? HEX_OFFSETS_EVEN : HEX_OFFSETS_ODD) : neighbourOffsets(topology);
 		for (const [dx, dy] of offsets) visit(x + dx, y + dy);
@@ -230,7 +225,7 @@ export class Level {
 	 */
 	static fromJSON(
 		kinds: TerrainKind[],
-		data: { width: number; height: number; shape: LevelShape; terrain: number[]; rooms: Rect[] }
+		data: { width: number; height: number; shape: LevelShape; terrain: number[]; rooms: Rect[] },
 	): Level {
 		const level = new Level(data.width, data.height, kinds, 0, data.shape);
 		level.terrain.set(data.terrain.slice(0, level.terrain.length));

@@ -13,8 +13,7 @@ export interface TurnRules<Actor> {
 }
 
 export type TurnResult<Actor> =
-	| { status: 'input'; actor: Actor; steps: number }
-	| { status: 'finished' | 'empty' | 'limit'; steps: number };
+	{ status: 'input'; actor: Actor; steps: number } | { status: 'finished' | 'empty' | 'limit'; steps: number };
 
 /**
  * Advance automatic actions with an explicit work budget. Input actors are never spent.
@@ -35,7 +34,8 @@ export type TurnResult<Actor> =
  * ```
  */
 export function advanceToInput<Actor>(rules: TurnRules<Actor>, budget: number): TurnResult<Actor> {
-	if (!Number.isSafeInteger(budget) || budget < 0) throw new RangeError('Turn budget must be a non-negative safe integer');
+	if (!Number.isSafeInteger(budget) || budget < 0)
+		throw new RangeError('Turn budget must be a non-negative safe integer');
 	let steps = 0;
 	while (steps < budget) {
 		if (rules.finished()) return { status: 'finished', steps };
@@ -44,7 +44,8 @@ export function advanceToInput<Actor>(rules: TurnRules<Actor>, budget: number): 
 		if (rules.needsInput(actor)) return { status: 'input', actor, steps };
 		const cost = rules.act(actor);
 		if (cost !== null) {
-			if (!Number.isFinite(cost) || cost < 0) throw new RangeError('Action cost must be finite and non-negative, or null');
+			if (!Number.isFinite(cost) || cost < 0)
+				throw new RangeError('Action cost must be finite and non-negative, or null');
 			rules.scheduler.spend(cost);
 		}
 		steps++;

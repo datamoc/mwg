@@ -208,14 +208,14 @@ class BattleScene extends Scene2D {
 	private showMessage(text: string): Promise<void> {
 		return new Promise((resolve) => {
 			this.windows.push(
-				new MessageBox({ width: 380, height: 100, pages: [{ text }], anchor: 'top', onDone: () => resolve() })
+				new MessageBox({ width: 380, height: 100, pages: [{ text }], anchor: 'top', onDone: () => resolve() }),
 			);
 		});
 	}
 
 	private refreshLabels(): void {
 		this.playerLabel.setText(
-			`${SLIME.id}  Lv.${this.player.progression.level}  HP ${Math.max(0, this.playerHp)}/${this.player.stats.get('maxHp')}`
+			`${SLIME.id}  Lv.${this.player.progression.level}  HP ${Math.max(0, this.playerHp)}/${this.player.stats.get('maxHp')}`,
 		);
 		this.enemyLabel.setText(`${WOLF.id}  HP ${Math.max(0, this.enemyHp)}/${this.enemy.stats.get('maxHp')}`);
 	}
@@ -249,6 +249,6 @@ main().catch((error) => {
 	console.error(error);
 	document.body.insertAdjacentHTML(
 		'afterbegin',
-		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
 	);
 });

@@ -5,7 +5,10 @@ import { parseCSV } from '../src/core/Csv.ts';
 
 test('a plain header/row csv parses into an array of string-keyed records', () => {
 	const rows = parseCSV('id,name\nblazing,Blazing\nchilling,Chilling');
-	assert.deepEqual(rows, [{ id: 'blazing', name: 'Blazing' }, { id: 'chilling', name: 'Chilling' }]);
+	assert.deepEqual(rows, [
+		{ id: 'blazing', name: 'Blazing' },
+		{ id: 'chilling', name: 'Chilling' },
+	]);
 });
 
 test('an empty cell omits the field entirely, rather than an empty string', () => {

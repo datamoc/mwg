@@ -78,19 +78,34 @@ export function parseCSV<T = Record<string, string>>(source: string, options: Cs
 		header.forEach((name, columnIndex) => {
 			const raw = cells[columnIndex] ?? '';
 			if (raw === '') return; //an empty cell omits the field, the same as an optional property never set
-			row[name] = coerceCsvCell(raw, options.columns?.[name] ?? 'string', name, rowIndex, listDelimiter, mapDelimiter);
+			row[name] = coerceCsvCell(
+				raw,
+				options.columns?.[name] ?? 'string',
+				name,
+				rowIndex,
+				listDelimiter,
+				mapDelimiter,
+			);
 		});
 		return row as T;
 	});
 }
 
-function coerceCsvCell(raw: string, type: CsvColumnType, column: string, rowIndex: number, listDelimiter: string, mapDelimiter: string): unknown {
+function coerceCsvCell(
+	raw: string,
+	type: CsvColumnType,
+	column: string,
+	rowIndex: number,
+	listDelimiter: string,
+	mapDelimiter: string,
+): unknown {
 	switch (type) {
 		case 'string':
 			return raw;
 		case 'number': {
 			const value = Number(raw);
-			if (!Number.isFinite(value)) throw new Error(`CSV row ${rowIndex + 1}, column "${column}": "${raw}" is not a number`);
+			if (!Number.isFinite(value))
+				throw new Error(`CSV row ${rowIndex + 1}, column "${column}": "${raw}" is not a number`);
 			return value;
 		}
 		case 'boolean': {
@@ -100,12 +115,21 @@ function coerceCsvCell(raw: string, type: CsvColumnType, column: string, rowInde
 			throw new Error(`CSV row ${rowIndex + 1}, column "${column}": "${raw}" is not "true" or "false"`);
 		}
 		case 'list':
-			return raw.split(listDelimiter).map((entry) => entry.trim()).filter((entry) => entry.length > 0);
+			return raw
+				.split(listDelimiter)
+				.map((entry) => entry.trim())
+				.filter((entry) => entry.length > 0);
 		case 'map': {
 			const map: Record<string, string> = {};
-			for (const entry of raw.split(listDelimiter).map((piece) => piece.trim()).filter((piece) => piece.length > 0)) {
+			for (const entry of raw
+				.split(listDelimiter)
+				.map((piece) => piece.trim())
+				.filter((piece) => piece.length > 0)) {
 				const at = entry.indexOf(mapDelimiter);
-				if (at === -1) throw new Error(`CSV row ${rowIndex + 1}, column "${column}": "${entry}" has no "${mapDelimiter}" to split a key from its value`);
+				if (at === -1)
+					throw new Error(
+						`CSV row ${rowIndex + 1}, column "${column}": "${entry}" has no "${mapDelimiter}" to split a key from its value`,
+					);
 				map[entry.slice(0, at).trim()] = entry.slice(at + mapDelimiter.length).trim();
 			}
 			return map;
@@ -127,18 +151,49 @@ function tokenizeCsv(source: string): string[][] {
 		const char = source[i];
 		if (inQuotes) {
 			if (char === '"') {
-				if (source[i + 1] === '"') { field += '"'; i += 2; continue; }
-				inQuotes = false; i++; continue;
+				if (source[i + 1] === '"') {
+					field += '"';
+					i += 2;
+					continue;
+				}
+				inQuotes = false;
+				i++;
+				continue;
 			}
-			field += char; i++; continue;
+			field += char;
+			i++;
+			continue;
 		}
-		if (char === '"') { inQuotes = true; i++; continue; }
-		if (char === ',') { row.push(field); field = ''; i++; continue; }
-		if (char === '\r') { i++; continue; } //normalize CRLF, and swallow a bare CR too
-		if (char === '\n') { row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
-		field += char; i++;
+		if (char === '"') {
+			inQuotes = true;
+			i++;
+			continue;
+		}
+		if (char === ',') {
+			row.push(field);
+			field = '';
+			i++;
+			continue;
+		}
+		if (char === '\r') {
+			i++;
+			continue;
+		} //normalize CRLF, and swallow a bare CR too
+		if (char === '\n') {
+			row.push(field);
+			rows.push(row);
+			row = [];
+			field = '';
+			i++;
+			continue;
+		}
+		field += char;
+		i++;
 	}
-	if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+	if (field.length > 0 || row.length > 0) {
+		row.push(field);
+		rows.push(row);
+	}
 
 	//a trailing newline (the common case for a hand-edited file) would otherwise flush one
 	//more, entirely blank row after the real data

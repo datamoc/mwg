@@ -34,7 +34,7 @@ export interface StatusEffectHandle {
  */
 export function leaseClock(
 	clock: EffectClock,
-	options: { duration: number; tick?: (turn: number) => void; onExpire: () => void }
+	options: { duration: number; tick?: (turn: number) => void; onExpire: () => void },
 ): StatusEffectHandle {
 	const id = clock.add({
 		duration: options.duration,
@@ -81,7 +81,7 @@ export function leaseClock(
 export function applyStatusEffect(
 	stats: StatBlock,
 	clock: EffectClock,
-	options: StatusEffectOptions
+	options: StatusEffectOptions,
 ): StatusEffectHandle {
 	const source = Symbol('statusEffect');
 	for (const modifier of options.modifiers) stats.addModifier({ ...modifier, source });

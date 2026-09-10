@@ -93,7 +93,9 @@ test('toJSON/fromJSON round-trips which cell holds which kind, definitions suppl
 	layer.place(10, 'sign');
 
 	const data = layer.toJSON();
-	const defs = new Map<string, CellFeatureDef<Ctx>>([['sign', { inspect: (_cell, ctx) => ctx.log.push('read again') }]]);
+	const defs = new Map<string, CellFeatureDef<Ctx>>([
+		['sign', { inspect: (_cell, ctx) => ctx.log.push('read again') }],
+	]);
 	const restored = FeatureLayer.fromJSON(defs, data);
 
 	assert.ok(restored.has(3) && restored.has(10));

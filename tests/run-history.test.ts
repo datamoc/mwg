@@ -31,7 +31,10 @@ test('record appends a run and returns the entry that was stored', () => {
 	assert.equal(entry.summary.score, 100);
 	assert.ok(entry.id);
 	assert.ok(entry.endedAt > 0);
-	assert.deepEqual(history.all().map((e) => e.summary), [{ score: 100, cause: 'a goblin' }]);
+	assert.deepEqual(
+		history.all().map((e) => e.summary),
+		[{ score: 100, cause: 'a goblin' }],
+	);
 });
 
 test('runs are kept oldest first, in the order they were recorded', () => {
@@ -42,7 +45,7 @@ test('runs are kept oldest first, in the order they were recorded', () => {
 
 	assert.deepEqual(
 		history.all().map((e) => e.summary.score),
-		[10, 30, 20]
+		[10, 30, 20],
 	);
 });
 
@@ -54,7 +57,7 @@ test('a limit drops the oldest run once exceeded', () => {
 
 	assert.deepEqual(
 		history.all().map((e) => e.summary.score),
-		[2, 3]
+		[2, 3],
 	);
 });
 
@@ -66,11 +69,11 @@ test('ranked sorts by a field of the summary, descending by default', () => {
 
 	assert.deepEqual(
 		history.ranked((s) => s.score).map((e) => e.summary.score),
-		[30, 20, 10]
+		[30, 20, 10],
 	);
 	assert.deepEqual(
 		history.ranked((s) => s.score, 'asc').map((e) => e.summary.score),
-		[10, 20, 30]
+		[10, 20, 30],
 	);
 });
 
@@ -82,7 +85,7 @@ test('ranked does not mutate what all() returns afterward', () => {
 	history.ranked((s) => s.score);
 	assert.deepEqual(
 		history.all().map((e) => e.summary.score),
-		[5, 1]
+		[5, 1],
 	);
 });
 

@@ -6,8 +6,18 @@ const LIGHT = 0xd8c6a1;
 const DARK = 0x765b49;
 const HIGHLIGHT = 0xe3b85b;
 const PIECES: Record<string, string> = {
-	whiteKing: '♔', whiteQueen: '♕', whiteRook: '♖', whiteBishop: '♗', whiteKnight: '♘', whitePawn: '♙',
-	blackKing: '♚', blackQueen: '♛', blackRook: '♜', blackBishop: '♝', blackKnight: '♞', blackPawn: '♟',
+	whiteKing: '♔',
+	whiteQueen: '♕',
+	whiteRook: '♖',
+	whiteBishop: '♗',
+	whiteKnight: '♘',
+	whitePawn: '♙',
+	blackKing: '♚',
+	blackQueen: '♛',
+	blackRook: '♜',
+	blackBishop: '♝',
+	blackKnight: '♞',
+	blackPawn: '♟',
 };
 
 //holding a direction repeats it, after an initial pause, at a steady cadence
@@ -25,7 +35,10 @@ class ChessScene extends Scene2D {
 
 	override create(): void {
 		this.stage.addChild(this.board);
-		this.status = new Text2D({ text: '', style: { fill: 0xd0cedb, fontFamily: 'monospace', fontSize: 15, align: 'center' } });
+		this.status = new Text2D({
+			text: '',
+			style: { fill: 0xd0cedb, fontFamily: 'monospace', fontSize: 15, align: 'center' },
+		});
 		this.status.anchor.set(0.5);
 		this.stage.addChild(this.status);
 		this.resize(Game.current.width, Game.current.height);
@@ -41,7 +54,10 @@ class ChessScene extends Scene2D {
 
 	override update(dt: number): void {
 		const directions: Record<string, [number, number]> = {
-			up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0],
+			up: [0, -1],
+			down: [0, 1],
+			left: [-1, 0],
+			right: [1, 0],
 		};
 		for (const [action, [dx, dy]] of Object.entries(directions)) {
 			if (Input.justPressed(action)) {
@@ -82,9 +98,12 @@ class ChessScene extends Scene2D {
 		const piece = this.state.board[this.cursor];
 		const moves = Board.legalMoves(this.state);
 		if (this.selected === null) {
-			if (piece?.side === this.state.turn && moves.some((move) => move.from === this.cursor)) this.selected = this.cursor;
+			if (piece?.side === this.state.turn && moves.some((move) => move.from === this.cursor))
+				this.selected = this.cursor;
 		} else {
-			const candidates = moves.filter((candidate) => candidate.from === this.selected && candidate.to === this.cursor);
+			const candidates = moves.filter(
+				(candidate) => candidate.from === this.selected && candidate.to === this.cursor,
+			);
 			//a promotion square offers one candidate per piece; always promote to queen
 			const move = candidates.find((candidate) => candidate.promotion === 'queen') ?? candidates[0];
 			if (move) {
@@ -112,7 +131,8 @@ class ChessScene extends Scene2D {
 		for (let square = 0; square < 64; square++) {
 			const file = square & 7;
 			const rank = square >> 3;
-			const color = square === this.cursor || square === this.selected ? HIGHLIGHT : (file + rank) % 2 === 0 ? LIGHT : DARK;
+			const color =
+				square === this.cursor || square === this.selected ? HIGHLIGHT : (file + rank) % 2 === 0 ? LIGHT : DARK;
 			const tileSquare = new Node2D();
 			tileSquare.position.set(file * cell, (7 - rank) * cell);
 			//an explicit hitArea makes the whole cell one hit target, so a dot or
@@ -122,10 +142,18 @@ class ChessScene extends Scene2D {
 			tileSquare.cursor = 'pointer';
 			tileSquare.on('pointertap', () => this.clickSquare(square));
 			tileSquare.addChild(new Shape2D().rect(0, 0, cell, cell).fill(color));
-			if (targets.has(square)) tileSquare.addChild(new Shape2D().circle(cell / 2, cell / 2, cell * 0.13).fill(0x49362f));
+			if (targets.has(square))
+				tileSquare.addChild(new Shape2D().circle(cell / 2, cell / 2, cell * 0.13).fill(0x49362f));
 			const piece = this.state.board[square];
 			if (piece) {
-				const glyph = new Text2D({ text: PIECES[`${piece.side}${piece.kind[0].toUpperCase()}${piece.kind.slice(1)}`] ?? '?', style: { fill: piece.side === 'white' ? 0xf8f1df : 0x17151c, fontFamily: 'serif', fontSize: cell * 0.72 } });
+				const glyph = new Text2D({
+					text: PIECES[`${piece.side}${piece.kind[0].toUpperCase()}${piece.kind.slice(1)}`] ?? '?',
+					style: {
+						fill: piece.side === 'white' ? 0xf8f1df : 0x17151c,
+						fontFamily: 'serif',
+						fontSize: cell * 0.72,
+					},
+				});
 				glyph.anchor.set(0.5);
 				glyph.position.set(cell / 2, cell / 2);
 				tileSquare.addChild(glyph);
@@ -133,7 +161,10 @@ class ChessScene extends Scene2D {
 			this.board.addChild(tileSquare);
 		}
 		const result = Board.gameResult(this.state);
-		this.status.text = result === 'ongoing' ? `${this.state.turn === 'white' ? 'White' : 'Black'} to move    click or arrows+Enter to move    Esc: reset` : `${result.replace('-', ' ').toUpperCase()}    Esc: reset`;
+		this.status.text =
+			result === 'ongoing'
+				? `${this.state.turn === 'white' ? 'White' : 'Black'} to move    click or arrows+Enter to move    Esc: reset`
+				: `${result.replace('-', ' ').toUpperCase()}    Esc: reset`;
 	}
 }
 
@@ -144,5 +175,8 @@ async function main(): Promise<void> {
 
 main().catch((error) => {
 	console.error(error);
-	document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`);
+	document.body.insertAdjacentHTML(
+		'afterbegin',
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
+	);
 });

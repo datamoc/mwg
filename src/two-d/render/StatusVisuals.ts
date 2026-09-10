@@ -90,7 +90,9 @@ export class StatusVisuals {
 
 		const style = this.styles[kind];
 		const peak = style.strength ?? 0.5;
-		const strength = style.pulseRate ? peak * (0.5 + 0.5 * Math.sin(this.elapsed * style.pulseRate * Math.PI * 2)) : peak;
+		const strength = style.pulseRate
+			? peak * (0.5 + 0.5 * Math.sin(this.elapsed * style.pulseRate * Math.PI * 2))
+			: peak;
 
 		this.target.lerpTint(style.color, strength);
 	}

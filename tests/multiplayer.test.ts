@@ -44,7 +44,9 @@ test('a welcome message sets id and fires onWelcome', () => {
 	client.connect();
 
 	let seen: { id: string } | null = null;
-	client.onWelcome.add((event) => { seen = event; });
+	client.onWelcome.add((event) => {
+		seen = event;
+	});
 	socket.receive({ type: 'welcome', id: 'p1' });
 
 	assert.equal(client.id, 'p1');
@@ -57,7 +59,9 @@ test('a tick message fires onTick with tick and inputs', () => {
 	client.connect();
 
 	let seen: { tick: number; inputs: Record<string, unknown> } | null = null;
-	client.onTick.add((event) => { seen = event; });
+	client.onTick.add((event) => {
+		seen = event;
+	});
 	socket.receive({ type: 'tick', tick: 3, inputs: { p1: 'left', p2: null } });
 
 	assert.deepEqual(seen, { tick: 3, inputs: { p1: 'left', p2: null } });
@@ -117,7 +121,10 @@ function connectClient(port: number, room: string): Promise<LockstepClient> {
 	});
 }
 
-function once<T>(signal: { add: (fn: (value: T) => void) => void; remove: (fn: (value: T) => void) => void }): Promise<T> {
+function once<T>(signal: {
+	add: (fn: (value: T) => void) => void;
+	remove: (fn: (value: T) => void) => void;
+}): Promise<T> {
 	return new Promise((resolve) => {
 		const handler = (value: T) => {
 			signal.remove(handler);

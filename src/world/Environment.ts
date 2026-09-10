@@ -44,7 +44,12 @@ export class EnvironmentClock {
 		this.dayLength = options.dayLength ?? 120;
 		if (!(this.dayLength > 0)) throw new Error('an environment day must be longer than zero seconds');
 		this.boundaries = options.phaseBoundaries ?? [0.2, 0.7, 0.8];
-		if (this.boundaries[0] <= 0 || this.boundaries[0] >= this.boundaries[1] || this.boundaries[1] >= this.boundaries[2] || this.boundaries[2] >= 1) {
+		if (
+			this.boundaries[0] <= 0 ||
+			this.boundaries[0] >= this.boundaries[1] ||
+			this.boundaries[1] >= this.boundaries[2] ||
+			this.boundaries[2] >= 1
+		) {
 			throw new Error('environment phase boundaries must be ascending fractions strictly between 0 and 1');
 		}
 		this.seconds_ = options.startSeconds ?? 0;
@@ -52,17 +57,25 @@ export class EnvironmentClock {
 		if (!Number.isFinite(this.seconds_)) throw new Error('environment startSeconds must be finite');
 	}
 
-	get day(): number { return Math.floor(this.seconds_ / this.dayLength); }
-	get seconds(): number { return this.seconds_; }
-	get weather(): string { return this.weather_; }
+	get day(): number {
+		return Math.floor(this.seconds_ / this.dayLength);
+	}
+	get seconds(): number {
+		return this.seconds_;
+	}
+	get weather(): string {
+		return this.weather_;
+	}
 	get phase(): DayPhase {
-		const fraction = ((this.seconds_ % this.dayLength) + this.dayLength) % this.dayLength / this.dayLength;
+		const fraction = (((this.seconds_ % this.dayLength) + this.dayLength) % this.dayLength) / this.dayLength;
 		if (fraction < this.boundaries[0]) return 'dawn';
 		if (fraction < this.boundaries[1]) return 'day';
 		if (fraction < this.boundaries[2]) return 'dusk';
 		return 'night';
 	}
-	get night(): boolean { return this.phase === 'night'; }
+	get night(): boolean {
+		return this.phase === 'night';
+	}
 
 	/**
 	 * Advances the clock by `dt` real seconds.

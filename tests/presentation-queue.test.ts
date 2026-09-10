@@ -21,7 +21,7 @@ test('enqueue starts the first event immediately', () => {
 	assert.equal(queue.isBusy, true);
 });
 
-test('the next event starts only once its predecessor\'s duration elapses', () => {
+test("the next event starts only once its predecessor's duration elapses", () => {
 	const played: Event[] = [];
 	const queue = new PresentationQueue<Event>({ play: (event) => (played.push(event), 0.2) });
 
@@ -43,7 +43,11 @@ test('events with no duration chain immediately, costing no extra update() call'
 	const played: Event[] = [];
 	const queue = new PresentationQueue<Event>({ play: (event) => played.push(event) && undefined });
 
-	queue.enqueue([{ type: 'damage', amount: 1 }, { type: 'damage', amount: 2 }, { type: 'damage', amount: 3 }]);
+	queue.enqueue([
+		{ type: 'damage', amount: 1 },
+		{ type: 'damage', amount: 2 },
+		{ type: 'damage', amount: 3 },
+	]);
 
 	assert.equal(played.length, 3, 'all three drained in the same enqueue call');
 	assert.equal(queue.isBusy, false);

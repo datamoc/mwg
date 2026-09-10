@@ -30,7 +30,7 @@ test('levels below the filter never reach the sink', () => {
 
 	assert.deepEqual(
 		entries.map((e) => e.level),
-		['warn', 'error']
+		['warn', 'error'],
 	);
 });
 
@@ -42,7 +42,7 @@ test('setLevel moves the filter afterwards', () => {
 
 	assert.deepEqual(
 		entries.map((e) => e.message),
-		['kept']
+		['kept'],
 	);
 });
 

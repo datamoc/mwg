@@ -145,7 +145,7 @@ class WorldTransitionScene extends Scene2D {
 	private updateStatus(data: MapData): void {
 		this.status.setText(
 			`${data.name} - ${this.world.isPersistent(this.world.currentMapId!) ? 'persistent' : 'rebuilt every visit'}\n` +
-				'arrow keys to move, walk off the left/right edge to cross over'
+				'arrow keys to move, walk off the left/right edge to cross over',
 		);
 	}
 }
@@ -163,5 +163,8 @@ async function main(): Promise<void> {
 
 main().catch((error) => {
 	console.error(error);
-	document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`);
+	document.body.insertAdjacentHTML(
+		'afterbegin',
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
+	);
 });

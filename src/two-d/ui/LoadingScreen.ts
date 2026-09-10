@@ -76,9 +76,13 @@ export class LoadingScreen extends Container {
 	}
 
 	/** invoke from a game-owned retry button or keyboard binding */
-	retry(): void { this.onRetry?.(); }
+	retry(): void {
+		this.onRetry?.();
+	}
 	/** invoke from a game-owned cancel button or keyboard binding */
-	cancel(): void { this.onCancel?.(); }
+	cancel(): void {
+		this.onCancel?.();
+	}
 
 	resize(width: number, height: number): void {
 		this.width_ = width;

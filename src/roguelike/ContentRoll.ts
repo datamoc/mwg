@@ -55,7 +55,11 @@ export interface ContentRollResult<T> {
  * );
  * ```
  */
-export function rollRoster<T>(regular: readonly RosterEntry<T>[], rare: readonly RareEntry<T>[] = [], shuffleResult = true): ContentRollResult<T> {
+export function rollRoster<T>(
+	regular: readonly RosterEntry<T>[],
+	rare: readonly RareEntry<T>[] = [],
+	shuffleResult = true,
+): ContentRollResult<T> {
 	const trace: RollTraceEntry[] = [];
 	const roster: T[] = regular.map((entry) => entry.value);
 

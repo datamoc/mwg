@@ -62,7 +62,10 @@ test('fetchItems rejects a non-ok response', async () => {
 
 test('NewsClient requires a non-empty endpoint and a positive timeout', () => {
 	assert.throws(() => new NewsClient({ endpoint: '' }), /endpoint is required/);
-	assert.throws(() => new NewsClient({ endpoint: 'https://example.test', timeoutMs: -1 }), /timeout must be positive/);
+	assert.throws(
+		() => new NewsClient({ endpoint: 'https://example.test', timeoutMs: -1 }),
+		/timeout must be positive/,
+	);
 });
 
 // ------------------------------------------------------------------- NewsSeenTracker
@@ -84,7 +87,7 @@ test('unseen filters out items already marked seen', () => {
 
 	assert.deepEqual(
 		tracker.unseen(items).map((i) => i.id),
-		['b']
+		['b'],
 	);
 });
 

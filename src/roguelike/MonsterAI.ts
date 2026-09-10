@@ -66,7 +66,7 @@ export function decideMonsterAI(
 	self: Step,
 	hpFraction: number,
 	target: Step,
-	options: MonsterAIOptions = {}
+	options: MonsterAIOptions = {},
 ): AIDecision {
 	const sightRadius = options.sightRadius ?? 6;
 	const fleeBelow = options.fleeBelow ?? 0;

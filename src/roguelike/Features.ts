@@ -92,7 +92,10 @@ export class FeatureLayer<TContext = unknown> {
 		return { cells: [...this.placed.entries()] };
 	}
 
-	static fromJSON<T>(defs: ReadonlyMap<string, CellFeatureDef<T>>, data: { cells: [number, string][] }): FeatureLayer<T> {
+	static fromJSON<T>(
+		defs: ReadonlyMap<string, CellFeatureDef<T>>,
+		data: { cells: [number, string][] },
+	): FeatureLayer<T> {
 		const layer = new FeatureLayer<T>();
 		for (const [kind, def] of defs) layer.define(kind, def);
 		for (const [cell, kind] of data.cells) layer.place(cell, kind);

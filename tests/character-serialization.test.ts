@@ -108,7 +108,16 @@ test('SkillPoints round-trips the unspent ledger, with ranks living in the StatB
 test('Inventory round-trips instance state while taking kind fields from the definitions', () => {
 	const inventory = new Inventory({ capacity: 50 });
 	inventory.add({ id: 'potion', quantity: 3, stackable: true, weight: 0.5 });
-	inventory.add({ id: 'sword', quantity: 1, weight: 5, level: 2, durability: 30, maxDurability: 50, identified: true, affix: 'flaming' });
+	inventory.add({
+		id: 'sword',
+		quantity: 1,
+		weight: 5,
+		level: 2,
+		durability: 30,
+		maxDurability: 50,
+		identified: true,
+		affix: 'flaming',
+	});
 
 	const restored = Inventory.fromJSON(ITEMS, JSON.parse(JSON.stringify(inventory)));
 	const sword = restored.find('sword');
@@ -166,7 +175,7 @@ test('an item the game no longer defines is refused loudly rather than restored 
 
 	assert.throws(
 		() => Inventory.fromJSON(ITEMS, JSON.parse(JSON.stringify(inventory))),
-		/no definition for item "removed-in-v2"/
+		/no definition for item "removed-in-v2"/,
 	);
 });
 
@@ -188,7 +197,7 @@ test('EquipmentSlots restores what was worn and reapplies its modifiers to the S
 	const restoredStats = StatBlock.fromJSON({ base: { attack: 1, defense: 1 } }, JSON.parse(JSON.stringify(stats)));
 	const restored = EquipmentSlots.fromJSON<'weapon' | 'armor', Item>(
 		{ slots: ['weapon', 'armor'], resolve: (id) => catalogue[id], stats: restoredStats },
-		data
+		data,
 	);
 
 	assert.equal(restored.get('weapon')?.id, 'sword');
@@ -202,7 +211,9 @@ test('EquipmentSlots restores what was worn and reapplies its modifiers to the S
 
 test('a locked cursed item is restored still worn, not refused', () => {
 	type Item = EquippableItem & { id: string; cursed?: boolean };
-	const catalogue: Record<string, Item> = { ring: { id: 'ring', cursed: true, modifiers: [{ stat: 'luck', op: 'add', value: -2 }] } };
+	const catalogue: Record<string, Item> = {
+		ring: { id: 'ring', cursed: true, modifiers: [{ stat: 'luck', op: 'add', value: -2 }] },
+	};
 
 	const stats = new StatBlock({ base: { luck: 5 } });
 	const restored = EquipmentSlots.fromJSON<'finger', Item>(
@@ -212,7 +223,7 @@ test('a locked cursed item is restored still worn, not refused', () => {
 			stats,
 			locked: (_slot, item) => item.cursed === true,
 		},
-		{ worn: [['finger', 'ring']] }
+		{ worn: [['finger', 'ring']] },
 	);
 
 	assert.equal(restored.get('finger')?.id, 'ring');
@@ -227,8 +238,8 @@ test('restoring into an unknown slot is refused', () => {
 		() =>
 			EquipmentSlots.fromJSON<'weapon', Item>(
 				{ slots: ['weapon'], resolve: (id) => ({ id }) },
-				{ worn: [['hat' as 'weapon', 'cap']] }
+				{ worn: [['hat' as 'weapon', 'cap']] },
 			),
-		/no such equipment slot/
+		/no such equipment slot/,
 	);
 });

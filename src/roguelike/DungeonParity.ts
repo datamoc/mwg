@@ -33,7 +33,10 @@ export interface DungeonMismatch {
 }
 
 function edgesEqual(a: readonly RoomEdge[], b: readonly RoomEdge[]): boolean {
-	return a.length === b.length && a.every((edge, i) => edge.a === b[i].a && edge.b === b[i].b && edge.extra === b[i].extra);
+	return (
+		a.length === b.length &&
+		a.every((edge, i) => edge.a === b[i].a && edge.b === b[i].b && edge.extra === b[i].extra)
+	);
 }
 
 function arraysEqual(a: ArrayLike<number>, b: ArrayLike<number>): boolean {
@@ -80,11 +83,23 @@ export function compareDungeonArtifacts(expected: DungeonArtifacts, actual: Dung
 		mismatches.push({ stage: 'graph', field: 'graph', expected: expected.graph, actual: actual.graph });
 	}
 
-	if (expected.width !== actual.width || expected.height !== actual.height || !arraysEqual(expected.terrain, actual.terrain)) {
+	if (
+		expected.width !== actual.width ||
+		expected.height !== actual.height ||
+		!arraysEqual(expected.terrain, actual.terrain)
+	) {
 		mismatches.push({ stage: 'paint', field: 'terrain', expected: expected.terrain, actual: actual.terrain });
 	}
-	if (expected.roomBuilders.length !== actual.roomBuilders.length || expected.roomBuilders.some((id, i) => id !== actual.roomBuilders[i])) {
-		mismatches.push({ stage: 'paint', field: 'roomBuilders', expected: expected.roomBuilders, actual: actual.roomBuilders });
+	if (
+		expected.roomBuilders.length !== actual.roomBuilders.length ||
+		expected.roomBuilders.some((id, i) => id !== actual.roomBuilders[i])
+	) {
+		mismatches.push({
+			stage: 'paint',
+			field: 'roomBuilders',
+			expected: expected.roomBuilders,
+			actual: actual.roomBuilders,
+		});
 	}
 	if (!featuresEqual(expected.features, actual.features)) {
 		mismatches.push({ stage: 'paint', field: 'features', expected: expected.features, actual: actual.features });

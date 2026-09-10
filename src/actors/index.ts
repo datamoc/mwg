@@ -8,7 +8,13 @@ export type { SkillPointsOptions } from './SkillPoints.ts';
 export { EquipmentSlots } from './Equipment.ts';
 export type { EquippableItem, EquipmentOptions, SavedEquipment } from './Equipment.ts';
 export { Inventory } from './Inventory.ts';
-export type { InventoryItem, InventoryOptions, ItemDefinition, SavedInventory, SavedInventoryItem } from './Inventory.ts';
+export type {
+	InventoryItem,
+	InventoryOptions,
+	ItemDefinition,
+	SavedInventory,
+	SavedInventoryItem,
+} from './Inventory.ts';
 export { craft } from './craft.ts';
 export type { Recipe } from './craft.ts';
 export { applyStatusEffect } from './StatusEffect.ts';

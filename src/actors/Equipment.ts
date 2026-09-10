@@ -130,7 +130,7 @@ export class EquipmentSlots<Slot extends string, Item extends EquippableItem> {
 			stats?: StatBlock | null;
 			locked?: (slot: Slot, item: Item) => boolean;
 		},
-		data: SavedEquipment<Slot>
+		data: SavedEquipment<Slot>,
 	): EquipmentSlots<Slot, Item> {
 		const equipment = new EquipmentSlots<Slot, Item>(defs.slots, defs.stats ?? null, { locked: defs.locked });
 

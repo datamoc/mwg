@@ -584,22 +584,26 @@ export class TileMap extends Container {
 		for (let k = 1; k <= height; k++) {
 			const top = k * step;
 			const bottom = (k - 1) * step;
-			face
-				.poly([
-					ox, oy + halfH - top,
-					ox + halfW, oy + halfH * 2 - top,
-					ox + halfW, oy + halfH * 2 - bottom,
-					ox, oy + halfH - bottom,
-				])
-				.fill(LEFT_FACE_FILL);
-			face
-				.poly([
-					ox + halfW, oy + halfH * 2 - top,
-					ox + halfW * 2, oy + halfH - top,
-					ox + halfW * 2, oy + halfH - bottom,
-					ox + halfW, oy + halfH * 2 - bottom,
-				])
-				.fill(RIGHT_FACE_FILL);
+			face.poly([
+				ox,
+				oy + halfH - top,
+				ox + halfW,
+				oy + halfH * 2 - top,
+				ox + halfW,
+				oy + halfH * 2 - bottom,
+				ox,
+				oy + halfH - bottom,
+			]).fill(LEFT_FACE_FILL);
+			face.poly([
+				ox + halfW,
+				oy + halfH * 2 - top,
+				ox + halfW * 2,
+				oy + halfH - top,
+				ox + halfW * 2,
+				oy + halfH - bottom,
+				ox + halfW,
+				oy + halfH * 2 - bottom,
+			]).fill(RIGHT_FACE_FILL);
 		}
 	}
 

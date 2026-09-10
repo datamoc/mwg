@@ -1,6 +1,10 @@
 import '@babylonjs/loaders/glTF/index.js';
 import { ImportMeshAsync, LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader.js';
-import type { ImportMeshOptions, ISceneLoaderAsyncResult, LoadAssetContainerOptions } from '@babylonjs/core/Loading/sceneLoader.js';
+import type {
+	ImportMeshOptions,
+	ISceneLoaderAsyncResult,
+	LoadAssetContainerOptions,
+} from '@babylonjs/core/Loading/sceneLoader.js';
 import type { AssetContainer } from '@babylonjs/core/assetContainer.js';
 import type { Scene } from '@babylonjs/core/scene.js';
 
@@ -22,7 +26,11 @@ function resolveSource(source: ModelSource3D): ModelSource3D {
  * model, `loadModelContainer3D` fetches and parses once and instantiates independent copies
  * from it - calling this a second time for the same source imports and parses it again.
  */
-export function loadModel3D(source: ModelSource3D, scene: Scene, options?: ImportMeshOptions): Promise<ISceneLoaderAsyncResult> {
+export function loadModel3D(
+	source: ModelSource3D,
+	scene: Scene,
+	options?: ImportMeshOptions,
+): Promise<ISceneLoaderAsyncResult> {
 	return ImportMeshAsync(resolveSource(source), scene, options);
 }
 
@@ -55,7 +63,11 @@ const containerCache = new Map<string, Promise<AssetContainer>>();
  * releaseModelContainer('models/tree.glb'); // frees the container once every copy is placed
  * ```
  */
-export function loadModelContainer3D(source: ModelSource3D, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer> {
+export function loadModelContainer3D(
+	source: ModelSource3D,
+	scene: Scene,
+	options?: LoadAssetContainerOptions,
+): Promise<AssetContainer> {
 	const resolved = resolveSource(source);
 	if (typeof resolved !== 'string') return LoadAssetContainerAsync(resolved, scene, options);
 

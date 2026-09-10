@@ -55,7 +55,7 @@ test('nothing reachable from mwg/3d imports Pixi', () => {
 	assert.deepEqual(
 		offenders.map((file) => file.slice(SRC.length + 1).replace(/\\/g, '/')),
 		[],
-		'a Babylon-rendered game must not pull in Pixi - import from assets/paths.ts, not the assets barrel'
+		'a Babylon-rendered game must not pull in Pixi - import from assets/paths.ts, not the assets barrel',
 	);
 });
 
@@ -71,7 +71,7 @@ test('nothing reachable from mwg/two-d imports Babylon', () => {
 	assert.deepEqual(
 		offenders.map((file) => file.slice(SRC.length + 1).replace(/\\/g, '/')),
 		[],
-		'a Pixi-rendered game must not pull in Babylon'
+		'a Pixi-rendered game must not pull in Babylon',
 	);
 });
 
@@ -99,7 +99,19 @@ test('assets/paths.ts stays renderer-free on its own', () => {
  * `loadTiledMap` moved to `two-d/render`, where the `TileMap` and `SpriteSheet` it constructs
  * already lived. Only `two-d/*` is left as a deliberate Pixi dependency.
  */
-const RENDERER_FREE = ['core', 'i18n', 'actors', 'world', 'battle', 'simulation', 'roguelike', 'board', 'audio', 'rpg', 'three-d'];
+const RENDERER_FREE = [
+	'core',
+	'i18n',
+	'actors',
+	'world',
+	'battle',
+	'simulation',
+	'roguelike',
+	'board',
+	'audio',
+	'rpg',
+	'three-d',
+];
 
 test('every module documented as renderer-free stays that way', () => {
 	for (const module of RENDERER_FREE) {
@@ -107,7 +119,7 @@ test('every module documented as renderer-free stays that way', () => {
 		assert.deepEqual(
 			offenders.map((file) => file.slice(SRC.length + 1).replace(/\\/g, '/')),
 			[],
-			`mwg/${module} is documented as renderer-free`
+			`mwg/${module} is documented as renderer-free`,
 		);
 	}
 });
@@ -144,7 +156,11 @@ test('example games import pixi.js only through two-d/pixi-interop, never direct
 			if (importsPixiDirectly(file)) offenders.push(`${example.name}/${entry}`);
 		}
 	}
-	assert.deepEqual(offenders, [], 'import Graphics/Text/Container etc. from two-d/pixi-interop.ts instead of pixi.js');
+	assert.deepEqual(
+		offenders,
+		[],
+		'import Graphics/Text/Container etc. from two-d/pixi-interop.ts instead of pixi.js',
+	);
 });
 
 test('the assets loader really does still use Pixi, so this suite is testing something', () => {
@@ -201,27 +217,27 @@ test('two-d/render and two-d/ui do not leak raw Pixi types into public signature
 				.filter((name) => PIXI_TYPE_NAMES.includes(name));
 			if (pixiImports.length === 0) continue;
 
-				const lines = source.split('\n');
-				//tracks whether the nearest enclosing top-level (0-tab) declaration was an
-				//exported interface/class - a non-exported helper type's own fields are an
-				//implementation detail, not a public leak (caught for real: TileMap.ts's own
-				//module-private `Layer` interface, which happens to hold a `Container` field)
-				let insideExported = false;
-				for (const line of lines) {
-					if (/^\S/.test(line)) {
-						insideExported = /^export\s+(default\s+)?(abstract\s+)?(interface|class)\b/.test(line);
-					}
-					if (!insideExported) continue;
+			const lines = source.split('\n');
+			//tracks whether the nearest enclosing top-level (0-tab) declaration was an
+			//exported interface/class - a non-exported helper type's own fields are an
+			//implementation detail, not a public leak (caught for real: TileMap.ts's own
+			//module-private `Layer` interface, which happens to hold a `Container` field)
+			let insideExported = false;
+			for (const line of lines) {
+				if (/^\S/.test(line)) {
+					insideExported = /^export\s+(default\s+)?(abstract\s+)?(interface|class)\b/.test(line);
+				}
+				if (!insideExported) continue;
 
-					if (/^\s*(private|protected)\b/.test(line)) continue;
-					//an `override` matches its Pixi superclass's own signature by construction -
-					//e.g. `destroy(options?: Parameters<Container['destroy']>[0])` - not a new leak
-					//beyond what extending that class already means
-					if (/^\s*override\b/.test(line)) continue;
-					//a local variable inside a method body is implementation detail, not a public
-					//signature - only a top-level (one indent level) member/property line counts
-					if (/^\t\t/.test(line)) continue;
-					if (!/(?:\)\s*:\s*\w|constructor\s*\(|\w+\s*\(\s*\w+\s*:|^\s*\w+\??\s*:\s*\w)/.test(line)) continue;
+				if (/^\s*(private|protected)\b/.test(line)) continue;
+				//an `override` matches its Pixi superclass's own signature by construction -
+				//e.g. `destroy(options?: Parameters<Container['destroy']>[0])` - not a new leak
+				//beyond what extending that class already means
+				if (/^\s*override\b/.test(line)) continue;
+				//a local variable inside a method body is implementation detail, not a public
+				//signature - only a top-level (one indent level) member/property line counts
+				if (/^\t\t/.test(line)) continue;
+				if (!/(?:\)\s*:\s*\w|constructor\s*\(|\w+\s*\(\s*\w+\s*:|^\s*\w+\??\s*:\s*\w)/.test(line)) continue;
 				for (const name of pixiImports) {
 					if (new RegExp(`\\b${name}\\b`).test(line) && !new RegExp(`${name}2D\\b`).test(line)) {
 						offenders.push(`${dir}/${entry}: ${line.trim()}`);

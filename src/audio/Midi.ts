@@ -55,9 +55,10 @@ const DEFAULT_TEMPO = 500000; // 120 BPM
  * ```
  */
 export function parseMidi(data: ArrayBuffer | ArrayBufferView): MidiFile {
-	const bytes = data instanceof ArrayBuffer
-		? new Uint8Array(data)
-		: new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+	const bytes =
+		data instanceof ArrayBuffer
+			? new Uint8Array(data)
+			: new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
 	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
 	let offset = 0;
@@ -67,8 +68,16 @@ export function parseMidi(data: ArrayBuffer | ArrayBufferView): MidiFile {
 		offset += length;
 		return text;
 	};
-	const readUint32 = (): number => { const v = view.getUint32(offset, false); offset += 4; return v; };
-	const readUint16 = (): number => { const v = view.getUint16(offset, false); offset += 2; return v; };
+	const readUint32 = (): number => {
+		const v = view.getUint32(offset, false);
+		offset += 4;
+		return v;
+	};
+	const readUint16 = (): number => {
+		const v = view.getUint16(offset, false);
+		offset += 2;
+		return v;
+	};
 	const readVLQ = (): number => {
 		let value = 0;
 		for (;;) {
@@ -179,7 +188,13 @@ export function scheduleMidi(file: MidiFile): ScheduledNote[] {
 		} else {
 			const start = active.get(key);
 			if (start) {
-				notes.push({ time: start.time, duration: Math.max(0.01, time - start.time), note: event.note, velocity: start.velocity, channel: event.channel });
+				notes.push({
+					time: start.time,
+					duration: Math.max(0.01, time - start.time),
+					note: event.note,
+					velocity: start.velocity,
+					channel: event.channel,
+				});
 				active.delete(key);
 			}
 		}

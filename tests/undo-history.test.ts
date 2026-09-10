@@ -80,7 +80,7 @@ test('clear drops everything, including redo history', () => {
 	assert.equal(history.canRedo, false);
 });
 
-test('states are stored by reference, so a game\'s own snapshot object round-trips exactly', () => {
+test("states are stored by reference, so a game's own snapshot object round-trips exactly", () => {
 	const history = new UndoHistory<{ hp: number }>();
 	const a = { hp: 10 };
 	const b = { hp: 7 };

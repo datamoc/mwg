@@ -43,7 +43,7 @@ export function buy(
 	bag: Inventory,
 	id: string,
 	quantity: number,
-	options: ShopOptions
+	options: ShopOptions,
 ): boolean {
 	const price = options.prices.get(id);
 	if (!price) return false;
@@ -71,7 +71,7 @@ export function sell(
 	bag: Inventory,
 	id: string,
 	quantity: number,
-	options: ShopOptions
+	options: ShopOptions,
 ): boolean {
 	const price = options.prices.get(id);
 	if (!price) return false;

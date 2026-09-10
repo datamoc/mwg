@@ -155,7 +155,7 @@ export class StageScript {
 					dims: false,
 					anchor: 'bottom',
 					onDone: () => resolve(),
-				})
+				}),
 			);
 		});
 		return true;
@@ -272,12 +272,7 @@ export class StageScript {
 	 * dialogue its own way (a different box, a voice line, a test harness) without
 	 * reimplementing the sequencing above.
 	 */
-	protected speak(
-		text: string,
-		as: string | undefined,
-		speaker?: string,
-		choices?: Choice[]
-	): Promise<unknown> {
+	protected speak(text: string, as: string | undefined, speaker?: string, choices?: Choice[]): Promise<unknown> {
 		const { stage, windows } = this.options;
 
 		//dim everyone but the speaker; a line with no speaker lights the whole stage again
@@ -305,7 +300,7 @@ export class StageScript {
 					dims: false,
 					anchor: 'bottom',
 					onDone: (chosen) => resolve(chosen),
-				})
+				}),
 			);
 		});
 	}

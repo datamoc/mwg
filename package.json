@@ -1,253 +1,253 @@
 {
-  "name": "@datamoc/mw_games",
-  "version": "0.5.4",
-  "description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
-  "license": "MPL-2.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/datamoc/mwg.git"
-  },
-  "keywords": [
-    "game-framework",
-    "game-engine",
-    "2d-game-engine",
-    "html5-games",
-    "pixijs",
-    "babylonjs",
-    "typescript",
-    "tile-map",
-    "top-down",
-    "rpg",
-    "roguelike",
-    "dungeon-crawler",
-    "turn-based",
-    "dialogue-system",
-    "capacitor",
-    "offline-first",
-    "no-server",
-    "local-file"
-  ],
-  "type": "module",
-  "sideEffects": [
-    "./dist/three-d/Models.js",
-    "./dist/three-d/TileGrid3D.js",
-    "./dist/two-d/render/TintedSprite.js"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "files": [
-    "dist",
-    "tools/compile-resources.mjs",
-    "tools/compress-dist.mjs",
-    "tools/compress-dist.d.mts",
-    "LICENSE",
-    "README.md"
-  ],
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./3d": {
-      "types": "./dist/three-d/index.d.ts",
-      "import": "./dist/three-d/index.js"
-    },
-    "./3d/models": {
-      "types": "./dist/three-d/Models.d.ts",
-      "import": "./dist/three-d/Models.js"
-    },
-    "./actors": {
-      "types": "./dist/actors/index.d.ts",
-      "import": "./dist/actors/index.js"
-    },
-    "./assets": {
-      "types": "./dist/assets/index.d.ts",
-      "import": "./dist/assets/index.js"
-    },
-    "./assets/paths": {
-      "types": "./dist/assets/paths.d.ts",
-      "import": "./dist/assets/paths.js"
-    },
-    "./assets/binary": {
-      "types": "./dist/assets/binary.d.ts",
-      "import": "./dist/assets/binary.js"
-    },
-    "./audio": {
-      "types": "./dist/audio/index.d.ts",
-      "import": "./dist/audio/index.js"
-    },
-    "./battle": {
-      "types": "./dist/battle/index.d.ts",
-      "import": "./dist/battle/index.js"
-    },
-    "./board": {
-      "types": "./dist/board/index.d.ts",
-      "import": "./dist/board/index.js"
-    },
-    "./core": {
-      "types": "./dist/core/index.d.ts",
-      "import": "./dist/core/index.js"
-    },
-    "./i18n": {
-      "types": "./dist/i18n/index.d.ts",
-      "import": "./dist/i18n/index.js"
-    },
-    "./roguelike": {
-      "types": "./dist/roguelike/index.d.ts",
-      "import": "./dist/roguelike/index.js"
-    },
-    "./rpg": {
-      "types": "./dist/rpg/index.d.ts",
-      "import": "./dist/rpg/index.js"
-    },
-    "./simulation": {
-      "types": "./dist/simulation/index.d.ts",
-      "import": "./dist/simulation/index.js"
-    },
-    "./tools/compile-resources": "./tools/compile-resources.mjs",
-    "./tools/compress-dist": "./tools/compress-dist.mjs",
-    "./two-d": {
-      "types": "./dist/two-d/index.d.ts",
-      "import": "./dist/two-d/index.js"
-    },
-    "./two-d/render": {
-      "types": "./dist/two-d/render/index.d.ts",
-      "import": "./dist/two-d/render/index.js"
-    },
-    "./two-d/stage": {
-      "types": "./dist/two-d/stage/index.d.ts",
-      "import": "./dist/two-d/stage/index.js"
-    },
-    "./two-d/ui": {
-      "types": "./dist/two-d/ui/index.d.ts",
-      "import": "./dist/two-d/ui/index.js"
-    },
-    "./two-d/pixi-interop": {
-      "types": "./dist/two-d/pixi-interop.d.ts",
-      "import": "./dist/two-d/pixi-interop.js"
-    },
-    "./world": {
-      "types": "./dist/world/index.d.ts",
-      "import": "./dist/world/index.js"
-    }
-  },
-  "scripts": {
-    "build": "npm run build:pkg && npm run build:global",
-    "build:pkg": "tsc -p tsconfig.build.json",
-    "build:global": "vite build --config vite.lib.config.ts",
-    "check": "tsc --noEmit",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "api:report": "npm run build:pkg && node tools/api-report.mjs",
-    "api:check": "node tools/api-report.mjs --check",
-    "audit": "npm audit --audit-level=high",
-    "example": "vite --config examples/colour-transform/vite.config.ts",
-    "example:build": "vite build --config examples/colour-transform/vite.config.ts && node tools/emit-page.mjs examples/colour-transform",
-    "test": "node --test \"tests/**/*.test.ts\"",
-    "coverage": "node --test --experimental-test-coverage \"tests/**/*.test.ts\"",
-    "assets": "node tools/make-example-assets.mjs",
-    "extract:rgssad": "node tools/extract-rgssad.mjs",
-    "i18n:edit": "node tools/i18n-edit.mjs",
-    "i18n:check": "node tools/i18n-edit.mjs --check",
-    "example:ui": "vite --config examples/interface/vite.config.ts",
-    "example:ui:build": "vite build --config examples/interface/vite.config.ts && node tools/emit-page.mjs examples/interface",
-    "example:dialogue": "vite --config examples/dialogue/vite.config.ts",
-    "example:dialogue:build": "vite build --config examples/dialogue/vite.config.ts && node tools/emit-page.mjs examples/dialogue",
-    "example:dungeon": "vite --config examples/dungeon/vite.config.ts",
-    "example:dungeon:build": "vite build --config examples/dungeon/vite.config.ts && node tools/emit-page.mjs examples/dungeon",
-    "example:village": "vite --config examples/village/vite.config.ts",
-    "example:village:build": "vite build --config examples/village/vite.config.ts && node tools/emit-page.mjs examples/village",
-    "example:battle": "vite --config examples/battle/vite.config.ts",
-    "example:battle:build": "vite build --config examples/battle/vite.config.ts && node tools/emit-page.mjs examples/battle",
-    "example:minigame": "vite --config examples/minigame/vite.config.ts",
-    "example:minigame:build": "vite build --config examples/minigame/vite.config.ts && node tools/emit-page.mjs examples/minigame",
-    "example:chess": "vite --config examples/chess/vite.config.ts",
-    "example:chess:build": "vite build --config examples/chess/vite.config.ts && node tools/emit-page.mjs examples/chess",
-    "example:tower-defense": "vite --config examples/tower-defense/vite.config.ts",
-    "example:tower-defense:build": "vite build --config examples/tower-defense/vite.config.ts && node tools/emit-page.mjs examples/tower-defense",
-    "example:3d": "vite --config examples/three-d/vite.config.ts",
-    "example:3d:build": "vite build --config examples/three-d/vite.config.ts && node tools/emit-page.mjs examples/three-d",
-    "example:loading": "vite --config examples/loading/vite.config.ts",
-    "example:loading:build": "vite build --config examples/loading/vite.config.ts && node tools/emit-page.mjs examples/loading",
-    "example:hello-world": "vite --config examples/hello-world/vite.config.ts",
-    "example:hello-world:build": "vite build --config examples/hello-world/vite.config.ts && node tools/emit-page.mjs examples/hello-world",
-    "example:movement": "vite --config examples/movement/vite.config.ts",
-    "example:movement:build": "vite build --config examples/movement/vite.config.ts && node tools/emit-page.mjs examples/movement",
-    "example:save-load": "vite --config examples/save-load/vite.config.ts",
-    "example:save-load:build": "vite build --config examples/save-load/vite.config.ts && node tools/emit-page.mjs examples/save-load",
-    "example:audio": "vite --config examples/audio/vite.config.ts",
-    "example:audio:build": "vite build --config examples/audio/vite.config.ts && node tools/emit-page.mjs examples/audio",
-    "example:i18n": "vite --config examples/i18n/vite.config.ts",
-    "example:i18n:build": "vite build --config examples/i18n/vite.config.ts && node tools/emit-page.mjs examples/i18n",
-    "example:string-editor": "vite --config examples/string-editor/vite.config.ts",
-    "example:string-editor:build": "vite build --config examples/string-editor/vite.config.ts && node tools/emit-page.mjs examples/string-editor",
-    "example:world-transition": "vite --config examples/world-transition/vite.config.ts",
-    "example:world-transition:build": "vite build --config examples/world-transition/vite.config.ts && node tools/emit-page.mjs examples/world-transition",
-    "example:event-system": "vite --config examples/event-system/vite.config.ts",
-    "example:event-system:build": "vite build --config examples/event-system/vite.config.ts && node tools/emit-page.mjs examples/event-system",
-    "example:headless": "vite --config examples/headless/vite.config.ts",
-    "example:headless:build": "vite build --config examples/headless/vite.config.ts && node tools/emit-page.mjs examples/headless",
-    "benchmark:browser": "npm run example:dungeon:build && node tools/benchmark-browser.mjs",
-    "benchmark:3d": "npm run example:3d:build && node tools/benchmark-browser.mjs examples/three-d/dist/index.html",
-    "benchmark:tower-defense": "npm run example:tower-defense:build && node tools/benchmark-browser.mjs examples/tower-defense/dist/index.html",
-    "benchmark:ui": "npm run example:ui:build && node tools/benchmark-browser.mjs examples/interface/dist/index.html",
-    "benchmark:simulation": "node tools/benchmark-simulation.mjs",
-    "visual:smoke": "node tools/visual-smoke.mjs",
-    "visual:smoke:ui": "npm run example:ui:build && node tools/visual-smoke.mjs examples/interface/dist/index.html Tab",
-    "graphics:capabilities": "node tools/graphics-capabilities.mjs",
-    "webpage:examples": "node tools/build-webpage-examples.mjs",
-    "webpage:docs": "node tools/build-webpage-docs.mjs",
-    "webpage:diagrams": "node tools/make-example-diagrams.mjs && node tools/make-architecture-diagrams.mjs",
-    "mobile:build": "npm run example:tower-defense:build",
-    "cap:cli": "node --require ./tools/capacitor-node-workaround.cjs ./node_modules/@capacitor/cli/bin/capacitor",
-    "cap:add:android": "npm run mobile:build && npm run cap:cli -- add android",
-    "cap:add:ios": "npm run mobile:build && npm run cap:cli -- add ios",
-    "cap:sync": "npm run mobile:build && npm run cap:cli -- sync",
-    "cap:open:android": "npm run cap:cli -- open android",
-    "cap:open:ios": "npm run cap:cli -- open ios",
-    "desktop:build": "npm run mobile:build && dotnet build desktop/MwgDesktopHost",
-    "desktop:run": "npm run mobile:build && dotnet run --project desktop/MwgDesktopHost",
-    "multiplayer:server": "node tools/multiplayer-server.mjs",
-    "roadmap:progress": "node tools/roadmap-progress.mjs",
-    "roadmap:browser": "node tools/roadmap-progress.mjs --browser"
-  },
-  "dependencies": {
-    "pixi.js": "^8.20.1",
-    "rot-js": "^2.2.1"
-  },
-  "peerDependencies": {
-    "@babylonjs/core": "^9.25.0",
-    "@babylonjs/loaders": "^9.25.0",
-    "@capacitor/core": "^7.4.4"
-  },
-  "peerDependenciesMeta": {
-    "@babylonjs/core": {
-      "optional": true
-    },
-    "@babylonjs/loaders": {
-      "optional": true
-    },
-    "@capacitor/core": {
-      "optional": true
-    }
-  },
-  "devDependencies": {
-    "@babylonjs/core": "^9.25.0",
-    "@babylonjs/loaders": "^9.25.0",
-    "@capacitor/android": "^7.4.4",
-    "@capacitor/cli": "^7.4.4",
-    "@capacitor/core": "^7.4.4",
-    "@capacitor/ios": "^7.4.4",
-    "@types/node": "^26.4.1",
-    "@types/ws": "^8.18.1",
-    "playwright-core": "^1.62.1",
-    "prettier": "^3.9.6",
-    "typescript": "^7.0.2",
-    "vite": "^8.2.2",
-    "ws": "^8.21.3"
-  },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "unpkg": "./dist/mw_games.global.js"
+	"name": "@datamoc/mw_games",
+	"version": "0.5.4",
+	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
+	"license": "MPL-2.0",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/datamoc/mwg.git"
+	},
+	"keywords": [
+		"game-framework",
+		"game-engine",
+		"2d-game-engine",
+		"html5-games",
+		"pixijs",
+		"babylonjs",
+		"typescript",
+		"tile-map",
+		"top-down",
+		"rpg",
+		"roguelike",
+		"dungeon-crawler",
+		"turn-based",
+		"dialogue-system",
+		"capacitor",
+		"offline-first",
+		"no-server",
+		"local-file"
+	],
+	"type": "module",
+	"sideEffects": [
+		"./dist/three-d/Models.js",
+		"./dist/three-d/TileGrid3D.js",
+		"./dist/two-d/render/TintedSprite.js"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": [
+		"dist",
+		"tools/compile-resources.mjs",
+		"tools/compress-dist.mjs",
+		"tools/compress-dist.d.mts",
+		"LICENSE",
+		"README.md"
+	],
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./3d": {
+			"types": "./dist/three-d/index.d.ts",
+			"import": "./dist/three-d/index.js"
+		},
+		"./3d/models": {
+			"types": "./dist/three-d/Models.d.ts",
+			"import": "./dist/three-d/Models.js"
+		},
+		"./actors": {
+			"types": "./dist/actors/index.d.ts",
+			"import": "./dist/actors/index.js"
+		},
+		"./assets": {
+			"types": "./dist/assets/index.d.ts",
+			"import": "./dist/assets/index.js"
+		},
+		"./assets/paths": {
+			"types": "./dist/assets/paths.d.ts",
+			"import": "./dist/assets/paths.js"
+		},
+		"./assets/binary": {
+			"types": "./dist/assets/binary.d.ts",
+			"import": "./dist/assets/binary.js"
+		},
+		"./audio": {
+			"types": "./dist/audio/index.d.ts",
+			"import": "./dist/audio/index.js"
+		},
+		"./battle": {
+			"types": "./dist/battle/index.d.ts",
+			"import": "./dist/battle/index.js"
+		},
+		"./board": {
+			"types": "./dist/board/index.d.ts",
+			"import": "./dist/board/index.js"
+		},
+		"./core": {
+			"types": "./dist/core/index.d.ts",
+			"import": "./dist/core/index.js"
+		},
+		"./i18n": {
+			"types": "./dist/i18n/index.d.ts",
+			"import": "./dist/i18n/index.js"
+		},
+		"./roguelike": {
+			"types": "./dist/roguelike/index.d.ts",
+			"import": "./dist/roguelike/index.js"
+		},
+		"./rpg": {
+			"types": "./dist/rpg/index.d.ts",
+			"import": "./dist/rpg/index.js"
+		},
+		"./simulation": {
+			"types": "./dist/simulation/index.d.ts",
+			"import": "./dist/simulation/index.js"
+		},
+		"./tools/compile-resources": "./tools/compile-resources.mjs",
+		"./tools/compress-dist": "./tools/compress-dist.mjs",
+		"./two-d": {
+			"types": "./dist/two-d/index.d.ts",
+			"import": "./dist/two-d/index.js"
+		},
+		"./two-d/render": {
+			"types": "./dist/two-d/render/index.d.ts",
+			"import": "./dist/two-d/render/index.js"
+		},
+		"./two-d/stage": {
+			"types": "./dist/two-d/stage/index.d.ts",
+			"import": "./dist/two-d/stage/index.js"
+		},
+		"./two-d/ui": {
+			"types": "./dist/two-d/ui/index.d.ts",
+			"import": "./dist/two-d/ui/index.js"
+		},
+		"./two-d/pixi-interop": {
+			"types": "./dist/two-d/pixi-interop.d.ts",
+			"import": "./dist/two-d/pixi-interop.js"
+		},
+		"./world": {
+			"types": "./dist/world/index.d.ts",
+			"import": "./dist/world/index.js"
+		}
+	},
+	"scripts": {
+		"build": "npm run build:pkg && npm run build:global",
+		"build:pkg": "tsc -p tsconfig.build.json",
+		"build:global": "vite build --config vite.lib.config.ts",
+		"check": "tsc --noEmit",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
+		"api:report": "npm run build:pkg && node tools/api-report.mjs",
+		"api:check": "node tools/api-report.mjs --check",
+		"audit": "npm audit --audit-level=high",
+		"example": "vite --config examples/colour-transform/vite.config.ts",
+		"example:build": "vite build --config examples/colour-transform/vite.config.ts && node tools/emit-page.mjs examples/colour-transform",
+		"test": "node --test \"tests/**/*.test.ts\"",
+		"coverage": "node --test --experimental-test-coverage \"tests/**/*.test.ts\"",
+		"assets": "node tools/make-example-assets.mjs",
+		"extract:rgssad": "node tools/extract-rgssad.mjs",
+		"i18n:edit": "node tools/i18n-edit.mjs",
+		"i18n:check": "node tools/i18n-edit.mjs --check",
+		"example:ui": "vite --config examples/interface/vite.config.ts",
+		"example:ui:build": "vite build --config examples/interface/vite.config.ts && node tools/emit-page.mjs examples/interface",
+		"example:dialogue": "vite --config examples/dialogue/vite.config.ts",
+		"example:dialogue:build": "vite build --config examples/dialogue/vite.config.ts && node tools/emit-page.mjs examples/dialogue",
+		"example:dungeon": "vite --config examples/dungeon/vite.config.ts",
+		"example:dungeon:build": "vite build --config examples/dungeon/vite.config.ts && node tools/emit-page.mjs examples/dungeon",
+		"example:village": "vite --config examples/village/vite.config.ts",
+		"example:village:build": "vite build --config examples/village/vite.config.ts && node tools/emit-page.mjs examples/village",
+		"example:battle": "vite --config examples/battle/vite.config.ts",
+		"example:battle:build": "vite build --config examples/battle/vite.config.ts && node tools/emit-page.mjs examples/battle",
+		"example:minigame": "vite --config examples/minigame/vite.config.ts",
+		"example:minigame:build": "vite build --config examples/minigame/vite.config.ts && node tools/emit-page.mjs examples/minigame",
+		"example:chess": "vite --config examples/chess/vite.config.ts",
+		"example:chess:build": "vite build --config examples/chess/vite.config.ts && node tools/emit-page.mjs examples/chess",
+		"example:tower-defense": "vite --config examples/tower-defense/vite.config.ts",
+		"example:tower-defense:build": "vite build --config examples/tower-defense/vite.config.ts && node tools/emit-page.mjs examples/tower-defense",
+		"example:3d": "vite --config examples/three-d/vite.config.ts",
+		"example:3d:build": "vite build --config examples/three-d/vite.config.ts && node tools/emit-page.mjs examples/three-d",
+		"example:loading": "vite --config examples/loading/vite.config.ts",
+		"example:loading:build": "vite build --config examples/loading/vite.config.ts && node tools/emit-page.mjs examples/loading",
+		"example:hello-world": "vite --config examples/hello-world/vite.config.ts",
+		"example:hello-world:build": "vite build --config examples/hello-world/vite.config.ts && node tools/emit-page.mjs examples/hello-world",
+		"example:movement": "vite --config examples/movement/vite.config.ts",
+		"example:movement:build": "vite build --config examples/movement/vite.config.ts && node tools/emit-page.mjs examples/movement",
+		"example:save-load": "vite --config examples/save-load/vite.config.ts",
+		"example:save-load:build": "vite build --config examples/save-load/vite.config.ts && node tools/emit-page.mjs examples/save-load",
+		"example:audio": "vite --config examples/audio/vite.config.ts",
+		"example:audio:build": "vite build --config examples/audio/vite.config.ts && node tools/emit-page.mjs examples/audio",
+		"example:i18n": "vite --config examples/i18n/vite.config.ts",
+		"example:i18n:build": "vite build --config examples/i18n/vite.config.ts && node tools/emit-page.mjs examples/i18n",
+		"example:string-editor": "vite --config examples/string-editor/vite.config.ts",
+		"example:string-editor:build": "vite build --config examples/string-editor/vite.config.ts && node tools/emit-page.mjs examples/string-editor",
+		"example:world-transition": "vite --config examples/world-transition/vite.config.ts",
+		"example:world-transition:build": "vite build --config examples/world-transition/vite.config.ts && node tools/emit-page.mjs examples/world-transition",
+		"example:event-system": "vite --config examples/event-system/vite.config.ts",
+		"example:event-system:build": "vite build --config examples/event-system/vite.config.ts && node tools/emit-page.mjs examples/event-system",
+		"example:headless": "vite --config examples/headless/vite.config.ts",
+		"example:headless:build": "vite build --config examples/headless/vite.config.ts && node tools/emit-page.mjs examples/headless",
+		"benchmark:browser": "npm run example:dungeon:build && node tools/benchmark-browser.mjs",
+		"benchmark:3d": "npm run example:3d:build && node tools/benchmark-browser.mjs examples/three-d/dist/index.html",
+		"benchmark:tower-defense": "npm run example:tower-defense:build && node tools/benchmark-browser.mjs examples/tower-defense/dist/index.html",
+		"benchmark:ui": "npm run example:ui:build && node tools/benchmark-browser.mjs examples/interface/dist/index.html",
+		"benchmark:simulation": "node tools/benchmark-simulation.mjs",
+		"visual:smoke": "node tools/visual-smoke.mjs",
+		"visual:smoke:ui": "npm run example:ui:build && node tools/visual-smoke.mjs examples/interface/dist/index.html Tab",
+		"graphics:capabilities": "node tools/graphics-capabilities.mjs",
+		"webpage:examples": "node tools/build-webpage-examples.mjs",
+		"webpage:docs": "node tools/build-webpage-docs.mjs",
+		"webpage:diagrams": "node tools/make-example-diagrams.mjs && node tools/make-architecture-diagrams.mjs",
+		"mobile:build": "npm run example:tower-defense:build",
+		"cap:cli": "node --require ./tools/capacitor-node-workaround.cjs ./node_modules/@capacitor/cli/bin/capacitor",
+		"cap:add:android": "npm run mobile:build && npm run cap:cli -- add android",
+		"cap:add:ios": "npm run mobile:build && npm run cap:cli -- add ios",
+		"cap:sync": "npm run mobile:build && npm run cap:cli -- sync",
+		"cap:open:android": "npm run cap:cli -- open android",
+		"cap:open:ios": "npm run cap:cli -- open ios",
+		"desktop:build": "npm run mobile:build && dotnet build desktop/MwgDesktopHost",
+		"desktop:run": "npm run mobile:build && dotnet run --project desktop/MwgDesktopHost",
+		"multiplayer:server": "node tools/multiplayer-server.mjs",
+		"roadmap:progress": "node tools/roadmap-progress.mjs",
+		"roadmap:browser": "node tools/roadmap-progress.mjs --browser"
+	},
+	"dependencies": {
+		"pixi.js": "^8.20.1",
+		"rot-js": "^2.2.1"
+	},
+	"peerDependencies": {
+		"@babylonjs/core": "^9.25.0",
+		"@babylonjs/loaders": "^9.25.0",
+		"@capacitor/core": "^7.4.4"
+	},
+	"peerDependenciesMeta": {
+		"@babylonjs/core": {
+			"optional": true
+		},
+		"@babylonjs/loaders": {
+			"optional": true
+		},
+		"@capacitor/core": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"@babylonjs/core": "^9.25.0",
+		"@babylonjs/loaders": "^9.25.0",
+		"@capacitor/android": "^7.4.4",
+		"@capacitor/cli": "^7.4.4",
+		"@capacitor/core": "^7.4.4",
+		"@capacitor/ios": "^7.4.4",
+		"@types/node": "^26.4.1",
+		"@types/ws": "^8.18.1",
+		"playwright-core": "^1.62.1",
+		"prettier": "^3.9.6",
+		"typescript": "^7.0.2",
+		"vite": "^8.2.2",
+		"ws": "^8.21.3"
+	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"unpkg": "./dist/mw_games.global.js"
 }

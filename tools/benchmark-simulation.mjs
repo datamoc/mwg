@@ -56,7 +56,8 @@ function benchmarkTurns() {
 		turnStepsToRun,
 	);
 	const elapsedMs = performance.now() - start;
-	if (result.status !== 'limit' || result.steps !== turnStepsToRun) throw new Error('advanceToInput did not run its full budget');
+	if (result.status !== 'limit' || result.steps !== turnStepsToRun)
+		throw new Error('advanceToInput did not run its full budget');
 	void spent;
 	return { stepsPerSecond: (turnStepsToRun / elapsedMs) * 1000, elapsedMs };
 }
@@ -74,16 +75,19 @@ const bestPrior = {
 await appendHistory(historyPath, history, result);
 
 const regressions = [];
-if (bestPrior.commandsPerSecond !== null && scenario.commandsPerSecond < bestPrior.commandsPerSecond * (1 - maxRegression)) {
+if (
+	bestPrior.commandsPerSecond !== null &&
+	scenario.commandsPerSecond < bestPrior.commandsPerSecond * (1 - maxRegression)
+) {
 	regressions.push(
 		`runScenario throughput regressed: ${scenario.commandsPerSecond.toFixed(0)} commands/s now vs ` +
-		`${bestPrior.commandsPerSecond.toFixed(0)} best-seen`,
+			`${bestPrior.commandsPerSecond.toFixed(0)} best-seen`,
 	);
 }
 if (bestPrior.stepsPerSecond !== null && turns.stepsPerSecond < bestPrior.stepsPerSecond * (1 - maxRegression)) {
 	regressions.push(
 		`advanceToInput throughput regressed: ${turns.stepsPerSecond.toFixed(0)} steps/s now vs ` +
-		`${bestPrior.stepsPerSecond.toFixed(0)} best-seen`,
+			`${bestPrior.stepsPerSecond.toFixed(0)} best-seen`,
 	);
 }
 if (regressions.length > 0) throw new Error(regressions.join('; '));

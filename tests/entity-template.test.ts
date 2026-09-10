@@ -131,7 +131,12 @@ test('toEntitySaveState omits progression and item when the entity has neither',
 
 test('fromEntitySaveState with progression data but no growth column throws', () => {
 	assert.throws(
-		() => fromEntitySaveState({ id: 'plain' }, {}, { stats: { base: {} }, progression: { level: 2, experience: 10 } }),
+		() =>
+			fromEntitySaveState(
+				{ id: 'plain' },
+				{},
+				{ stats: { base: {} }, progression: { level: 2, experience: 10 } },
+			),
 		/save data has progression but the row names no growth curve/,
 	);
 });

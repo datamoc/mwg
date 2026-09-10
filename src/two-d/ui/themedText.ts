@@ -17,7 +17,7 @@ export interface ThemedTextOptions {
 
 /** accepts the `options | string` shorthand both labels offer in their constructors */
 export function normalizeTextOptions<T extends ThemedTextOptions>(options: T | string): T {
-	return typeof options === 'string' ? ({ text: options }) as T : options;
+	return typeof options === 'string' ? ({ text: options } as T) : options;
 }
 
 /** the align a label uses when the game gave none: the theme direction, not a fixed left */

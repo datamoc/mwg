@@ -51,14 +51,18 @@ test('square, triangle, sine and noise are all audibly different waveforms', () 
 });
 
 test('decay fades the envelope toward zero by the end of the tone', () => {
-	const { samples } = decodeWav(synthesizeTone({ waveform: 'square', frequency: 100, duration: 0.2, sampleRate: 4000, decay: 12 }));
+	const { samples } = decodeWav(
+		synthesizeTone({ waveform: 'square', frequency: 100, duration: 0.2, sampleRate: 4000, decay: 12 }),
+	);
 	const early = Math.abs(samples[10]);
 	const late = Math.abs(samples[samples.length - 1]);
 	assert.ok(late < early, `expected decay: early=${early}, late=${late}`);
 });
 
 test('decay: 0 holds full amplitude for the whole tone', () => {
-	const { samples } = decodeWav(synthesizeTone({ waveform: 'square', frequency: 100, duration: 0.1, sampleRate: 4000, decay: 0, volume: 1 }));
+	const { samples } = decodeWav(
+		synthesizeTone({ waveform: 'square', frequency: 100, duration: 0.1, sampleRate: 4000, decay: 0, volume: 1 }),
+	);
 	assert.ok(Math.abs(samples[0]) > 0x7ff0);
 	assert.ok(Math.abs(samples[samples.length - 1]) > 0x7ff0);
 });

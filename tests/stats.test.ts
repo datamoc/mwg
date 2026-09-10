@@ -21,7 +21,11 @@ function memoryStorage(): SaveStorage {
 }
 
 function combine(total: Totals, summary: { kills: number; floor: number }): Totals {
-	return { runs: total.runs + 1, kills: total.kills + summary.kills, bestFloor: Math.max(total.bestFloor, summary.floor) };
+	return {
+		runs: total.runs + 1,
+		kills: total.kills + summary.kills,
+		bestFloor: Math.max(total.bestFloor, summary.floor),
+	};
 }
 
 test('get() returns initial before anything is recorded', () => {
@@ -31,7 +35,12 @@ test('get() returns initial before anything is recorded', () => {
 
 test('record folds a run into the running total and persists it', () => {
 	const storage = memoryStorage();
-	const stats = new PlayerStats({ namespace: 'test', storage, initial: { runs: 0, kills: 0, bestFloor: 0 }, combine });
+	const stats = new PlayerStats({
+		namespace: 'test',
+		storage,
+		initial: { runs: 0, kills: 0, bestFloor: 0 },
+		combine,
+	});
 
 	const after1 = stats.record({ kills: 3, floor: 2 });
 	assert.deepEqual(after1, { runs: 1, kills: 3, bestFloor: 2 });
@@ -49,7 +58,12 @@ test('the total survives being read back through a fresh instance over the same 
 		floor: 1,
 	});
 
-	const reopened = new PlayerStats({ namespace: 'shared', storage, initial: { runs: 0, kills: 0, bestFloor: 0 }, combine });
+	const reopened = new PlayerStats({
+		namespace: 'shared',
+		storage,
+		initial: { runs: 0, kills: 0, bestFloor: 0 },
+		combine,
+	});
 	assert.deepEqual(reopened.get(), { runs: 1, kills: 1, bestFloor: 1 });
 });
 
@@ -73,7 +87,12 @@ test('the running total is unaffected by a run-history retention limit truncatin
 	//the whole reason PlayerStats keeps its own persisted total rather than reducing over
 	//RunHistory.all(): that list can shrink, a lifetime total must not
 	const storage = memoryStorage();
-	const stats = new PlayerStats({ namespace: 'limit-test', storage, initial: { runs: 0, kills: 0, bestFloor: 0 }, combine });
+	const stats = new PlayerStats({
+		namespace: 'limit-test',
+		storage,
+		initial: { runs: 0, kills: 0, bestFloor: 0 },
+		combine,
+	});
 	for (let i = 0; i < 100; i++) stats.record({ kills: 1, floor: 1 });
 	assert.equal(stats.get().runs, 100);
 	assert.equal(stats.get().kills, 100);

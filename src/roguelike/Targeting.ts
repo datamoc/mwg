@@ -11,10 +11,7 @@ import type { Step } from './Pathfinder.ts';
  * many cells wide the far end is.
  */
 export type AreaShape =
-	| { kind: 'single' }
-	| { kind: 'burst'; radius: number }
-	| { kind: 'line' }
-	| { kind: 'cone'; width: number };
+	{ kind: 'single' } | { kind: 'burst'; radius: number } | { kind: 'line' } | { kind: 'cone'; width: number };
 
 export interface TargetingOptions {
 	/** how far the aim can reach, in cells (Chebyshev distance - the usual roguelike ruler) */

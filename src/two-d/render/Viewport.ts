@@ -75,7 +75,7 @@ export class Viewport {
  */
 export function splitScreenHalves(
 	width: number,
-	height: number
+	height: number,
 ): [{ x: number; y: number; width: number; height: number }, { x: number; y: number; width: number; height: number }] {
 	if (width >= height) {
 		const half = Math.floor(width / 2);

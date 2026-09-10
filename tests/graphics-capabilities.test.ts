@@ -5,7 +5,7 @@ import { inspectGraphicsCapabilities, detectWebGpu, RENDERING_DECISIONS } from '
 
 test('inspectGraphicsCapabilities reports available graphics APIs', () => {
 	const capabilities = inspectGraphicsCapabilities({
-		createCanvas: () => ({ getContext: (kind) => kind === 'webgl2' ? {} : null }),
+		createCanvas: () => ({ getContext: (kind) => (kind === 'webgl2' ? {} : null) }),
 		webgpu: true,
 	});
 
@@ -17,7 +17,7 @@ test('inspectGraphicsCapabilities reports available graphics APIs', () => {
 
 test('inspectGraphicsCapabilities takes wgsl only from a caller-supplied, real result', () => {
 	const capabilities = inspectGraphicsCapabilities({
-		createCanvas: () => ({ getContext: (kind) => kind === 'webgl2' ? {} : null }),
+		createCanvas: () => ({ getContext: (kind) => (kind === 'webgl2' ? {} : null) }),
 		webgpu: true,
 		wgsl: true,
 	});
@@ -34,7 +34,17 @@ test('detectWebGpu resolves both flags false when navigator.gpu does not exist',
 });
 
 test('rendering decisions cover both 2D and 3D workloads', () => {
-	assert.deepEqual(RENDERING_DECISIONS.map(({ workload }) => workload), [
-		'sprites', 'ui', 'custom-shaders', 'particles', 'instanced-terrain', 'voxels', 'animated-models', 'large-3d-worlds',
-	]);
+	assert.deepEqual(
+		RENDERING_DECISIONS.map(({ workload }) => workload),
+		[
+			'sprites',
+			'ui',
+			'custom-shaders',
+			'particles',
+			'instanced-terrain',
+			'voxels',
+			'animated-models',
+			'large-3d-worlds',
+		],
+	);
 });

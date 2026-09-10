@@ -72,7 +72,10 @@ export function synthesizeTone(options: ToneOptions = {}): string {
  * playTone({ waveform: 'sine', frequency: 660, duration: 0.08 }); // a quick UI blip
  * ```
  */
-export function playTone(options: ToneOptions = {}, create: (dataUri: string) => Playable = (uri) => new Audio(uri)): Playable {
+export function playTone(
+	options: ToneOptions = {},
+	create: (dataUri: string) => Playable = (uri) => new Audio(uri),
+): Playable {
 	const playable = create(synthesizeTone(options));
 	// same rejection-swallowing as Sound.play()/Music.play(): an interrupted play() here is
 	// expected, not an error, and must not escape as an unhandled rejection.
@@ -102,7 +105,7 @@ function noiseSample(seed: number, index: number): number {
 	h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0;
 	h = Math.imul(h ^ (h >>> 13), 3266489917) >>> 0;
 	h ^= h >>> 16;
-	return (h >>> 0) / 4294967295 * 2 - 1;
+	return ((h >>> 0) / 4294967295) * 2 - 1;
 }
 
 function encodeWav(samples: Float32Array, sampleRate: number): string {

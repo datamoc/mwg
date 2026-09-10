@@ -46,7 +46,12 @@ test('an underscore inside a word is text, an asterisk is emphasis', () => {
 test('unmatched markers stay literal', () => {
 	assert.deepEqual(styled('a * b'), [{ text: 'a * b', bold: false, italic: false }]);
 	assert.deepEqual(styled('**half'), [{ text: '**half', bold: false, italic: false }]);
-	assert.deepEqual(styled('**a** **b**').filter((span) => span.bold).map((span) => span.text), ['a', 'b']);
+	assert.deepEqual(
+		styled('**a** **b**')
+			.filter((span) => span.bold)
+			.map((span) => span.text),
+		['a', 'b'],
+	);
 });
 
 test('a backslash escapes a marker', () => {

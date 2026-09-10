@@ -93,7 +93,11 @@ const RESERVED_KEYS = new Set(['id', 'growth', 'level', 'startingAffix', 'starti
  * console.log(goblin.stats.get('attack')); // 4
  * ```
  */
-export function buildEntity(row: EntityTemplateRow, catalog: EntityTemplateCatalog = {}, onLowHp?: (entity: BuiltEntity) => void): BuiltEntity {
+export function buildEntity(
+	row: EntityTemplateRow,
+	catalog: EntityTemplateCatalog = {},
+	onLowHp?: (entity: BuiltEntity) => void,
+): BuiltEntity {
 	const stats = new StatBlock({ base: statsFrom(row) });
 
 	let progression: Progression | undefined;
@@ -119,7 +123,10 @@ export function buildEntity(row: EntityTemplateRow, catalog: EntityTemplateCatal
 	const entity: BuiltEntity = { id: row.id, stats, progression, item, reactions };
 
 	if (row.lowHpReaction !== undefined) {
-		if (!onLowHp) throw new Error(`entity template "${row.id}": names a lowHpReaction threshold but no onLowHp callback was given`);
+		if (!onLowHp)
+			throw new Error(
+				`entity template "${row.id}": names a lowHpReaction threshold but no onLowHp callback was given`,
+			);
 		const threshold = row.lowHpReaction;
 		reactions.add({ id: 'low-hp', when: (s) => s.hp / s.maxHp <= threshold, action: () => onLowHp(entity) });
 	}
@@ -128,7 +135,11 @@ export function buildEntity(row: EntityTemplateRow, catalog: EntityTemplateCatal
 }
 
 /** `buildEntity` over every row - the usual shape once a whole file's worth loads at once */
-export function buildEntities(rows: readonly EntityTemplateRow[], catalog: EntityTemplateCatalog = {}, onLowHp?: (entity: BuiltEntity) => void): BuiltEntity[] {
+export function buildEntities(
+	rows: readonly EntityTemplateRow[],
+	catalog: EntityTemplateCatalog = {},
+	onLowHp?: (entity: BuiltEntity) => void,
+): BuiltEntity[] {
 	return rows.map((row) => buildEntity(row, catalog, onLowHp));
 }
 
@@ -197,7 +208,8 @@ function statsFrom(row: EntityTemplateRow): Stats {
 	const stats: Stats = {};
 	for (const [key, value] of Object.entries(row)) {
 		if (RESERVED_KEYS.has(key)) continue;
-		if (typeof value !== 'number') throw new Error(`entity template "${row.id}": stat "${key}" must be a number, got ${typeof value}`);
+		if (typeof value !== 'number')
+			throw new Error(`entity template "${row.id}": stat "${key}" must be a number, got ${typeof value}`);
 		stats[key] = value;
 	}
 	return stats;

@@ -28,7 +28,10 @@ test('a move whose real path exceeds the action budget is not offered at all', (
 	assert.equal(move, undefined, 'the old bug listed this as legal at the cheap straight-line cost');
 
 	getUnit(state).actions = 5;
-	assert.equal(tacticalMoves(state, 'a').find((m) => m.x === 4 && m.y === 0), undefined);
+	assert.equal(
+		tacticalMoves(state, 'a').find((m) => m.x === 4 && m.y === 0),
+		undefined,
+	);
 });
 
 test('moving spends exactly the real path cost', () => {
@@ -68,7 +71,7 @@ test('zone of control does not block a unit from moving onto a threatened cell a
 	assert.equal(move.cost, 1);
 });
 
-test('a unit already adjacent to an enemy ignores that enemy\'s zone of control', () => {
+test("a unit already adjacent to an enemy ignores that enemy's zone of control", () => {
 	//B starts adjacent to A, so A is already engaged with it; B's zone (which would
 	//otherwise cut the only route through row 1) should not apply to A's move at all
 	const state = startingTactics(3, 2, 'square');

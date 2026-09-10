@@ -66,7 +66,7 @@ export function resolve(path: string): string {
 	const found = map[path];
 	if (found === undefined) {
 		throw new Error(
-			`asset "${path}" is not in this build - check it is under the folder passed to compile-resources`
+			`asset "${path}" is not in this build - check it is under the folder passed to compile-resources`,
 		);
 	}
 	return found;

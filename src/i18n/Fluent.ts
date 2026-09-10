@@ -61,22 +61,33 @@ export function parseFTL(locale: string, source: string, options: FluentOptions 
 		throw new Error(`Invalid FTL line: ${line}`);
 	}
 	finish();
-	return { locale, direction: options.direction ?? (/^(ar|he|fa|ur)(?:-|$)/i.test(locale) ? 'rtl' : 'ltr'), messages };
+	return {
+		locale,
+		direction: options.direction ?? (/^(ar|he|fa|ur)(?:-|$)/i.test(locale) ? 'rtl' : 'ltr'),
+		messages,
+	};
 }
 
 function normalize(text: string): string {
 	//`{$name}` renders as `{name}`; a conversion or format spec rides along untouched
 	//(`{$dmg:03d}` becomes `{dmg:03d}`), for `t()`'s own f-string handling downstream
 	return text
-		.replace(/\{\s*\$([\w-]+)\s*(?:!([sra]))?\s*(?::\s*([^{}]*?))?\s*\}/g, (_, name: string, conv: string | undefined, spec: string | undefined) => {
-			const conversion = conv ? `!${conv}` : '';
-			const suffix = spec === undefined ? '' : `:${spec.trim()}`;
-			return `{${name}${conversion}${suffix}}`;
-		})
+		.replace(
+			/\{\s*\$([\w-]+)\s*(?:!([sra]))?\s*(?::\s*([^{}]*?))?\s*\}/g,
+			(_, name: string, conv: string | undefined, spec: string | undefined) => {
+				const conversion = conv ? `!${conv}` : '';
+				const suffix = spec === undefined ? '' : `:${spec.trim()}`;
+				return `{${name}${conversion}${suffix}}`;
+			},
+		)
 		.trim();
 }
 
-function selectMessage(locale: string, selectorName: string, variants: Variant[]): { format(params?: MessageParams): string } {
+function selectMessage(
+	locale: string,
+	selectorName: string,
+	variants: Variant[],
+): { format(params?: MessageParams): string } {
 	const defaults = variants.filter((variant) => variant.default);
 	if (defaults.length !== 1) throw new Error('FTL select expressions need exactly one default variant');
 	const defaultVariant = defaults[0];

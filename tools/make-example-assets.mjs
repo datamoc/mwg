@@ -308,14 +308,26 @@ function buildBackdrop(palette) {
 	//wall, shaded slightly darker towards the floor
 	for (let y = 0; y < horizon; y++) {
 		const shade = 1 - (y / horizon) * 0.25;
-		canvas.rect(0, y, width, 1, palette.wall.map((c) => Math.round(c * shade)));
+		canvas.rect(
+			0,
+			y,
+			width,
+			1,
+			palette.wall.map((c) => Math.round(c * shade)),
+		);
 	}
 
 	//floor, in perspective-ish bands that get shorter towards the horizon
 	for (let y = horizon; y < height; y++) {
 		const depth = (y - horizon) / (height - horizon);
 		const shade = 0.55 + depth * 0.45;
-		canvas.rect(0, y, width, 1, palette.floor.map((c) => Math.round(c * shade)));
+		canvas.rect(
+			0,
+			y,
+			width,
+			1,
+			palette.floor.map((c) => Math.round(c * shade)),
+		);
 	}
 	for (let x = 0; x < width; x += 24) {
 		for (let y = horizon; y < height; y++) {
@@ -648,16 +660,18 @@ await writeFile(
 			},
 		},
 		null,
-		'\t'
+		'\t',
 	) + '\n',
-	'utf8'
+	'utf8',
 );
 
 const kb = (n) => (n / 1024).toFixed(1) + ' KB';
 console.log(`tiles.png   ${kb(png.length)}  (${COLUMNS}x${ROWS} tiles of ${TILE}px)`);
 console.log(`backdrop_room.png ${kb(backdrop.length)}  (320x180)`);
 for (const [name, character] of Object.entries(characters)) {
-	console.log(`${name.padEnd(12)}${kb(character.png.length)}  (${character.expressions} expressions of ${character.frameWidth}x${character.frameHeight})`);
+	console.log(
+		`${name.padEnd(12)}${kb(character.png.length)}  (${character.expressions} expressions of ${character.frameWidth}x${character.frameHeight})`,
+	);
 }
 for (const [name, samples] of Object.entries(SOUNDS)) {
 	console.log(`${name.padEnd(12)}${kb(samples.length * 2 + 44)}`);

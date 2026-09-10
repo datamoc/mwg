@@ -79,7 +79,8 @@ export class SupportLedger {
 	static fromJSON(levels: readonly SupportLevel[], data: SupportSave): SupportLedger {
 		const ledger = new SupportLedger(levels);
 		for (const [a, b, points] of data.pairs) {
-			if (!a || !b || a === b || !Number.isFinite(points) || points < 0) throw new Error('invalid support save data');
+			if (!a || !b || a === b || !Number.isFinite(points) || points < 0)
+				throw new Error('invalid support save data');
 			const key = pairKey(a, b);
 			if (ledger.points.has(key)) throw new Error(`invalid support save data: duplicate pair "${a}" / "${b}"`);
 			ledger.points.set(key, points);

@@ -142,7 +142,11 @@ export class Scheduler<A extends Actor> {
 		return {
 			now: this.now,
 			sequence: this.sequence,
-			entries: this.entries.map((entry) => ({ id: actorId(entry.actor), time: entry.time, sequence: entry.sequence })),
+			entries: this.entries.map((entry) => ({
+				id: actorId(entry.actor),
+				time: entry.time,
+				sequence: entry.sequence,
+			})),
 		};
 	}
 
@@ -157,7 +161,11 @@ export class Scheduler<A extends Actor> {
 		const scheduler = new Scheduler<A>();
 		scheduler.now = snapshot.now;
 		scheduler.sequence = snapshot.sequence;
-		scheduler.entries = snapshot.entries.map((entry) => ({ actor: actorOf(entry.id), time: entry.time, sequence: entry.sequence }));
+		scheduler.entries = snapshot.entries.map((entry) => ({
+			actor: actorOf(entry.id),
+			time: entry.time,
+			sequence: entry.sequence,
+		}));
 		scheduler.sort();
 		return scheduler;
 	}

@@ -138,7 +138,7 @@ export class Advancement {
 	/** rebuilds advancement from save data - the track itself is supplied fresh, the same as `QuestLog` definitions */
 	static fromJSON(
 		track: AdvancementTrack,
-		data: { grantedTiers: number; balance: number; choices: [number, string][] }
+		data: { grantedTiers: number; balance: number; choices: [number, string][] },
 	): Advancement {
 		const advancement = new Advancement(track);
 		advancement.grantedTiers = data.grantedTiers;

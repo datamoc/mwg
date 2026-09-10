@@ -58,7 +58,7 @@ test('bind() scopes a keyboard binding the same way bindButton scopes a gamepad 
 	const p1 = new PlayerInput('p1-keys');
 	p1.bind('jump', ['Space']);
 	assert.deepEqual(p1.keysFor('jump'), ['Space']);
-	assert.deepEqual(Input.keysFor('jump'), [], "the bare, unscoped action must be untouched");
+	assert.deepEqual(Input.keysFor('jump'), [], 'the bare, unscoped action must be untouched');
 });
 
 test('bindButton/bindAxis without a padIndex throw rather than binding nothing silently', () => {

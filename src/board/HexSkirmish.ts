@@ -76,9 +76,22 @@ export interface SkirmishState {
 	round: number;
 }
 
-export interface SkirmishMove { unit: string; x: number; y: number; cost: number; }
-export interface SkirmishStrike { attacker: string; defender: string; hit: boolean; damage: number; killed: boolean; }
-export interface SkirmishExchange { strikes: SkirmishStrike[]; }
+export interface SkirmishMove {
+	unit: string;
+	x: number;
+	y: number;
+	cost: number;
+}
+export interface SkirmishStrike {
+	attacker: string;
+	defender: string;
+	hit: boolean;
+	damage: number;
+	killed: boolean;
+}
+export interface SkirmishExchange {
+	strikes: SkirmishStrike[];
+}
 
 /**
  * @example
@@ -89,7 +102,12 @@ export interface SkirmishExchange { strikes: SkirmishStrike[]; }
  * console.log(state.width, state.round); // 6 1
  * ```
  */
-export function startingSkirmish(width: number, height: number, terrainTable: Record<string, SkirmishTerrain>, defaultTerrain?: string): SkirmishState {
+export function startingSkirmish(
+	width: number,
+	height: number,
+	terrainTable: Record<string, SkirmishTerrain>,
+	defaultTerrain?: string,
+): SkirmishState {
 	if (width < 1 || height < 1) throw new Error('a skirmish map needs positive dimensions');
 	const terrain = defaultTerrain ?? Object.keys(terrainTable)[0];
 	if (!terrain || !terrainTable[terrain]) throw new Error('a skirmish map needs at least one terrain kind');
@@ -176,11 +194,13 @@ export function skirmishMoves(state: SkirmishState, unitId: string): SkirmishMov
 	if (unit.owner !== state.turn || budget <= 0) return [];
 
 	const out: SkirmishMove[] = [];
-	for (let y = 0; y < state.height; y++) for (let x = 0; x < state.width; x++) {
-		if ((x === unit.x && y === unit.y) || moveCostOf(state, x, y) === Infinity || occupied(state, x, y)) continue;
-		const cost = pathCost(state, unit, x, y, budget);
-		if (cost !== null) out.push({ unit: unitId, x, y, cost });
-	}
+	for (let y = 0; y < state.height; y++)
+		for (let x = 0; x < state.width; x++) {
+			if ((x === unit.x && y === unit.y) || moveCostOf(state, x, y) === Infinity || occupied(state, x, y))
+				continue;
+			const cost = pathCost(state, unit, x, y, budget);
+			if (cost !== null) out.push({ unit: unitId, x, y, cost });
+		}
 	return out;
 }
 
@@ -306,15 +326,29 @@ function getUnit(state: SkirmishState, id: string): SkirmishUnit {
 	if (!unit) throw new Error(`unknown skirmish unit "${id}"`);
 	return unit;
 }
-function inside(state: SkirmishState, x: number, y: number): boolean { return x >= 0 && y >= 0 && x < state.width && y < state.height; }
-function occupied(state: SkirmishState, x: number, y: number): boolean { return state.units.some((unit) => unit.x === x && unit.y === y); }
-function terrainOf(state: SkirmishState, x: number, y: number): SkirmishTerrain { return state.terrainTable[state.cells[y * state.width + x].terrain]; }
-function moveCostOf(state: SkirmishState, x: number, y: number): number { return terrainOf(state, x, y).moveCost; }
+function inside(state: SkirmishState, x: number, y: number): boolean {
+	return x >= 0 && y >= 0 && x < state.width && y < state.height;
+}
+function occupied(state: SkirmishState, x: number, y: number): boolean {
+	return state.units.some((unit) => unit.x === x && unit.y === y);
+}
+function terrainOf(state: SkirmishState, x: number, y: number): SkirmishTerrain {
+	return state.terrainTable[state.cells[y * state.width + x].terrain];
+}
+function moveCostOf(state: SkirmishState, x: number, y: number): number {
+	return terrainOf(state, x, y).moveCost;
+}
 
 //the real weighted walking cost to (targetX, targetY), never exceeding `budget`, or null if it
 //cannot be reached within that budget - Dijkstra over a small grid rather than BFS, since
 //terrain move cost varies per cell unlike board.Tactics' uniform one-step cost
-function pathCost(state: SkirmishState, unit: SkirmishUnit, targetX: number, targetY: number, budget: number): number | null {
+function pathCost(
+	state: SkirmishState,
+	unit: SkirmishUnit,
+	targetX: number,
+	targetY: number,
+	budget: number,
+): number | null {
 	const best = new Map<string, number>([[`${unit.x},${unit.y}`, 0]]);
 	const todo = [{ x: unit.x, y: unit.y, cost: 0 }];
 	while (todo.length > 0) {

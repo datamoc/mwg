@@ -62,7 +62,10 @@ async function importsPackage(file, pkg) {
 /** which renderer, if any, each module's barrel actually pulls in */
 async function moduleFacts() {
 	const entries = await readdir(SRC, { withFileTypes: true });
-	const modules = entries.filter((e) => e.isDirectory()).map((e) => e.name).sort();
+	const modules = entries
+		.filter((e) => e.isDirectory())
+		.map((e) => e.name)
+		.sort();
 
 	const facts = [];
 	for (const name of modules) {
@@ -114,7 +117,7 @@ function renderColumns(spec) {
 				`<g>\n  <rect x="${x + 24}" y="${ty}" width="${colWidth - 48}" height="${tileHeight}" rx="10" fill="#1d222c" stroke="#333c4a"/>\n` +
 					text(x + 40, ty + tileHeight / 2 + 1, INK, 17, 600, 'start', tile.label) +
 					text(x + 40, ty + tileHeight - 7, '#7f8899', 13, null, 'start', tile.note ?? '') +
-					`</g>`
+					`</g>`,
 			);
 		});
 	});
@@ -142,11 +145,15 @@ function renderPipeline(spec) {
 		const x = 70 + i * (boxWidth + gap);
 		if (i > 0) {
 			const prev = x - gap;
-			parts.push(`<line x1="${prev + 6}" y1="${top + 90}" x2="${x - 8}" y2="${top + 90}" stroke="${LINE}" stroke-width="3" marker-end="url(#arrow)"/>`);
+			parts.push(
+				`<line x1="${prev + 6}" y1="${top + 90}" x2="${x - 8}" y2="${top + 90}" stroke="${LINE}" stroke-width="3" marker-end="url(#arrow)"/>`,
+			);
 		}
 		parts.push(panel(x, top, boxWidth, 300, stage.accent ?? ACCENT.blue));
 		parts.push(text(x + 24, top + 46, INK, 23, 700, 'start', stage.label));
-		(stage.lines ?? []).forEach((line, j) => parts.push(text(x + 24, top + 86 + j * 28, DIM, 16, null, 'start', line)));
+		(stage.lines ?? []).forEach((line, j) =>
+			parts.push(text(x + 24, top + 86 + j * 28, DIM, 16, null, 'start', line)),
+		);
 	});
 
 	if (spec.footnote) parts.push(text(70, 700, DIM, 18, null, 'start', spec.footnote));
@@ -248,20 +255,41 @@ const DEPLOYMENT = {
 		{
 			label: 'Build',
 			accent: ACCENT.amber,
-			lines: ['compile-resources turns', 'every asset into a data:', 'URI inside a plain script.', '', 'The library emits a', 'classic IIFE, not ESM.'],
+			lines: [
+				'compile-resources turns',
+				'every asset into a data:',
+				'URI inside a plain script.',
+				'',
+				'The library emits a',
+				'classic IIFE, not ESM.',
+			],
 		},
 		{
 			label: 'Artifact',
 			accent: ACCENT.green,
-			lines: ['One folder: index.html,', 'game.js, asset scripts.', '', 'No install step, no', 'runtime to download.'],
+			lines: [
+				'One folder: index.html,',
+				'game.js, asset scripts.',
+				'',
+				'No install step, no',
+				'runtime to download.',
+			],
 		},
 		{
 			label: 'Run',
 			accent: ACCENT.blue,
-			lines: ['Opens from file://,', 'a static host, Capacitor', 'or a WebView2 desktop', 'shell, unchanged.', '', 'Draws through WebGL.'],
+			lines: [
+				'Opens from file://,',
+				'a static host, Capacitor',
+				'or a WebView2 desktop',
+				'shell, unchanged.',
+				'',
+				'Draws through WebGL.',
+			],
 		},
 	],
-	footnote: 'file:// blocks ES modules, fetch() and cross-origin images, which is why assets are compiled in and the bundle is a classic script.',
+	footnote:
+		'file:// blocks ES modules, fetch() and cross-origin images, which is why assets are compiled in and the bundle is a classic script.',
 	footnote2: 'Everything after load is synchronous: game code never awaits an asset mid-scene.',
 	note: 'Conceptual MWG diagram',
 };
@@ -279,7 +307,14 @@ const RPG_FLOW = {
 		{
 			label: 'MapEvent',
 			accent: ACCENT.blue,
-			lines: ['a position on the map', 'and several EventPages', '', 'conditions are checked', 'against GameState;', 'the last valid page wins'],
+			lines: [
+				'a position on the map',
+				'and several EventPages',
+				'',
+				'conditions are checked',
+				'against GameState;',
+				'the last valid page wins',
+			],
 		},
 		{
 			label: 'Active EventPage',
@@ -289,15 +324,30 @@ const RPG_FLOW = {
 		{
 			label: 'EventRunner',
 			accent: ACCENT.red,
-			lines: ['say / ask / wait', 'setSwitch / addVariable', 'if / move / call', '', 'writes back to GameState,', 'closing the loop'],
+			lines: [
+				'say / ask / wait',
+				'setSwitch / addVariable',
+				'if / move / call',
+				'',
+				'writes back to GameState,',
+				'closing the loop',
+			],
 		},
 		{
 			label: 'DialoguePresenter',
 			accent: ACCENT.purple,
-			lines: ['shows a line, resolves', 'with what was chosen', '', 'two-d/ui supplies a', 'MessageBox one; a 3D', 'game supplies its own'],
+			lines: [
+				'shows a line, resolves',
+				'with what was chosen',
+				'',
+				'two-d/ui supplies a',
+				'MessageBox one; a 3D',
+				'game supplies its own',
+			],
 		},
 	],
-	footnote: 'The presenter is injected, so mwg/rpg needs no renderer: the same event scripts run under a 2D game, a 3D game, or a headless test.',
+	footnote:
+		'The presenter is injected, so mwg/rpg needs no renderer: the same event scripts run under a 2D game, a 3D game, or a headless test.',
 	note: 'Conceptual MWG diagram',
 };
 

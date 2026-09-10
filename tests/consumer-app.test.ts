@@ -82,7 +82,11 @@ new Game({ extensions: [] }).start(GameScene);
 `;
 
 test('a minimal 2D game compiling only against @datamoc/mw_games public paths never names pixi.js/@babylonjs', () => {
-	assert.doesNotMatch(CONSUMER_GAME, /['"](pixi\.js|@pixi\/|@babylonjs\/)/, 'the fixture itself must not import a renderer directly');
+	assert.doesNotMatch(
+		CONSUMER_GAME,
+		/['"](pixi\.js|@pixi\/|@babylonjs\/)/,
+		'the fixture itself must not import a renderer directly',
+	);
 
 	const scratchRoot = join(ROOT, '.example-check');
 	mkdirSync(scratchRoot, { recursive: true });
@@ -102,7 +106,9 @@ test('a minimal 2D game compiling only against @datamoc/mw_games public paths ne
 				noEmit: true,
 				types: [],
 				allowImportingTsExtensions: true,
-				paths: Object.fromEntries(Object.entries(publicPathMap()).map(([specifier, path]) => [specifier, [path]])),
+				paths: Object.fromEntries(
+					Object.entries(publicPathMap()).map(([specifier, path]) => [specifier, [path]]),
+				),
 			},
 			include: [file],
 		};
@@ -113,7 +119,9 @@ test('a minimal 2D game compiling only against @datamoc/mw_games public paths ne
 			execFileSync('npx', ['tsc', '--noEmit', '-p', tsconfigPath], { cwd: ROOT, stdio: 'pipe', shell: true });
 		} catch (error) {
 			const output = (error as { stdout?: Buffer }).stdout?.toString() ?? String(error);
-			assert.fail(`the minimal consumer game fails to compile against @datamoc/mw_games's public paths:\n${output}`);
+			assert.fail(
+				`the minimal consumer game fails to compile against @datamoc/mw_games's public paths:\n${output}`,
+			);
 		}
 	} finally {
 		rmSync(dir, { recursive: true, force: true });

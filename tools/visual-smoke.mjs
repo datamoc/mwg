@@ -33,7 +33,7 @@ const pageUrl = pathToFileURL(resolve(root, relativePage)).href;
 const screenshotDir = resolve(root, 'benchmark-results', 'visual-smoke');
 const screenshot = join(screenshotDir, relativePage.replace(/[\\/]/g, '-').replace(/\.html$/, '.png'));
 
-const executablePath = process.env.CHROME_PATH ?? await findChrome();
+const executablePath = process.env.CHROME_PATH ?? (await findChrome());
 const extraChromeArgs = (process.env.MWG_VISUAL_CHROME_ARGS ?? '').split(' ').filter(Boolean);
 
 await mkdir(screenshotDir, { recursive: true });
@@ -57,10 +57,14 @@ try {
 	});
 
 	await page.goto(pageUrl, { waitUntil: 'load' });
-	await page.waitForFunction(() => {
-		const canvas = document.querySelector('canvas');
-		return Boolean(window.__MWG__) && Boolean(canvas && canvas.width > 0 && canvas.height > 0);
-	}, undefined, { timeout: 5000 });
+	await page.waitForFunction(
+		() => {
+			const canvas = document.querySelector('canvas');
+			return Boolean(window.__MWG__) && Boolean(canvas && canvas.width > 0 && canvas.height > 0);
+		},
+		undefined,
+		{ timeout: 5000 },
+	);
 
 	//let the example's own scene finish its first frames before reading pixels back
 	await page.waitForTimeout(250);

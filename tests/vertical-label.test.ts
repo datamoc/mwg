@@ -17,7 +17,7 @@ test('characters stack top to bottom within a column', () => {
 
 	assert.deepEqual(
 		glyphs.map((g) => g.y),
-		[0, 10, 20]
+		[0, 10, 20],
 	);
 	assert.ok(glyphs.every((g) => g.x === 0));
 });
@@ -28,7 +28,7 @@ test('a column wraps once it reaches columnHeight, moving further left', () => {
 	//three rows fit (0, 10, 20 < 25), the fourth wraps to a new column
 	assert.deepEqual(
 		glyphs.map((g) => g.x),
-		[0, 0, 0, -10]
+		[0, 0, 0, -10],
 	);
 	assert.equal(glyphs[3].y, 0);
 });

@@ -34,7 +34,7 @@ export function messageBoxPresenter(windows: WindowStack, options: MessageBoxPre
 					choices: request.choices,
 					anchor: options.anchor ?? 'bottom',
 					onDone: (chosen) => resolve(chosen),
-				})
+				}),
 			);
 		});
 }

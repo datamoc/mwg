@@ -49,7 +49,7 @@ test('removeLayer takes it out entirely', () => {
 	assert.equal(sprite.children.length, 0);
 });
 
-test('setTexture swaps a layer\'s texture without touching its identity or order', () => {
+test("setTexture swaps a layer's texture without touching its identity or order", () => {
 	const sprite = new LayeredSprite();
 	const layer = sprite.addLayer('weapon', blankTexture(), 5);
 	const next = blankTexture();

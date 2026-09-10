@@ -37,9 +37,7 @@ export interface AppearanceTable {
  */
 export function assignAppearances(table: AppearanceTable): Map<string, string> {
 	if (table.labels.length < table.kinds.length) {
-		throw new Error(
-			`not enough appearances: ${table.kinds.length} kinds but only ${table.labels.length} labels`
-		);
+		throw new Error(`not enough appearances: ${table.kinds.length} kinds but only ${table.labels.length} labels`);
 	}
 	const pool = [...table.labels];
 	for (let i = pool.length - 1; i > 0; i--) {
@@ -80,7 +78,7 @@ export class Appearances {
 	/** rebuilds appearances from save data - the tables themselves are supplied fresh, the same as `QuestLog` definitions */
 	static fromJSON(
 		tables: Record<string, AppearanceTable>,
-		data: { assigned: [string, [string, string][]][] }
+		data: { assigned: [string, [string, string][]][] },
 	): Appearances {
 		const appearances = new Appearances(tables);
 		for (const [category, entries] of data.assigned) appearances.assigned.set(category, new Map(entries));

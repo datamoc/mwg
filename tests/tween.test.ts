@@ -30,7 +30,9 @@ test('isBusy reports whether any tween is still running', () => {
 test('a non-positive duration applies the end state immediately without waiting a frame', async () => {
 	const tweener = new Tweener();
 	let applied = -1;
-	await tweener.tween(0, (t) => { applied = t; });
+	await tweener.tween(0, (t) => {
+		applied = t;
+	});
 	assert.equal(applied, 1);
 	assert.equal(tweener.isBusy, false);
 });
@@ -53,9 +55,11 @@ test('several tweens run independently, each resolving at its own duration', asy
 test('a tween resolving mid-update can start another without it being double-advanced', async () => {
 	const tweener = new Tweener();
 	const seen: number[] = [];
-	const chained = tweener.tween(1, () => {}).then(() => {
-		tweener.tween(1, (t) => seen.push(t));
-	});
+	const chained = tweener
+		.tween(1, () => {})
+		.then(() => {
+			tweener.tween(1, (t) => seen.push(t));
+		});
 	tweener.update(1);
 	await chained;
 	assert.deepEqual(seen, []);
@@ -67,7 +71,13 @@ test('clear drops every running tween without applying its end state or resolvin
 	const tweener = new Tweener();
 	let applied = -1;
 	let resolved = false;
-	void tweener.tween(1, (t) => { applied = t; }).then(() => { resolved = true; });
+	void tweener
+		.tween(1, (t) => {
+			applied = t;
+		})
+		.then(() => {
+			resolved = true;
+		});
 	tweener.update(0.3);
 	assert.equal(applied, 0.3);
 

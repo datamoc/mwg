@@ -60,7 +60,8 @@ export class LoadQueue {
 
 	add(task: LoadTask): this {
 		if (!task.id) throw new Error('load task needs an id');
-		if (this.tasks.some((candidate) => candidate.id === task.id)) throw new Error(`duplicate load task "${task.id}"`);
+		if (this.tasks.some((candidate) => candidate.id === task.id))
+			throw new Error(`duplicate load task "${task.id}"`);
 		if (task.weight !== undefined && !(task.weight > 0)) throw new Error('load task weight must be positive');
 		if (this.status_ === 'loading') throw new Error('cannot add a task while loading');
 		this.tasks.push(task);
@@ -71,7 +72,10 @@ export class LoadQueue {
 
 	get snapshot(): LoadSnapshot {
 		const total = this.tasks.reduce((sum, task) => sum + (task.weight ?? 1), 0);
-		const complete = this.tasks.reduce((sum, task) => sum + (task.weight ?? 1) * (this.progress.get(task.id) ?? 0), 0);
+		const complete = this.tasks.reduce(
+			(sum, task) => sum + (task.weight ?? 1) * (this.progress.get(task.id) ?? 0),
+			0,
+		);
 		return { status: this.status_, completed: complete, total, current: this.current_, error: this.error_ };
 	}
 

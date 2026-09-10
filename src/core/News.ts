@@ -77,7 +77,7 @@ export class NewsSeenTracker {
 	constructor(options: NewsSeenOptions) {
 		this.store = new StoredValue<string[]>(
 			options.storage ?? defaultStorage(),
-			`mwg-news-seen:${options.namespace}`
+			`mwg-news-seen:${options.namespace}`,
 		);
 	}
 

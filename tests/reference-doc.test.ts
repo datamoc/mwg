@@ -73,7 +73,7 @@ test('every runtime export is named somewhere in REFERENCE.md', () => {
 	assert.deepEqual(
 		undocumented,
 		[],
-		`REFERENCE.md does not mention these exports - add a line for each, or stop exporting it:\n${undocumented.join('\n')}`
+		`REFERENCE.md does not mention these exports - add a line for each, or stop exporting it:\n${undocumented.join('\n')}`,
 	);
 });
 

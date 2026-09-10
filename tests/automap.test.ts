@@ -31,8 +31,13 @@ test('a matching pattern is replaced, and the rest of the map is untouched', () 
 
 	assert.equal(automap(map, [rule]), 1);
 	assert.deepEqual(
-		[map.getTile('ground', 0, 0), map.getTile('ground', 1, 0), map.getTile('ground', 2, 0), map.getTile('ground', 3, 0)],
-		[7, 7, 2, 2]
+		[
+			map.getTile('ground', 0, 0),
+			map.getTile('ground', 1, 0),
+			map.getTile('ground', 2, 0),
+			map.getTile('ground', 3, 0),
+		],
+		[7, 7, 2, 2],
 	);
 });
 
@@ -47,8 +52,13 @@ test('an empty input cell constrains nothing, and an empty output cell writes no
 
 	assert.equal(automap(map, [rule]), 2);
 	assert.deepEqual(
-		[map.getTile('ground', 0, 0), map.getTile('ground', 1, 0), map.getTile('ground', 2, 0), map.getTile('ground', 3, 0)],
-		[1, 8, 1, 8]
+		[
+			map.getTile('ground', 0, 0),
+			map.getTile('ground', 1, 0),
+			map.getTile('ground', 2, 0),
+			map.getTile('ground', 3, 0),
+		],
+		[1, 8, 1, 8],
 	);
 });
 
@@ -61,19 +71,14 @@ test('rules apply in order, so a later rule overrides an earlier one', () => {
 	]);
 
 	assert.equal(matches, 8); //four origins times two rules
-	assert.deepEqual(
-		[map.getTile('ground', 0, 0), map.getTile('ground', 3, 0)],
-		[3, 3]
-	);
+	assert.deepEqual([map.getTile('ground', 0, 0), map.getTile('ground', 3, 0)], [3, 3]);
 });
 
 test('a rule never sees its own writes within one pass', () => {
 	const map = strip([1, 1, 1, 1]);
 
 	//if writes were visible mid-pass, the fresh 2s would match again and cascade to 3
-	const matches = automap(map, [
-		{ width: 1, height: 1, input: { ground: [1] }, outputs: [{ ground: [2] }] },
-	]);
+	const matches = automap(map, [{ width: 1, height: 1, input: { ground: [1] }, outputs: [{ ground: [2] }] }]);
 
 	assert.equal(matches, 4);
 	assert.equal(map.getTile('ground', 0, 0), 2);
@@ -92,7 +97,7 @@ test('several outputs are random variation, picked per match', () => {
 				picked.push(1);
 				return 1;
 			},
-		}
+		},
 	);
 
 	assert.equal(matches, 4);
@@ -103,8 +108,10 @@ test('several outputs are random variation, picked per match', () => {
 test('a pattern larger than the map matches nowhere', () => {
 	const map = strip([1, 1, 1, 1]);
 	assert.equal(
-		automap(map, [{ width: 5, height: 1, input: { ground: [1, 1, 1, 1, 1] }, outputs: [{ ground: [2, 2, 2, 2, 2] }] }]),
-		0
+		automap(map, [
+			{ width: 5, height: 1, input: { ground: [1, 1, 1, 1, 1] }, outputs: [{ ground: [2, 2, 2, 2, 2] }] },
+		]),
+		0,
 	);
 	assert.equal(map.getTile('ground', 0, 0), 1);
 });
@@ -112,13 +119,11 @@ test('a pattern larger than the map matches nowhere', () => {
 test('a misshapen rule is an authoring error', () => {
 	const map = strip([1, 1, 1, 1]);
 	assert.throws(
-		() => automap(map, [{ name: 'bad', width: 2, height: 1, input: { ground: [1] }, outputs: [{ ground: [2, 2] }] }]),
-		/input "ground" has 1 cells, but the pattern is 2/
+		() =>
+			automap(map, [{ name: 'bad', width: 2, height: 1, input: { ground: [1] }, outputs: [{ ground: [2, 2] }] }]),
+		/input "ground" has 1 cells, but the pattern is 2/,
 	);
-	assert.throws(
-		() => automap(map, [{ width: 1, height: 1, input: { ground: [1] }, outputs: [] }]),
-		/no outputs/
-	);
+	assert.throws(() => automap(map, [{ width: 1, height: 1, input: { ground: [1] }, outputs: [] }]), /no outputs/);
 	assert.throws(() => automap(map, [{ width: 0, height: 1, input: {}, outputs: [{}] }]), /positive width/);
 });
 

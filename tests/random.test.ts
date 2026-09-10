@@ -1,7 +1,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Generator, withSeed, int, normalRange, weighted, weightedKey, element, shuffle, reset } from '../src/core/Random.ts';
+import {
+	Generator,
+	withSeed,
+	int,
+	normalRange,
+	weighted,
+	weightedKey,
+	element,
+	shuffle,
+	reset,
+} from '../src/core/Random.ts';
 
 test('the same seed produces the same stream', () => {
 	const a = new Generator(12345);
@@ -56,7 +66,7 @@ test('int(bound) is unbiased for a bound that does not divide 2^32', () => {
 	for (const count of buckets) {
 		assert.ok(
 			Math.abs(count - expected) / expected < 0.01,
-			`bucket deviated by ${((Math.abs(count - expected) / expected) * 100).toFixed(2)}%`
+			`bucket deviated by ${((Math.abs(count - expected) / expected) * 100).toFixed(2)}%`,
 		);
 	}
 });
@@ -116,7 +126,7 @@ test('withSeed pops its generator even when the body throws', () => {
 	assert.throws(() =>
 		withSeed(1, () => {
 			throw new Error('level generation failed');
-		})
+		}),
 	);
 	//if the generator had leaked, this would be drawing from the seeded stream
 	assert.doesNotThrow(() => int(10));
@@ -168,7 +178,7 @@ test('shuffle sends every value to every position equally often', () => {
 		for (const count of row) {
 			assert.ok(
 				Math.abs(count - expected) / expected < 0.08,
-				`a value landed in one position ${((count / expected) * 100).toFixed(0)}% of the expected rate`
+				`a value landed in one position ${((count / expected) * 100).toFixed(0)}% of the expected rate`,
 			);
 		}
 	}

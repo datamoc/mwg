@@ -68,7 +68,6 @@ export interface EventRunnerOptions {
 
 	/** carries out a move command; the runner itself does not know what "moving" means */
 	move?: (target: string, steps: readonly MoveStep[]) => Promise<void>;
-
 }
 
 /**

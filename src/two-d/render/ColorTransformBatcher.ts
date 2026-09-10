@@ -209,7 +209,7 @@ function writeQuadCorner(
 	v: number,
 	argb: number,
 	textureIdAndRound: number,
-	colorAdd: number
+	colorAdd: number,
 ): void {
 	float32View[index] = a * x + c * y + tx;
 	float32View[index + 1] = d * y + b * x + ty;
@@ -255,7 +255,7 @@ export class ColorTransformBatcher extends Batcher {
 		float32View: Float32Array,
 		uint32View: Uint32Array,
 		index: number,
-		textureId: number
+		textureId: number,
 	): void {
 		const textureIdAndRound = (textureId << 16) | (element.roundPixels & 0xffff);
 		const { a, b, c, d, tx, ty } = element.transform;
@@ -286,7 +286,7 @@ export class ColorTransformBatcher extends Batcher {
 		float32View: Float32Array,
 		uint32View: Uint32Array,
 		index: number,
-		textureId: number
+		textureId: number,
 	): void {
 		const { a, b, c, d, tx, ty } = element.transform;
 		const { bounds } = element;
@@ -303,13 +303,81 @@ export class ColorTransformBatcher extends Batcher {
 
 		//the four corners, in the winding order Pixi's shared index buffer expects - written
 		//by hand rather than looped over a built array, since this runs per sprite per frame
-		writeQuadCorner(float32View, uint32View, index, a, b, c, d, tx, ty, w1, h1, uvs.x0, uvs.y0, argb, textureIdAndRound, colorAdd);
+		writeQuadCorner(
+			float32View,
+			uint32View,
+			index,
+			a,
+			b,
+			c,
+			d,
+			tx,
+			ty,
+			w1,
+			h1,
+			uvs.x0,
+			uvs.y0,
+			argb,
+			textureIdAndRound,
+			colorAdd,
+		);
 		index += VERTEX_SIZE;
-		writeQuadCorner(float32View, uint32View, index, a, b, c, d, tx, ty, w0, h1, uvs.x1, uvs.y1, argb, textureIdAndRound, colorAdd);
+		writeQuadCorner(
+			float32View,
+			uint32View,
+			index,
+			a,
+			b,
+			c,
+			d,
+			tx,
+			ty,
+			w0,
+			h1,
+			uvs.x1,
+			uvs.y1,
+			argb,
+			textureIdAndRound,
+			colorAdd,
+		);
 		index += VERTEX_SIZE;
-		writeQuadCorner(float32View, uint32View, index, a, b, c, d, tx, ty, w0, h0, uvs.x2, uvs.y2, argb, textureIdAndRound, colorAdd);
+		writeQuadCorner(
+			float32View,
+			uint32View,
+			index,
+			a,
+			b,
+			c,
+			d,
+			tx,
+			ty,
+			w0,
+			h0,
+			uvs.x2,
+			uvs.y2,
+			argb,
+			textureIdAndRound,
+			colorAdd,
+		);
 		index += VERTEX_SIZE;
-		writeQuadCorner(float32View, uint32View, index, a, b, c, d, tx, ty, w1, h0, uvs.x3, uvs.y3, argb, textureIdAndRound, colorAdd);
+		writeQuadCorner(
+			float32View,
+			uint32View,
+			index,
+			a,
+			b,
+			c,
+			d,
+			tx,
+			ty,
+			w1,
+			h0,
+			uvs.x3,
+			uvs.y3,
+			argb,
+			textureIdAndRound,
+			colorAdd,
+		);
 	}
 
 	/** @internal - Pixi calls this when the device's texture limit is known */
@@ -391,17 +459,14 @@ class TintedSpritePipe {
 		return gpuData[this.renderer.uid] ?? this.create(sprite, gpuData);
 	}
 
-	private create(
-		sprite: TintedRenderable,
-		gpuData: Record<number, BatchableTintedSprite>
-	): BatchableTintedSprite {
+	private create(sprite: TintedRenderable, gpuData: Record<number, BatchableTintedSprite>): BatchableTintedSprite {
 		const element = new BatchableTintedSprite();
 		element.renderable = sprite;
 		element.transform = sprite.groupTransform;
 		element.texture = sprite.texture;
 		element.bounds = sprite.visualBounds;
-		element.roundPixels = (((this.renderer as unknown as { _roundPixels: number })._roundPixels |
-			sprite._roundPixels) as 0 | 1);
+		element.roundPixels = ((this.renderer as unknown as { _roundPixels: number })._roundPixels |
+			sprite._roundPixels) as 0 | 1;
 		element.colorAdd = sprite.colorAdd;
 
 		gpuData[this.renderer.uid] = element;
@@ -513,9 +578,7 @@ export function registerColorTransform(): void {
 export function packColorAdd(r: number, g: number, b: number, a = 0): number {
 	//unorm8x4 reads the four bytes in memory order, and the view is little-endian, so the
 	//red channel has to sit in the lowest byte
-	return (
-		((clamp255(a) << 24) | (clamp255(b) << 16) | (clamp255(g) << 8) | clamp255(r)) >>> 0
-	);
+	return ((clamp255(a) << 24) | (clamp255(b) << 16) | (clamp255(g) << 8) | clamp255(r)) >>> 0;
 }
 
 /** the additive half of `lerp(texel, colour, strength)`; pair with a tint of `1 - strength`
@@ -534,7 +597,7 @@ export function packTintAdd(color: number, strength: number): number {
 	return packColorAdd(
 		(((color >> 16) & 0xff) / 255) * strength,
 		(((color >> 8) & 0xff) / 255) * strength,
-		((color & 0xff) / 255) * strength
+		((color & 0xff) / 255) * strength,
 	);
 }
 

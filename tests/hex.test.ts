@@ -273,7 +273,7 @@ test('hex FieldOfView does not light past an opaque cell', () => {
 	assert.equal(fov.isVisible(blocker.x, blocker.y), true); //the wall itself is seen...
 	//...but whatever sits directly behind it, further from the centre, is not
 	const behind = hexNeighbors(blocker.x, blocker.y).find(
-		(c) => hexDistance({ x: 4, y: 4 }, c) > hexDistance({ x: 4, y: 4 }, blocker)
+		(c) => hexDistance({ x: 4, y: 4 }, c) > hexDistance({ x: 4, y: 4 }, blocker),
 	)!;
 	assert.equal(fov.isVisible(behind.x, behind.y), false);
 });

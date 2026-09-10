@@ -31,7 +31,7 @@ function publicModules() {
 
 	for (const [subpath, target] of Object.entries(pkg.exports)) {
 		if (subpath.startsWith('./tools')) continue;
-		const types = typeof target === 'string' ? null : target.types ?? target.import;
+		const types = typeof target === 'string' ? null : (target.types ?? target.import);
 		const distPath = typeof target === 'string' ? target : types;
 		if (!distPath) continue;
 		const rel = distPath.replace(/^\.\/dist\//, '').replace(/\\/g, '/');
@@ -50,7 +50,8 @@ function readDeclarations(dir) {
 			const full = join(current, entry);
 			const info = statSync(full);
 			if (info.isDirectory()) walk(full);
-			else if (entry.endsWith('.d.ts')) files.set(relative(dir, full).replace(/\\/g, '/'), readFileSync(full, 'utf8'));
+			else if (entry.endsWith('.d.ts'))
+				files.set(relative(dir, full).replace(/\\/g, '/'), readFileSync(full, 'utf8'));
 		}
 	}
 
@@ -103,7 +104,9 @@ function splitNameList(list) {
 /** normalize a specifier like './Game.ts' into a declarations-dir-relative .d.ts path */
 function resolveSpecifier(fromFile, specifier) {
 	if (!specifier.startsWith('.')) return null;
-	return relative('.', resolve(dirname(fromFile), specifier)).replace(/\\/g, '/').replace(/\.ts$/, '.d.ts');
+	return relative('.', resolve(dirname(fromFile), specifier))
+		.replace(/\\/g, '/')
+		.replace(/\.ts$/, '.d.ts');
 }
 
 /**
@@ -123,7 +126,8 @@ function parseFile(text) {
 		const line = lines[i];
 
 		const importMatch =
-			line.match(/^import type\s+\{([^}]+)\}\s+from\s+'([^']+)';?/) ?? line.match(/^import\s+\{([^}]+)\}\s+from\s+'([^']+)';?/);
+			line.match(/^import type\s+\{([^}]+)\}\s+from\s+'([^']+)';?/) ??
+			line.match(/^import\s+\{([^}]+)\}\s+from\s+'([^']+)';?/);
 		if (importMatch) {
 			const typeOnly = /^import type/.test(line);
 			const source = importMatch[2];
@@ -154,7 +158,11 @@ function parseFile(text) {
 		}
 
 		// block declarations: class/interface bodies span several lines
-		if (/^export declare (?:abstract )?class\b/.test(line) || /^export interface\b/.test(line) || /^export declare (?:enum|namespace)\b/.test(line)) {
+		if (
+			/^export declare (?:abstract )?class\b/.test(line) ||
+			/^export interface\b/.test(line) ||
+			/^export declare (?:enum|namespace)\b/.test(line)
+		) {
 			let depth = 0;
 			let collected = '';
 			let started = false;
@@ -225,12 +233,21 @@ function resolveModule(file, files, cache) {
 			if (statement.source) {
 				const target = resolveSpecifier(file, statement.source);
 				if (target === null || !files.has(target)) {
-					add(entry.exported, entry.type ? 'type' : 're-export', `export ${entry.type ? 'type ' : ''}{ ${entry.local}${entry.local !== entry.exported ? ` as ${entry.exported}` : ''} } from '${statement.source}'`);
+					add(
+						entry.exported,
+						entry.type ? 'type' : 're-export',
+						`export ${entry.type ? 'type ' : ''}{ ${entry.local}${entry.local !== entry.exported ? ` as ${entry.exported}` : ''} } from '${statement.source}'`,
+					);
 					continue;
 				}
 				const resolved = resolveModule(target, files, cache).get(entry.local);
 				if (resolved) add(entry.exported, resolved.kind, resolved.text);
-				else add(entry.exported, entry.type ? 'type' : 'export', `export { ${entry.local} } from '${statement.source}'`);
+				else
+					add(
+						entry.exported,
+						entry.type ? 'type' : 'export',
+						`export { ${entry.local} } from '${statement.source}'`,
+					);
 				continue;
 			}
 
@@ -245,7 +262,11 @@ function resolveModule(file, files, cache) {
 						continue;
 					}
 				}
-				add(entry.exported, imported.type || entry.type ? 'type' : 're-export', `export { ${entry.local} } from '${imported.source}'`);
+				add(
+					entry.exported,
+					imported.type || entry.type ? 'type' : 're-export',
+					`export { ${entry.local} } from '${imported.source}'`,
+				);
 				continue;
 			}
 

@@ -68,5 +68,7 @@ test('resolveAabbAgainstTiles checks every row/column the box spans, not just it
 });
 
 test('resolveAabbAgainstTiles rejects a non-positive tileSize', () => {
-	assert.throws(() => resolveAabbAgainstTiles({ x: 0, y: 0, width: 8, height: 8 }, 1, 0, { tileSize: 0, isSolid: () => false }));
+	assert.throws(() =>
+		resolveAabbAgainstTiles({ x: 0, y: 0, width: 8, height: 8 }, 1, 0, { tileSize: 0, isSolid: () => false }),
+	);
 });

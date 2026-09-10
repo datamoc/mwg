@@ -39,7 +39,9 @@ function renderProgressBar(done, total, width = 30) {
 
 const overallPct = data.overallTotal > 0 ? Math.round((100 * data.overallDone) / data.overallTotal) : 0;
 console.log('\n  mwg - ROADMAP.md progress');
-console.log(`  Overall: ${data.overallDone}/${data.overallTotal} (${overallPct}%) ${renderProgressBar(data.overallDone, data.overallTotal, 32)}\n`);
+console.log(
+	`  Overall: ${data.overallDone}/${data.overallTotal} (${overallPct}%) ${renderProgressBar(data.overallDone, data.overallTotal, 32)}\n`,
+);
 
 for (const section of data.sections) {
 	const pct = section.total > 0 ? Math.round((100 * section.done) / section.total) : 0;
@@ -66,7 +68,7 @@ if (shouldEmbed) {
 	const safeMarkdown = markdown.replace(/<\/script>/gi, '<\\/script>');
 	const updatedHtml = html.replace(
 		scriptTag,
-		`<script id="roadmap-data" type="text/plain">\n${safeMarkdown}\n</script>`
+		`<script id="roadmap-data" type="text/plain">\n${safeMarkdown}\n</script>`,
 	);
 	writeFileSync(htmlPath, updatedHtml, 'utf8');
 	console.log(`  Embedded ROADMAP.md into: ${htmlPath}`);

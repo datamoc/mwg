@@ -90,18 +90,26 @@ class VillageScene extends Scene2D {
 						{
 							ask: 'Take a potion for the road?',
 							speaker: 'Shopkeeper',
-							choices: [{ text: 'Gladly', value: true }, { text: 'No thanks', value: false }],
+							choices: [
+								{ text: 'Gladly', value: true },
+								{ text: 'No thanks', value: false },
+							],
 							store: 'tookPotion',
 						},
 						//EventRunner's built-in `if` only reads GameState (switches/variables), not an
 						//`ask`'s own stored answer - `call` is the escape hatch for exactly this
-						{ call: (state) => { if (state.answers.tookPotion) state.game.setVariable('potions', state.game.variable('potions') + 1); } },
+						{
+							call: (state) => {
+								if (state.answers.tookPotion)
+									state.game.setVariable('potions', state.game.variable('potions') + 1);
+							},
+						},
 					],
 				},
 				{
 					trigger: 'action',
 					conditions: [{ switch: 'metShopkeeper', equals: true }],
-					commands: [{ say: "Back again? Mind the wolves outside town.", speaker: 'Shopkeeper' }],
+					commands: [{ say: 'Back again? Mind the wolves outside town.', speaker: 'Shopkeeper' }],
 				},
 			],
 		};
@@ -206,7 +214,7 @@ class VillageScene extends Scene2D {
 
 	private updateStatus(): void {
 		this.status.setText(
-			`potions: ${this.game.variable('potions')}    arrow keys to move, Enter to talk to the shopkeeper`
+			`potions: ${this.game.variable('potions')}    arrow keys to move, Enter to talk to the shopkeeper`,
 		);
 	}
 
@@ -237,6 +245,6 @@ main().catch((error) => {
 	console.error(error);
 	document.body.insertAdjacentHTML(
 		'afterbegin',
-		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
 	);
 });

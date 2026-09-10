@@ -1,12 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import {
-	resolveArea,
-	coneCells,
-	chainTargets,
-	knockbackPath,
-} from '../src/roguelike/Targeting.ts';
+import { resolveArea, coneCells, chainTargets, knockbackPath } from '../src/roguelike/Targeting.ts';
 import { Level } from '../src/roguelike/Level.ts';
 
 function level(): Level {
@@ -36,7 +31,10 @@ test('a cone widens with distance and stays symmetric', () => {
 
 test('a diagonal cone stays within one step of the snapped diagonal', () => {
 	const cells = coneCells({ x: 0, y: 0 }, { x: 3, y: 3 }, 1);
-	assert.ok(cells.some((cell) => cell.x === 3 && cell.y === 3), 'reaches the target');
+	assert.ok(
+		cells.some((cell) => cell.x === 3 && cell.y === 3),
+		'reaches the target',
+	);
 	const centres = [
 		{ x: 1, y: 1 },
 		{ x: 2, y: 2 },
@@ -53,7 +51,10 @@ test('aiming at your own cell resolves to just that cell', () => {
 });
 
 test('resolveArea routes the cone shape through coneCells', () => {
-	assert.deepEqual(resolveArea({ x: 2, y: 2 }, { x: 4, y: 2 }, { kind: 'cone', width: 1 }), coneCells({ x: 2, y: 2 }, { x: 4, y: 2 }, 1));
+	assert.deepEqual(
+		resolveArea({ x: 2, y: 2 }, { x: 4, y: 2 }, { kind: 'cone', width: 1 }),
+		coneCells({ x: 2, y: 2 }, { x: 4, y: 2 }, 1),
+	);
 });
 
 test('chainTargets hops nearest-first, never revisits, and stops at range', () => {

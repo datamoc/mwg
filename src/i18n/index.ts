@@ -123,7 +123,12 @@ export function tRaw(key: string, params?: MessageParams): string {
 	const entry = active?.messages[key] ?? base?.messages[key];
 	if (entry === undefined) return key;
 
-	const text = typeof entry === 'string' ? entry : isFluentMessage(entry) ? entry.format(params) : resolvePlural(entry, params?.count);
+	const text =
+		typeof entry === 'string'
+			? entry
+			: isFluentMessage(entry)
+				? entry.format(params)
+				: resolvePlural(entry, params?.count);
 	return params ? interpolate(text, params) : text;
 }
 
@@ -167,8 +172,22 @@ const NBSP = ' ';
  * one game's own vocabulary, the same way `t()`'s plural categories are language structure
  * rather than content */
 const FR_NUMBERING_WORDS = [
-	'Chapitre', 'Tome', 'Livre', 'Partie', 'Section', 'Article', 'Acte', 'Scène',
-	'Niveau', 'Manche', 'Round', 'Étape', 'Volume', 'Figure', 'Page', 'Numéro',
+	'Chapitre',
+	'Tome',
+	'Livre',
+	'Partie',
+	'Section',
+	'Article',
+	'Acte',
+	'Scène',
+	'Niveau',
+	'Manche',
+	'Round',
+	'Étape',
+	'Volume',
+	'Figure',
+	'Page',
+	'Numéro',
 ];
 
 /** German abbreviations that keep a no-break space before whatever follows them (Duden K 116) */
@@ -317,7 +336,12 @@ function escapeAscii(text: string): string {
 	let out = '';
 	for (const char of text) {
 		const code = char.codePointAt(0) ?? 0;
-		out += code > 127 ? (code > 0xffff ? `\\U${code.toString(16).padStart(8, '0')}` : `\\u${code.toString(16).padStart(4, '0')}`) : char;
+		out +=
+			code > 127
+				? code > 0xffff
+					? `\\U${code.toString(16).padStart(8, '0')}`
+					: `\\u${code.toString(16).padStart(4, '0')}`
+				: char;
 	}
 	return out;
 }
@@ -336,7 +360,13 @@ export { parseSoundMarkers, stripSoundMarkers } from './SoundMarkers.ts';
 export type { InlineSoundCue, ParsedSoundText } from './SoundMarkers.ts';
 
 export { createCatalogFormatter } from './SemanticMessage.ts';
-export type { SemanticMessage, EntityTextResolver, GrammaticalEntity, MessageChannel, MessageFormatter } from './SemanticMessage.ts';
+export type {
+	SemanticMessage,
+	EntityTextResolver,
+	GrammaticalEntity,
+	MessageChannel,
+	MessageFormatter,
+} from './SemanticMessage.ts';
 
 export { formatNumber, formatDate, formatList } from './Format.ts';
 

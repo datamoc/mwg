@@ -103,10 +103,7 @@ test('EventRunner stops running once cancelled', async () => {
 	const state = new GameState();
 	const runner = new EventRunner({ present: silent, game: state });
 
-	await runner.run([
-		{ call: () => runner.cancel() },
-		{ setVariable: 'shouldNotRun', value: 1 },
-	]);
+	await runner.run([{ call: () => runner.cancel() }, { setVariable: 'shouldNotRun', value: 1 }]);
 
 	assert.equal(state.variable('shouldNotRun'), 0);
 });
@@ -247,17 +244,14 @@ test('loadTiledMap refuses one sheet for several tilesets, and a sheet count tha
 		layers: [],
 	};
 	assert.throws(() => loadTiledMap(data, tinyTilesetSheet()), /one sheet per tileset/);
-	assert.throws(
-		() => loadTiledMap(data, [{ firstgid: 1, sheet: tinyTilesetSheet() }]),
-		/one sheet per tileset/
-	);
+	assert.throws(() => loadTiledMap(data, [{ firstgid: 1, sheet: tinyTilesetSheet() }]), /one sheet per tileset/);
 	assert.throws(
 		() =>
 			loadTiledMap(data, [
 				{ firstgid: 1, sheet: tinyTilesetSheet() },
 				{ firstgid: 2, sheet: tinyTilesetSheet() },
 			]),
-		/no sheet for the tileset at firstgid 100/
+		/no sheet for the tileset at firstgid 100/,
 	);
 });
 
@@ -281,7 +275,7 @@ test('loadTiledMap refuses a sheet cut to another tile size, and a gid no tilese
 				{ firstgid: 5, sheet: sized(8, 8) },
 				{ firstgid: 100, sheet: tinyTilesetSheet() },
 			]),
-		/firstgid 5.*8x8.*16x16/
+		/firstgid 5.*8x8.*16x16/,
 	);
 	assert.throws(
 		() =>
@@ -289,7 +283,7 @@ test('loadTiledMap refuses a sheet cut to another tile size, and a gid no tilese
 				{ firstgid: 5, sheet: tinyTilesetSheet() },
 				{ firstgid: 100, sheet: tinyTilesetSheet() },
 			]),
-		/below every tileset's firstgid/
+		/below every tileset's firstgid/,
 	);
 });
 

@@ -58,7 +58,7 @@ test('autotileFrames refuses a frame table of the wrong length', () => {
 	assert.throws(() => autotileFrames(3, 3, () => true, [0, 1, 2]));
 });
 
-test('autotileFrames writes EMPTY wherever sameTerrain is false, and never calls it for those cells\' neighbours', () => {
+test("autotileFrames writes EMPTY wherever sameTerrain is false, and never calls it for those cells' neighbours", () => {
 	const frames = Array.from({ length: 47 }, (_, i) => i);
 	//a single terrain cell in the middle of an otherwise different terrain
 	const grid = autotileFrames(3, 3, (x, y) => x === 1 && y === 1, frames);

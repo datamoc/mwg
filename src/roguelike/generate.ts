@@ -223,7 +223,7 @@ function carveCorridor(
 	level: Level,
 	from: { x: number; y: number },
 	to: { x: number; y: number },
-	floor: number
+	floor: number,
 ): void {
 	const horizontalFirst = Random.chance(0.5);
 
@@ -242,7 +242,7 @@ function carveLine(
 	toCoord: number,
 	fixed: number,
 	horizontal: boolean,
-	floor: number
+	floor: number,
 ): void {
 	const step = fromCoord <= toCoord ? 1 : -1;
 	for (let c = fromCoord; c !== toCoord + step; c += step) {

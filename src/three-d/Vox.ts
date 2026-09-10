@@ -6,15 +6,29 @@ import '@babylonjs/core/Meshes/thinInstanceMesh.js';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
 import type { Scene } from '@babylonjs/core/scene.js';
 
-export interface VoxSize { x: number; y: number; z: number; }
-export interface Voxel { x: number; y: number; z: number; color: number; }
-export interface VoxModel { size: VoxSize; voxels: readonly Voxel[]; palette: Uint32Array; }
+export interface VoxSize {
+	x: number;
+	y: number;
+	z: number;
+}
+export interface Voxel {
+	x: number;
+	y: number;
+	z: number;
+	color: number;
+}
+export interface VoxModel {
+	size: VoxSize;
+	voxels: readonly Voxel[];
+	palette: Uint32Array;
+}
 
 /** Reads one MagicaVoxel VOX model, including an optional RGBA palette chunk. */
 export function parseVox(data: ArrayBuffer | ArrayBufferView): VoxModel {
-	const bytes = data instanceof ArrayBuffer
-		? new Uint8Array(data)
-		: new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+	const bytes =
+		data instanceof ArrayBuffer
+			? new Uint8Array(data)
+			: new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
 	if (bytes.length < 20 || text(bytes, 0) !== 'VOX ') throw new Error('invalid VOX header');
 	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 	let offset = 8;
@@ -31,7 +45,11 @@ export function parseVox(data: ArrayBuffer | ArrayBufferView): VoxModel {
 		if (end + childrenSize > bytes.length) throw new Error(`truncated VOX ${id} chunk`);
 		if (id === 'SIZE') {
 			if (contentSize < 12) throw new Error('invalid VOX SIZE chunk');
-			size = { x: view.getUint32(content, true), y: view.getUint32(content + 4, true), z: view.getUint32(content + 8, true) };
+			size = {
+				x: view.getUint32(content, true),
+				y: view.getUint32(content + 4, true),
+				z: view.getUint32(content + 8, true),
+			};
 		} else if (id === 'XYZI') {
 			const count = view.getUint32(content, true);
 			if (contentSize < 4 + count * 4) throw new Error('invalid VOX XYZI chunk');
@@ -64,14 +82,20 @@ export function createVoxModel3D(scene: Scene, model: VoxModel, voxelSize = 1): 
 		box.parent = root;
 		const rgba = model.palette[Math.max(0, color - 1)];
 		const material = new StandardMaterial(`voxel-${color}`, scene);
-		material.diffuseColor = new Color3((rgba & 0xff) / 255, ((rgba >> 8) & 0xff) / 255, ((rgba >> 16) & 0xff) / 255);
+		material.diffuseColor = new Color3(
+			(rgba & 0xff) / 255,
+			((rgba >> 8) & 0xff) / 255,
+			((rgba >> 16) & 0xff) / 255,
+		);
 		material.alpha = ((rgba >>> 24) & 0xff) / 255;
 		box.material = material;
 		const matrices = new Float32Array(voxels.length * 16);
 		for (let index = 0; index < voxels.length; index++) {
 			const voxel = voxels[index];
-			Matrix.Translation(voxel.x * voxelSize, voxel.z * voxelSize, voxel.y * voxelSize)
-				.copyToArray(matrices, index * 16);
+			Matrix.Translation(voxel.x * voxelSize, voxel.z * voxelSize, voxel.y * voxelSize).copyToArray(
+				matrices,
+				index * 16,
+			);
 		}
 		box.thinInstanceSetBuffer('matrix', matrices, 16, true);
 	}

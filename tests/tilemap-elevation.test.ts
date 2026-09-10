@@ -146,8 +146,5 @@ test('square cells lift without faces, and pits sink faceless', () => {
 });
 
 test('a bad step is refused up front', () => {
-	assert.throws(
-		() => new TileMap({ width: 1, height: 1, sheet: squareSheet(), heightStep: 0 }),
-		/heightStep/
-	);
+	assert.throws(() => new TileMap({ width: 1, height: 1, sheet: squareSheet(), heightStep: 0 }), /heightStep/);
 });

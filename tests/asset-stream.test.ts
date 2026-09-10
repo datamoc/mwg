@@ -5,7 +5,11 @@ import { AssetStream } from '../src/assets/Streaming.ts';
 
 test('AssetStream stages likely bundles by descending priority', async () => {
 	const loaded: string[] = [];
-	const stream = new AssetStream({ load: async (paths) => { loaded.push(...paths); } });
+	const stream = new AssetStream({
+		load: async (paths) => {
+			loaded.push(...paths);
+		},
+	});
 
 	await stream.preloadLikely([
 		{ id: 'far', paths: ['far.png'], priority: 1 },
@@ -21,7 +25,9 @@ test('AssetStream evicts least recently used bundles within its budget', async (
 	const stream = new AssetStream({
 		budgetBytes: 10,
 		load: async () => {},
-		release: async (paths) => { released.push(paths); },
+		release: async (paths) => {
+			released.push(paths);
+		},
 	});
 
 	await stream.preload({ id: 'old', paths: ['old.png'], estimatedBytes: 5 });
@@ -36,8 +42,12 @@ test('AssetStream retains paths shared with a loaded bundle', async () => {
 	const loaded: string[][] = [];
 	const released: string[][] = [];
 	const stream = new AssetStream({
-		load: async (paths) => { loaded.push(paths); },
-		release: async (paths) => { released.push(paths); },
+		load: async (paths) => {
+			loaded.push(paths);
+		},
+		release: async (paths) => {
+			released.push(paths);
+		},
 	});
 
 	await stream.preload({ id: 'one', paths: ['shared.png', 'one.png'] });
@@ -49,7 +59,7 @@ test('AssetStream retains paths shared with a loaded bundle', async () => {
 	assert.deepEqual(released, [['one.png'], ['shared.png', 'two.png']]);
 });
 
-test('preload forwards its loader\'s progress callback', async () => {
+test("preload forwards its loader's progress callback", async () => {
 	const seen: number[] = [];
 	const stream = new AssetStream({
 		load: async (_paths, onProgress) => {
@@ -87,7 +97,7 @@ test('preloadLikely reports one fraction across every bundle in the list', async
 			{ id: 'a', paths: ['a.png'], priority: 2 },
 			{ id: 'b', paths: ['b.png'], priority: 1 },
 		],
-		(fraction) => seen.push(fraction)
+		(fraction) => seen.push(fraction),
 	);
 
 	assert.deepEqual(seen, [0.25, 0.5, 0.75, 1, 1]);
@@ -98,7 +108,9 @@ test('repeated preload/evict cycles under a tight budget never exceed it and rel
 	const stream = new AssetStream({
 		budgetBytes: 10,
 		load: async () => {},
-		release: async (paths) => { for (const path of paths) released.add(path); },
+		release: async (paths) => {
+			for (const path of paths) released.add(path);
+		},
 	});
 
 	for (let i = 0; i < 50; i++) {

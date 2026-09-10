@@ -1,7 +1,25 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { reset, setBase, setActive, t, has, direction, locale, typographic, nonBreakingUnit, createCatalogFormatter, formatNumber, formatDate, formatList, diffCatalogKeys, validateCatalog, type SemanticMessage, type Catalog } from '../src/i18n/index.ts';
+import {
+	reset,
+	setBase,
+	setActive,
+	t,
+	has,
+	direction,
+	locale,
+	typographic,
+	nonBreakingUnit,
+	createCatalogFormatter,
+	formatNumber,
+	formatDate,
+	formatList,
+	diffCatalogKeys,
+	validateCatalog,
+	type SemanticMessage,
+	type Catalog,
+} from '../src/i18n/index.ts';
 
 const THIN_NBSP = ' ';
 const NBSP = ' ';
@@ -34,7 +52,11 @@ test('has() reports whether a key resolves in either language', () => {
 });
 
 test('{token} placeholders interpolate from params, leaving unmatched tokens untouched', () => {
-	setBase({ locale: 'en', direction: 'ltr', messages: { welcome: 'Hi {name}, you have {count} items and {missing}.' } });
+	setBase({
+		locale: 'en',
+		direction: 'ltr',
+		messages: { welcome: 'Hi {name}, you have {count} items and {missing}.' },
+	});
 	assert.equal(t('welcome', { name: 'Ada', count: 3 }), 'Hi Ada, you have 3 items and {missing}.');
 	reset();
 });
@@ -83,13 +105,21 @@ test('French: a narrow no-break space goes before a colon after a letter, not af
 
 test('French: a narrow no-break space sits inside French guillemets', () => {
 	assert.equal(typographic('«Bonjour»', 'fr'), `«${THIN_NBSP}Bonjour${THIN_NBSP}»`);
-	assert.equal(typographic('« Bonjour »', 'fr'), `«${THIN_NBSP}Bonjour${THIN_NBSP}»`, 'an ordinary space is upgraded, not doubled');
+	assert.equal(
+		typographic('« Bonjour »', 'fr'),
+		`«${THIN_NBSP}Bonjour${THIN_NBSP}»`,
+		'an ordinary space is upgraded, not doubled',
+	);
 });
 
 test('French: an ordinary no-break space sits between a numbering word and its number', () => {
 	assert.equal(typographic('Chapitre 3', 'fr'), `Chapitre${NBSP}3`);
 	assert.equal(typographic('Niveau 12 termine', 'fr'), `Niveau${NBSP}12 termine`);
-	assert.equal(typographic('Le chapitre suivant', 'fr'), 'Le chapitre suivant', 'lowercase mid-sentence is left alone');
+	assert.equal(
+		typographic('Le chapitre suivant', 'fr'),
+		'Le chapitre suivant',
+		'lowercase mid-sentence is left alone',
+	);
 });
 
 test('French typography is idempotent: running it twice changes nothing further', () => {
@@ -127,7 +157,7 @@ test('typographic apostrophes apply to French, Italian, and Dutch elisions', () 
 test('translation applies typography after interpolation and allows opting out', () => {
 	setBase({ locale: 'fr', direction: 'ltr', messages: { greeting: "Bonjour, {name}! Aujourd'hui." } });
 	assert.equal(t('greeting', { name: "l'ami" }), `Bonjour, l’ami${THIN_NBSP}! Aujourd’hui.`);
-	setActive({ locale: 'fr', direction: 'ltr', typography: false, messages: { greeting: "Salut, {name}!" } });
+	setActive({ locale: 'fr', direction: 'ltr', typography: false, messages: { greeting: 'Salut, {name}!' } });
 	assert.equal(t('greeting', { name: "l'ami" }), "Salut, l'ami!");
 	reset();
 });
@@ -184,7 +214,11 @@ test('a channel missing its own key falls back to the bare type; missing both is
 
 	reset();
 	setBase({ locale: 'en', direction: 'ltr', messages: {} });
-	assert.equal(formatter.format(damage, 'log'), 'combat.damage', 'no catalog entry at all: the type key itself, like t()');
+	assert.equal(
+		formatter.format(damage, 'log'),
+		'combat.damage',
+		'no catalog entry at all: the type key itself, like t()',
+	);
 	reset();
 });
 
@@ -215,7 +249,7 @@ test('plural/select through the formatter works the same as through t(), across 
 //compared against Intl directly, rather than a hardcoded formatted string: the exact
 //separators (a narrow no-break space in French grouping, say) are ICU data, not this
 //project's contract, and differ across Node/ICU versions in ways ours must simply track
-test('formatNumber uses the active locale\'s grouping and decimal conventions', () => {
+test("formatNumber uses the active locale's grouping and decimal conventions", () => {
 	setBase({ locale: 'en-US', direction: 'ltr', messages: {} });
 	assert.equal(formatNumber(1234.5), new Intl.NumberFormat('en-US').format(1234.5));
 	try {
@@ -228,11 +262,14 @@ test('formatNumber uses the active locale\'s grouping and decimal conventions', 
 
 test('formatNumber accepts Intl.NumberFormatOptions the same way Intl.NumberFormat does', () => {
 	setBase({ locale: 'en-US', direction: 'ltr', messages: {} });
-	assert.equal(formatNumber(0.5, { style: 'percent' }), new Intl.NumberFormat('en-US', { style: 'percent' }).format(0.5));
+	assert.equal(
+		formatNumber(0.5, { style: 'percent' }),
+		new Intl.NumberFormat('en-US', { style: 'percent' }).format(0.5),
+	);
 	reset();
 });
 
-test('formatList joins with the active locale\'s own conjunction', () => {
+test("formatList joins with the active locale's own conjunction", () => {
 	setBase({ locale: 'en-US', direction: 'ltr', messages: {} });
 	assert.equal(formatList(['a sword', 'a shield']), new Intl.ListFormat('en-US').format(['a sword', 'a shield']));
 	try {
@@ -282,7 +319,9 @@ test('validateCatalog flags an empty message string', () => {
 test('validateCatalog flags plural forms with no "other" branch', () => {
 	const catalog: Catalog = { locale: 'en', direction: 'ltr', messages: { broken: { few: 'a few' } } };
 	const issues = validateCatalog(catalog);
-	assert.deepEqual(issues, [{ key: 'broken', kind: 'plural-missing-other', detail: 'plural forms have no "other" branch' }]);
+	assert.deepEqual(issues, [
+		{ key: 'broken', kind: 'plural-missing-other', detail: 'plural forms have no "other" branch' },
+	]);
 });
 
 test('validateCatalog is clean for a catalog with no structural problems', () => {

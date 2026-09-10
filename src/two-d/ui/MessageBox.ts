@@ -227,7 +227,9 @@ export class MessageBox extends Window {
 
 		//every earlier page is already fully revealed and stays on screen; only the newest
 		//page's own reveal is still in progress
-		const lines = this.pages.slice(0, this.pageIndex).map((page) => this.formatLine(page, parseSoundMarkers(page.text).text));
+		const lines = this.pages
+			.slice(0, this.pageIndex)
+			.map((page) => this.formatLine(page, parseSoundMarkers(page.text).text));
 		const current = this.pages[this.pageIndex];
 		lines.push(this.formatLine(current, this.pageText.slice(0, Math.floor(this.reveal.revealed))));
 		this.body.setText(lines.join('\n\n'));

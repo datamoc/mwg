@@ -37,9 +37,10 @@ export class NinePatch extends Container {
 	constructor(texture: Texture2D, options: NinePatchOptions) {
 		super();
 
-		const b = typeof options.border === 'number'
-			? { left: options.border, top: options.border, right: options.border, bottom: options.border }
-			: options.border;
+		const b =
+			typeof options.border === 'number'
+				? { left: options.border, top: options.border, right: options.border, bottom: options.border }
+				: options.border;
 
 		this.sprite = new NineSliceSprite({
 			texture,

@@ -114,8 +114,8 @@ export function hexLine(a: HexCoord, b: HexCoord): HexCoord[] {
 					x: ca.x + (cb.x - ca.x) * t,
 					y: ca.y + (cb.y - ca.y) * t,
 					z: ca.z + (cb.z - ca.z) * t,
-				})
-			)
+				}),
+			),
 		);
 	}
 

@@ -83,7 +83,9 @@ export function importTwee(source: string): TwineStory {
 			if ('ask' in command) {
 				for (const choice of command.choices) {
 					if (choice.goto !== undefined && !Object.prototype.hasOwnProperty.call(story, choice.goto)) {
-						throw new Error(`passage "${name}" links to "${choice.goto}", which is not a passage in this file`);
+						throw new Error(
+							`passage "${name}" links to "${choice.goto}", which is not a passage in this file`,
+						);
 					}
 				}
 			}
@@ -183,7 +185,7 @@ function parseLink(inner: string, passage: string): StageChoice {
 	if (inner.includes('[') || inner.includes(']')) {
 		throw new Error(
 			`passage "${passage}" links with a setter ("${inner.trim()}") - ` +
-				'story-format macros are not imported, so the link is refused rather than half-read'
+				'story-format macros are not imported, so the link is refused rather than half-read',
 		);
 	}
 	const forward = inner.indexOf('->');

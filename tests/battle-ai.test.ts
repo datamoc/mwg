@@ -19,21 +19,30 @@ test('chooseMove returns null for an empty list', () => {
 
 test('chooseMove picks the type-effective move by default', () => {
 	const matrix = matchup();
-	const moves = [{ type: 'water', name: 'splash' }, { type: 'fire', name: 'ember' }];
+	const moves = [
+		{ type: 'water', name: 'splash' },
+		{ type: 'fire', name: 'ember' },
+	];
 
 	assert.equal(chooseMove(moves, matrix, ['fire'])!.name, 'splash');
 });
 
 test('chooseMove keeps the first candidate on a tie', () => {
 	const matrix = matchup(); // both moves are neutral against a type with no set pairing
-	const moves = [{ type: 'normal', name: 'tackle' }, { type: 'psychic', name: 'confusion' }];
+	const moves = [
+		{ type: 'normal', name: 'tackle' },
+		{ type: 'psychic', name: 'confusion' },
+	];
 
 	assert.equal(chooseMove(moves, matrix, ['rock'])!.name, 'tackle');
 });
 
 test('chooseMove accepts a custom score function instead of the type-effectiveness default', () => {
 	const matrix = matchup();
-	const moves = [{ type: 'water', power: 10 }, { type: 'fire', power: 100 }];
+	const moves = [
+		{ type: 'water', power: 10 },
+		{ type: 'fire', power: 100 },
+	];
 
 	//scoring purely by power should override the type-effective default's own pick
 	const best = chooseMove(moves, matrix, ['fire'], (move) => move.power);

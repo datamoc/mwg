@@ -73,7 +73,7 @@ const SHAPE_BY_ORIENTATION: Record<string, 'square' | 'isometric' | 'staggered'>
 function checkTileSize(sheet: SpriteSheet, data: TiledMapData, firstgid: number): void {
 	if (sheet.frameWidth !== data.tilewidth || sheet.frameHeight !== data.tileheight) {
 		throw new Error(
-			`the tileset at firstgid ${firstgid} is cut to ${sheet.frameWidth}x${sheet.frameHeight}, but the map is ${data.tilewidth}x${data.tileheight}`
+			`the tileset at firstgid ${firstgid} is cut to ${sheet.frameWidth}x${sheet.frameHeight}, but the map is ${data.tilewidth}x${data.tileheight}`,
 		);
 	}
 }
@@ -145,11 +145,13 @@ export function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSh
 		throw new Error(`loadTiledMap does not read "${orientation}" maps yet`);
 	}
 	if (shape === 'staggered' && (data.staggeraxis ?? 'y') !== 'y') {
-		throw new Error(`loadTiledMap only reads Y-axis staggered maps right now, this one is staggered on "${data.staggeraxis}"`);
+		throw new Error(
+			`loadTiledMap only reads Y-axis staggered maps right now, this one is staggered on "${data.staggeraxis}"`,
+		);
 	}
 	if (shape === 'staggered' && (data.staggerindex ?? 'odd') !== 'odd') {
 		throw new Error(
-			`loadTiledMap only reads odd-index staggered maps right now, this one staggers "${data.staggerindex}"`
+			`loadTiledMap only reads odd-index staggered maps right now, this one staggers "${data.staggerindex}"`,
 		);
 	}
 	if (data.tilesets.length === 0) {
@@ -163,7 +165,7 @@ export function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSh
 	if (sheets instanceof SpriteSheet) {
 		if (data.tilesets.length !== 1) {
 			throw new Error(
-				`loadTiledMap was given one sheet but this map has ${data.tilesets.length} tilesets - pass one sheet per tileset`
+				`loadTiledMap was given one sheet but this map has ${data.tilesets.length} tilesets - pass one sheet per tileset`,
 			);
 		}
 		checkTileSize(sheets, data, ordered[0].firstgid);
@@ -172,7 +174,7 @@ export function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSh
 	} else {
 		if (sheets.length !== data.tilesets.length) {
 			throw new Error(
-				`loadTiledMap was given ${sheets.length} sheets but this map has ${data.tilesets.length} tilesets - pass one sheet per tileset`
+				`loadTiledMap was given ${sheets.length} sheets but this map has ${data.tilesets.length} tilesets - pass one sheet per tileset`,
 			);
 		}
 		mapSheets = ordered.map((ref) => {
@@ -191,7 +193,7 @@ export function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSh
 		if (layer.type === 'tilelayer') {
 			if (layer.encoding && layer.encoding !== 'csv') {
 				throw new Error(
-					`layer "${layer.name}" uses "${layer.encoding}" encoding - export tile layers as CSV/plain, not compressed`
+					`layer "${layer.name}" uses "${layer.encoding}" encoding - export tile layers as CSV/plain, not compressed`,
 				);
 			}
 

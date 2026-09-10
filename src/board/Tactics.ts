@@ -34,11 +34,42 @@ import { hexDistance, hexNeighbors } from '../core/Hex.ts';
  * ```
  */
 export type TacticalShape = 'square' | 'hex';
-export interface TacticalCell { passable: boolean; cover?: number; }
-export interface TacticalUnit { id: string; owner: string; x: number; y: number; hp: number; maxHp: number; actions: number; overwatch?: boolean; }
-export interface TacticalState { width: number; height: number; shape: TacticalShape; cells: TacticalCell[]; units: TacticalUnit[]; turn: string; round: number; }
-export interface TacticalMove { unit: string; x: number; y: number; cost: number; }
-export interface TacticalAttack { attacker: string; defender: string; damage: number; cover: number; killed: boolean; }
+export interface TacticalCell {
+	passable: boolean;
+	cover?: number;
+}
+export interface TacticalUnit {
+	id: string;
+	owner: string;
+	x: number;
+	y: number;
+	hp: number;
+	maxHp: number;
+	actions: number;
+	overwatch?: boolean;
+}
+export interface TacticalState {
+	width: number;
+	height: number;
+	shape: TacticalShape;
+	cells: TacticalCell[];
+	units: TacticalUnit[];
+	turn: string;
+	round: number;
+}
+export interface TacticalMove {
+	unit: string;
+	x: number;
+	y: number;
+	cost: number;
+}
+export interface TacticalAttack {
+	attacker: string;
+	defender: string;
+	damage: number;
+	cover: number;
+	killed: boolean;
+}
 
 /**
  * @example
@@ -51,7 +82,15 @@ export interface TacticalAttack { attacker: string; defender: string; damage: nu
  */
 export function startingTactics(width: number, height: number, shape: TacticalShape = 'hex'): TacticalState {
 	if (width < 1 || height < 1) throw new Error('a tactical map needs positive dimensions');
-	return { width, height, shape, cells: Array.from({ length: width * height }, () => ({ passable: true, cover: 0 })), units: [], turn: '', round: 1 };
+	return {
+		width,
+		height,
+		shape,
+		cells: Array.from({ length: width * height }, () => ({ passable: true, cover: 0 })),
+		units: [],
+		turn: '',
+		round: 1,
+	};
 }
 
 /** whether a unit could be placed at (x, y) right now - on the map, and not already occupied
@@ -114,11 +153,13 @@ export function tacticalMoves(state: TacticalState, unitId: string): TacticalMov
 	const engaged = tacticalEngaged(state, unit);
 	const zone = tacticalZone(state, unit, engaged);
 	const out: TacticalMove[] = [];
-	for (let y = 0; y < state.height; y++) for (let x = 0; x < state.width; x++) {
-		if ((x === unit.x && y === unit.y) || !state.cells[y * state.width + x].passable || occupied(state, x, y)) continue;
-		const cost = tacticalPathCost(state, unit, x, y, unit.actions, zone);
-		if (cost !== null) out.push({ unit: unitId, x, y, cost });
-	}
+	for (let y = 0; y < state.height; y++)
+		for (let x = 0; x < state.width; x++) {
+			if ((x === unit.x && y === unit.y) || !state.cells[y * state.width + x].passable || occupied(state, x, y))
+				continue;
+			const cost = tacticalPathCost(state, unit, x, y, unit.actions, zone);
+			if (cost !== null) out.push({ unit: unitId, x, y, cost });
+		}
 	return out;
 }
 
@@ -187,13 +228,17 @@ export function triggerTacticalOverwatch(state: TacticalState, movingUnitId: str
 	const moving = getUnit(state, movingUnitId);
 	const reactions: TacticalAttack[] = [];
 	for (const watcher of [...state.units]) {
-		if (!watcher.overwatch || watcher.owner === moving.owner || tacticalDistance(state, watcher, moving) > 3) continue;
+		if (!watcher.overwatch || watcher.owner === moving.owner || tacticalDistance(state, watcher, moving) > 3)
+			continue;
 		const cover = state.cells[moving.y * state.width + moving.x].cover ?? 0;
 		const dealt = Math.max(0, damage - cover);
 		moving.hp = Math.max(0, moving.hp - dealt);
 		watcher.overwatch = false;
 		reactions.push({ attacker: watcher.id, defender: moving.id, damage: dealt, cover, killed: moving.hp === 0 });
-		if (moving.hp === 0) { state.units = state.units.filter((unit) => unit !== moving); break; }
+		if (moving.hp === 0) {
+			state.units = state.units.filter((unit) => unit !== moving);
+			break;
+		}
 	}
 	return reactions;
 }
@@ -212,7 +257,12 @@ export function triggerTacticalOverwatch(state: TacticalState, movingUnitId: str
  * console.log(result); // { attacker: 'raider', defender: 'ranger', damage: 3, cover: 0, killed: false }
  * ```
  */
-export function tacticalAttack(state: TacticalState, attackerId: string, defenderId: string, damage: number): TacticalAttack {
+export function tacticalAttack(
+	state: TacticalState,
+	attackerId: string,
+	defenderId: string,
+	damage: number,
+): TacticalAttack {
 	const attacker = getUnit(state, attackerId);
 	const defender = getUnit(state, defenderId);
 	if (attacker.owner !== state.turn || attacker.owner === defender.owner) throw new Error('invalid tactical attack');
@@ -247,22 +297,91 @@ export function endTacticalTurn(state: TacticalState): void {
 	const next = owners.indexOf(state.turn) + 1;
 	if (next >= owners.length) state.round++;
 	state.turn = owners[next % owners.length];
-	for (const unit of state.units) if (unit.owner === state.turn) { unit.actions = 2; unit.overwatch = false; }
+	for (const unit of state.units)
+		if (unit.owner === state.turn) {
+			unit.actions = 2;
+			unit.overwatch = false;
+		}
 }
 
-function getUnit(state: TacticalState, id: string): TacticalUnit { const unit = state.units.find((candidate) => candidate.id === id); if (!unit) throw new Error(`unknown tactical unit "${id}"`); return unit; }
-function occupied(state: TacticalState, x: number, y: number): boolean { return state.units.some((unit) => unit.x === x && unit.y === y); }
-function tacticalInside(state: TacticalState, x: number, y: number): boolean { return x >= 0 && y >= 0 && x < state.width && y < state.height; }
-function tacticalNeighbours(state: TacticalState, x: number, y: number): { x: number; y: number }[] { return state.shape === 'hex' ? hexNeighbors(x, y) : [{ x: x - 1, y }, { x: x + 1, y }, { x, y: y - 1 }, { x, y: y + 1 }]; }
-function tacticalDistance(state: TacticalState, a: { x: number; y: number }, b: { x: number; y: number }): number { return state.shape === 'hex' ? hexDistance(a, b) : Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
+function getUnit(state: TacticalState, id: string): TacticalUnit {
+	const unit = state.units.find((candidate) => candidate.id === id);
+	if (!unit) throw new Error(`unknown tactical unit "${id}"`);
+	return unit;
+}
+function occupied(state: TacticalState, x: number, y: number): boolean {
+	return state.units.some((unit) => unit.x === x && unit.y === y);
+}
+function tacticalInside(state: TacticalState, x: number, y: number): boolean {
+	return x >= 0 && y >= 0 && x < state.width && y < state.height;
+}
+function tacticalNeighbours(state: TacticalState, x: number, y: number): { x: number; y: number }[] {
+	return state.shape === 'hex'
+		? hexNeighbors(x, y)
+		: [
+				{ x: x - 1, y },
+				{ x: x + 1, y },
+				{ x, y: y - 1 },
+				{ x, y: y + 1 },
+			];
+}
+function tacticalDistance(state: TacticalState, a: { x: number; y: number }, b: { x: number; y: number }): number {
+	return state.shape === 'hex' ? hexDistance(a, b) : Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
 //enemies already adjacent to the unit before it moves - engaging one already lifts its zone
-function tacticalEngaged(state: TacticalState, unit: TacticalUnit): Set<string> { return new Set(state.units.filter((other) => other.owner !== unit.owner && tacticalNeighbours(state, unit.x, unit.y).some((cell) => cell.x === other.x && cell.y === other.y)).map((other) => other.id)); }
+function tacticalEngaged(state: TacticalState, unit: TacticalUnit): Set<string> {
+	return new Set(
+		state.units
+			.filter(
+				(other) =>
+					other.owner !== unit.owner &&
+					tacticalNeighbours(state, unit.x, unit.y).some((cell) => cell.x === other.x && cell.y === other.y),
+			)
+			.map((other) => other.id),
+	);
+}
 //cells adjacent to an enemy the unit is not already engaged with - stepping into one uses up
 //the rest of a move (standard zone-of-control), though it can still be entered as a final stop
-function tacticalZone(state: TacticalState, unit: TacticalUnit, engaged: Set<string>): Set<string> { const zone = new Set<string>(); for (const enemy of state.units) { if (enemy.owner === unit.owner || engaged.has(enemy.id)) continue; for (const cell of tacticalNeighbours(state, enemy.x, enemy.y)) zone.add(`${cell.x},${cell.y}`); } return zone; }
+function tacticalZone(state: TacticalState, unit: TacticalUnit, engaged: Set<string>): Set<string> {
+	const zone = new Set<string>();
+	for (const enemy of state.units) {
+		if (enemy.owner === unit.owner || engaged.has(enemy.id)) continue;
+		for (const cell of tacticalNeighbours(state, enemy.x, enemy.y)) zone.add(`${cell.x},${cell.y}`);
+	}
+	return zone;
+}
 //the real walking distance to (targetX, targetY), never exceeding `budget` steps, or null if
 //it cannot be reached within that budget - a move's true cost, not straight-line distance.
 //`zone` is precomputed once by the caller (see tacticalMoves) rather than recomputed here on
 //every call, since neither depends on the candidate target; a plain index cursor stands in
 //for `todo.shift()`, which is O(n) per pop and would make this BFS quadratic in path length
-function tacticalPathCost(state: TacticalState, unit: TacticalUnit, targetX: number, targetY: number, budget: number, zone: Set<string>): number | null { const todo = [{ x: unit.x, y: unit.y, distance: 0 }]; let head = 0; const seen = new Set([`${unit.x},${unit.y}`]); while (head < todo.length) { const current = todo[head++]; if (current.x === targetX && current.y === targetY) return current.distance; if (current.distance >= budget || (current.distance > 0 && zone.has(`${current.x},${current.y}`))) continue; for (const next of tacticalNeighbours(state, current.x, current.y)) { const key = `${next.x},${next.y}`; if (!tacticalInside(state, next.x, next.y) || seen.has(key) || !state.cells[next.y * state.width + next.x].passable || occupied(state, next.x, next.y) && !(next.x === targetX && next.y === targetY)) continue; seen.add(key); todo.push({ x: next.x, y: next.y, distance: current.distance + 1 }); } } return null; }
+function tacticalPathCost(
+	state: TacticalState,
+	unit: TacticalUnit,
+	targetX: number,
+	targetY: number,
+	budget: number,
+	zone: Set<string>,
+): number | null {
+	const todo = [{ x: unit.x, y: unit.y, distance: 0 }];
+	let head = 0;
+	const seen = new Set([`${unit.x},${unit.y}`]);
+	while (head < todo.length) {
+		const current = todo[head++];
+		if (current.x === targetX && current.y === targetY) return current.distance;
+		if (current.distance >= budget || (current.distance > 0 && zone.has(`${current.x},${current.y}`))) continue;
+		for (const next of tacticalNeighbours(state, current.x, current.y)) {
+			const key = `${next.x},${next.y}`;
+			if (
+				!tacticalInside(state, next.x, next.y) ||
+				seen.has(key) ||
+				!state.cells[next.y * state.width + next.x].passable ||
+				(occupied(state, next.x, next.y) && !(next.x === targetX && next.y === targetY))
+			)
+				continue;
+			seen.add(key);
+			todo.push({ x: next.x, y: next.y, distance: current.distance + 1 });
+		}
+	}
+	return null;
+}

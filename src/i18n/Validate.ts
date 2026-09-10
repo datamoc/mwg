@@ -68,7 +68,8 @@ export function validateCatalog(catalog: Catalog): CatalogIssue[] {
 
 	for (const [key, value] of Object.entries(catalog.messages)) {
 		if (typeof value === 'string') {
-			if (value === '') issues.push({ key, kind: 'empty-message', detail: 'message resolves to an empty string' });
+			if (value === '')
+				issues.push({ key, kind: 'empty-message', detail: 'message resolves to an empty string' });
 			continue;
 		}
 		if (isPluralForms(value) && value.other === undefined) {
@@ -115,9 +116,17 @@ export function validateMessageAudio(catalog: Catalog): AudioIssue[] {
 	for (const [key, value] of Object.entries(catalog.messages)) {
 		if (!key.endsWith('.audio')) continue;
 		if (typeof value !== 'string') {
-			issues.push({ key, kind: 'audio-not-a-path', detail: 'an audio entry must be a plain path string, not plural forms or a select message' });
+			issues.push({
+				key,
+				kind: 'audio-not-a-path',
+				detail: 'an audio entry must be a plain path string, not plural forms or a select message',
+			});
 		} else if (value === '') {
-			issues.push({ key, kind: 'empty-audio-path', detail: 'an empty audio entry already means "no sound"; remove the key instead' });
+			issues.push({
+				key,
+				kind: 'empty-audio-path',
+				detail: 'an empty audio entry already means "no sound"; remove the key instead',
+			});
 		}
 	}
 

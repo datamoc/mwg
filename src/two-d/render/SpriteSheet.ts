@@ -79,7 +79,7 @@ export class SpriteSheet {
 				(index % this.columns) * this.frameWidth,
 				Math.floor(index / this.columns) * this.frameHeight,
 				this.frameWidth,
-				this.frameHeight
+				this.frameHeight,
 			),
 		});
 

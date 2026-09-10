@@ -11,7 +11,11 @@ test('LoadQueue reports weighted task progress and completes', async () => {
 	await queue.start();
 
 	assert.deepEqual(queue.snapshot, {
-		status: 'ready', completed: 4, total: 4, current: null, error: null,
+		status: 'ready',
+		completed: 4,
+		total: 4,
+		current: null,
+		error: null,
 	});
 });
 
@@ -34,12 +38,21 @@ test('LoadQueue cancellation stays visible to a running task', async () => {
 
 test('LoadQueue retry clears a failure and resets progress', async () => {
 	const queue = new LoadQueue();
-	queue.add({ id: 'broken', run: () => { throw new Error('offline'); } });
+	queue.add({
+		id: 'broken',
+		run: () => {
+			throw new Error('offline');
+		},
+	});
 
 	await assert.rejects(queue.start(), /offline/);
 	assert.equal(queue.snapshot.status, 'failed');
 	queue.retry();
 	assert.deepEqual(queue.snapshot, {
-		status: 'idle', completed: 0, total: 1, current: null, error: null,
+		status: 'idle',
+		completed: 0,
+		total: 1,
+		current: null,
+		error: null,
 	});
 });

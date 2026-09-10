@@ -104,7 +104,12 @@ export class LockstepClient {
 	}
 
 	private handleMessage(raw: string): void {
-		const message = JSON.parse(raw) as { type: string; id?: string; tick?: number; inputs?: Record<string, unknown> };
+		const message = JSON.parse(raw) as {
+			type: string;
+			id?: string;
+			tick?: number;
+			inputs?: Record<string, unknown>;
+		};
 		if (message.type === 'welcome' && message.id !== undefined) {
 			this._id = message.id;
 			this.onWelcome.dispatch({ id: message.id });

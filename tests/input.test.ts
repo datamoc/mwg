@@ -236,7 +236,11 @@ test('pressTouch is a no-op if already held, so a duplicate pointerdown does not
 	endFrame();
 
 	pressTouch('repeat-button');
-	assert.equal(justPressed('touch-repeat'), false, 'a second press while already held must not look like a fresh press');
+	assert.equal(
+		justPressed('touch-repeat'),
+		false,
+		'a second press while already held must not look like a fresh press',
+	);
 
 	releaseTouch('repeat-button');
 	unbind('touch-repeat');
@@ -283,8 +287,14 @@ test('attachSwipe resolves a rightward drag to the right action', () => {
 test('attachSwipe resolves all 8 directions by angle', () => {
 	const target = new EventTarget();
 	const actions = {
-		up: 'swipe-up', down: 'swipe-down', left: 'swipe-left', right: 'swipe-right',
-		upLeft: 'swipe-upLeft', upRight: 'swipe-upRight', downLeft: 'swipe-downLeft', downRight: 'swipe-downRight',
+		up: 'swipe-up',
+		down: 'swipe-down',
+		left: 'swipe-left',
+		right: 'swipe-right',
+		upLeft: 'swipe-upLeft',
+		upRight: 'swipe-upRight',
+		downLeft: 'swipe-downLeft',
+		downRight: 'swipe-downRight',
 	};
 	const detach = attachSwipe(target, { actions });
 

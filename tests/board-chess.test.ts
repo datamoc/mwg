@@ -85,7 +85,7 @@ test('castling needs rights, room, and no check on the way over', () => {
 	assert.equal(
 		legalMoves(state).filter((m) => m.from === sq('e8')).length > 0,
 		true,
-		"black still has moves, including the king's own"
+		"black still has moves, including the king's own",
 	);
 });
 
@@ -105,10 +105,7 @@ test('promotion offers all four pieces, and the choice sticks', () => {
 	const state = parseFen('7k/P7/8/8/8/8/1K6/8 w - - 0 1');
 
 	const promotions = legalMoves(state).filter((m) => m.from === sq('a7') && m.to === sq('a8'));
-	assert.deepEqual(
-		promotions.map((m) => m.promotion).sort(),
-		['bishop', 'knight', 'queen', 'rook']
-	);
+	assert.deepEqual(promotions.map((m) => m.promotion).sort(), ['bishop', 'knight', 'queen', 'rook']);
 
 	applyMove(state, { from: sq('a7'), to: sq('a8'), promotion: 'knight' });
 	assert.deepEqual(state.board[sq('a8')], { side: 'white', kind: 'knight' });
@@ -155,8 +152,13 @@ test('the engine returns only legal moves and reports its node count', () => {
 	const result = search(state, { depth: 2 });
 	assert.ok(result.move);
 	assert.deepEqual(
-		legalMoves(state).some((move) => move.from === result.move?.from && move.to === result.move?.to && move.promotion === result.move?.promotion),
-		true
+		legalMoves(state).some(
+			(move) =>
+				move.from === result.move?.from &&
+				move.to === result.move?.to &&
+				move.promotion === result.move?.promotion,
+		),
+		true,
 	);
 	assert.ok(result.nodes > 0);
 });

@@ -24,7 +24,18 @@ test('API_REPORT.md matches the declarations emitted from the current src/', () 
 	try {
 		execFileSync(
 			'npx',
-			['tsc', '-p', 'tsconfig.build.json', '--emitDeclarationOnly', '--outDir', dir, '--declarationMap', 'false', '--sourceMap', 'false'],
+			[
+				'tsc',
+				'-p',
+				'tsconfig.build.json',
+				'--emitDeclarationOnly',
+				'--outDir',
+				dir,
+				'--declarationMap',
+				'false',
+				'--sourceMap',
+				'false',
+			],
 			{ cwd: ROOT, stdio: 'pipe', shell: true },
 		);
 
@@ -35,8 +46,11 @@ test('API_REPORT.md matches the declarations emitted from the current src/', () 
 		});
 	} catch (error) {
 		const caught = error as { stdout?: Buffer; stderr?: Buffer };
-		const output = [caught.stdout?.toString(), caught.stderr?.toString()].filter(Boolean).join('\n') || String(error);
-		assert.fail(`API_REPORT.md is out of date with the current source. Run "npm run api:report" and commit the result.\n\n${output}`);
+		const output =
+			[caught.stdout?.toString(), caught.stderr?.toString()].filter(Boolean).join('\n') || String(error);
+		assert.fail(
+			`API_REPORT.md is out of date with the current source. Run "npm run api:report" and commit the result.\n\n${output}`,
+		);
 	} finally {
 		rmSync(dir, { recursive: true, force: true });
 	}

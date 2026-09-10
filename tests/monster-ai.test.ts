@@ -23,10 +23,17 @@ test('wanders when the target is out of its own sight', () => {
 	const pathfinder = new Pathfinder(level);
 
 	//far enough that a small sight radius will not reach it, even in an open room
-	const decision = decideMonsterAI(level, pathfinder, { x: 2, y: 2 }, 1, { x: 18, y: 2 }, {
-		sightRadius: 3,
-		topology: 4,
-	});
+	const decision = decideMonsterAI(
+		level,
+		pathfinder,
+		{ x: 2, y: 2 },
+		1,
+		{ x: 18, y: 2 },
+		{
+			sightRadius: 3,
+			topology: 4,
+		},
+	);
 
 	assert.equal(decision.state, 'wander');
 });
@@ -49,11 +56,18 @@ test('flees away from a visible target once HP drops to the threshold', () => {
 	const level = openRoom();
 	const pathfinder = new Pathfinder(level);
 
-	const decision = decideMonsterAI(level, pathfinder, { x: 5, y: 2 }, 0.2, { x: 8, y: 2 }, {
-		sightRadius: 10,
-		fleeBelow: 0.25,
-		topology: 4,
-	});
+	const decision = decideMonsterAI(
+		level,
+		pathfinder,
+		{ x: 5, y: 2 },
+		0.2,
+		{ x: 8, y: 2 },
+		{
+			sightRadius: 10,
+			fleeBelow: 0.25,
+			topology: 4,
+		},
+	);
 
 	assert.equal(decision.state, 'flee');
 	assert.ok(decision.step, 'should have somewhere to flee to');
@@ -65,10 +79,17 @@ test('a monster with no flee threshold never flees, however low its HP', () => {
 	const level = openRoom();
 	const pathfinder = new Pathfinder(level);
 
-	const decision = decideMonsterAI(level, pathfinder, { x: 2, y: 2 }, 0.01, { x: 8, y: 2 }, {
-		sightRadius: 10,
-		topology: 4,
-	});
+	const decision = decideMonsterAI(
+		level,
+		pathfinder,
+		{ x: 2, y: 2 },
+		0.01,
+		{ x: 8, y: 2 },
+		{
+			sightRadius: 10,
+			topology: 4,
+		},
+	);
 
 	assert.equal(decision.state, 'hunt');
 });
@@ -88,10 +109,17 @@ test('wandering with every neighbour blocked returns no step', () => {
 	level.set(1, 1, 1); //a single passable cell, walled in on every side
 
 	const pathfinder = new Pathfinder(level);
-	const decision = decideMonsterAI(level, pathfinder, { x: 1, y: 1 }, 1, { x: 50, y: 50 }, {
-		sightRadius: 3,
-		topology: 8,
-	});
+	const decision = decideMonsterAI(
+		level,
+		pathfinder,
+		{ x: 1, y: 1 },
+		1,
+		{ x: 50, y: 50 },
+		{
+			sightRadius: 3,
+			topology: 8,
+		},
+	);
 
 	assert.equal(decision.state, 'wander');
 	assert.equal(decision.step, null);
@@ -103,11 +131,18 @@ test('fleeing with every neighbour blocked returns no step', () => {
 	level.set(1, 1, 1);
 
 	const pathfinder = new Pathfinder(level);
-	const decision = decideMonsterAI(level, pathfinder, { x: 1, y: 1 }, 0.1, { x: 1, y: 1 }, {
-		sightRadius: 3,
-		fleeBelow: 0.5,
-		topology: 8,
-	});
+	const decision = decideMonsterAI(
+		level,
+		pathfinder,
+		{ x: 1, y: 1 },
+		0.1,
+		{ x: 1, y: 1 },
+		{
+			sightRadius: 3,
+			fleeBelow: 0.5,
+			topology: 8,
+		},
+	);
 
 	assert.equal(decision.state, 'flee');
 	assert.equal(decision.step, null);
@@ -118,11 +153,18 @@ test('a peaceful monster wanders even with the target in plain sight', () => {
 	const level = openRoom();
 	const pathfinder = new Pathfinder(level);
 
-	const decision = decideMonsterAI(level, pathfinder, { x: 2, y: 2 }, 1, { x: 8, y: 2 }, {
-		sightRadius: 10,
-		topology: 4,
-		disposition: 'peaceful',
-	});
+	const decision = decideMonsterAI(
+		level,
+		pathfinder,
+		{ x: 2, y: 2 },
+		1,
+		{ x: 8, y: 2 },
+		{
+			sightRadius: 10,
+			topology: 4,
+			disposition: 'peaceful',
+		},
+	);
 
 	assert.equal(decision.state, 'wander');
 });
@@ -132,11 +174,18 @@ test('a neutral monster wanders too, same as peaceful, until provoked', () => {
 	const level = openRoom();
 	const pathfinder = new Pathfinder(level);
 
-	const decision = decideMonsterAI(level, pathfinder, { x: 2, y: 2 }, 1, { x: 8, y: 2 }, {
-		sightRadius: 10,
-		topology: 4,
-		disposition: 'neutral',
-	});
+	const decision = decideMonsterAI(
+		level,
+		pathfinder,
+		{ x: 2, y: 2 },
+		1,
+		{ x: 8, y: 2 },
+		{
+			sightRadius: 10,
+			topology: 4,
+			disposition: 'neutral',
+		},
+	);
 
 	assert.equal(decision.state, 'wander');
 });
@@ -164,10 +213,17 @@ test('omitting disposition defaults to hostile, unchanged from before this optio
 	const level = openRoom();
 	const pathfinder = new Pathfinder(level);
 
-	const decision = decideMonsterAI(level, pathfinder, { x: 2, y: 2 }, 1, { x: 8, y: 2 }, {
-		sightRadius: 10,
-		topology: 4,
-	});
+	const decision = decideMonsterAI(
+		level,
+		pathfinder,
+		{ x: 2, y: 2 },
+		1,
+		{ x: 8, y: 2 },
+		{
+			sightRadius: 10,
+			topology: 4,
+		},
+	);
 
 	assert.equal(decision.state, 'hunt');
 });

@@ -46,7 +46,7 @@ const html = await readFile(join(dist, 'index.html'), 'utf8');
 
 //vite names the entry chunk with a hash, so it is found rather than assumed
 const entry = (await readdir(join(dist, 'assets').replace(/assets$/, ''))).find(
-	(name) => name.endsWith('.js') && name !== 'assets'
+	(name) => name.endsWith('.js') && name !== 'assets',
 );
 
 const scriptTag = /[ \t]*<script[^>]*src="([^"]+\.js)"[^>]*><\/script>/;

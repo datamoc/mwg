@@ -1,9 +1,4 @@
-export {
-	ColorTransformBatcher,
-	packColorAdd,
-	packTintAdd,
-	NO_COLOR_ADD,
-} from './ColorTransformBatcher.ts';
+export { ColorTransformBatcher, packColorAdd, packTintAdd, NO_COLOR_ADD } from './ColorTransformBatcher.ts';
 export type { HasColorAdd } from './ColorTransformBatcher.ts';
 
 export { TintedSprite, registerColorTransform } from './TintedSprite.ts';
@@ -41,11 +36,24 @@ export { blobIndex, autotileFrames, BLOB_SHAPES } from './Autotile.ts';
 export type { NeighborMask } from './Autotile.ts';
 
 export { inspectGraphicsCapabilities, detectWebGpu, RENDERING_DECISIONS } from './Capabilities.ts';
-export type { GraphicsCapabilities, GraphicsProbe, GraphicsWorkload, RenderingDecision, WebGpuDetection } from './Capabilities.ts';
+export type {
+	GraphicsCapabilities,
+	GraphicsProbe,
+	GraphicsWorkload,
+	RenderingDecision,
+	WebGpuDetection,
+} from './Capabilities.ts';
 
 export { rectOf } from './Types2D.ts';
 export type { Container2D, Texture2D, Rect, TextureRegion } from './Types2D.ts';
 export { Node2D, Shape2D, Text2D, Sprite2D, TiledSprite, Gradient } from './Shape2D.ts';
 
 export { loadTiledMap } from './TiledMap.ts';
-export type { TiledMapData, TiledTilesetData, TilesetSheet, LoadedTiledMap, TiledObject, TiledLayer } from './TiledMap.ts';
+export type {
+	TiledMapData,
+	TiledTilesetData,
+	TilesetSheet,
+	LoadedTiledMap,
+	TiledObject,
+	TiledLayer,
+} from './TiledMap.ts';

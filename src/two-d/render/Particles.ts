@@ -148,7 +148,19 @@ export class ParticleEmitter extends Container {
 		this.spin = options.spin ?? 0;
 
 		for (let i = 0; i < max; i++) {
-			this.pool.push({ x: 0, y: 0, vx: 0, vy: 0, age: 0, life: 0, rotation: 0, spin: 0, scale: 1, alpha: 1, active: false });
+			this.pool.push({
+				x: 0,
+				y: 0,
+				vx: 0,
+				vy: 0,
+				age: 0,
+				life: 0,
+				rotation: 0,
+				spin: 0,
+				scale: 1,
+				alpha: 1,
+				active: false,
+			});
 
 			if (options.texture) {
 				const sprite = new Sprite(options.texture);

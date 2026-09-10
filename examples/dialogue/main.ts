@@ -35,11 +35,7 @@ const SCENE: StageCommand[] = [
 	{
 		ask: 'It is how this one worked. Do you want to see where?',
 		as: 'bob',
-		choices: [
-			{ text: 'Show me.' },
-			{ text: 'Not in these shoes.' },
-			{ text: 'You are making this up.' },
-		],
+		choices: [{ text: 'Show me.' }, { text: 'Not in these shoes.' }, { text: 'You are making this up.' }],
 		store: 'answer',
 	},
 	{
@@ -70,11 +66,7 @@ class DialogueScene extends Scene2D {
 		const cast = { alice: ALICE, bob: BOB };
 		for (const [id, asset] of Object.entries(cast)) {
 			this.dialogue.defineCharacter(id, {
-				sheet: SpriteSheet.fromTexture(
-					Resources.texture(asset),
-					character.frameWidth,
-					character.frameHeight
-				),
+				sheet: SpriteSheet.fromTexture(Resources.texture(asset), character.frameWidth, character.frameHeight),
 				expressions: character.expressions,
 				height: 0.64,
 			});
@@ -111,7 +103,7 @@ class DialogueScene extends Scene2D {
 				],
 				dims: false,
 				anchor: 'bottom',
-			})
+			}),
 		);
 	}
 
@@ -145,6 +137,6 @@ main().catch((error) => {
 	console.error(error);
 	document.body.insertAdjacentHTML(
 		'afterbegin',
-		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
 	);
 });

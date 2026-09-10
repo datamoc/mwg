@@ -46,7 +46,7 @@ test('all returns records in insertion order, and remove deletes', () => {
 
 	assert.deepEqual(
 		db.all().map((r) => r.id),
-		['a', 'c']
+		['a', 'c'],
 	);
 });
 
@@ -58,7 +58,7 @@ test('where answers the query the save system cannot ask', () => {
 
 	assert.deepEqual(
 		db.where((q) => !q.done).map((q) => q.id),
-		['amulet', 'escort']
+		['amulet', 'escort'],
 	);
 });
 

@@ -90,8 +90,14 @@ test('sessionRows filters missing-only and free-text queries', () => {
 		sessionRows(session, { missingOnly: true }).map((row) => row.key),
 		['farewell', 'gems'],
 	);
-	assert.deepEqual(sessionRows(session, { query: 'BONJOUR' }).map((row) => row.key), ['greeting']);
-	assert.deepEqual(sessionRows(session, { query: 'gem' }).map((row) => row.key), ['gems']);
+	assert.deepEqual(
+		sessionRows(session, { query: 'BONJOUR' }).map((row) => row.key),
+		['greeting'],
+	);
+	assert.deepEqual(
+		sessionRows(session, { query: 'gem' }).map((row) => row.key),
+		['gems'],
+	);
 });
 
 test('setTargetText writes a string and preserves plural shape from JSON', () => {
@@ -131,7 +137,10 @@ test('a channel key shows its semantic family cue, and setting one writes the fa
 	const semanticBase: Catalog = {
 		locale: 'en',
 		direction: 'ltr',
-		messages: { 'combat.damage.log': 'The {target} takes {amount} damage.', 'combat.damage.audio': 'sounds/hit.wav' },
+		messages: {
+			'combat.damage.log': 'The {target} takes {amount} damage.',
+			'combat.damage.audio': 'sounds/hit.wav',
+		},
 	};
 	const semanticTarget: Catalog = { locale: 'fr', direction: 'ltr', messages: {} };
 	const session = createEditSession(semanticBase, semanticTarget);

@@ -44,14 +44,54 @@ export interface RenderingDecision {
  * ```
  */
 export const RENDERING_DECISIONS: readonly RenderingDecision[] = [
-	{ workload: 'sprites', preferred: 'PixiJS WebGL/WebGPU batcher', fallback: 'PixiJS WebGL', reason: 'high-volume textured 2D batches' },
-	{ workload: 'ui', preferred: 'PixiJS display tree', fallback: 'PixiJS display tree', reason: 'themeable 2D layout and text' },
-	{ workload: 'custom-shaders', preferred: 'backend-specific GLSL/WGSL only when profiled', fallback: 'PixiJS filters', reason: 'avoid maintaining paired shader sources without a measured gain' },
-	{ workload: 'particles', preferred: 'PixiJS for 2D, Babylon.js for 3D', fallback: 'instanced sprites/meshes', reason: 'match simulation and depth to the scene' },
-	{ workload: 'instanced-terrain', preferred: 'Babylon.js thin instances', fallback: 'PixiJS TileMap for 2D', reason: 'depth-tested repeated 3D geometry' },
-	{ workload: 'voxels', preferred: 'Babylon.js thin instances', fallback: 'batched meshes', reason: 'color-grouped 3D voxels' },
-	{ workload: 'animated-models', preferred: 'Babylon.js glTF animation groups', fallback: 'billboard sprites', reason: 'standard 3D interchange and animation support' },
-	{ workload: 'large-3d-worlds', preferred: 'Babylon.js with streaming/culling', fallback: 'partitioned scenes', reason: 'scene graph, depth, and instancing' },
+	{
+		workload: 'sprites',
+		preferred: 'PixiJS WebGL/WebGPU batcher',
+		fallback: 'PixiJS WebGL',
+		reason: 'high-volume textured 2D batches',
+	},
+	{
+		workload: 'ui',
+		preferred: 'PixiJS display tree',
+		fallback: 'PixiJS display tree',
+		reason: 'themeable 2D layout and text',
+	},
+	{
+		workload: 'custom-shaders',
+		preferred: 'backend-specific GLSL/WGSL only when profiled',
+		fallback: 'PixiJS filters',
+		reason: 'avoid maintaining paired shader sources without a measured gain',
+	},
+	{
+		workload: 'particles',
+		preferred: 'PixiJS for 2D, Babylon.js for 3D',
+		fallback: 'instanced sprites/meshes',
+		reason: 'match simulation and depth to the scene',
+	},
+	{
+		workload: 'instanced-terrain',
+		preferred: 'Babylon.js thin instances',
+		fallback: 'PixiJS TileMap for 2D',
+		reason: 'depth-tested repeated 3D geometry',
+	},
+	{
+		workload: 'voxels',
+		preferred: 'Babylon.js thin instances',
+		fallback: 'batched meshes',
+		reason: 'color-grouped 3D voxels',
+	},
+	{
+		workload: 'animated-models',
+		preferred: 'Babylon.js glTF animation groups',
+		fallback: 'billboard sprites',
+		reason: 'standard 3D interchange and animation support',
+	},
+	{
+		workload: 'large-3d-worlds',
+		preferred: 'Babylon.js with streaming/culling',
+		fallback: 'partitioned scenes',
+		reason: 'scene graph, depth, and instancing',
+	},
 ];
 
 /**
@@ -81,10 +121,11 @@ export const RENDERING_DECISIONS: readonly RenderingDecision[] = [
  * ```
  */
 export function inspectGraphicsCapabilities(probe: GraphicsProbe = {}): GraphicsCapabilities {
-	const canvas = probe.createCanvas?.() ?? (typeof document === 'undefined' ? null : document.createElement('canvas'));
+	const canvas =
+		probe.createCanvas?.() ?? (typeof document === 'undefined' ? null : document.createElement('canvas'));
 	const webgl2 = Boolean(canvas?.getContext('webgl2'));
 	const webgl1 = webgl2 || Boolean(canvas?.getContext('webgl') ?? canvas?.getContext('experimental-webgl'));
-	const webgpu = probe.webgpu ?? Boolean((globalThis.navigator as Navigator & { gpu?: unknown } | undefined)?.gpu);
+	const webgpu = probe.webgpu ?? Boolean((globalThis.navigator as (Navigator & { gpu?: unknown }) | undefined)?.gpu);
 	return { webgl1, webgl2, webgpu, wgsl: probe.wgsl ?? false };
 }
 
@@ -109,7 +150,7 @@ export interface WebGpuDetection {
  * ```
  */
 export async function detectWebGpu(): Promise<WebGpuDetection> {
-	const gpu = (globalThis.navigator as Navigator & { gpu?: GPU } | undefined)?.gpu;
+	const gpu = (globalThis.navigator as (Navigator & { gpu?: GPU }) | undefined)?.gpu;
 	if (!gpu) return { webgpu: false, wgsl: false };
 
 	try {

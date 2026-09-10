@@ -107,12 +107,14 @@ function parseRoadmap(markdown) {
 		const overallDone = checkboxItems.filter((i) => i.done).length;
 		const overallTotal = checkboxItems.length;
 		return {
-			sections: [{
-				name: 'Tasks',
-				done: overallDone,
-				total: overallTotal,
-				items: checkboxItems,
-			}],
+			sections: [
+				{
+					name: 'Tasks',
+					done: overallDone,
+					total: overallTotal,
+					items: checkboxItems,
+				},
+			],
 			overallDone,
 			overallTotal,
 			openItems: checkboxItems.filter((i) => !i.done),
@@ -123,7 +125,7 @@ function parseRoadmap(markdown) {
 	return { sections: [], overallDone: 0, overallTotal: 0, openItems: [], allItems: [] };
 }
 
-const Scene2DBase = (typeof mw_games !== 'undefined' && mw_games.Scene2D) ? mw_games.Scene2D : class {};
+const Scene2DBase = typeof mw_games !== 'undefined' && mw_games.Scene2D ? mw_games.Scene2D : class {};
 
 class RoadmapScene extends Scene2DBase {
 	create() {
@@ -477,11 +479,26 @@ function buildManagementPanel(panelEl, data) {
 		}
 	}
 
-	searchInput.addEventListener('input', () => { state.search = searchInput.value; render(); });
-	onlyOpenCheckbox.addEventListener('change', () => { state.onlyOpen = onlyOpenCheckbox.checked; render(); });
-	priorityFilter.select.addEventListener('change', () => { state.priority = priorityFilter.select.value; render(); });
-	statusFilter.select.addEventListener('change', () => { state.status = statusFilter.select.value; render(); });
-	assigneeFilter.select.addEventListener('change', () => { state.assignee = assigneeFilter.select.value; render(); });
+	searchInput.addEventListener('input', () => {
+		state.search = searchInput.value;
+		render();
+	});
+	onlyOpenCheckbox.addEventListener('change', () => {
+		state.onlyOpen = onlyOpenCheckbox.checked;
+		render();
+	});
+	priorityFilter.select.addEventListener('change', () => {
+		state.priority = priorityFilter.select.value;
+		render();
+	});
+	statusFilter.select.addEventListener('change', () => {
+		state.status = statusFilter.select.value;
+		render();
+	});
+	assigneeFilter.select.addEventListener('change', () => {
+		state.assignee = assigneeFilter.select.value;
+		render();
+	});
 
 	panelEl.appendChild(toolbar);
 	panelEl.appendChild(summary);
@@ -521,7 +538,11 @@ if (typeof window !== 'undefined') {
 
 	window.buildManagementPanel = buildManagementPanel;
 
-	if (typeof document !== 'undefined' && typeof document.getElementById === 'function' && !window.__MWG_ROADMAP_NO_AUTOSTART__) {
+	if (
+		typeof document !== 'undefined' &&
+		typeof document.getElementById === 'function' &&
+		!window.__MWG_ROADMAP_NO_AUTOSTART__
+	) {
 		(async () => {
 			const markdown = await loadRoadmapMarkdown();
 			window.__roadmapData = markdown ? parseRoadmap(markdown) : null;

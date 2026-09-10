@@ -55,7 +55,7 @@ function renderDiagram(spec) {
 		parts.push(
 			`<g>\n  <rect x="${x}" y="432" width="116" height="38" rx="19" fill="#261a2d" stroke="#5d4086"/>\n` +
 				text(x + 58, 457, '#ead9ff', 15, 600, 'middle', name) +
-				`</g>`
+				`</g>`,
 		);
 	});
 
@@ -73,7 +73,9 @@ function renderDiagram(spec) {
 	spec.flow.forEach((step, i) => {
 		const x = flowX[i];
 		if (i > 0) {
-			parts.push(`<line x1="${flowX[i - 1] + 180}" y1="855" x2="${x}" y2="855" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/>`);
+			parts.push(
+				`<line x1="${flowX[i - 1] + 180}" y1="855" x2="${x}" y2="855" stroke="#596273" stroke-width="3" marker-end="url(#arrow)"/>`,
+			);
 		}
 		parts.push(panel(x, 810, 180, 90, FLOW_COLOR));
 		parts.push(text(x + 90, 848, '#f3f4f6', 19, 700, 'middle', step));
@@ -83,7 +85,9 @@ function renderDiagram(spec) {
 	spec.callouts.forEach((flowIndex, i) => {
 		const x1 = categoryX[i] + 205;
 		const x2 = flowX[flowIndex] + 90;
-		parts.push(`<line x1="${x1}" y1="790" x2="${x2}" y2="810" stroke="#596273" stroke-width="3" marker-end="url(#arrow)" stroke-dasharray="10 10"/>`);
+		parts.push(
+			`<line x1="${x1}" y1="790" x2="${x2}" y2="810" stroke="#596273" stroke-width="3" marker-end="url(#arrow)" stroke-dasharray="10 10"/>`,
+		);
 	});
 
 	parts.push(text(1530, 964, '#667080', 14, null, 'end', 'Conceptual MWG example diagram'));
@@ -165,7 +169,10 @@ const DIAGRAMS = {
 	'17_movement': {
 		title: 'movement',
 		subtitle: 'Grid movement, tile collision, and TileMap layers together',
-		shows: ['Demonstrates Input actions, GridMover tweening, wall-tile', 'collision, and layered TileMap rendering.'],
+		shows: [
+			'Demonstrates Input actions, GridMover tweening, wall-tile',
+			'collision, and layered TileMap rendering.',
+		],
 		matters: ['The walk-around-a-map loop every RPG/roguelike example', 'builds on, without dialogue or combat.'],
 		modules: ['core', 'render', 'rpg'],
 		categories: [
@@ -207,7 +214,10 @@ const DIAGRAMS = {
 	'20_string_editor': {
 		title: 'string editor',
 		subtitle: 'Reference, translation, and rendered line with cues',
-		shows: ['Demonstrates an editable translation beside its reference,', 'markdown preview, variables, and sound cues.'],
+		shows: [
+			'Demonstrates an editable translation beside its reference,',
+			'markdown preview, variables, and sound cues.',
+		],
 		matters: ['The translation workflow as a playable page,', 'not a terminal.'],
 		modules: ['i18n', 'ui', 'audio'],
 		categories: [

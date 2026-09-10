@@ -74,7 +74,10 @@ test('cards deal without duplication and solitaire deals seven columns', () => {
 	assert.equal(new Set(hands.flat().map((card) => `${card.suit}:${card.rank}`)).size, 20);
 	const solitaire = Board.dealSolitaire(4);
 	assert.equal(solitaire.tableau.length, 7);
-	assert.deepEqual(solitaire.tableau.map((column) => column.down.length + column.up.length), [7, 6, 5, 4, 3, 2, 1]);
+	assert.deepEqual(
+		solitaire.tableau.map((column) => column.down.length + column.up.length),
+		[7, 6, 5, 4, 3, 2, 1],
+	);
 	assert.equal(solitaire.stock.length, 52 - 28);
 });
 
@@ -114,9 +117,14 @@ test('foundation moves require suit sequence from the ace up, and win needs all 
 	assert.throws(() => Board.moveSolitaireToFoundation(state, 'waste'));
 	state.waste = [{ suit: 'clubs', rank: 1 }];
 	Board.moveSolitaireToFoundation(state, 'waste');
-	assert.equal(state.foundations.some((pile) => pile.length === 1), true);
+	assert.equal(
+		state.foundations.some((pile) => pile.length === 1),
+		true,
+	);
 	assert.equal(Board.solitaireWon(state), false);
-	for (const foundation of state.foundations) for (let rank = foundation.length + 1; rank <= 13; rank++) foundation.push({ suit: 'clubs', rank: rank as Board.CardRank });
+	for (const foundation of state.foundations)
+		for (let rank = foundation.length + 1; rank <= 13; rank++)
+			foundation.push({ suit: 'clubs', rank: rank as Board.CardRank });
 	assert.equal(Board.solitaireWon(state), true);
 });
 
@@ -159,8 +167,16 @@ test('dice expressions and combat hooks are deterministic and composable', () =>
 	assert.ok(first >= 3 && first <= 13);
 	const hooks = new CombatHooks<string>();
 	const source = {};
-	hooks.on('beforeDamage', (context) => { context.amount *= 2; }, source);
-	hooks.on('beforeDamage', (context) => { context.amount -= 3; });
+	hooks.on(
+		'beforeDamage',
+		(context) => {
+			context.amount *= 2;
+		},
+		source,
+	);
+	hooks.on('beforeDamage', (context) => {
+		context.amount -= 3;
+	});
 	assert.equal(hooks.modifyDamage('a', 'b', 4).amount, 5);
 	hooks.offSource(source);
 	assert.equal(hooks.modifyDamage('a', 'b', 4).amount, 1);
@@ -168,11 +184,15 @@ test('dice expressions and combat hooks are deterministic and composable', () =>
 
 test('CombatHooks reports prevented damage and fires named lifecycle events', () => {
 	const hooks = new CombatHooks<string>();
-	hooks.on('beforeDamage', (context) => { context.amount = 0; });
+	hooks.on('beforeDamage', (context) => {
+		context.amount = 0;
+	});
 	const context = hooks.modifyDamage('a', 'b', 10);
 	assert.equal(context.prevented, true);
 	let killed: string | undefined;
-	hooks.on('onKill', (context) => { killed = context.defender; });
+	hooks.on('onKill', (context) => {
+		killed = context.defender;
+	});
 	hooks.emit('onKill', { attacker: 'a', defender: 'b', amount: 0, prevented: false });
 	assert.equal(killed, 'b');
 });

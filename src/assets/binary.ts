@@ -29,7 +29,11 @@ export interface LoadBinaryOptions {
 const cache = new Map<string, ArrayBuffer>();
 
 /** Loads and caches raw bytes for every path not already cached; a path already loaded is a no-op. */
-export async function loadBinary(paths: string[], onProgress?: AssetProgress, options: LoadBinaryOptions = {}): Promise<void> {
+export async function loadBinary(
+	paths: string[],
+	onProgress?: AssetProgress,
+	options: LoadBinaryOptions = {},
+): Promise<void> {
 	const doFetch = options.fetch ?? globalThis.fetch;
 	if (!doFetch) throw new Error('fetch is unavailable; provide LoadBinaryOptions.fetch');
 
@@ -47,7 +51,7 @@ export async function loadBinary(paths: string[], onProgress?: AssetProgress, op
 			cache.set(path, await response.arrayBuffer());
 			done++;
 			onProgress?.(done / pending.length);
-		})
+		}),
 	);
 }
 

@@ -107,7 +107,9 @@ export function diffPlaceholders(baseText: string, targetText: string): Placehol
 		extra: [...target.keys()].filter((token) => !base.has(token)),
 		changed: [...base].flatMap(([token, baseSig]) => {
 			const targetSig = target.get(token);
-			return targetSig !== undefined && targetSig !== baseSig ? [{ token, base: baseSig, target: targetSig }] : [];
+			return targetSig !== undefined && targetSig !== baseSig
+				? [{ token, base: baseSig, target: targetSig }]
+				: [];
 		}),
 	};
 }
@@ -156,7 +158,13 @@ function padExponent(text: string): string {
  * the exponent stays below the precision; a bare precision without a type (`{v:.4}`)
  * switches to exponential one digit sooner - same shape, a tighter threshold.
  */
-function formatGeneral(magnitude: number, precision: number, upper: boolean, alt: boolean, fixedBelow?: number): string {
+function formatGeneral(
+	magnitude: number,
+	precision: number,
+	upper: boolean,
+	alt: boolean,
+	fixedBelow?: number,
+): string {
 	const digits = precision === 0 ? 1 : precision;
 	if (magnitude === 0) return alt ? `0.${'0'.repeat(digits - 1)}` : '0';
 	const exponent = Math.floor(Math.log10(magnitude));
@@ -207,7 +215,8 @@ export function formatSpec(value: string | number, spec: string, language = 'en'
 	if (typeof value === 'string') {
 		//strings take width/alignment/fill and `.precision` truncation only - every other
 		//option is numeric, and CPython raises for those rather than coercing the string
-		if (sign || zFlag || altFlag || grouping || alignChar === '=' || (type !== undefined && type !== 's')) return undefined;
+		if (sign || zFlag || altFlag || grouping || alignChar === '=' || (type !== undefined && type !== 's'))
+			return undefined;
 		return formatStringSpec(value, fillChar, alignChar, zeroFlag, width, precision);
 	}
 

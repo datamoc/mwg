@@ -45,7 +45,8 @@ function exportedNames(file: string, seen: Set<string> = new Set()): Map<string,
 		.replace(/\/\/.*$/gm, '')
 		.replace(
 			/export\s+(type\s+)?\{([\s\S]*?)\}\s*from/g,
-			(_match, keyword: string | undefined, body: string) => `export ${keyword ?? ''}{ ${body.replace(/\s+/g, ' ').trim()} } from`,
+			(_match, keyword: string | undefined, body: string) =>
+				`export ${keyword ?? ''}{ ${body.replace(/\s+/g, ' ').trim()} } from`,
 		);
 	const names = new Map<string, string>();
 
@@ -75,7 +76,10 @@ function exportedNames(file: string, seen: Set<string> = new Set()): Map<string,
 			const target = resolvePath(dirname(file), match[2]);
 			const targetNames = exportedNames(target, nextSeen);
 			for (const entry of match[1].split(',')) {
-				const parts = entry.trim().replace(/^type\s+/, '').split(/\s+as\s+/);
+				const parts = entry
+					.trim()
+					.replace(/^type\s+/, '')
+					.split(/\s+as\s+/);
 				const local = parts[0].trim();
 				const exported = (parts[1] ?? parts[0]).trim();
 				const found = targetNames.get(local);
@@ -88,14 +92,21 @@ function exportedNames(file: string, seen: Set<string> = new Set()): Map<string,
 		match = line.match(/export (?:type )?\{([^}]+)\}(?!\s*from)/);
 		if (match) {
 			for (const entry of match[1].split(',')) {
-				const name = entry.trim().replace(/^type\s+/, '').split(/\s+as\s+/).pop()!.trim();
+				const name = entry
+					.trim()
+					.replace(/^type\s+/, '')
+					.split(/\s+as\s+/)
+					.pop()!
+					.trim();
 				add(name, line.trim());
 			}
 			continue;
 		}
 
 		// export declare/class/function/const/interface/type/enum NAME - a real declaration
-		match = line.match(/export (?:declare )?(?:abstract )?(?:class|interface|type|function|const|enum|namespace) (\w+)/);
+		match = line.match(
+			/export (?:declare )?(?:abstract )?(?:class|interface|type|function|const|enum|namespace) (\w+)/,
+		);
 		if (match) add(match[1], line.trim());
 	}
 
@@ -115,7 +126,9 @@ test('no two export * sources in the same barrel export the same name', () => {
 
 	for (const barrel of barrels) {
 		const source = readFileSync(barrel, 'utf8').replace(/\/\*\*?[\s\S]*?\*\//g, '');
-		const stars = [...source.matchAll(/export \* from '(\.[^']+)'/g)].map((match) => resolvePath(dirname(barrel), match[1]));
+		const stars = [...source.matchAll(/export \* from '(\.[^']+)'/g)].map((match) =>
+			resolvePath(dirname(barrel), match[1]),
+		);
 		const byName = new Map<string, string[]>();
 
 		for (const star of stars) {
@@ -133,7 +146,11 @@ test('no two export * sources in the same barrel export the same name', () => {
 		}
 	}
 
-	assert.deepEqual(collisions, [], 'star-export collisions silently drop the name from the barrel - rename or re-export one explicitly');
+	assert.deepEqual(
+		collisions,
+		[],
+		'star-export collisions silently drop the name from the barrel - rename or re-export one explicitly',
+	);
 });
 
 /** the guard on the guard: the root barrel must actually resolve the names games import */

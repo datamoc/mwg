@@ -19,10 +19,6 @@ import * as Random from '../core/Random.ts';
  * const withCustomDice = skillCheck(5, 15, () => 12); // an injected, non-random roll
  * ```
  */
-export function skillCheck(
-	value: number,
-	difficulty: number,
-	roll: () => number = () => Random.range(1, 20)
-): boolean {
+export function skillCheck(value: number, difficulty: number, roll: () => number = () => Random.range(1, 20)): boolean {
 	return value + roll() >= difficulty;
 }

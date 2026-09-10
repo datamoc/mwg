@@ -61,7 +61,9 @@ class LoadingScene extends Scene2D {
 			id: 'preloading next area',
 			weight: 1,
 			run: (context: LoadTaskContext) =>
-				this.stream.preload({ id: 'area-2', paths: [TILES], estimatedBytes: 1 }, (fraction) => context.report(fraction)),
+				this.stream.preload({ id: 'area-2', paths: [TILES], estimatedBytes: 1 }, (fraction) =>
+					context.report(fraction),
+				),
 		});
 
 		this.screen = new LoadingScreen({
@@ -156,6 +158,6 @@ main().catch((error) => {
 	console.error(error);
 	document.body.insertAdjacentHTML(
 		'afterbegin',
-		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`
+		`<pre style="color:#c66;font:12px monospace;padding:16px">${String(error?.stack ?? error)}</pre>`,
 	);
 });

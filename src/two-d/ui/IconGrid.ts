@@ -341,14 +341,11 @@ export class IconGrid extends Container {
 	move(dx: number, dy: number): boolean {
 		const rows = this.rows;
 		const columns = this.columns;
-		return this.selection.step(
-			(from) => {
-				const row = (Math.floor(from / columns) + dy + rows) % rows;
-				const col = ((from % columns) + dx + columns) % columns;
-				return row * columns + col;
-			},
-			rows * columns
-		);
+		return this.selection.step((from) => {
+			const row = (Math.floor(from / columns) + dy + rows) % rows;
+			const col = ((from % columns) + dx + columns) % columns;
+			return row * columns + col;
+		}, rows * columns);
 	}
 
 	select(index: number): void {

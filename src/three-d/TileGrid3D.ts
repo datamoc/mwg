@@ -26,43 +26,55 @@ export interface TileGrid3DMeshes {
 }
 
 /** Builds an instanced square or flat-top hex floor with optional raised columns. */
-export function createTileGrid3D(scene: Scene, cells: readonly GridCell3D[], options: TileGrid3DOptions): TileGrid3DMeshes {
+export function createTileGrid3D(
+	scene: Scene,
+	cells: readonly GridCell3D[],
+	options: TileGrid3DOptions,
+): TileGrid3DMeshes {
 	const tileSize = options.tileSize ?? 1;
 	const heightStep = options.heightStep ?? 1;
 	const thickness = options.tileThickness ?? 0.12;
 	if (!(thickness > 0)) throw new Error('3D tile thickness must be positive');
 	const origin = options.origin ?? [0, 0, 0];
-	const tiles = options.shape === 'square'
-		? CreateBox('square-tiles', { width: tileSize * 0.94, height: thickness, depth: tileSize * 0.94 }, scene)
-		: CreateCylinder('hex-tiles', { diameter: tileSize * 1.9, height: thickness, tessellation: 6 }, scene);
+	const tiles =
+		options.shape === 'square'
+			? CreateBox('square-tiles', { width: tileSize * 0.94, height: thickness, depth: tileSize * 0.94 }, scene)
+			: CreateCylinder('hex-tiles', { diameter: tileSize * 1.9, height: thickness, tessellation: 6 }, scene);
 	const tileMaterial = material(scene, 'tile-material', options.tileColor ?? 0x5f8f62);
 	tiles.material = tileMaterial;
-	setMatrices(tiles, cells.map((cell) => {
-		const point = gridPoint3D(options.shape, cell.x, cell.y, tileSize, cell.height ?? 0, heightStep);
-		return Matrix.Translation(point.x + origin[0], point.y + origin[1] - thickness / 2, point.z + origin[2]);
-	}));
+	setMatrices(
+		tiles,
+		cells.map((cell) => {
+			const point = gridPoint3D(options.shape, cell.x, cell.y, tileSize, cell.height ?? 0, heightStep);
+			return Matrix.Translation(point.x + origin[0], point.y + origin[1] - thickness / 2, point.z + origin[2]);
+		}),
+	);
 
 	const raised = cells.filter((cell) => (cell.height ?? 0) !== 0);
 	let columns: Mesh | null = null;
 	let columnMaterial: StandardMaterial | null = null;
 	if (raised.length) {
-		columns = options.shape === 'square'
-			? CreateBox('square-columns', { size: 1 }, scene)
-			: CreateCylinder('hex-columns', { diameter: 1.9, height: 1, tessellation: 6 }, scene);
+		columns =
+			options.shape === 'square'
+				? CreateBox('square-columns', { size: 1 }, scene)
+				: CreateCylinder('hex-columns', { diameter: 1.9, height: 1, tessellation: 6 }, scene);
 		columnMaterial = material(scene, 'column-material', options.columnColor ?? 0x3f6048);
 		columns.material = columnMaterial;
-		setMatrices(columns, raised.map((cell) => {
-			const levels = cell.height ?? 0;
-			const point = gridPoint3D(options.shape, cell.x, cell.y, tileSize, 0, heightStep);
-			const height = Math.abs(levels * heightStep);
-			const centerY = origin[1] + Math.sign(levels) * height / 2;
-			const horizontal = options.shape === 'square' ? tileSize * 0.94 : tileSize;
-			return Matrix.Compose(
-				new Vector3(horizontal, height, horizontal),
-				Quaternion.Identity(),
-				new Vector3(point.x + origin[0], centerY, point.z + origin[2]),
-			);
-		}));
+		setMatrices(
+			columns,
+			raised.map((cell) => {
+				const levels = cell.height ?? 0;
+				const point = gridPoint3D(options.shape, cell.x, cell.y, tileSize, 0, heightStep);
+				const height = Math.abs(levels * heightStep);
+				const centerY = origin[1] + (Math.sign(levels) * height) / 2;
+				const horizontal = options.shape === 'square' ? tileSize * 0.94 : tileSize;
+				return Matrix.Compose(
+					new Vector3(horizontal, height, horizontal),
+					Quaternion.Identity(),
+					new Vector3(point.x + origin[0], centerY, point.z + origin[2]),
+				);
+			}),
+		);
 	}
 
 	return {

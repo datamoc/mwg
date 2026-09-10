@@ -2,13 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { Level } from '../src/roguelike/Level.ts';
-import {
-	chebyshevDistance,
-	traceLine,
-	hasLineOfSight,
-	canTarget,
-	resolveArea,
-} from '../src/roguelike/Targeting.ts';
+import { chebyshevDistance, traceLine, hasLineOfSight, canTarget, resolveArea } from '../src/roguelike/Targeting.ts';
 
 const KINDS = [
 	{ passable: false, transparent: false },
@@ -68,10 +62,7 @@ test('canTarget refuses a blocked shot unless line of sight is waived', () => {
 	level.fillRect({ left: 5, top: 1, right: 5, bottom: 9 }, 0);
 
 	assert.equal(canTarget(level, { x: 1, y: 5 }, { x: 9, y: 5 }, { range: 20 }), false);
-	assert.equal(
-		canTarget(level, { x: 1, y: 5 }, { x: 9, y: 5 }, { range: 20, requireLineOfSight: false }),
-		true
-	);
+	assert.equal(canTarget(level, { x: 1, y: 5 }, { x: 9, y: 5 }, { range: 20, requireLineOfSight: false }), true);
 });
 
 test('resolveArea single hits only the aimed cell', () => {

@@ -26,10 +26,13 @@ test('quests come back in first-seen order across the table', () => {
 		{ questId: 'a', description: 'first' },
 		{ questId: 'b', description: 'second' },
 	]);
-	assert.deepEqual(quests.map((q) => q.id), ['b', 'a']);
+	assert.deepEqual(
+		quests.map((q) => q.id),
+		['b', 'a'],
+	);
 });
 
-test('requires is read off a quest\'s first row only', () => {
+test("requires is read off a quest's first row only", () => {
 	const quests = questsFromRows([
 		{ questId: 'rats', requires: ['intro'], description: 'first' },
 		{ questId: 'rats', requires: ['ignored'], description: 'second' },
@@ -55,11 +58,17 @@ test('naming both a condition switch and a condition variable throws', () => {
 });
 
 test('conditionSwitch without conditionEquals throws', () => {
-	assert.throws(() => questsFromRows([{ questId: 'q', conditionSwitch: 'a' }]), /conditionSwitch needs a conditionEquals/);
+	assert.throws(
+		() => questsFromRows([{ questId: 'q', conditionSwitch: 'a' }]),
+		/conditionSwitch needs a conditionEquals/,
+	);
 });
 
 test('counterVariable without counterTarget throws', () => {
-	assert.throws(() => questsFromRows([{ questId: 'q', counterVariable: 'rep' }]), /counterVariable needs a counterTarget/);
+	assert.throws(
+		() => questsFromRows([{ questId: 'q', counterVariable: 'rep' }]),
+		/counterVariable needs a counterTarget/,
+	);
 });
 
 test('a location needs both x and y', () => {
@@ -86,5 +95,8 @@ rats,,,Report back to the innkeeper`;
 	log.define(quest);
 	log.start('rats');
 	assert.equal(log.status('rats'), 'active');
-	assert.deepEqual(log.currentStage('rats'), { counter: { variable: 'ratsKilled', target: 5 }, description: 'Kill 5 rats' });
+	assert.deepEqual(log.currentStage('rats'), {
+		counter: { variable: 'ratsKilled', target: 5 },
+		description: 'Kill 5 rats',
+	});
 });
