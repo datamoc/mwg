@@ -65,3 +65,8 @@ export type { LoadingScreenOptions } from './LoadingScreen.ts';
 
 export { messageBoxPresenter } from './EventDialogue.ts';
 export type { MessageBoxPresenterOptions } from './EventDialogue.ts';
+
+export { contrastRatio, meetsContrast, relativeLuminance } from './contrast.ts';
+export type { ContrastLevel } from './contrast.ts';
+
+export { ScreenReader, screenReader } from './a11y.ts';

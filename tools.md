@@ -29,6 +29,9 @@ by double-clicking. Run from the repo root.
 | `benchmark-simulation` | Headless throughput for `mwg/simulation` (no frame, canvas, or Pixi involved) | `npm run benchmark:simulation` |
 | `graphics-capabilities` | Probes the host's WebGL capabilities headless | `npm run graphics:capabilities` |
 | `visual-smoke` | Opens one built example from `file://` in headless Chrome, fails on a page error or a blank canvas, and writes a screenshot. Runs per pull request in CI | `npm run visual:smoke:ui` |
+| `package-smoke` | `npm pack`, installs the tarball outside the repo, builds the tutorial's tiny game and opens both that and the standalone global from `file://` | `npm run package:smoke` |
+| `build-all-examples` | Runs every `example:*:build` script, so a vite/emit-page regression in any example is caught, not just the benchmarked ones | `npm run examples:build` |
+| `bundle-size` | Compares the global bundle and `dist` against the committed `tools/bundle-size.json` budget; `--update` rewrites it | `npm run size:check` |
 
 ## Project chores
 

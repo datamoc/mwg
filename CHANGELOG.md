@@ -8,6 +8,22 @@ the public API may still change between minor versions.
 ## [Unreleased]
 
 ### Added
+- Accessibility (roadmap item 192): `core.reducedMotion`/`setReducedMotion`/
+  `prefersReducedMotion` (the OS `prefers-reduced-motion` preference with a per-game override,
+  consulted by `Tweener`, `Camera`, `ScreenEffects` and `ParticleEmitter`),
+  `ui.contrastRatio`/`meetsContrast`/`relativeLuminance` for WCAG-checking a palette, and
+  `ui.screenReader`, a hidden `aria-live` mirror that `Window` (its title) and `MessageBox`
+  (each page and its choices) already announce through.
+- `npm run package:smoke` (roadmap item 193): packs the tarball, installs it into a scratch
+  directory outside the repo, builds the tutorial's own tiny game and opens both that page and
+  the standalone `mw_games.global.js` from `file://` in headless Chrome.
+- `npm run size:check` / `size:update` (194): the global bundle and `dist` against the
+  committed `tools/bundle-size.json`, failing past a 2% growth.
+- `npm run coverage:check` (195): the existing suite under Node's line/branch/function floors.
+- Cross-version save fixtures (196): committed `tests/fixtures/saves/` blobs for a floor,
+  a `GameState` and a `Blob`, loaded by `tests/save-compat.test.ts`.
+- `npm run examples:build` (197): runs every `example:*:build` script, so a vite or
+  `emit-page` regression in any example is caught, not just the benchmarked ones.
 - `npm run coverage` and `npm run visual:smoke:ui`. Coverage reuses the existing Node test
   suite through `--experimental-test-coverage`, so measuring it costs no dependency. The
   visual smoke builds the interface example, opens it from `file://` in headless Chrome, and
@@ -28,6 +44,10 @@ the public API may still change between minor versions.
   escape hatch ADR-001 already documented.
 
 ### Changed
+- CI now runs the coverage floor, the bundle-size budget, `examples:build` and the
+  published-package smoke alongside its existing check/test/build/api gates, so neither
+  coverage, bundle growth, an unbuildable example nor a broken packed install can land
+  unnoticed.
 - Formatting is now gated: Prettier over `src`, `tests`, `examples` and `tools`
   (`.prettierrc.json`, `npm run format`/`format:check`, run in CI). No ESLint rule set comes
   with it, and the reformat changes no behaviour (line wrapping, trailing commas and the

@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { Easing } from '../../core/Tween.ts';
+import { reducedMotion } from '../../core/Motion.ts';
 
 /** what the overlay is currently doing; `'idle'` covers both fully clear and a held tint */
 export type ScreenEffectPhase = 'idle' | 'fadeOut' | 'fadeIn' | 'flash';
@@ -138,6 +139,9 @@ export class ScreenEffects extends Container {
 	}
 
 	private begin(phase: ScreenEffectPhase, duration: number, from: number, to: number, color?: number): void {
+		//reduced motion turns a fade or flash into the instant cut a non-positive duration is
+		if (reducedMotion()) duration = 0;
+
 		this.overlay.tint = color ?? this.defaultColor;
 		this.fromAlpha = from;
 		this.toAlpha = to;

@@ -29,11 +29,15 @@ jobs:
       # diff review stays about behaviour rather than whitespace
       - run: npm run format:check
       - run: npm test
+      # the same suite again under a coverage floor, so coverage cannot quietly erode
+      - run: npm run coverage:check
       # the library build (tsc emit + the standalone mw_games.global.js IIFE) - catches a
       # build break tsc --noEmit alone would not, such as a broken vite config
       - run: npm run build
       # the committed API_REPORT.md must match the declarations the build just emitted
       - run: npm run api:check
+      # the global bundle and the published dist stay inside their recorded size budget
+      - run: npm run size:check
 
   # The check no typechecker can make: one layout-heavy example is built, opened from
   # file:// in a real Chrome, and screenshotted, so a canvas that paints nothing (or a page
@@ -79,6 +83,62 @@ jobs:
           name: visual-smoke
           path: benchmark-results/visual-smoke/
           if-no-files-found: warn
+
+  # The central promise, checked rather than assumed: `npm pack`, install the tarball in a
+  # scratch directory outside the repo, build the tutorial's own tiny game, and open both it
+  # and the standalone global from file://. `tests/consumer-app.test.ts` names the public
+  # specifiers but compiles against src/, so only a packed install proves the real thing.
+  package-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '26'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Locate Chrome
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$chrome" ]; then
+            echo "no Chrome on this runner; package-smoke.mjs cannot run" >&2
+            exit 1
+          fi
+          echo "CHROME_PATH=$chrome" >> "$GITHUB_ENV"
+          "$chrome" --version
+
+      - name: Pack, install and open both documented paths
+        env:
+          MWG_VISUAL_CHROME_ARGS: '--use-gl=angle --use-angle=swiftshader --disable-dev-shm-usage'
+        run: npm run package:smoke
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: package-smoke
+          path: benchmark-results/package-smoke/
+          if-no-files-found: warn
+
+  # Every example page, not just the ones the benchmarks and the smoke happen to name: a
+  # broken vite config or an emit-page/compile-resources regression in any other example
+  # would otherwise ship unnoticed, since `npm run check` only typechecks them.
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '26'
+          cache: npm
+
+      - run: npm ci
+      # generates the shared assets first, then builds every example:*:build script
+      - run: npm run examples:build
 
   # The one benchmark that needs no browser, no GPU and no example build: pure Node
   # throughput for mwg/simulation. Safe on every push because of what it does NOT do - it

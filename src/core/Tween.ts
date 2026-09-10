@@ -4,6 +4,7 @@
  * `render.Camera`'s shake decay each used to hand-roll this same shape under a different
  * name; this is that shape, pulled out once.
  */
+import { reducedMotion } from './Motion.ts';
 
 export type Easing = (t: number) => number;
 
@@ -51,10 +52,10 @@ export class Tweener {
 	/**
 	 * Runs `apply` with progress eased from 0 to 1 over `duration` seconds, resolving once it
 	 * reaches 1. A non-positive duration applies the end state at once rather than waiting a
-	 * frame for it.
+	 * frame for it, and so does reduced motion (`core.reducedMotion`).
 	 */
 	tween(duration: number, apply: (t: number) => void, ease: Easing = Easing.linear): Promise<void> {
-		if (!(duration > 0)) {
+		if (reducedMotion() || !(duration > 0)) {
 			apply(1);
 			return Promise.resolve();
 		}

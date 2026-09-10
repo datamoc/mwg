@@ -1,5 +1,6 @@
 import { Container, Sprite } from 'pixi.js';
 import * as Random from '../../core/Random.ts';
+import { reducedMotion } from '../../core/Motion.ts';
 import type { Texture2D } from './Types2D.ts';
 
 /**
@@ -230,15 +231,17 @@ export class ParticleEmitter extends Container {
 
 		const angle = pick(this.angleRange);
 		const speed = pick(this.speed);
+		//reduced motion keeps the puff and its fade but drops the travel and spin
+		const motion = reducedMotion() ? 0 : 1;
 
 		particle.x = this.x;
 		particle.y = this.y;
-		particle.vx = Math.cos(angle) * speed;
-		particle.vy = Math.sin(angle) * speed;
+		particle.vx = Math.cos(angle) * speed * motion;
+		particle.vy = Math.sin(angle) * speed * motion;
 		particle.age = 0;
 		particle.life = Math.max(1e-6, pick(this.life));
 		particle.rotation = 0;
-		particle.spin = pick(this.spin);
+		particle.spin = pick(this.spin) * motion;
 		particle.scale = this.scaleRange[0];
 		particle.alpha = this.alphaRange[0];
 		particle.active = true;

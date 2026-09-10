@@ -28,13 +28,11 @@ where those live.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** 193 first - it protects the one promise every
-other item rests on, that the packed output opens from `file://` - then 194-197 in the order
-listed, and 192 (accessibility) last as the largest item and the one no current game
-demands. Every numbered item before 192 shipped, including the former priority cluster
-(28, 30, 41, 45). Numbers are never reassigned once given - the list is an append-only
-history, including for what is not done yet - so priority order lives in prose, rather than
-in the list's own sequence. What remains before 1.0 is recorded in the
+**Priority order among what's still open:** none. Every numbered item has shipped,
+including the former priority cluster (28, 30, 41, 45), everything placed around it, and the
+verification and accessibility tail (192-197). Numbers are never reassigned once given - the
+list is an append-only history, including for what is not done yet - so priority order lives
+in prose, rather than in the list's own sequence. What remains before 1.0 is recorded in the
 [1.0 exit checklist](#10-exit-checklist) at the end of this file; the few deliberate
 non-decisions (which reference title, if any, a future genre pick should study) are parked
 in [Parked decisions](#parked-decisions) rather than left as phantom open items.
@@ -2922,52 +2920,44 @@ rather than someone else's build.
      `seed` and `clear` all repeated is one private `index` helper. 8 unit tests, including
      the add/clear round-trip and a cleared cell dropping out of `cellsAbove`.
 
-192. requested directly: accessibility stops short of what a redistributable framework should
-     cover, and this list never named the gap. Colour-blindness filters, captions, the `i18n`
-     accessibility channel, input rebinding, RTL and a `highContrastTheme` example already
-     ship, but three holes remain: the canvas is one opaque element to a screen reader, so
-     `ui` widgets expose no text; nothing honours `prefers-reduced-motion` in the tween,
-     particle or screen-effect paths; and a `theme` palette is never contrast-checked. Add
-     the holes without committing to their shape yet - an accessible text/ARIA layer for
-     windowed widgets, a reduced-motion switch those paths consult, and a contrast helper or
-     documented rule for palettes - and decide scope and priority with the game or release
-     that needs them.
+192. ~~requested directly: accessibility stops short of what a redistributable framework
+     should cover~~ - the three named holes are closed. `core.reducedMotion`/`setReducedMotion`/
+     `prefersReducedMotion` answer "should this animate" from the OS preference with a per-game
+     override, and `Tweener`, `Camera.shake`, `ScreenEffects` and `ParticleEmitter` already
+     consult it; `ui.contrastRatio`/`meetsContrast`/`relativeLuminance` are the WCAG formulas
+     with AA/AAA thresholds, checked against the shipped themes; and `ui.screenReader` mirrors
+     text into a visually hidden `aria-live` region that `Window` (its title) and `MessageBox`
+     (each page and its choices) already use, no-op where there is no DOM. 14 unit tests.
 
-193. requested directly: nothing proves the central promise end to end. The getting-started
-     tutorial's install paths (`npm install`, the `npm pack` + `.tgz` fallback, and the
-     no-install `mw_games.global.js` script tag) are followed by hand on the 1.0 exit
-     checklist, and `tests/consumer-app.test.ts` names the public specifiers but compiles them
-     against `src/`, so a broken `dist` export map, a `files` leak, or a `file://` regression
-     in a packed build surfaces only when someone runs the tutorial. Add a smoke that runs
-     `npm pack`, installs the tarball into a scratch directory outside the repo, builds a tiny
-     game through the documented steps, and opens the result from `file://` in headless Chrome
-     (reusing `tools/visual-smoke.mjs`); the no-install path is the same check against the
-     global IIFE. The checklist's manual pass stays, since only a person can tell whether the
-     prose is followable.
+193. ~~requested directly: nothing proves the central promise end to end~~ -
+     `tools/package-smoke.mjs` packs the tarball, installs it into a scratch directory outside
+     the repo, builds the tutorial's own tiny game with its vite config, applies step 10's
+     module-to-classic edit, and opens both that page and the standalone `mw_games.global.js`
+     from `file://` in headless Chrome, judged the same way the visual smoke judges a page. CI
+     runs it per pull request. The checklist's manual pass stays: only a person can tell
+     whether the prose is followable.
 
-194. requested directly: the rendering-backend policy weighs bundle cost, but nothing measures
-     it. `dist/mw_games.global.js` is 860 kB and `dist` totals 845 files, with no gate that
-     notices when either grows. Record the sizes of the global build and each published
-     subpath, commit the snapshot, and fail CI past a stated threshold, so "keep the bundle
-     small" is a number the policy can point at rather than an intention.
+194. ~~requested directly: the rendering-backend policy weighs bundle cost, but nothing
+     measures it~~ - `tools/bundle-size.mjs` records the global build (raw and gzipped) and the
+     whole published `dist` without source maps in `tools/bundle-size.json`, and
+     `npm run size:check` fails past a 2% growth; `size:update` commits a deliberate new
+     number. CI runs the check after the build.
 
-195. requested directly: `npm run coverage` reports with no floor. At 89.3% lines and 83.1%
-     branches, a gate a point or two lower would stop quiet erosion without making every new
-     branch a fight. Decide the numbers, enforce them in `npm run coverage` or a CI step, and
-     let a deliberate drop be a visible, argued change rather than an unnoticed one.
+195. ~~requested directly: `npm run coverage` reports with no floor~~ - `npm run coverage:check`
+     runs the same suite under Node's own thresholds, lines 88, branches 89, functions 82, a
+     little under the 89.3 / 90.4 / 83.1 measured when the floor was set. CI runs it beside the
+     plain test step.
 
-196. requested directly: `SaveSystem` versions and migrates saves, and the serialization paths
-     round-trip, but no test loads a save written by an earlier shape. Players carry saves
-     across releases, so a schema change that silently breaks an old one is the worst kind of
-     regression for a redistributable framework. Commit one fixture save per released save
-     shape and load each in a test, so a break fails loudly at the version it breaks.
+196. ~~requested directly: no test loads a save written by an earlier shape~~ -
+     `tests/fixtures/saves/` freezes a released floor (`Level`/`Secrets`/`Doors`), a
+     `GameState` and a `Blob` as committed blobs, and `tests/save-compat.test.ts` loads each
+     one, so a schema change that stops an already-shipped save from loading fails there. Its
+     own note says to add a new fixture beside the old one rather than edit it.
 
-197. requested directly: only the interface example is built per pull request (by the visual
-     smoke); the weekly browser benchmark builds three more, and the rest are typechecked but
-     never built. A broken `vite.config.ts` or an `emit-page`/`compile-resources` regression
-     in any other example would ship unnoticed. Build every `example:*:build` script in CI, as
-     a matrix or one job, so the whole set of published pages stays green on every pull
-     request.
+197. ~~requested directly: only the interface example is built per pull request~~ -
+     `npm run examples:build` runs all twenty `example:*:build` scripts after generating the
+     shared assets, and CI runs it as its own job, so a vite/`emit-page`/`compile-resources`
+     regression in any example fails the pull request.
 
 ### Parked decisions
 

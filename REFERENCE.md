@@ -149,6 +149,10 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   moves volume around). `seed` adds to a cell, `clear` zeroes one cell and leaves its
   neighbours alone, and `cellsAbove` lists what a game applies its effect on; what a volume
   means (fire, gas, ooze, water) stays the game's own reading.
+- `reducedMotion`/`setReducedMotion`/`prefersReducedMotion` - the one answer to "should this
+  animate": the OS `prefers-reduced-motion` preference, overridable per game. `Tweener`,
+  `Camera`, `ScreenEffects` and `ParticleEmitter` already consult it, so a game that calls
+  nothing still respects the preference on the paths it uses.
 - `Tweener`/`Easing` - a generic `tween(duration, apply, ease?)` plus a small
   linear/quad/cubic easing-curve set.
 - `UndoHistory` - gameplay-level undo/redo over pushed, reference-held states.
@@ -272,6 +276,13 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
 - `HelpScreen` - a topic-list-plus-body help/controls screen.
 - `StatsScreen` - a player-stats display screen.
 - `LoadingScreen` - a progress-bar loading screen wired to `core.LoadQueue`.
+- `ScreenReader`/`screenReader` - the screen-reader bridge: `Window` announces its title and
+  `MessageBox` each page and its choices through a visually hidden `aria-live` region, and a
+  game's own widgets use the same `screenReader.announce(text, { assertive })`. No-ops where
+  there is no DOM, so ordinary scene code needs no guard around it.
+- `contrastRatio`/`meetsContrast`/`relativeLuminance`/`ContrastLevel` - WCAG contrast for a
+  `theme` palette: the standard luminance and ratio formulas with AA/AAA thresholds, so a
+  game checks its own colours rather than guessing.
 
 ### `two-d/stage`
 

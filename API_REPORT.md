@@ -356,6 +356,10 @@ build instead.
 
     export declare function completeReveal(state: RevealState): void;
 
+### `contrastRatio` (function)
+
+    export declare function contrastRatio(a: number, b: number): number;
+
 ### `createCamera` (function)
 
     export declare function createCamera(options?: CameraOptions): Camera;
@@ -825,6 +829,10 @@ build instead.
         private write;
     }
 
+### `meetsContrast` (function)
+
+    export declare function meetsContrast(foreground: number, background: number, level?: ContrastLevel, large?: boolean): boolean;
+
 ### `MessageBox` (class)
 
     export declare class MessageBox extends Window {
@@ -848,6 +856,7 @@ build instead.
         private finished;
         private autoAdvance?;
         private autoAdvanceElapsed;
+        private announce;
         private readonly messageThemeListener;
         constructor(options: MessageBoxOptions);
         
@@ -1058,6 +1067,10 @@ build instead.
         reset(): void;
     }
 
+### `prefersReducedMotion` (function)
+
+    export declare function prefersReducedMotion(): boolean;
+
 ### `PresentationQueue` (class)
 
     export declare class PresentationQueue<Event> {
@@ -1171,6 +1184,10 @@ build instead.
 
     export declare function rectOf(rectangle: Rectangle): Rect;
 
+### `reducedMotion` (function)
+
+    export declare function reducedMotion(): boolean;
+
 ### `registerColorTransform` (function)
 
     export declare function registerColorTransform(): void;
@@ -1186,6 +1203,10 @@ build instead.
         
         list(): string[];
     }
+
+### `relativeLuminance` (function)
+
+    export declare function relativeLuminance(color: number): number;
 
 ### `RENDERING_DECISIONS` (const)
 
@@ -1397,6 +1418,26 @@ build instead.
         update(dt: number): boolean;
     }
 
+### `screenReader` (const)
+
+    export declare const screenReader: ScreenReader;
+
+### `ScreenReader` (class)
+
+    export declare class ScreenReader {
+        private polite;
+        private assertive;
+        private region;
+        
+        announce(text: string, options?: {
+            assertive?: boolean;
+        }): void;
+        
+        clear(): void;
+        
+        destroy(): void;
+    }
+
 ### `serializeReplay` (function)
 
     export declare function serializeReplay(events: readonly ReplayEvent[]): string;
@@ -1408,6 +1449,10 @@ build instead.
         readonly launches: number;
         constructor(options?: SessionOptions);
     }
+
+### `setReducedMotion` (function)
+
+    export declare function setReducedMotion(value: boolean | null): void;
 
 ### `setTheme` (function)
 
@@ -3350,6 +3395,10 @@ build instead.
         reset(): void;
     }
 
+### `prefersReducedMotion` (function)
+
+    export declare function prefersReducedMotion(): boolean;
+
 ### `PresentationQueue` (class)
 
     export declare class PresentationQueue<Event> {
@@ -3416,6 +3465,10 @@ build instead.
         
         stop(): void;
     }
+
+### `reducedMotion` (function)
+
+    export declare function reducedMotion(): boolean;
 
 ### `Registry` (class)
 
@@ -3564,6 +3617,10 @@ build instead.
         readonly launches: number;
         constructor(options?: SessionOptions);
     }
+
+### `setReducedMotion` (function)
+
+    export declare function setReducedMotion(value: boolean | null): void;
 
 ### `Signal` (class)
 
@@ -4837,6 +4894,10 @@ build instead.
 
     export declare function completeReveal(state: RevealState): void;
 
+### `contrastRatio` (function)
+
+    export declare function contrastRatio(a: number, b: number): number;
+
 ### `createCamera` (function)
 
     export declare function createCamera(options?: CameraOptions): Camera;
@@ -5149,6 +5210,10 @@ build instead.
 
     export declare function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSheet[]): LoadedTiledMap;
 
+### `meetsContrast` (function)
+
+    export declare function meetsContrast(foreground: number, background: number, level?: ContrastLevel, large?: boolean): boolean;
+
 ### `MessageBox` (class)
 
     export declare class MessageBox extends Window {
@@ -5172,6 +5237,7 @@ build instead.
         private finished;
         private autoAdvance?;
         private autoAdvanceElapsed;
+        private announce;
         private readonly messageThemeListener;
         constructor(options: MessageBoxOptions);
         
@@ -5347,6 +5413,10 @@ build instead.
 
     export declare function registerColorTransform(): void;
 
+### `relativeLuminance` (function)
+
+    export declare function relativeLuminance(color: number): number;
+
 ### `RENDERING_DECISIONS` (const)
 
     export declare const RENDERING_DECISIONS: readonly RenderingDecision[];
@@ -5419,6 +5489,26 @@ build instead.
         private begin;
         
         update(dt: number): boolean;
+    }
+
+### `screenReader` (const)
+
+    export declare const screenReader: ScreenReader;
+
+### `ScreenReader` (class)
+
+    export declare class ScreenReader {
+        private polite;
+        private assertive;
+        private region;
+        
+        announce(text: string, options?: {
+            assertive?: boolean;
+        }): void;
+        
+        clear(): void;
+        
+        destroy(): void;
     }
 
 ### `setTheme` (function)
@@ -6542,6 +6632,10 @@ build instead.
 
     export declare function completeReveal(state: RevealState): void;
 
+### `contrastRatio` (function)
+
+    export declare function contrastRatio(a: number, b: number): number;
+
 ### `defaultTheme` (const)
 
     export declare const defaultTheme: Theme;
@@ -6720,6 +6814,10 @@ build instead.
         private layout;
     }
 
+### `meetsContrast` (function)
+
+    export declare function meetsContrast(foreground: number, background: number, level?: ContrastLevel, large?: boolean): boolean;
+
 ### `MessageBox` (class)
 
     export declare class MessageBox extends Window {
@@ -6743,6 +6841,7 @@ build instead.
         private finished;
         private autoAdvance?;
         private autoAdvanceElapsed;
+        private announce;
         private readonly messageThemeListener;
         constructor(options: MessageBoxOptions);
         
@@ -6810,6 +6909,10 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `relativeLuminance` (function)
+
+    export declare function relativeLuminance(color: number): number;
+
 ### `revealComplete` (function)
 
     export declare function revealComplete(state: RevealState): boolean;
@@ -6834,6 +6937,26 @@ build instead.
         
         private restyle;
         destroy(options?: Parameters<HTMLText['destroy']>[0]): void;
+    }
+
+### `screenReader` (const)
+
+    export declare const screenReader: ScreenReader;
+
+### `ScreenReader` (class)
+
+    export declare class ScreenReader {
+        private polite;
+        private assertive;
+        private region;
+        
+        announce(text: string, options?: {
+            assertive?: boolean;
+        }): void;
+        
+        clear(): void;
+        
+        destroy(): void;
     }
 
 ### `setTheme` (function)

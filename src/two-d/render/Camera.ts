@@ -1,6 +1,7 @@
 import { Container } from 'pixi.js';
 import { Game } from '../Game.ts';
 import * as Random from '../../core/Random.ts';
+import { reducedMotion } from '../../core/Motion.ts';
 
 /**
  * A view onto a world larger than the screen.
@@ -178,6 +179,9 @@ export class Camera {
 
 	/** @param magnitude world units @param duration seconds */
 	shake(magnitude: number, duration = 0.4): void {
+		//screen shake is exactly the motion a reduced-motion preference asks a game to drop
+		if (reducedMotion()) return;
+
 		this.shakeMagnitude = magnitude;
 		this.shakeRemaining = this.shakeDuration = duration;
 	}

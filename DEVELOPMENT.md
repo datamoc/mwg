@@ -12,11 +12,16 @@ npm run format           # format code with Prettier
 npm run format:check     # verify formatting without writing
 npm test                 # run the Node test suite
 npm run coverage         # the same suite with Node's built-in coverage report
+npm run coverage:check   # the same suite under a line/branch/function coverage floor
 npm run build            # build the npm package and standalone global IIFE
+npm run size:check       # fail if the global bundle or dist grew past its recorded budget
+npm run size:update      # rewrite that budget after a deliberate growth
 npm run audit            # fail on high or critical dependency advisories
 npm run assets           # generate example tiles and sounds
+npm run examples:build   # build every example page, not just the benchmarked ones
 npm run visual:smoke     # screenshot one built example from file:// and check it rendered
 npm run visual:smoke:ui  # build the interface example first, then smoke it
+npm run package:smoke    # npm pack + install + open both published paths from file:// (run build first)
 npm run webpage:examples # rebuild playable example pages for the website
 npm run webpage:docs     # rebuild the generated API documentation
 ```
@@ -33,10 +38,13 @@ checked in CI with `npm run format:check`; config in `.prettierrc.json`, generat
 and prose ignored in `.prettierignore`). There is no ESLint rule set on top: formatting keeps
 diffs reviewable without a second list of opinions to maintain. The normal verification loop
 is `npm run check`, `npm test`, `npm run build`, then opening a built example and looking at
-it. Rendering and layout bugs are not visible to the typechecker. `npm run coverage` reuses
-the same suite with Node's built-in `--experimental-test-coverage`, so coverage costs no
-dependency; use it in the simplify pass to find untested branches and exports nothing imports
-any more.
+it. Rendering and layout bugs are not visible to the typechecker, which is what the two
+smokes and the every-example build are for. `npm run coverage` reuses the same suite with
+Node's built-in `--experimental-test-coverage`, so coverage costs no dependency; use it in the
+simplify pass to find untested branches and exports nothing imports any more, and
+`npm run coverage:check` is the CI floor a little below the current numbers. `npm run
+size:check` compares the built global bundle and `dist` against the committed
+`tools/bundle-size.json` budget, so an unexplained growth fails rather than ships.
 
 ## Architecture boundaries
 

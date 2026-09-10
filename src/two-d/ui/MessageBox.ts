@@ -7,6 +7,7 @@ import { theme, themeChanged } from './theme.ts';
 import { startReveal, advanceReveal, completeReveal, revealComplete, type RevealState } from './reveal.ts';
 import type { Texture2D } from '../render/Types2D.ts';
 import { parseSoundMarkers, type InlineSoundCue } from '../../i18n/index.ts';
+import { screenReader } from './a11y.ts';
 
 export interface MessagePage {
 	text: string;
@@ -46,6 +47,12 @@ export interface MessageBoxOptions {
 
 	/** where the stack puts the box */
 	anchor?: 'center' | 'bottom' | 'top';
+
+	/**
+	 * Announce each page, and the choices once they appear, to a screen reader through
+	 * `ui.screenReader`. Default true; the calls are no-ops where there is no DOM.
+	 */
+	announce?: boolean;
 
 	/**
 	 * `'adv'` (the default) clears and redraws the box for each page, the way this class
@@ -121,6 +128,7 @@ export class MessageBox extends Window {
 
 	private autoAdvance?: number;
 	private autoAdvanceElapsed = 0;
+	private announce: boolean;
 
 	private readonly messageThemeListener = () => this.restyleMessage();
 
@@ -141,6 +149,7 @@ export class MessageBox extends Window {
 		this.choices = options.choices ?? [];
 		this.onDone = options.onDone ?? null;
 		this.onSound = options.onSound ?? null;
+		this.announce = options.announce ?? true;
 
 		const t = theme();
 
@@ -208,6 +217,10 @@ export class MessageBox extends Window {
 		this.pageText = parsed.text;
 		this.pageCues = parsed.cues;
 		this.nextCue = 0;
+		//the whole page, not the typewriter's current slice: a screen reader should not wait
+		if (this.announce) {
+			screenReader.announce(page.speaker !== undefined ? `${page.speaker}: ${this.pageText}` : this.pageText);
+		}
 		this.reveal = startReveal(this.pageText.length, this.speed);
 		this.autoAdvanceElapsed = 0;
 		this.playRevealedSounds();
@@ -317,6 +330,8 @@ export class MessageBox extends Window {
 			disabled: choice.disabled,
 			value: choice.value ?? choice.text,
 		}));
+
+		if (this.announce) screenReader.announce(this.choices.map((choice) => choice.text).join(', '));
 
 		const rowHeight = Math.ceil(t.font.size * t.font.lineHeight) + t.spacing;
 		const height = items.length * rowHeight;

@@ -4,6 +4,7 @@ import type { Action } from '../../core/Input.ts';
 import { NinePatch } from './NinePatch.ts';
 import { Label } from './Label.ts';
 import { theme, themeChanged } from './theme.ts';
+import { screenReader } from './a11y.ts';
 
 export interface WindowOptions {
 	width: number;
@@ -91,6 +92,8 @@ export class Window extends Container {
 		if (options.title !== undefined) {
 			this.titleLabel = new Label({ text: options.title, color: t.color.textHighlight, bold: true });
 			this.addChild(this.titleLabel);
+			//the canvas is opaque to assistive technology, so a windowed screen announces its title
+			screenReader.announce(options.title);
 		}
 
 		this.addChild(this.content);

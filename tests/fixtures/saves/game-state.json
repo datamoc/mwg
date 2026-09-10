@@ -1,0 +1,10 @@
+{
+	"switches": [
+		["metShopkeeper", true],
+		["foundSword", false]
+	],
+	"variables": [
+		["gold", 50],
+		["depth", 3]
+	]
+}
