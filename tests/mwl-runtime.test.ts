@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { compile } from '../src/mwl/compiler.ts';
-import { MwlRuntime, parseTerrain } from '../src/mwl/runtime.ts';
+import { MwlRuntime, parseTerrain, type MwlMessage } from '../src/mwl/runtime.ts';
 
 const ARENA_MAP = ['1 Kh,Gg,Gg', 'Gg,Gg,Gg', 'Gg,Gg,2 Kh'].join('\n');
 
@@ -129,7 +129,7 @@ test('MWL runtime runs events, moves a unit, and spends its moves', () => {
   const messages: string[] = [];
   const runtime = new MwlRuntime(compile(ARENA), {
     resolveMap: () => ARENA_MAP,
-    onMessage: (text) => messages.push(text),
+    onMessage: (message) => messages.push(message.text),
   });
   runtime.run('start');
   assert.deepEqual(messages, ['Begin']);
@@ -216,4 +216,126 @@ test('MWL runtime passes objective attributes to predicate hooks', () => {
   assert.equal(runtime.evaluate(), 'won');
   assert.equal(seen.length, 1);
   assert.deepEqual(seen[0], { side: '1', value: '3' });
+});
+
+const MOVETO_MAP = ['1 Kh,Gg,2 Kh'].join('\n');
+
+const MOVETO = `[game]
+schema=0.1
+[unit_type]
+id=Scout
+hitpoints=10
+movement=3
+[/unit_type]
+[unit_type]
+id=Grunt
+hitpoints=8
+movement=3
+[/unit_type]
+[side]
+id=1
+controller=human
+leader=Scout
+[/side]
+[side]
+id=2
+controller=ai
+leader=Grunt
+[/side]
+[map]
+id=moveto
+file=moveto.map
+[/map]
+[event]
+id=ford
+on=moveto
+unit=Scout 1 (0,0)
+x=1
+y=0
+[message]
+speaker=_ "Elvish Scout"
+portrait=portraits/elves/scout.webp
+text=_ "The ford is guarded."
+[/message]
+[/event]
+[event]
+id=advance
+on=advance
+[move]
+unit=Scout 1 (0,0)
+x=1
+y=0
+[/move]
+[/event]
+[event]
+id=back
+on=back
+[move]
+unit=Scout 1 (0,0)
+x=0
+y=0
+[/move]
+[/event]
+[event]
+id=arriving
+on=moveto
+side=2
+[message]
+text=_ "A grunt arrives."
+[/message]
+[/event]
+[/game]
+`;
+
+function moving(): { runtime: MwlRuntime; messages: MwlMessage[] } {
+  const messages: MwlMessage[] = [];
+  const runtime = new MwlRuntime(compile(MOVETO), { resolveMap: () => MOVETO_MAP, onMessage: (message) => messages.push({ ...message }) });
+  return { runtime, messages };
+}
+
+test('moveto fires when the runtime moves a unit onto the watched hex', () => {
+  const { runtime, messages } = moving();
+  assert.equal(Object.keys(runtime.world.units).length, 2);
+
+  runtime.run('advance');
+  assert.deepEqual(messages, [
+    { text: 'The ford is guarded.', speaker: 'Elvish Scout', portrait: 'portraits/elves/scout.webp' },
+  ]);
+  assert.deepEqual(runtime.world.firedEvents, ['ford']);
+});
+
+test('a moveto event fires once, and not for the other side', () => {
+  const { runtime, messages } = moving();
+  runtime.run('advance');
+  runtime.run('back');
+  runtime.run('advance');
+  assert.equal(messages.length, 1, 'the story beat does not repeat');
+});
+
+test('a game engine can report a move it resolved itself', () => {
+  const { runtime, messages } = moving();
+  const unit = Object.values(runtime.world.units).find((candidate) => candidate.side === 1);
+  assert.ok(unit);
+  unit.x = 1;
+  unit.y = 0;
+  runtime.fireMoveto('Scout 1 (0,0)');
+  assert.equal(messages.length, 1);
+  assert.equal(messages[0].text, 'The ford is guarded.');
+
+  // The side filter matches the other side's unit, and fires its own event.
+  const grunt = Object.values(runtime.world.units).find((candidate) => candidate.side === 2);
+  assert.ok(grunt);
+  runtime.fireMoveto(Object.keys(runtime.world.units).find((id) => runtime.world.units[id] === grunt) ?? '');
+  assert.deepEqual(messages.map((message) => message.text), ['The ford is guarded.', 'A grunt arrives.']);
+});
+
+test('a spent moveto event stays spent across a save and restore', () => {
+  const { runtime, messages } = moving();
+  runtime.run('advance');
+  const saved = runtime.save();
+
+  runtime.run('back');
+  runtime.restore(saved);
+  runtime.run('advance');
+  assert.equal(messages.length, 1, 'restoring keeps one-shot events spent');
 });

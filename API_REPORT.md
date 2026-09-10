@@ -4028,6 +4028,12 @@ build instead.
         constructor(game: MwlCompiledGame, options?: MwlRuntimeOptions);
         run(trigger: string): void;
         
+        fireMoveto(id: string): void;
+        
+        private claimEvent;
+        private eventFiltersMatch;
+        private executeEvent;
+        
         evaluate(): MwlWorld['status'];
         save(): string;
         snapshot(): string;
@@ -4042,6 +4048,8 @@ build instead.
         private executeNode;
         private runHook;
         private applyMove;
+        
+        private showMessage;
         private spawnUnit;
         private killUnit;
         private addGold;

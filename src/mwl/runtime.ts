@@ -45,6 +45,16 @@ export interface MwlWorld {
 	/** the current schedule entry, by id */
 	timeOfDay?: string;
 	scheduleIndex?: number;
+	/** ids of one-shot events that already fired, so a restore keeps them spent */
+	firedEvents?: string[];
+}
+
+/** One `[message]`: the text plus whatever a game needs to show it. */
+export interface MwlMessage {
+	readonly text: string;
+	readonly speaker?: string;
+	readonly portrait?: string;
+	readonly side?: number;
 }
 
 /** The hook implementations a game provides to the runtime. */
@@ -59,7 +69,8 @@ export interface MwlHookRegistry {
 
 export interface MwlRuntimeOptions {
 	readonly world?: MwlWorld;
-	readonly onMessage?: (text: string) => void;
+	/** called for every `[message]` command, with its speaker and portrait */
+	readonly onMessage?: (message: MwlMessage) => void;
 	/** resolve a `[map] file=` reference to its text */
 	readonly resolveMap?: (file: string) => string;
 	readonly hooks?: MwlHookRegistry;
@@ -137,7 +148,7 @@ export function parseTerrain(text: string): {
 export class MwlRuntime {
 	readonly game: MwlCompiledGame;
 	readonly world: MwlWorld;
-	private readonly onMessage?: (text: string) => void;
+	private readonly onMessage?: (message: MwlMessage) => void;
 	private readonly resolveMap?: (file: string) => string;
 	private readonly hooks?: MwlHookRegistry;
 	private readonly persistence: MwlPersistenceOptions;
@@ -161,21 +172,62 @@ export class MwlRuntime {
 	run(trigger: string): void {
 		for (const event of this.nodes('event')) {
 			if ((event.attributes.on ?? event.attributes.trigger) !== trigger) continue;
-			const condition = event.children.find((child) => child.tag === 'condition');
-			if (condition && this.world.variables[condition.attributes.variable] !== condition.attributes.equals)
-				continue;
-			const filter = event.children.find((child) => child.tag === 'filter');
-			if (filter && !this.filterMatches(filter)) continue;
-			for (const command of event.children.filter(
-				(child) =>
-					child.tag !== 'condition' &&
-					child.tag !== 'filter' &&
-					child.tag !== 'dialogue' &&
-					child.tag !== 'say',
-			))
-				this.executeNode(command);
+			if (!this.eventFiltersMatch(event)) continue;
+			if (!this.claimEvent(event)) continue;
+			this.executeEvent(event);
 		}
 		this.checkObjectives();
+	}
+
+	/**
+	 * Fire the `on=moveto` events for a unit that has just arrived somewhere.
+	 * The runtime's own `[move]` command calls this, and so does a game whose
+	 * engine moved the unit: write the new position into `world.units` first,
+	 * then call this with the unit id.
+	 *
+	 * An event matches when `x`/`y` (when given) are the unit's position, and
+	 * `unit`/`side` (when given) are the unit's. A moveto event fires once by
+	 * default; pass `once=false` on the event to let it fire every time.
+	 */
+	fireMoveto(id: string): void {
+		const unit = this.world.units[id];
+		if (!unit || !unit.alive) return;
+		for (const event of this.nodes('event')) {
+			if ((event.attributes.on ?? event.attributes.trigger) !== 'moveto') continue;
+			if (event.attributes.x !== undefined && integer(event, 'x', Number.NaN) !== unit.x) continue;
+			if (event.attributes.y !== undefined && integer(event, 'y', Number.NaN) !== unit.y) continue;
+			if (event.attributes.unit !== undefined && event.attributes.unit !== id) continue;
+			if (event.attributes.side !== undefined && integer(event, 'side', Number.NaN) !== unit.side) continue;
+			if (!this.eventFiltersMatch(event)) continue;
+			if (!this.claimEvent(event)) continue;
+			this.executeEvent(event);
+		}
+		this.checkObjectives();
+	}
+
+	/** A `moveto` event is a story beat: it fires once unless told otherwise. */
+	private claimEvent(event: MwlCompiledNode): boolean {
+		const once = event.attributes.once === undefined ? event.attributes.on === 'moveto' : event.attributes.once !== 'false';
+		if (!once) return true;
+		const key = event.attributes.id ?? `${event.attributes.on ?? event.attributes.trigger ?? 'event'}@${event.location?.line ?? 0}`;
+		const fired = (this.world.firedEvents ??= []);
+		if (fired.includes(key)) return false;
+		fired.push(key);
+		return true;
+	}
+
+	private eventFiltersMatch(event: MwlCompiledNode): boolean {
+		const condition = event.children.find((child) => child.tag === 'condition');
+		if (condition && this.world.variables[condition.attributes.variable] !== condition.attributes.equals) return false;
+		const filter = event.children.find((child) => child.tag === 'filter');
+		return !filter || this.filterMatches(filter);
+	}
+
+	private executeEvent(event: MwlCompiledNode): void {
+		for (const command of event.children.filter(
+			(child) => child.tag !== 'condition' && child.tag !== 'filter' && child.tag !== 'dialogue' && child.tag !== 'say',
+		))
+			this.executeNode(command);
 	}
 
 	/**
@@ -208,6 +260,8 @@ export class MwlRuntime {
 		this.world.map = restored.map ?? null;
 		this.world.timeOfDay = restored.timeOfDay ?? this.schedule[0] ?? '';
 		this.world.scheduleIndex = restored.scheduleIndex ?? 0;
+		// One-shot events stay spent across a load.
+		this.world.firedEvents = [...(restored.firedEvents ?? [])];
 	}
 
 	private loadUnitTypes(): void {
@@ -317,9 +371,10 @@ export class MwlRuntime {
 		const name = node.tag === 'command' ? node.attributes.name : node.tag;
 		if (!name) throw new Error('MWL command is missing name');
 		switch (name) {
-			case 'message':
-				this.onMessage?.(node.attributes.text ?? node.attributes.value ?? '');
+			case 'message': {
+				this.showMessage(node.attributes);
 				break;
+			}
 			case 'spawn':
 				this.spawnUnit(
 					node.attributes.type ?? '',
@@ -402,6 +457,20 @@ export class MwlRuntime {
 		}
 		unit.x = x;
 		unit.y = y;
+		this.fireMoveto(id);
+	}
+
+	/** Deliver a `[message]` to the game, with speaker and portrait when given. */
+	private showMessage(attributes: Readonly<Record<string, string>>): void {
+		if (!this.onMessage) return;
+		const side = Number.parseInt(attributes.side ?? '', 10);
+		const message: MwlMessage = {
+			text: attributes.text ?? attributes.value ?? '',
+			...(attributes.speaker === undefined ? {} : { speaker: attributes.speaker }),
+			...(attributes.portrait === undefined ? {} : { portrait: attributes.portrait }),
+			...(Number.isFinite(side) ? { side } : {}),
+		};
+		this.onMessage(message);
 	}
 
 	private spawnUnit(type: string, side: number | undefined, x: number, y: number, id?: string, hp?: number): void {
@@ -542,7 +611,7 @@ export class MwlRuntime {
 			setVariable: (name, value) => {
 				this.world.variables[name] = value;
 			},
-			message: (_speaker, text) => this.onMessage?.(text),
+			message: (speaker, text) => this.onMessage?.({ text, ...(speaker ? { speaker } : {}) }),
 			endTurn: () => this.endTurn(),
 			win: (_side) => {
 				this.world.status = 'won';
