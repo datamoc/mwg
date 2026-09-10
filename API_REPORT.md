@@ -148,6 +148,43 @@ build instead.
 
     export declare function bitmapLabelStyle(opts: BitmapLabelOptions, t: Theme): TextStyleOptions;
 
+### `Blob` (class)
+
+    export declare class Blob {
+        readonly width: number;
+        readonly height: number;
+        private volume;
+        constructor(width: number, height: number);
+        
+        private index;
+        
+        volumeAt(x: number, y: number): number;
+        
+        total(): number;
+        
+        seed(x: number, y: number, amount: number): void;
+        
+        clear(x: number, y: number): void;
+        
+        spread(open: (x: number, y: number) => boolean, spread?: number, decay?: number): void;
+        
+        cellsAbove(minimum: number): Array<{
+            x: number;
+            y: number;
+            volume: number;
+        }>;
+        toJSON(): {
+            width: number;
+            height: number;
+            volume: number[];
+        };
+        static fromJSON(data: {
+            width: number;
+            height: number;
+            volume: number[];
+        }): Blob;
+    }
+
 ### `BLOB_SHAPES` (const)
 
     export declare const BLOB_SHAPES: readonly NeighborMask[];
@@ -3008,6 +3045,43 @@ build instead.
         }): Achievements;
     }
 
+### `Blob` (class)
+
+    export declare class Blob {
+        readonly width: number;
+        readonly height: number;
+        private volume;
+        constructor(width: number, height: number);
+        
+        private index;
+        
+        volumeAt(x: number, y: number): number;
+        
+        total(): number;
+        
+        seed(x: number, y: number, amount: number): void;
+        
+        clear(x: number, y: number): void;
+        
+        spread(open: (x: number, y: number) => boolean, spread?: number, decay?: number): void;
+        
+        cellsAbove(minimum: number): Array<{
+            x: number;
+            y: number;
+            volume: number;
+        }>;
+        toJSON(): {
+            width: number;
+            height: number;
+            volume: number[];
+        };
+        static fromJSON(data: {
+            width: number;
+            height: number;
+            volume: number[];
+        }): Blob;
+    }
+
 ### `checkNoControlCharacters` (function)
 
     export declare function checkNoControlCharacters(text: string): void;
@@ -3814,39 +3888,6 @@ build instead.
 ### `areaFalloffMultiplier` (function)
 
     export declare function areaFalloffMultiplier(index: number, steps: readonly number[]): number;
-
-### `Blob` (class)
-
-    export declare class Blob {
-        readonly width: number;
-        readonly height: number;
-        private volume;
-        constructor(width: number, height: number);
-        
-        volumeAt(x: number, y: number): number;
-        
-        total(): number;
-        
-        seed(x: number, y: number, amount: number): void;
-        
-        spread(passable: (x: number, y: number) => boolean, spread?: number, decay?: number): void;
-        
-        cellsAbove(minimum: number): Array<{
-            x: number;
-            y: number;
-            volume: number;
-        }>;
-        toJSON(): {
-            width: number;
-            height: number;
-            volume: number[];
-        };
-        static fromJSON(data: {
-            width: number;
-            height: number;
-            volume: number[];
-        }): Blob;
-    }
 
 ### `BossPhases` (class)
 

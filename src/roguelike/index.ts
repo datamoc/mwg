@@ -41,7 +41,6 @@ export type { RangeBand } from './Targeting.ts';
 
 export { BossPhases, AbilityCycle } from './Boss.ts';
 
-export { Blob } from './Blob.ts';
 export { CombatHooks } from './Combat.ts';
 export type { CombatEvent, CombatHook, DamageContext } from './Combat.ts';
 

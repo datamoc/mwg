@@ -8,6 +8,9 @@ the public API may still change between minor versions.
 ## [Unreleased]
 
 ### Added
+- `core.Blob` gained a per-cell `clear(x, y)` (roadmap item 191): it zeroes one cell's
+  volume and leaves its neighbours alone, so a game can douse a single tile, seal a breach,
+  or put out one patch of fire without rebuilding the field.
 - `npm run api:report` / `npm run api:check`, backed by the new committed `API_REPORT.md`:
   a generated index of every public export and its declaration, so API renames, removals
   and signature changes are visible in review instead of discovered by consumers.
@@ -20,6 +23,11 @@ the public API may still change between minor versions.
   escape hatch ADR-001 already documented.
 
 ### Changed
+- **Breaking: `Blob` moved from `mwg/roguelike` to `mwg/core`.** A grid of volumes is not a
+  dungeon-crawl concern, so the field now lives in the renderer-free `core` module (still
+  reachable at the top level from `mw_games`) and imports nothing. Import it from
+  `@datamoc/mw_games/core` instead of `@datamoc/mw_games/roguelike`. `spread`'s predicate
+  parameter is now named `open` rather than `passable`; positional callers are unaffected.
 - Documentation page is now the `REFERENCE.md` module guide (with a sidebar TOC), and
   the TypeDoc symbol dump lives under `documentation/api/` instead of being the front
   door.

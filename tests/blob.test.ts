@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Blob } from '../src/roguelike/Blob.ts';
+import { Blob } from '../src/core/index.ts';
 
 const open = () => true;
 
@@ -56,4 +56,26 @@ test('save and restore round-trips every cell', () => {
 	const restored = Blob.fromJSON(blob.toJSON());
 	assert.equal(restored.total(), blob.total());
 	assert.equal(restored.volumeAt(2, 1), blob.volumeAt(2, 1));
+});
+
+test('clear zeroes one cell and leaves its neighbours alone', () => {
+	const blob = new Blob(5, 5);
+	blob.seed(1, 1, 5);
+	blob.seed(2, 2, 7);
+	blob.clear(1, 1);
+	assert.equal(blob.volumeAt(1, 1), 0);
+	assert.equal(blob.volumeAt(2, 2), 7, 'the other cell keeps its volume');
+	assert.equal(blob.total(), 7);
+	blob.clear(9, 9);
+	assert.equal(blob.total(), 7, 'off-map clearing is a no-op');
+});
+
+test('a cleared cell stays gone through cellsAbove and a later spread', () => {
+	const blob = new Blob(5, 5);
+	blob.seed(2, 2, 10);
+	assert.equal(blob.cellsAbove(1).length, 1);
+	blob.clear(2, 2);
+	assert.deepEqual(blob.cellsAbove(1), []);
+	blob.spread(open, 0.5, 1);
+	assert.equal(blob.total(), 0, 'a cleared cell has nothing left to share');
 });

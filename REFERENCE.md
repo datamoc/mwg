@@ -144,6 +144,11 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   minigame), distinct from `roguelike.Scheduler`'s turn-order primitive.
 - `hexNeighbors`/`hexDistance`/`hexLine`/`hexRange`/`hexToPixel`/`pixelToHex` - flat-top,
   odd-q hex grid geometry.
+- `Blob` - a spreading volume field over a grid: a per-cell number that `spread` diffuses a
+  share of into its open 4-neighbours and decays the rest (`decay: 1` conserves and only
+  moves volume around). `seed` adds to a cell, `clear` zeroes one cell and leaves its
+  neighbours alone, and `cellsAbove` lists what a game applies its effect on; what a volume
+  means (fire, gas, ooze, water) stays the game's own reading.
 - `Tweener`/`Easing` - a generic `tween(duration, apply, ease?)` plus a small
   linear/quad/cubic easing-curve set.
 - `UndoHistory` - gameplay-level undo/redo over pushed, reference-held states.
@@ -504,8 +509,6 @@ the dungeon-crawl half of the capability spec.
   lookup, and a per-target falloff multiplier for an area effect hitting several targets.
 - `BossPhases`/`AbilityCycle` - an HP-fraction phase ladder whose `check(hpFraction)` reports
   newly entered phases, and a named-cooldown ability rotation (`ready`/`use`/`advance`).
-- `Blob` - a spreading volume-per-cell area effect (fire, gas) that diffuses into passable
-  neighbours and decays.
 - `CombatHooks`/`CombatEvent`/`DamageContext` - `core.HookRegistry` with combat's argument
   shape (one mutable `DamageContext`), plus `modifyDamage`'s pre-damage seam.
 - `Stealth`/`StealthOptions` - sticky, one-way detection: `checkDetection` returns true

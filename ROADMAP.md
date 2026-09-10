@@ -28,9 +28,8 @@ where those live.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** none. Every numbered item except the last has
-shipped, including the former priority cluster (28, 30, 41, 45) and everything placed
-around it; item 191 is a single low-priority idea added after that, so it needs no ordering.
+**Priority order among what's still open:** none. Every numbered item has shipped,
+including the former priority cluster (28, 30, 41, 45) and everything placed around it.
 Numbers are never reassigned once given - the list is an append-only history, including
 for what is not done yet - so priority order lives in prose, rather than in the list's
 own sequence. What remains before 1.0 is recorded in the
@@ -2914,14 +2913,12 @@ rather than someone else's build.
      from `file://`, including typing, HP changes, cue cycling, the reveal, and the
      features-to-example link chain.~~
 
-191. requested directly: `roguelike.Blob` is a per-cell volume field that can only add
-     (`seed`) and diffuse (`spread`), and it sits under `roguelike` as though a grid of
-     volumes were a roguelike concern. Make the field generic, usable wherever a game wants
-     volumes over a grid, and give it a per-cell clear: a `clear(x, y)` that zeroes one cell
-     the way `seed` adds to it, so a game can douse a single tile, seal a breach, or put out
-     one patch of fire without rebuilding the field. Off-map stays a no-op to match `seed`,
-     and tests should cover the add/clear round-trip and a cleared cell dropping out of
-     `cellsAbove`.
+191. ~~requested directly: a generic `Blob` API with a per-cell clear operation~~ - `Blob`
+     moved from `roguelike` to `core` (still top-level through `mw_games`) and now imports
+     nothing, so a volume field is no longer a dungeon-crawl concern; it gained `clear(x, y)`
+     to zero one cell without touching its neighbours, and the bounds check `volumeAt`,
+     `seed` and `clear` all repeated is one private `index` helper. 8 unit tests, including
+     the add/clear round-trip and a cleared cell dropping out of `cellsAbove`.
 
 ### Parked decisions
 

@@ -52,6 +52,7 @@ export { Spawner } from './Spawner.ts';
 export type { Wave, SpawnerOptions } from './Spawner.ts';
 export { hexNeighbors, hexDistance, hexLine, hexRange, hexToPixel, pixelToHex } from './Hex.ts';
 export type { HexCoord } from './Hex.ts';
+export { Blob } from './Blob.ts';
 export { Tweener, Easing } from './Tween.ts';
 export { UndoHistory } from './UndoHistory.ts';
 export type { UndoHistoryOptions } from './UndoHistory.ts';
