@@ -15,7 +15,6 @@ export { setBase, isCompiled, paths, has, resolve } from './paths.ts';
 export type { AssetProgress } from './paths.ts';
 
 export { load, texture, get, isLoaded, release } from './loader.ts';
-export type { LoadAssetsOptions } from './loader.ts';
 
 export { loadBinary, getBinary, isBinaryLoaded, releaseBinary } from './binary.ts';
 export type { LoadBinaryOptions } from './binary.ts';

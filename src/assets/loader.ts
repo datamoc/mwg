@@ -35,20 +35,10 @@ export interface LoadAssetsOptions {
 }
 
 /** the `Assets.add` descriptor for one path, with the resolution carried through */
-export interface AssetDescriptor {
+interface AssetDescriptor {
 	alias: string;
 	src: string;
 	data?: { resolution: number };
-}
-
-/**
- * Builds the descriptor `load` registers a path under. Exported so the resolution
- * pass-through is unit-tested; the rasterization itself is Pixi's and needs a browser.
- */
-export function assetDescriptor(path: string, resolution?: number): AssetDescriptor {
-	const descriptor: AssetDescriptor = { alias: path, src: resolve(path) };
-	if (resolution !== undefined) descriptor.data = { resolution };
-	return descriptor;
 }
 
 /**
@@ -69,7 +59,9 @@ export async function load(paths: string[], options: AssetProgress | LoadAssetsO
 	}
 
 	for (const path of pending) {
-		Assets.add(assetDescriptor(path, resolution));
+		const descriptor: AssetDescriptor = { alias: path, src: resolve(path) };
+		if (resolution !== undefined) descriptor.data = { resolution };
+		Assets.add(descriptor);
 	}
 	await Assets.load(pending, onProgress);
 }

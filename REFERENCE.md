@@ -311,11 +311,11 @@ reach the compiled asset map without it.
 
 - `setBase`/`isCompiled`/`paths`/`has`/`resolve` - dev-vs-compiled path resolution, renderer-free
   (also its own entry point, `@datamoc/mw_games/assets/paths`).
-- `load`/`texture`/`get`/`isLoaded`/`release`/`LoadAssetsOptions` - load assets by path, read
-  them back synchronously, and free GPU memory once a zone is no longer needed.
-  `load(paths, { resolution })` rasterizes a vector source (SVG) at a multiple of its intrinsic
-  size, so a game that zooms into an icon asks for a `2` or `3` instead of shipping a soft
-  bitmap; `onProgress` is the same `LoadQueue` seam whether passed alone or in the options.
+- `load`/`texture`/`get`/`isLoaded`/`release` - load assets by path, read them back
+  synchronously, and free GPU memory once a zone is no longer needed. `load(paths,
+  { resolution })` rasterizes a vector source (SVG) at a multiple of its intrinsic size, so a
+  game that zooms into an icon asks for a `2` or `3` instead of shipping a soft bitmap;
+  `onProgress` is the same `LoadQueue` seam whether passed alone or in the options.
 - `loadBinary`/`getBinary`/`isBinaryLoaded`/`releaseBinary` - the renderer-free counterpart
   to `load`/`texture`/.../`release`, caching raw `ArrayBuffer`s instead of Pixi textures
   (also its own entry point, `@datamoc/mw_games/assets/binary`); `3d/models`' `Vox.parseVox`
