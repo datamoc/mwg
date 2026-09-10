@@ -34,5 +34,5 @@ by double-clicking. Run from the repo root.
 | tool | what it does | run |
 | --- | --- | --- |
 | `roadmap-progress` | Reports ROADMAP.md completion, optionally in a browser | `npm run roadmap:progress` |
-| `build-webpage-examples` / `build-webpage-docs` | Generate the live examples and API reference under `webpage/` | `npm run webpage:examples`, `npm run webpage:docs` |
+| `build-webpage-examples` / `build-webpage-docs` | Generate the live examples and Documentation page under `webpage/` (`REFERENCE.md` guide + TypeDoc under `documentation/api/`) | `npm run webpage:examples`, `npm run webpage:docs` |
 | `make-example-diagrams` / `make-architecture-diagrams` | Rebuild the generated diagrams under `webpage/assets` (never hand-drawn) | `npm run webpage:diagrams` |

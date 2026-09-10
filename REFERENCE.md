@@ -1,11 +1,12 @@
 # mwg reference
 
 A one-line-per-export index of `@datamoc/mw_games`'s public API - what exists and where,
-not how to use it. For the full generated API docs (every parameter, every doc comment),
-see `webpage/documentation/` (built by `npm run webpage:docs`) or the published site. For
-*why* the framework is shaped this way and what it's for, see `README.md`'s capability
-spec. For architecture and build commands, see `CLAUDE.md`. For the order things shipped
-in and the reasoning behind it, see `ROADMAP.md`.
+not how to use it. The published Documentation page is this file rendered as HTML; the
+full generated API (every parameter, every doc comment) lives beside it at
+`webpage/documentation/api/` (both from `npm run webpage:docs`). For *why* the framework
+is shaped this way and what it's for, see `README.md`'s capability spec. For architecture
+and build commands, see `DEVELOPMENT.md`. For the order things shipped in and the reasoning
+behind it, see `ROADMAP.md`.
 
 Every module is its own barrel: `import { X } from '@datamoc/mw_games/core'` (or the
 matching subpath for any module below), or `import { X } from '@datamoc/mw_games'` for the
@@ -219,6 +220,66 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   behaviour, only a name a game can import without naming `pixi.js` itself. Prefer
   `ui.Label`/`BitmapLabel` over `Text2D` for anything styled through `ui.theme()`, and
   `render.TintedSprite` over `Sprite2D` the moment a colour transform is needed.
+
+### `two-d/ui`
+
+Windows, lists, message boxes, HUD widgets - all themed from one live-swappable `Theme`.
+
+- `theme`/`setTheme`/`defaultTheme`/`highContrastTheme`/`themeChanged` - the active theme;
+  `setTheme` fires `themeChanged` so already-built widgets restyle in place.
+- `Label` - a themed text wrapper over Pixi `Text`; `stroke`/`resolution`/`roundPixels`
+  options, useful for text over artwork.
+- `RichLabel`/`parseMarkdown`/`stripMarkdown`/`sliceSpans` - basic inline markdown (`**bold**`,
+  `*italic*`, combined `***both***`, backslash escapes) through Pixi `HTMLText`, which is
+  what makes mixed styles inside one string possible at all. `parseMarkdown` is pure
+  span-splitting (unmatched markers stay literal); `stripMarkdown` recovers plain text;
+  `sliceSpans` takes the first N visible characters with styles kept, for progressive
+  reveal without leaking half-shown markers. Costs more than a `Label`, so this is for
+  descriptions and help bodies, not per-frame numbers.
+- `startReveal`/`advanceReveal`/`completeReveal`/`revealComplete` - the shared
+  progressive-display primitive: one character count behind `MessageBox` pages (which
+  already revealed this way), `Label` lines, and `RichLabel` markdown. `Label` and
+  `RichLabel` expose it as `showProgressive`/`updateReveal`/`completeReveal`, driven by
+  the game's own frame loop; `MessageBox` keeps its confirm-completes-then-advances rule
+  on top unchanged.
+- `BitmapLabel`/`bitmapLabelStyle` - bitmap-font-backed text, for a HUD value redrawn
+  every frame where `Label`'s per-string texture re-render would be wasteful.
+- `NinePatch` - a resizable nine-slice panel.
+- `Window` - a themed panel container.
+- `WindowStack` - keyboard focus goes to the top window only; dims what's underneath.
+- `ListView` - a scrollable, keyboard- and pointer-navigable row list (click, wheel-scroll).
+- `IconGrid` - a multi-column icon-grid inventory view; tap-then-tap "drag and drop",
+  frame-driven long-press for a quickslot.
+- `MessageBox` - dialogue text box: paged reveal, choices, ADV/NVL display modes,
+  `autoAdvance`, and timed `{sound:path}` markers delivered through `onSound`.
+- `messageBoxPresenter` - wires `rpg.EventRunner`'s dialogue to a `MessageBox` on a
+  `WindowStack`, in one argument: `present: messageBoxPresenter(this.windows)`.
+- `VerticalLabel`/`layoutVertical` - vertical writing layout, with CJK glyph rotation.
+- `RebindScreen` - a keybind-rebinding flow over `Input`, with an optional conflict hook.
+- `Button`/`ButtonSkin`/`ButtonState` - idle/hover/pressed/disabled clickable region, icon
+  and/or text, optional per-button nine-patch skin with per-state tints.
+- `Bar` - a filled-proportion track (health/mana/XP); flat colour or texture, optional
+  `roundUpToPixel` so a nonzero value never rounds down to invisible.
+- `FloatingText` - a rising, fading damage/pickup number.
+- `Toast` - a queued, timed pop-up notification (fade in, hold, fade out).
+- `Tooltip` - a hover explanation over a themed `Window`: a frame-driven hover delay, and
+  edge-aware placement that flips rather than letting the panel run off screen.
+- `HelpScreen` - a topic-list-plus-body help/controls screen.
+- `StatsScreen` - a player-stats display screen.
+- `LoadingScreen` - a progress-bar loading screen wired to `core.LoadQueue`.
+
+### `two-d/stage`
+
+Dialogue scenes: backdrop, characters, a script runner - the visual-novel half.
+
+- `DialogueStage`/`CharacterDefinition`/`ShowOptions` - backdrop plus character
+  conversation scenes; the speaking character lit, others dimmed.
+- `StageScript`/`StageCommand`/`StageChoice`/`StoryScript` - a command interpreter;
+  `runStory` follows a named-passage graph (`{goto}`, choice jumps); `history`/`showLast`
+  for read-only dialogue rollback; `skipSeen` for auto-advancing already-read lines;
+  `ScriptOptions.mode: 'nvl'` for the accumulating-block presentation.
+- `importTwee`/`TwineStory` - imports Twee-notation Twine stories into `StageScript`'s
+  command format.
 
 ## `assets`
 
@@ -509,19 +570,6 @@ live game loop.
   since every `SimulationRuntime` needs one; a simulation-first game need not import a second
   module just to construct the class its own runtime is built around.
 
-### `two-d/stage`
-
-Dialogue scenes: backdrop, characters, a script runner - the visual-novel half.
-
-- `DialogueStage`/`CharacterDefinition`/`ShowOptions` - backdrop plus character
-  conversation scenes; the speaking character lit, others dimmed.
-- `StageScript`/`StageCommand`/`StageChoice`/`StoryScript` - a command interpreter;
-  `runStory` follows a named-passage graph (`{goto}`, choice jumps); `history`/`showLast`
-  for read-only dialogue rollback; `skipSeen` for auto-advancing already-read lines;
-  `ScriptOptions.mode: 'nvl'` for the accumulating-block presentation.
-- `importTwee`/`TwineStory` - imports Twee-notation Twine stories into `StageScript`'s
-  command format.
-
 ## `three-d` (optional)
 
 Babylon.js-backed 3D, kept fully separate from the 2D default - nothing in `core` imports
@@ -545,53 +593,6 @@ this module.
   heightmap image, alongside `createTileGrid3D`'s stepped floors.
 - `buildHeightIndex`/`cellAt`/`heightAt`/`resolveCapsuleAgainstGrid` - horizontal collision
   for a moving capsule against `createTileGrid3D`'s stepped grid.
-
-### `two-d/ui`
-
-Windows, lists, message boxes, HUD widgets - all themed from one live-swappable `Theme`.
-
-- `theme`/`setTheme`/`defaultTheme`/`highContrastTheme`/`themeChanged` - the active theme;
-  `setTheme` fires `themeChanged` so already-built widgets restyle in place.
-- `Label` - a themed text wrapper over Pixi `Text`; `stroke`/`resolution`/`roundPixels`
-  options, useful for text over artwork.
-- `RichLabel`/`parseMarkdown`/`stripMarkdown`/`sliceSpans` - basic inline markdown (`**bold**`,
-  `*italic*`, combined `***both***`, backslash escapes) through Pixi `HTMLText`, which is
-  what makes mixed styles inside one string possible at all. `parseMarkdown` is pure
-  span-splitting (unmatched markers stay literal); `stripMarkdown` recovers plain text;
-  `sliceSpans` takes the first N visible characters with styles kept, for progressive
-  reveal without leaking half-shown markers. Costs more than a `Label`, so this is for
-  descriptions and help bodies, not per-frame numbers.
-- `startReveal`/`advanceReveal`/`completeReveal`/`revealComplete` - the shared
-  progressive-display primitive: one character count behind `MessageBox` pages (which
-  already revealed this way), `Label` lines, and `RichLabel` markdown. `Label` and
-  `RichLabel` expose it as `showProgressive`/`updateReveal`/`completeReveal`, driven by
-  the game's own frame loop; `MessageBox` keeps its confirm-completes-then-advances rule
-  on top unchanged.
-- `BitmapLabel`/`bitmapLabelStyle` - bitmap-font-backed text, for a HUD value redrawn
-  every frame where `Label`'s per-string texture re-render would be wasteful.
-- `NinePatch` - a resizable nine-slice panel.
-- `Window` - a themed panel container.
-- `WindowStack` - keyboard focus goes to the top window only; dims what's underneath.
-- `ListView` - a scrollable, keyboard- and pointer-navigable row list (click, wheel-scroll).
-- `IconGrid` - a multi-column icon-grid inventory view; tap-then-tap "drag and drop",
-  frame-driven long-press for a quickslot.
-- `MessageBox` - dialogue text box: paged reveal, choices, ADV/NVL display modes,
-  `autoAdvance`, and timed `{sound:path}` markers delivered through `onSound`.
-- `messageBoxPresenter` - wires `rpg.EventRunner`'s dialogue to a `MessageBox` on a
-  `WindowStack`, in one argument: `present: messageBoxPresenter(this.windows)`.
-- `VerticalLabel`/`layoutVertical` - vertical writing layout, with CJK glyph rotation.
-- `RebindScreen` - a keybind-rebinding flow over `Input`, with an optional conflict hook.
-- `Button`/`ButtonSkin`/`ButtonState` - idle/hover/pressed/disabled clickable region, icon
-  and/or text, optional per-button nine-patch skin with per-state tints.
-- `Bar` - a filled-proportion track (health/mana/XP); flat colour or texture, optional
-  `roundUpToPixel` so a nonzero value never rounds down to invisible.
-- `FloatingText` - a rising, fading damage/pickup number.
-- `Toast` - a queued, timed pop-up notification (fade in, hold, fade out).
-- `Tooltip` - a hover explanation over a themed `Window`: a frame-driven hover delay, and
-  edge-aware placement that flips rather than letting the panel run off screen.
-- `HelpScreen` - a topic-list-plus-body help/controls screen.
-- `StatsScreen` - a player-stats display screen.
-- `LoadingScreen` - a progress-bar loading screen wired to `core.LoadQueue`.
 
 ## `world`
 

@@ -450,6 +450,144 @@ th:first-child {
 	color: var(--add);
 }
 
+/* -------------------------------------------------------------- documentation reference */
+
+.ref-layout {
+	display: grid;
+	grid-template-columns: 14rem minmax(0, 1fr);
+	gap: 2.5rem;
+	align-items: start;
+}
+
+.ref-toc {
+	position: sticky;
+	top: 4.5rem;
+	font-family: var(--font-display);
+	font-size: 0.78rem;
+	letter-spacing: 0.02em;
+	max-height: calc(100vh - 5.5rem);
+	overflow: auto;
+	padding-bottom: 1rem;
+}
+
+.ref-toc-title {
+	margin: 0 0 0.75rem;
+	color: var(--muted);
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	font-size: 0.72rem;
+}
+
+.ref-toc ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.ref-toc li {
+	margin: 0;
+}
+
+.ref-toc a {
+	display: block;
+	color: var(--muted);
+	text-decoration: none;
+	padding: 0.28rem 0;
+	border-left: 1px solid transparent;
+	padding-left: 0.75rem;
+}
+
+.ref-toc a:hover,
+.ref-toc a:focus-visible {
+	color: var(--add);
+}
+
+.ref-toc-sub a {
+	padding-left: 1.4rem;
+	font-size: 0.74rem;
+}
+
+.ref-toc-api {
+	margin: 1.25rem 0 0;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--line);
+}
+
+.ref-toc-api a {
+	color: var(--add);
+	text-decoration: none;
+	padding-left: 0.75rem;
+}
+
+.ref-toc-api a:hover {
+	border-bottom: 1px solid var(--add);
+}
+
+.ref-body {
+	min-width: 0;
+	padding-bottom: 2rem;
+}
+
+.ref-body > :first-child {
+	margin-top: 0;
+}
+
+.ref-body h2 {
+	margin-top: 2.75rem;
+	padding-top: 0.5rem;
+	scroll-margin-top: 4.5rem;
+}
+
+.ref-body h3 {
+	margin-top: 2rem;
+	scroll-margin-top: 4.5rem;
+	color: var(--add);
+}
+
+.ref-body p,
+.ref-body li {
+	color: var(--muted);
+	max-width: 68ch;
+}
+
+.ref-body li {
+	margin: 0.45rem 0;
+}
+
+.ref-body strong {
+	color: var(--paper);
+	font-weight: 600;
+}
+
+.ref-body a {
+	color: var(--add);
+}
+
+.ref-body table {
+	margin: 1.25rem 0;
+	display: block;
+	overflow-x: auto;
+}
+
+.ref-body ul {
+	padding-left: 1.15rem;
+}
+
+@media (max-width: 860px) {
+	.ref-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.ref-toc {
+		position: static;
+		max-height: none;
+		border: 1px solid var(--line-strong);
+		background: var(--panel);
+		padding: 1rem 1rem 0.75rem;
+		border-radius: 3px;
+	}
+}
+
 /* -------------------------------------------------------------- stub pages */
 
 .stub {

@@ -37,9 +37,10 @@ jobs:
 
       - run: npm ci
       - run: npm run assets
-      # generates webpage/examples/*/ and webpage/documentation/ - both gitignored, built
-      # fresh here rather than committed, same as a local `npm run webpage:examples` /
-      # `npm run webpage:docs` before opening the site by hand
+      # generates webpage/examples/*/ and webpage/documentation/ (REFERENCE guide +
+      # TypeDoc under documentation/api/) - both gitignored, built fresh here rather than
+      # committed, same as a local `npm run webpage:examples` / `npm run webpage:docs`
+      # before opening the site by hand
       - run: npm run webpage:examples
       - run: npm run webpage:docs
 

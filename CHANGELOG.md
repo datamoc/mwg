@@ -7,6 +7,11 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Changed
+- Documentation page is now the `REFERENCE.md` module guide (with a sidebar TOC), and
+  the TypeDoc symbol dump lives under `documentation/api/` instead of being the front
+  door.
+
 ## [0.5.4] - 2026-09-10
 
 Inline sound markers now travel with translated dialogue strings and fire at their visible
