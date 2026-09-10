@@ -1,7 +1,6 @@
 import { mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { chromium } from 'playwright-core';
-import { findChrome } from './find-chrome.mjs';
+import { launchChrome } from './find-chrome.mjs';
 
 /**
  * Opens a built page from `file://` in headless Chrome and asserts it actually rendered.
@@ -19,19 +18,8 @@ import { findChrome } from './find-chrome.mjs';
  * `MWG_VISUAL_CHROME_ARGS` carries machine-specific flags, as on a runner with no GPU.
  */
 export async function smokePage({ url, screenshot, keyToPress = null }) {
-	const executablePath = process.env.CHROME_PATH ?? (await findChrome());
-	const extraChromeArgs = (process.env.MWG_VISUAL_CHROME_ARGS ?? '').split(' ').filter(Boolean);
 	await mkdir(dirname(screenshot), { recursive: true });
-
-	const browser = await chromium.launch({
-		executablePath,
-		headless: true,
-		args: [
-			//the page loads its compiled assets from a neighbouring file, which file:// allows
-			'--allow-file-access-from-files',
-			...extraChromeArgs,
-		],
-	});
+	const browser = await launchChrome({ argsEnv: 'MWG_VISUAL_CHROME_ARGS' });
 
 	try {
 		const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });

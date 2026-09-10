@@ -2,8 +2,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } fro
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { chromium } from 'playwright-core';
-import { findChrome } from './find-chrome.mjs';
+import { launchChrome } from './find-chrome.mjs';
 
 /**
  * Measures the crossover between browser-native element animation and Pixi sprites.
@@ -43,7 +42,6 @@ const counts = (process.env.MWG_ANIM_COUNTS ?? '250,1000,4000')
 	.filter((value) => Number.isFinite(value) && value > 0);
 const modes = (process.env.MWG_ANIM_MODES ?? 'css,pixi,both').split(',').map((value) => value.trim());
 const frames = Number(process.env.MWG_ANIM_FRAMES ?? 120);
-const extraChromeArgs = (process.env.MWG_BENCHMARK_CHROME_ARGS ?? '').split(' ').filter(Boolean);
 
 const PAGE = `<!doctype html>
 <html lang="en">
@@ -179,12 +177,7 @@ const scratch = mkdtempSync(join(tmpdir(), 'mwg-animation-bench-'));
 cpSync(globalBundle, join(scratch, 'mw_games.global.js'));
 writeFileSync(join(scratch, 'index.html'), PAGE);
 
-const executablePath = process.env.CHROME_PATH ?? (await findChrome());
-const browser = await chromium.launch({
-	executablePath,
-	headless: true,
-	args: ['--allow-file-access-from-files', ...extraChromeArgs],
-});
+const browser = await launchChrome();
 
 const rows = [];
 let renderer = { name: 'unknown', gpu: null };
