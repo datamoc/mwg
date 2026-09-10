@@ -33,6 +33,11 @@ the public API may still change between minor versions.
   with it, and the reformat changes no behaviour (line wrapping, trailing commas and the
   like); `barrel-collisions.test.ts` now tolerates Prettier wrapping a long
   `export { ... } from './...'` across lines.
+- ROADMAP.md: five verification gaps are recorded as the open backlog at the tail (193, a
+  published-package `file://` smoke; 194, a bundle-size budget; 195, a coverage floor; 196,
+  cross-version save fixtures; 197, building every example in CI), each with the concrete
+  number or path it should assert against. The 1.0 checklist's API line widens from
+  `DEPRECATED` alone to a full stability-marker contract (`@experimental` plus `DEPRECATED`).
 - ROADMAP.md: item 192 records the accessibility gaps the list had never named (screen-reader
   text for `ui` widgets, `prefers-reduced-motion`, palette contrast) as one open backlog item
   at the tail; the roadmap-progress test now guards that open items sit after every shipped

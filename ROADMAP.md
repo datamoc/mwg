@@ -28,12 +28,13 @@ where those live.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** none. Every numbered item has shipped except
-192, an accessibility idea deliberately recorded at the tail rather than folded into 1.0;
-everything before it shipped, including the former priority cluster (28, 30, 41, 45).
-Numbers are never reassigned once given - the list is an append-only history, including
-for what is not done yet - so priority order lives in prose, rather than in the list's
-own sequence. What remains before 1.0 is recorded in the
+**Priority order among what's still open:** 193 first - it protects the one promise every
+other item rests on, that the packed output opens from `file://` - then 194-197 in the order
+listed, and 192 (accessibility) last as the largest item and the one no current game
+demands. Every numbered item before 192 shipped, including the former priority cluster
+(28, 30, 41, 45). Numbers are never reassigned once given - the list is an append-only
+history, including for what is not done yet - so priority order lives in prose, rather than
+in the list's own sequence. What remains before 1.0 is recorded in the
 [1.0 exit checklist](#10-exit-checklist) at the end of this file; the few deliberate
 non-decisions (which reference title, if any, a future genre pick should study) are parked
 in [Parked decisions](#parked-decisions) rather than left as phantom open items.
@@ -2932,6 +2933,42 @@ rather than someone else's build.
      documented rule for palettes - and decide scope and priority with the game or release
      that needs them.
 
+193. requested directly: nothing proves the central promise end to end. The getting-started
+     tutorial's install paths (`npm install`, the `npm pack` + `.tgz` fallback, and the
+     no-install `mw_games.global.js` script tag) are followed by hand on the 1.0 exit
+     checklist, and `tests/consumer-app.test.ts` names the public specifiers but compiles them
+     against `src/`, so a broken `dist` export map, a `files` leak, or a `file://` regression
+     in a packed build surfaces only when someone runs the tutorial. Add a smoke that runs
+     `npm pack`, installs the tarball into a scratch directory outside the repo, builds a tiny
+     game through the documented steps, and opens the result from `file://` in headless Chrome
+     (reusing `tools/visual-smoke.mjs`); the no-install path is the same check against the
+     global IIFE. The checklist's manual pass stays, since only a person can tell whether the
+     prose is followable.
+
+194. requested directly: the rendering-backend policy weighs bundle cost, but nothing measures
+     it. `dist/mw_games.global.js` is 860 kB and `dist` totals 845 files, with no gate that
+     notices when either grows. Record the sizes of the global build and each published
+     subpath, commit the snapshot, and fail CI past a stated threshold, so "keep the bundle
+     small" is a number the policy can point at rather than an intention.
+
+195. requested directly: `npm run coverage` reports with no floor. At 89.3% lines and 83.1%
+     branches, a gate a point or two lower would stop quiet erosion without making every new
+     branch a fight. Decide the numbers, enforce them in `npm run coverage` or a CI step, and
+     let a deliberate drop be a visible, argued change rather than an unnoticed one.
+
+196. requested directly: `SaveSystem` versions and migrates saves, and the serialization paths
+     round-trip, but no test loads a save written by an earlier shape. Players carry saves
+     across releases, so a schema change that silently breaks an old one is the worst kind of
+     regression for a redistributable framework. Commit one fixture save per released save
+     shape and load each in a test, so a break fails loudly at the version it breaks.
+
+197. requested directly: only the interface example is built per pull request (by the visual
+     smoke); the weekly browser benchmark builds three more, and the rest are typechecked but
+     never built. A broken `vite.config.ts` or an `emit-page`/`compile-resources` regression
+     in any other example would ship unnoticed. Build every `example:*:build` script in CI, as
+     a matrix or one job, so the whole set of published pages stays green on every pull
+     request.
+
 ### Parked decisions
 
 Not open work, and not forgotten: these are decisions this project has deliberately
@@ -2970,8 +3007,9 @@ every numbered capability in the list above has already shipped.
 - [ ] `pixi.js` moves from `dependencies` to optional `peerDependencies` (item 175's
       decision) and the two npm paths above are re-verified under that new install
       contract before the move ships.
-- [ ] The public API gets a `DEPRECATED` convention and release notes call out every
-      breaking change, so 1.0 is the last release where renames happen silently.
+- [ ] The public API gets a stability-marker contract: `@experimental` on anything not
+      intended as 1.0-stable, called out in release notes, and a `DEPRECATED` convention, so
+      1.0 is the last release where a rename or an unstable surface moves silently.
 - [ ] A browser smoke check opens one built example from `file://` and looks at it:
       `npm run visual:smoke:ui` runs the check and writes a screenshot, but a human still
       has to look at it - the class of layout bug 1.0 must not ship is invisible to every
