@@ -4,6 +4,7 @@ import { Window } from './Window.ts';
 import { Label } from './Label.ts';
 import { ListView, type ListItem } from './ListView.ts';
 import { theme, themeChanged } from './theme.ts';
+import { startReveal, advanceReveal, completeReveal, revealComplete, type RevealState } from './reveal.ts';
 import type { Texture2D } from '../render/Types2D.ts';
 
 export interface MessagePage {
@@ -94,7 +95,7 @@ export class MessageBox extends Window {
 	private pageIndex = 0;
 
 	private speed: number;
-	private revealed = 0;
+	private reveal: RevealState = startReveal(0);
 	private mode: 'adv' | 'nvl';
 
 	private body: Label;
@@ -193,7 +194,7 @@ export class MessageBox extends Window {
 		this.body.y = this.mode === 'adv' && page.speaker !== undefined ? this.speakerLabel.height + t.spacing : 0;
 		this.body.style.wordWrapWidth = Math.max(16, textWidth);
 
-		this.revealed = this.speed > 0 ? 0 : page.text.length;
+		this.reveal = startReveal(page.text.length, this.speed);
 		this.autoAdvanceElapsed = 0;
 		this.renderBody();
 
@@ -205,7 +206,7 @@ export class MessageBox extends Window {
 	/** the current page's revealed slice, formatted with its speaker inline in nvl mode */
 	private renderBody(): void {
 		if (this.mode === 'adv') {
-			this.body.setText(this.pages[this.pageIndex].text.slice(0, Math.floor(this.revealed)));
+			this.body.setText(this.pages[this.pageIndex].text.slice(0, Math.floor(this.reveal.revealed)));
 			return;
 		}
 
@@ -213,7 +214,7 @@ export class MessageBox extends Window {
 		//page's own reveal is still in progress
 		const lines = this.pages.slice(0, this.pageIndex).map((page) => this.formatLine(page, page.text));
 		const current = this.pages[this.pageIndex];
-		lines.push(this.formatLine(current, current.text.slice(0, Math.floor(this.revealed))));
+		lines.push(this.formatLine(current, current.text.slice(0, Math.floor(this.reveal.revealed))));
 		this.body.setText(lines.join('\n\n'));
 	}
 
@@ -222,14 +223,14 @@ export class MessageBox extends Window {
 	}
 
 	private get pageComplete(): boolean {
-		return this.revealed >= this.pages[this.pageIndex].text.length;
+		return revealComplete(this.reveal);
 	}
 
 	override update(dt: number): void {
 		if (this.finished) return;
 
 		if (!this.pageComplete) {
-			this.revealed = Math.min(this.pages[this.pageIndex].text.length, this.revealed + this.speed * dt);
+			advanceReveal(this.reveal, dt);
 			this.renderBody();
 			return;
 		}
@@ -257,7 +258,7 @@ export class MessageBox extends Window {
 		//first press completes the page, second advances: skipping the reveal must never
 		//also skip the page, or fast readers lose lines
 		if (!this.pageComplete) {
-			this.revealed = this.pages[this.pageIndex].text.length;
+			completeReveal(this.reveal);
 			this.renderBody();
 			return true;
 		}

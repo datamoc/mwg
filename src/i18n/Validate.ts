@@ -82,3 +82,44 @@ export function validateCatalog(catalog: Catalog): CatalogIssue[] {
 function isPluralForms(value: MessageValue): value is Exclude<MessageValue, string> & Record<string, string> {
 	return typeof value === 'object' && value !== null && !('format' in value);
 }
+
+export interface AudioIssue {
+	/** the full `<type>.audio` key */
+	key: string;
+	kind: 'empty-audio-path' | 'audio-not-a-path';
+	detail: string;
+}
+
+/**
+ * Structural problems in a catalog's sound cues: an `<type>.audio` entry holding an
+ * empty string (the formatter already reads that as "no sound", so it is dead weight),
+ * or holding plural forms/a select message instead of a plain path. A sound path is data
+ * a game hands to `mwg/audio`'s `Sound`, not grammar - count- or variant-dependent paths
+ * would silently reduce to one branch at lookup time rather than selecting one per play.
+ *
+ * @example
+ * ```ts
+ * import { validateMessageAudio } from '@datamoc/mw_games/i18n';
+ *
+ * const catalog = {
+ *   locale: 'en', direction: 'ltr' as const,
+ *   messages: { 'hit.audio': '', 'loot.audio': { one: 'a.wav', other: 'b.wav' } },
+ * };
+ *
+ * console.log(validateMessageAudio(catalog).map((issue) => issue.key)); // ['hit.audio', 'loot.audio']
+ * ```
+ */
+export function validateMessageAudio(catalog: Catalog): AudioIssue[] {
+	const issues: AudioIssue[] = [];
+
+	for (const [key, value] of Object.entries(catalog.messages)) {
+		if (!key.endsWith('.audio')) continue;
+		if (typeof value !== 'string') {
+			issues.push({ key, kind: 'audio-not-a-path', detail: 'an audio entry must be a plain path string, not plural forms or a select message' });
+		} else if (value === '') {
+			issues.push({ key, kind: 'empty-audio-path', detail: 'an empty audio entry already means "no sound"; remove the key instead' });
+		}
+	}
+
+	return issues;
+}

@@ -1,6 +1,7 @@
 import { Text, TextStyle } from 'pixi.js';
 import { theme, themeChanged, type Theme } from './theme.ts';
 import { normalizeTextOptions, themedAlign, type ThemedTextOptions } from './themedText.ts';
+import { startReveal, advanceReveal, completeReveal, type RevealState } from './reveal.ts';
 
 export interface LabelOptions extends ThemedTextOptions {
 	/** Outline in texture pixels, useful for text over artwork. */
@@ -31,6 +32,8 @@ export interface LabelOptions extends ThemedTextOptions {
 export class Label extends Text {
 	private readonly opts: LabelOptions;
 	private readonly themeListener = (t: Theme) => this.restyle(t);
+	private revealSource: string | null = null;
+	private reveal: RevealState | null = null;
 
 	constructor(options: LabelOptions | string = {}) {
 		const opts = normalizeTextOptions(options);
@@ -66,7 +69,44 @@ export class Label extends Text {
 
 	/** avoids the re-render when the text has not actually changed */
 	setText(value: string): void {
+		//an instant set cancels any reveal in progress - the two never interleave
+		this.revealSource = null;
+		this.reveal = null;
 		if (this.text !== value) this.text = value;
+	}
+
+	/**
+	 * Shows `value` progressively, `speed` characters per second. The game drives the
+	 * reveal by calling `updateReveal(dt)` each frame (a label owns no update loop of
+	 * its own, unlike a `MessageBox` on a `WindowStack`); `completeReveal` skips to the
+	 * end, for a confirm press mid-reveal.
+	 */
+	showProgressive(value: string, speed?: number): void {
+		this.revealSource = value;
+		this.reveal = startReveal(value.length, speed);
+		this.renderRevealed();
+	}
+
+	/** advances an in-progress reveal; returns true when nothing is left to show */
+	updateReveal(dt: number): boolean {
+		if (!this.reveal) return true;
+		const done = advanceReveal(this.reveal, dt);
+		this.renderRevealed();
+		return done;
+	}
+
+	/** shows the whole in-progress text at once */
+	completeReveal(): void {
+		if (!this.reveal) return;
+		completeReveal(this.reveal);
+		this.renderRevealed();
+	}
+
+	private renderRevealed(): void {
+		if (!this.reveal || this.revealSource === null) return;
+		//through the field rather than setText, which cancels a reveal in progress
+		const visible = this.revealSource.slice(0, Math.floor(this.reveal.revealed));
+		if (this.text !== visible) this.text = visible;
 	}
 
 	/**

@@ -204,6 +204,20 @@ const DIAGRAMS = {
 		flow: ['Walk to edge', 'crossOver()', 'world.enter()', 'Map swapped', 'Player placed'],
 		callouts: [0, 2, 4],
 	},
+	'20_string_editor': {
+		title: 'string editor',
+		subtitle: 'Reference, translation, and rendered line with cues',
+		shows: ['Demonstrates an editable translation beside its reference,', 'markdown preview, variables, and sound cues.'],
+		matters: ['The translation workflow as a playable page,', 'not a terminal.'],
+		modules: ['i18n', 'ui', 'audio'],
+		categories: [
+			{ title: 'Split panes', items: ['EN reference', 'editable FR', 'live preview'] },
+			{ title: 'Message shape', items: ['markdown spans', '{HP_loose} variable', 'placeholder check'] },
+			{ title: 'Cues', items: ['blip / hit / pickup', 'cue per string', 'play on reveal'] },
+		],
+		flow: ['Edit FR text', 'Preview re-renders', 'Placeholders checked', 'Play reveals', 'Cue fires'],
+		callouts: [0, 2, 4],
+	},
 };
 
 for (const [filename, spec] of Object.entries(DIAGRAMS)) {

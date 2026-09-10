@@ -4,6 +4,15 @@ export type { Theme } from './theme.ts';
 export { Label } from './Label.ts';
 export type { LabelOptions } from './Label.ts';
 
+export { RichLabel } from './RichLabel.ts';
+export type { RichLabelOptions } from './RichLabel.ts';
+
+export { parseMarkdown, stripMarkdown, sliceSpans } from './markdown.ts';
+export type { MarkdownSpan } from './markdown.ts';
+
+export { startReveal, advanceReveal, completeReveal, revealComplete } from './reveal.ts';
+export type { RevealState } from './reveal.ts';
+
 export { BitmapLabel, bitmapLabelStyle } from './BitmapLabel.ts';
 export type { BitmapLabelOptions } from './BitmapLabel.ts';
 

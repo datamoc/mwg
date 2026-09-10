@@ -36,6 +36,7 @@ const scripts = {
 	'save-load': 'example:save-load:build',
 	audio: 'example:audio:build',
 	i18n: 'example:i18n:build',
+	'string-editor': 'example:string-editor:build',
 	'world-transition': 'example:world-transition:build',
 	'event-system': 'example:event-system:build',
 	headless: 'example:headless:build',

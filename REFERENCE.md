@@ -554,6 +554,19 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   `setTheme` fires `themeChanged` so already-built widgets restyle in place.
 - `Label` - a themed text wrapper over Pixi `Text`; `stroke`/`resolution`/`roundPixels`
   options, useful for text over artwork.
+- `RichLabel`/`parseMarkdown`/`stripMarkdown`/`sliceSpans` - basic inline markdown (`**bold**`,
+  `*italic*`, combined `***both***`, backslash escapes) through Pixi `HTMLText`, which is
+  what makes mixed styles inside one string possible at all. `parseMarkdown` is pure
+  span-splitting (unmatched markers stay literal); `stripMarkdown` recovers plain text;
+  `sliceSpans` takes the first N visible characters with styles kept, for progressive
+  reveal without leaking half-shown markers. Costs more than a `Label`, so this is for
+  descriptions and help bodies, not per-frame numbers.
+- `startReveal`/`advanceReveal`/`completeReveal`/`revealComplete` - the shared
+  progressive-display primitive: one character count behind `MessageBox` pages (which
+  already revealed this way), `Label` lines, and `RichLabel` markdown. `Label` and
+  `RichLabel` expose it as `showProgressive`/`updateReveal`/`completeReveal`, driven by
+  the game's own frame loop; `MessageBox` keeps its confirm-completes-then-advances rule
+  on top unchanged.
 - `BitmapLabel`/`bitmapLabelStyle` - bitmap-font-backed text, for a HUD value redrawn
   every frame where `Label`'s per-string texture re-render would be wasteful.
 - `NinePatch` - a resizable nine-slice panel.
@@ -603,8 +616,16 @@ Message tables, plurals, interpolation, and direction - pure logic, no Pixi depe
   messages, an optional Fluent-parsed or plain-string/plural-form value.
 - `setBase`/`setActive`/`locale`/`direction` - the active and fallback language, and the
   direction `ui`'s `Theme.direction` reads from; `reset` clears both back to unset.
-- `t`/`MessageParams` - resolves a key, selecting a plural form via `Intl.PluralRules` and
-  interpolating `{token}`s; falls back to the base language, then to the raw key.
+- `t`/`tRaw`/`formatSpec`/`tokenizeMessage`/`diffPlaceholders`/`MessageParams` - resolves a key, selecting a plural form via `Intl.PluralRules` and
+  interpolating `{token}`s; falls back to the base language, then to the raw key. Placeholders
+  also take Python f-string-style specs (`{dmg:03d}`, `{hp:.1%}`, `{name:>12}`), `!s`/`!r`/`!a`
+  conversions and `=` debugging, resolved through `formatSpec` (verified case by case against
+  CPython; an ill-fitting spec stays untouched rather than throwing). `tokenizeMessage` is
+  the single definition of that placeholder grammar, shared by interpolation and by
+  `diffPlaceholders`, which compares a reference string against its translation (dropped,
+  added, or reshaped tokens) for `tools/i18n-edit` to surface. `tRaw`
+  skips the display-text decoration (typographic spacing, RTL wrapping) for catalog values
+  that are not shown to the player, such as a sound path.
 - `typographic` - locale-aware curly-apostrophe substitution (French/Italian/Dutch elisions);
   for French, also a narrow no-break space before `; ! ? :` and around `« »`, and a plain
   no-break space between a numbering word and its number ("Chapitre 3"); for German, a
@@ -618,9 +639,12 @@ Message tables, plurals, interpolation, and direction - pure logic, no Pixi depe
   `Catalog`/`t()` surface, with variables, exact and plural variants.
 - `SemanticMessage`/`MessageChannel`/`MessageFormatter`/`createCatalogFormatter` - a typed
   `{ type, params }` communication intent rendered differently per channel (log/compact/
-  accessibility/debug) from the same underlying catalog: `createCatalogFormatter` looks up
+  accessibility/debug/audio) from the same underlying catalog: `createCatalogFormatter` looks up
   `${type}.${channel}`, falling back to `${type}` alone, then formats through `t()`. A
-  simulation emits the message once; the channel is a presentation choice, not a rule.
+  simulation emits the message once; the channel is a presentation choice, not a rule. The
+  `audio` channel holds a sound path (played game-side through `audio`'s `Sound`), resolves
+  through `tRaw` rather than `t()`, returns `''` when no `<type>.audio` entry exists, and
+  never falls back to a bare type holding a sentence.
 - `EntityTextResolver`/`GrammaticalEntity` - type contracts a game uses while building a
   `SemanticMessage`'s params (resolving an id to display text, or carrying gender/number/
   proper-noun metadata for its own catalog's grammar); MWG never calls or interprets either.
@@ -634,6 +658,17 @@ Message tables, plurals, interpolation, and direction - pure logic, no Pixi depe
   `other` branch within one catalog. Deliberately not a parameter schema validator - a
   `SemanticMessage<TType, TParams>`'s own generics already give a game compile-time
   parameter safety, which is the primary mechanism the source document calls for.
+- `validateMessageAudio`/`AudioIssue` - structural checks over `<type>.audio` sound-cue
+  entries: empty paths and non-string (plural/select) values, which would reduce silently
+  at lookup time rather than selecting per play.
+- `EditSession`/`EditRow`/`RowFilter`/`AUDIO_SUFFIX`/`createEditSession`/`sessionKeys`/
+  `sessionRow`/`sessionRows`/`setTargetText`/`copyFromBase`/`deleteTargetKey`/
+  `setTargetSound`/`cueKeyFor`/`sessionCompleteness`/`swapSession`/`isAudioKey` - the pure
+  session core behind `tools/i18n-edit`: translatable rows with reference/target text and
+  an effective cue (a channel key shares its semantic family's `<type>.audio`, one cue per
+  family), completeness ignoring cue keys, and swapping which catalog is the reference.
+  `tools/i18n-edit.mjs` is the terminal split-screen editor over it, with a `--check`
+  mode for CI.
 - `messageText`/`levenshteinDistance`/`findSimilarMessages` - content-management over a
   catalog's actual message text rather than only its key shape: `messageText` reduces any
   `MessageValue` to plain comparable text, `levenshteinDistance` is the classic edit-distance

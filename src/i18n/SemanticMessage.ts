@@ -1,4 +1,4 @@
-import { t, has, type MessageParams } from './index.ts';
+import { t, tRaw, has, type MessageParams } from './index.ts';
 
 /**
  * A structured communication intent, not a finished sentence: a type naming what happened,
@@ -41,8 +41,11 @@ export interface GrammaticalEntity {
 }
 
 /** Where the same semantic message ends up: a game log line, a compact HUD number, an
- * accessibility announcement, or a debug dump - one simulation event, several presentations. */
-export type MessageChannel = 'log' | 'compact' | 'accessibility' | 'debug';
+ * accessibility announcement, a debug dump, or the sound effect played alongside it - one
+ * simulation event, several presentations. The `audio` entry holds a sound path (an asset
+ * path `mwg/audio`'s `Sound` plays), not display text, so it resolves through `tRaw`
+ * rather than `t()`: no typographic spacing, no right-to-left wrapping. */
+export type MessageChannel = 'log' | 'compact' | 'accessibility' | 'debug' | 'audio';
 
 export interface MessageFormatter {
 	format(message: SemanticMessage, channel: MessageChannel): string;
@@ -75,13 +78,27 @@ export interface MessageFormatter {
  * console.log(formatter.format(message, 'log'));     // 'The gnoll takes 7 damage.'
  * console.log(formatter.format(message, 'compact'));  // '-7 HP'
  * console.log(formatter.format(message, 'debug'));    // falls back to the bare type: the key itself, if undeclared
+ * console.log(formatter.format(message, 'audio'));    // 'sounds/sword-hit.wav', or '' when no '<type>.audio' entry exists
  * ```
+ *
+ * The `audio` channel is deliberately narrower than the text channels: it resolves only
+ * `<type>.audio`, never falling back to the bare type the way text does. A bare type
+ * holding a sentence (`'combat.damage': 'combat.damage generic'`) is not a playable path,
+ * so falling back to it would hand the game garbage to load. Sounds that need no
+ * per-channel variation are still shared - every text channel already falls back to the
+ * same bare type, while `audio` stays a separate entry a translator never touches and the
+ * base language usually owns alone (runtime lookup falls back to the base catalog, so a
+ * translated catalog needs no copy of it).
  */
 export function createCatalogFormatter(): MessageFormatter {
 	return {
 		format(message: SemanticMessage, channel: MessageChannel): string {
-			const key = `${message.type}.${channel}`;
 			const params = message.params as MessageParams;
+			if (channel === 'audio') {
+				const key = `${message.type}.audio`;
+				return has(key) ? tRaw(key, params) : '';
+			}
+			const key = `${message.type}.${channel}`;
 			return has(key) ? t(key, params) : t(message.type, params);
 		},
 	};

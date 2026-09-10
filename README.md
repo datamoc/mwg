@@ -11,7 +11,7 @@ of their own; improvements to `mwg`'s own files are shared back.
 **[Live examples and API docs](https://datamoc.github.io/mwg/)**: every example below,
 playable in the browser with no download, plus the generated API reference.
 
-> **Status: early release (v0.4.3).** Every module in the shared floor below, plus optional
+> **Status: early release (v0.5.3).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
 > [ROADMAP.md](ROADMAP.md) for the full, numbered history.
 >
@@ -119,7 +119,9 @@ them rather than pretending otherwise:
 | cross-origin images | an `<img>` from a sibling file taints a WebGL texture in Chrome | assets travel as `data:` URIs inside those scripts |
 
 The practical effect: resources are **compiled at build time**, so at runtime every lookup
-is synchronous. Game code never awaits an asset.
+is synchronous. Game code never awaits an asset. The developer-side scripts behind this
+and the other workflows (translation editing, benchmarks, packaging) are listed in
+[tools.md](tools.md).
 
 ## Capability spec
 
@@ -144,15 +146,16 @@ only some do.
 | | camera with follow, pan, shake and zoom | `mwg/two-d/render` |
 | | particle effects | `mwg/two-d/render` |
 | | screen transitions: fade, flash, tint | `mwg/two-d/render` |
-| **ui** | windows, lists, tooltips | `mwg/two-d/ui` |
+| **ui** | windows, lists, tooltips, markdown labels | `mwg/two-d/ui` |
 | | text and fonts, including non-latin fallback | PixiJS |
 | | pointer, keyboard and gamepad input with rebinding | `mwg/core` |
 | **text** | message tables per language, compiled at build time | `mwg/i18n` |
-| | plurals, gendered forms and interpolation | `mwg/i18n` |
+| | plurals, gendered forms, interpolation, and Python f-string-style format specs | `mwg/i18n` |
 | | Fluent-style FTL catalogs with locale-aware fallback and variants | `mwg/i18n` |
 | | left-to-right, right-to-left and vertical writing | `mwg/i18n` |
 | | interface mirrored for right-to-left languages | `mwg/two-d/ui` |
 | | a missing translation falls back rather than showing a key | `mwg/i18n` |
+| | per-message sound cues as an `audio` channel, edited in a split-screen CLI | `mwg/i18n` + `tools/i18n-edit` |
 | **audio** | sound effects with pooling, music with crossfade | `mwg/audio` |
 
 ### World

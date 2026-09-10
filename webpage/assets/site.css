@@ -410,58 +410,6 @@ th:first-child {
 	white-space: nowrap;
 }
 
-/* -------------------------------------------------------------- roadmap */
-
-.roadmap {
-	display: grid;
-	gap: 0;
-	counter-reset: step;
-}
-
-.roadmap li {
-	list-style: none;
-	display: grid;
-	grid-template-columns: 3rem 1fr auto;
-	align-items: baseline;
-	gap: 1rem;
-	padding: 0.7rem 0;
-	border-bottom: 1px solid var(--line);
-	counter-increment: step;
-}
-
-.roadmap li::before {
-	content: counter(step, decimal-leading-zero);
-	font-family: var(--font-display);
-	color: var(--muted);
-	font-size: 0.85rem;
-}
-
-.roadmap li.done::before {
-	color: var(--moss);
-}
-
-.roadmap .label {
-	color: var(--paper);
-}
-
-.roadmap li.done .label {
-	color: var(--muted);
-	text-decoration: line-through;
-	text-decoration-color: var(--line-strong);
-}
-
-.roadmap .status {
-	font-family: var(--font-display);
-	font-size: 0.72rem;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	color: var(--muted);
-}
-
-.roadmap li.done .status {
-	color: var(--moss);
-}
-
 /* -------------------------------------------------------------- footer */
 
 .site-footer {

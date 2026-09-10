@@ -238,9 +238,32 @@ barrier.absorb(15);     // drains the ward first, then the shield</code></pre>
 						</p>
 					</article>
 
-					<article class="panel feature-card">
-						<p class="module-tag">mwg/battle</p>
-						<h2>A bounded stage ladder as one modifier, not one per stage</h2>
+				<article class="panel feature-card">
+					<p class="module-tag">mwg/i18n + mwg/two-d/ui + mwg/audio</p>
+					<h2>A hit message is text, sound, and layout wearing one string</h2>
+					<p>
+						A combat line is never just characters: it carries a variable, emphasis on
+						two words, and a sound cue - and the translator editing it sees none of that
+						structure, so a dropped token reaches the player as a raw
+						<code>{HP_loose}</code>.
+					</p>
+					<p class="the-trick">
+						One semantic message renders several ways from one catalog entry: the log
+						line, a compact HUD number, an accessibility announcement, a debug dump, and
+						the <code>audio</code> channel holding the sound path itself. Placeholders take
+						Python f-string specs (<code>{HP_loose:02d}</code>), markdown spans
+						(<code>*hit*</code>, <code>**die**</code>) draw through
+						<code>RichLabel</code> and reveal progressively without leaking markers, and
+						<code>diffPlaceholders</code> fails the translation check when the French line
+						drops a token. <a href="../examples/view.html?ex=string-editor">Try the string editor</a>.
+					</p>
+					<pre><code>t('player.hit.log', { HP_loose: 12 })
+// "You're *hit*. You loose 12. You **die**!"</code></pre>
+				</article>
+
+				<article class="panel feature-card">
+					<p class="module-tag">mwg/battle</p>
+					<h2>A bounded stage ladder as one modifier, not one per stage</h2>
 						<p>
 							A naive "+1/-1 stat stage" system adds a new modifier on every stage change,
 							leaving stray modifiers behind unless the game remembers to remove exactly the

@@ -2836,3 +2836,97 @@ rather than someone else's build.
      `Camera` turned out not to belong on this list once actually read: it holds no sprite and
      has no colour concept of its own, only a `Container` used as a positional grouping, so
      there was nothing there to document.
+
+184. ~~requested directly: a command-line translation editor with a split screen (reference
+     language left, translation right), free choice of which language stands on which side,
+     and a per-string sound association. Resolved mid-item into the semantic specification
+     rather than a parallel map: a cue is an ordinary `<type>.audio` entry holding a sound
+     path, read by a new `audio` channel on the semantic formatter (`format(message,
+     'audio')`), played game-side through `mwg/audio`'s `Sound` - one simulation event,
+     several presentations, sound among them. The channel resolves through a new `tRaw`
+     (same lookup and interpolation as `t()`, without typographic spacing or RTL wrapping,
+     either of which would corrupt a path) and returns `''` rather than a key when no cue
+     is declared; unlike text channels it never falls back to a bare type holding a
+     sentence, which is not a playable path. `validateMessageAudio` flags empty and
+     non-string audio entries. The editor itself is `tools/i18n-edit.mjs` (a terminal TUI
+     in the ne shape, no dependencies): JSON and FTL auto-detected per file, `x` swaps the
+     sides, `s` sets the cue (a channel key shares its semantic family's `<type>.audio`,
+     one cue per family), `w` saves following the target's own extension, and `--check`
+     reports missing/extra keys, structural and audio issues, completeness, and cue files
+     missing from disk for CI. The pure session core (`i18n/EditSession.ts`) is unit-tested
+     separately from the terminal rendering, the same split the tool draws between catalog
+     arithmetic and file IO.~~
+
+185. ~~requested directly: catalog placeholders shaped like Python f-strings
+     (`{dmg:03d}`, `{hp:.1%}`, `{name:>12}`), per
+     https://docs.python.org/3/library/string.html#format-specification-mini-language -
+     plain `{token}` interpolation already existed, the format-spec mini-language did not.
+     `i18n/formatSpec` implements the `[[fill]align][sign][z][#][0][width][,|_]
+     [.precision][type]` subset (`b c d e E f F g G n o s x X %`), wired into `t()`/`tRaw`
+     alongside `!s`/`!r`/`!a` conversions and `=` debugging, and into FTL parsing so
+     `{$dmg:03d}` survives a catalog file. Verified case by case against CPython's own
+     output before being written into tests (which caught four real divergences: `c`
+     aligning right, `_` grouping hex in fours, precision-without-a-type going exponential
+     one digit sooner than `g`, zero-padding a string left-aligned). An ill-fitting spec
+     leaves its placeholder untouched rather than throwing, the same grace a missing token
+     already gets. The one divergence nothing can close: JavaScript numbers carry no
+     int/float distinction, so integer-valued floats always take the integer path (`3.0`
+     renders as `3`), documented on the function itself.~~
+
+186. ~~requested directly: UI text managing basic markdown
+     (https://www.markdownguide.org/basic-syntax/, minimally bold and italic).
+     `two-d/ui`'s `Label` styles the whole string or nothing, so inline spans needed a
+     different renderer rather than an option: `RichLabel` draws through Pixi `HTMLText`
+     (`**bold**`, `__bold__`, `*italic*`, `_italic_`, combined `***both***`, backslash
+     escapes), theme-aware like `Label` with the same `setText` re-render guard. The
+     parsing is pure (`parseMarkdown`/`stripMarkdown` in `ui/markdown.ts`, unit-tested
+     headless: sequential per-kind pairing, intra-word underscores left alone, unmatched
+     markers literal); the widget itself is type-checked and reviewed rather than unit-
+     tested, since measuring text needs a canvas this suite has none of - the same reason
+     `Label` and `HelpScreen` carry no renderer tests either. Documented as heavier than
+     `Label` (descriptions and help bodies, not per-frame numbers) and unsuitable for
+     `MessageBox`'s typewriter reveal, where a half-shown marker would read literally.~~
+
+187. ~~requested directly: f-string parsing and markdown rendering inside `tools/i18n-edit`
+     itself. Both panes already showed raw source, so a dropped `{dmg:03d}` and a broken
+     `**bold**` were equally invisible until runtime. The panes now preview markdown as
+     terminal bold/italic (`v` toggles raw source for editing), flag placeholder drift
+     with a `≠` marker and per-row detail, hint the needed tokens in the edit prompt, and
+     report both in `--check` mode (a mismatch fails the check like a missing key).
+     Backed by `i18n.tokenizeMessage`/`diffPlaceholders` - the placeholder grammar factored
+     out of `t()`'s own interpolation into one shared definition, so the check cannot
+     disagree with the runtime about what counts as a placeholder.~~
+
+188. ~~requested directly: progressive display in `ui`, beyond `MessageBox`'s own typewriter
+     (`speed` characters per second, already shipped long before this item). The missing
+     piece was a reusable primitive: `ui/reveal.ts` (`startReveal`/`advanceReveal`/
+     `completeReveal`/`revealComplete`, pure and unit-tested) now sits behind
+     `Label.showProgressive`/`updateReveal` and `RichLabel`'s markdown-aware counterpart,
+     which counts visible characters through `ui.sliceSpans` so markers never count toward
+     the total nor leak half-shown - exactly what a plain slice over the source would get
+     wrong. `MessageBox` was reworked onto the same primitive with zero behaviour change
+     (its confirm-completes-then-advances rule untouched), so one implementation serves
+     all three rather than three parallel counters.~~
+
+189. ~~requested directly: a shortcut (`Ctrl+P`, free in the tool's keymap) in `i18n:edit`
+     to play the sound cue on the current row. A dependency-free tool cannot bundle audio
+     playback, so `playerCandidates` delegates to the OS player (`afplay` on macOS,
+     format-matched `aplay`/`paplay` before general `ffplay` elsewhere, Windows WAV via
+     SoundPlayer with single-quote escaping), falling through only on `ENOENT` - a player
+     that runs and rejects the file reports its own error instead. `MWG_SFX_PLAYER`
+     replaces the list with one command when none fit; `platform` is injectable so the
+     selection is unit-tested without spawning anything. Plain `p` stays deliberately
+     unbound, remote `data:`/`http` cues and missing files report instead of playing, and
+     playback never blocks the interface (it resolves back into the status line).~~
+
+190. ~~requested directly: the string editor on the website, as an `examples/` page with a
+     default string, usable sounds, and a preconfigured variable - `examples/string-editor`
+     shows `You're *hit*. You loose {HP_loose}. You **die**!` beside an editable French
+     translation, rendered live through `RichLabel` with an adjustable `HP_loose`,
+     placeholder-drift warnings via `diffPlaceholders`, and blip/hit/pickup cues where the
+     string's own cue fires on the progressive reveal. Wired through the existing pipeline
+     (`example:string-editor:build`, `build-webpage-examples`, an `examples-data.js` entry
+     with a generated `20_string_editor` diagram) and featured as its own card on the
+     website's features page, in that page's problem/trick/example voice. Browser-verified
+     from `file://`, including typing, HP changes, cue cycling, the reveal, and the
+     features-to-example link chain.~~

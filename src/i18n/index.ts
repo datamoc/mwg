@@ -102,18 +102,48 @@ export interface MessageParams {
 }
 
 /**
+ * Resolves a message by key, interpolating `{token}` placeholders from `params`, without
+ * any display-text decoration: no `typographic` spacing, no right-to-left isolate wrapping.
+ * This is the resolver for catalog values that are not shown to the player - a sound path
+ * behind the semantic formatter's `audio` channel, an icon id, a font name - where a
+ * narrow no-break space or a bidi control character would corrupt the value rather than
+ * improve it.
+ *
+ * A key present in neither language returns itself, the same as `t()`.
+ *
+ * @example
+ * ```ts
+ * import { setBase, tRaw } from '@datamoc/mw_games/i18n';
+ *
+ * setBase({ locale: 'fr', direction: 'ltr', messages: { 'ui.click.audio': 'sounds/hit!.wav' } });
+ * tRaw('ui.click.audio'); // 'sounds/hit!.wav', with no extra spacing before the '!'
+ * ```
+ */
+export function tRaw(key: string, params?: MessageParams): string {
+	const entry = active?.messages[key] ?? base?.messages[key];
+	if (entry === undefined) return key;
+
+	const text = typeof entry === 'string' ? entry : isFluentMessage(entry) ? entry.format(params) : resolvePlural(entry, params?.count);
+	return params ? interpolate(text, params) : text;
+}
+
+/**
  * Resolves a message by key, interpolating `{token}` placeholders from `params`.
+ *
+ * Placeholders also take Python f-string-style fitting-out: `{dmg:03d}`, `{hp:.1%}`,
+ * `{name:>12}`, plus `!s`/`!r`/`!a` conversions and `=` debugging (`{dmg=}` renders as
+ * `dmg=42`), all resolved through `formatSpec`. A placeholder whose token is missing, or
+ * whose spec fits neither the value nor the supported subset, is left untouched rather
+ * than throwing or rendering half-formatted.
  *
  * A key present in neither language returns itself, which is the only case where a raw key
  * can reach the player - and it means the key was never translated anywhere, not merely
  * missing from one language.
  */
 export function t(key: string, params?: MessageParams): string {
-	const entry = active?.messages[key] ?? base?.messages[key];
-	if (entry === undefined) return key;
+	if (!has(key)) return key;
 
-	const text = typeof entry === 'string' ? entry : isFluentMessage(entry) ? entry.format(params) : resolvePlural(entry, params?.count);
-	const translated = params ? interpolate(text, params) : text;
+	const translated = tRaw(key, params);
 	const resolved = (active ?? base)?.typography === false ? translated : typographic(translated, locale());
 
 	// Canvas 2D's fillText (what every renderer here draws text through) always resolves
@@ -250,10 +280,44 @@ function isFluentMessage(value: PluralForms | FluentMessage): value is FluentMes
 }
 
 function interpolate(text: string, params: MessageParams): string {
-	return text.replace(/\{(\w+)\}/g, (whole, token: string) => {
-		const value = params[token];
-		return value === undefined ? whole : String(value);
-	});
+	return tokenizeMessage(text)
+		.map((part) => (typeof part === 'string' ? part : resolvePlaceholder(part, params)))
+		.join('');
+}
+
+function resolvePlaceholder(part: Placeholder, params: MessageParams): string {
+	const value = params[part.token];
+	if (value === undefined) return part.raw;
+	try {
+		const converted = part.conv === undefined ? value : convertValue(value, part.conv);
+		const formatted = part.spec === undefined ? String(converted) : formatSpec(converted, part.spec, locale());
+		if (formatted === undefined) return part.raw;
+		return part.debug ? `${part.token}=${formatted}` : formatted;
+	} catch {
+		//an absurd width (or anything else down in the formatter that throws) leaves
+		//the placeholder readable rather than aborting the whole message
+		return part.raw;
+	}
+}
+
+/** `!s`/`!r`/`!a` before any `:spec`, the way CPython applies the conversion first */
+function convertValue(value: string | number, conv: string): string | number {
+	if (conv === 's') return String(value);
+	if (typeof value === 'number') {
+		const text = formatSpec(value, '', 'en') ?? String(value);
+		return conv === 'a' ? escapeAscii(text) : text;
+	}
+	const quoted = `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t')}'`;
+	return conv === 'a' ? escapeAscii(quoted) : quoted;
+}
+
+function escapeAscii(text: string): string {
+	let out = '';
+	for (const char of text) {
+		const code = char.codePointAt(0) ?? 0;
+		out += code > 127 ? (code > 0xffff ? `\\U${code.toString(16).padStart(8, '0')}` : `\\u${code.toString(16).padStart(4, '0')}`) : char;
+	}
+	return out;
 }
 
 /** clears both languages, mainly so tests do not leak state into one another */
@@ -271,8 +335,29 @@ export type { SemanticMessage, EntityTextResolver, GrammaticalEntity, MessageCha
 
 export { formatNumber, formatDate, formatList } from './Format.ts';
 
-export { diffCatalogKeys, validateCatalog } from './Validate.ts';
-export type { CatalogKeyDiff, CatalogIssue } from './Validate.ts';
+import { formatSpec, tokenizeMessage, diffPlaceholders, type Placeholder } from './FormatSpec.ts';
+export { formatSpec, tokenizeMessage, diffPlaceholders };
+export type { Placeholder, MessagePart, PlaceholderDiff } from './FormatSpec.ts';
+
+export { diffCatalogKeys, validateCatalog, validateMessageAudio } from './Validate.ts';
+export type { CatalogKeyDiff, CatalogIssue, AudioIssue } from './Validate.ts';
+
+export {
+	AUDIO_SUFFIX,
+	copyFromBase,
+	createEditSession,
+	cueKeyFor,
+	deleteTargetKey,
+	isAudioKey,
+	sessionCompleteness,
+	sessionKeys,
+	sessionRow,
+	sessionRows,
+	setTargetSound,
+	setTargetText,
+	swapSession,
+} from './EditSession.ts';
+export type { EditRow, EditSession, RowFilter } from './EditSession.ts';
 
 export {
 	messageText,

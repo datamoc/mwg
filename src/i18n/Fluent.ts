@@ -65,7 +65,15 @@ export function parseFTL(locale: string, source: string, options: FluentOptions 
 }
 
 function normalize(text: string): string {
-	return text.replace(/\{\s*\$([\w-]+)\s*\}/g, '{$1}').trim();
+	//`{$name}` renders as `{name}`; a conversion or format spec rides along untouched
+	//(`{$dmg:03d}` becomes `{dmg:03d}`), for `t()`'s own f-string handling downstream
+	return text
+		.replace(/\{\s*\$([\w-]+)\s*(?:!([sra]))?\s*(?::\s*([^{}]*?))?\s*\}/g, (_, name: string, conv: string | undefined, spec: string | undefined) => {
+			const conversion = conv ? `!${conv}` : '';
+			const suffix = spec === undefined ? '' : `:${spec.trim()}`;
+			return `{${name}${conversion}${suffix}}`;
+		})
+		.trim();
 }
 
 function selectMessage(locale: string, selectorName: string, variants: Variant[]): { format(params?: MessageParams): string } {

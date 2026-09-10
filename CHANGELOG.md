@@ -7,6 +7,54 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-09-10
+
+Closes ROADMAP items 184-190, the string stack requested directly across one session:
+translation editing (CLI and web), sound cues, f-string specs, markdown, and progressive
+display.
+
+### Added
+- `examples/string-editor` (roadmap item 190) - the string editor as a playable page:
+  an English reference beside an editable French translation, rendered live through
+  `RichLabel` with an adjustable `{HP_loose}` variable, placeholder-drift warnings, and
+  a blip/hit/pickup cue per string that fires on the progressive reveal. Listed on the
+  website's examples page with its own generated diagram.
+- `i18n:edit` cue preview (roadmap item 189) - `Ctrl+P` plays the current row's sound
+  cue through the OS player (`afplay`, `aplay`/`paplay`/`ffplay`, Windows WAV via
+  SoundPlayer; `MWG_SFX_PLAYER` names a replacement), falling through only when the
+  command itself is missing. Plain `p` stays unbound so previews never start by accident.
+- Shared progressive display (roadmap item 188) - `ui.startReveal`/`advanceReveal`/
+  `completeReveal`/`revealComplete` behind `Label.showProgressive`/`updateReveal` and
+  `RichLabel`'s markdown-aware counterpart (markers never count or leak, via
+  `ui.sliceSpans`); `MessageBox` now runs on the same primitive with its
+  confirm-completes-then-advances rule unchanged.
+- `i18n:edit` placeholder and markdown rendering (roadmap item 187) - panes preview
+  markdown as terminal bold/italic (`v` toggles raw source), flag placeholder drift
+  with a `≠` marker and per-row detail, hint the needed tokens in the edit prompt, and
+  report both in `--check` mode. Backed by `i18n.tokenizeMessage`/`diffPlaceholders`,
+  the same grammar `t()` interpolates with, so the check cannot disagree with runtime.
+- `ui.RichLabel`/`parseMarkdown`/`stripMarkdown` (roadmap item 186) - basic inline
+  markdown for UI text (`**bold**`, `*italic*`, combined `***both***`, backslash
+  escapes) through Pixi `HTMLText`. The parser is pure and unit-tested; unmatched
+  markers stay literal. Heavier than `Label`, so meant for descriptions and help
+  bodies, not per-frame numbers or typewriter reveal.
+- `i18n.formatSpec` (roadmap item 185) - Python f-string-style value formatting for
+  catalog placeholders (`{dmg:03d}`, `{hp:.1%}`, `{name:>12}`), with `!s`/`!r`/`!a`
+  conversions and `=` debugging, wired into `t()`/`tRaw` and FTL parsing. Verified case
+  by case against CPython output; an ill-fitting spec leaves its placeholder untouched.
+  The one divergence nothing can close: JavaScript numbers carry no int/float
+  distinction, so integer-valued floats take the integer path.
+- `i18n` semantic `audio` channel (roadmap item 184) - `format(message, 'audio')`
+  resolves `<type>.audio` to a sound path a game plays through `mwg/audio`'s `Sound`,
+  one more presentation of the same simulation event. Resolves raw via the new `tRaw`
+  (no typographic spacing, no RTL wrapping), returns `''` when no cue is declared, and
+  never falls back to a bare type holding a sentence. `validateMessageAudio` flags empty
+  and non-string audio entries.
+- `tools/i18n-edit.mjs` (roadmap item 184) - a split-screen terminal translation editor:
+  reference language left, translation right, either side any language (`x` swaps them),
+  per-string cue editing (`s`, one cue per semantic family), JSON/FTL auto-detection,
+  and a `--check` mode for CI. Pure session logic lives in `i18n/EditSession.ts`.
+
 ## [0.5.2] - 2026-09-09
 
 Closes ROADMAP items 178-182, five ideas raised against a reference game whose `main.ts` had
