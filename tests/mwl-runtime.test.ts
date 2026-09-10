@@ -467,8 +467,11 @@ value=ok
 	assert.deepEqual(messages, [{ text: 'Else' }]);
 	assert.equal(mark, 'ok');
 
-	const outcome = (tag: 'win' | 'lose'): MwlRuntime =>
-		new MwlRuntime(compile(`[game]\n[event]\non=outcome\n[${tag}]\n[/${tag}]\n[/event]\n[/game]`));
+	const outcome = (tag: 'win' | 'lose'): MwlRuntime => {
+		const runtime = new MwlRuntime(compile(`[game]\n[event]\non=outcome\n[${tag}]\n[/${tag}]\n[/event]\n[/game]`));
+		runtime.run('outcome');
+		return runtime;
+	};
 	assert.equal(outcome('win').evaluate(), 'won');
 	assert.equal(outcome('lose').evaluate(), 'lost');
 });
