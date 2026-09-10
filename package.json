@@ -123,6 +123,10 @@
       "types": "./dist/two-d/ui/index.d.ts",
       "import": "./dist/two-d/ui/index.js"
     },
+    "./two-d/pixi-interop": {
+      "types": "./dist/two-d/pixi-interop.d.ts",
+      "import": "./dist/two-d/pixi-interop.js"
+    },
     "./world": {
       "types": "./dist/world/index.d.ts",
       "import": "./dist/world/index.js"
@@ -133,6 +137,8 @@
     "build:pkg": "tsc -p tsconfig.build.json",
     "build:global": "vite build --config vite.lib.config.ts",
     "check": "tsc --noEmit",
+    "api:report": "npm run build:pkg && node tools/api-report.mjs",
+    "api:check": "node tools/api-report.mjs --check",
     "audit": "npm audit --audit-level=high",
     "example": "vite --config examples/colour-transform/vite.config.ts",
     "example:build": "vite build --config examples/colour-transform/vite.config.ts && node tools/emit-page.mjs examples/colour-transform",

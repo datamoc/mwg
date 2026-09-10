@@ -7,10 +7,29 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+- `npm run api:report` / `npm run api:check`, backed by the new committed `API_REPORT.md`:
+  a generated index of every public export and its declaration, so API renames, removals
+  and signature changes are visible in review instead of discovered by consumers.
+  `tests/api-surface.test.ts` emits declarations with `tsc --emitDeclarationOnly` and fails
+  when the committed report drifts; CI also runs `api:check` after the build.
+- `tests/barrel-collisions.test.ts`: a guard that fails when two `export *` sources in the
+  same barrel export the same name, which TypeScript would otherwise resolve by silently
+  exporting neither.
+- `@datamoc/mw_games/two-d/pixi-interop` is now a real published subpath, matching the
+  escape hatch ADR-001 already documented.
+
 ### Changed
 - Documentation page is now the `REFERENCE.md` module guide (with a sidebar TOC), and
   the TypeDoc symbol dump lives under `documentation/api/` instead of being the front
   door.
+- ROADMAP.md: the last open item (175, the `pixi.js` dependency-shape question) is closed
+  by decision - `pixi.js` stays a direct dependency for the 0.x line and moves to an
+  optional peer dependency with 1.0. The stale priority prose is replaced with a current
+  statement, and the new "Parked decisions" and "1.0 exit checklist" sections record what
+  actually remains before 1.0.
+- ADR-001's known gap is narrowed: `Sprite2D` closed the constructible-sprite half; the
+  remaining value-level exception is the one documented pixi-interop file.
 
 ## [0.5.4] - 2026-09-10
 
