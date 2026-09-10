@@ -101,6 +101,30 @@
 				<div class="feature-grid">
 
 					<article class="panel feature-card">
+						<p class="module-tag">mwg/mwl</p>
+						<h2>Author content once, compile it before play</h2>
+						<p>
+							Maps, units, items, events, translations, and asset paths should not be scattered
+							through a game's TypeScript. That makes content harder to review and forces the
+							browser to carry a parser it does not need.
+						</p>
+						<p class="the-trick">
+							MWL is a WML-inspired, game-neutral authoring layer. The <code>mwl build</code>
+							pipeline reads <code>.mwl</code> files and emits compiled game data, an i18n
+							catalog, and an asset manifest. The game keeps its own rules through hook
+							references, while the runtime consumes generated data directly.
+							<a href="../examples/view.html?ex=mwl-content">Try the MWL example</a>.
+						</p>
+						<pre><code>[unit_type]
+  id=Spearman
+  hitpoints=36
+  movement=5
+[/unit_type]
+
+npm run mwl -- build content/ -o generated/</code></pre>
+					</article>
+
+					<article class="panel feature-card">
 						<p class="module-tag">mwg/core</p>
 						<h2>Declarative reactions, not an <code>if</code> cascade</h2>
 						<p>

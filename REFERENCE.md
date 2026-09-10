@@ -53,7 +53,7 @@ Three rules the whole API follows, so a name means one thing everywhere:
 [core](#core) · [two-d](#two-d) · [render](#render) · [ui](#ui) · [stage](#stage) ·
 [assets](#assets) · [audio](#audio) · [battle](#battle) · [board](#board) ·
 [actors](#actors) · [roguelike](#roguelike) · [rpg](#rpg) · [simulation](#simulation) ·
-[three-d](#three-d-optional) · [world](#world) · [i18n](#i18n)
+[three-d](#three-d-optional) · [world](#world) · [i18n](#i18n) · [mwl](#mwl)
 
 ## `core`
 
@@ -710,3 +710,29 @@ Message tables, plurals, interpolation, and direction - pure logic, no Pixi depe
 - `mergeCatalogKeys` - drops a merged key from one catalog, keeping the surviving key's text
   untouched; rewriting call sites that used the merged key stays the caller's own job, the
   same boundary `catalogUsage`'s `referencedKeys` already draws.
+
+## `mwl`
+
+MWL is the build-time, game-neutral content layer. It uses a WML-inspired syntax for data
+such as units, items, maps, events, AI hooks, translations, and asset references. The runtime
+consumes generated data and does not parse `.mwl` source files in the browser.
+
+- `mwl build` - reads one file or a directory of `.mwl` files in stable path order and emits
+  `game-data.ts`, `i18n.json`, and `assets.json` in one step.
+- `mwl validate` - checks syntax and content structure without generating runtime files.
+- `mwl compile`/`mwl extract-i18n`/`mwl hooks` - lower-level commands for a generated module,
+  translation extraction, or hook manifest when a build pipeline needs separate outputs.
+- `parse`/`compile`/`validate`/`extractI18n` - the programmatic compiler surface exported from
+  `@datamoc/mw_games/mwl`; games provide their own hook implementations and interpret
+  game-specific effects.
+
+Typical build-time usage:
+
+```sh
+npm run mwl -- build content/ -o generated/
+```
+
+The executable [`mwl-content` example](../examples/view.html?ex=mwl-content) shows the full
+path: authored content, generated catalog and manifests, then a small game reading the result
+at runtime. A Wesnoth adapter can convert native `.cfg` files to the same MWL input model
+before invoking this build step.

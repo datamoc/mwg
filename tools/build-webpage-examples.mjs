@@ -40,6 +40,7 @@ const scripts = {
 	'world-transition': 'example:world-transition:build',
 	'event-system': 'example:event-system:build',
 	headless: 'example:headless:build',
+	'mwl-content': 'example:mwl-content:build',
 };
 
 for (const [name, script] of Object.entries(scripts)) {

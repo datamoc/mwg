@@ -184,6 +184,14 @@ window.MWG_EXAMPLES = [
 		title: 'Headless simulation',
 		description: '<code>mwg/simulation</code>\'s <code>runScenario</code>/<code>advanceToInput</code>, with no rendering, map, or sprite at all - the one example that would work identically with no page around it.',
 	},
+	{
+		id: 'mwl-content',
+		level: 'tech',
+		title: 'MWL content pipeline',
+		description:
+			'A small game consumes MWL files compiled at build time into game data, translations, and an asset manifest. The page shows the generated catalog without parsing MWL in the browser.',
+		controls: 'open the page to inspect the compiled units, items, maps, events, and AI hooks',
+	},
 ];
 
 window.MWG_EXAMPLE_LEVELS = {
