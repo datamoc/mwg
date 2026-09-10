@@ -7,6 +7,17 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.5.5] - 2026-09-10
+
+Accessibility reaches the framework floor: a reduced-motion switch the tween, particle, camera
+and screen-effect paths already consult, WCAG contrast helpers for a `theme` palette, and a
+screen-reader bridge `Window` and `MessageBox` announce through. The verification story catches
+up as well - a published-package `file://` smoke, a bundle-size budget, a coverage floor,
+cross-version save fixtures and a build of every example, all gated in CI. `Blob` moves to
+`core` (a breaking import change) with a per-cell `clear`, `assets.load` can rasterize a vector
+source at a chosen resolution, and a new benchmark settles the CSS/SVG-animation question in
+Pixi's favour.
+
 ### Added
 - `assets.load(paths, { resolution })` (roadmap item 198): rasterizes a vector source (SVG)
   at a multiple of its intrinsic size instead of only at intrinsic size, so a game that zooms
