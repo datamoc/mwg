@@ -16,6 +16,7 @@ npm run build            # build the npm package and standalone global IIFE
 npm run audit            # fail on high or critical dependency advisories
 npm run assets           # generate example tiles and sounds
 npm run visual:smoke     # screenshot one built example from file:// and check it rendered
+npm run visual:smoke:ui  # build the interface example first, then smoke it
 npm run webpage:examples # rebuild playable example pages for the website
 npm run webpage:docs     # rebuild the generated API documentation
 ```
