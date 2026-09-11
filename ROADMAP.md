@@ -3571,9 +3571,21 @@ it.
      makes a replay deterministic within MWG; a port consuming the raw 32-bit stream lines up with
      the reference engine exactly. The `Random`/`Generator` xoshiro path is unchanged and still the
      default. Eleven tests.
-267. [Medium] Turns as Wesnoth counts them (Ne correspond pas). `simulation/Turns.ts` is a cost
+267. ~~[Medium] Turns as Wesnoth counts them (Ne correspond pas). `simulation/Turns.ts` is a cost
      scheduler and `world/TurnClock`/`EnvironmentClock` are generic day phases; there is no
-     side/round/schedule model and no per-hex `lawful_bonus`.
+     side/round/schedule model and no per-hex `lawful_bonus`.~~ Landed as `world.SideTurns`, the
+     outer scenario loop, deliberately separate from `TurnClock` (one actor's timed effects) and
+     `simulation.Scheduler` (energy order within a side). Sides take turns in the declared order;
+     wrapping past the last opens a new round and steps the time-of-day schedule on one entry,
+     cycling, which is the reference's turn/round distinction. A `TimeOfDay` carries the
+     `lawfulBonus` a game's `[time]` writes, `alignmentBonus` turns it into a unit's own bonus for
+     the four alignments (lawful takes it, chaotic its negation, neutral/liminal ignore the time),
+     and a `TimeArea` overrides the schedule for part of the map - the first containing area wins,
+     a shorter area schedule falls back to the global entry - which is what makes the bonus per-hex
+     rather than global. `lawfulBonusAt(alignment, x, y)` is the one call a damage formula needs.
+     `toJSON`/`fromJSON` resume the exact round/side/time position, and malformed configuration
+     (no sides, no schedule, out-of-range indices) throws up front. Thirteen tests in
+     `tests/side-turns.test.ts`.
 268. ~~[High] Shared team vision (Ne correspond pas). `FactionFog` (`src/board/FogOfWar.ts`) is
      per-faction with no union of allies' vision, which is what `share_vision` means.~~ Landed:
      `FactionFog.share(factions)` puts factions on one map, for what is lit now and for the shroud
@@ -3800,6 +3812,38 @@ only for the square grid they are easiest to reason about.
      on every tile, which is worth measuring before it is adopted the way 254 and the batcher were.
      Also worth deciding here: whether "rotation" means the camera turning or the world turning,
      which only shows up once terrain has a light direction or a shadow.
+287. [Low] `Assets.load` missing-asset policy. There is no way to ask for an optional asset;
+     a caller that wants one has to wrap `assetUrl` in try/catch and fall back to
+     `Texture.EMPTY` by hand. An `onMissing` handler or a per-path `optional` flag would move
+     that glue into the framework once a second caller needs it.
+288. [Low] `applyImageModifiers`'s `GS` sets `sprite.filters = [filter]`, replacing whatever
+     filters were already on the sprite rather than appending to them. Fine while `GS` is the
+     only filter a caller applies; worth fixing to append once 255 adds more filter-shaped
+     modifiers that can legitimately stack with it.
+289. [Medium] Category-shaped crafting ingredients. `actors/craft.d.ts`'s recipe ingredient is
+     `{ id: string; quantity: number }` only: one exact item id, no "any item of this kind".
+     A recipe that wants "any herb plus any runestone" cannot be expressed and has to be left
+     unported. Generic shape, no reference-specific vocabulary: `id: string | string[] | {
+     category: string }`, or a `matches(item)` predicate on the ingredient.
+290. [Medium] `ui.Window.close()` destroys the instance it is called on (`destroy({children:
+     true})`), so the ordinary `this.someWindow = w` pattern followed by a later `w.x = ...`
+     throws on a null internal rather than failing predictably. Either a `destroyed` getter
+     callers can guard on, a doc note that the instance is spent after `close()`, or splitting
+     `close()` into a detach-only step with `destroy()` staying explicit.
+291. [Low] Sprite attachments: a shadow flat under a sprite, a status icon floating above it.
+     `StatusVisuals` only tints; nothing owns a second sprite's position relative to a first
+     one with its own lifetime. Needs its own shape (attachment lifetimes differ per game),
+     not a copy of one game's version.
+292. [Low] A temporised line-between-two-points visual (a lightning arc, a tether). No
+     dedicated helper in `two-d/render` for a line that animates between two arbitrary world
+     points over time; games building one draw it by hand.
+293. [Medium] The value-level Pixi facade item 167 shipped covers `Container`/`Texture`/
+     `Rectangle`, but `Sprite` (used directly, unwrapped, in roughly a dozen call sites),
+     `Graphics`, `FillGradient` and `TilingSprite`, plus the `extensions.add(...)` calls that
+     register `TilingSpritePipe`/`NineSliceSpritePipe`, still force `import 'pixi.js'`
+     wherever a game touches them. The pipe-registration piece is the same class of footgun
+     as any other missing-extension black-screen bug: worth a supported registration story,
+     not just a type.
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list

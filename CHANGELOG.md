@@ -35,6 +35,9 @@ the public API may still change between minor versions.
 - `i18n.parsePo`/`PoOptions` (item 270): a gettext `.po` loader into the same `Catalog` surface
   as `parseFTL`, with `msgctxt`, `msgstr[N]` mapped onto the locale's CLDR categories,
   untranslated entries left out for base fallback, and gettext `domain`-prefixed keys.
+- `world.SideTurns`/`SideTurn`/`TimeOfDay`/`TimeArea`/`Alignment`/`alignmentBonus` (item 267): the
+  reference's outer turn model, sides in order with a schedule that steps per round, and a per-hex
+  `lawfulBonusAt` where a `TimeArea` overrides the global time of day.
 - `ai.personalScoreView`/`ai.sideScoreView`/`ai.scoreWith`, over `ScoreSubject`/`ScoreView`/
   `ScorePersonality` (items 274-276): the numbers a mind needs when a search is the wrong tool.
   The game supplies what anything is worth, the framework assembles the view (own, allies and

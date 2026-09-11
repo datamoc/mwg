@@ -8422,6 +8422,10 @@ build instead.
 
 ## `./world`
 
+### `alignmentBonus` (function)
+
+    export declare function alignmentBonus(alignment: Alignment, lawfulBonus: number): number;
+
 ### `EnvironmentClock` (class)
 
     export declare class EnvironmentClock {
@@ -8459,6 +8463,32 @@ build instead.
 ### `rollEncounter` (function)
 
     export declare function rollEncounter<T>(table: EncounterTable<T>): T | null;
+
+### `SideTurns` (class)
+
+    export declare class SideTurns {
+        readonly sides: readonly string[];
+        readonly schedule: readonly TimeOfDay[];
+        private readonly areas;
+        private state;
+        constructor(options: SideTurnsOptions);
+        get round(): number;
+
+        get side(): string;
+        get timeIndex(): number;
+
+        get timeOfDay(): TimeOfDay;
+        get snapshot(): SideTurnState;
+
+        timeOfDayAt(x: number, y: number): TimeOfDay;
+
+        lawfulBonusAt(alignment: Alignment, x: number, y: number): number;
+
+        advance(): SideTurn;
+        toJSON(): SideTurnState;
+
+        static fromJSON(options: SideTurnsOptions, state: SideTurnState): SideTurns;
+    }
 
 ### `TurnClock` (class)
 

@@ -7,3 +7,5 @@ export { rollEncounter } from './Encounters.ts';
 export type { EncounterEntry, EncounterTable } from './Encounters.ts';
 export { EnvironmentClock } from './Environment.ts';
 export type { DayPhase, EnvironmentSnapshot, EnvironmentOptions } from './Environment.ts';
+export { SideTurns, alignmentBonus } from './SideTurns.ts';
+export type { Alignment, TimeOfDay, TimeArea, SideTurnsOptions, SideTurn, SideTurnState } from './SideTurns.ts';

@@ -4,8 +4,8 @@
 	"version": "0.7.6",
 	"releaseDate": "2026-09-11",
 	"source": {
-		"files": 248,
-		"lines": 35739,
+		"files": 249,
+		"lines": 35943,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -40,8 +40,8 @@
 			},
 			{
 				"name": "i18n",
-				"files": 9,
-				"lines": 1633
+				"files": 10,
+				"lines": 1835
 			},
 			{
 				"name": "rpg",
@@ -81,14 +81,14 @@
 			{
 				"name": "world",
 				"files": 6,
-				"lines": 394
+				"lines": 396
 			}
 		]
 	},
 	"tests": {
-		"files": 181,
-		"lines": 22738,
-		"cases": 1653
+		"files": 182,
+		"lines": 22874,
+		"cases": 1670
 	},
 	"tools": {
 		"files": 35,
@@ -122,10 +122,10 @@
 		]
 	},
 	"roadmap": {
-		"items": 286,
-		"completed": 264,
-		"open": 22,
-		"percent": 92
+		"items": 293,
+		"completed": 265,
+		"open": 28,
+		"percent": 90
 	},
 	"api": {
 		"declarationFiles": 0
@@ -133,7 +133,7 @@
 	"bundle": {
 		"globalRaw": 941520,
 		"globalGzip": 279972,
-		"distRaw": 2761903
+		"distRaw": 2772132
 	},
 	"quality": {
 		"testToSourceRatio": 0.6

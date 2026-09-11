@@ -703,6 +703,11 @@ tissue between scenes.
 - `EnvironmentClock`/`DayPhase`/`EnvironmentSnapshot` - a continuous day/night-phase and
   weather clock above any one encounter, driven by `update(dt)` in real seconds, with change
   notifications and `toJSON`/`fromJSON`.
+- `SideTurns`/`SideTurn`/`TimeOfDay`/`TimeArea`/`Alignment`/`alignmentBonus` - the reference
+  strategy game's outer turn model: sides take turns in order, a round is all of them, and the
+  time-of-day schedule steps on per round. `lawfulBonusAt` applies a unit's alignment to the
+  current time's `lawfulBonus`, and a `TimeArea` overrides the schedule for part of the map,
+  which is what makes the bonus per-hex. `toJSON`/`fromJSON` resume the exact position.
 
 ## `i18n`
 
