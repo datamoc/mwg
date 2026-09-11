@@ -2,7 +2,7 @@ import type { MwlCompiledGame, MwlCompiledNode } from './compiler.ts';
 import type { MwlDiagnostic, MwlLocation } from './grammar.ts';
 
 /**
- * The hook boundary described in `4MWG/ARCHITECTURE.md`. Hooks are the only
+ * The hook boundary described in the MWG architecture documentation. Hooks are the only
  * place JavaScript appears in MWL content. They are referenced by
  * `type:name`, resolved by the tooling, and bundled ahead of time; the runtime
  * never evaluates JavaScript from content.

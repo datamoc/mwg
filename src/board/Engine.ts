@@ -1,3 +1,4 @@
+import { alphaBetaSearch, type AlphaBetaGame } from '../ai/search.ts';
 import {
 	applyMove,
 	cloneChess,
@@ -69,57 +70,49 @@ export function chooseMove(state: ChessState, options: ChessEngineOptions = {}):
  */
 export function search(state: ChessState, options: ChessEngineOptions = {}): ChessSearchResult {
 	const depth = Math.max(1, Math.floor(options.depth ?? 3));
-	const maxNodes = options.maxNodes === undefined ? Infinity : Math.max(1, Math.floor(options.maxNodes));
-	const moves = orderedMoves(state, legalMoves(state));
-	if (moves.length === 0) return { move: null, score: terminalScore(state, 0), nodes: 1 };
-
-	let nodes = 0;
-	let bestMove = moves[0];
-	let bestScore = -Infinity;
-	let alpha = -Infinity;
-	for (const move of moves) {
-		if (nodes >= maxNodes) break;
-		const next = cloneChess(state);
-		applyMove(next, move);
-		const score = -negamax(next, depth - 1, -Infinity, -alpha, 1);
-		if (score > bestScore) {
-			bestScore = score;
-			bestMove = move;
-		}
-		alpha = Math.max(alpha, score);
-	}
-	return { move: bestMove, score: bestScore, nodes };
-
-	function negamax(position: ChessState, remaining: number, low: number, high: number, ply: number): number {
-		if (nodes >= maxNodes) return evaluate(position);
-		nodes++;
-		const result = gameResult(position);
-		if (result !== 'ongoing') return terminalScore(position, ply);
-		if (remaining === 0) return evaluate(position);
-
-		let value = -Infinity;
-		for (const move of orderedMoves(position, legalMoves(position))) {
-			const next = cloneChess(position);
-			applyMove(next, move);
-			value = Math.max(value, -negamax(next, remaining - 1, -high, -low, ply + 1));
-			low = Math.max(low, value);
-			if (low >= high) break;
-		}
-		return value;
-	}
+	const maxNodes = options.maxNodes === undefined ? 100_000 : Math.max(1, Math.floor(options.maxNodes));
+	const result = alphaBetaSearch(chessGame, state, { depth, maxNodes });
+	return { move: result.move, score: result.score, nodes: result.nodes };
 }
 
-function evaluate(state: ChessState): number {
+/**
+ * The chess rules adapter consumed by the shared `ai.alphaBetaSearch` primitive.
+ *
+ * @example
+ * ```ts
+ * import { chessGame, startingChess } from '@datamoc/mw_games/board';
+ * import { alphaBetaSearch } from '@datamoc/mw_games/ai';
+ *
+ * const result = alphaBetaSearch(chessGame, startingChess(), { depth: 2 });
+ * console.log(result.move !== null); // true
+ * ```
+ */
+export const chessGame: AlphaBetaGame<ChessState, ChessMove> = {
+	currentPlayer: (state) => (state.turn === 'white' ? 1 : -1),
+	moves: (state) => orderedMoves(state, legalMoves(state)),
+	apply: (state, move) => {
+		const next = cloneChess(state);
+		applyMove(next, move);
+		return next;
+	},
+	isTerminal: (state) => gameResult(state) !== 'ongoing',
+	evaluate: (state, rootPlayer) =>
+		gameResult(state) === 'ongoing' ? evaluate(state, rootPlayer) : terminalScore(state, rootPlayer),
+};
+
+function evaluate(state: ChessState, rootPlayer: number): number {
 	let score = 0;
 	for (const piece of state.board) {
 		if (piece) score += (piece.side === 'white' ? 1 : -1) * PIECE_VALUE[piece.kind];
 	}
-	return state.turn === 'white' ? score : -score;
+	return rootPlayer === 1 ? score : -score;
 }
 
-function terminalScore(state: ChessState, ply: number): number {
-	if (!inCheck(state, state.turn)) return 0;
-	return -MATE + ply;
+function terminalScore(state: ChessState, rootPlayer: number): number {
+	const result = gameResult(state);
+	if (result === 'stalemate' || !inCheck(state, state.turn)) return 0;
+	const winner = result === 'white-wins' ? 1 : -1;
+	return winner === rootPlayer ? MATE : -MATE;
 }
 
 function orderedMoves(state: ChessState, moves: ChessMove[]): ChessMove[] {

@@ -1,10 +1,37 @@
 import type { MwlCompiledGame, MwlCompiledNode } from './compiler.ts';
+import { coerceTableValue, parseTableColumns, type MwlTableColumn } from './schema.ts';
+import {
+	booleanAttribute,
+	enumAttribute,
+	flattenNodes,
+	integerAttribute,
+	numberAttribute,
+	requiredAttribute,
+} from './utils.ts';
+
+const required = requiredAttribute;
+const num = numberAttribute;
+const integer = integerAttribute;
+const bool = booleanAttribute;
+const enumValue = enumAttribute;
 
 export interface MwlEffectDefinition {
 	readonly applyTo: string;
 	readonly operation?: string;
 	readonly value?: string;
 	readonly range?: string;
+}
+export interface MwlTableDefinition {
+	readonly id: string;
+	readonly columns: readonly MwlTableColumn[];
+	readonly rows: readonly Readonly<Record<string, unknown>>[];
+}
+export interface MwlCampaignDefinition {
+	readonly id: string;
+	readonly name?: string;
+	readonly title?: string;
+	readonly description?: string;
+	readonly startScene?: string;
 }
 export interface MwlItemDefinition {
 	readonly id: string;
@@ -74,9 +101,20 @@ export interface MwlAiDefinition {
 	readonly strategy?: string;
 	readonly target?: string;
 	readonly difficulty?: number;
+	readonly scope?: 'actor' | 'controller';
+	readonly provider?: 'javascript' | 'lua';
+	readonly algorithm?: 'rules' | 'alpha_beta';
+	readonly depth?: number;
+	readonly maxNodes?: number;
+	readonly player?: string;
+	readonly moves?: string;
+	readonly apply?: string;
+	readonly terminal?: string;
+	readonly evaluate?: string;
 	readonly behaviors: readonly MwlBehaviorDefinition[];
 }
 export interface MwlContentCatalog {
+	readonly campaigns: readonly MwlCampaignDefinition[];
 	readonly items: readonly MwlItemDefinition[];
 	readonly monsters: readonly MwlMonsterDefinition[];
 	readonly statuses: readonly MwlStatusDefinition[];
@@ -86,11 +124,21 @@ export interface MwlContentCatalog {
 	readonly moves: readonly MwlMoveDefinition[];
 	readonly typeMatchups: readonly MwlTypeMatchupDefinition[];
 	readonly evolutions: readonly MwlEvolutionDefinition[];
+	readonly tables: readonly MwlTableDefinition[];
 }
 
 export function contentCatalog(game: MwlCompiledGame): MwlContentCatalog {
-	const nodes = flatten(game.roots);
+	const nodes = flattenNodes(game.roots);
 	return {
+		campaigns: nodes
+			.filter((node) => node.tag === 'campaign')
+			.map((node) => ({
+				id: required(node, 'id'),
+				name: node.attributes.name,
+				title: node.attributes.title,
+				description: node.attributes.description,
+				startScene: node.attributes.start_scene,
+			})),
 		items: nodes
 			.filter((node) => node.tag === 'item')
 			.map((node) => ({
@@ -151,6 +199,16 @@ export function contentCatalog(game: MwlCompiledGame): MwlContentCatalog {
 				strategy: node.attributes.strategy,
 				target: node.attributes.target,
 				difficulty: num(node, 'difficulty'),
+				scope: enumValue(node.attributes.scope, ['actor', 'controller']),
+				provider: enumValue(node.attributes.provider, ['javascript', 'lua']),
+				algorithm: enumValue(node.attributes.algorithm, ['rules', 'alpha_beta']),
+				depth: integer(node, 'depth'),
+				maxNodes: integer(node, 'max_nodes'),
+				player: node.attributes.player,
+				moves: node.attributes.moves,
+				apply: node.attributes.apply,
+				terminal: node.attributes.terminal,
+				evaluate: node.attributes.evaluate,
 				behaviors: node.children
 					.filter((child) => child.tag === 'behavior')
 					.map((child) => ({
@@ -183,6 +241,32 @@ export function contentCatalog(game: MwlCompiledGame): MwlContentCatalog {
 				into: required(node, 'into'),
 				level: integer(node, 'level', 1)!,
 			})),
+		tables: nodes.filter((node) => node.tag === 'table').map(table),
+	};
+}
+
+function table(node: MwlCompiledNode): MwlTableDefinition {
+	const columns = parseTableColumns(required(node, 'columns'));
+	return {
+		id: required(node, 'id'),
+		columns,
+		rows: node.children
+			.filter((child) => child.tag === 'row')
+			.map((row) => {
+				const values: Record<string, unknown> = {};
+				for (const column of columns) {
+					const raw = row.attributes[column.name];
+					if (raw !== undefined)
+						values[column.name] = coerceTableValue(
+							raw,
+							column.type,
+							column.name,
+							node.attributes.list_delimiter,
+							node.attributes.map_delimiter,
+						);
+				}
+				return values;
+			}),
 	};
 }
 
@@ -197,38 +281,8 @@ function effect(node: MwlCompiledNode): MwlEffectDefinition {
 		range: node.attributes.range,
 	};
 }
-function flatten(roots: readonly MwlCompiledNode[]): MwlCompiledNode[] {
-	const out: MwlCompiledNode[] = [];
-	const visit = (node: MwlCompiledNode): void => {
-		out.push(node);
-		node.children.forEach(visit);
-	};
-	roots.forEach(visit);
-	return out;
-}
-function required(node: MwlCompiledNode, name: string): string {
-	const value = node.attributes[name];
-	if (!value) throw new Error(`MWL ${node.tag} is missing ${name}`);
-	return value;
-}
-function num(node: MwlCompiledNode, name: string): number | undefined {
-	const value = node.attributes[name];
-	if (value === undefined) return undefined;
-	const result = Number(value);
-	return Number.isFinite(result) ? result : undefined;
-}
-function integer(node: MwlCompiledNode, name: string, fallback?: number): number | undefined {
-	const value = node.attributes[name];
-	if (value === undefined) return fallback;
-	const result = Number.parseInt(value, 10);
-	return Number.isFinite(result) ? result : fallback;
-}
 function pair(node: MwlCompiledNode, min: string, max: string): readonly [number, number] | undefined {
 	const a = num(node, min);
 	const b = num(node, max);
 	return a === undefined || b === undefined ? undefined : [a, b];
-}
-function bool(node: MwlCompiledNode, name: string): boolean | undefined {
-	const value = node.attributes[name];
-	return value === undefined ? undefined : value === 'true' || value === 'yes';
 }

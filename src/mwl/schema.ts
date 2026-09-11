@@ -1,6 +1,30 @@
 import type { MwlDiagnostic, MwlNode } from './grammar.ts';
+import { coerceCsvValue, type CsvColumnType } from '../core/Csv.ts';
 
-export type MwlValueType = 'string' | 'id' | 'number' | 'integer' | 'boolean';
+export type MwlValueType = 'string' | 'id' | 'number' | 'integer' | 'boolean' | 'ref' | 'coordinate';
+
+export interface MwlTableColumn {
+	readonly name: string;
+	readonly type: CsvColumnType;
+}
+
+/** Parse the compact `name:type|name:type` declaration used by MWL tables. */
+export function parseTableColumns(value: string): MwlTableColumn[] {
+	const columns: MwlTableColumn[] = [];
+	for (const part of value.split('|')) {
+		const separator = part.indexOf(':');
+		if (separator <= 0 || separator === part.length - 1) throw new Error(`invalid table column "${part}"`);
+		const name = part.slice(0, separator).trim();
+		const type = part.slice(separator + 1).trim() as CsvColumnType;
+		if (!/^[A-Za-z_][\w.-]*$/.test(name)) throw new Error(`invalid table column name "${name}"`);
+		if (!['string', 'number', 'boolean', 'list', 'map'].includes(type))
+			throw new Error(`invalid table column type "${type}"`);
+		if (columns.some((column) => column.name === name)) throw new Error(`duplicate table column "${name}"`);
+		columns.push({ name, type });
+	}
+	if (columns.length === 0) throw new Error('table must declare at least one column');
+	return columns;
+}
 
 export interface MwlTagSchema {
 	/** fixed attributes, name -> value type */
@@ -16,6 +40,10 @@ export interface MwlTagSchema {
 	readonly children?: readonly string[];
 	/** when true, children are accepted even though `children` is set */
 	readonly openChildren?: boolean;
+	/** target tag for declared `ref` attributes, or `*` for any id-bearing node */
+	readonly refTargets?: Readonly<Record<string, string>>;
+	/** ref attributes which must form an acyclic graph */
+	readonly acyclicRefs?: readonly string[];
 }
 
 export const schema01: Readonly<Record<string, MwlTagSchema>> = {
@@ -29,6 +57,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			save_slot: 'string',
 		},
 		children: [
+			'campaign',
 			'terrain_type',
 			'movetype',
 			'unit_type',
@@ -51,8 +80,25 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			'battle_move',
 			'type_matchup',
 			'evolution',
+			'table',
 		],
 	},
+	campaign: {
+		attributes: {
+			id: 'id',
+			name: 'string',
+			title: 'string',
+			description: 'string',
+			start_scene: 'id',
+		},
+		// Scenario and campaign-extension tags belong to the owning game.
+		openChildren: true,
+	},
+	table: {
+		attributes: { id: 'id', columns: 'string', list_delimiter: 'string', map_delimiter: 'string' },
+		children: ['row'],
+	},
+	row: { openAttributes: 'string' },
 	terrain_type: {
 		attributes: {
 			id: 'id',
@@ -147,8 +193,8 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			trigger: 'id',
 			// `on=moveto` filters. All optional: `[event] on=moveto unit=scout` fires
 			// for any hex that unit reaches, `x`/`y` narrow it to one hex.
-			x: 'integer',
-			y: 'integer',
+			x: 'coordinate',
+			y: 'coordinate',
 			side: 'integer',
 			unit: 'string',
 			// Defaults to true for moveto (a story beat fires once) and false for
@@ -215,6 +261,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 		attributes: {
 			side: 'integer',
 			type: 'string',
+			unit: 'string',
 			x: 'integer',
 			y: 'integer',
 			level: 'integer',
@@ -281,8 +328,11 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	lose: { attributes: { side: 'integer' } },
 	say: { attributes: { speaker: 'id', text: 'string' } },
 	dialogue: { attributes: { id: 'id', ref: 'id' }, children: ['say', 'choice', 'branch', 'message'] },
-	choice: { attributes: { text: 'string', event: 'id' }, children: ['branch'] },
-	branch: { attributes: { text: 'string' }, children: ['message', 'say', 'command'] },
+	choice: { attributes: { text: 'string', event: 'id', variable: 'id', equals: 'string' }, children: ['branch'] },
+	branch: {
+		attributes: { text: 'string' },
+		children: ['message', 'say', 'command', 'set_variable', 'move', 'attack', 'spawn', 'kill', 'gold', 'hook'],
+	},
 	trait: { attributes: { id: 'id', name: 'string' }, children: ['effect'] },
 	ability: { attributes: { id: 'id', name: 'string' }, children: ['effect'] },
 	weapon_special: { attributes: { id: 'id', name: 'string' } },
@@ -318,7 +368,25 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	status: { attributes: { id: 'id', name: 'string', duration: 'integer', tick: 'string', modifiers: 'string' } },
 	loot: { attributes: { item: 'id', chance: 'number', quantity: 'integer', weight: 'number' } },
 	turn_clock: { attributes: { id: 'id', tick: 'number', hunger: 'number' } },
-	ai: { attributes: { id: 'id', strategy: 'id', target: 'id', difficulty: 'number' }, children: ['behavior'] },
+	ai: {
+		attributes: {
+			id: 'id',
+			strategy: 'id',
+			target: 'id',
+			difficulty: 'number',
+			scope: 'id',
+			provider: 'id',
+			algorithm: 'id',
+			depth: 'integer',
+			max_nodes: 'integer',
+			player: 'string',
+			moves: 'string',
+			apply: 'string',
+			terminal: 'string',
+			evaluate: 'string',
+		},
+		children: ['behavior'],
+	},
 	behavior: { attributes: { id: 'id', when: 'string', action: 'string', hook: 'string' } },
 	battle_move: { attributes: { id: 'id', type: 'id', target: 'id', power: 'number', cost: 'number' } },
 	type_matchup: { attributes: { attacker: 'id', defender: 'id', multiplier: 'number' } },
@@ -342,9 +410,23 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 
 export function validate(nodes: readonly MwlNode[], schemas = schema01): MwlDiagnostic[] {
 	const diagnostics: MwlDiagnostic[] = [];
-	const visit = (node: MwlNode): void => {
+	const ids = new Map<string, MwlNode[]>();
+	const collectIds = (node: MwlNode): void => {
+		const id = node.attributes.id;
+		if (id) ids.set(id, [...(ids.get(id) ?? []), node]);
+		node.children.forEach(collectIds);
+	};
+	nodes.forEach(collectIds);
+	const references: Array<{ from: MwlNode; to: MwlNode; name: string }> = [];
+	const visit = (node: MwlNode, openUnknown = false): void => {
 		const definition = schemas[node.tag];
 		if (!definition) {
+			if (openUnknown) {
+				// An open child is a game-owned attribute bag. Keep walking its subtree so
+				// nested effect/filter nodes can remain opaque without losing their locations.
+				node.children.forEach((child) => visit(child, true));
+				return;
+			}
 			diagnostics.push({ code: 'MWL_UNKNOWN_TAG', message: `unknown tag ${node.tag}`, location: node.location });
 			return;
 		}
@@ -361,6 +443,26 @@ export function validate(nodes: readonly MwlNode[], schemas = schema01): MwlDiag
 			const value = node.attributes[name];
 			if (value !== undefined && !validType(value, type))
 				diagnostics.push({ code: 'MWL_VALUE', message: `${name} must be ${type}`, location: node.location });
+			if (value !== undefined && type === 'ref') {
+				const candidates = (ids.get(value) ?? []).filter((target) => {
+					const targetTag = definition.refTargets?.[name];
+					return !targetTag || targetTag === '*' || target.tag === targetTag;
+				});
+				if (candidates.length === 0)
+					diagnostics.push({
+						code: 'MWL_REF_MISSING',
+						message: `${name} references missing target ${value}`,
+						location: node.location,
+					});
+				else if (candidates.length > 1)
+					diagnostics.push({
+						code: 'MWL_REF_DUPLICATE',
+						message: `${name} references ambiguous target ${value}`,
+						location: node.location,
+					});
+				else if (definition.acyclicRefs?.includes(name))
+					references.push({ from: node, to: candidates[0], name });
+			}
 		}
 		if (definition.openAttributes) {
 			for (const [name, value] of Object.entries(node.attributes)) {
@@ -379,17 +481,115 @@ export function validate(nodes: readonly MwlNode[], schemas = schema01): MwlDiag
 					message: `${child.tag} is not allowed inside ${node.tag}`,
 					location: child.location,
 				});
-			visit(child);
+			visit(child, definition.openChildren === true);
 		}
 	};
-	nodes.forEach(visit);
+	nodes.forEach((node) => visit(node));
+	validateTables(nodes, diagnostics);
+	const visiting = new Set<MwlNode>();
+	const visited = new Set<MwlNode>();
+	const walkReference = (node: MwlNode, trail: MwlNode[]): void => {
+		if (visiting.has(node)) {
+			const repeated = trail.indexOf(node);
+			diagnostics.push({
+				code: 'MWL_REF_CYCLE',
+				message: `reference cycle through ${trail
+					.slice(repeated)
+					.map((entry) => entry.attributes.id ?? entry.tag)
+					.join(' -> ')}`,
+				location: node.location,
+			});
+			return;
+		}
+		if (visited.has(node)) return;
+		visiting.add(node);
+		for (const reference of references.filter((entry) => entry.from === node))
+			walkReference(reference.to, [...trail, node]);
+		visiting.delete(node);
+		visited.add(node);
+	};
+	for (const reference of references) walkReference(reference.from, []);
 	return diagnostics.sort((a, b) => a.location.line - b.location.line || a.location.column - b.location.column);
+}
+
+function validateTables(nodes: readonly MwlNode[], diagnostics: MwlDiagnostic[]): void {
+	const visit = (node: MwlNode): void => {
+		if (node.tag === 'table') {
+			let columns: MwlTableColumn[];
+			try {
+				columns = parseTableColumns(node.attributes.columns ?? '');
+			} catch (error) {
+				diagnostics.push({
+					code: 'MWL_TABLE',
+					message: String(error).replace(/^Error: /, ''),
+					location: node.location,
+				});
+				columns = [];
+			}
+			const declared = new Map(columns.map((column) => [column.name, column]));
+			for (const row of node.children.filter((child) => child.tag === 'row')) {
+				for (const name of Object.keys(row.attributes)) {
+					if (!declared.has(name))
+						diagnostics.push({
+							code: 'MWL_TABLE',
+							message: `unknown table column ${name}`,
+							location: row.location,
+						});
+				}
+				for (const column of columns) {
+					const value = row.attributes[column.name];
+					if (value === undefined) {
+						diagnostics.push({
+							code: 'MWL_TABLE',
+							message: `missing table column ${column.name}`,
+							location: row.location,
+						});
+						continue;
+					}
+					try {
+						coerceTableValue(
+							value,
+							column.type,
+							column.name,
+							node.attributes.list_delimiter,
+							node.attributes.map_delimiter,
+						);
+					} catch (error) {
+						diagnostics.push({
+							code: 'MWL_TABLE',
+							message: String(error).replace(/^Error: /, ''),
+							location: row.location,
+						});
+					}
+				}
+			}
+		}
+		node.children.forEach(visit);
+	};
+	nodes.forEach(visit);
+}
+
+export function coerceTableValue(
+	raw: string,
+	type: CsvColumnType,
+	column: string,
+	listDelimiter = ';',
+	mapDelimiter = '=',
+): unknown {
+	return coerceCsvValue(raw, type, {
+		column,
+		listDelimiter,
+		mapDelimiter,
+		acceptYesNo: true,
+	});
 }
 
 function validType(value: string, type: MwlValueType): boolean {
 	if (type === 'number') return Number.isFinite(Number(value));
 	if (type === 'integer') return /^-?\d+$/.test(value);
 	if (type === 'boolean') return value === 'true' || value === 'false' || value === 'yes' || value === 'no';
+	if (type === 'ref') return /^[A-Za-z_][\w.-]*$/.test(value);
+	if (type === 'coordinate') return /^-?\d+(?:\s*,\s*-?\d+|\s*-\s*-?\d+)*$/.test(value);
 	if (type === 'id') return /^[A-Za-z_][\w.-]*$/.test(value);
 	return true;
 }

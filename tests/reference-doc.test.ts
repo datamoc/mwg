@@ -18,6 +18,7 @@ import * as ui from '../src/two-d/ui/index.ts';
 import * as world from '../src/world/index.ts';
 import * as i18n from '../src/i18n/index.ts';
 import * as mwl from '../src/mwl/index.ts';
+import * as ai from '../src/ai/index.ts';
 
 /**
  * REFERENCE.md is hand-written and nothing generates it, so it drifts silently the moment an
@@ -47,6 +48,7 @@ const MODULES: Record<string, Record<string, unknown>> = {
 	world,
 	i18n,
 	mwl,
+	ai,
 };
 
 /** every identifier appearing inside a backticked span anywhere in the document */

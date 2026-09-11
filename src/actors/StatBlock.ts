@@ -47,7 +47,18 @@ export interface StatBlockOptions {
  * so a +10% ring and a cursed -2 sword combine the same way regardless of equip order, and
  * a `set` modifier (a polymorph, a stat drained to exactly zero) always wins over the rest.
  */
-function resolve(base: number, modifiers: readonly Modifier[]): number {
+/**
+ * Apply the framework's canonical add, multiply, then set composition.
+ *
+ * @example
+ * ```ts
+ * import { composeModifiers } from '@datamoc/mw_games/actors';
+ *
+ * const attack = composeModifiers(10, [{ stat: 'attack', op: 'add', value: 2 }]);
+ * console.log(attack); // 12
+ * ```
+ */
+export function composeModifiers(base: number, modifiers: readonly Modifier[]): number {
 	const byOp = (op: ModifierOp) =>
 		modifiers.filter((m) => m.op === op).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
@@ -106,10 +117,10 @@ export class StatBlock {
 
 		const result: Stats = { ...this.baseValues };
 		for (const name of Object.keys(result)) {
-			result[name] = resolve(result[name], this.modifiersFor(name));
+			result[name] = composeModifiers(result[name], this.modifiersFor(name));
 		}
 		for (const d of this.derived) {
-			result[d.name] = resolve(d.from(result), this.modifiersFor(d.name));
+			result[d.name] = composeModifiers(d.from(result), this.modifiersFor(d.name));
 		}
 
 		this.cache = result;

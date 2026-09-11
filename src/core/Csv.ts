@@ -99,20 +99,59 @@ function coerceCsvCell(
 	listDelimiter: string,
 	mapDelimiter: string,
 ): unknown {
+	return coerceCsvValue(raw, type, {
+		column,
+		rowIndex,
+		listDelimiter,
+		mapDelimiter,
+		error: () => {
+			if (type === 'number') return `CSV row ${rowIndex + 1}, column "${column}": "${raw}" is not a number`;
+			if (type === 'boolean')
+				return `CSV row ${rowIndex + 1}, column "${column}": "${raw}" is not "true" or "false"`;
+			if (type === 'map')
+				return `CSV row ${rowIndex + 1}, column "${column}": "${
+					raw
+						.split(listDelimiter)
+						.map((piece) => piece.trim())
+						.find((piece) => piece && !piece.includes(mapDelimiter)) ?? raw
+				}" has no "${mapDelimiter}" to split a key from its value`;
+			return `CSV row ${rowIndex + 1}, column "${column}": "${raw}" is invalid`;
+		},
+	});
+}
+
+export interface CsvCoercionOptions {
+	readonly column?: string;
+	readonly rowIndex?: number;
+	readonly listDelimiter?: string;
+	readonly mapDelimiter?: string;
+	readonly acceptYesNo?: boolean;
+	readonly error?: (message: string) => string;
+}
+
+/** Coerce one typed cell, shared by CSV and declarative content readers. */
+export function coerceCsvValue(raw: string, type: CsvColumnType, options: CsvCoercionOptions = {}): unknown {
+	const column = options.column ?? 'value';
+	const listDelimiter = options.listDelimiter ?? ';';
+	const mapDelimiter = options.mapDelimiter ?? '=';
+	const fail = (message: string): never => {
+		throw new Error(options.error?.(message) ?? message);
+	};
 	switch (type) {
 		case 'string':
 			return raw;
 		case 'number': {
 			const value = Number(raw);
-			if (!Number.isFinite(value))
-				throw new Error(`CSV row ${rowIndex + 1}, column "${column}": "${raw}" is not a number`);
+			if (!Number.isFinite(value)) fail(`${column} must be a number`);
 			return value;
 		}
 		case 'boolean': {
 			const lower = raw.toLowerCase();
 			if (lower === 'true') return true;
 			if (lower === 'false') return false;
-			throw new Error(`CSV row ${rowIndex + 1}, column "${column}": "${raw}" is not "true" or "false"`);
+			if (options.acceptYesNo && lower === 'yes') return true;
+			if (options.acceptYesNo && lower === 'no') return false;
+			fail(`${column} must be true, false${options.acceptYesNo ? ', yes, or no' : ''}`);
 		}
 		case 'list':
 			return raw
@@ -126,10 +165,7 @@ function coerceCsvCell(
 				.map((piece) => piece.trim())
 				.filter((piece) => piece.length > 0)) {
 				const at = entry.indexOf(mapDelimiter);
-				if (at === -1)
-					throw new Error(
-						`CSV row ${rowIndex + 1}, column "${column}": "${entry}" has no "${mapDelimiter}" to split a key from its value`,
-					);
+				if (at === -1) fail(`${column} map entry must contain ${mapDelimiter}`);
 				map[entry.slice(0, at).trim()] = entry.slice(at + mapDelimiter.length).trim();
 			}
 			return map;

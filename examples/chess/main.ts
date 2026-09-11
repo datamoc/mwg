@@ -1,6 +1,6 @@
 import { Rectangle } from '../../src/two-d/pixi-interop.ts';
 import { Node2D, Shape2D, Text2D } from '../../src/two-d/render/index.ts';
-import { Board, Game, Input, Scene2D } from '../../src/index.ts';
+import { AI, Board, Game, Input, Scene2D } from '../../src/index.ts';
 
 const LIGHT = 0xd8c6a1;
 const DARK = 0x765b49;
@@ -110,7 +110,7 @@ class ChessScene extends Scene2D {
 				Board.applyMove(this.state, move);
 				this.selected = null;
 				if (this.state.turn === 'black' && Board.gameResult(this.state) === 'ongoing') {
-					const reply = Board.chooseMove(this.state, { depth: 3 });
+					const reply = AI.alphaBetaSearch(Board.chessGame, this.state, { depth: 3 }).move;
 					if (reply) Board.applyMove(this.state, reply);
 				}
 			} else if (piece?.side === this.state.turn && moves.some((candidate) => candidate.from === this.cursor)) {

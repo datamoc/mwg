@@ -20,7 +20,7 @@ export type {
 	ChessState,
 	ChessResult,
 } from './chess.ts';
-export { chooseMove, search } from './Engine.ts';
+export { chessGame, chooseMove, search } from './Engine.ts';
 export type { ChessEngineOptions, ChessSearchResult } from './Engine.ts';
 export {
 	BoardGrid,

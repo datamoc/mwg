@@ -1,14 +1,24 @@
 export { MwlSyntaxError, isGettext, parse, parseValue, preprocess } from './grammar.ts';
 export type { MwlDiagnostic, MwlLocation, MwlNode, MwlPreprocessOptions } from './grammar.ts';
-export { schema01, validate } from './schema.ts';
-export type { MwlTagSchema, MwlValueType } from './schema.ts';
-export { compile, compileNodes, compileSources, emitModule, extractCatalog } from './compiler.ts';
+export { coerceTableValue, parseTableColumns, schema01, validate } from './schema.ts';
+export type { MwlTableColumn, MwlTagSchema, MwlValueType } from './schema.ts';
+export {
+	compile,
+	compileAndEmitSources,
+	compileNodes,
+	compileSources,
+	emitArtifacts,
+	emitModule,
+	extractCatalog,
+} from './compiler.ts';
 export type {
+	MwlArtifact,
 	MwlCatalog,
 	MwlCatalogOptions,
 	MwlCompileOptions,
 	MwlCompiledGame,
 	MwlCompiledNode,
+	MwlEmitOptions,
 	MwlSourceFile,
 } from './compiler.ts';
 export {
@@ -35,6 +45,7 @@ export type {
 export { createWorld, execute, MwlRuntime, parseTerrain } from './runtime.ts';
 export type {
 	MwlCommand,
+	MwlDialogueChoice,
 	MwlHookRegistry,
 	MwlMap,
 	MwlMapStart,
@@ -43,6 +54,7 @@ export type {
 	MwlWorld,
 } from './runtime.ts';
 export { contentCatalog } from './content.ts';
+export type { MwlCampaignDefinition } from './content.ts';
 export type {
 	MwlContentCatalog,
 	MwlEffectDefinition,
@@ -52,13 +64,22 @@ export type {
 	MwlLootDefinition,
 	MwlMonsterDefinition,
 	MwlStatusDefinition,
+	MwlTableDefinition,
 	MwlTurnClockDefinition,
 } from './content.ts';
 export { evaluateExpression, parseExpression } from './expression.ts';
 export type { MwlExpression, MwlExpressionContext } from './expression.ts';
-export { effectToModifier, inventoryItem, itemDefinition } from './actors.ts';
+export { composeEffects, effectToModifier, inventoryItem, itemDefinition } from './actors.ts';
 export type { MwlActorItem, MwlEquipment } from './actors.ts';
 export { validateCatalog, validateCatalogNodes } from './catalog.ts';
 export type { MwlValidationOptions } from './catalog.ts';
 export { decodeSave, encodeSave, validateWorld } from './persistence.ts';
 export type { MwlMigration, MwlPersistenceOptions, MwlSaveEnvelope } from './persistence.ts';
+export { contentReport } from './report.ts';
+export type { MwlContentReport } from './report.ts';
+export { readAttributes, readChildren } from './readers.ts';
+export type { MwlFieldSpec, MwlReadResult, MwlReaderType } from './readers.ts';
+export { createExpressionScriptHost } from './scripts.ts';
+export type { ScriptContext, ScriptEmit, ScriptHost, ScriptValue } from './scripts.ts';
+export { evaluateCondition } from './conditions.ts';
+export type { MwlConditionContext, MwlConditionHelper, MwlConditionOptions, MwlConditionValue } from './conditions.ts';

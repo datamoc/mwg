@@ -6,7 +6,9 @@ import { pathToFileURL } from 'node:url';
 import {
 	collectHookReferences,
 	compile,
+	compileAndEmitSources,
 	compileSources,
+	contentReport,
 	emitHooksDeclaration,
 	emitModule,
 	extractCatalog,
@@ -26,16 +28,18 @@ import {
  */
 
 const args = process.argv.slice(2);
-const commands = ['validate', 'compile', 'extract-i18n', 'assets', 'hooks', 'build'];
+const commands = ['validate', 'compile', 'extract-i18n', 'assets', 'report', 'hooks', 'build'];
 const [command, input] = args;
 const outputFlag = args.indexOf('-o');
 const output = outputFlag === -1 ? undefined : args[outputFlag + 1];
 const manifestFlag = args.indexOf('--manifest');
 const manifestPath = manifestFlag === -1 ? undefined : args[manifestFlag + 1];
+const assetRootFlag = args.indexOf('--asset-root');
+const assetRoot = assetRootFlag === -1 ? undefined : args[assetRootFlag + 1];
 
 if (!command || !input || !commands.includes(command)) {
 	console.error(
-		'Usage: mwl <validate|compile|extract-i18n|assets|hooks|build> input.mwl [-o output] [--manifest hooks.json]',
+		'Usage: mwl <validate|compile|extract-i18n|assets|report|hooks|build> input.mwl [-o output] [--manifest hooks.json] [--asset-root directory]',
 	);
 	process.exitCode = 2;
 } else {
@@ -69,7 +73,8 @@ if (!command || !input || !commands.includes(command)) {
 		const result = compileSources(files);
 		const values =
 			command === 'extract-i18n' ? extractCatalog(result) : command === 'assets' ? result.assets : result;
-		const text = command === 'compile' ? emitModule(result) : `${JSON.stringify(values, null, '\t')}\n`;
+		const report = command === 'report' ? contentReport(result) : values;
+		const text = command === 'compile' ? emitModule(result) : `${JSON.stringify(report, null, '\t')}\n`;
 		if (output) {
 			fs.mkdirSync(path.dirname(path.resolve(output)), { recursive: true });
 			fs.writeFileSync(output, text);
@@ -109,12 +114,33 @@ function sourceLabel(file) {
 /** One deterministic build step for the three files every MWL game consumes. */
 function build(files) {
 	const game = compileSources(files);
+	if (assetRoot) validateAssets(game, path.resolve(assetRoot));
 	const directory = path.resolve(output ?? 'generated');
 	fs.mkdirSync(directory, { recursive: true });
-	fs.writeFileSync(path.join(directory, 'game-data.ts'), emitModule(game));
-	fs.writeFileSync(path.join(directory, 'i18n.json'), `${JSON.stringify(extractCatalog(game), null, '\t')}\n`);
-	fs.writeFileSync(path.join(directory, 'assets.json'), `${JSON.stringify({ assets: game.assets }, null, '\t')}\n`);
+	const artifacts = compileAndEmitSources(files);
+	for (const artifact of artifacts) fs.writeFileSync(path.join(directory, artifact.name), artifact.content);
 	console.log(`built MWL into ${directory}`);
+}
+
+function validateAssets(game, root) {
+	const missing = game.assets.filter(
+		(asset) => !asset.startsWith('data:') && !fs.existsSync(path.resolve(root, asset)),
+	);
+	if (!missing.length) return;
+	const locations = new Map();
+	const visit = (node) => {
+		for (const value of Object.values(node.attributes))
+			for (const asset of missing)
+				if (value.includes(asset) && !locations.has(asset)) locations.set(asset, node.location);
+		node.children.forEach(visit);
+	};
+	game.roots.forEach(visit);
+	for (const asset of missing) {
+		const location = locations.get(asset);
+		const prefix = location ? `${location.file}:${location.line}:${location.column}: ` : '';
+		console.error(`${prefix}missing MWL asset "${asset}" under ${root}`);
+	}
+	throw new Error(`${missing.length} MWL asset(s) not found`);
 }
 
 /**

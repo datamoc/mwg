@@ -53,7 +53,7 @@ Three rules the whole API follows, so a name means one thing everywhere:
 [core](#core) · [two-d](#two-d) · [render](#render) · [ui](#ui) · [stage](#stage) ·
 [assets](#assets) · [audio](#audio) · [battle](#battle) · [board](#board) ·
 [actors](#actors) · [roguelike](#roguelike) · [rpg](#rpg) · [simulation](#simulation) ·
-[three-d](#three-d-optional) · [world](#world) · [i18n](#i18n) · [mwl](#mwl)
+[three-d](#three-d-optional) · [world](#world) · [i18n](#i18n) · [mwl](#mwl) · [ai](#ai)
 
 ## `core`
 
@@ -223,11 +223,11 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   reduction of 8-neighbour terrain matches.
 - `inspectGraphicsCapabilities`/`detectWebGpu`/`RENDERING_DECISIONS` - checks
   WebGL/WebGPU/WGSL support and records this project's own rendering-backend decisions.
-- `Container2D`/`Texture2D`/`Rect`/`TextureRegion`/`rectOf` - the plain, renderer-free public
-  types a game names in place of `pixi.js`'s own `Container`/`Texture`/`Rectangle` (`Scene2D.
-  stage` is typed `Container2D`; `SpriteSheet.region` returns a `TextureRegion`). For the rare
-  need `two-d`'s own facade doesn't cover, `two-d/pixi-interop` re-exports the underlying Pixi
-  classes explicitly, rather than a game importing `pixi.js` itself.
+- `Container2D`/`Texture2D`/`Rectangle2D`/`Rect`/`TextureRegion`/`rectOf` - the renderer
+  boundary names for common 2D values. The first three work in both type and value positions,
+  so a game can construct a container or use texture and rectangle constants without naming
+  `pixi.js`. For the rare need the facade does not cover, `two-d/pixi-interop` re-exports the
+  underlying Pixi classes explicitly.
 - `Node2D`/`Shape2D`/`Text2D`/`Sprite2D`/`TiledSprite`/`Gradient` - bare, MWG-named
   re-exports of Pixi's `Container`/`Graphics`/`Text`/`Sprite`/`TilingSprite`/`FillGradient`:
   a plain grouping layer, vector drawing, one-off text, a plain untinted sprite, a
@@ -373,8 +373,9 @@ borrowed from any licensed game.
 - **chess** (`chess.ts`): `startingChess`/`parseFen`/`cloneChess`/`legalMoves`/`applyMove`/
   `inCheck`/`gameResult`/`sq`/`squareName` - full rules: legality, check/mate/stalemate,
   castling, en passant, promotion, FEN.
-- **engine** (`Engine.ts`): `chooseMove`/`search` - deterministic, material-evaluation
-  alpha-beta chess search with depth/node limits.
+- **engine** (`Engine.ts`): `chessGame`/`chooseMove`/`search` - the chess rules adapter and
+  convenience wrapper over the shared `ai.alphaBetaSearch`, with material evaluation and
+  depth/node limits. The chess example calls the shared AI primitive directly.
 - **classics** (`Classics.ts`): `BoardGrid`; checkers
   (`startingCheckers`/`checkersMoves`/`applyCheckersMove`, forced multi-jump captures); go
   (`startingGo`/`playGo`/`passGo`/`goResult`/`goScore`, ko and area scoring); backgammon
@@ -410,6 +411,8 @@ on. This is the *shape* - a game names its own attributes and formulas.
   through ordered modifiers (add → multiply → set). `toJSON` saves base values only:
   modifiers are reapplied on load by whatever owns them (equipment, status effects, auras),
   so saving them too would double every bonus.
+- `composeModifiers` - the same canonical modifier composition as `StatBlock`, available to
+  adapters that resolve declarative effect lists without creating a stat block.
 - `Progression`/`powerCurve` - levelling from experience against a growth curve; `toJSON`
   saves level and experience, the curve being a definition.
 - `skillCheck` - value-plus-modifiers against a difficulty, one dice roll.
@@ -719,6 +722,26 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 
 - `mwl build` - reads one file or a directory of `.mwl` files in stable path order and emits
   `game-data.ts`, `i18n.json`, and `assets.json` in one step.
+- `mwl build --asset-root public/assets` - optionally verifies every extracted asset before
+  emitting the generated files. Missing paths include their MWL source location; without this
+  flag the build stays portable for games that resolve assets elsewhere.
+- `contentReport` / `mwl report` - counts tags, lists opaque names, and reports unresolved
+  content references for parity checks and CI.
+- `[campaign]` - declares game-owned campaign metadata (`id`, optional `name`, `title`,
+  `description`, and `start_scene`). Its children are intentionally open so a game can define
+  scenario and progression tags without changing the core MWL schema; metadata is exposed by
+  `contentCatalog(game).campaigns`.
+- `readAttributes` / `readChildren` - shared typed readers for compiled nodes. They coerce
+  scalars and lists and return source-located diagnostics instead of silently guessing.
+- MWL tables use `[table] columns=name:type|...` with typed `[row]` attributes. The compiler
+  validates column shape and values, and `contentCatalog(game).tables` exposes typed rows.
+  Supported column types match `core.parseCSV`: `string`, `number`, `boolean`, `list`, and
+  `map`, with configurable list and map delimiters.
+- `composeEffects` - resolves MWL effects through `actors.composeModifiers`, so declarative
+  item effects and actor stats use one composition rule.
+- `evaluateCondition` - evaluates bounded content conditions with comparisons, `and`/`or`/`not`,
+  arithmetic, literals, `where` bindings, and explicitly supplied pure helpers. There are no loops, assignments,
+  dynamic code loading, or implicit game rules.
 - `mwl validate` - checks syntax and content structure without generating runtime files.
 - `mwl compile`/`mwl extract-i18n`/`mwl hooks` - lower-level commands for a generated module,
   translation extraction, or hook manifest when a build pipeline needs separate outputs.
@@ -726,11 +749,28 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   `@datamoc/mw_games/mwl`; games provide their own hook implementations and interpret
   game-specific effects.
 - Public MWL exports - `MwlRuntime`, `MwlSyntaxError`, `collectHookReferences`, `compileNodes`,
-  `compileSources`, `contentCatalog`, `createWorld`, `decodeSave`, `effectToModifier`,
+  `compileSources`, `compileAndEmitSources`, `emitArtifacts`, `coerceTableValue`,
+  `parseTableColumns`, `contentCatalog`, `createWorld`, `decodeSave`, `effectToModifier`,
   `emitHooksDeclaration`, `emitModule`, `encodeSave`, `evaluateExpression`, `execute`,
   `extractCatalog`, `hookTypes`, `inventoryItem`, `isGettext`, `itemDefinition`,
   `parseExpression`, `parseHookReference`, `parseTerrain`, `parseValue`, `preprocess`,
   `schema01`, `validateCatalogNodes`, `validateHookReferences`, and `validateWorld`.
+- `ScriptHost` and `createExpressionScriptHost` - the game-owned boundary for executable content.
+  The expression host is the statement-free default. The main `mwl` entry point
+  exports its types without loading a scripting VM. Projects that opt in to the optional
+  `fengari` dependency can import `createFengariScriptHost` from `@datamoc/mw_games/mwl/fengari`.
+  It provides Lua 5.3 evaluation, chunks, named function calls, JSON-shaped context values, and
+  `mwg_emit(name, payload)` events. The adapter removes filesystem, process, module-loading and
+  debug globals, replaces `math.random` with seeded deterministic random, and enforces an
+  instruction budget. Lua VM state is not save data: reload scripts from the game's entry point.
+
+`MwlRuntime` exposes `fireEvent(id)` for named event execution. Event conditions compare
+numeric variables numerically, `set_variable` accepts the bounded MWL expression syntax,
+filters can match a unit id, `unit_at` can constrain a side, and moveto coordinates accept
+lists and inclusive ranges. Top-level `say` commands execute normally. Dialogue choices are
+delivered in `MwlMessage.choices` and answered with `answerDialogue`; pending choices are
+included in save data. Commands after a dialogue in the same event run immediately, before
+the answer, so deferred follow-up commands belong in the selected choice event.
 
 Typical build-time usage:
 
@@ -742,3 +782,42 @@ The executable [`mwl-content` example](../examples/view.html?ex=mwl-content) sho
 path: authored content, generated catalog and manifests, then a small game reading the result
 at runtime. A Wesnoth adapter can convert native `.cfg` files to the same MWL input model
 before invoking this build step.
+
+## `ai`
+
+Renderer-free decision runners. The game owns perception, navigation, combat rules and
+goals; these modules provide the execution boundary, deterministic choice support, explicit
+actions, serialisable state, diagnostics and budgets.
+
+- `JavaScriptAI` - registers named behaviours, checks them in declaration order, and returns
+  a JSON-shaped action or an idle decision. A behaviour receives perception, mutable plain
+  state, seeded `random()`, `emit()` and a cooperative `checkpoint()` for cancellation and
+  step or wall-clock budgets. JavaScript cannot interrupt a synchronous function that never
+  checks its checkpoint, so long-running behaviours must cooperate.
+- `alphaBetaSearch`/`AlphaBetaGame` - deterministic minimax with alpha-beta pruning over a
+  game-owned immutable-state adapter. The adapter supplies legal moves, transitions, terminal
+  detection, current player and evaluation from the root player's perspective. `depth`,
+  `maxNodes`, cancellation and node diagnostics bound the search; the same primitive works
+  for a local actor and for a top-level controller such as a chess master.
+- `AIDecision`/`AIDecisionInput`/`AIAction` - the shared contract for perception, explicit
+  action objects, status (`action`, `idle`, `cancelled`, or `budget-exceeded`), emitted
+  diagnostics and state snapshots.
+- `AICancelledError`/`AIBudgetExceededError` - the cooperative control-flow errors used by
+  a JavaScript behaviour when it observes cancellation or exceeds its configured budget.
+- `exportState`/`importState` - versioned, JSON-shaped agent state. Function closures, VM
+  state and arbitrary object graphs never become save data.
+- `LuaAI` from `@datamoc/mw_games/ai/lua` - optional Lua 5.3 provider with the same action
+  and state envelope. A Lua function receives `(perception, state)` and returns an action
+  table or `{ action, state, events }`. It uses the existing optional Fengari host, which
+  removes filesystem, process, module-loading, clock and debug access, supplies seeded random,
+  and enforces an instruction budget.
+- `AIAgentDefinition`/`AIBehavior` - JavaScript registrations; Lua registrations instead
+  provide a source chunk and an entry function name. Both remain game-owned content and
+  do not include any reference game's code or data.
+
+MWL `[ai]` profiles describe the boundary without embedding executable game rules: `scope`
+is `actor` or `controller`, `provider` is `javascript` or `lua`, `algorithm` can be
+`rules` or `alpha_beta`, and `depth`, `max_nodes`, `player`, `moves`, `apply`, `terminal`
+and `evaluate` identify search limits and game-owned operations. A game resolves those names
+to JavaScript behaviours or Lua functions and supplies the actual state, legal moves and
+evaluation.

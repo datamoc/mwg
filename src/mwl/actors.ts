@@ -1,6 +1,6 @@
 import type { EquipmentSlots } from '../actors/Equipment.ts';
 import type { InventoryItem, ItemDefinition } from '../actors/Inventory.ts';
-import type { Modifier } from '../actors/StatBlock.ts';
+import { composeModifiers, type Modifier } from '../actors/StatBlock.ts';
 import type { MwlEffectDefinition, MwlItemDefinition } from './content.ts';
 import { evaluateExpression, type MwlExpressionContext } from './expression.ts';
 
@@ -23,6 +23,18 @@ export function itemDefinition(item: MwlItemDefinition, context: MwlExpressionCo
 
 export function inventoryItem(item: MwlActorItem, quantity = 1): InventoryItem {
 	return { id: item.id, quantity, stackable: item.stackable, weight: item.weight };
+}
+
+/** Resolve a declarative MWL effect list using the same rule as StatBlock. */
+export function composeEffects(
+	base: number,
+	effects: readonly MwlEffectDefinition[],
+	context: MwlExpressionContext = {},
+): number {
+	return composeModifiers(
+		base,
+		effects.map((effect) => effectToModifier(effect, context)),
+	);
 }
 
 export function effectToModifier(effect: MwlEffectDefinition, context: MwlExpressionContext = {}): Modifier {

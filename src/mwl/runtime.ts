@@ -10,6 +10,12 @@ import type {
 	PredicateHook,
 } from './hooks.ts';
 import { decodeSave, encodeSave, type MwlPersistenceOptions } from './persistence.ts';
+import { evaluateExpression } from './expression.ts';
+import { integerAttribute, requiredAttribute } from './utils.ts';
+
+const required = requiredAttribute;
+const integer = (node: MwlCompiledNode, attribute: string, fallback: number): number =>
+	integerAttribute(node, attribute, fallback) ?? fallback;
 
 export interface MwlMapStart {
 	readonly x: number;
@@ -47,6 +53,7 @@ export interface MwlWorld {
 	scheduleIndex?: number;
 	/** ids of one-shot events that already fired, so a restore keeps them spent */
 	firedEvents?: string[];
+	pendingDialogue?: { id: string; choices: readonly MwlDialogueChoice[] };
 }
 
 /** One `[message]`: the text plus whatever a game needs to show it. */
@@ -55,6 +62,18 @@ export interface MwlMessage {
 	readonly speaker?: string;
 	readonly portrait?: string;
 	readonly side?: number;
+	/** choices waiting on the player; answer with `answerDialogue` */
+	readonly choices?: readonly MwlDialogueChoice[];
+	/** identifies the pending dialogue this message's choices belong to */
+	readonly dialogueId?: string;
+}
+
+/** One offered choice inside a `dialogue`: its label and the event answering runs. */
+export interface MwlDialogueChoice {
+	readonly text: string;
+	readonly event?: string;
+	/** inline branch commands, used when a choice does not name a separate event */
+	readonly branch?: readonly MwlCompiledNode[];
 }
 
 /** The hook implementations a game provides to the runtime. */
@@ -154,6 +173,8 @@ export class MwlRuntime {
 	private readonly persistence: MwlPersistenceOptions;
 	private readonly unitTypes = new Map<string, { hitpoints: number; movement: number }>();
 	private schedule: string[] = [];
+	private pendingDialogue: { id: string; choices: MwlDialogueChoice[] } | null = null;
+	private dialogueCounter = 0;
 
 	constructor(game: MwlCompiledGame, options: MwlRuntimeOptions = {}) {
 		this.game = game;
@@ -179,6 +200,15 @@ export class MwlRuntime {
 		this.checkObjectives();
 	}
 
+	/** Fire one named event through the same filter, claim, and execution path as a trigger. */
+	fireEvent(id: string): boolean {
+		const event = this.nodes('event').find((candidate) => candidate.attributes.id === id);
+		if (!event || !this.eventFiltersMatch(event) || !this.claimEvent(event)) return false;
+		this.executeEvent(event);
+		this.checkObjectives();
+		return true;
+	}
+
 	/**
 	 * Fire the `on=moveto` events for a unit that has just arrived somewhere.
 	 * The runtime's own `[move]` command calls this, and so does a game whose
@@ -194,8 +224,8 @@ export class MwlRuntime {
 		if (!unit || !unit.alive) return;
 		for (const event of this.nodes('event')) {
 			if ((event.attributes.on ?? event.attributes.trigger) !== 'moveto') continue;
-			if (event.attributes.x !== undefined && integer(event, 'x', Number.NaN) !== unit.x) continue;
-			if (event.attributes.y !== undefined && integer(event, 'y', Number.NaN) !== unit.y) continue;
+			if (event.attributes.x !== undefined && !coordinateMatches(event.attributes.x, unit.x)) continue;
+			if (event.attributes.y !== undefined && !coordinateMatches(event.attributes.y, unit.y)) continue;
 			if (event.attributes.unit !== undefined && event.attributes.unit !== id) continue;
 			if (event.attributes.side !== undefined && integer(event, 'side', Number.NaN) !== unit.side) continue;
 			if (!this.eventFiltersMatch(event)) continue;
@@ -221,18 +251,113 @@ export class MwlRuntime {
 
 	private eventFiltersMatch(event: MwlCompiledNode): boolean {
 		const condition = event.children.find((child) => child.tag === 'condition');
-		if (condition && this.world.variables[condition.attributes.variable] !== condition.attributes.equals)
+		if (condition && !sameValue(this.world.variables[condition.attributes.variable], condition.attributes.equals))
 			return false;
 		const filter = event.children.find((child) => child.tag === 'filter');
 		return !filter || this.filterMatches(filter);
 	}
 
 	private executeEvent(event: MwlCompiledNode): void {
-		for (const command of event.children.filter(
-			(child) =>
-				child.tag !== 'condition' && child.tag !== 'filter' && child.tag !== 'dialogue' && child.tag !== 'say',
-		))
+		for (const command of event.children.filter((child) => child.tag !== 'condition' && child.tag !== 'filter')) {
+			if (command.tag === 'say') {
+				this.showSay(command);
+				continue;
+			}
+			if (command.tag === 'dialogue') {
+				this.showDialogue(command);
+				continue;
+			}
 			this.executeNode(command);
+		}
+	}
+
+	/**
+	 * Deliver a `dialogue`: its `message`/`say` lines first, then one message
+	 * carrying the offered `choice`s. A choice names the event answering runs;
+	 * the game answers later with `answerDialogue`, so content keeps any
+	 * follow-up commands inside the referenced events rather than after the
+	 * dialogue. Choices gated by `variable`/`equals` are skipped unless the
+	 * world variable matches.
+	 */
+	private showDialogue(node: MwlCompiledNode): void {
+		let last: { text: string; speaker?: string; portrait?: string; side?: number } | null = null;
+		for (const child of node.children) {
+			if (child.tag === 'message') {
+				this.showMessage(child.attributes);
+				const side = Number.parseInt(child.attributes.side ?? '', 10);
+				last = {
+					text: child.attributes.text ?? child.attributes.value ?? '',
+					...(child.attributes.speaker === undefined ? {} : { speaker: child.attributes.speaker }),
+					...(child.attributes.portrait === undefined ? {} : { portrait: child.attributes.portrait }),
+					...(Number.isFinite(side) ? { side } : {}),
+				};
+			} else if (child.tag === 'say') {
+				this.showSay(child);
+				last = { text: child.attributes.text ?? '', speaker: child.attributes.speaker };
+			}
+		}
+		const choices: MwlDialogueChoice[] = [];
+		for (const child of node.children) {
+			if (child.tag !== 'choice' || !child.attributes.text) continue;
+			if (
+				child.attributes.variable !== undefined &&
+				!sameValue(this.world.variables[child.attributes.variable], child.attributes.equals)
+			)
+				continue;
+			const branches = child.children.filter((branch) => branch.tag === 'branch');
+			if (branches.length) {
+				for (const branch of branches) {
+					choices.push({
+						text: branch.attributes.text ?? child.attributes.text,
+						branch: branch.children,
+					});
+				}
+			} else if (child.attributes.event)
+				choices.push({ text: child.attributes.text, event: child.attributes.event });
+		}
+		if (choices.length === 0) return;
+		this.dialogueCounter += 1;
+		const id = `dialogue-${this.dialogueCounter}`;
+		this.pendingDialogue = { id, choices };
+		this.world.pendingDialogue = { id, choices };
+		this.onMessage?.({
+			text: last?.text ?? '',
+			...(last?.speaker === undefined ? {} : { speaker: last.speaker }),
+			choices,
+			dialogueId: id,
+		});
+	}
+
+	private showSay(node: MwlCompiledNode): void {
+		if (!this.onMessage) return;
+		this.onMessage({
+			text: node.attributes.text ?? '',
+			...(node.attributes.speaker === undefined ? {} : { speaker: node.attributes.speaker }),
+		});
+	}
+
+	/**
+	 * Answer a pending dialogue: run the chosen choice's event and clear the
+	 * pending state. Returns false when there is no such pending dialogue or
+	 * choice; throws when the referenced event does not exist (content error).
+	 */
+	answerDialogue(dialogueId: string, choiceIndex: number): boolean {
+		const pending = this.pendingDialogue;
+		if (!pending || pending.id !== dialogueId) return false;
+		const choice = pending.choices[choiceIndex];
+		if (!choice) return false;
+		this.pendingDialogue = null;
+		delete this.world.pendingDialogue;
+		if (choice.event) {
+			const event = this.nodes('event').find((candidate) => candidate.attributes.id === choice.event);
+			if (!event) throw new Error(`MWL dialogue choice points at unknown event: ${choice.event}`);
+			if (!this.claimEvent(event)) return true;
+			this.executeEvent(event);
+		} else {
+			for (const command of choice.branch ?? []) this.executeNode(command);
+		}
+		this.checkObjectives();
+		return true;
 	}
 
 	/**
@@ -267,6 +392,12 @@ export class MwlRuntime {
 		this.world.scheduleIndex = restored.scheduleIndex ?? 0;
 		// One-shot events stay spent across a load.
 		this.world.firedEvents = [...(restored.firedEvents ?? [])];
+		this.world.pendingDialogue = restored.pendingDialogue;
+		this.pendingDialogue = restored.pendingDialogue
+			? { id: restored.pendingDialogue.id, choices: [...restored.pendingDialogue.choices] }
+			: null;
+		const dialogueNumber = restored.pendingDialogue?.id.match(/^dialogue-(\d+)$/);
+		if (dialogueNumber) this.dialogueCounter = Math.max(this.dialogueCounter, Number(dialogueNumber[1]));
 	}
 
 	private loadUnitTypes(): void {
@@ -416,8 +547,10 @@ export class MwlRuntime {
 				this.addGold(required(node, 'side'), integer(node, 'delta', integer(node, 'amount', 0)));
 				break;
 			case 'set_variable':
-				this.world.variables[node.tag === 'command' ? required(node, 'target') : required(node, 'name')] =
-					node.attributes.value ?? '';
+				this.setVariable(
+					node.tag === 'command' ? required(node, 'target') : required(node, 'name'),
+					node.attributes.value ?? '',
+				);
 				break;
 			case 'end_turn':
 				this.endTurn();
@@ -483,6 +616,24 @@ export class MwlRuntime {
 		this.onMessage(message);
 	}
 
+	private setVariable(name: string, raw: string): void {
+		const numeric = Number(raw);
+		if (raw.trim() !== '' && Number.isFinite(numeric)) {
+			this.world.variables[name] = numeric;
+			return;
+		}
+		const context = Object.fromEntries(
+			Object.entries(this.world.variables).filter(
+				(entry): entry is [string, number] => typeof entry[1] === 'number',
+			),
+		);
+		if (/[+*/^()]|\s-\s/.test(raw) || Object.prototype.hasOwnProperty.call(context, raw.trim())) {
+			this.world.variables[name] = evaluateExpression(raw, context);
+			return;
+		}
+		this.world.variables[name] = raw;
+	}
+
 	private spawnUnit(type: string, side: number | undefined, x: number, y: number, id?: string, hp?: number): void {
 		const stats = type ? this.unitTypes.get(type) : undefined;
 		const key = id ?? `${type || 'unit'}#${side ?? 0}@${x},${y}`;
@@ -530,9 +681,10 @@ export class MwlRuntime {
 	}
 
 	private filterMatches(node: MwlCompiledNode): boolean {
-		const candidates = Object.values(this.world.units).filter((unit) => unit.alive);
-		return candidates.some(
-			(unit) =>
+		return Object.entries(this.world.units).some(
+			([id, unit]) =>
+				unit.alive &&
+				(node.attributes.unit === undefined || id === node.attributes.unit) &&
 				(node.attributes.side === undefined || unit.side === Number(node.attributes.side)) &&
 				(node.attributes.type === undefined || unit.type === node.attributes.type) &&
 				(node.attributes.x === undefined || unit.x === Number(node.attributes.x)) &&
@@ -542,7 +694,9 @@ export class MwlRuntime {
 
 	private conditionMatches(node: MwlCompiledNode): boolean {
 		const condition = node.children.find((child) => child.tag === 'condition');
-		return !condition || this.world.variables[condition.attributes.variable] === condition.attributes.equals;
+		return (
+			!condition || sameValue(this.world.variables[condition.attributes.variable], condition.attributes.equals)
+		);
 	}
 
 	private conditionMet(node: MwlCompiledNode): boolean {
@@ -569,9 +723,11 @@ export class MwlRuntime {
 			case 'unit_at': {
 				const x = optionalInteger(node, 'x');
 				const y = optionalInteger(node, 'y');
+				const targetSide = optionalInteger(node, 'side_filter') ?? side;
 				return Object.values(this.world.units).some(
 					(unit) =>
 						unit.alive &&
+						(targetSide === undefined || unit.side === targetSide) &&
 						(node.attributes.type === undefined || unit.type === node.attributes.type) &&
 						unit.x === x &&
 						unit.y === y,
@@ -691,20 +847,30 @@ function requireUnit(world: MwlWorld, id: string): { hp: number; x: number; y: n
 	return unit;
 }
 
-function required(node: MwlCompiledNode, attribute: string): string {
-	const value = node.attributes[attribute];
-	if (!value) throw new Error(`MWL ${node.tag} is missing ${attribute}`);
-	return value;
-}
-
-function integer(node: MwlCompiledNode, attribute: string, fallback: number): number {
-	const value = node.attributes[attribute];
-	return value === undefined ? fallback : Number.parseInt(value, 10);
-}
-
 function optionalInteger(node: MwlCompiledNode, attribute: string): number | undefined {
 	const value = node.attributes[attribute];
 	if (value === undefined || value === '') return undefined;
 	const parsed = Number.parseInt(value, 10);
 	return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function sameValue(value: string | number | boolean | undefined, expected: string | undefined): boolean {
+	if (value === undefined || expected === undefined) return value === expected;
+	const numeric = Number(expected);
+	return typeof value === 'number' && expected.trim() !== '' && Number.isFinite(numeric)
+		? value === numeric
+		: value === expected;
+}
+
+function coordinateMatches(specification: string, coordinate: number): boolean {
+	return specification.split(',').some((part) => {
+		const value = part.trim();
+		const range = value.match(/^(-?\d+)\s*-\s*(-?\d+)$/);
+		if (range) {
+			const from = Number(range[1]);
+			const to = Number(range[2]);
+			return coordinate >= Math.min(from, to) && coordinate <= Math.max(from, to);
+		}
+		return /^-?\d+$/.test(value) && Number(value) === coordinate;
+	});
 }

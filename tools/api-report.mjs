@@ -177,7 +177,8 @@ function parseFile(text) {
 			}
 			i = j;
 			const name = nameOf(collected);
-			if (name) declarations.set(name, { kind: kindOf(collected), text: collected.trim() });
+			if (name)
+				declarations.set(name, { kind: kindOf(collected), text: collected.trim().replace(/[ \t]+$/gm, '') });
 			continue;
 		}
 
@@ -193,7 +194,8 @@ function parseFile(text) {
 			}
 			i = j;
 			const name = nameOf(collected);
-			if (name) declarations.set(name, { kind: kindOf(collected), text: collected.trim() });
+			if (name)
+				declarations.set(name, { kind: kindOf(collected), text: collected.trim().replace(/[ \t]+$/gm, '') });
 			continue;
 		}
 	}
@@ -304,7 +306,13 @@ function renderReport(modules, files) {
 		for (const name of names) {
 			const { kind, text } = exported.get(name);
 			lines.push(`### \`${name}\` (${kind})`, '');
-			lines.push('    ' + text.replace(/\n/g, '\n    '), '');
+			lines.push(
+				text
+					.split('\n')
+					.map((line) => (line ? `    ${line}` : ''))
+					.join('\n'),
+				'',
+			);
 		}
 	}
 

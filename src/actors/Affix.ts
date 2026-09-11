@@ -70,14 +70,26 @@ export interface AffixTable {
 	entries: readonly AffixDef[];
 }
 
+export interface RollAffixOptions {
+	/** when supplied, only entries with this curse flag are eligible */
+	readonly curse?: boolean;
+	/** an additional game-owned eligibility predicate */
+	readonly predicate?: (entry: AffixDef) => boolean;
+}
+
 /**
  * Weight-picks one affix from a table - the same "roll whether, then weight-pick which"
  * shape `rollLoot` already is, with a single entry reading as "always this one".
  *
  * @returns null when the table is empty or every entry has weight 0
  */
-export function rollAffix(table: AffixTable): AffixDef | null {
-	const live = table.entries.filter((entry) => entry.weight > 0);
+export function rollAffix(table: AffixTable, options: RollAffixOptions = {}): AffixDef | null {
+	const live = table.entries.filter(
+		(entry) =>
+			entry.weight > 0 &&
+			(options.curse === undefined || Boolean(entry.curse) === options.curse) &&
+			(options.predicate?.(entry) ?? true),
+	);
 	if (live.length === 0) return null;
 	const index = Random.weighted(live.map((entry) => entry.weight));
 	return index === null ? null : live[index];

@@ -11,7 +11,11 @@ of their own; improvements to `mwg`'s own files are shared back.
 **[Live examples and API docs](https://datamoc.github.io/mwg/)**: every example below,
 playable in the browser with no download, plus the generated API reference.
 
-> **Status: pre-alpha (v0.7.1).** Every module in the shared floor below, plus optional
+**[AI project prompt](https://datamoc.github.io/mwg/ai-prompt/)**: a copy-ready prompt for
+planning or porting a demanding game with mwg, with links to the [mwg reference](REFERENCE.md)
+and the [mwg Pixel Dungeon study](https://datamoc.github.io/mwg-pixel-dungeon/).
+
+> **Status: pre-alpha (v0.7.2).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
 > [ROADMAP.md](ROADMAP.md) for the full, numbered history.
 >
@@ -397,7 +401,7 @@ npm run mwl -- hooks game.mwl --manifest hooks.json -o generated/hooks.mjs
 The input may also be a content directory. `mwl build content/ -o generated/`
 reads every `.mwl` file recursively in stable path order and emits one merged,
 validated catalog. Diagnostics retain each source file and line, so a game can
-organize assets, units, items, scenarios, dialogue, and AI data as separate files.
+organize campaigns, assets, units, items, scenarios, dialogue, and AI data as separate files.
 
 `mwl build` is the normal game command: it produces `game-data.ts`, `i18n.json`,
 and `assets.json` in one build-time step. The game imports the generated module;
@@ -408,6 +412,11 @@ saves. Asset attributes such as `image`, `image_icon`, `profile`, `icon`, `file`
 sound lists, Wesnoth sound ranges such as `human-hit-[1~5].ogg`, and image
 modifiers. Nested transform arguments are not mistaken for separate assets.
 Item slots, formulas, hooks, and business rules remain defined by the game.
+
+Campaign metadata can be authored with a `[campaign]` tag inside `[game]`. It requires an
+`id` and accepts `name`, `title`, `description`, and `start_scene`; scenario and extension
+children remain game-owned and are preserved by the compiler. The compiled metadata is
+available as `contentCatalog(game).campaigns`.
 
 For a large self-contained HTML page, `npm run extract:html -- page.html -o extracted/`
 writes a rewritten `index.html`, an `assets/` directory, and a deterministic
@@ -433,6 +442,22 @@ game's engine adapter, because they need that game's real data. A command hook
 receives the `[hook]` attributes as its context; a `condition=hook` objective
 receives its other attributes, so content can parameterize an engine predicate
 (`value` is the generic integer parameter).
+
+Events trigger on `start`, `turn`, and `moveto`. A `moveto` event fires when a
+unit arrives on a hex, filtered by `x`, `y`, `unit` and `side`, once by default
+(and a spent one-shot stays spent across save/restore). A game whose own engine
+resolves movement writes the new position into the world and calls
+`runtime.fireMoveto(unitId)`, so the trigger works either way. A `[message]`
+becomes an `MwlMessage` with its `text`, and its `speaker`, `portrait` and `side`
+when the content gives them, which is enough for a real dialogue box instead of a
+log line.
+
+Dialogue choices are exposed through `MwlMessage.choices` and answered with
+`runtime.answerDialogue(dialogueId, choiceIndex)`. Pending choices are part of the
+saved world. Commands after a dialogue in the same event run immediately, before
+the player answers, so deferred follow-up commands belong in the event named by
+the selected choice. Events can also be invoked directly with `runtime.fireEvent(id)`;
+moveto coordinates accept comma lists and inclusive ranges such as `1,3-5`.
 
 The generated data is plain TypeScript and works with the same local-file build
 pipeline as the rest of the framework. Wesnoth-specific MWL source belongs in

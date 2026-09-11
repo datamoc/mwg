@@ -1,6 +1,7 @@
 import type { MwlCompiledGame, MwlCompiledNode } from './compiler.ts';
 import type { MwlDiagnostic, MwlLocation, MwlNode } from './grammar.ts';
 import { collectHookReferences, parseHookReference } from './hooks.ts';
+import { flattenNodes } from './utils.ts';
 
 export interface MwlValidationOptions {
 	/** Slots are game-defined. Supplying them enables unknown-slot diagnostics. */
@@ -13,7 +14,7 @@ export interface MwlValidationOptions {
 export function validateCatalog(game: MwlCompiledGame, options: MwlValidationOptions = {}): MwlDiagnostic[] {
 	const diagnostics: MwlDiagnostic[] = [];
 	const ids = new Map<string, MwlCompiledNode>();
-	const nodes = flatten(game.roots);
+	const nodes = flattenNodes(game.roots);
 	for (const node of nodes) {
 		const id = node.attributes.id;
 		if (id) {
@@ -79,15 +80,6 @@ export function validateCatalog(game: MwlCompiledGame, options: MwlValidationOpt
 	return diagnostics;
 }
 
-function flatten(roots: readonly MwlCompiledNode[]): MwlCompiledNode[] {
-	const result: MwlCompiledNode[] = [];
-	const visit = (node: MwlCompiledNode): void => {
-		result.push(node);
-		node.children.forEach(visit);
-	};
-	roots.forEach(visit);
-	return result;
-}
 function diagnostic(code: string, message: string, location: MwlLocation | undefined): MwlDiagnostic {
 	return { code, message, location: location ?? { file: '<mwl>', line: 1, column: 1 } };
 }

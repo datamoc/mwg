@@ -82,6 +82,18 @@ test('copyAffix carries an affix (and its curse mark) onto another item', () => 
 	assert.equal(other.cursed, true);
 });
 
+test('rollAffix filters curse pools without changing seeded selection order', () => {
+	const table: AffixTable = {
+		entries: [
+			{ id: 'blessed', trigger: 'passive', weight: 1 },
+			{ id: 'cursed', trigger: 'passive', weight: 1, curse: true },
+		],
+	};
+	assert.equal(rollAffix(table, { curse: true })?.id, 'cursed');
+	assert.equal(rollAffix(table, { curse: false })?.id, 'blessed');
+	assert.equal(rollAffix(table, { predicate: (entry) => entry.id === 'cursed' })?.id, 'cursed');
+});
+
 test('copyAffix replaces whatever the target already had', () => {
 	const source = item();
 	applyAffix(source, { id: 'keen', trigger: 'strike', weight: 1 });

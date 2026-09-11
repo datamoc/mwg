@@ -37,6 +37,9 @@ function run(command, args, cwd) {
 	//package.json is the policy this install should follow
 	const env = { ...process.env };
 	delete env.npm_config_allow_scripts;
+	// Keep package smoke independent of a user-level npm cache that may be locked down
+	// or owned by another npm installation.
+	env.npm_config_cache = join(scratch, 'npm-cache');
 
 	const result = spawnSync(command, args, { cwd, stdio: 'inherit', shell: true, env });
 	if (result.status !== 0) throw new Error(`${command} ${args.join(' ')} failed (exit ${result.status})`);

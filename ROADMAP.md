@@ -28,7 +28,12 @@ where those live.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** none. Every numbered item has shipped, including the
+**Priority order among what's still open:** items 205-210, all opened by port work
+against real game data. 206 and 209 come first (they remove hand-written data plumbing and make
+extraction regressions visible in CI), then 208 and 205 (the formula subset covers most content
+conditions and values), then 207, then 210, which stays parked until a game must run existing Lua
+content unmodified. Everything numbered below 205
+has shipped, including the
 former priority cluster (28, 30, 41, 45), the verification and accessibility tail (192-197), the
 SVG and benchmark follow-up (198) and the reduced-motion cluster (199-202). Numbers are never
 reassigned once given - the list is an append-only history, including for what is not done yet -
@@ -3035,6 +3040,198 @@ rather than someone else's build.
      `tools/extract-html.mjs` is shipped with the package and its `extract:html` command is
      usable by website and game build scripts; four tests cover scripts, styles, HTML data URLs,
      CSS data URLs, `srcset`, deduplication, ordering, and module warnings.
+
+~~205. Opaque child tags in MWL schemas: a game whose content vocabulary is open should not have
+     to enumerate every tag name in its schema extension just to pass validation. The Wesnoth
+     port's adapter declares roughly forty tags (`[damage]`, `[poison]`, `[leadership]`,
+     `[filter_base_value]`, ...) only so its compiled effect trees validate, and that list has
+     to be kept in step with the game's macro files by hand. A schema option (`openChildTags`,
+     or a wildcard child entry) should accept any child tag under a node whose children are
+     game-defined and validate those children as open attribute bags, while the fixed part of the
+     schema keeps its diagnostics. Paired with item 209 this stays honest: the tags a game
+     actually uses get reported, not merely tolerated. Generic item; the vocabulary itself stays
+     in the game that owns it.~~
+
+~~206. Compiled-MWL to typed table readers: ports hand-write one reader per tag to turn compiled
+     nodes back into typed records (`compiledTerrain`, `compiledUnitType`, `compiledMovetype`,
+     `compiledSpecial`, ...); the Wesnoth adapter carries more than ten of them, each repeating
+     the same attribute, number, id-list, and child-collection handling. A generic helper in
+     `mwg/mwl` - a field spec for scalar attributes (with number, id, and comma-list coercions)
+     and child collections, returning a typed record - would remove the boilerplate and give one
+     place where a missing or malformed field is reported with its source location. Generic item;
+     it is the read side of the same boundary item 203 describes.~~
+
+~~207. One modifier-composition rule shared by `mwg/actors` and MWL effect lists: both models
+     exist today and do not share a documented composition, so a game that needs "a list of
+     declarative effects modifies a base value" writes its own. The Wesnoth port did exactly
+     that: set, add, sub, multiply, divide, min/max clamps, a base-value filter, and an
+     offense/defense scope, all port-side. Provide the minimal generic composition in one module
+     and use it for `actors` modifiers, with the deliberate boundary that only the generic rule
+     travels: no game's numeric quirks, scaling conventions, or effect-vocabulary names come with
+     it. Generic item.~~
+
+~~208. Bounded expression evaluation for content-authored conditions and values: game data wants
+     conditions (`level < other.level`, "this unit is adjacent to an ally", "the target is
+     petrified") and computed values (`value="(25 * (level - other.level))"`), and today a port
+     either adds a hook per case or implements a parser of its own. A small, documented evaluator
+     over a declared context (`self`, `other`, plain unit fields) should cover the
+     formula-shaped subset the content actually uses: arithmetic and comparisons, boolean
+     `and/or/not`, a short fixed list of named helpers, and `where` bindings for local names.
+     The boundary is explicit - no loops, no side effects, no user-defined functions, no string
+     manipulation beyond equality, and a clear diagnostic when a content file needs more than
+     that. Relates to the expression module already used by MWL; the remaining work is the
+     filter-shaped context, the named-helper list, and the documented limit. This is the cheap
+     path that covers most content formulas, and it is deliberately smaller than item 210.~~
+
+~~209. MWL content report: `mwl report <content>` printing counts per tag, the tag names an opaque
+     schema accepted (item 205), and dangling references - an ability id, unit type, terrain code,
+     or asset a content file points at with nothing behind it. Ports need this for the data-parity
+     tests they write anyway, and it turns an extraction regression into a CI failure rather than
+     a surprise at runtime. Generic item.~~
+
+~~210. Script host boundary, with Lua as an optional adapter rather than a core dependency: real
+     games need more than data and expressions - a campaign script that reacts to arbitrary state,
+     a generator, an AI. Today the only answer is a JavaScript hook, which is fine for a game the
+     project itself owns and wrong for content the engine did not write. The work is a small
+     `ScriptHost` interface in `mwg/mwl` (evaluate, execute, call a named function, receive a
+     context and an emit callback) with three implementations: the bounded expression evaluator
+     (item 208, the default), the existing JavaScript hooks, and an **optional** Lua adapter that
+     ships outside the core package so MWG keeps its dependency list. Cost, stated plainly, since
+     it decides the design: a pure-JavaScript Lua (fengari, Lua 5.3) is roughly 200-240 KB raw and
+     55-65 KB gzipped, loaded synchronously, which fits the single-file `file://` story; a
+     WebAssembly Lua (wasmoon, Lua 5.4) is roughly 200-260 KB total and needs an async wasm fetch
+     or a large base64 inline, plus glue. Either way the adapter must sandbox the VM (`os`, `io`,
+     `os.time` removed), make it deterministic (seeded random only, an instruction budget per
+     call so content cannot hang the frame), and decide persistence explicitly: VM state is not
+     serialised into saves, so scripts re-run from a declared entry point on load. Un-parked by a
+     game that must run existing Lua content unmodified - mainline Wesnoth campaigns are exactly
+     that case (338 `.lua` files with the AI and campaign scripting) - and it stays parked while
+     item 208 covers the content formulas. Generic item; no game's Lua library travels with it.~~
+
+~~211. Optional asset-root validation in the MWL build: a port's build script should not have to
+     repeat the same `game.assets` existence check before emitting generated files. Add an
+     explicit `--asset-root` or equivalent build option that resolves logical asset paths,
+     reports missing files with their source locations, and keeps the default build portable
+     when assets are resolved by another packaging step. This is the generic part extracted
+     from the Pixel Dungeon adapter; asset naming, packaging and runtime resolution remain
+     game-owned.~~
+
+~~212. JavaScript AI module: provide a renderer-free, game-neutral foundation for authoring and
+     running game AI in JavaScript, building on the `ScriptHost` boundary from item 210. The
+     module should cover named behaviours or planners, perception supplied by the game,
+     deterministic seeded decisions, explicit action requests, cancellation, and a per-turn
+     or per-frame budget so an AI cannot stall the game loop. It should expose observable
+     decisions and diagnostics for replay, tests and debugging, while keeping navigation,
+     combat rules, world data and game-specific goals in the owning game. It must work with
+     MWL-authored AI configuration without turning authored content into framework-specific
+     code.~~ - `mwg/ai` now provides `JavaScriptAI`, explicit JSON-shaped actions and state,
+     seeded decisions, cooperative cancellation and budgets, emitted diagnostics, and
+     versioned state import/export. `alphaBetaSearch` adds bounded minimax with a typed,
+     game-owned state adapter, so the same module serves a local actor or a top-level
+     controller. The renderer-free contract keeps navigation and game rules in the owning
+     game, while MWL supplies the profile and operation names.
+
+~~213. Lua AI module: add an optional Lua implementation of the AI contract from item 212,
+     sharing the same perception, action, determinism, budget, diagnostics and persistence
+     boundaries as the JavaScript module. Keep Lua outside the core package and preserve the
+     local-file deployment story. The adapter must be sandboxed, exclude filesystem, process,
+     clock and network access, use only seeded randomness, enforce an instruction budget, and
+     define how scripts resume after save and load. Lua is a content and modding boundary,
+     not a reason to move game rules into the framework or to ship any reference game's Lua
+     code or data.~~ - `mwg/ai/lua` provides the optional Fengari-backed `LuaAI` adapter with
+     the shared action and state envelope, sandboxed deterministic execution, instruction
+     budgets, explicit events, and no reference-game content. Lua alpha-beta search calls
+     named Lua operations for current player, legal moves, transitions, terminal detection and
+     evaluation, so it has the same actor and controller capability as JavaScript.
+
+214. ~~Typed tables and rows in MWL: add a game-neutral table/row/column primitive, or an
+     equivalent declaration on an MWL effect, so structured values are validated at compile
+     time instead of remaining opaque strings. It must support typed columns, explicit
+     delimiters, compile-time arity checks, and a typed accessor in the content catalog. Reuse
+     the existing `CsvColumnType` vocabulary and RFC-4180 parsing rules where possible. This
+     closes the gap between MWL and `core.parseCSV`, and prevents malformed room-count,
+     probability and similar content tables from surviving compilation until first runtime
+     generation. The framework owns the shape and diagnostics; game-specific tables remain
+     game-owned.~~
+
+215. ~~Generic reference and foreign-key values in MWL: add an `MwlValueType` of `ref`, with a
+     declared target tag or id namespace, so a value can be checked against existing node ids
+     during compilation. Report missing and duplicate targets with source locations, and
+     provide cycle diagnostics where a declared reference graph requires acyclic data. Keep
+     domain rules in the game adapter: MWL should validate that an enchant, roster member,
+     asset or transition names something that exists, not decide what that relationship means.~~
+
+216. ~~Caller-chosen `EntityId`: extend the entity registry boundary with an optional caller-
+     supplied id, while preserving generated ids as the default. The id must reject duplicates,
+     remain stable through save/load, and follow the existing `Registry.register(name, value)`
+     convention so games can persist meaningful hero and item identities without a parallel
+     id-minting layer.~~
+
+217. ~~Value positions in `Types2D`: replace type-only aliases with value-capable renderer
+     boundary types wherever a game needs to extend or construct a Pixi object. Keep the
+     renderer isolation rule intact, and measure the resulting import and bundle cost before
+     widening the public surface.~~
+
+218. ~~Deterministic generated-artifact emission: provide an `onEmit` or `emitArtifacts` hook for
+     MWL builds, with a built-in compile-twice-and-compare determinism check. It should cover
+     the generated module, i18n catalog, asset manifest and game-defined generated artifacts,
+     replacing repeated port-owned emission glue without taking ownership of game content.~~
+
+219. ~~Affix pool filtering: extend `rollAffix` with an optional curse or pool predicate, or add
+     a `splitAffixTable` helper, so games can select curse and non-curse pools without
+     hand-splitting the same table. The helper must preserve seeded determinism and leave the
+     affix definitions and balance values game-owned.~~
+
+### High-value, small-surface event work
+
+220. ~~Numeric event-condition equality: event conditions currently compare `world.variables[x]`
+     with `attributes.equals` using strict equality, so numeric variables never match string
+     attributes. Coerce values when both sides are numeric, or reuse `evaluateCondition` for
+     condition children, with tests for counters and turn gates.~~
+
+221. ~~Expression-backed `set_variable`: connect the existing `expression.ts` evaluator to
+     `set_variable` values so counters and arithmetic do not need game-side hook round trips.
+     Preserve the bounded, game-neutral expression rules and deterministic runtime behavior.~~
+
+222. ~~Public fire-by-id: add `MwlRuntime.fireEvent(id)` using the existing claim-and-execute
+     path, so content can trigger a named event without build-time inlining or game-specific
+     event plumbing.~~
+
+223. ~~Moveto coordinate lists and ranges: accept comma-separated coordinates and inclusive
+     `a-b` ranges in event `x` and `y` attributes, expanding them during compilation or into
+     the runtime matcher with deterministic validation and no duplicated event execution.~~
+
+### Medium event and objective work
+
+224. ~~Unit-id event filters: allow event filters to match the unit's world key in addition to
+     side, type, position and other existing criteria, enabling death-of-a-named-unit triggers
+     without variable smuggling.~~
+
+225. ~~Side-aware `unit_at` objectives: honor an optional `side` or `side_filter` on
+     `unit_at`, matching the existing side semantics of `units_dead`.~~
+
+226. ~~Top-level event dialogue: execute a top-level `say` child in an event, or reject it at
+     validation time. Content must never silently drop a schema-legal command.~~
+
+227. ~~Dialogue branches: implement the currently schema-legal `branch` runtime behavior, or
+     remove it from the schema until supported, so authored content cannot rely on a dead tag.~~
+
+### Dialogue persistence and documentation
+
+228. ~~Persist pending dialogue choices: save and restore pending `{ id, choices }` state beside
+     fired events, or explicitly document and enforce that games must resolve choices before
+     saving. Prefer persistence so mid-choice saves do not lose player input.~~
+
+229. ~~Document post-dialogue event ordering: explain that commands after a dialogue in the same
+     event run immediately before the player answers, and that follow-up commands belong in
+     the selected choice event when they must wait for the answer.~~
+
+230. ~~Document dialogue choices in the public MWG documentation: record that dialogue choices are supported and that
+     `MwlMessage.choices` together with `answerDialogue` is the answering contract.~~
+
+231. ~~MWL campaign tag: add a game-level `[campaign]` container with validated metadata for
+     `id`, `name`, `title`, `description`, and `start_scene`, while leaving scenario and
+     progression children game-owned. Expose the metadata through `contentCatalog(game).campaigns`.~~
 
 ### Parked decisions
 

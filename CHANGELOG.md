@@ -5,6 +5,23 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
+## [0.7.2] - 2026-09-11
+
+### Added
+
+- Renderer-free JavaScript and optional Lua AI modules, including bounded alpha-beta search for
+  local actors and top-level controllers.
+- MWL typed tables, references, campaign metadata, deterministic artifact emission, and richer
+  event, dialogue, expression, and persistence support.
+- Stable caller-chosen entity ids, typed 2D value exports, affix pool filtering, and shared
+  CSV/MWL cell coercion.
+
+### Changed
+
+- The chess example now uses the shared MWG alpha-beta primitive.
+- The standalone bundle baseline, API report, documentation, and roadmap were updated.
+- Release checks now isolate npm audit and package-smoke caches from user-level npm settings.
+
 ## [Unreleased]
 
 ## [0.7.1] - 2026-09-10

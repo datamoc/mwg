@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.7.1",
+	"version": "0.7.2",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -45,6 +45,7 @@
 		"tools/compress-dist.d.mts",
 		"tools/mwl.mjs",
 		"LICENSE",
+		"CHANGELOG.md",
 		"README.md"
 	],
 	"exports": {
@@ -112,6 +113,18 @@
 			"types": "./dist/mwl/index.d.ts",
 			"import": "./dist/mwl/index.js"
 		},
+		"./mwl/fengari": {
+			"types": "./dist/mwl/fengari.d.ts",
+			"import": "./dist/mwl/fengari.js"
+		},
+		"./ai": {
+			"types": "./dist/ai/index.d.ts",
+			"import": "./dist/ai/index.js"
+		},
+		"./ai/lua": {
+			"types": "./dist/ai/lua.d.ts",
+			"import": "./dist/ai/lua.js"
+		},
 		"./tools/compile-resources": "./tools/compile-resources.mjs",
 		"./tools/compress-dist": "./tools/compress-dist.mjs",
 		"./two-d": {
@@ -151,7 +164,7 @@
 		"mwl": "npm run build:pkg && node tools/mwl.mjs",
 		"size:check": "node tools/bundle-size.mjs",
 		"size:update": "node tools/bundle-size.mjs --update",
-		"audit": "npm audit --audit-level=high",
+		"audit": "node tools/npm-audit.mjs",
 		"example": "vite --config examples/colour-transform/vite.config.ts",
 		"example:build": "vite build --config examples/colour-transform/vite.config.ts && node tools/emit-page.mjs examples/colour-transform",
 		"test": "node --test \"tests/**/*.test.ts\"",
@@ -267,5 +280,8 @@
 	},
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
-	"unpkg": "./dist/mw_games.global.js"
+	"unpkg": "./dist/mw_games.global.js",
+	"optionalDependencies": {
+		"fengari": "^0.1.5"
+	}
 }

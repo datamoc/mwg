@@ -22,6 +22,18 @@ export interface MwlCompileOptions extends MwlPreprocessOptions {
 	readonly schemas?: Readonly<Record<string, MwlTagSchema>>;
 }
 
+export interface MwlArtifact {
+	readonly name: string;
+	readonly content: string;
+}
+
+export interface MwlEmitOptions {
+	readonly variable?: string;
+	/** additional game-owned generated files, kept in the same deterministic artifact set */
+	readonly artifacts?: Readonly<Record<string, string>>;
+	readonly onEmit?: (artifact: MwlArtifact) => void;
+}
+
 export function compile(source: string, options: MwlCompileOptions = {}): MwlCompiledGame {
 	const expanded = preprocess(source, options);
 	return compileNodes(parse(expanded, options.file), options);
@@ -160,4 +172,36 @@ export function extractCatalog(game: MwlCompiledGame, options: MwlCatalogOptions
 
 export function emitModule(game: MwlCompiledGame, variable = 'gameData'): string {
 	return `export const ${variable} = ${JSON.stringify(game, null, '\t')} as const;\n`;
+}
+
+/** Emits the standard MWL outputs plus game-owned artifacts in stable name order. */
+export function emitArtifacts(game: MwlCompiledGame, options: MwlEmitOptions = {}): readonly MwlArtifact[] {
+	const artifacts: MwlArtifact[] = [
+		{ name: 'game-data.ts', content: emitModule(game, options.variable ?? 'gameData') },
+		{ name: 'i18n.json', content: `${JSON.stringify(extractCatalog(game), null, '\t')}\n` },
+		{ name: 'assets.json', content: `${JSON.stringify({ assets: game.assets }, null, '\t')}\n` },
+		...Object.entries(options.artifacts ?? {})
+			.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+			.map(([name, content]) => ({ name, content })),
+	];
+	for (const artifact of artifacts) options.onEmit?.(artifact);
+	return artifacts;
+}
+
+/** Compiles the same source set twice and fails if any generated artifact differs. */
+export function compileAndEmitSources(
+	files: readonly MwlSourceFile[],
+	options: MwlCompileOptions = {},
+	emitOptions: Omit<MwlEmitOptions, 'onEmit'> = {},
+): readonly MwlArtifact[] {
+	const first = emitArtifacts(compileSources(files, options), emitOptions);
+	const second = emitArtifacts(compileSources(files, options), emitOptions);
+	if (
+		first.length !== second.length ||
+		first.some(
+			(artifact, index) => artifact.name !== second[index]?.name || artifact.content !== second[index]?.content,
+		)
+	)
+		throw new Error('MWL generated artifacts are not deterministic');
+	return first;
 }

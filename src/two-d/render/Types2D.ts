@@ -1,4 +1,4 @@
-import type { Container, Texture, Rectangle } from 'pixi.js';
+import { Container, Texture, Rectangle } from 'pixi.js';
 
 /**
  * The scene-graph container type a 2D game names in its own code - `Scene2D.stage` and any
@@ -6,10 +6,26 @@ import type { Container, Texture, Rectangle } from 'pixi.js';
  * so naming the type does not require importing the renderer directly. It is the same object
  * at runtime; only the public name a game writes down changes.
  */
-export type Container2D = Container;
+/** Renderer facade class, usable in both type and value positions. */
+export { Container as Container2D };
 
 /** The texture type a 2D game names in its own code, for the same reason as `Container2D`. */
-export type Texture2D = Texture;
+/** Renderer facade class, usable in both type and value positions. */
+export { Texture as Texture2D };
+
+/** Explicit value-position escape hatch for rectangle construction through the facade. */
+/**
+ * Renderer facade class, usable in both type and value positions.
+ *
+ * @example
+ * ```ts
+ * import { Rectangle2D } from '@datamoc/mw_games/two-d/render';
+
+ * const hitArea = new Rectangle2D(0, 0, 32, 32);
+ * console.log(hitArea.width); // 32
+ * ```
+ */
+export { Rectangle as Rectangle2D };
 
 /** A plain, renderer-free rectangle: the shape `TextureRegion.frame` and similar public
  * fields use in place of `pixi.js`'s `Rectangle`. */
@@ -22,7 +38,7 @@ export interface Rect {
 
 /** A texture together with the frame it was cut from - what `SpriteSheet.region` returns. */
 export interface TextureRegion {
-	texture: Texture2D;
+	texture: Texture;
 	frame: Rect;
 }
 

@@ -19,6 +19,7 @@ import * as ui from '../src/two-d/ui/index.ts';
 import * as stage from '../src/two-d/stage/index.ts';
 import * as world from '../src/world/index.ts';
 import * as i18n from '../src/i18n/index.ts';
+import * as ai from '../src/ai/index.ts';
 
 /**
  * Every exported class, function and namespace should carry a working `@example` - not
@@ -61,6 +62,7 @@ const MODULES: Record<string, Record<string, unknown>> = {
 	stage,
 	world,
 	i18n,
+	ai,
 };
 
 const ROOT = resolvePath(new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));

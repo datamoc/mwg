@@ -1,4 +1,4 @@
-export { StatBlock } from './StatBlock.ts';
+export { composeModifiers, StatBlock } from './StatBlock.ts';
 export type { Stats, Modifier, ModifierOp, DerivedStat, StatBlockOptions } from './StatBlock.ts';
 export { Progression, powerCurve } from './Progression.ts';
 export type { GrowthCurve } from './Progression.ts';
@@ -30,7 +30,7 @@ export type { LootEntry, LootTable } from './Loot.ts';
 export { Advancement } from './Advancement.ts';
 export type { AdvancementOption, AdvancementTier, AdvancementTierKind, AdvancementTrack } from './Advancement.ts';
 export { rollAffix, affixOf, applyAffix, removeAffix, copyAffix, matchesContext } from './Affix.ts';
-export type { AffixDef, AffixTable, AffixTrigger, AttackKind, AffixContext } from './Affix.ts';
+export type { AffixDef, AffixTable, AffixTrigger, AttackKind, AffixContext, RollAffixOptions } from './Affix.ts';
 export { scaledModifiers } from './Scaling.ts';
 export type { LevelScale } from './Scaling.ts';
 export { assignAppearances, Appearances } from './Appearances.ts';

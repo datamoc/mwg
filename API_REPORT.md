@@ -11,26 +11,26 @@ build instead.
     export declare class Achievements {
         private definitions;
         private counts;
-        
+
         private fresh;
         define(definition: AchievementDef): void;
-        
+
         count(counter: string): number;
-        
+
         increment(counter: string, amount?: number): string[];
-        
+
         unlocked(id: string): boolean;
-        
+
         progress(id: string): {
             count: number;
             target: number;
         };
-        
+
         drainNew(): string[];
         toJSON(): {
             counts: [string, number][];
         };
-        
+
         static fromJSON(definitions: AchievementDef[], data: {
             counts: [string, number][];
         }): Achievements;
@@ -45,12 +45,12 @@ build instead.
         private idleOrMove;
         private inAction;
         constructor(sprite: AnimatedSprite, options: ActorAnimatorOptions);
-        
+
         get state(): ActorAnimationState;
         get variantName(): string;
-        
+
         setMoving(moving: boolean, variant?: string): void;
-        
+
         playAction(variant?: string, restart?: boolean): void;
         private onSpriteFinish;
         private apply;
@@ -64,6 +64,10 @@ build instead.
 
     export declare function advanceReveal(state: RevealState, dt: number): boolean;
 
+### `AI` (namespace)
+
+    export * as AI from './ai/index.ts'
+
 ### `AnimatedSprite` (class)
 
     export declare class AnimatedSprite extends TintedSprite {
@@ -73,14 +77,14 @@ build instead.
         private frameIndex;
         private timer;
         private finished;
-        
+
         onFinish: ((name: string) => void) | null;
         paused: boolean;
         add(name: string, frames: readonly Texture2D[], options?: AnimationOptions): this;
         has(name: string): boolean;
         get playing(): string | null;
         get isFinished(): boolean;
-        
+
         play(name: string, restart?: boolean): this;
         stop(): void;
         update(dt: number): void;
@@ -119,7 +123,7 @@ build instead.
         private readonly roundUpToPixel;
         private readonly themeListener;
         constructor(options: BarOptions);
-        
+
         get value(): number;
         setValue(value: number, max?: number): void;
         resize(width: number, height: number): void;
@@ -137,9 +141,9 @@ build instead.
         private readonly opts;
         private readonly themeListener;
         constructor(options?: BitmapLabelOptions | string);
-        
+
         setText(value: string): void;
-        
+
         private restyle;
         destroy(options?: Parameters<BitmapText['destroy']>[0]): void;
     }
@@ -155,19 +159,19 @@ build instead.
         readonly height: number;
         private volume;
         constructor(width: number, height: number);
-        
+
         private index;
-        
+
         volumeAt(x: number, y: number): number;
-        
+
         total(): number;
-        
+
         seed(x: number, y: number, amount: number): void;
-        
+
         clear(x: number, y: number): void;
-        
+
         spread(open: (x: number, y: number) => boolean, spread?: number, decay?: number): void;
-        
+
         cellsAbove(minimum: number): Array<{
             x: number;
             y: number;
@@ -214,15 +218,15 @@ build instead.
         private disabled_;
         private readonly themeListener;
         constructor(options: ButtonOptions);
-        
+
         private static createBackground;
-        
+
         resize(width: number, height: number): void;
         setText(text: string | undefined): void;
         get disabled(): boolean;
         setDisabled(disabled: boolean): void;
         private setState;
-        
+
         private layoutContent;
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -231,9 +235,9 @@ build instead.
 ### `Camera` (class)
 
     export declare class Camera {
-        
+
         readonly world: Container<import("pixi.js").ContainerChild>;
-        
+
         x: number;
         y: number;
         private _zoom;
@@ -250,46 +254,46 @@ build instead.
         private shakeDuration;
         private shakeX;
         private shakeY;
-        
+
         private bounds;
         constructor(options?: CameraOptions);
         get zoom(): number;
         set zoom(value: number);
-        
+
         setViewport(width: number, height: number, screenX?: number, screenY?: number): void;
-        
+
         get view(): {
             x: number;
             y: number;
             width: number;
             height: number;
         };
-        
+
         setBounds(bounds: {
             minX: number;
             minY: number;
             maxX: number;
             maxY: number;
         } | null): void;
-        
+
         snapTo(x: number, y: number): void;
-        
+
         panTo(x: number, y: number, intensity?: number): void;
-        
+
         follow(target: {
             x: number;
             y: number;
         }, intensity?: number): void;
         stopFollowing(): void;
-        
+
         shake(magnitude: number, duration?: number): void;
         update(dt: number): void;
-        
+
         toScreen(x: number, y: number): {
             x: number;
             y: number;
         };
-        
+
         toWorld(x: number, y: number): {
             x: number;
             y: number;
@@ -312,17 +316,17 @@ build instead.
         private readonly prefix;
         private readonly storage;
         constructor(name: string, options?: CollectionOptions);
-        
+
         get size(): number;
-        
+
         all(): DbRecord[];
         get(id: string): DbRecord | undefined;
-        
+
         put(record: DbRecord): void;
         remove(id: string): void;
-        
+
         where(predicate: (record: DbRecord) => boolean): DbRecord[];
-        
+
         clear(): void;
         private keys;
         private read;
@@ -335,7 +339,7 @@ build instead.
 ### `ColorTransformBatcher` (class)
 
     export declare class ColorTransformBatcher extends Batcher {
-        
+
         static extension: {
             readonly type: readonly [ExtensionType.Batcher];
             readonly name: 'mwg-color-transform';
@@ -347,7 +351,7 @@ build instead.
         constructor(options: BatcherOptions);
         packAttributes(element: MeshElement, float32View: Float32Array, uint32View: Uint32Array, index: number, textureId: number): void;
         packQuadAttributes(element: QuadElement, float32View: Float32Array, uint32View: Uint32Array, index: number, textureId: number): void;
-        
+
         _updateMaxTextures(maxTextures: number): void;
         destroy(): void;
     }
@@ -355,6 +359,10 @@ build instead.
 ### `completeReveal` (function)
 
     export declare function completeReveal(state: RevealState): void;
+
+### `Container2D` (export)
+
+    export { Container2D }
 
 ### `contrastRatio` (function)
 
@@ -393,26 +401,26 @@ build instead.
         private stageWidth;
         private stageHeight;
         private tweener;
-        
+
         dimAmount: number;
         constructor(width: number, height: number);
-        
+
         defineCharacter(id: string, definition: CharacterDefinition): void;
         resize(width: number, height: number): void;
-        
+
         setBackdrop(texture: Texture, fade?: number): Promise<void>;
         private fitBackdrop;
         show(id: string, options?: ShowOptions): Promise<void>;
         hide(id: string, fade?: number): Promise<void>;
         hideAll(fade?: number): Promise<void>;
         setExpression(id: string, expression: string): void;
-        
+
         focus(id: string | null): void;
         private applyFocus;
         private slotOf;
         private placeActor;
         update(dt: number): void;
-        
+
         get isBusy(): boolean;
     }
 
@@ -430,10 +438,10 @@ build instead.
         private entities;
         private ids;
         private sequence;
-        
-        add(entity: T): EntityId;
+
+        add(entity: T, requestedId?: EntityId): EntityId;
         get(id: EntityId): T | undefined;
-        
+
         idOf(entity: T): EntityId | undefined;
         has(id: EntityId): boolean;
         remove(id: EntityId): boolean;
@@ -455,9 +463,9 @@ build instead.
         private elapsed;
         private done;
         constructor(options: FloatingTextOptions);
-        
+
         get finished(): boolean;
-        
+
         update(dt: number): void;
     }
 
@@ -466,13 +474,13 @@ build instead.
     export declare class Game {
         private static instance;
         readonly app: Application<import("pixi.js").Renderer>;
-        
+
         elapsed: number;
-        
+
         timeTotal: number;
-        
+
         timeScale: number;
-        
+
         readonly onFrame: Signal<number>;
         private hitStopRemaining;
         private hitStopScale;
@@ -482,33 +490,33 @@ build instead.
         private started;
         private stopWatchingDpr;
         constructor(options?: GameOptions);
-        
+
         get width(): number;
         get height(): number;
-        
+
         static get current(): Game;
         start(first: SceneClass<Scene2D>): Promise<void>;
-        
+
         switchScene(next: SceneClass<Scene2D>): void;
-        
+
         pushScene(next: SceneClass<Scene2D>): void;
-        
+
         popScene(result?: unknown): void;
-        
+
         get currentScene(): Scene2D | null;
-        
+
         hitStop(duration: number, scale?: number): void;
-        
+
         step(dt: number): void;
-        
+
         private expose;
         private frame;
         private switchNow;
-        
+
         private applySwitch;
-        
+
         private applyPush;
-        
+
         private applyPop;
         destroy(): void;
     }
@@ -522,13 +530,13 @@ build instead.
         private s3;
         readonly seed: number;
         constructor(seed?: number);
-        
+
         nextUint32(): number;
-        
+
         float(): number;
-        
+
         int(bound: number): number;
-        
+
         getState(): [number, number, number, number];
         setState(state: readonly [number, number, number, number]): void;
     }
@@ -545,7 +553,7 @@ build instead.
         private topics;
         constructor(options: HelpScreenOptions);
         private showBody;
-        
+
         handleAction(action: Action): boolean;
     }
 
@@ -579,13 +587,13 @@ build instead.
     export declare class HookRegistry<TArgs extends unknown[]> {
         private hooks;
         on(event: string, handler: (...args: TArgs) => void, source?: unknown): void;
-        
+
         off(handler: (...args: TArgs) => void): void;
-        
+
         offSource(source: unknown): void;
-        
+
         emit(event: string, ...args: TArgs): void;
-        
+
         get size(): number;
         clear(): void;
     }
@@ -609,7 +617,7 @@ build instead.
         private cellSize;
         private longPressDuration;
         private scrollRow;
-        
+
         private pickedUp;
         private pressedIndex;
         private pressTimer;
@@ -617,9 +625,9 @@ build instead.
         onHighlight: ((item: IconGridItem, index: number) => void) | null;
         onQuickslot: ((item: IconGridItem, index: number) => void) | null;
         onReorder: ((fromIndex: number, toIndex: number) => void) | null;
-        
+
         private readonly themeListener;
-        
+
         private columnX;
         constructor(options: IconGridOptions);
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -632,21 +640,21 @@ build instead.
         setItems(items: IconGridItem[]): void;
         private releaseCell;
         resize(width: number, height: number): void;
-        
+
         update(dt: number): void;
-        
+
         tapCell(index: number): void;
-        
+
         private swapCells;
-        
+
         cancelPickup(): void;
-        
+
         move(dx: number, dy: number): boolean;
         select(index: number): void;
         confirm(): boolean;
-        
+
         handleAction(action: Action): boolean;
-        
+
         private cellRect;
         private refresh;
     }
@@ -671,18 +679,18 @@ build instead.
         private revealSource;
         private reveal;
         constructor(options?: LabelOptions | string);
-        
+
         setColor(color: number): void;
-        
+
         setText(value: string): void;
-        
+
         showProgressive(value: string, speed?: number): void;
-        
+
         updateReveal(dt: number): boolean;
-        
+
         completeReveal(): void;
         private renderRevealed;
-        
+
         private restyle;
         destroy(options?: Parameters<Text['destroy']>[0]): void;
     }
@@ -691,12 +699,12 @@ build instead.
 
     export declare class LayeredSprite extends Container {
         private layers;
-        
+
         addLayer(name: string, texture: Texture2D, order?: number): TintedSprite;
         removeLayer(name: string): void;
         layer(name: string): TintedSprite | undefined;
         hasLayer(name: string): boolean;
-        
+
         setTexture(name: string, texture: Texture2D): void;
         private resort;
     }
@@ -722,7 +730,7 @@ build instead.
         onSelect: ((item: ListItem, index: number) => void) | null;
         onHighlight: ((item: ListItem, index: number) => void) | null;
         constructor(options: ListViewOptions);
-        
+
         private restyle;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
         private drawMask;
@@ -732,11 +740,11 @@ build instead.
         get length(): number;
         setItems(items: ListItem[]): void;
         resize(width: number, height: number): void;
-        
+
         move(delta: number): boolean;
         select(index: number): void;
         confirm(): boolean;
-        
+
         handleAction(action: Action): boolean;
         private refresh;
     }
@@ -754,11 +762,11 @@ build instead.
         private height_;
         constructor(options: LoadingScreenOptions);
         setSnapshot(snapshot: LoadSnapshot): void;
-        
+
         bind(queue: LoadQueue): () => void;
-        
+
         retry(): void;
-        
+
         cancel(): void;
         resize(width: number, height: number): void;
         private layout;
@@ -776,11 +784,11 @@ build instead.
         private cancelled;
         add(task: LoadTask): this;
         get snapshot(): LoadSnapshot;
-        
+
         start(): Promise<void>;
-        
+
         cancel(): void;
-        
+
         retry(): void;
         private report;
         private emit;
@@ -803,11 +811,11 @@ build instead.
         private readonly createSocket;
         private _id;
         constructor(options: LockstepClientOptions);
-        
+
         get id(): string | null;
         get connected(): boolean;
         connect(): void;
-        
+
         submitInput(payload: unknown): void;
         close(): void;
         private handleMessage;
@@ -820,7 +828,7 @@ build instead.
         private level;
         private readonly sink;
         constructor(category: string, options?: LoggerOptions);
-        
+
         setLevel(level: LogLevel): void;
         debug(message: string, data?: unknown): void;
         info(message: string, data?: unknown): void;
@@ -859,21 +867,21 @@ build instead.
         private announce;
         private readonly messageThemeListener;
         constructor(options: MessageBoxOptions);
-        
+
         private restyleMessage;
         destroy(options?: Parameters<Window['destroy']>[0]): void;
         private showPage;
-        
+
         private renderBody;
         private formatLine;
         private playRevealedSounds;
         private get pageComplete();
         update(dt: number): void;
         handleAction(action: Action): boolean;
-        
+
         private advance;
         private showChoices;
-        
+
         private grow;
         private finish;
     }
@@ -892,13 +900,13 @@ build instead.
         private drawn;
         private marker;
         constructor(options: MinimapOptions);
-        
+
         get exploredCount(): number;
-        
+
         sync(explored: ReadonlySet<number>, colorFor: (x: number, y: number) => number): void;
-        
+
         setMarker(x: number, y: number, facing?: number, color?: number): void;
-        
+
         reset(): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -919,7 +927,7 @@ build instead.
 
     export declare class NewsClient extends HttpTransport {
         constructor(options: NewsOptions);
-        
+
         fetchItems(): Promise<NewsItem[]>;
     }
 
@@ -931,7 +939,7 @@ build instead.
         private readSeen;
         isSeen(id: string): boolean;
         markSeen(id: string): void;
-        
+
         unseen(items: readonly NewsItem[]): NewsItem[];
     }
 
@@ -940,7 +948,7 @@ build instead.
     export declare class NinePatch extends Container {
         private sprite;
         constructor(texture: Texture2D, options: NinePatchOptions);
-        
+
         get border(): {
             left: number;
             top: number;
@@ -990,27 +998,27 @@ build instead.
         private readonly alphaRange;
         private readonly spin;
         private emitting;
-        
+
         private poolCursor;
-        
+
         private debt;
         constructor(options?: ParticleEmitterOptions);
-        
+
         start(): void;
-        
+
         stop(): void;
         get isEmitting(): boolean;
-        
+
         get activeCount(): number;
-        
+
         get particles(): readonly Particle[];
-        
+
         burst(count: number): number;
         private spawn;
         update(dt: number): void;
-        
+
         private draw;
-        
+
         clear(): void;
     }
 
@@ -1028,9 +1036,9 @@ build instead.
         private readonly frames;
         private readonly onFrame;
         constructor(events: readonly ReplayEvent[], dispatch: (action: string) => void, frames: Signal<number>);
-        
+
         get done(): boolean;
-        
+
         stop(): void;
         private pump;
     }
@@ -1042,21 +1050,21 @@ build instead.
         readonly padIndex?: number;
         constructor(id: string, options?: PlayerInputOptions);
         private scoped;
-        
+
         bind(action: Action, keys: readonly string[]): void;
-        
+
         bindButton(action: Action, buttons: readonly number[]): void;
-        
+
         bindAxis(action: Action, axis: number, direction: 1 | -1): void;
-        
+
         bindTouch(action: Action, id?: string): void;
-        
+
         pressTouch(id: string): void;
         releaseTouch(id: string): void;
         isDown(action: Action): boolean;
         justPressed(action: Action): boolean;
         justReleased(action: Action): boolean;
-        
+
         keysFor(action: Action): string[];
     }
 
@@ -1067,11 +1075,11 @@ build instead.
         private readonly initial;
         private readonly combine;
         constructor(options: PlayerStatsOptions<T, S>);
-        
+
         get(): T;
-        
+
         record(summary: S): T;
-        
+
         reset(): void;
     }
 
@@ -1087,13 +1095,13 @@ build instead.
         private busy;
         private remaining;
         constructor(options: PresentationQueueOptions<Event>);
-        
+
         enqueue(events: readonly Event[]): void;
-        
+
         update(dt: number): void;
-        
+
         get isBusy(): boolean;
-        
+
         clear(): void;
         private advance;
     }
@@ -1111,9 +1119,9 @@ build instead.
         private arrived;
         constructor(sprite: ProjectilePoint, from: ProjectilePoint, to: ProjectilePoint, options?: ProjectileOptions);
         get done(): boolean;
-        
+
         get progress(): number;
-        
+
         update(dt: number): boolean;
     }
 
@@ -1129,19 +1137,19 @@ build instead.
         private spent;
         constructor(rules?: ReactionRule<TState>[]);
         add(rule: ReactionRule<TState>): void;
-        
+
         remove(id: string): void;
-        
+
         check(state: Readonly<TState>): string[];
-        
+
         isActive(id: string): boolean;
-        
+
         reset(): void;
         toJSON(): {
             active: string[];
             spent: string[];
         };
-        
+
         static fromJSON<TState>(rules: ReactionRule<TState>[], data: {
             active: string[];
             spent: string[];
@@ -1164,9 +1172,9 @@ build instead.
         private startCapture;
         private cancelCapture;
         private finishCapture;
-        
+
         get isCapturing(): boolean;
-        
+
         handleAction(action: Action): boolean;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -1182,11 +1190,15 @@ build instead.
         private readonly onFrame;
         constructor(actions: Signal<string>, frames: Signal<number>);
         get events(): readonly ReplayEvent[];
-        
+
         toJSON(): ReplayEvent[];
-        
+
         stop(): void;
     }
+
+### `Rectangle2D` (export)
+
+    export { Rectangle2D }
 
 ### `rectOf` (function)
 
@@ -1204,11 +1216,11 @@ build instead.
 
     export declare class Registry<T> {
         private items;
-        
+
         register(name: string, value: T): void;
         get(name: string): T;
         has(name: string): boolean;
-        
+
         list(): string[];
     }
 
@@ -1236,16 +1248,16 @@ build instead.
         private revealSpans;
         private reveal;
         constructor(options?: RichLabelOptions | string);
-        
+
         setText(value: string): void;
-        
+
         showProgressive(value: string, speed?: number): void;
-        
+
         updateReveal(dt: number): boolean;
-        
+
         completeReveal(): void;
         private renderRevealed;
-        
+
         private restyle;
         destroy(options?: Parameters<HTMLText['destroy']>[0]): void;
     }
@@ -1265,13 +1277,13 @@ build instead.
         private readonly limit?;
         constructor(options: RunHistoryOptions);
         private readAll;
-        
+
         record(summary: T): RunHistoryEntry<T>;
-        
+
         all(): readonly RunHistoryEntry<T>[];
-        
+
         ranked(by: (summary: T) => number, order?: 'asc' | 'desc'): readonly RunHistoryEntry<T>[];
-        
+
         clear(): void;
     }
 
@@ -1283,11 +1295,11 @@ build instead.
 
     export declare class SaveSyncClient extends HttpTransport {
         constructor(options: SaveSyncOptions);
-        
+
         upload(slot: string, payload: string): Promise<SaveSyncResponse>;
-        
+
         download(slot: string): Promise<string>;
-        
+
         list(): Promise<string[]>;
         private slotUrl;
     }
@@ -1302,16 +1314,16 @@ build instead.
         constructor(options: SaveSystemOptions);
         private key;
         save(slot: string, state: T, preview?: unknown): void;
-        
+
         load(slot: string): SaveData<T> | null;
-        
+
         importExternal(slot: string, externalBytes: Uint8Array, normalize: (bytes: Uint8Array) => unknown, preview?: unknown): void;
         delete(slot: string): void;
-        
+
         exportSlot(slot: string, scrambleKey?: string): string | null;
-        
+
         importSlot(slot: string, payload: string, scrambleKey?: string): void;
-        
+
         list(): Array<{
             slot: string;
             meta: SaveMeta;
@@ -1321,21 +1333,21 @@ build instead.
 ### `Scene` (class)
 
     export declare abstract class Scene {
-        
+
         readonly onDestroy: Signal<void>;
         private destroyed;
-        
+
         abstract create(): void;
-        
+
         update(_dt: number): void;
-        
+
         resize(_width: number, _height: number): void;
-        
+
         onSuspend(): void;
-        
+
         onResume(_result: unknown): void;
         destroy(): void;
-        
+
         protected teardown(): void;
         get isDestroyed(): boolean;
     }
@@ -1343,7 +1355,7 @@ build instead.
 ### `Scene2D` (class)
 
     export declare abstract class Scene2D extends Scene {
-        
+
         readonly stage: Container2D;
         protected teardown(): void;
     }
@@ -1353,16 +1365,16 @@ build instead.
     export declare class SceneComponentHost<TScene extends Scene = Scene> {
         private order;
         private registry;
-        
+
         add(component: SceneComponent<TScene>, scene: TScene): void;
         has(name: string): boolean;
-        
+
         get<T extends SceneComponent<TScene> = SceneComponent<TScene>>(name: string): T;
         update(scene: TScene, dt: number): void;
         resize(scene: TScene, width: number, height: number): void;
         onSuspend(scene: TScene): void;
         onResume(scene: TScene, result: unknown): void;
-        
+
         destroy(scene: TScene): void;
     }
 
@@ -1370,18 +1382,18 @@ build instead.
 
     export declare class SceneStack<T extends Scene = Scene> {
         private scenes;
-        
+
         get current(): T | null;
         get depth(): number;
-        
+
         replace(scene: T): void;
-        
+
         push(scene: T): void;
-        
+
         pop(result?: unknown): void;
-        
+
         update(dt: number): void;
-        
+
         resize(width: number, height: number): void;
         destroy(): void;
     }
@@ -1400,29 +1412,29 @@ build instead.
         private phase;
         private elapsed;
         private duration;
-        
+
         private fromAlpha;
         private toAlpha;
         constructor(options?: ScreenEffectsOptions);
-        
+
         setViewport(width: number, height: number): void;
         private redraw;
-        
+
         get isBusy(): boolean;
-        
+
         get washAlpha(): number;
-        
+
         fadeOut(duration: number, color?: number): void;
-        
+
         fadeIn(duration: number, color?: number): void;
-        
+
         flash(duration: number, color?: number, peak?: number): void;
-        
+
         setTint(color: number, alpha: number): void;
-        
+
         clear(): void;
         private begin;
-        
+
         update(dt: number): boolean;
     }
 
@@ -1436,13 +1448,13 @@ build instead.
         private polite;
         private assertive;
         private region;
-        
+
         announce(text: string, options?: {
             assertive?: boolean;
         }): void;
-        
+
         clear(): void;
-        
+
         destroy(): void;
     }
 
@@ -1453,7 +1465,7 @@ build instead.
 ### `Session` (class)
 
     export declare class Session {
-        
+
         readonly launches: number;
         constructor(options?: SessionOptions);
     }
@@ -1476,13 +1488,13 @@ build instead.
     export declare class Signal<T> {
         private listeners;
         private readonly stackMode;
-        
+
         constructor(stackMode?: boolean);
         add(listener: SignalListener<T>): void;
         remove(listener: SignalListener<T>): void;
         removeAll(): void;
         get size(): number;
-        
+
         dispatch(value: T): boolean;
     }
 
@@ -1511,7 +1523,7 @@ build instead.
         private onComplete?;
         constructor(options: SpawnerOptions<T>);
         update(dt: number): void;
-        
+
         get isComplete(): boolean;
     }
 
@@ -1536,21 +1548,21 @@ build instead.
         private frames;
         private names;
         private constructor();
-        
+
         static grid(path: string, frameWidth: number, frameHeight?: number): SpriteSheet;
         static fromTexture(texture: Texture2D, frameWidth: number, frameHeight?: number): SpriteSheet;
         get count(): number;
-        
+
         name(name: string, index: number): this;
-        
+
         nameAll(names: Readonly<Record<string, number>>): this;
         indexOf(name: string): number;
         get(frame: number | string): Texture2D;
-        
+
         region(frame: number | string): TextureRegion;
-        
+
         range(from: number, to: number): Texture2D[];
-        
+
         pick(...frames: Array<number | string>): Texture2D[];
     }
 
@@ -1562,21 +1574,21 @@ build instead.
         private cancelled;
         private historyLog;
         private seenLines;
-        
+
         skipSeen: boolean;
         constructor(options: ScriptOptions);
         cancel(): void;
-        
+
         get history(): readonly HistoryEntry[];
-        
+
         showLast(): Promise<boolean>;
         run(commands: readonly StageCommand[]): Promise<ScriptState>;
-        
+
         runStory(story: StoryScript, start: string): Promise<ScriptState>;
-        
+
         private step;
         private recordHistory;
-        
+
         protected speak(text: string, as: string | undefined, speaker?: string, choices?: Choice[]): Promise<unknown>;
     }
 
@@ -1589,7 +1601,7 @@ build instead.
     export declare class StatsScreen extends Container {
         private text;
         constructor(options: StatsScreenOptions);
-        
+
         setStats(stats: readonly StatRow[], width?: number): void;
         private static format;
     }
@@ -1599,15 +1611,15 @@ build instead.
     export declare class StatusVisuals {
         private target;
         private styles;
-        
+
         private priority;
         private active;
         private elapsed;
         constructor(target: TintTarget, options: StatusVisualsOptions);
-        
+
         set(kind: string, active: boolean): void;
         has(kind: string): boolean;
-        
+
         update(dt: number): void;
     }
 
@@ -1620,11 +1632,11 @@ build instead.
     export declare class TelemetryClient extends HttpTransport {
         private consented;
         constructor(options: TelemetryOptions);
-        
+
         get hasConsent(): boolean;
-        
+
         setConsent(granted: boolean): void;
-        
+
         send(event: TelemetryEvent): Promise<TelemetryResponse | null>;
     }
 
@@ -1632,6 +1644,10 @@ build instead.
 
     export declare class Text2D extends Text {
     }
+
+### `Texture2D` (export)
+
+    export { Texture2D }
 
 ### `theme` (function)
 
@@ -1666,7 +1682,7 @@ build instead.
         readonly tileWidth: number;
         readonly tileHeight: number;
         readonly shape: 'square' | 'hex' | 'isometric' | 'staggered';
-        
+
         readonly heightStep: number;
         private sheets;
         private layers;
@@ -1681,56 +1697,56 @@ build instead.
         private faces;
         constructor(options: TileMapOptions);
         get layerCount(): number;
-        
+
         get worldWidth(): number;
         get worldHeight(): number;
         inside(x: number, y: number): boolean;
         private index;
-        
+
         addLayer(name: string, data?: ArrayLike<number>): this;
         private layerAt;
         private chunkIndex;
-        
+
         private projectedCenter;
-        
+
         private projectedTile;
-        
+
         private cellOrigin;
-        
+
         private textureFor;
         private buildSprite;
         getTile(layer: string | number, x: number, y: number): number;
         setTile(layer: string | number, x: number, y: number, frame: number): void;
-        
+
         setLayerData(layer: string | number, data: ArrayLike<number>): void;
-        
+
         setCellColor(x: number, y: number, tint: number, add?: number): void;
         getCellTint(x: number, y: number): number;
-        
+
         clearColors(): void;
-        
+
         setCellHeight(x: number, y: number, height: number): void;
-        
+
         getCellHeight(x: number, y: number): number;
-        
+
         get faceCount(): number;
-        
+
         private syncFaces;
-        
+
         private drawFaces;
-        
+
         toTile(worldX: number, worldY: number): {
             x: number;
             y: number;
         };
-        
+
         tileCenter(x: number, y: number): {
             x: number;
             y: number;
         };
-        
+
         cull(camera: Camera): void;
-        
+
         get visibleChunks(): number;
     }
 
@@ -1739,16 +1755,16 @@ build instead.
     export declare class TintedSprite extends Sprite {
         private _colorAdd;
         constructor(options?: SpriteOptions | Texture2D);
-        
+
         get colorAdd(): number;
         set colorAdd(value: number);
-        
+
         setColorAdd(r: number, g: number, b: number, a?: number): void;
-        
+
         lerpTint(color: number, strength: number): void;
-        
+
         silhouette(color: number): void;
-        
+
         resetColor(): void;
     }
 
@@ -1764,9 +1780,9 @@ build instead.
         private phase;
         private elapsed;
         constructor(options?: ToastOptions);
-        
+
         show(content: Container2D): void;
-        
+
         get isBusy(): boolean;
         private start;
         update(dt: number): void;
@@ -1786,22 +1802,22 @@ build instead.
         private readonly body;
         private viewWidth;
         private viewHeight;
-        
+
         private panelWidth;
         private panelHeight;
         private pending;
         private waited;
         constructor(options?: TooltipOptions);
-        
+
         setViewport(width: number, height: number): void;
-        
+
         hover(text: string, x: number, y: number): void;
-        
+
         leave(): void;
         get isShowing(): boolean;
-        
+
         get text(): string | null;
-        
+
         get panelPosition(): {
             x: number;
             y: number;
@@ -1810,14 +1826,14 @@ build instead.
             width: number;
             height: number;
         };
-        
+
         update(dt: number): boolean;
-        
+
         protected measureBody(): {
             width: number;
             height: number;
         };
-        
+
         private place;
     }
 
@@ -1825,12 +1841,12 @@ build instead.
 
     export declare class Tweener {
         private tweens;
-        
+
         tween(duration: number, apply: (t: number) => void, options?: Easing | TweenOptions): Promise<void>;
         update(dt: number): void;
-        
+
         get isBusy(): boolean;
-        
+
         clear(): void;
     }
 
@@ -1841,17 +1857,17 @@ build instead.
         private cursor;
         private readonly limit;
         constructor(options?: UndoHistoryOptions);
-        
+
         push(state: T): void;
         get canUndo(): boolean;
         get canRedo(): boolean;
-        
+
         undo(): T | null;
-        
+
         redo(): T | null;
-        
+
         get current(): T | null;
-        
+
         clear(): void;
     }
 
@@ -1865,7 +1881,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.7.1";
+    export declare const version = "0.7.2";
 
 ### `VerticalLabel` (class)
 
@@ -1873,7 +1889,7 @@ build instead.
         private readonly opts;
         private readonly themeListener;
         constructor(options: VerticalLabelOptions);
-        
+
         private build;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -1882,11 +1898,11 @@ build instead.
 
     export declare class Viewport {
         readonly camera: Camera;
-        
+
         readonly container: Container<import("pixi.js").ContainerChild>;
         private readonly clip;
         constructor(options: ViewportOptions);
-        
+
         resize(x: number, y: number, width: number, height: number): void;
         update(dt: number): void;
     }
@@ -1912,23 +1928,23 @@ build instead.
         private currentHeight;
         private readonly themeListener;
         constructor(options: WindowOptions);
-        
+
         private restyle;
         resize(width: number, height: number): void;
-        
+
         get contentWidth(): number;
         get contentHeight(): number;
         setTitle(text: string): void;
-        
+
         delegate: {
             handleAction(action: Action): boolean;
         } | null;
-        
+
         handleAction(action: Action): boolean;
-        
+
         update(_dt: number): void;
         close(): void;
-        
+
         place(viewportWidth: number, viewportHeight: number): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -1947,17 +1963,17 @@ build instead.
         get top(): Window | null;
         get isEmpty(): boolean;
         get depth(): number;
-        
+
         push(window: Window): Window;
-        
+
         pop(): void;
         closeAll(): void;
         private forget;
         private updateOverlay;
         private drawOverlay;
-        
+
         private handleAction;
-        
+
         get blocksWorld(): boolean;
         update(dt: number): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -1987,19 +2003,19 @@ build instead.
         private readonly collideXZ?;
         private readonly animations;
         private currentClip;
-        
+
         constructor(node: TransformNode, animations?: readonly AnimationGroup[], collideXZ?: CollideXZ);
-        
+
         hasAnimation(name: string): boolean;
-        
+
         playAnimation(name: string, loop?: boolean): boolean;
-        
+
         stopAnimation(): void;
-        
+
         get currentAnimation(): string | null;
         moveTo(x: number, y: number, z: number, speed: number): void;
         update(deltaSeconds: number): boolean;
-        
+
         static fromMesh(mesh: AbstractMesh, animations?: readonly AnimationGroup[]): Character3D;
         static billboard(scene: Scene, options: Billboard3DOptions): Character3D;
     }
@@ -2076,29 +2092,29 @@ build instead.
 
     export declare class Advancement {
         private track;
-        
+
         private grantedTiers;
         private balance;
         private choices;
         constructor(track: AdvancementTrack);
-        
+
         get points(): number;
-        
+
         openTiers(level: number): number[];
-        
+
         grant(level: number): number;
-        
+
         spend(points: number): boolean;
-        
+
         choose(tierIndex: number, optionId: string, level: number): void;
-        
+
         choice(tierIndex: number): string | null;
         toJSON(): {
             grantedTiers: number;
             balance: number;
             choices: [number, string][];
         };
-        
+
         static fromJSON(track: AdvancementTrack, data: {
             grantedTiers: number;
             balance: number;
@@ -2116,12 +2132,12 @@ build instead.
         private tables;
         private assigned;
         constructor(tables: Record<string, AppearanceTable>);
-        
+
         appearanceOf(category: string, kind: string): string;
         toJSON(): {
             assigned: [string, [string, string][]][];
         };
-        
+
         static fromJSON(tables: Record<string, AppearanceTable>, data: {
             assigned: [string, [string, string][]][];
         }): Appearances;
@@ -2158,17 +2174,17 @@ build instead.
 
     export declare class Barrier {
         private layers;
-        
+
         add(amount: number, decayPerTick?: number): void;
-        
+
         get total(): number;
-        
+
         get layerCount(): number;
-        
+
         absorb(amount: number): number;
-        
+
         advance(turns?: number): void;
-        
+
         clear(): void;
         toJSON(): {
             layers: BarrierLayer[];
@@ -2204,13 +2220,13 @@ build instead.
         constructor(options: ChargesOptions);
         get current(): number;
         canAfford(cost: number): boolean;
-        
+
         spend(cost: number): boolean;
-        
+
         refund(amount?: number): number;
-        
+
         advance(turns?: number): void;
-        
+
         toJSON(): {
             current: number;
             progress: number;
@@ -2220,6 +2236,10 @@ build instead.
             progress: number;
         }): Charges;
     }
+
+### `composeModifiers` (function)
+
+    export declare function composeModifiers(base: number, modifiers: readonly Modifier[]): number;
 
 ### `convertToCharges` (function)
 
@@ -2250,22 +2270,22 @@ build instead.
         private isSlotLocked;
         constructor(slots: readonly Slot[], stats?: StatBlock | null, options?: EquipmentOptions<Slot, Item>);
         get(slot: Slot): Item | undefined;
-        
+
         isLocked(slot: Slot): boolean;
-        
+
         equip(slot: Slot, item: Item): Item | undefined;
-        
+
         private wear;
-        
+
         unequip(slot: Slot): Item | undefined;
         get slots(): readonly Slot[];
         private assertSlot;
-        
+
         toJSON(identify: (item: Item) => string): SavedEquipment<Slot>;
-        
+
         static fromJSON<Slot extends string, Item extends EquippableItem>(defs: {
             slots: readonly Slot[];
-            
+
             resolve: (id: string) => Item;
             stats?: StatBlock | null;
             locked?: (slot: Slot, item: Item) => boolean;
@@ -2289,17 +2309,17 @@ build instead.
         get items(): readonly InventoryItem[];
         get totalWeight(): number;
         private weightOf;
-        
+
         find(id: string, instanceId?: string): InventoryItem | undefined;
-        
+
         add(item: InventoryItem): boolean;
-        
+
         remove(id: string, quantity?: number, instanceId?: string): void;
-        
+
         take(id: string, quantity?: number, instanceId?: string): InventoryItem | undefined;
-        
+
         toJSON(): SavedInventory;
-        
+
         static fromJSON(defs: ReadonlyMap<string, ItemDefinition>, data: SavedInventory): Inventory;
     }
 
@@ -2321,11 +2341,11 @@ build instead.
             level?: number;
             experience?: number;
         });
-        
+
         get experienceToNext(): number | null;
-        
+
         addExperience(amount: number): number;
-        
+
         toJSON(): {
             level: number;
             experience: number;
@@ -2350,7 +2370,7 @@ build instead.
 
 ### `rollAffix` (function)
 
-    export declare function rollAffix(table: AffixTable): AffixDef | null;
+    export declare function rollAffix(table: AffixTable, options?: RollAffixOptions): AffixDef | null;
 
 ### `rollLoot` (function)
 
@@ -2377,17 +2397,17 @@ build instead.
         private costFor;
         private available;
         constructor(stats: StatBlock, options?: SkillPointsOptions);
-        
+
         get points(): number;
-        
+
         grant(points: number): void;
-        
+
         canSpend(stat: string): boolean;
-        
+
         spend(stat: string): boolean;
-        
+
         private nextRankCost;
-        
+
         toJSON(): {
             points: number;
         };
@@ -2408,18 +2428,18 @@ build instead.
         private modifiers;
         private cache;
         constructor(options: StatBlockOptions);
-        
+
         base(name: string): number;
         setBase(name: string, value: number): void;
         addModifier(modifier: Modifier): void;
         removeModifier(modifier: Modifier): void;
-        
+
         removeModifiersFrom(source: unknown): void;
-        
+
         get(name: string): number;
         private resolveAll;
         private modifiersFor;
-        
+
         toJSON(): {
             base: Stats;
         };
@@ -2445,6 +2465,189 @@ build instead.
 
     export declare function toEntitySaveState(entity: BuiltEntity): EntitySaveState;
 
+## `./ai`
+
+### `AIAction` (interface)
+
+    export interface AIAction {
+        readonly type: string;
+        readonly [key: string]: AIValue;
+    }
+
+### `AIAgentDefinition` (interface)
+
+    export interface AIAgentDefinition {
+        readonly id: string;
+        readonly behaviors: readonly AIBehavior[];
+        readonly scope?: 'actor' | 'controller';
+        readonly algorithm?: 'rules' | 'alpha_beta';
+        readonly depth?: number;
+        readonly maxNodes?: number;
+    }
+
+### `AIBehavior` (interface)
+
+    export interface AIBehavior {
+        readonly id: string;
+        readonly when?: (context: AIDecisionContext) => boolean;
+        readonly decide: (context: AIDecisionContext) => AIAction | null;
+    }
+
+### `AIBudgetExceededError` (class)
+
+    export declare class AIBudgetExceededError extends Error {
+        constructor();
+    }
+
+### `AICancelledError` (class)
+
+    export declare class AICancelledError extends Error {
+        constructor();
+    }
+
+### `AIDecision` (interface)
+
+    export interface AIDecision {
+        readonly agent: string;
+        readonly action: AIAction | null;
+        readonly state: AIState;
+        readonly behavior?: string;
+        readonly status: 'action' | 'idle' | 'cancelled' | 'budget-exceeded';
+        readonly steps: number;
+        readonly events: readonly AIEvent[];
+    }
+
+### `AIDecisionContext` (interface)
+
+    export interface AIDecisionContext {
+        readonly perception: AIValue;
+        readonly state: AIState;
+        readonly random: () => number;
+        readonly checkpoint: () => void;
+        emit(name: string, payload?: AIValue): void;
+    }
+
+### `AIDecisionInput` (interface)
+
+    export interface AIDecisionInput {
+        readonly perception: AIValue;
+        readonly state?: AIState;
+        readonly signal?: AbortSignal;
+        readonly seed?: number;
+        readonly maxSteps?: number;
+        readonly maxMilliseconds?: number;
+    }
+
+### `AIDiagnostics` (interface)
+
+    export interface AIDiagnostics {
+        readonly onDecision?: (decision: AIDecision) => void;
+    }
+
+### `AIEvent` (interface)
+
+    export interface AIEvent {
+        readonly name: string;
+        readonly payload?: AIValue;
+    }
+
+### `AIModule` (interface)
+
+    export interface AIModule {
+        register(agent: AIAgentDefinition): void;
+        decide(agent: string, input: AIDecisionInput): AIDecision;
+        exportState(): AIStateEnvelope;
+        importState(envelope: AIStateEnvelope): void;
+        dispose(): void;
+    }
+
+### `AIState` (type)
+
+    export type AIState = Record<string, AIValue>;
+
+### `AIStateEnvelope` (interface)
+
+    export interface AIStateEnvelope {
+        readonly version: 1;
+        readonly agents: Readonly<Record<string, AIState>>;
+    }
+
+### `AIValue` (type)
+
+    export type AIValue = null | boolean | number | string | AIValue[] | {
+        readonly [key: string]: AIValue;
+
+### `alphaBetaSearch` (function)
+
+    export declare function alphaBetaSearch<State, Move>(game: AlphaBetaGame<State, Move>, state: State, options: AlphaBetaOptions): AlphaBetaResult<State, Move>;
+
+### `JavaScriptAI` (class)
+
+    export declare class JavaScriptAI implements AIModule {
+        private readonly agents;
+        private readonly states;
+        private readonly options;
+        constructor(options?: JavaScriptAIOptions);
+        register(agent: AIAgentDefinition): void;
+        decide(agentId: string, input: AIDecisionInput): AIDecision;
+
+        search<State, Move>(game: AlphaBetaGame<State, Move>, state: State, options: AlphaBetaOptions): AlphaBetaResult<State, Move>;
+        exportState(): AIStateEnvelope;
+        importState(envelope: AIStateEnvelope): void;
+        dispose(): void;
+    }
+
+### `JavaScriptAIOptions` (interface)
+
+    export interface JavaScriptAIOptions extends AIDiagnostics {
+        readonly maxSteps?: number;
+        readonly maxMilliseconds?: number;
+        readonly seed?: number;
+    }
+
+## `./ai/lua`
+
+### `createLuaAI` (function)
+
+    export declare function createLuaAI(options?: LuaAIOptions): LuaAI;
+
+### `LuaAI` (class)
+
+    export declare class LuaAI {
+        private readonly host;
+        private readonly agents;
+        private readonly states;
+        private readonly options;
+        private readonly loaded;
+        constructor(options?: LuaAIOptions);
+        register(agent: LuaAIAgentDefinition): void;
+        decide(agentId: string, input: AIDecisionInput): AIDecision;
+
+        search(agentId: string, state: import('./index.ts').AIValue, options: AlphaBetaOptions): AlphaBetaResult<import('./index.ts').AIValue, import('./index.ts').AIValue>;
+        exportState(): AIStateEnvelope;
+        importState(envelope: AIStateEnvelope): void;
+        dispose(): void;
+    }
+
+### `LuaAIAgentDefinition` (interface)
+
+    export interface LuaAIAgentDefinition {
+        readonly id: string;
+        readonly source: string;
+        readonly functionName?: string;
+        readonly search?: LuaAlphaBetaFunctions;
+    }
+
+### `LuaAIOptions` (interface)
+
+    export interface LuaAIOptions extends FengariScriptHostOptions {
+        readonly host?: ScriptHost;
+        readonly maxSteps?: number;
+        readonly maxMilliseconds?: number;
+        readonly seed?: number;
+        readonly onDecision?: (decision: AIDecision) => void;
+    }
+
 ## `./assets`
 
 ### `AssetStream` (class)
@@ -2456,14 +2659,14 @@ build instead.
         private readonly releaseAssets;
         private clock;
         constructor(options?: AssetStreamOptions);
-        
+
         preload(bundle: AssetBundle, onProgress?: AssetProgress): Promise<void>;
-        
+
         preloadLikely(bundles: readonly AssetBundle[], onProgress?: AssetProgress): Promise<void>;
-        
+
         use(id: string): boolean;
         isReady(id: string): boolean;
-        
+
         unload(id: string): Promise<void>;
         get estimatedBytes(): number;
         private enforceBudget;
@@ -2547,7 +2750,7 @@ build instead.
 ### `LoadBinaryOptions` (interface)
 
     export interface LoadBinaryOptions {
-        
+
         fetch?: typeof globalThis.fetch;
     }
 
@@ -2600,11 +2803,11 @@ build instead.
         constructor(file: MidiFile, options?: MidiPlayerOptions);
         play(): void;
         pause(): void;
-        
+
         stop(): void;
         update(dt: number): void;
         get isPlaying(): boolean;
-        
+
         get duration(): number;
     }
 
@@ -2618,9 +2821,9 @@ build instead.
         private playlistFade;
         volume: number;
         constructor(options?: MusicOptions);
-        
+
         play(path: string, fadeDuration?: number): void;
-        
+
         playTracks(paths: readonly string[], fadeDuration?: number): void;
         private startNextTrack;
         private start;
@@ -2644,13 +2847,13 @@ build instead.
         private currentTrack;
         private music;
         constructor(music: Music);
-        
+
         define(state: string, mapping: OrchestratorState): void;
-        
+
         enter(state: string): void;
-        
+
         on(event: string, cue: Sound): void;
-        
+
         trigger(event: string): void;
     }
 
@@ -2716,7 +2919,7 @@ build instead.
         readonly progression: Progression;
         private deriveStats?;
         constructor(options: CreatureOptions);
-        
+
         refreshStats(): void;
         private computeBase;
     }
@@ -2730,7 +2933,7 @@ build instead.
         get(id: string): FieldCondition | undefined;
         clear(id: string): void;
         get active(): readonly FieldCondition[];
-        
+
         advance(rounds?: number): void;
     }
 
@@ -2742,13 +2945,13 @@ build instead.
         constructor(activeSize: number);
         get members(): readonly (C | null)[];
         get boxed(): readonly C[];
-        
+
         add(creature: C): void;
-        
+
         store(index: number): void;
-        
+
         withdraw(storageIndex: number, activeSlot: number): void;
-        
+
         get activeMembers(): C[];
     }
 
@@ -2761,12 +2964,12 @@ build instead.
         private stages;
         private modifiers;
         constructor(stats: StatBlock, options: StatStagesOptions);
-        
+
         get(stat: string): number;
-        
+
         change(stat: string, delta: number): number;
         private applyModifier;
-        
+
         resetAll(): void;
     }
 
@@ -2777,7 +2980,7 @@ build instead.
         private key;
         set(attacking: string, defending: string, multiplier: number): void;
         get(attacking: string, defending: string): number;
-        
+
         multiplierFor(attacking: string, defendingTypes: readonly string[]): number;
     }
 
@@ -2850,6 +3053,10 @@ build instead.
 ### `checkersMoves` (function)
 
     export declare function checkersMoves(state: CheckersState): CheckersMove[];
+
+### `chessGame` (const)
+
+    export declare const chessGame: AlphaBetaGame<ChessState, ChessMove>;
 
 ### `chooseMove` (function)
 
@@ -3077,26 +3284,26 @@ build instead.
     export declare class Achievements {
         private definitions;
         private counts;
-        
+
         private fresh;
         define(definition: AchievementDef): void;
-        
+
         count(counter: string): number;
-        
+
         increment(counter: string, amount?: number): string[];
-        
+
         unlocked(id: string): boolean;
-        
+
         progress(id: string): {
             count: number;
             target: number;
         };
-        
+
         drainNew(): string[];
         toJSON(): {
             counts: [string, number][];
         };
-        
+
         static fromJSON(definitions: AchievementDef[], data: {
             counts: [string, number][];
         }): Achievements;
@@ -3109,19 +3316,19 @@ build instead.
         readonly height: number;
         private volume;
         constructor(width: number, height: number);
-        
+
         private index;
-        
+
         volumeAt(x: number, y: number): number;
-        
+
         total(): number;
-        
+
         seed(x: number, y: number, amount: number): void;
-        
+
         clear(x: number, y: number): void;
-        
+
         spread(open: (x: number, y: number) => boolean, spread?: number, decay?: number): void;
-        
+
         cellsAbove(minimum: number): Array<{
             x: number;
             y: number;
@@ -3153,17 +3360,17 @@ build instead.
         private readonly prefix;
         private readonly storage;
         constructor(name: string, options?: CollectionOptions);
-        
+
         get size(): number;
-        
+
         all(): DbRecord[];
         get(id: string): DbRecord | undefined;
-        
+
         put(record: DbRecord): void;
         remove(id: string): void;
-        
+
         where(predicate: (record: DbRecord) => boolean): DbRecord[];
-        
+
         clear(): void;
         private keys;
         private read;
@@ -3183,10 +3390,10 @@ build instead.
         private entities;
         private ids;
         private sequence;
-        
-        add(entity: T): EntityId;
+
+        add(entity: T, requestedId?: EntityId): EntityId;
         get(id: EntityId): T | undefined;
-        
+
         idOf(entity: T): EntityId | undefined;
         has(id: EntityId): boolean;
         remove(id: EntityId): boolean;
@@ -3209,13 +3416,13 @@ build instead.
         private s3;
         readonly seed: number;
         constructor(seed?: number);
-        
+
         nextUint32(): number;
-        
+
         float(): number;
-        
+
         int(bound: number): number;
-        
+
         getState(): [number, number, number, number];
         setState(state: readonly [number, number, number, number]): void;
     }
@@ -3246,13 +3453,13 @@ build instead.
     export declare class HookRegistry<TArgs extends unknown[]> {
         private hooks;
         on(event: string, handler: (...args: TArgs) => void, source?: unknown): void;
-        
+
         off(handler: (...args: TArgs) => void): void;
-        
+
         offSource(source: unknown): void;
-        
+
         emit(event: string, ...args: TArgs): void;
-        
+
         get size(): number;
         clear(): void;
     }
@@ -3273,11 +3480,11 @@ build instead.
         private cancelled;
         add(task: LoadTask): this;
         get snapshot(): LoadSnapshot;
-        
+
         start(): Promise<void>;
-        
+
         cancel(): void;
-        
+
         retry(): void;
         private report;
         private emit;
@@ -3296,11 +3503,11 @@ build instead.
         private readonly createSocket;
         private _id;
         constructor(options: LockstepClientOptions);
-        
+
         get id(): string | null;
         get connected(): boolean;
         connect(): void;
-        
+
         submitInput(payload: unknown): void;
         close(): void;
         private handleMessage;
@@ -3313,7 +3520,7 @@ build instead.
         private level;
         private readonly sink;
         constructor(category: string, options?: LoggerOptions);
-        
+
         setLevel(level: LogLevel): void;
         debug(message: string, data?: unknown): void;
         info(message: string, data?: unknown): void;
@@ -3330,7 +3537,7 @@ build instead.
 
     export declare class NewsClient extends HttpTransport {
         constructor(options: NewsOptions);
-        
+
         fetchItems(): Promise<NewsItem[]>;
     }
 
@@ -3342,7 +3549,7 @@ build instead.
         private readSeen;
         isSeen(id: string): boolean;
         markSeen(id: string): void;
-        
+
         unseen(items: readonly NewsItem[]): NewsItem[];
     }
 
@@ -3364,9 +3571,9 @@ build instead.
         private readonly frames;
         private readonly onFrame;
         constructor(events: readonly ReplayEvent[], dispatch: (action: string) => void, frames: Signal<number>);
-        
+
         get done(): boolean;
-        
+
         stop(): void;
         private pump;
     }
@@ -3378,21 +3585,21 @@ build instead.
         readonly padIndex?: number;
         constructor(id: string, options?: PlayerInputOptions);
         private scoped;
-        
+
         bind(action: Action, keys: readonly string[]): void;
-        
+
         bindButton(action: Action, buttons: readonly number[]): void;
-        
+
         bindAxis(action: Action, axis: number, direction: 1 | -1): void;
-        
+
         bindTouch(action: Action, id?: string): void;
-        
+
         pressTouch(id: string): void;
         releaseTouch(id: string): void;
         isDown(action: Action): boolean;
         justPressed(action: Action): boolean;
         justReleased(action: Action): boolean;
-        
+
         keysFor(action: Action): string[];
     }
 
@@ -3403,11 +3610,11 @@ build instead.
         private readonly initial;
         private readonly combine;
         constructor(options: PlayerStatsOptions<T, S>);
-        
+
         get(): T;
-        
+
         record(summary: S): T;
-        
+
         reset(): void;
     }
 
@@ -3423,13 +3630,13 @@ build instead.
         private busy;
         private remaining;
         constructor(options: PresentationQueueOptions<Event>);
-        
+
         enqueue(events: readonly Event[]): void;
-        
+
         update(dt: number): void;
-        
+
         get isBusy(): boolean;
-        
+
         clear(): void;
         private advance;
     }
@@ -3446,19 +3653,19 @@ build instead.
         private spent;
         constructor(rules?: ReactionRule<TState>[]);
         add(rule: ReactionRule<TState>): void;
-        
+
         remove(id: string): void;
-        
+
         check(state: Readonly<TState>): string[];
-        
+
         isActive(id: string): boolean;
-        
+
         reset(): void;
         toJSON(): {
             active: string[];
             spent: string[];
         };
-        
+
         static fromJSON<TState>(rules: ReactionRule<TState>[], data: {
             active: string[];
             spent: string[];
@@ -3476,9 +3683,9 @@ build instead.
         private readonly onFrame;
         constructor(actions: Signal<string>, frames: Signal<number>);
         get events(): readonly ReplayEvent[];
-        
+
         toJSON(): ReplayEvent[];
-        
+
         stop(): void;
     }
 
@@ -3490,11 +3697,11 @@ build instead.
 
     export declare class Registry<T> {
         private items;
-        
+
         register(name: string, value: T): void;
         get(name: string): T;
         has(name: string): boolean;
-        
+
         list(): string[];
     }
 
@@ -3505,13 +3712,13 @@ build instead.
         private readonly limit?;
         constructor(options: RunHistoryOptions);
         private readAll;
-        
+
         record(summary: T): RunHistoryEntry<T>;
-        
+
         all(): readonly RunHistoryEntry<T>[];
-        
+
         ranked(by: (summary: T) => number, order?: 'asc' | 'desc'): readonly RunHistoryEntry<T>[];
-        
+
         clear(): void;
     }
 
@@ -3523,11 +3730,11 @@ build instead.
 
     export declare class SaveSyncClient extends HttpTransport {
         constructor(options: SaveSyncOptions);
-        
+
         upload(slot: string, payload: string): Promise<SaveSyncResponse>;
-        
+
         download(slot: string): Promise<string>;
-        
+
         list(): Promise<string[]>;
         private slotUrl;
     }
@@ -3542,16 +3749,16 @@ build instead.
         constructor(options: SaveSystemOptions);
         private key;
         save(slot: string, state: T, preview?: unknown): void;
-        
+
         load(slot: string): SaveData<T> | null;
-        
+
         importExternal(slot: string, externalBytes: Uint8Array, normalize: (bytes: Uint8Array) => unknown, preview?: unknown): void;
         delete(slot: string): void;
-        
+
         exportSlot(slot: string, scrambleKey?: string): string | null;
-        
+
         importSlot(slot: string, payload: string, scrambleKey?: string): void;
-        
+
         list(): Array<{
             slot: string;
             meta: SaveMeta;
@@ -3561,21 +3768,21 @@ build instead.
 ### `Scene` (class)
 
     export declare abstract class Scene {
-        
+
         readonly onDestroy: Signal<void>;
         private destroyed;
-        
+
         abstract create(): void;
-        
+
         update(_dt: number): void;
-        
+
         resize(_width: number, _height: number): void;
-        
+
         onSuspend(): void;
-        
+
         onResume(_result: unknown): void;
         destroy(): void;
-        
+
         protected teardown(): void;
         get isDestroyed(): boolean;
     }
@@ -3585,16 +3792,16 @@ build instead.
     export declare class SceneComponentHost<TScene extends Scene = Scene> {
         private order;
         private registry;
-        
+
         add(component: SceneComponent<TScene>, scene: TScene): void;
         has(name: string): boolean;
-        
+
         get<T extends SceneComponent<TScene> = SceneComponent<TScene>>(name: string): T;
         update(scene: TScene, dt: number): void;
         resize(scene: TScene, width: number, height: number): void;
         onSuspend(scene: TScene): void;
         onResume(scene: TScene, result: unknown): void;
-        
+
         destroy(scene: TScene): void;
     }
 
@@ -3602,18 +3809,18 @@ build instead.
 
     export declare class SceneStack<T extends Scene = Scene> {
         private scenes;
-        
+
         get current(): T | null;
         get depth(): number;
-        
+
         replace(scene: T): void;
-        
+
         push(scene: T): void;
-        
+
         pop(result?: unknown): void;
-        
+
         update(dt: number): void;
-        
+
         resize(width: number, height: number): void;
         destroy(): void;
     }
@@ -3629,7 +3836,7 @@ build instead.
 ### `Session` (class)
 
     export declare class Session {
-        
+
         readonly launches: number;
         constructor(options?: SessionOptions);
     }
@@ -3643,13 +3850,13 @@ build instead.
     export declare class Signal<T> {
         private listeners;
         private readonly stackMode;
-        
+
         constructor(stackMode?: boolean);
         add(listener: SignalListener<T>): void;
         remove(listener: SignalListener<T>): void;
         removeAll(): void;
         get size(): number;
-        
+
         dispatch(value: T): boolean;
     }
 
@@ -3666,7 +3873,7 @@ build instead.
         private onComplete?;
         constructor(options: SpawnerOptions<T>);
         update(dt: number): void;
-        
+
         get isComplete(): boolean;
     }
 
@@ -3675,11 +3882,11 @@ build instead.
     export declare class TelemetryClient extends HttpTransport {
         private consented;
         constructor(options: TelemetryOptions);
-        
+
         get hasConsent(): boolean;
-        
+
         setConsent(granted: boolean): void;
-        
+
         send(event: TelemetryEvent): Promise<TelemetryResponse | null>;
     }
 
@@ -3687,12 +3894,12 @@ build instead.
 
     export declare class Tweener {
         private tweens;
-        
+
         tween(duration: number, apply: (t: number) => void, options?: Easing | TweenOptions): Promise<void>;
         update(dt: number): void;
-        
+
         get isBusy(): boolean;
-        
+
         clear(): void;
     }
 
@@ -3703,17 +3910,17 @@ build instead.
         private cursor;
         private readonly limit;
         constructor(options?: UndoHistoryOptions);
-        
+
         push(state: T): void;
         get canUndo(): boolean;
         get canRedo(): boolean;
-        
+
         undo(): T | null;
-        
+
         redo(): T | null;
-        
+
         get current(): T | null;
-        
+
         clear(): void;
     }
 
@@ -3738,11 +3945,11 @@ build instead.
 ### `Catalog` (interface)
 
     export interface Catalog {
-        
+
         locale: string;
         direction: Direction;
         messages: Record<string, MessageValue>;
-        
+
         typography?: boolean;
     }
 
@@ -3839,7 +4046,7 @@ build instead.
 ### `MessageParams` (interface)
 
     export interface MessageParams {
-        
+
         count?: number;
         [token: string]: string | number | undefined;
     }
@@ -3942,6 +4149,10 @@ build instead.
 
 ## `./mwl`
 
+### `coerceTableValue` (function)
+
+    export declare function coerceTableValue(raw: string, type: CsvColumnType, column: string, listDelimiter?: string, mapDelimiter?: string): unknown;
+
 ### `collectHookReferences` (function)
 
     export declare function collectHookReferences(game: MwlCompiledGame): HookReference[];
@@ -3949,6 +4160,10 @@ build instead.
 ### `compile` (function)
 
     export declare function compile(source: string, options?: MwlCompileOptions): MwlCompiledGame;
+
+### `compileAndEmitSources` (function)
+
+    export declare function compileAndEmitSources(files: readonly MwlSourceFile[], options?: MwlCompileOptions, emitOptions?: Omit<MwlEmitOptions, 'onEmit'>): readonly MwlArtifact[];
 
 ### `compileNodes` (function)
 
@@ -3958,9 +4173,21 @@ build instead.
 
     export declare function compileSources(files: readonly MwlSourceFile[], options?: MwlCompileOptions): MwlCompiledGame;
 
+### `composeEffects` (function)
+
+    export declare function composeEffects(base: number, effects: readonly MwlEffectDefinition[], context?: MwlExpressionContext): number;
+
 ### `contentCatalog` (function)
 
     export declare function contentCatalog(game: MwlCompiledGame): MwlContentCatalog;
+
+### `contentReport` (function)
+
+    export declare function contentReport(game: MwlCompiledGame): MwlContentReport;
+
+### `createExpressionScriptHost` (function)
+
+    export declare function createExpressionScriptHost(): ScriptHost;
 
 ### `createWorld` (function)
 
@@ -3974,6 +4201,10 @@ build instead.
 
     export declare function effectToModifier(effect: MwlEffectDefinition, context?: MwlExpressionContext): Modifier;
 
+### `emitArtifacts` (function)
+
+    export declare function emitArtifacts(game: MwlCompiledGame, options?: MwlEmitOptions): readonly MwlArtifact[];
+
 ### `emitHooksDeclaration` (function)
 
     export declare function emitHooksDeclaration(references: readonly HookReference[]): string;
@@ -3985,6 +4216,10 @@ build instead.
 ### `encodeSave` (function)
 
     export declare function encodeSave(world: MwlWorld, options: MwlPersistenceOptions): string;
+
+### `evaluateCondition` (function)
+
+    export declare function evaluateCondition(source: string, context: MwlConditionContext, options?: MwlConditionOptions): boolean;
 
 ### `evaluateExpression` (function)
 
@@ -4025,15 +4260,24 @@ build instead.
         private readonly persistence;
         private readonly unitTypes;
         private schedule;
+        private pendingDialogue;
+        private dialogueCounter;
         constructor(game: MwlCompiledGame, options?: MwlRuntimeOptions);
         run(trigger: string): void;
-        
+
+        fireEvent(id: string): boolean;
+
         fireMoveto(id: string): void;
-        
+
         private claimEvent;
         private eventFiltersMatch;
         private executeEvent;
-        
+
+        private showDialogue;
+        private showSay;
+
+        answerDialogue(dialogueId: string, choiceIndex: number): boolean;
+
         evaluate(): MwlWorld['status'];
         save(): string;
         snapshot(): string;
@@ -4048,8 +4292,9 @@ build instead.
         private executeNode;
         private runHook;
         private applyMove;
-        
+
         private showMessage;
+        private setVariable;
         private spawnUnit;
         private killUnit;
         private addGold;
@@ -4086,6 +4331,10 @@ build instead.
     export declare function parseHookReference(value: string): {
         type: HookType;
 
+### `parseTableColumns` (function)
+
+    export declare function parseTableColumns(value: string): MwlTableColumn[];
+
 ### `parseTerrain` (function)
 
     export declare function parseTerrain(text: string): {
@@ -4098,6 +4347,14 @@ build instead.
 ### `preprocess` (function)
 
     export declare function preprocess(source: string, options?: MwlPreprocessOptions): string;
+
+### `readAttributes` (function)
+
+    export declare function readAttributes<T extends Record<string, unknown>>(node: MwlCompiledNode, fields: Readonly<Record<keyof T & string, MwlFieldSpec>>): MwlReadResult<T>;
+
+### `readChildren` (function)
+
+    export declare function readChildren<T>(node: MwlCompiledNode, tag: string, read: (child: MwlCompiledNode) => MwlReadResult<T>): MwlReadResult<readonly T[]>;
 
 ### `schema01` (const)
 
@@ -4123,6 +4380,19 @@ build instead.
 
     export declare function validateWorld(value: unknown): MwlWorld;
 
+## `./mwl/fengari`
+
+### `createFengariScriptHost` (function)
+
+    export declare function createFengariScriptHost(options?: FengariScriptHostOptions): ScriptHost;
+
+### `FengariScriptHostOptions` (interface)
+
+    export interface FengariScriptHostOptions {
+        readonly instructionLimit?: number;
+        readonly seed?: number;
+    }
+
 ## `./roguelike`
 
 ### `AbilityCycle` (class)
@@ -4131,11 +4401,11 @@ build instead.
         private cooldowns;
         private remaining;
         constructor(cooldowns: Record<string, number>);
-        
+
         advance(turns?: number): void;
-        
+
         ready(): string[];
-        
+
         use(id: string): boolean;
         toJSON(): {
             remaining: [string, number][];
@@ -4154,13 +4424,13 @@ build instead.
     export declare class BossPhases {
         private thresholds;
         private current;
-        
+
         constructor(thresholds?: readonly number[]);
-        
+
         get phase(): number;
-        
+
         check(hpFraction: number): number[];
-        
+
         reset(): void;
         toJSON(): {
             phase: number;
@@ -4197,7 +4467,7 @@ build instead.
 ### `CombatHooks` (class)
 
     export declare class CombatHooks<C> extends HookRegistry<[context: DamageContext<C>]> {
-        
+
         modifyDamage(attacker: C, defender: C, amount: number): DamageContext<C>;
     }
 
@@ -4222,7 +4492,7 @@ build instead.
         private lockedBy;
         private open_;
         constructor(level: Level);
-        
+
         place(x: number, y: number, options: {
             open: number;
             closed: number;
@@ -4232,13 +4502,13 @@ build instead.
         isDoor(x: number, y: number): boolean;
         isOpen(x: number, y: number): boolean;
         isLocked(x: number, y: number): boolean;
-        
+
         requiredKey(x: number, y: number): string | undefined;
-        
+
         open(x: number, y: number): boolean;
-        
+
         close(x: number, y: number): boolean;
-        
+
         unlock(x: number, y: number): boolean;
         toJSON(): {
             doors: {
@@ -4249,7 +4519,7 @@ build instead.
                 isOpen: boolean;
             }[];
         };
-        
+
         static fromJSON(level: Level, data: {
             doors: {
                 cell: number;
@@ -4271,9 +4541,9 @@ build instead.
         private readonly level;
         private readonly heights;
         constructor(level: Level);
-        
+
         heightAt(x: number, y: number): number;
-        
+
         set(x: number, y: number, height: number): void;
     }
 
@@ -4286,19 +4556,19 @@ build instead.
     export declare class FeatureLayer<TContext = unknown> {
         private defs;
         private placed;
-        
+
         define(kind: string, def: CellFeatureDef<TContext>): void;
-        
+
         place(cell: number, kind: string): void;
         has(cell: number): boolean;
         kindAt(cell: number): string | undefined;
         remove(cell: number): void;
-        
+
         inspect(cell: number, ctx: TContext): void;
-        
+
         interact(cell: number, ctx: TContext): void;
         private defAt;
-        
+
         toJSON(): {
             cells: [number, string][];
         };
@@ -4312,28 +4582,28 @@ build instead.
     export declare class FieldOfView {
         private level;
         private fov;
-        
+
         readonly visible: Set<number>;
-        
+
         readonly explored: Set<number>;
-        
+
         readonly light: Map<number, number>;
         constructor(level: Level);
-        
+
         update(x: number, y: number, radius: number, sight?: HeightSight): void;
-        
+
         private lightCell;
-        
+
         private updateFromHeight;
-        
+
         private heightBlocked;
         isVisible(x: number, y: number): boolean;
         isExplored(x: number, y: number): boolean;
-        
+
         lightAt(x: number, y: number): number;
-        
+
         reset(): void;
-        
+
         revealAll(): void;
     }
 
@@ -4376,10 +4646,10 @@ build instead.
         readonly width: number;
         readonly height: number;
         readonly shape: LevelShape;
-        
+
         readonly terrain: Uint8Array;
         private kinds;
-        
+
         rooms: Rect[];
         constructor(width: number, height: number, kinds: TerrainKind[], fill?: number, shape?: LevelShape);
         get cellCount(): number;
@@ -4387,14 +4657,14 @@ build instead.
         xOf(cell: number): number;
         yOf(cell: number): number;
         inside(x: number, y: number): boolean;
-        
+
         neighbors(x: number, y: number, topology?: 4 | 8): Array<{
             x: number;
             y: number;
         }>;
-        
+
         forEachNeighbor(x: number, y: number, topology: 4 | 8, visit: (nx: number, ny: number) => void): void;
-        
+
         insideWithBorder(x: number, y: number): boolean;
         get(x: number, y: number): number;
         set(x: number, y: number, kind: number): void;
@@ -4402,7 +4672,7 @@ build instead.
         passable(x: number, y: number): boolean;
         transparent(x: number, y: number): boolean;
         fillRect(rect: Rect, kind: number): void;
-        
+
         passableCells(): number[];
         toJSON(): {
             width: number;
@@ -4411,7 +4681,7 @@ build instead.
             terrain: number[];
             rooms: Rect[];
         };
-        
+
         static fromJSON(kinds: TerrainKind[], data: {
             width: number;
             height: number;
@@ -4428,15 +4698,15 @@ build instead.
         private index;
         private remaining;
         constructor(stages: readonly AbilityStage[]);
-        
+
         get active(): boolean;
-        
+
         get stage(): AbilityStage | null;
-        
+
         start(): boolean;
-        
+
         advance(): string | null;
-        
+
         cancel(): void;
         toJSON(): {
             index: number;
@@ -4458,19 +4728,19 @@ build instead.
         private level;
         constructor(level: Level);
         private passable;
-        
+
         private stepper;
-        
+
         find(from: Step, to: Step, options?: PathOptions): Step[];
-        
+
         step(from: Step, to: Step, options?: PathOptions): Step | null;
-        
+
         distanceMap(to: Step, options?: PathOptions): Int32Array;
-        
+
         descend(from: Step, distances: Int32Array, options?: PathOptions): Step | null;
-        
+
         autoExplore(from: Step, explored: FieldOfView, options?: PathOptions): Step[];
-        
+
         private reconstruct;
     }
 
@@ -4504,26 +4774,26 @@ build instead.
     export declare class Scheduler<A extends Actor> {
         private entries;
         private sequence;
-        
+
         now: number;
         get size(): number;
         get actors(): A[];
         has(actor: A): boolean;
-        
+
         add(actor: A, delay?: number): void;
         remove(actor: A): void;
         clear(): void;
-        
+
         peek(): A | null;
-        
+
         spend(cost: number): void;
-        
+
         postpone(actor: A, delay: number): void;
-        
+
         timeOf(actor: A): number | null;
-        
+
         toJSON(actorId: (actor: A) => string): SchedulerSnapshot;
-        
+
         static restore<A extends Actor>(snapshot: SchedulerSnapshot, actorOf: (id: string) => A): Scheduler<A>;
         private sort;
     }
@@ -4535,18 +4805,18 @@ build instead.
         private revealedKind;
         private discovered;
         constructor(level: Level);
-        
+
         conceal(x: number, y: number, disguise: number, revealed: number): void;
-        
+
         isSecret(x: number, y: number): boolean;
         isDiscovered(x: number, y: number): boolean;
-        
+
         discover(x: number, y: number): boolean;
         toJSON(): {
             revealed: [number, number][];
             discovered: number[];
         };
-        
+
         static fromJSON(level: Level, data: {
             revealed: [number, number][];
             discovered: number[];
@@ -4564,9 +4834,9 @@ build instead.
         private radius;
         constructor(options: StealthOptions);
         get isDetected(): boolean;
-        
+
         checkDetection(hidden: Step, observers: readonly Step[]): boolean;
-        
+
         reset(): void;
     }
 
@@ -4581,13 +4851,13 @@ build instead.
         private streak;
         private lastTurn;
         constructor(window: number);
-        
+
         get count(): number;
-        
+
         trigger(turn: number): number;
-        
+
         isActive(turn: number): boolean;
-        
+
         reset(): void;
         toJSON(): {
             streak: number;
@@ -4659,7 +4929,7 @@ build instead.
     export declare class FreeMover {
         x: number;
         y: number;
-        
+
         facing: number;
         private sprite;
         private speed;
@@ -4667,9 +4937,9 @@ build instead.
         private moving;
         constructor(sprite: MovableSprite, x: number, y: number, options?: FreeMoverOptions);
         get isMoving(): boolean;
-        
+
         move(dx: number, dy: number, dt: number): void;
-        
+
         turnTo(dx: number, dy: number): void;
         private place;
         private playWalk;
@@ -4712,9 +4982,9 @@ build instead.
         private progress;
         constructor(sprite: MovableSprite, x: number, y: number, options: GridMoverOptions);
         get isMoving(): boolean;
-        
+
         turnTo(dx: number, dy: number): void;
-        
+
         moveBy(dx: number, dy: number): boolean;
         update(dt: number): void;
         private place;
@@ -4730,42 +5000,42 @@ build instead.
 
     export declare class QuestLog {
         private definitions;
-        
+
         private stageIndex;
-        
+
         private tracked;
         define(quest: QuestDefinition): void;
-        
+
         track(id: string | null): void;
-        
+
         trackedQuest(): string | null;
-        
+
         trackedLocation(): {
             map?: string;
             x: number;
             y: number;
         } | null;
-        
+
         markerFor(ids: readonly string[], state: GameState): QuestMarker;
-        
+
         canStart(id: string): boolean;
-        
+
         start(id: string): void;
         status(id: string): QuestStatus;
-        
+
         currentStage(id: string): QuestStage | null;
-        
+
         progress(id: string, state: GameState): number | null;
-        
+
         advanceStage(id: string, state: GameState): boolean;
-        
+
         private stageSatisfied;
         private require;
         toJSON(): {
             stageIndex: [string, number][];
             tracked: string | null;
         };
-        
+
         static fromJSON(definitions: QuestDefinition[], data: {
             stageIndex: [string, number][];
             tracked?: string | null;
@@ -4807,26 +5077,26 @@ build instead.
     export declare class Scheduler<A extends Actor> {
         private entries;
         private sequence;
-        
+
         now: number;
         get size(): number;
         get actors(): A[];
         has(actor: A): boolean;
-        
+
         add(actor: A, delay?: number): void;
         remove(actor: A): void;
         clear(): void;
-        
+
         peek(): A | null;
-        
+
         spend(cost: number): void;
-        
+
         postpone(actor: A, delay: number): void;
-        
+
         timeOf(actor: A): number | null;
-        
+
         toJSON(actorId: (actor: A) => string): SchedulerSnapshot;
-        
+
         static restore<A extends Actor>(snapshot: SchedulerSnapshot, actorOf: (id: string) => A): Scheduler<A>;
         private sort;
     }
@@ -4847,10 +5117,10 @@ build instead.
             actorId: (actor: A) => string;
         });
         get state(): State;
-        
+
         dispatch(command: Command): SimulationOutcome<State, Event>;
         snapshot(version?: number): SimulationSnapshot<State>;
-        
+
         static restore<State, Command, Event, A extends Actor>(snapshot: SimulationSnapshot<State>, options: {
             rule: SimulationRuntimeRule<State, Command, Event, A>;
             actorOf: (id: string) => A;
@@ -4869,12 +5139,12 @@ build instead.
         private idleOrMove;
         private inAction;
         constructor(sprite: AnimatedSprite, options: ActorAnimatorOptions);
-        
+
         get state(): ActorAnimationState;
         get variantName(): string;
-        
+
         setMoving(moving: boolean, variant?: string): void;
-        
+
         playAction(variant?: string, restart?: boolean): void;
         private onSpriteFinish;
         private apply;
@@ -4893,14 +5163,14 @@ build instead.
         private frameIndex;
         private timer;
         private finished;
-        
+
         onFinish: ((name: string) => void) | null;
         paused: boolean;
         add(name: string, frames: readonly Texture2D[], options?: AnimationOptions): this;
         has(name: string): boolean;
         get playing(): string | null;
         get isFinished(): boolean;
-        
+
         play(name: string, restart?: boolean): this;
         stop(): void;
         update(dt: number): void;
@@ -4935,7 +5205,7 @@ build instead.
         private readonly roundUpToPixel;
         private readonly themeListener;
         constructor(options: BarOptions);
-        
+
         get value(): number;
         setValue(value: number, max?: number): void;
         resize(width: number, height: number): void;
@@ -4949,9 +5219,9 @@ build instead.
         private readonly opts;
         private readonly themeListener;
         constructor(options?: BitmapLabelOptions | string);
-        
+
         setText(value: string): void;
-        
+
         private restyle;
         destroy(options?: Parameters<BitmapText['destroy']>[0]): void;
     }
@@ -4985,15 +5255,15 @@ build instead.
         private disabled_;
         private readonly themeListener;
         constructor(options: ButtonOptions);
-        
+
         private static createBackground;
-        
+
         resize(width: number, height: number): void;
         setText(text: string | undefined): void;
         get disabled(): boolean;
         setDisabled(disabled: boolean): void;
         private setState;
-        
+
         private layoutContent;
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -5002,9 +5272,9 @@ build instead.
 ### `Camera` (class)
 
     export declare class Camera {
-        
+
         readonly world: Container<import("pixi.js").ContainerChild>;
-        
+
         x: number;
         y: number;
         private _zoom;
@@ -5021,46 +5291,46 @@ build instead.
         private shakeDuration;
         private shakeX;
         private shakeY;
-        
+
         private bounds;
         constructor(options?: CameraOptions);
         get zoom(): number;
         set zoom(value: number);
-        
+
         setViewport(width: number, height: number, screenX?: number, screenY?: number): void;
-        
+
         get view(): {
             x: number;
             y: number;
             width: number;
             height: number;
         };
-        
+
         setBounds(bounds: {
             minX: number;
             minY: number;
             maxX: number;
             maxY: number;
         } | null): void;
-        
+
         snapTo(x: number, y: number): void;
-        
+
         panTo(x: number, y: number, intensity?: number): void;
-        
+
         follow(target: {
             x: number;
             y: number;
         }, intensity?: number): void;
         stopFollowing(): void;
-        
+
         shake(magnitude: number, duration?: number): void;
         update(dt: number): void;
-        
+
         toScreen(x: number, y: number): {
             x: number;
             y: number;
         };
-        
+
         toWorld(x: number, y: number): {
             x: number;
             y: number;
@@ -5076,7 +5346,7 @@ build instead.
 ### `ColorTransformBatcher` (class)
 
     export declare class ColorTransformBatcher extends Batcher {
-        
+
         static extension: {
             readonly type: readonly [ExtensionType.Batcher];
             readonly name: 'mwg-color-transform';
@@ -5088,7 +5358,7 @@ build instead.
         constructor(options: BatcherOptions);
         packAttributes(element: MeshElement, float32View: Float32Array, uint32View: Uint32Array, index: number, textureId: number): void;
         packQuadAttributes(element: QuadElement, float32View: Float32Array, uint32View: Uint32Array, index: number, textureId: number): void;
-        
+
         _updateMaxTextures(maxTextures: number): void;
         destroy(): void;
     }
@@ -5096,6 +5366,10 @@ build instead.
 ### `completeReveal` (function)
 
     export declare function completeReveal(state: RevealState): void;
+
+### `Container2D` (export)
+
+    export { Container2D }
 
 ### `contrastRatio` (function)
 
@@ -5130,26 +5404,26 @@ build instead.
         private stageWidth;
         private stageHeight;
         private tweener;
-        
+
         dimAmount: number;
         constructor(width: number, height: number);
-        
+
         defineCharacter(id: string, definition: CharacterDefinition): void;
         resize(width: number, height: number): void;
-        
+
         setBackdrop(texture: Texture, fade?: number): Promise<void>;
         private fitBackdrop;
         show(id: string, options?: ShowOptions): Promise<void>;
         hide(id: string, fade?: number): Promise<void>;
         hideAll(fade?: number): Promise<void>;
         setExpression(id: string, expression: string): void;
-        
+
         focus(id: string | null): void;
         private applyFocus;
         private slotOf;
         private placeActor;
         update(dt: number): void;
-        
+
         get isBusy(): boolean;
     }
 
@@ -5165,9 +5439,9 @@ build instead.
         private elapsed;
         private done;
         constructor(options: FloatingTextOptions);
-        
+
         get finished(): boolean;
-        
+
         update(dt: number): void;
     }
 
@@ -5176,13 +5450,13 @@ build instead.
     export declare class Game {
         private static instance;
         readonly app: Application<import("pixi.js").Renderer>;
-        
+
         elapsed: number;
-        
+
         timeTotal: number;
-        
+
         timeScale: number;
-        
+
         readonly onFrame: Signal<number>;
         private hitStopRemaining;
         private hitStopScale;
@@ -5192,33 +5466,33 @@ build instead.
         private started;
         private stopWatchingDpr;
         constructor(options?: GameOptions);
-        
+
         get width(): number;
         get height(): number;
-        
+
         static get current(): Game;
         start(first: SceneClass<Scene2D>): Promise<void>;
-        
+
         switchScene(next: SceneClass<Scene2D>): void;
-        
+
         pushScene(next: SceneClass<Scene2D>): void;
-        
+
         popScene(result?: unknown): void;
-        
+
         get currentScene(): Scene2D | null;
-        
+
         hitStop(duration: number, scale?: number): void;
-        
+
         step(dt: number): void;
-        
+
         private expose;
         private frame;
         private switchNow;
-        
+
         private applySwitch;
-        
+
         private applyPush;
-        
+
         private applyPop;
         destroy(): void;
     }
@@ -5235,7 +5509,7 @@ build instead.
         private topics;
         constructor(options: HelpScreenOptions);
         private showBody;
-        
+
         handleAction(action: Action): boolean;
     }
 
@@ -5258,7 +5532,7 @@ build instead.
         private cellSize;
         private longPressDuration;
         private scrollRow;
-        
+
         private pickedUp;
         private pressedIndex;
         private pressTimer;
@@ -5266,9 +5540,9 @@ build instead.
         onHighlight: ((item: IconGridItem, index: number) => void) | null;
         onQuickslot: ((item: IconGridItem, index: number) => void) | null;
         onReorder: ((fromIndex: number, toIndex: number) => void) | null;
-        
+
         private readonly themeListener;
-        
+
         private columnX;
         constructor(options: IconGridOptions);
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -5281,21 +5555,21 @@ build instead.
         setItems(items: IconGridItem[]): void;
         private releaseCell;
         resize(width: number, height: number): void;
-        
+
         update(dt: number): void;
-        
+
         tapCell(index: number): void;
-        
+
         private swapCells;
-        
+
         cancelPickup(): void;
-        
+
         move(dx: number, dy: number): boolean;
         select(index: number): void;
         confirm(): boolean;
-        
+
         handleAction(action: Action): boolean;
-        
+
         private cellRect;
         private refresh;
     }
@@ -5316,18 +5590,18 @@ build instead.
         private revealSource;
         private reveal;
         constructor(options?: LabelOptions | string);
-        
+
         setColor(color: number): void;
-        
+
         setText(value: string): void;
-        
+
         showProgressive(value: string, speed?: number): void;
-        
+
         updateReveal(dt: number): boolean;
-        
+
         completeReveal(): void;
         private renderRevealed;
-        
+
         private restyle;
         destroy(options?: Parameters<Text['destroy']>[0]): void;
     }
@@ -5336,12 +5610,12 @@ build instead.
 
     export declare class LayeredSprite extends Container {
         private layers;
-        
+
         addLayer(name: string, texture: Texture2D, order?: number): TintedSprite;
         removeLayer(name: string): void;
         layer(name: string): TintedSprite | undefined;
         hasLayer(name: string): boolean;
-        
+
         setTexture(name: string, texture: Texture2D): void;
         private resort;
     }
@@ -5367,7 +5641,7 @@ build instead.
         onSelect: ((item: ListItem, index: number) => void) | null;
         onHighlight: ((item: ListItem, index: number) => void) | null;
         constructor(options: ListViewOptions);
-        
+
         private restyle;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
         private drawMask;
@@ -5377,11 +5651,11 @@ build instead.
         get length(): number;
         setItems(items: ListItem[]): void;
         resize(width: number, height: number): void;
-        
+
         move(delta: number): boolean;
         select(index: number): void;
         confirm(): boolean;
-        
+
         handleAction(action: Action): boolean;
         private refresh;
     }
@@ -5399,11 +5673,11 @@ build instead.
         private height_;
         constructor(options: LoadingScreenOptions);
         setSnapshot(snapshot: LoadSnapshot): void;
-        
+
         bind(queue: LoadQueue): () => void;
-        
+
         retry(): void;
-        
+
         cancel(): void;
         resize(width: number, height: number): void;
         private layout;
@@ -5443,21 +5717,21 @@ build instead.
         private announce;
         private readonly messageThemeListener;
         constructor(options: MessageBoxOptions);
-        
+
         private restyleMessage;
         destroy(options?: Parameters<Window['destroy']>[0]): void;
         private showPage;
-        
+
         private renderBody;
         private formatLine;
         private playRevealedSounds;
         private get pageComplete();
         update(dt: number): void;
         handleAction(action: Action): boolean;
-        
+
         private advance;
         private showChoices;
-        
+
         private grow;
         private finish;
     }
@@ -5476,13 +5750,13 @@ build instead.
         private drawn;
         private marker;
         constructor(options: MinimapOptions);
-        
+
         get exploredCount(): number;
-        
+
         sync(explored: ReadonlySet<number>, colorFor: (x: number, y: number) => number): void;
-        
+
         setMarker(x: number, y: number, facing?: number, color?: number): void;
-        
+
         reset(): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -5496,7 +5770,7 @@ build instead.
     export declare class NinePatch extends Container {
         private sprite;
         constructor(texture: Texture2D, options: NinePatchOptions);
-        
+
         get border(): {
             left: number;
             top: number;
@@ -5542,27 +5816,27 @@ build instead.
         private readonly alphaRange;
         private readonly spin;
         private emitting;
-        
+
         private poolCursor;
-        
+
         private debt;
         constructor(options?: ParticleEmitterOptions);
-        
+
         start(): void;
-        
+
         stop(): void;
         get isEmitting(): boolean;
-        
+
         get activeCount(): number;
-        
+
         get particles(): readonly Particle[];
-        
+
         burst(count: number): number;
         private spawn;
         update(dt: number): void;
-        
+
         private draw;
-        
+
         clear(): void;
     }
 
@@ -5579,9 +5853,9 @@ build instead.
         private arrived;
         constructor(sprite: ProjectilePoint, from: ProjectilePoint, to: ProjectilePoint, options?: ProjectileOptions);
         get done(): boolean;
-        
+
         get progress(): number;
-        
+
         update(dt: number): boolean;
     }
 
@@ -5601,12 +5875,16 @@ build instead.
         private startCapture;
         private cancelCapture;
         private finishCapture;
-        
+
         get isCapturing(): boolean;
-        
+
         handleAction(action: Action): boolean;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
+
+### `Rectangle2D` (export)
+
+    export { Rectangle2D }
 
 ### `rectOf` (function)
 
@@ -5636,16 +5914,16 @@ build instead.
         private revealSpans;
         private reveal;
         constructor(options?: RichLabelOptions | string);
-        
+
         setText(value: string): void;
-        
+
         showProgressive(value: string, speed?: number): void;
-        
+
         updateReveal(dt: number): boolean;
-        
+
         completeReveal(): void;
         private renderRevealed;
-        
+
         private restyle;
         destroy(options?: Parameters<HTMLText['destroy']>[0]): void;
     }
@@ -5653,7 +5931,7 @@ build instead.
 ### `Scene2D` (class)
 
     export declare abstract class Scene2D extends Scene {
-        
+
         readonly stage: Container2D;
         protected teardown(): void;
     }
@@ -5668,29 +5946,29 @@ build instead.
         private phase;
         private elapsed;
         private duration;
-        
+
         private fromAlpha;
         private toAlpha;
         constructor(options?: ScreenEffectsOptions);
-        
+
         setViewport(width: number, height: number): void;
         private redraw;
-        
+
         get isBusy(): boolean;
-        
+
         get washAlpha(): number;
-        
+
         fadeOut(duration: number, color?: number): void;
-        
+
         fadeIn(duration: number, color?: number): void;
-        
+
         flash(duration: number, color?: number, peak?: number): void;
-        
+
         setTint(color: number, alpha: number): void;
-        
+
         clear(): void;
         private begin;
-        
+
         update(dt: number): boolean;
     }
 
@@ -5704,13 +5982,13 @@ build instead.
         private polite;
         private assertive;
         private region;
-        
+
         announce(text: string, options?: {
             assertive?: boolean;
         }): void;
-        
+
         clear(): void;
-        
+
         destroy(): void;
     }
 
@@ -5752,21 +6030,21 @@ build instead.
         private frames;
         private names;
         private constructor();
-        
+
         static grid(path: string, frameWidth: number, frameHeight?: number): SpriteSheet;
         static fromTexture(texture: Texture2D, frameWidth: number, frameHeight?: number): SpriteSheet;
         get count(): number;
-        
+
         name(name: string, index: number): this;
-        
+
         nameAll(names: Readonly<Record<string, number>>): this;
         indexOf(name: string): number;
         get(frame: number | string): Texture2D;
-        
+
         region(frame: number | string): TextureRegion;
-        
+
         range(from: number, to: number): Texture2D[];
-        
+
         pick(...frames: Array<number | string>): Texture2D[];
     }
 
@@ -5778,21 +6056,21 @@ build instead.
         private cancelled;
         private historyLog;
         private seenLines;
-        
+
         skipSeen: boolean;
         constructor(options: ScriptOptions);
         cancel(): void;
-        
+
         get history(): readonly HistoryEntry[];
-        
+
         showLast(): Promise<boolean>;
         run(commands: readonly StageCommand[]): Promise<ScriptState>;
-        
+
         runStory(story: StoryScript, start: string): Promise<ScriptState>;
-        
+
         private step;
         private recordHistory;
-        
+
         protected speak(text: string, as: string | undefined, speaker?: string, choices?: Choice[]): Promise<unknown>;
     }
 
@@ -5805,7 +6083,7 @@ build instead.
     export declare class StatsScreen extends Container {
         private text;
         constructor(options: StatsScreenOptions);
-        
+
         setStats(stats: readonly StatRow[], width?: number): void;
         private static format;
     }
@@ -5815,15 +6093,15 @@ build instead.
     export declare class StatusVisuals {
         private target;
         private styles;
-        
+
         private priority;
         private active;
         private elapsed;
         constructor(target: TintTarget, options: StatusVisualsOptions);
-        
+
         set(kind: string, active: boolean): void;
         has(kind: string): boolean;
-        
+
         update(dt: number): void;
     }
 
@@ -5835,6 +6113,10 @@ build instead.
 
     export declare class Text2D extends Text {
     }
+
+### `Texture2D` (export)
+
+    export { Texture2D }
 
 ### `theme` (function)
 
@@ -5869,7 +6151,7 @@ build instead.
         readonly tileWidth: number;
         readonly tileHeight: number;
         readonly shape: 'square' | 'hex' | 'isometric' | 'staggered';
-        
+
         readonly heightStep: number;
         private sheets;
         private layers;
@@ -5884,56 +6166,56 @@ build instead.
         private faces;
         constructor(options: TileMapOptions);
         get layerCount(): number;
-        
+
         get worldWidth(): number;
         get worldHeight(): number;
         inside(x: number, y: number): boolean;
         private index;
-        
+
         addLayer(name: string, data?: ArrayLike<number>): this;
         private layerAt;
         private chunkIndex;
-        
+
         private projectedCenter;
-        
+
         private projectedTile;
-        
+
         private cellOrigin;
-        
+
         private textureFor;
         private buildSprite;
         getTile(layer: string | number, x: number, y: number): number;
         setTile(layer: string | number, x: number, y: number, frame: number): void;
-        
+
         setLayerData(layer: string | number, data: ArrayLike<number>): void;
-        
+
         setCellColor(x: number, y: number, tint: number, add?: number): void;
         getCellTint(x: number, y: number): number;
-        
+
         clearColors(): void;
-        
+
         setCellHeight(x: number, y: number, height: number): void;
-        
+
         getCellHeight(x: number, y: number): number;
-        
+
         get faceCount(): number;
-        
+
         private syncFaces;
-        
+
         private drawFaces;
-        
+
         toTile(worldX: number, worldY: number): {
             x: number;
             y: number;
         };
-        
+
         tileCenter(x: number, y: number): {
             x: number;
             y: number;
         };
-        
+
         cull(camera: Camera): void;
-        
+
         get visibleChunks(): number;
     }
 
@@ -5942,16 +6224,16 @@ build instead.
     export declare class TintedSprite extends Sprite {
         private _colorAdd;
         constructor(options?: SpriteOptions | Texture2D);
-        
+
         get colorAdd(): number;
         set colorAdd(value: number);
-        
+
         setColorAdd(r: number, g: number, b: number, a?: number): void;
-        
+
         lerpTint(color: number, strength: number): void;
-        
+
         silhouette(color: number): void;
-        
+
         resetColor(): void;
     }
 
@@ -5967,9 +6249,9 @@ build instead.
         private phase;
         private elapsed;
         constructor(options?: ToastOptions);
-        
+
         show(content: Container2D): void;
-        
+
         get isBusy(): boolean;
         private start;
         update(dt: number): void;
@@ -5989,22 +6271,22 @@ build instead.
         private readonly body;
         private viewWidth;
         private viewHeight;
-        
+
         private panelWidth;
         private panelHeight;
         private pending;
         private waited;
         constructor(options?: TooltipOptions);
-        
+
         setViewport(width: number, height: number): void;
-        
+
         hover(text: string, x: number, y: number): void;
-        
+
         leave(): void;
         get isShowing(): boolean;
-        
+
         get text(): string | null;
-        
+
         get panelPosition(): {
             x: number;
             y: number;
@@ -6013,14 +6295,14 @@ build instead.
             width: number;
             height: number;
         };
-        
+
         update(dt: number): boolean;
-        
+
         protected measureBody(): {
             width: number;
             height: number;
         };
-        
+
         private place;
     }
 
@@ -6030,7 +6312,7 @@ build instead.
         private readonly opts;
         private readonly themeListener;
         constructor(options: VerticalLabelOptions);
-        
+
         private build;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -6039,11 +6321,11 @@ build instead.
 
     export declare class Viewport {
         readonly camera: Camera;
-        
+
         readonly container: Container<import("pixi.js").ContainerChild>;
         private readonly clip;
         constructor(options: ViewportOptions);
-        
+
         resize(x: number, y: number, width: number, height: number): void;
         update(dt: number): void;
     }
@@ -6065,23 +6347,23 @@ build instead.
         private currentHeight;
         private readonly themeListener;
         constructor(options: WindowOptions);
-        
+
         private restyle;
         resize(width: number, height: number): void;
-        
+
         get contentWidth(): number;
         get contentHeight(): number;
         setTitle(text: string): void;
-        
+
         delegate: {
             handleAction(action: Action): boolean;
         } | null;
-        
+
         handleAction(action: Action): boolean;
-        
+
         update(_dt: number): void;
         close(): void;
-        
+
         place(viewportWidth: number, viewportHeight: number): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -6100,17 +6382,17 @@ build instead.
         get top(): Window | null;
         get isEmpty(): boolean;
         get depth(): number;
-        
+
         push(window: Window): Window;
-        
+
         pop(): void;
         closeAll(): void;
         private forget;
         private updateOverlay;
         private drawOverlay;
-        
+
         private handleAction;
-        
+
         get blocksWorld(): boolean;
         update(dt: number): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -6153,12 +6435,12 @@ build instead.
         private idleOrMove;
         private inAction;
         constructor(sprite: AnimatedSprite, options: ActorAnimatorOptions);
-        
+
         get state(): ActorAnimationState;
         get variantName(): string;
-        
+
         setMoving(moving: boolean, variant?: string): void;
-        
+
         playAction(variant?: string, restart?: boolean): void;
         private onSpriteFinish;
         private apply;
@@ -6173,14 +6455,14 @@ build instead.
         private frameIndex;
         private timer;
         private finished;
-        
+
         onFinish: ((name: string) => void) | null;
         paused: boolean;
         add(name: string, frames: readonly Texture2D[], options?: AnimationOptions): this;
         has(name: string): boolean;
         get playing(): string | null;
         get isFinished(): boolean;
-        
+
         play(name: string, restart?: boolean): this;
         stop(): void;
         update(dt: number): void;
@@ -6211,9 +6493,9 @@ build instead.
 ### `Camera` (class)
 
     export declare class Camera {
-        
+
         readonly world: Container<import("pixi.js").ContainerChild>;
-        
+
         x: number;
         y: number;
         private _zoom;
@@ -6230,46 +6512,46 @@ build instead.
         private shakeDuration;
         private shakeX;
         private shakeY;
-        
+
         private bounds;
         constructor(options?: CameraOptions);
         get zoom(): number;
         set zoom(value: number);
-        
+
         setViewport(width: number, height: number, screenX?: number, screenY?: number): void;
-        
+
         get view(): {
             x: number;
             y: number;
             width: number;
             height: number;
         };
-        
+
         setBounds(bounds: {
             minX: number;
             minY: number;
             maxX: number;
             maxY: number;
         } | null): void;
-        
+
         snapTo(x: number, y: number): void;
-        
+
         panTo(x: number, y: number, intensity?: number): void;
-        
+
         follow(target: {
             x: number;
             y: number;
         }, intensity?: number): void;
         stopFollowing(): void;
-        
+
         shake(magnitude: number, duration?: number): void;
         update(dt: number): void;
-        
+
         toScreen(x: number, y: number): {
             x: number;
             y: number;
         };
-        
+
         toWorld(x: number, y: number): {
             x: number;
             y: number;
@@ -6285,7 +6567,7 @@ build instead.
 ### `ColorTransformBatcher` (class)
 
     export declare class ColorTransformBatcher extends Batcher {
-        
+
         static extension: {
             readonly type: readonly [ExtensionType.Batcher];
             readonly name: 'mwg-color-transform';
@@ -6297,10 +6579,14 @@ build instead.
         constructor(options: BatcherOptions);
         packAttributes(element: MeshElement, float32View: Float32Array, uint32View: Uint32Array, index: number, textureId: number): void;
         packQuadAttributes(element: QuadElement, float32View: Float32Array, uint32View: Uint32Array, index: number, textureId: number): void;
-        
+
         _updateMaxTextures(maxTextures: number): void;
         destroy(): void;
     }
+
+### `Container2D` (export)
+
+    export { Container2D }
 
 ### `createCamera` (function)
 
@@ -6330,12 +6616,12 @@ build instead.
 
     export declare class LayeredSprite extends Container {
         private layers;
-        
+
         addLayer(name: string, texture: Texture2D, order?: number): TintedSprite;
         removeLayer(name: string): void;
         layer(name: string): TintedSprite | undefined;
         hasLayer(name: string): boolean;
-        
+
         setTexture(name: string, texture: Texture2D): void;
         private resort;
     }
@@ -6354,13 +6640,13 @@ build instead.
         private drawn;
         private marker;
         constructor(options: MinimapOptions);
-        
+
         get exploredCount(): number;
-        
+
         sync(explored: ReadonlySet<number>, colorFor: (x: number, y: number) => number): void;
-        
+
         setMarker(x: number, y: number, facing?: number, color?: number): void;
-        
+
         reset(): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -6401,27 +6687,27 @@ build instead.
         private readonly alphaRange;
         private readonly spin;
         private emitting;
-        
+
         private poolCursor;
-        
+
         private debt;
         constructor(options?: ParticleEmitterOptions);
-        
+
         start(): void;
-        
+
         stop(): void;
         get isEmitting(): boolean;
-        
+
         get activeCount(): number;
-        
+
         get particles(): readonly Particle[];
-        
+
         burst(count: number): number;
         private spawn;
         update(dt: number): void;
-        
+
         private draw;
-        
+
         clear(): void;
     }
 
@@ -6438,11 +6724,15 @@ build instead.
         private arrived;
         constructor(sprite: ProjectilePoint, from: ProjectilePoint, to: ProjectilePoint, options?: ProjectileOptions);
         get done(): boolean;
-        
+
         get progress(): number;
-        
+
         update(dt: number): boolean;
     }
+
+### `Rectangle2D` (export)
+
+    export { Rectangle2D }
 
 ### `rectOf` (function)
 
@@ -6466,29 +6756,29 @@ build instead.
         private phase;
         private elapsed;
         private duration;
-        
+
         private fromAlpha;
         private toAlpha;
         constructor(options?: ScreenEffectsOptions);
-        
+
         setViewport(width: number, height: number): void;
         private redraw;
-        
+
         get isBusy(): boolean;
-        
+
         get washAlpha(): number;
-        
+
         fadeOut(duration: number, color?: number): void;
-        
+
         fadeIn(duration: number, color?: number): void;
-        
+
         flash(duration: number, color?: number, peak?: number): void;
-        
+
         setTint(color: number, alpha: number): void;
-        
+
         clear(): void;
         private begin;
-        
+
         update(dt: number): boolean;
     }
 
@@ -6522,21 +6812,21 @@ build instead.
         private frames;
         private names;
         private constructor();
-        
+
         static grid(path: string, frameWidth: number, frameHeight?: number): SpriteSheet;
         static fromTexture(texture: Texture2D, frameWidth: number, frameHeight?: number): SpriteSheet;
         get count(): number;
-        
+
         name(name: string, index: number): this;
-        
+
         nameAll(names: Readonly<Record<string, number>>): this;
         indexOf(name: string): number;
         get(frame: number | string): Texture2D;
-        
+
         region(frame: number | string): TextureRegion;
-        
+
         range(from: number, to: number): Texture2D[];
-        
+
         pick(...frames: Array<number | string>): Texture2D[];
     }
 
@@ -6545,15 +6835,15 @@ build instead.
     export declare class StatusVisuals {
         private target;
         private styles;
-        
+
         private priority;
         private active;
         private elapsed;
         constructor(target: TintTarget, options: StatusVisualsOptions);
-        
+
         set(kind: string, active: boolean): void;
         has(kind: string): boolean;
-        
+
         update(dt: number): void;
     }
 
@@ -6561,6 +6851,10 @@ build instead.
 
     export declare class Text2D extends Text {
     }
+
+### `Texture2D` (export)
+
+    export { Texture2D }
 
 ### `TiledSprite` (class)
 
@@ -6587,7 +6881,7 @@ build instead.
         readonly tileWidth: number;
         readonly tileHeight: number;
         readonly shape: 'square' | 'hex' | 'isometric' | 'staggered';
-        
+
         readonly heightStep: number;
         private sheets;
         private layers;
@@ -6602,56 +6896,56 @@ build instead.
         private faces;
         constructor(options: TileMapOptions);
         get layerCount(): number;
-        
+
         get worldWidth(): number;
         get worldHeight(): number;
         inside(x: number, y: number): boolean;
         private index;
-        
+
         addLayer(name: string, data?: ArrayLike<number>): this;
         private layerAt;
         private chunkIndex;
-        
+
         private projectedCenter;
-        
+
         private projectedTile;
-        
+
         private cellOrigin;
-        
+
         private textureFor;
         private buildSprite;
         getTile(layer: string | number, x: number, y: number): number;
         setTile(layer: string | number, x: number, y: number, frame: number): void;
-        
+
         setLayerData(layer: string | number, data: ArrayLike<number>): void;
-        
+
         setCellColor(x: number, y: number, tint: number, add?: number): void;
         getCellTint(x: number, y: number): number;
-        
+
         clearColors(): void;
-        
+
         setCellHeight(x: number, y: number, height: number): void;
-        
+
         getCellHeight(x: number, y: number): number;
-        
+
         get faceCount(): number;
-        
+
         private syncFaces;
-        
+
         private drawFaces;
-        
+
         toTile(worldX: number, worldY: number): {
             x: number;
             y: number;
         };
-        
+
         tileCenter(x: number, y: number): {
             x: number;
             y: number;
         };
-        
+
         cull(camera: Camera): void;
-        
+
         get visibleChunks(): number;
     }
 
@@ -6660,16 +6954,16 @@ build instead.
     export declare class TintedSprite extends Sprite {
         private _colorAdd;
         constructor(options?: SpriteOptions | Texture2D);
-        
+
         get colorAdd(): number;
         set colorAdd(value: number);
-        
+
         setColorAdd(r: number, g: number, b: number, a?: number): void;
-        
+
         lerpTint(color: number, strength: number): void;
-        
+
         silhouette(color: number): void;
-        
+
         resetColor(): void;
     }
 
@@ -6677,11 +6971,11 @@ build instead.
 
     export declare class Viewport {
         readonly camera: Camera;
-        
+
         readonly container: Container<import("pixi.js").ContainerChild>;
         private readonly clip;
         constructor(options: ViewportOptions);
-        
+
         resize(x: number, y: number, width: number, height: number): void;
         update(dt: number): void;
     }
@@ -6701,26 +6995,26 @@ build instead.
         private stageWidth;
         private stageHeight;
         private tweener;
-        
+
         dimAmount: number;
         constructor(width: number, height: number);
-        
+
         defineCharacter(id: string, definition: CharacterDefinition): void;
         resize(width: number, height: number): void;
-        
+
         setBackdrop(texture: Texture, fade?: number): Promise<void>;
         private fitBackdrop;
         show(id: string, options?: ShowOptions): Promise<void>;
         hide(id: string, fade?: number): Promise<void>;
         hideAll(fade?: number): Promise<void>;
         setExpression(id: string, expression: string): void;
-        
+
         focus(id: string | null): void;
         private applyFocus;
         private slotOf;
         private placeActor;
         update(dt: number): void;
-        
+
         get isBusy(): boolean;
     }
 
@@ -6736,21 +7030,21 @@ build instead.
         private cancelled;
         private historyLog;
         private seenLines;
-        
+
         skipSeen: boolean;
         constructor(options: ScriptOptions);
         cancel(): void;
-        
+
         get history(): readonly HistoryEntry[];
-        
+
         showLast(): Promise<boolean>;
         run(commands: readonly StageCommand[]): Promise<ScriptState>;
-        
+
         runStory(story: StoryScript, start: string): Promise<ScriptState>;
-        
+
         private step;
         private recordHistory;
-        
+
         protected speak(text: string, as: string | undefined, speaker?: string, choices?: Choice[]): Promise<unknown>;
     }
 
@@ -6775,7 +7069,7 @@ build instead.
         private readonly roundUpToPixel;
         private readonly themeListener;
         constructor(options: BarOptions);
-        
+
         get value(): number;
         setValue(value: number, max?: number): void;
         resize(width: number, height: number): void;
@@ -6789,9 +7083,9 @@ build instead.
         private readonly opts;
         private readonly themeListener;
         constructor(options?: BitmapLabelOptions | string);
-        
+
         setText(value: string): void;
-        
+
         private restyle;
         destroy(options?: Parameters<BitmapText['destroy']>[0]): void;
     }
@@ -6817,15 +7111,15 @@ build instead.
         private disabled_;
         private readonly themeListener;
         constructor(options: ButtonOptions);
-        
+
         private static createBackground;
-        
+
         resize(width: number, height: number): void;
         setText(text: string | undefined): void;
         get disabled(): boolean;
         setDisabled(disabled: boolean): void;
         private setState;
-        
+
         private layoutContent;
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -6851,9 +7145,9 @@ build instead.
         private elapsed;
         private done;
         constructor(options: FloatingTextOptions);
-        
+
         get finished(): boolean;
-        
+
         update(dt: number): void;
     }
 
@@ -6865,7 +7159,7 @@ build instead.
         private topics;
         constructor(options: HelpScreenOptions);
         private showBody;
-        
+
         handleAction(action: Action): boolean;
     }
 
@@ -6888,7 +7182,7 @@ build instead.
         private cellSize;
         private longPressDuration;
         private scrollRow;
-        
+
         private pickedUp;
         private pressedIndex;
         private pressTimer;
@@ -6896,9 +7190,9 @@ build instead.
         onHighlight: ((item: IconGridItem, index: number) => void) | null;
         onQuickslot: ((item: IconGridItem, index: number) => void) | null;
         onReorder: ((fromIndex: number, toIndex: number) => void) | null;
-        
+
         private readonly themeListener;
-        
+
         private columnX;
         constructor(options: IconGridOptions);
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -6911,21 +7205,21 @@ build instead.
         setItems(items: IconGridItem[]): void;
         private releaseCell;
         resize(width: number, height: number): void;
-        
+
         update(dt: number): void;
-        
+
         tapCell(index: number): void;
-        
+
         private swapCells;
-        
+
         cancelPickup(): void;
-        
+
         move(dx: number, dy: number): boolean;
         select(index: number): void;
         confirm(): boolean;
-        
+
         handleAction(action: Action): boolean;
-        
+
         private cellRect;
         private refresh;
     }
@@ -6938,18 +7232,18 @@ build instead.
         private revealSource;
         private reveal;
         constructor(options?: LabelOptions | string);
-        
+
         setColor(color: number): void;
-        
+
         setText(value: string): void;
-        
+
         showProgressive(value: string, speed?: number): void;
-        
+
         updateReveal(dt: number): boolean;
-        
+
         completeReveal(): void;
         private renderRevealed;
-        
+
         private restyle;
         destroy(options?: Parameters<Text['destroy']>[0]): void;
     }
@@ -6975,7 +7269,7 @@ build instead.
         onSelect: ((item: ListItem, index: number) => void) | null;
         onHighlight: ((item: ListItem, index: number) => void) | null;
         constructor(options: ListViewOptions);
-        
+
         private restyle;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
         private drawMask;
@@ -6985,11 +7279,11 @@ build instead.
         get length(): number;
         setItems(items: ListItem[]): void;
         resize(width: number, height: number): void;
-        
+
         move(delta: number): boolean;
         select(index: number): void;
         confirm(): boolean;
-        
+
         handleAction(action: Action): boolean;
         private refresh;
     }
@@ -7007,11 +7301,11 @@ build instead.
         private height_;
         constructor(options: LoadingScreenOptions);
         setSnapshot(snapshot: LoadSnapshot): void;
-        
+
         bind(queue: LoadQueue): () => void;
-        
+
         retry(): void;
-        
+
         cancel(): void;
         resize(width: number, height: number): void;
         private layout;
@@ -7047,21 +7341,21 @@ build instead.
         private announce;
         private readonly messageThemeListener;
         constructor(options: MessageBoxOptions);
-        
+
         private restyleMessage;
         destroy(options?: Parameters<Window['destroy']>[0]): void;
         private showPage;
-        
+
         private renderBody;
         private formatLine;
         private playRevealedSounds;
         private get pageComplete();
         update(dt: number): void;
         handleAction(action: Action): boolean;
-        
+
         private advance;
         private showChoices;
-        
+
         private grow;
         private finish;
     }
@@ -7075,7 +7369,7 @@ build instead.
     export declare class NinePatch extends Container {
         private sprite;
         constructor(texture: Texture2D, options: NinePatchOptions);
-        
+
         get border(): {
             left: number;
             top: number;
@@ -7105,9 +7399,9 @@ build instead.
         private startCapture;
         private cancelCapture;
         private finishCapture;
-        
+
         get isCapturing(): boolean;
-        
+
         handleAction(action: Action): boolean;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -7128,16 +7422,16 @@ build instead.
         private revealSpans;
         private reveal;
         constructor(options?: RichLabelOptions | string);
-        
+
         setText(value: string): void;
-        
+
         showProgressive(value: string, speed?: number): void;
-        
+
         updateReveal(dt: number): boolean;
-        
+
         completeReveal(): void;
         private renderRevealed;
-        
+
         private restyle;
         destroy(options?: Parameters<HTMLText['destroy']>[0]): void;
     }
@@ -7152,13 +7446,13 @@ build instead.
         private polite;
         private assertive;
         private region;
-        
+
         announce(text: string, options?: {
             assertive?: boolean;
         }): void;
-        
+
         clear(): void;
-        
+
         destroy(): void;
     }
 
@@ -7179,7 +7473,7 @@ build instead.
     export declare class StatsScreen extends Container {
         private text;
         constructor(options: StatsScreenOptions);
-        
+
         setStats(stats: readonly StatRow[], width?: number): void;
         private static format;
     }
@@ -7208,9 +7502,9 @@ build instead.
         private phase;
         private elapsed;
         constructor(options?: ToastOptions);
-        
+
         show(content: Container2D): void;
-        
+
         get isBusy(): boolean;
         private start;
         update(dt: number): void;
@@ -7230,22 +7524,22 @@ build instead.
         private readonly body;
         private viewWidth;
         private viewHeight;
-        
+
         private panelWidth;
         private panelHeight;
         private pending;
         private waited;
         constructor(options?: TooltipOptions);
-        
+
         setViewport(width: number, height: number): void;
-        
+
         hover(text: string, x: number, y: number): void;
-        
+
         leave(): void;
         get isShowing(): boolean;
-        
+
         get text(): string | null;
-        
+
         get panelPosition(): {
             x: number;
             y: number;
@@ -7254,14 +7548,14 @@ build instead.
             width: number;
             height: number;
         };
-        
+
         update(dt: number): boolean;
-        
+
         protected measureBody(): {
             width: number;
             height: number;
         };
-        
+
         private place;
     }
 
@@ -7271,7 +7565,7 @@ build instead.
         private readonly opts;
         private readonly themeListener;
         constructor(options: VerticalLabelOptions);
-        
+
         private build;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -7293,23 +7587,23 @@ build instead.
         private currentHeight;
         private readonly themeListener;
         constructor(options: WindowOptions);
-        
+
         private restyle;
         resize(width: number, height: number): void;
-        
+
         get contentWidth(): number;
         get contentHeight(): number;
         setTitle(text: string): void;
-        
+
         delegate: {
             handleAction(action: Action): boolean;
         } | null;
-        
+
         handleAction(action: Action): boolean;
-        
+
         update(_dt: number): void;
         close(): void;
-        
+
         place(viewportWidth: number, viewportHeight: number): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -7328,17 +7622,17 @@ build instead.
         get top(): Window | null;
         get isEmpty(): boolean;
         get depth(): number;
-        
+
         push(window: Window): Window;
-        
+
         pop(): void;
         closeAll(): void;
         private forget;
         private updateOverlay;
         private drawOverlay;
-        
+
         private handleAction;
-        
+
         get blocksWorld(): boolean;
         update(dt: number): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -7360,10 +7654,10 @@ build instead.
         get weather(): string;
         get phase(): DayPhase;
         get night(): boolean;
-        
+
         update(dt: number): EnvironmentSnapshot;
         setWeather(weather: string): EnvironmentSnapshot;
-        
+
         toJSON(): EnvironmentSnapshot;
         static fromJSON(options: EnvironmentOptions, data: EnvironmentSnapshot): EnvironmentClock;
     }
@@ -7375,7 +7669,7 @@ build instead.
         add(location: Location): void;
         remove(id: string): void;
         get(id: string): Location | undefined;
-        
+
         at(x: number, y: number): Location | undefined;
         get all(): readonly Location[];
     }
@@ -7389,11 +7683,11 @@ build instead.
     export declare class TurnClock {
         turn: number;
         private effects;
-        
+
         add(effect: TimedEffect): symbol;
         remove(id: symbol): void;
         has(id: symbol): boolean;
-        
+
         advance(turns?: number): void;
     }
 
@@ -7404,20 +7698,20 @@ build instead.
         private loaded;
         private currentId;
         private lastSpawn;
-        
+
         define(id: string, create: () => M, options?: {
             persistent?: boolean;
         }): void;
-        
+
         enter(id: string, spawn?: string): M;
         get current(): M | null;
         get currentMapId(): string | null;
-        
+
         get spawn(): string | undefined;
-        
+
         isLoaded(id: string): boolean;
-        
+
         isPersistent(id: string): boolean;
-        
+
         unload(id: string): void;
     }

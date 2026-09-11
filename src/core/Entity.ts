@@ -32,12 +32,23 @@ export class EntityRegistry<T extends object> {
 	private ids = new Map<T, EntityId>();
 	private sequence = 0;
 
-	/** registers a new entity and returns the id it is known by from now on */
-	add(entity: T): EntityId {
+	/** registers an entity, using a caller-supplied stable id when provided */
+	add(entity: T, requestedId?: EntityId): EntityId {
 		const existing = this.ids.get(entity);
-		if (existing !== undefined) return existing;
+		if (existing !== undefined) {
+			if (requestedId !== undefined && requestedId !== existing)
+				throw new Error(`entity already has id ${existing}`);
+			return existing;
+		}
 
-		const id = `e${this.sequence++}`;
+		let id = requestedId;
+		if (id !== undefined) {
+			if (id.length === 0) throw new Error('entity id must not be empty');
+			if (this.entities.has(id)) throw new Error(`entity id already exists: ${id}`);
+		} else {
+			do id = `e${this.sequence++}`;
+			while (this.entities.has(id));
+		}
 		this.entities.set(id, entity);
 		this.ids.set(entity, id);
 		return id;
