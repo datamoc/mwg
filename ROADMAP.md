@@ -3362,9 +3362,9 @@ The definition of done for 1.0. Each line is a check to run, not a feature to bu
 every numbered capability in the list above has already shipped.
 
 - [x] `npm run check`, `npm test`, `npm run build`, and `npm run audit` are all green on
-      the release commit. (2026-09-11: green on the working tree - 1501 tests, 0
-      vulnerabilities, clean build. Re-run on the 1.0 release commit itself, which is the
-      wording this line keeps.)
+      the release commit. (2026-09-11: green on the 0.7.6 release commit `98c64df`, whose own CI
+      run passed all five jobs - 1501 tests, 0 vulnerabilities, clean build. Re-run on the 1.0
+      release commit itself, which is the wording this line keeps.)
 - [x] `npm run api:check` passes: the committed `API_REPORT.md` matches the built
       declarations exactly. (2026-09-11: passes, after regenerating for `Blob.spread`'s
       return value.)
@@ -3385,20 +3385,22 @@ every numbered capability in the list above has already shipped.
       pixi.js vite`, the `npm pack` + install-by-path `.tgz` fallback, and the no-install
       `mw_games.global.js` script tag. All three reach a working `file://` page.
       (2026-09-11: all three, each a WebGL, game-ready page with no page errors. The registry
-      path in `C:\Users\miche\dev\_mwg-tutorial-registry`, against the published 0.7.4; the
-      `.tgz` and global paths through `npm run package:smoke`, whose scratch directory is
-      outside the repo. `package:smoke` now names `pixi.js` in the consumer install, so it
-      fails if the tutorial's install line ever stops being enough.)
+      path in `C:\Users\miche\dev\_mwg-tutorial-registry`, against the published 0.7.4 and
+      re-run against 0.7.6 once it landed; the `.tgz` and global paths through
+      `npm run package:smoke`, whose scratch directory is outside the repo. `package:smoke` now
+      names `pixi.js` in the consumer install, so it fails if the tutorial's install line ever
+      stops being enough.)
 - [x] `pixi.js` moves from `dependencies` to optional `peerDependencies` (item 175's
       decision) and the two npm paths above are re-verified under that new install
       contract before the move ships. (2026-09-11: moved, with `pixi.js` also in
       `devDependencies` so this repo still builds and tests, and the install line named in
-      `README`, `REFERENCE.md` and the getting-started page. Re-verified: `package:smoke`
-      installs the packed tarball plus `pixi.js` and reaches a working `file://` page. The one
-      half that has to publish rather than build - a literal registry fetch of the new shape -
-      can only be re-run once 1.0 is on the registry; the tarball path exercises the same peer
-      resolution, since npm reads the same `package.json` out of it. The published 0.7.4 still
-      lists `pixi.js` under `dependencies`, which is exactly why this belongs to 1.0.)
+      `README`, `REFERENCE.md` and the getting-started page. Re-verified twice: `package:smoke`
+      installs the packed tarball plus `pixi.js` and reaches a working `file://` page, and once
+      0.7.6 was on the registry the literal registry path was re-run against it - installing
+      `@datamoc/mw_games@^0.7.6` alone leaves `node_modules/pixi.js` absent (checked directly),
+      the published `dependencies` is `rot-js` only with `pixi.js` a peer `^8.20.1` marked
+      `optional`, and `@datamoc/mw_games/core` imports and runs with no Pixi present. 0.7.4 had
+      still listed `pixi.js` under `dependencies`, which is exactly why this belonged to 1.0.)
 - [x] The public API gets a stability-marker contract: `@experimental` on anything not
       intended as 1.0-stable, called out in release notes, and a `DEPRECATED` convention, so
       1.0 is the last release where a rename or an unstable surface moves silently.
