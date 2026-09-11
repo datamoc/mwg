@@ -52,6 +52,20 @@ export class FactionFog {
 		this.explored.set(faction, memory);
 	}
 
+	/**
+	 * Mark cells explored without changing what is currently visible: the
+	 * shroud-clearing half of `sync`, for effects (a revealed map, a scouted
+	 * region) that lift the shroud where no unit stands watch.
+	 */
+	reveal(faction: string, cells: Iterable<VisionCell>): void {
+		if (!faction) throw new Error('fog needs a faction id');
+		const memory = this.explored.get(faction) ?? new Set<number>();
+		for (const cell of cells) {
+			if (this.inside(cell.x, cell.y)) memory.add(this.index(cell.x, cell.y));
+		}
+		this.explored.set(faction, memory);
+	}
+
 	isVisible(faction: string, x: number, y: number): boolean {
 		return this.visible.get(faction)?.has(this.index(x, y)) ?? false;
 	}

@@ -30,3 +30,15 @@ test('faction fog rejects invalid dimensions and ignores out-of-bounds vision', 
 	]);
 	assert.deepEqual(fog.visibleCells('blue'), [0]);
 });
+
+test('reveal lifts shroud without changing current vision', () => {
+	const fog = new FactionFog(3, 3);
+	fog.sync('red', [{ x: 0, y: 0 }], (source) => [source]);
+	fog.reveal('red', [
+		{ x: 2, y: 2 },
+		{ x: 9, y: 9 },
+	]);
+	assert.equal(fog.isExplored('red', 2, 2), true);
+	assert.equal(fog.isVisible('red', 2, 2), false);
+	assert.equal(fog.isExplored('red', 1, 1), false);
+});

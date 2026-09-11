@@ -250,15 +250,16 @@ export class MwlRuntime {
 	}
 
 	private eventFiltersMatch(event: MwlCompiledNode): boolean {
-		const condition = event.children.find((child) => child.tag === 'condition');
-		if (condition && !sameValue(this.world.variables[condition.attributes.variable], condition.attributes.equals))
-			return false;
+		if (!this.conditionMatches(event)) return false;
+		if (!this.filterConditionMatches(event)) return false;
 		const filter = event.children.find((child) => child.tag === 'filter');
 		return !filter || this.filterMatches(filter);
 	}
 
 	private executeEvent(event: MwlCompiledNode): void {
-		for (const command of event.children.filter((child) => child.tag !== 'condition' && child.tag !== 'filter')) {
+		for (const command of event.children.filter(
+			(child) => child.tag !== 'condition' && child.tag !== 'filter' && child.tag !== 'filter_condition',
+		)) {
 			if (command.tag === 'say') {
 				this.showSay(command);
 				continue;
@@ -608,7 +609,7 @@ export class MwlRuntime {
 		if (!this.onMessage) return;
 		const side = Number.parseInt(attributes.side ?? '', 10);
 		const message: MwlMessage = {
-			text: attributes.text ?? attributes.value ?? '',
+			text: this.interpolate(attributes.text ?? attributes.value ?? ''),
 			...(attributes.speaker === undefined ? {} : { speaker: attributes.speaker }),
 			...(attributes.portrait === undefined ? {} : { portrait: attributes.portrait }),
 			...(Number.isFinite(side) ? { side } : {}),
@@ -616,10 +617,41 @@ export class MwlRuntime {
 		this.onMessage(message);
 	}
 
+	/**
+	 * Substitute `$name` and `$(expression)` references in message text from
+	 * the world variables (numbers evaluate, missing reads as empty), the
+	 * same interpolation WML authors expect in story and dialogue strings.
+	 */
+	private interpolate(text: string): string {
+		const variables = this.world.variables;
+		const numeric = Object.fromEntries(
+			Object.entries(variables).filter((entry): entry is [string, number] => typeof entry[1] === 'number'),
+		);
+		const expanded = text.replace(/\$\(([^)]*)\)/g, (_whole, expression: string) => {
+			try {
+				return String(evaluateExpression(expression, numeric));
+			} catch {
+				return '';
+			}
+		});
+		return expanded.replace(/\$([A-Za-z_][A-Za-z0-9_.]*)/g, (_whole, name: string) => {
+			const value = variables[name];
+			return value === undefined || typeof value === 'boolean' ? '' : String(value);
+		});
+	}
+
 	private setVariable(name: string, raw: string): void {
 		const numeric = Number(raw);
 		if (raw.trim() !== '' && Number.isFinite(numeric)) {
 			this.world.variables[name] = numeric;
+			return;
+		}
+		// A bare `$name` copies another variable (missing reads as empty),
+		// so content can alias changing values without arithmetic.
+		const reference = /^\$([A-Za-z_][A-Za-z0-9_.]*)$/.exec(raw.trim());
+		if (reference) {
+			const value = this.world.variables[reference[1]];
+			this.world.variables[name] = value === undefined ? '' : value;
 			return;
 		}
 		const context = Object.fromEntries(
@@ -682,21 +714,55 @@ export class MwlRuntime {
 
 	private filterMatches(node: MwlCompiledNode): boolean {
 		return Object.entries(this.world.units).some(
-			([id, unit]) =>
-				unit.alive &&
-				(node.attributes.unit === undefined || id === node.attributes.unit) &&
-				(node.attributes.side === undefined || unit.side === Number(node.attributes.side)) &&
-				(node.attributes.type === undefined || unit.type === node.attributes.type) &&
-				(node.attributes.x === undefined || unit.x === Number(node.attributes.x)) &&
-				(node.attributes.y === undefined || unit.y === Number(node.attributes.y)),
+			([id, unit]) => unit.alive && unitMatchesFilter(unit, id, node.attributes),
 		);
 	}
 
+	/**
+	 * Every `condition` child must match (conjunction). Each child names a
+	 * world variable and states one comparison: `equals` (the default, numeric
+	 * aware), `not_equals`, comma-list `in`/`not_in`, or the numeric
+	 * `less_than`/`greater_than`/`less_than_or_equal_to`/
+	 * `greater_than_or_equal_to` (false when either side is not a number).
+	 */
 	private conditionMatches(node: MwlCompiledNode): boolean {
-		const condition = node.children.find((child) => child.tag === 'condition');
-		return (
-			!condition || sameValue(this.world.variables[condition.attributes.variable], condition.attributes.equals)
-		);
+		return node.children
+			.filter((child) => child.tag === 'condition')
+			.every((condition) =>
+				variableMatches(
+					this.world.variables[condition.attributes.variable],
+					condition.attributes,
+					this.world.variables,
+				),
+			);
+	}
+
+	/**
+	 * A `filter_condition` child holds `variable` comparisons (same operators
+	 * as `condition`) and `have_unit` existence checks (an alive unit matching
+	 * the given id/type/side/x/y, reusing the `filter` semantics). All must
+	 * hold for the event to fire.
+	 */
+	private filterConditionMatches(node: MwlCompiledNode): boolean {
+		const wrapper = node.children.find((child) => child.tag === 'filter_condition');
+		if (!wrapper) return true;
+		return wrapper.children.every((child) => {
+			if (child.tag === 'variable') {
+				const name = child.attributes.name;
+				if (name === undefined) return false;
+				return variableMatches(this.world.variables[name], child.attributes, this.world.variables);
+			}
+			// `have_unit` names the world key with `id` where a `filter`
+			// would say `unit`; everything else matches `filter` semantics.
+			if (child.tag === 'have_unit')
+				return Object.entries(this.world.units).some(
+					([id, unit]) =>
+						unit.alive &&
+						(child.attributes.id === undefined || id === child.attributes.id) &&
+						unitMatchesFilter(unit, id, child.attributes),
+				);
+			return true;
+		});
 	}
 
 	private conditionMet(node: MwlCompiledNode): boolean {
@@ -854,8 +920,80 @@ function optionalInteger(node: MwlCompiledNode, attribute: string): number | und
 	return Number.isFinite(parsed) ? parsed : undefined;
 }
 
-function sameValue(value: string | number | boolean | undefined, expected: string | undefined): boolean {
+/**
+ * One variable comparison for `condition`/`variable` nodes. `equals` keeps
+ * the historical numeric-aware match; the rest are strict about shape:
+ * lists split on commas, comparisons coerce both sides with `Number` and
+ * fail on anything non-numeric.
+ */
+function variableMatches(
+	value: string | number | boolean | undefined,
+	attributes: Readonly<Record<string, string>>,
+	variables: Readonly<Record<string, string | number | boolean>> = {},
+): boolean {
+	const resolve = (expected: string): string | number | boolean | undefined =>
+		expected.startsWith('$') ? variables[expected.slice(1)] : expected;
+	if (attributes.equals !== undefined) return sameValue(value, resolve(attributes.equals));
+	if (attributes.not_equals !== undefined) return !sameValue(value, resolve(attributes.not_equals));
+	if (attributes.in !== undefined) {
+		const options = attributes.in.split(',').map((entry) => entry.trim());
+		return options.some((option) => sameValue(value, option));
+	}
+	if (attributes.not_in !== undefined) {
+		const options = attributes.not_in.split(',').map((entry) => entry.trim());
+		return !options.some((option) => sameValue(value, option));
+	}
+	const actual = typeof value === 'number' ? value : Number(value);
+	const wanted = (name: string): number => Number(attributes[name]);
+	if (
+		attributes.less_than !== undefined ||
+		attributes.greater_than !== undefined ||
+		attributes.less_than_or_equal_to !== undefined ||
+		attributes.greater_than_or_equal_to !== undefined
+	) {
+		if (typeof value === 'boolean' || !Number.isFinite(actual)) return false;
+		if (attributes.less_than !== undefined && !(actual < wanted('less_than'))) return false;
+		if (attributes.greater_than !== undefined && !(actual > wanted('greater_than'))) return false;
+		if (attributes.less_than_or_equal_to !== undefined && !(actual <= wanted('less_than_or_equal_to')))
+			return false;
+		if (attributes.greater_than_or_equal_to !== undefined && !(actual >= wanted('greater_than_or_equal_to')))
+			return false;
+		return true;
+	}
+	return value !== undefined;
+}
+
+/**
+ * One alive unit against `filter`/`have_unit` attributes: side, type (with
+ * comma-list `not_type` exclusion), world key (`unit`, or `id` on
+ * `have_unit`), and coordinates all have to match when present.
+ */
+function unitMatchesFilter(
+	unit: { alive: boolean; type?: string; side?: number; x: number; y: number },
+	id: string,
+	attributes: Readonly<Record<string, string>>,
+): boolean {
+	const excluded = (attributes.not_type ?? '')
+		.split(',')
+		.map((entry) => entry.trim())
+		.filter(Boolean);
+	const key = attributes.unit ?? attributes.id;
+	return (
+		(key === undefined || id === key) &&
+		(attributes.side === undefined || unit.side === Number(attributes.side)) &&
+		(attributes.type === undefined || unit.type === attributes.type) &&
+		(excluded.length === 0 || !excluded.includes(unit.type ?? '')) &&
+		(attributes.x === undefined || unit.x === Number(attributes.x)) &&
+		(attributes.y === undefined || unit.y === Number(attributes.y))
+	);
+}
+
+function sameValue(
+	value: string | number | boolean | undefined,
+	expected: string | number | boolean | undefined,
+): boolean {
 	if (value === undefined || expected === undefined) return value === expected;
+	if (typeof expected !== 'string') return value === expected;
 	const numeric = Number(expected);
 	return typeof value === 'number' && expected.trim() !== '' && Number.isFinite(numeric)
 		? value === numeric

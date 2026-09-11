@@ -22,6 +22,8 @@ npm run examples:build   # build every example page, not just the benchmarked on
 npm run visual:smoke     # screenshot one built example from file:// and check it rendered
 npm run visual:smoke:ui  # build the interface example first, then smoke it
 npm run package:smoke    # npm pack + install + open both published paths from file:// (run build first)
+npm run stats:write      # regenerate PROJECT_STATS and the website statistics page
+npm run stats:check      # verify the committed release statistics are reproducible
 npm run motion:smoke     # open the interface example with reduced motion, and with it flipped at runtime
 npm run benchmark:animation # CSS/SVG element animation vs Pixi sprites, measured (run build first)
 npm run webpage:examples # rebuild playable example pages for the website
@@ -79,7 +81,8 @@ Do not replace this with a server-only solution for convenience.
 
 1. Update `package.json` and `src/version.ts` to the same version.
 2. Add a dated Keep a Changelog entry describing what actually shipped.
-3. Run `npm run check`, `npm test`, `npm run build`, and `npm publish --dry-run`.
+3. Run `npm run check`, `npm test`, `npm run build`, `npm run stats:write`,
+   `npm run stats:check`, and `npm publish --dry-run`.
 4. Commit the release as one commit, using the existing `release: x.y.z, summary` style.
 5. Push `main`, create the annotated `vX.Y.Z` tag, push the tag, and create the GitHub release:
 

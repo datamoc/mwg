@@ -3118,6 +3118,8 @@ build instead.
         private explored;
         constructor(width: number, height: number);
         sync(faction: string, sources: readonly VisionCell[], cells: (source: VisionCell) => Iterable<VisionCell>): void;
+
+        reveal(faction: string, cells: Iterable<VisionCell>): void;
         isVisible(faction: string, x: number, y: number): boolean;
         isExplored(faction: string, x: number, y: number): boolean;
         visibleCells(faction: string): readonly number[];
@@ -4300,6 +4302,8 @@ build instead.
         private applyMove;
 
         private showMessage;
+
+        private interpolate;
         private setVariable;
         private spawnUnit;
         private killUnit;
@@ -4308,7 +4312,10 @@ build instead.
         private advanceSchedule;
         private resetMoves;
         private filterMatches;
+
         private conditionMatches;
+
+        private filterConditionMatches;
         private conditionMet;
         private checkObjectives;
         private worldView;

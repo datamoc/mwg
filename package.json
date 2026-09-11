@@ -161,6 +161,8 @@
 		"format:check": "prettier --check .",
 		"api:report": "npm run build:pkg && node tools/api-report.mjs",
 		"api:check": "node tools/api-report.mjs --check",
+		"stats:write": "node tools/project-stats.mjs",
+		"stats:check": "node tools/project-stats.mjs --check",
 		"mwl": "npm run build:pkg && node tools/mwl.mjs",
 		"size:check": "node tools/bundle-size.mjs",
 		"size:update": "node tools/bundle-size.mjs --update",

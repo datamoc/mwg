@@ -204,6 +204,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 		children: [
 			'condition',
 			'filter',
+			'filter_condition',
 			'command',
 			'say',
 			'dialogue',
@@ -256,17 +257,53 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			value: 'integer',
 		},
 	},
-	condition: { attributes: { variable: 'id', equals: 'string' } },
+	condition: {
+		attributes: {
+			variable: 'id',
+			equals: 'string',
+			not_equals: 'string',
+			in: 'string',
+			not_in: 'string',
+			less_than: 'string',
+			greater_than: 'string',
+			less_than_or_equal_to: 'string',
+			greater_than_or_equal_to: 'string',
+		},
+	},
 	filter: {
 		attributes: {
 			side: 'integer',
 			type: 'string',
+			not_type: 'string',
 			unit: 'string',
 			x: 'integer',
 			y: 'integer',
 			level: 'integer',
 			alignment: 'id',
 			can_recruit: 'boolean',
+		},
+	},
+	filter_condition: { children: ['variable', 'have_unit'] },
+	variable: {
+		attributes: {
+			name: 'id',
+			equals: 'string',
+			not_equals: 'string',
+			in: 'string',
+			not_in: 'string',
+			less_than: 'string',
+			greater_than: 'string',
+			less_than_or_equal_to: 'string',
+			greater_than_or_equal_to: 'string',
+		},
+	},
+	have_unit: {
+		attributes: {
+			id: 'string',
+			type: 'string',
+			side: 'integer',
+			x: 'integer',
+			y: 'integer',
 		},
 	},
 	command: {

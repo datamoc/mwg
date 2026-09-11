@@ -1,0 +1,60 @@
+{
+	"project": "mwg",
+	"package": "@datamoc/mw_games",
+	"version": "0.7.3",
+	"releaseDate": "2026-09-11",
+	"source": {
+		"files": 235,
+		"lines": 32455,
+		"modules": 15
+	},
+	"tests": {
+		"files": 163,
+		"lines": 19999,
+		"cases": 1472
+	},
+	"tools": {
+		"files": 34,
+		"lines": 6143
+	},
+	"examples": {
+		"count": 22,
+		"names": [
+			"audio",
+			"battle",
+			"chess",
+			"colour-transform",
+			"dialogue",
+			"dungeon",
+			"event-system",
+			"headless",
+			"hello-world",
+			"i18n",
+			"interface",
+			"loading",
+			"minigame",
+			"movement",
+			"multi-turn-beam",
+			"mwl-content",
+			"save-load",
+			"string-editor",
+			"three-d",
+			"tower-defense",
+			"village",
+			"world-transition"
+		]
+	},
+	"roadmap": {
+		"items": 233,
+		"completed": 233,
+		"open": 0
+	},
+	"api": {
+		"declarationFiles": 0
+	},
+	"bundle": {
+		"globalRaw": 917253,
+		"globalGzip": 272227,
+		"distRaw": 2554943
+	}
+}

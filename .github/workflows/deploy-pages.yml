@@ -43,6 +43,7 @@ jobs:
       # before opening the site by hand
       - run: npm run webpage:examples
       - run: npm run webpage:docs
+      - run: npm run stats:write
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

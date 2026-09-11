@@ -46,6 +46,7 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: npm run build
+      - run: npm run stats:check
 
       # staged, not direct: this uploads the tarball but leaves it pending. The npmjs.org
       # trusted publisher for this repo is configured to allow only `npm stage publish`, not

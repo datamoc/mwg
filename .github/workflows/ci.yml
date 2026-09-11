@@ -36,6 +36,8 @@ jobs:
       - run: npm run build
       # the committed API_REPORT.md must match the declarations the build just emitted
       - run: npm run api:check
+      # release statistics are committed and must stay reproducible from the checkout
+      - run: npm run stats:check
       # the global bundle and the published dist stay inside their recorded size budget
       - run: npm run size:check
 
