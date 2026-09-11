@@ -150,8 +150,12 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   player-submitted feedback; the game owns the endpoint, consent flow, and server-side storage.
 - `Spawner` - a `dt`-driven, timed, escalating wave spawner (a horde mode, a survival
   minigame), distinct from `roguelike.Scheduler`'s turn-order primitive.
-- `hexNeighbors`/`hexDistance`/`hexLine`/`hexRange`/`hexToPixel`/`pixelToHex` - flat-top,
-  odd-q hex grid geometry.
+- `hexNeighbors`/`hexDistance`/`hexLine`/`hexRange`/`hexToPixel`/`pixelToHex` with
+  `HexShape`/`HexOrientation`/`HexOffset` - hex grid geometry: cube-based neighbours, lines and
+  ranges, and the pixel projection in both orientations and both offset parities, defaulting to the
+  flat-top odd-q layout this module always had. `pixelToHex` answers with the nearest cell centre
+  rather than a closed-form inverse per combination, so it cannot disagree with `hexToPixel` at a
+  hex's edge.
 - `weightedFlood`/`WeightedCell`/`WeightedFloodOptions` - renderer- and rules-neutral Dijkstra
   flood over any cell topology, with injected costs, blockers, budget and stopping rules.
 - `Blob` - a spreading volume field over a grid: a per-cell number that `spread` diffuses a

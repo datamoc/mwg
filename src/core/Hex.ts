@@ -137,28 +137,86 @@ export function hexRange(center: HexCoord, radius: number): HexCoord[] {
 	return out;
 }
 
-/** the pixel position of a hex cell's centre, for a flat-top tile of the given size */
-export function hexToPixel(x: number, y: number, tileWidth: number, tileHeight: number): { x: number; y: number } {
+/** which way the tiles point: flat-top (columns) or pointy-top (rows) */
+export type HexOrientation = 'flat-top' | 'pointy-top';
+
+/** which columns (flat-top) or rows (pointy-top) are pushed half a step down or right */
+export type HexOffset = 'odd' | 'even';
+
+/**
+ * How a grid of hexes is laid out on a screen. Both fields default to what this module has always
+ * done - flat-top tiles, odd columns pushed half a row down - so a caller that says nothing gets
+ * the layout it already had, and a Wesnoth-style map is `{ orientation: 'pointy-top', offset: 'odd' }`.
+ */
+export interface HexShape {
+	readonly orientation?: HexOrientation;
+	readonly offset?: HexOffset;
+}
+
+/**
+ * The pixel position of a hex cell's centre.
+ *
+ * `tileWidth`/`tileHeight` are the tile as drawn, so a flat-top hex is `0.75` of its width between
+ * columns and its full height between rows; a pointy-top one is the transpose of that.
+ */
+export function hexToPixel(
+	x: number,
+	y: number,
+	tileWidth: number,
+	tileHeight: number,
+	shape: HexShape = {},
+): { x: number; y: number } {
+	const parity = (shape.offset ?? 'odd') === 'odd' ? 1 : 0;
+
+	if ((shape.orientation ?? 'flat-top') === 'pointy-top') {
+		return {
+			x: x * tileWidth + ((y & 1) === parity ? tileWidth / 2 : 0) + tileWidth / 2,
+			y: y * tileHeight * 0.75 + tileHeight / 2,
+		};
+	}
+
 	return {
 		x: x * tileWidth * 0.75 + tileWidth / 2,
-		y: y * tileHeight + (x & 1) * (tileHeight / 2) + tileHeight / 2,
+		y: y * tileHeight + ((x & 1) === parity ? tileHeight / 2 : 0) + tileHeight / 2,
 	};
 }
 
 /**
  * The hex cell under a pixel position - the inverse of `hexToPixel`.
  *
- * Fractional cube coordinates first, rounded only at the end (`cubeRound`), the same way
- * `hexLine` resolves a fractional step to a cell - rounding column and row independently
- * would round to the wrong cell right at a hex's edge.
+ * The answer is the nearest cell centre, searched over the cells around the one the pixel looks
+ * like it is in, and that is deliberate: a hexagonal tiling has no ties, the containing cell *is* the
+ * nearest centre, and a search needs no second set of formulas to stay the inverse of the four
+ * orientation-and-offset combinations above. A closed-form inverse would be four more chances to be
+ * subtly wrong at a hex's edge, where a click has to land somewhere sensible.
  */
-export function pixelToHex(px: number, py: number, tileWidth: number, tileHeight: number): HexCoord {
-	const relativeX = px - tileWidth / 2;
-	const relativeY = py - tileHeight / 2;
+export function pixelToHex(
+	px: number,
+	py: number,
+	tileWidth: number,
+	tileHeight: number,
+	shape: HexShape = {},
+): HexCoord {
+	const pointy = (shape.orientation ?? 'flat-top') === 'pointy-top';
+	const stepX = pointy ? tileWidth : tileWidth * 0.75;
+	const stepY = pointy ? tileHeight * 0.75 : tileHeight;
+	const guessX = Math.round((px - tileWidth / 2) / stepX);
+	const guessY = Math.round((py - tileHeight / 2) / stepY);
 
-	const cx = relativeX / (tileWidth * 0.75);
-	const cz = relativeY / tileHeight - 0.5 * cx;
-	const cy = -cx - cz;
+	let best: HexCoord = { x: guessX, y: guessY };
+	let bestDistance = Infinity;
 
-	return fromCube(cubeRound({ x: cx, y: cy, z: cz }));
+	for (let dx = -2; dx <= 2; dx++) {
+		for (let dy = -2; dy <= 2; dy++) {
+			const candidate = { x: guessX + dx, y: guessY + dy };
+			const centre = hexToPixel(candidate.x, candidate.y, tileWidth, tileHeight, shape);
+			const distance = (centre.x - px) ** 2 + (centre.y - py) ** 2;
+			if (distance < bestDistance) {
+				bestDistance = distance;
+				best = candidate;
+			}
+		}
+	}
+
+	return best;
 }

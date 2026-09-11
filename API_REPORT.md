@@ -698,7 +698,7 @@ build instead.
 
 ### `hexToPixel` (function)
 
-    export declare function hexToPixel(x: number, y: number, tileWidth: number, tileHeight: number): {
+    export declare function hexToPixel(x: number, y: number, tileWidth: number, tileHeight: number, shape?: HexShape): {
         x: number;
 
 ### `highContrastTheme` (const)
@@ -1173,7 +1173,7 @@ build instead.
 
 ### `pixelToHex` (function)
 
-    export declare function pixelToHex(px: number, py: number, tileWidth: number, tileHeight: number): HexCoord;
+    export declare function pixelToHex(px: number, py: number, tileWidth: number, tileHeight: number, shape?: HexShape): HexCoord;
 
 ### `Player` (class)
 
@@ -3659,7 +3659,7 @@ build instead.
 
 ### `hexToPixel` (function)
 
-    export declare function hexToPixel(x: number, y: number, tileWidth: number, tileHeight: number): {
+    export declare function hexToPixel(x: number, y: number, tileWidth: number, tileHeight: number, shape?: HexShape): {
         x: number;
 
 ### `HookRegistry` (class)
@@ -3773,7 +3773,7 @@ build instead.
 
 ### `pixelToHex` (function)
 
-    export declare function pixelToHex(px: number, py: number, tileWidth: number, tileHeight: number): HexCoord;
+    export declare function pixelToHex(px: number, py: number, tileWidth: number, tileHeight: number, shape?: HexShape): HexCoord;
 
 ### `Player` (class)
 

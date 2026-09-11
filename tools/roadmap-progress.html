@@ -3542,10 +3542,23 @@ it.
      interpolation and an RTL sample are covered by unit tests; existing plain `Label` text is
      unchanged. The Wesnoth adapter will map its `<b>`, `<i>`, `<span color>`, `<img>` and `$var`
      syntax to this contract; no Wesnoth-specific tag names belong in MWG.
-259. [Medium] Hex projection options (Ne correspond pas). `src/core/Hex.ts` fixes flat-top odd-q
+259. ~~[Medium] Hex projection options (Ne correspond pas). `src/core/Hex.ts` fixes flat-top odd-q
      with no orientation or offset-parity option - it says so itself about pointy-top - and
      `TileMap`/`TiledMap` refuse hexagonal orientation, so a Wesnoth map cannot be projected
-     exactly.
+     exactly.~~ Landed the projection half: `hexToPixel`/`pixelToHex` take a `HexShape`
+     (`orientation` flat-top or pointy-top, `offset` odd or even) and still default to flat-top
+     odd-q, so nothing that already called them changed. `pixelToHex` is now the nearest cell centre
+     instead of a closed-form inverse: a hexagonal tiling has no ties, the containing cell *is* the
+     nearest centre, and four inverse formulas for four combinations would be four more chances to
+     be wrong at a hex's edge. Seven tests in `tests/hex-projection.test.ts`, the important one a
+     round-trip property over every cell of a grid in all four combinations. **What remains is the
+     other half of the item, and it is its own work: 284** - `TileMap`/`TiledMap` still refuse a
+     hexagonal orientation, which is the part that draws the map rather than projecting one cell.
+284. [Medium] Hexagonal tile maps. `Hex.ts` projects a hex cell in any orientation now (259), but
+     `TileMap` and `TiledMap` accept square grids only, so a hex map cannot be drawn from content:
+     needs per-cell placement through the hex projection, the hex's own pick/click mapping, and the
+     asset-side question of what a hex tile image is anchored to (a 72px source sprite overlapping
+     into neighbouring hexes is not expressible in a one-sprite-per-cell grid, see 257).
 260. ~~[Medium] Halos (Absent). `[halo]`/`[halo_frame]` have no equivalent; floating labels do
      (`FloatingTextStack`).~~ Landed as `Halo`: an `AnimatedSprite` that follows a target through
      `follow(x, y)`, applying its own `x`/`y` offset once rather than in every game that draws a

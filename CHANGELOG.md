@@ -64,6 +64,10 @@ the public API may still change between minor versions.
   `user_team_name`, `share_vision`, `village_gold`, `heal`, `fog`, `shroud`, `hidden` and `flag` are
   read onto `MwlWorld.sides` as written (`yes`/`no` as booleans), and `sideVisionGroups` turns
   `team_name` with `share_vision` into the groups `FactionFog.share` takes.
+- Hex projection options, first half of item 259: `hexToPixel`/`pixelToHex` take
+  `HexShape`/`HexOrientation`/`HexOffset`, so a grid can be flat-top or pointy-top with either
+  offset parity, and the default is the flat-top odd-q layout the module always had. The inverse is
+  the nearest cell centre, which cannot disagree with the projection at a hex's edge.
 - `Halo` (item 260): the glow around a unit, an aura, a shrine's light. An `AnimatedSprite` that
   `follow(x, y)`s a target with its own offset applied once, additive by default, with z-order left
   to the caller. `[halo_frame]` needed nothing new after 254 gave frames their own timing.
