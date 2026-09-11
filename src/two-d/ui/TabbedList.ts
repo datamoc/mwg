@@ -236,7 +236,6 @@ export class TabbedList<T> {
 
 	/** the first row on `page` that is not disabled, or its first row when all are */
 	private firstSelectableOnPage(page: number): number {
-		if (this.pageSize <= 0) return this.firstSelectable(0);
 		const start = page * this.pageSize;
 		const end = Math.min(this.rows_.length, start + this.pageSize);
 		for (let i = start; i < end; i++) {
