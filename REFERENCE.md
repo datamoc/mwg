@@ -309,6 +309,10 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
 - `ListView` - a scrollable, keyboard- and pointer-navigable row list (click, wheel-scroll).
 - `IconGrid` - a multi-column icon-grid inventory view; tap-then-tap "drag and drop",
   frame-driven long-press for a quickslot.
+- `TabbedList`/`ListTab`/`TabbedListOptions` - a renderer-free model for an inventory, journal,
+  shop or codex: caller-supplied tabs and rows (no assumed taxonomy), an optional label,
+  filter and disabled predicate, selection that skips disabled rows, a page derived from the
+  selection rather than tracked beside it, and an `openDetail`/`closeDetail` state.
 - `MessageBox` - dialogue text box: paged reveal, choices, ADV/NVL display modes,
   `autoAdvance`, and timed `{sound:path}` markers delivered through `onSound`.
 - `messageBoxPresenter` - wires `rpg.EventRunner`'s dialogue to a `MessageBox` on a

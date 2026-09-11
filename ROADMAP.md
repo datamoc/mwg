@@ -3750,10 +3750,18 @@ source rather than against the note, so neither is an item:
      each step. It returns cells only - damage, legality details and drawing stay with the game.
      Thirteen tests in `tests/targeting-controller.test.ts`, including the range boundary, a wall
      between origin and cursor, hex neighbour stepping and hex distance.
-281. [Low] Tabbed, paginated list primitives (the port's P2). `ListView`/`IconGrid` cover the list
+281. ~~[Low] Tabbed, paginated list primitives (the port's P2). `ListView`/`IconGrid` cover the list
      itself; a contract for tabs, filtered rows, selection, paging and a detail/close action would
      serve inventories, journals, shops and codices across games. Caller-supplied labels and rows,
-     no assumed item taxonomy.
+     no assumed item taxonomy.~~ Landed as `two-d/ui`'s `TabbedList`, a renderer-free model beside
+     `SelectionModel` rather than another drawn widget: the caller supplies the tabs and a
+     `rowsFor(tabId)` returning any row type it likes, plus optional `label`, `filter` and
+     `disabled` predicates, so no item taxonomy is assumed. It owns the tab choice (skipping
+     disabled tabs, wrapping), the query (default case-insensitive substring of the label), the
+     selection (skipping disabled rows, clamped), the page and the detail/close state. The page is
+     **derived** from the selection rather than tracked next to it, so the two can never disagree and
+     `nextPage` is just a selection move of one page; `pageRows`, `selectedIndex` and `onChange` are
+     what a renderer reads. Eighteen tests in `tests/tabbed-list.test.ts`, no DOM needed.
 282. [Low] A documented event-to-presentation sequencing recipe (the port's P2). The split itself
      exists (`simulation.SimulationRuntime` and `core.PresentationQueue`); what is missing is a
      documented pattern, with a small example and a test, for a command result, a scheduled

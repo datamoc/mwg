@@ -1841,6 +1841,64 @@ build instead.
 
     export declare function stripMarkup(source: string, options?: MarkupOptions): string;
 
+### `TabbedList` (class)
+
+    export declare class TabbedList<T> {
+
+        readonly onChange: Signal<void>;
+        private readonly tabList;
+        private readonly rowsFor;
+        private readonly pageSize;
+        private readonly labelOf;
+        private readonly filterOf;
+        private readonly disabledOf;
+        private currentTabIndex;
+        private currentQuery;
+        private rows_;
+        private currentSelectedIndex;
+        private detail;
+        constructor(options: TabbedListOptions<T>);
+
+        get tabs(): readonly ListTab[];
+
+        get tab(): ListTab;
+        get query(): string;
+
+        get rows(): readonly T[];
+
+        get pageCount(): number;
+
+        get page(): number;
+
+        get pageRows(): readonly T[];
+
+        get selectedIndex(): number;
+        get selected(): T | null;
+
+        get detailOpen(): boolean;
+
+        selectTab(id: string): void;
+
+        nextTab(delta?: number): void;
+
+        setQuery(query: string): void;
+
+        move(delta: number): void;
+
+        setPage(page: number): void;
+
+        nextPage(delta: number): void;
+
+        openDetail(): boolean;
+        closeDetail(): void;
+
+        private firstSelectableOnPage;
+        private firstSelectable;
+
+        private recompute;
+        private emit;
+    }
+
 ### `TelemetryClient` (class)
 
     export declare class TelemetryClient extends HttpTransport {
@@ -6754,6 +6812,64 @@ build instead.
 
     export declare function stripMarkup(source: string, options?: MarkupOptions): string;
 
+### `TabbedList` (class)
+
+    export declare class TabbedList<T> {
+
+        readonly onChange: Signal<void>;
+        private readonly tabList;
+        private readonly rowsFor;
+        private readonly pageSize;
+        private readonly labelOf;
+        private readonly filterOf;
+        private readonly disabledOf;
+        private currentTabIndex;
+        private currentQuery;
+        private rows_;
+        private currentSelectedIndex;
+        private detail;
+        constructor(options: TabbedListOptions<T>);
+
+        get tabs(): readonly ListTab[];
+
+        get tab(): ListTab;
+        get query(): string;
+
+        get rows(): readonly T[];
+
+        get pageCount(): number;
+
+        get page(): number;
+
+        get pageRows(): readonly T[];
+
+        get selectedIndex(): number;
+        get selected(): T | null;
+
+        get detailOpen(): boolean;
+
+        selectTab(id: string): void;
+
+        nextTab(delta?: number): void;
+
+        setQuery(query: string): void;
+
+        move(delta: number): void;
+
+        setPage(page: number): void;
+
+        nextPage(delta: number): void;
+
+        openDetail(): boolean;
+        closeDetail(): void;
+
+        private firstSelectableOnPage;
+        private firstSelectable;
+
+        private recompute;
+        private emit;
+    }
+
 ### `Text2D` (class)
 
     export declare class Text2D extends Text {
@@ -8263,6 +8379,64 @@ build instead.
 ### `stripMarkup` (function)
 
     export declare function stripMarkup(source: string, options?: MarkupOptions): string;
+
+### `TabbedList` (class)
+
+    export declare class TabbedList<T> {
+
+        readonly onChange: Signal<void>;
+        private readonly tabList;
+        private readonly rowsFor;
+        private readonly pageSize;
+        private readonly labelOf;
+        private readonly filterOf;
+        private readonly disabledOf;
+        private currentTabIndex;
+        private currentQuery;
+        private rows_;
+        private currentSelectedIndex;
+        private detail;
+        constructor(options: TabbedListOptions<T>);
+
+        get tabs(): readonly ListTab[];
+
+        get tab(): ListTab;
+        get query(): string;
+
+        get rows(): readonly T[];
+
+        get pageCount(): number;
+
+        get page(): number;
+
+        get pageRows(): readonly T[];
+
+        get selectedIndex(): number;
+        get selected(): T | null;
+
+        get detailOpen(): boolean;
+
+        selectTab(id: string): void;
+
+        nextTab(delta?: number): void;
+
+        setQuery(query: string): void;
+
+        move(delta: number): void;
+
+        setPage(page: number): void;
+
+        nextPage(delta: number): void;
+
+        openDetail(): boolean;
+        closeDetail(): void;
+
+        private firstSelectableOnPage;
+        private firstSelectable;
+
+        private recompute;
+        private emit;
+    }
 
 ### `theme` (function)
 

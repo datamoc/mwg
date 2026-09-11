@@ -38,6 +38,9 @@ the public API may still change between minor versions.
 - `world.SideTurns`/`SideTurn`/`TimeOfDay`/`TimeArea`/`Alignment`/`alignmentBonus` (item 267): the
   reference's outer turn model, sides in order with a schedule that steps per round, and a per-hex
   `lawfulBonusAt` where a `TimeArea` overrides the global time of day.
+- `ui.TabbedList`/`ListTab`/`TabbedListOptions` (item 281): a renderer-free model for a tabbed,
+  filtered, paged list with selection and a detail/close state, over caller-supplied rows and
+  predicates. The page is derived from the selection, so the two cannot disagree.
 - `ai.personalScoreView`/`ai.sideScoreView`/`ai.scoreWith`, over `ScoreSubject`/`ScoreView`/
   `ScorePersonality` (items 274-276): the numbers a mind needs when a search is the wrong tool.
   The game supplies what anything is worth, the framework assembles the view (own, allies and

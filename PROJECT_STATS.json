@@ -4,14 +4,14 @@
 	"version": "0.7.6",
 	"releaseDate": "2026-09-11",
 	"source": {
-		"files": 249,
-		"lines": 35943,
+		"files": 250,
+		"lines": 36153,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 61,
-				"lines": 10400
+				"lines": 10403
 			},
 			{
 				"name": "core",
@@ -64,6 +64,11 @@
 				"lines": 756
 			},
 			{
+				"name": "world",
+				"files": 7,
+				"lines": 603
+			},
+			{
 				"name": "battle",
 				"files": 10,
 				"lines": 555
@@ -77,18 +82,13 @@
 				"name": "simulation",
 				"files": 6,
 				"lines": 443
-			},
-			{
-				"name": "world",
-				"files": 6,
-				"lines": 396
 			}
 		]
 	},
 	"tests": {
-		"files": 182,
-		"lines": 22874,
-		"cases": 1670
+		"files": 183,
+		"lines": 23075,
+		"cases": 1689
 	},
 	"tools": {
 		"files": 35,
@@ -123,9 +123,9 @@
 	},
 	"roadmap": {
 		"items": 293,
-		"completed": 265,
-		"open": 28,
-		"percent": 90
+		"completed": 266,
+		"open": 27,
+		"percent": 91
 	},
 	"api": {
 		"declarationFiles": 0
@@ -133,7 +133,7 @@
 	"bundle": {
 		"globalRaw": 941520,
 		"globalGzip": 279972,
-		"distRaw": 2772132
+		"distRaw": 2797552
 	},
 	"quality": {
 		"testToSourceRatio": 0.6

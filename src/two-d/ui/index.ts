@@ -32,6 +32,9 @@ export type { ListItem, ListViewOptions } from './ListView.ts';
 export { IconGrid } from './IconGrid.ts';
 export type { IconGridItem, IconGridOptions } from './IconGrid.ts';
 
+export { TabbedList } from './TabbedList.ts';
+export type { ListTab, TabbedListOptions } from './TabbedList.ts';
+
 export { MessageBox } from './MessageBox.ts';
 export type { MessageBoxOptions, MessagePage, Choice } from './MessageBox.ts';
 
