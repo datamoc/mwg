@@ -654,6 +654,20 @@ build instead.
 
     export declare const Gradient: typeof FillGradient;
 
+### `Halo` (class)
+
+    export declare class Halo extends AnimatedSprite {
+        private readonly offsetX;
+        private readonly offsetY;
+        constructor(options: HaloOptions);
+
+        follow(x: number, y: number): this;
+    }
+
+### `HALO_ANIMATION` (const)
+
+    export declare const HALO_ANIMATION = "halo";
+
 ### `HelpScreen` (class)
 
     export declare class HelpScreen extends Container {
@@ -5905,6 +5919,20 @@ build instead.
 
     export declare const Gradient: typeof FillGradient;
 
+### `Halo` (class)
+
+    export declare class Halo extends AnimatedSprite {
+        private readonly offsetX;
+        private readonly offsetY;
+        constructor(options: HaloOptions);
+
+        follow(x: number, y: number): this;
+    }
+
+### `HALO_ANIMATION` (const)
+
+    export declare const HALO_ANIMATION = "halo";
+
 ### `HelpScreen` (class)
 
     export declare class HelpScreen extends Container {
@@ -7070,6 +7098,20 @@ build instead.
 ### `Gradient` (const)
 
     export declare const Gradient: typeof FillGradient;
+
+### `Halo` (class)
+
+    export declare class Halo extends AnimatedSprite {
+        private readonly offsetX;
+        private readonly offsetY;
+        constructor(options: HaloOptions);
+
+        follow(x: number, y: number): this;
+    }
+
+### `HALO_ANIMATION` (const)
+
+    export declare const HALO_ANIMATION = "halo";
 
 ### `imageModifier` (function)
 

@@ -3531,8 +3531,15 @@ it.
      with no orientation or offset-parity option - it says so itself about pointy-top - and
      `TileMap`/`TiledMap` refuse hexagonal orientation, so a Wesnoth map cannot be projected
      exactly.
-260. [Medium] Halos (Absent). `[halo]`/`[halo_frame]` have no equivalent; floating labels do
-     (`FloatingTextStack`).
+260. ~~[Medium] Halos (Absent). `[halo]`/`[halo_frame]` have no equivalent; floating labels do
+     (`FloatingTextStack`).~~ Landed as `Halo`: an `AnimatedSprite` that follows a target through
+     `follow(x, y)`, applying its own `x`/`y` offset once rather than in every game that draws a
+     glow, and adding to the scene by default (`blend_mode=add`). `[halo_frame]`'s frames needed
+     nothing new, since 254 gave a frame its own duration and offset, so a halo cycle is written the
+     way any other animation is. Z-order stays the caller's on purpose: behind a unit is
+     `addChild(halo, unit)` and in front is the other order, and the note says so where a game will
+     look for it. Six tests in `tests/halo.test.ts`, all without a renderer - a sprite and its blend
+     mode exist without one.
 261. [High] Missing widgets (Absent). No Slider, Checkbox/Toggle, Dropdown/OptionButton,
      TextInput/TextArea, Table/data grid, collapsible TreeView, Spinner or ScrollBox. Present:
      Button, Label, RichLabel, ListView, IconGrid, Bar, Window, WindowStack, MessageBox,

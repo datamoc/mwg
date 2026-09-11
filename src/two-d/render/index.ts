@@ -27,6 +27,8 @@ export type { TileMapOptions } from './TileMap.ts';
 export { LayeredSprite } from './LayeredSprite.ts';
 export { Projectile } from './Projectile.ts';
 export type { ProjectilePoint, ProjectileOptions } from './Projectile.ts';
+export { Halo, HALO_ANIMATION } from './Halo.ts';
+export type { HaloOptions } from './Halo.ts';
 
 export { ParticleEmitter } from './Particles.ts';
 export type { Particle, ParticleRange, ParticleEmitterOptions } from './Particles.ts';

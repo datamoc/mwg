@@ -60,6 +60,9 @@ the public API may still change between minor versions.
   rather than vanishing, and output text is escaped so no raw HTML can leak. What the item's
   acceptance still wants (backend equivalence, wrapping after styling, images through the asset
   resolver, an accessibility projection) is recorded on the item rather than implied here.
+- `Halo` (item 260): the glow around a unit, an aura, a shrine's light. An `AnimatedSprite` that
+  `follow(x, y)`s a target with its own offset applied once, additive by default, with z-order left
+  to the caller. `[halo_frame]` needed nothing new after 254 gave frames their own timing.
 
 ### Fixed
 

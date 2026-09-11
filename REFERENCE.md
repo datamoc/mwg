@@ -228,6 +228,11 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   square/hex/isometric/staggered projections, multi-sheet tiles, elevation columns.
 - `LayeredSprite` - layered character sprites (body/hair/equipment as separate layers).
 - `Projectile` - tweens a sprite in a straight line for a thrown/shot visual flourish.
+- `Halo`/`HALO_ANIMATION` - the glow around a unit, an aura, a shrine's light: an `AnimatedSprite`
+  drawn additively (Wesnoth's `[halo] blend_mode=add`) whose `follow(x, y)` applies the halo's own
+  offset once instead of in every game that draws one. Z-order stays the caller's, because a halo
+  that belongs behind its unit is added before it and one that belongs in front is added after, and
+  a framework that guessed would be wrong half the time.
 - `ParticleEmitter`/`Particle` - a pooled, seeded particle emitter (sparks, dust, rain):
   `burst`/`start`/`stop` over a pool allocated once at `max`. Runs the whole simulation with
   no `texture` given, which is how it is tested without a renderer.
