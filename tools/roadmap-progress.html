@@ -71,38 +71,17 @@ where those live.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** 28 → 30 → 41 → 45 (everything placed above
-has shipped and is no longer part of this ordering). Items 37 (quests) and 39 (skills)
-move up from their append position - both are small, unblocked `mwg/actors`/`mwg/rpg`
-capabilities that already-committed reference games (ADOM's own row names quests explicitly;
-levelling is implicit in nearly all of them) demand directly, unlike several later entries
-that are either blocked on hex (28, 41) or still deciding which genre or mechanic to commit
-to at all (30, 38). 40 (crafting) is pulled up alongside them for the same reason, sharing
-37/39's shape: small, unblocked, already-demanded. 42 (action recording and replay) follows
-right after - not demanded by any reference game, but the fastest way to make every item
-above and below it faster to verify, and cheap: most of its determinism already exists
-(`Random`, `Game.step`). Numbers themselves are never reassigned once given - the list is
-an append-only history, including for what is not done yet - so priority order lives here, in
-prose, rather than in the list's own sequence.
-
-Reassessment with 43/44/45 placed: 43 (a spendable per-use resource) joins the top
-cluster - its entry already scopes it to the one genuinely missing bit, which is small
-(`craft()`-shaped), unblocked, and demanded across the references (MP/mana pools; item
-48's `Charges` covers per-move uses, not pools). 44 (discrete elevation) sits mid-list:
-concrete and scoped, but no committed reference demands height yet and it cuts across
-`FieldOfView`, `Pathfinder` and draw order, so it costs more than its current demand
-justifies placing higher. At that point, 45 (true 3D) went last because it was very low
-priority and against the project's stated 2D purpose. 36 (structured logging) sinks below
-all demanded work on its own entry's admission of marginal value. 28 stays low even
-though hex (item 17) shipping removed its blocker - it is still an undecided reference
-rather than demanded work.
-
-Everything placed has since shipped (42, 32, 43, 31, 34, 33, 35, 44 with its TileMap
-rendering half, 38, 36 - plus 37, 39, 40, 46-56 before them). What remains is decisions,
-not demanded work: 28 and 30 are reference picks no capability waits on, and 41 waits on
-30's pick by its own entry's admission. The formerly gated 45 has since shipped as optional
-Babylon.js support, without changing the 2D default.
-and needs a project-level yes before any code.
+**Priority order among what's still open:** the Wesnoth port's gaps, items 247 and up, added
+2026-09-11 after that port's own analysis, with the structural blockers first (247, 248, 254,
+255, 257, 258, 261, 262, 266, 268). Everything else numbered has shipped: the data-extraction
+cluster 205-213 (whose items say what landed), the former priority cluster (28, 30, 41, 45), the
+verification and accessibility tail (192-197), the SVG and benchmark follow-up (198) and the
+reduced-motion cluster (199-202). Numbers are never reassigned once given - the list is an
+append-only history, including for what is not done yet - so priority order lives in prose rather
+than in the list's own sequence. What remains before 1.0 is recorded in the [1.0 exit
+checklist](#10-exit-checklist) at the end of this file, and the deliberate non-decisions (which
+reference title, if any, a future genre pick should study) in
+[Parked decisions](#parked-decisions) rather than left as phantom open items.
 
 17. ~~`mwg/render` + `mwg/roguelike` - hexagonal tile maps, and FOV/pathfinding over a hex
     grid~~ - flat-top, matching Wesnoth. `Level` and `TileMap` both gained a `shape` option
@@ -585,10 +564,13 @@ in the same session they were logged in.
     `AbilityCycle` ticks named cooldowns down, lists what is ready, and spends on `use`.
     Both round-trip through JSON for a saved mid-fight boss. 11 unit tests
 63. ~~a spreading area effect over the grid: fire, gas, anything with a volume per cell~~ -
-    `roguelike.Blob` holds volumes, diffuses a share into passable 4-neighbours per step
+    `core.Blob` holds volumes, diffuses a share into passable 4-neighbours per step
     and decays the rest (`decay: 1` conserves and only moves volume around); the game
     decides what a volume means via `cellsAbove`. Float dust snaps to zero so a burned-out
-    effect reads as gone. 6 unit tests, including wall-blocking and the full decay-out
+    effect reads as gone, and `spread` hands back the cells it just emptied, so the ground
+    under a fire can turn to embers at the moment the flames leave it rather than the game
+    diffing `cellsAbove` between steps. 12 unit tests, including wall-blocking, the full
+    decay-out, and each cell reported on the step that empties it
 64. ~~floor serialization: a whole dungeon floor as save data~~ - `Level`, `Secrets` and
     `Doors` gained `toJSON`/`fromJSON` following `QuestLog`'s definitions-fresh convention
     (terrain ids and rooms persist; the game's own `kinds` table is supplied on load, and
@@ -2155,7 +2137,28 @@ process - appended at low priority, not argued into or out of existence on the s
      omitting `instanceId`) and stay apart the moment either sets a distinguishing one. 12 new
      unit tests across the four; the full existing suite passes unchanged
 
-148. Wesnoth-style hex skirmishes expose a gap between `board.Tactics`' generic action-point/cover model and a reusable army-game rules layer: weighted terrain movement and defence per unit, adjacent attack exchanges with retaliation and hit chances, village ownership/healing, and per-side turn income. `wesnoth-1.19.27/mwg` keeps these rules as an original game-side prototype for now, wired to `mwg`'s hex geometry and faction fog; evaluate a small, data-driven `board.HexSkirmish` API once a second game needs the same combination. It must provide mechanisms rather than any reference game's units, maps, probabilities, or economy values.
+148. ~~Wesnoth-style hex skirmishes expose a gap between `board.Tactics`' generic
+     action-point/cover model and a reusable army-game rules layer: weighted terrain
+     movement and defence per unit, adjacent attack exchanges with retaliation and hit
+     chances, village ownership/healing, and per-side turn income. `wesnoth-1.19.27/mwg`
+     kept these rules as an original game-side prototype, wired to `mwg`'s hex geometry and
+     faction fog; this evaluates a small, data-driven `board.HexSkirmish` API now that a
+     second consumer (this item's own write-up, revisited) makes the shape worth
+     generalising~~ - `board/HexSkirmish.ts` adds `startingSkirmish`/`setSkirmishTerrain`/
+     `canPlaceSkirmishUnit`/`addSkirmishUnit`/`skirmishMoves`/`moveSkirmishUnit`/
+     `skirmishAttack`/`skirmishIncome`/`endSkirmishTurn`. Distinct from `board.Tactics` on
+     purpose: a `SkirmishTerrain` carries its own `moveCost` (weighted Dijkstra over
+     `core.Hex` neighbours, not `Tactics`' uniform one-step BFS) and `defense` (a 0-1 bonus
+     for whoever is standing on it while defending); combat is adjacency-only with no zone
+     of control, and `skirmishAttack` always lets a surviving defender strike back in the
+     same call rather than needing a second, separate action. A village is a cell flag -
+     `moveSkirmishUnit` sets its `owner` the moment a unit steps onto one, `skirmishIncome`
+     counts an owner's villages toward a flat base rate, and `endSkirmishTurn` heals units
+     standing on a village they own. Every number (move cost, defence, attack, hit chance,
+     income rate) is the game's own data, the same policy `board.Army`'s `armyIncome`
+     already follows - nothing here is a Wesnoth number. 11 unit tests, including a forced
+     detour around an impassable terrain kind, a guaranteed-kill leaving no retaliation, and
+     terrain defence pushed to a guaranteed miss for a deterministic assertion
 
 149. ~~Add the reusable dungeon-content primitives exposed by the Shattered Pixel Dungeon port:
     deterministic seeded floor generation with room graphs and retry reporting; regional
@@ -2667,6 +2670,923 @@ rather than someone else's build.
      `HelpScreen`'s fix could not get a unit test the same way - like `ListView` itself, it
      constructs real Pixi `Text` and has no test today, since measuring it needs a canvas
      this headless suite has none of - verified by type-check and code review instead
+
+172. ~~requested directly: without a declarative way to react to a stat crossing a
+     threshold, a game ends up writing its own cascade of `if HP < n` checks, one per
+     reaction, scattered through its update loop and hard to keep straight as more
+     reactions pile up~~ - `core.ReactionTable`/`ReactionRule` checks a list of named
+     `when`/`action` rules against any state shape a game passes in (an actor's
+     `StatBlock` values, or a plain object's own fields such as an item's durability),
+     firing `action` the moment `when` turns true and staying quiet while it remains
+     true, edge-triggered the same way `roguelike.BossPhases` already tracks entered
+     phases. A `once` rule retires after firing; the default re-fires on the next
+     rising edge, for a recurring warning rather than a single milestone. Deliberately
+     narrower than `BossPhases` (no thresholds-must-descend ordering, no phase index) and
+     more general (an arbitrary predicate, not just an HP fraction), and deliberately in
+     `core` rather than `actors`, so the same table watches a character's stats or an
+     inanimate object's state without either module depending on the other. 8 unit tests
+
+173. ~~item 167 closed the `mwg-pixel-dungeon` study claiming "nothing left... not a gap",
+     and ADR-001 records the renderer boundary as flatly Accepted; a closer look at what
+     that actually covers found the claim overstated~~ - `two-d/render/Shape2D.ts` gives a
+     game an MWG-owned *type* for a container/shape/text (`Node2D`/`Shape2D`/`Text2D`), but
+     no bare, constructible `Sprite2D` exists - only `TintedSprite`, which adds
+     colour-transform behaviour rather than standing in as a neutral sprite. `two-d/
+     pixi-interop.ts` is itself a literal `export { Container, Sprite, ... } from 'pixi.js'`,
+     so reaching it still means `pixi.js` is present at the value level, and `package.json`'s
+     `dependencies` still lists `pixi.js` directly - removing it today would still break the
+     build. What item 167 got right: every *type* position across the public API genuinely
+     no longer names a `pixi.js` type, which is what `renderer-isolation.test.ts`'s scans
+     actually check. ADR-001 corrected to say exactly that distinction rather than a flat
+     "Accepted". Not fixed here - a `Sprite2D` and a real look at what removing `pixi.js`
+     from `dependencies` would take are their own item, not folded into this correction
+
+174. ~~item 172 added `core.ReactionTable` to replace a game's own cascade of `if HP < n`
+     checks; before assuming it was worth using anywhere, surveyed every latch/transition
+     site across the reference games it was meant to help (70 sites: warn/flee state
+     machines, boss phase gates, ability cooldowns, one-shot rage triggers) and sketched the
+     conversion rather than asserting from memory~~ - every site surveyed was already a
+     minimal single boolean or inline check; converting any of them to a `ReactionTable`
+     costs net lines (the rules object, the `check()` call site, re-supplying rules to
+     `fromJSON` at every load site), and the one two-stage case (a shopkeeper's warn-then-flee)
+     would additionally need one rule's `when` to read another rule's `isActive` - strictly
+     uglier than the six lines it replaces. Nothing converted: this repository already
+     deletes speculative framework-shaped scaffolding on sight, and retrofitting working code
+     for neutral-to-negative benefit violates that same standard. `ReactionTable` stays
+     available for a game that actually has many rules over one state, which is what it was
+     designed for - this item records that the existing reference games are not that case,
+     so a future session does not re-run the same survey
+
+175. ~~Item 173 corrected ADR-001/item 167's overstated "renderer boundary fully closed" claim
+     and, while adding `two-d/render/Shape2D.ts`'s `Sprite2D` closed the "no bare
+     constructible sprite" half of that gap, left the actual dependency-shape question
+     explicitly unresolved: `package.json`'s `dependencies` still lists `pixi.js` directly
+     (not `peerDependencies`, unlike `@babylonjs/core`'s already-established optional-peer
+     treatment for `three-d`), and moving it would change the published package's install
+     contract for a version already live on the npm registry (`0.5.0`, confirmed via `npm
+     view`) - a real breaking-change decision, not a same-session mechanical edit. Needs,
+     before it can move: confirming `npm install`'s behaviour is unchanged for a consumer
+     under npm 7+'s auto-installed-required-peer-dependency handling (both the `npm install
+     @datamoc/mw_games vite` path and the `.tgz` fallback CLAUDE.md's own getting-started
+     verification section names), rerunning that getting-started verification from an empty
+     directory once the shape actually changes, and deciding whether this is a `0.5.x` patch
+     or belongs bundled with a larger breaking-change release. Left open on purpose rather
+     than rushed through under a goal-completion pass - confirmed directly: asked whether to
+     implement it now or leave it open, and the answer was to leave it open.~~ - Closed by
+     decision rather than code change: `pixi.js` stays in `dependencies` for the rest of the
+     0.x line. Moving it to optional `peerDependencies` (the `@babylonjs/core` treatment) is
+     a real install-contract change for a live published package, so it belongs bundled with
+     1.0's breaking changes, and the [1.0 exit checklist](#10-exit-checklist) below carries
+     the verification steps this entry named (npm-install and `.tgz` paths, from an empty
+     directory).
+
+176. ~~requested directly: a game's own data tables (`actors.AffixTable` and the like) are
+     hand-written `.ts` object literals today, which means a content designer without
+     TypeScript has to touch source to add or tweak an entry - author them as CSV instead,
+     readable by both a spreadsheet and the framework~~ - `core.parseCSV` turns a header-row
+     CSV string into an array of typed row objects; `columns` names which fields coerce to
+     `'number'`/`'boolean'`/`'list'` (semicolon-separated, for a field shaped like
+     `AffixDef.kinds`) or `'map'` (semicolon-separated `key=value` pairs, for a per-row
+     property bag), and an undeclared column stays a plain string. An empty cell omits that
+     field entirely, the same as an optional property never set. RFC 4180-shaped tokenizing
+     (char by char, not `split(',')`) survives a quoted field containing the delimiter, a
+     newline, or an escaped `""`, which a real description column eventually will. Takes a
+     raw string with no opinion on how it was loaded - the same boundary `i18n.parseFTL`
+     already draws, and deliberately not wired into `assets.load`/`tools/compile-resources`,
+     since Pixi's own text-asset handling for an arbitrary extension was never verified here
+     and a small table already fits a `.ts` template literal while a larger one has a
+     bundler's own raw-text import (Vite's `?raw` suffix) to reach for. Explicitly does not
+     and cannot hold a `core.ReactionTable` rule's `when`/`action`, which are executable
+     code, not data - a CSV row can drive *which* reactions a game builds at startup (an id,
+     a comparison string, a threshold number), never the rule's own logic, the same
+     `AffixDef.id` boundary already draws. 12 unit tests, including a round-trip of a real
+     `AffixTable` shape and quoted fields surviving an embedded comma, an escaped quote, and
+     an embedded newline.
+
+177. ~~requested directly: a dev should be able to hand the engine a hero or monster "file"
+     and have it read and apply the rules, rather than the per-entity glue code item 176's
+     own consultation showed (subclass/affix `if`-cascades). Given the choice between a file
+     that supplies only base data (composed by the game's own code, as shown that same
+     session) and one row wiring a complete entity in a single call, the fuller shape was
+     requested directly~~ - `actors.buildEntity`/`buildEntities` turn one `core.parseCSV` row
+     into a `StatBlock` (every non-reserved column is a base stat, so a game's own stat names
+     need no declaring), an optional `Progression` against a named growth curve, a starting
+     item carrying a named starting affix, and a `core.ReactionTable` already holding a
+     low-HP rule if the row names a threshold. Every named reference (`growth`, `startingAffix`,
+     `startingItem`) resolves through a game-supplied `EntityTemplateCatalog` - `mwg` reads
+     which name a row asks for, never invents what the name means, the same boundary
+     `AffixDef.id` already draws; a `lowHpReaction` threshold with no `onLowHp` callback
+     supplied throws rather than silently doing nothing. Deliberately one low-HP threshold
+     per row, not an arbitrary reaction list - a second one is a second column and a second
+     `ReactionRule` in a game's own code once actually needed, not speculative. 12 unit
+     tests, including a full CSV-row round-trip (parse a file's own row shape straight into
+     a wired entity) and every reserved-column/unknown-reference error path.
+
+178. ~~Raised against a reference game whose `main.ts` grew to roughly 7,800 lines, ~90% of it
+     one `SewersScene` class: a scene composition/registry system, so a game can register
+     named sub-scenes or scene "sections" (map logic, encounter logic, UI wiring) as separate
+     modules that a factory assembles at `switchScene` time, instead of one file accreting
+     every responsibility a scene ends up needing~~ - built as the same primitive as item 181
+     below, rather than two overlapping mechanisms: `core.SceneComponentHost`/`SceneComponent`
+     let a scene register named sections, each implementing whichever `create`/`update`/
+     `resize`/`onSuspend`/`onResume`/`destroy` hooks it needs, run in registration order (and
+     reverse order on `destroy`). Composition, not inheritance - a scene owns one host and
+     forwards `core.Scene`'s lifecycle to it in a handful of lines, so it works the same
+     whether that scene extends `Scene` directly or `two-d.Scene2D`, which item 181's ECS
+     framing (tied to `Scene2D` specifically) would not have. The "requires a second reference
+     game" caution this item was written with was overridden by a direct instruction to
+     implement 178-182 as given.
+
+179. ~~Same session as item 178: externalized content-definition files (quests, tables, NPC
+     appearances) as an alternative to large hand-written `.ts` object-literal blocks (~300-400
+     lines in the reporting game)~~ - scoped to the concrete case already in the framework
+     rather than a new file format: `rpg.questsFromRows`/`QuestStageRow` groups a flat table of
+     stage rows (one row per stage, sharing a `questId`, typically a `core.parseCSV` result)
+     into `QuestDefinition`s, the same relational shape (two linked flat tables) `core.
+     parseCSV`/`actors.buildEntity` already model for other one-to-many content, rather than a
+     bespoke nested/branching text format. A quest's `condition`/`counter`/`location` all fit a
+     stage row's columns directly since `rpg.EventCondition` is a two-shape union, not a tree;
+     a genuinely tree-shaped content format (a branching dialogue) remains the open case a
+     `.ts` template literal or a bundler's raw-text import already covers, per item 176's own
+     line.
+
+180. ~~Same session as item 178: reduce a game's own import-section boilerplate (~130 lines,
+     85+ imports in the reporting game) via some form of auto-registration or plugin
+     architecture, each subsystem registering itself rather than being explicitly imported and
+     wired by hand~~ - implemented as the disciplined middle ground the tension this item was
+     written with called for, not filesystem auto-discovery or decorator-based registration:
+     `core.Registry` is a named lookup (`register`/`get`/`has`/`list`, throwing by name on a
+     duplicate or a miss) a game still imports and registers each entry into by hand, replacing
+     a hand-written `if`/`switch` dispatch cascade rather than the import statement above it.
+     `SceneComponentHost` (item 178) uses one internally for its own by-name lookup rather than
+     duplicating the same "already registered"/"no X named" logic a second time.
+
+181. ~~Same session as item 178: an ECS-like component system for `Scene2D`, each subsystem a
+     self-contained module with its own lifecycle, proposed as the highest-ceiling fix (claimed
+     could take the reporting game's `main.ts` under 500 lines)~~ - folded into item 178's
+     `SceneComponentHost`/`SceneComponent` rather than built as a second mechanism: this item's
+     own text flagged the risk of duplicating `core.Scene`'s existing lifecycle hooks, and a
+     second look showed "named sections a factory assembles" (178) and "self-contained modules
+     with their own lifecycle" (181) were the same primitive described twice. `SceneComponent`
+     forwards exactly `Scene`'s existing hooks, adding no new lifecycle concept and no ECS-style
+     entity/query layer beyond that, deliberately - `core.ReactionTable`'s trigger-based
+     composition already covers reactive rules, and a query layer over many entities is a much
+     larger, distinct feature this session's report gave no concrete evidence for.
+
+182. ~~Same session as item 178: generic save/load typing to cut a game's own save-shape
+     boilerplate (~170 lines of interfaces in the reporting game, e.g. `SaveShape`,
+     `FloorState`)~~ - scoped to the one concrete shape the framework already has enough of a
+     definition for, rather than a generic schema system: `actors.toEntitySaveState`/
+     `fromEntitySaveState`/`EntitySaveState` save a `buildEntity`-built entity's mutable state
+     (base stat values, level/experience, the carried item) in the same "definitions supplied
+     fresh on load" convention `StatBlock.toJSON`/`Progression.toJSON` already draw.
+     `fromEntitySaveState` rebuilds via `buildEntity` from the same row and catalog (so
+     reactions and item lookups stay validated the same way) and overlays the saved state on
+     top. Does not attempt a generic `SaveShape`-inference helper for arbitrary game state - a
+     save shape genuinely varies per game, and this item's own text already named that as the
+     open question a concrete look would have to answer; entities built through `buildEntity`
+     are the one shape `mwg` itself defines closely enough to save generically.
+
+183. ~~Raised from a reference game (`mwg-pixel-dungeon`) wanting alpha/translucency for a
+     spectral-type enemy sprite and assuming `TintedSprite`/`ColorTransformBatcher` needed a
+     new capability for it.~~ Checked first rather than built blind: `TintedSprite` only *adds*
+     one vertex attribute (`colorAdd`) onto Pixi's own colour+alpha packing
+     (`groupColorAlpha`), never replacing or shadowing it, so plain `sprite.alpha` already
+     composes correctly with both `tint` and `colorAdd` - confirmed live in the reference
+     game, not just by reading the packing code (a `TintedSprite` at `alpha = 0.35` rendered
+     genuinely see-through). No new capability needed; `TintedSprite`'s own doc comment now
+     has a worked alpha/ghost example plus a paragraph stating this explicitly, since a reader
+     had no way to know it without reading the batcher's packing code themselves. Followed
+     with the documentation-completeness survey this item originally left open, over the rest
+     of the render path built on or wrapping `TintedSprite`: `AnimatedSprite` (extends
+     `TintedSprite` directly, so gets the same worked example plus a pointer back), and
+     `LayeredSprite`/`TileMap`/`NinePatch` (each a `Container` wrapping one or more sprites
+     rather than a sprite itself, so each now says explicitly that its own `alpha` still fades
+     everything inside it, since Pixi composes a container's alpha into its children when
+     rendering regardless of whether the container forwards `tint` by hand the way these do).
+     `Camera` turned out not to belong on this list once actually read: it holds no sprite and
+     has no colour concept of its own, only a `Container` used as a positional grouping, so
+     there was nothing there to document.
+
+184. ~~requested directly: a command-line translation editor with a split screen (reference
+     language left, translation right), free choice of which language stands on which side,
+     and a per-string sound association. Resolved mid-item into the semantic specification
+     rather than a parallel map: a cue is an ordinary `<type>.audio` entry holding a sound
+     path, read by a new `audio` channel on the semantic formatter (`format(message,
+     'audio')`), played game-side through `mwg/audio`'s `Sound` - one simulation event,
+     several presentations, sound among them. The channel resolves through a new `tRaw`
+     (same lookup and interpolation as `t()`, without typographic spacing or RTL wrapping,
+     either of which would corrupt a path) and returns `''` rather than a key when no cue
+     is declared; unlike text channels it never falls back to a bare type holding a
+     sentence, which is not a playable path. `validateMessageAudio` flags empty and
+     non-string audio entries. The editor itself is `tools/i18n-edit.mjs` (a terminal TUI
+     in the ne shape, no dependencies): JSON and FTL auto-detected per file, `x` swaps the
+     sides, `s` sets the cue (a channel key shares its semantic family's `<type>.audio`,
+     one cue per family), `w` saves following the target's own extension, and `--check`
+     reports missing/extra keys, structural and audio issues, completeness, and cue files
+     missing from disk for CI. The pure session core (`i18n/EditSession.ts`) is unit-tested
+     separately from the terminal rendering, the same split the tool draws between catalog
+     arithmetic and file IO.~~
+
+185. ~~requested directly: catalog placeholders shaped like Python f-strings
+     (`{dmg:03d}`, `{hp:.1%}`, `{name:>12}`), per
+     https://docs.python.org/3/library/string.html#format-specification-mini-language -
+     plain `{token}` interpolation already existed, the format-spec mini-language did not.
+     `i18n/formatSpec` implements the `[[fill]align][sign][z][#][0][width][,|_]
+     [.precision][type]` subset (`b c d e E f F g G n o s x X %`), wired into `t()`/`tRaw`
+     alongside `!s`/`!r`/`!a` conversions and `=` debugging, and into FTL parsing so
+     `{$dmg:03d}` survives a catalog file. Verified case by case against CPython's own
+     output before being written into tests (which caught four real divergences: `c`
+     aligning right, `_` grouping hex in fours, precision-without-a-type going exponential
+     one digit sooner than `g`, zero-padding a string left-aligned). An ill-fitting spec
+     leaves its placeholder untouched rather than throwing, the same grace a missing token
+     already gets. The one divergence nothing can close: JavaScript numbers carry no
+     int/float distinction, so integer-valued floats always take the integer path (`3.0`
+     renders as `3`), documented on the function itself.~~
+
+186. ~~requested directly: UI text managing basic markdown
+     (https://www.markdownguide.org/basic-syntax/, minimally bold and italic).
+     `two-d/ui`'s `Label` styles the whole string or nothing, so inline spans needed a
+     different renderer rather than an option: `RichLabel` draws through Pixi `HTMLText`
+     (`**bold**`, `__bold__`, `*italic*`, `_italic_`, combined `***both***`, backslash
+     escapes), theme-aware like `Label` with the same `setText` re-render guard. The
+     parsing is pure (`parseMarkdown`/`stripMarkdown` in `ui/markdown.ts`, unit-tested
+     headless: sequential per-kind pairing, intra-word underscores left alone, unmatched
+     markers literal); the widget itself is type-checked and reviewed rather than unit-
+     tested, since measuring text needs a canvas this suite has none of - the same reason
+     `Label` and `HelpScreen` carry no renderer tests either. Documented as heavier than
+     `Label` (descriptions and help bodies, not per-frame numbers) and unsuitable for
+     `MessageBox`'s typewriter reveal, where a half-shown marker would read literally.~~
+
+187. ~~requested directly: f-string parsing and markdown rendering inside `tools/i18n-edit`
+     itself. Both panes already showed raw source, so a dropped `{dmg:03d}` and a broken
+     `**bold**` were equally invisible until runtime. The panes now preview markdown as
+     terminal bold/italic (`v` toggles raw source for editing), flag placeholder drift
+     with a `≠` marker and per-row detail, hint the needed tokens in the edit prompt, and
+     report both in `--check` mode (a mismatch fails the check like a missing key).
+     Backed by `i18n.tokenizeMessage`/`diffPlaceholders` - the placeholder grammar factored
+     out of `t()`'s own interpolation into one shared definition, so the check cannot
+     disagree with the runtime about what counts as a placeholder.~~
+
+188. ~~requested directly: progressive display in `ui`, beyond `MessageBox`'s own typewriter
+     (`speed` characters per second, already shipped long before this item). The missing
+     piece was a reusable primitive: `ui/reveal.ts` (`startReveal`/`advanceReveal`/
+     `completeReveal`/`revealComplete`, pure and unit-tested) now sits behind
+     `Label.showProgressive`/`updateReveal` and `RichLabel`'s markdown-aware counterpart,
+     which counts visible characters through `ui.sliceSpans` so markers never count toward
+     the total nor leak half-shown - exactly what a plain slice over the source would get
+     wrong. `MessageBox` was reworked onto the same primitive with zero behaviour change
+     (its confirm-completes-then-advances rule untouched), so one implementation serves
+     all three rather than three parallel counters.~~
+
+189. ~~requested directly: a shortcut (`Ctrl+P`, free in the tool's keymap) in `i18n:edit`
+     to play the sound cue on the current row. A dependency-free tool cannot bundle audio
+     playback, so `playerCandidates` delegates to the OS player (`afplay` on macOS,
+     format-matched `aplay`/`paplay` before general `ffplay` elsewhere, Windows WAV via
+     SoundPlayer with single-quote escaping), falling through only on `ENOENT` - a player
+     that runs and rejects the file reports its own error instead. `MWG_SFX_PLAYER`
+     replaces the list with one command when none fit; `platform` is injectable so the
+     selection is unit-tested without spawning anything. Plain `p` stays deliberately
+     unbound, remote `data:`/`http` cues and missing files report instead of playing, and
+     playback never blocks the interface (it resolves back into the status line).~~
+
+190. ~~requested directly: the string editor on the website, as an `examples/` page with a
+     default string, usable sounds, and a preconfigured variable - `examples/string-editor`
+     shows `You're *hit*. You loose {HP_loose}. You **die**!` beside an editable French
+     translation, rendered live through `RichLabel` with an adjustable `HP_loose`,
+     placeholder-drift warnings via `diffPlaceholders`, and blip/hit/pickup cues where the
+     string's own cue fires on the progressive reveal. Wired through the existing pipeline
+     (`example:string-editor:build`, `build-webpage-examples`, an `examples-data.js` entry
+     with a generated `20_string_editor` diagram) and featured as its own card on the
+     website's features page, in that page's problem/trick/example voice. Browser-verified
+     from `file://`, including typing, HP changes, cue cycling, the reveal, and the
+     features-to-example link chain.~~
+
+191. ~~requested directly: a generic `Blob` API with a per-cell clear operation~~ - `Blob`
+     moved from `roguelike` to `core` (still top-level through `mw_games`) and now imports
+     nothing, so a volume field is no longer a dungeon-crawl concern; it gained `clear(x, y)`
+     to zero one cell without touching its neighbours, and the bounds check `volumeAt`,
+     `seed` and `clear` all repeated is one private `index` helper. 8 unit tests, including
+     the add/clear round-trip and a cleared cell dropping out of `cellsAbove`.
+
+192. ~~requested directly: accessibility stops short of what a redistributable framework
+     should cover~~ - the three named holes are closed. `core.reducedMotion`/`setReducedMotion`/
+     `prefersReducedMotion` answer "should this animate" from the OS preference with a per-game
+     override, and `Tweener`, `Camera.shake`, `ScreenEffects` and `ParticleEmitter` already
+     consult it; `ui.contrastRatio`/`meetsContrast`/`relativeLuminance` are the WCAG formulas
+     with AA/AAA thresholds, checked against the shipped themes; and `ui.screenReader` mirrors
+     text into a visually hidden `aria-live` region that `Window` (its title) and `MessageBox`
+     (each page and its choices) already use, no-op where there is no DOM. 14 unit tests.
+
+193. ~~requested directly: nothing proves the central promise end to end~~ -
+     `tools/package-smoke.mjs` packs the tarball, installs it into a scratch directory outside
+     the repo, builds the tutorial's own tiny game with its vite config, applies step 10's
+     module-to-classic edit, and opens both that page and the standalone `mw_games.global.js`
+     from `file://` in headless Chrome, judged the same way the visual smoke judges a page. CI
+     runs it per pull request. The checklist's manual pass stays: only a person can tell
+     whether the prose is followable.
+
+194. ~~requested directly: the rendering-backend policy weighs bundle cost, but nothing
+     measures it~~ - `tools/bundle-size.mjs` records the global build (raw and gzipped) and the
+     whole published `dist` without source maps in `tools/bundle-size.json`, and
+     `npm run size:check` fails past a 2% growth; `size:update` commits a deliberate new
+     number. CI runs the check after the build.
+
+195. ~~requested directly: `npm run coverage` reports with no floor~~ - `npm run coverage:check`
+     runs the same suite under Node's own thresholds, lines 88, branches 89, functions 82, a
+     little under the 89.3 / 90.4 / 83.1 measured when the floor was set. CI runs it beside the
+     plain test step.
+
+196. ~~requested directly: no test loads a save written by an earlier shape~~ -
+     `tests/fixtures/saves/` freezes a released floor (`Level`/`Secrets`/`Doors`), a
+     `GameState` and a `Blob` as committed blobs, and `tests/save-compat.test.ts` loads each
+     one, so a schema change that stops an already-shipped save from loading fails there. Its
+     own note says to add a new fixture beside the old one rather than edit it.
+
+197. ~~requested directly: only the interface example is built per pull request~~ -
+     `npm run examples:build` runs all twenty `example:*:build` scripts after generating the
+     shared assets, and CI runs it as its own job, so a vite/`emit-page`/`compile-resources`
+     regression in any example fails the pull request.
+
+198. ~~requested directly: SVG loads as a texture source (item 15) but only rasterizes at its
+     intrinsic size, so a game that zooms into an icon ships a soft bitmap~~ -
+     `assets.load(paths, { resolution })` passes a resolution through to the loader, which
+     rasterizes a vector source at that multiple of its intrinsic size; the colour-transform
+     example loads its gem SVG at 2x. A companion measurement, `npm run benchmark:animation`,
+     compares CSS/SVG element animation against Pixi sprites at increasing counts. On an RTX
+     3070 it settled the question the same way for every count measured: 4000 composer-animated
+     `<svg>` elements fall to ~14 fps while 4000 Pixi sprites hold 60, and running both at once
+     is limited by the DOM side, so browser-native element animation stays an asset-format win
+     and a possible handful-of-chrome-elements escape hatch, not a world renderer.
+
+199. ~~requested directly, from WebKit's "Responsive Design for Motion" (item 192 shipped the
+     media feature itself): the reduced path is binary and blunt~~ - `MotionIntent` and
+     `motionDuration` now let a caller declare a motion `decorative` (collapses, the old
+     behaviour) or `meaningful` (shortened, not deleted), and `Tweener.tween` takes
+     `{ intent, alternate }` so a trigger can be replaced by a fade instead of cut outright.
+
+200. ~~requested directly, same article: 192 wired four paths (`Tweener`, `Camera.shake`,
+     `ScreenEffects`, `ParticleEmitter`) and missed the triggers the article actually names~~ -
+     `Camera.panTo`/`follow` now cut to the target instead of easing (the multi-directional
+     peripheral trigger), `FloatingText` keeps its fade and drops its rise, and `AnimatedSprite`
+     is a documented keep: a frame cycle is usually game state, not decoration, with `paused`
+     there for a game whose loops are purely decorative. `GridMover`'s own step stays, being
+     user-driven.
+
+201. ~~requested directly, same article: `reducedMotion()` reads `MediaQueryList.matches` live, so
+     the next query is correct, but nothing is notified when the user flips the setting~~ -
+     `watchReducedMotion(listener)` returns an unsubscribe and fires both on a real media change
+     (with the deprecated `addListener` spelling supported) and on `setReducedMotion`. `Tweener`,
+     `ParticleEmitter` and `ScreenEffects` finish or freeze an in-flight motion when the
+     preference appears, and the interface example's demo subscribes to update its label.
+
+202. ~~requested directly, same article: nothing in the repo exercises the preference outside
+     unit tests~~ - the interface example gained a motion demo (a sliding diamond, a label, a
+     toggle button) publishing its state on `window.__MWG_MOTION__`, and
+     `tools/motion-smoke.mjs` opens it three ways through `page.emulateMedia`, asserting that
+     full motion animates, an emulated `reduce` before load stops it, and a flip while the page
+     is open is reported and stops the running slide. CI runs it in the visual-smoke job.
+
+203. ~~MWL as the default content boundary for complete games: assets, maps, scenarios, units,
+     items, dialogue, rules data, schedules, and AI configuration should be authored in
+     structured CFG/MWL files (with JSON or another explicit data format only where it is a
+     better fit), parsed and validated by MWL, and compiled at build time. Game TypeScript
+     should provide the generic engine, rendering and input code, plus explicit hooks for
+     genuinely executable game rules; it should not embed authored content as object literals
+     or ad-hoc constants. The roadmap work includes a first-class content-file layout, generated
+     typed modules/manifests, source-location diagnostics, deterministic build integration, and
+     examples covering assets, scenarios and AI. This is an architectural boundary, not a
+     request to put any Wesnoth or other game's content into MWG. The first slice is now
+     implemented: `mwl build` accepts one file or a recursive content directory, sorts source
+     paths deterministically, validates and merges them, and emits the compiled module,
+     translation catalog, and asset manifest. Wesnoth keeps its native `.cfg` files as source
+     and routes them through its port-owned WML front end and MWL adapter. Generic item,
+     expression, hook, persistence, and game-neutral AI catalog contracts are published; complete game migrations remain
+     open work. `examples/mwl-content/` now provides the reference layout with separate game,
+     unit, item, scenario, and AI files, is consumed by an executable page through its generated
+     module, and is validated by the same directory build command. `examples/battle/` now also
+     migrates its species, moves, type matchups, and evolution to `content/battle.mwl`; its
+     TypeScript contains only the battle loop and game-specific damage formula. Generated source
+     locations are relative and stable across machines.~~ - `examples/battle` is now a complete
+     reference game using MWL-generated species, moves, type matchups, and evolution data; the
+     remaining extraction work is tracked separately in item 204.
+
+204. ~~MWG content extraction from a large self-contained HTML file: on the first run, inspect
+     inline scripts, styles, data URIs, and embedded resources, write them to a deterministic
+     asset directory, and rewrite the HTML or emit a manifest that references those extracted
+     files. The command must be safe to rerun, preserve resource MIME types and ordering, and
+     report resources it cannot extract without silently changing them. Initial implementation:
+     `tools/extract-html.mjs` provides `extract-html input.html -o output/`: it writes a copy,
+     extracted assets, and a fingerprinted manifest, preserves source order, deduplicates
+     identical resources, keeps the input untouched, and warns about moved module imports.
+     CSS `url(data:...)` and HTML `srcset` candidates are also extracted. Integration with
+     the website build and less common embedded-resource forms remain open.~~ -
+     `tools/extract-html.mjs` is shipped with the package and its `extract:html` command is
+     usable by website and game build scripts; four tests cover scripts, styles, HTML data URLs,
+     CSS data URLs, `srcset`, deduplication, ordering, and module warnings.
+
+~~205. Opaque child tags in MWL schemas: a game whose content vocabulary is open should not have
+     to enumerate every tag name in its schema extension just to pass validation. The Wesnoth
+     port's adapter declares roughly forty tags (`[damage]`, `[poison]`, `[leadership]`,
+     `[filter_base_value]`, ...) only so its compiled effect trees validate, and that list has
+     to be kept in step with the game's macro files by hand. A schema option (`openChildTags`,
+     or a wildcard child entry) should accept any child tag under a node whose children are
+     game-defined and validate those children as open attribute bags, while the fixed part of the
+     schema keeps its diagnostics. Paired with item 209 this stays honest: the tags a game
+     actually uses get reported, not merely tolerated. Generic item; the vocabulary itself stays
+     in the game that owns it.~~
+
+~~206. Compiled-MWL to typed table readers: ports hand-write one reader per tag to turn compiled
+     nodes back into typed records (`compiledTerrain`, `compiledUnitType`, `compiledMovetype`,
+     `compiledSpecial`, ...); the Wesnoth adapter carries more than ten of them, each repeating
+     the same attribute, number, id-list, and child-collection handling. A generic helper in
+     `mwg/mwl` - a field spec for scalar attributes (with number, id, and comma-list coercions)
+     and child collections, returning a typed record - would remove the boilerplate and give one
+     place where a missing or malformed field is reported with its source location. Generic item;
+     it is the read side of the same boundary item 203 describes.~~
+
+~~207. One modifier-composition rule shared by `mwg/actors` and MWL effect lists: both models
+     exist today and do not share a documented composition, so a game that needs "a list of
+     declarative effects modifies a base value" writes its own. The Wesnoth port did exactly
+     that: set, add, sub, multiply, divide, min/max clamps, a base-value filter, and an
+     offense/defense scope, all port-side. Provide the minimal generic composition in one module
+     and use it for `actors` modifiers, with the deliberate boundary that only the generic rule
+     travels: no game's numeric quirks, scaling conventions, or effect-vocabulary names come with
+     it. Generic item.~~
+
+~~208. Bounded expression evaluation for content-authored conditions and values: game data wants
+     conditions (`level < other.level`, "this unit is adjacent to an ally", "the target is
+     petrified") and computed values (`value="(25 * (level - other.level))"`), and today a port
+     either adds a hook per case or implements a parser of its own. A small, documented evaluator
+     over a declared context (`self`, `other`, plain unit fields) should cover the
+     formula-shaped subset the content actually uses: arithmetic and comparisons, boolean
+     `and/or/not`, a short fixed list of named helpers, and `where` bindings for local names.
+     The boundary is explicit - no loops, no side effects, no user-defined functions, no string
+     manipulation beyond equality, and a clear diagnostic when a content file needs more than
+     that. Relates to the expression module already used by MWL; the remaining work is the
+     filter-shaped context, the named-helper list, and the documented limit. This is the cheap
+     path that covers most content formulas, and it is deliberately smaller than item 210.~~
+
+~~209. MWL content report: `mwl report <content>` printing counts per tag, the tag names an opaque
+     schema accepted (item 205), and dangling references - an ability id, unit type, terrain code,
+     or asset a content file points at with nothing behind it. Ports need this for the data-parity
+     tests they write anyway, and it turns an extraction regression into a CI failure rather than
+     a surprise at runtime. Generic item.~~
+
+~~210. Script host boundary, with Lua as an optional adapter rather than a core dependency: real
+     games need more than data and expressions - a campaign script that reacts to arbitrary state,
+     a generator, an AI. Today the only answer is a JavaScript hook, which is fine for a game the
+     project itself owns and wrong for content the engine did not write. The work is a small
+     `ScriptHost` interface in `mwg/mwl` (evaluate, execute, call a named function, receive a
+     context and an emit callback) with three implementations: the bounded expression evaluator
+     (item 208, the default), the existing JavaScript hooks, and an **optional** Lua adapter that
+     ships outside the core package so MWG keeps its dependency list. Cost, stated plainly, since
+     it decides the design: a pure-JavaScript Lua (fengari, Lua 5.3) is roughly 200-240 KB raw and
+     55-65 KB gzipped, loaded synchronously, which fits the single-file `file://` story; a
+     WebAssembly Lua (wasmoon, Lua 5.4) is roughly 200-260 KB total and needs an async wasm fetch
+     or a large base64 inline, plus glue. Either way the adapter must sandbox the VM (`os`, `io`,
+     `os.time` removed), make it deterministic (seeded random only, an instruction budget per
+     call so content cannot hang the frame), and decide persistence explicitly: VM state is not
+     serialised into saves, so scripts re-run from a declared entry point on load. Un-parked by a
+     game that must run existing Lua content unmodified - mainline Wesnoth campaigns are exactly
+     that case (338 `.lua` files with the AI and campaign scripting) - and it stays parked while
+     item 208 covers the content formulas. Generic item; no game's Lua library travels with it.~~
+
+~~211. Optional asset-root validation in the MWL build: a port's build script should not have to
+     repeat the same `game.assets` existence check before emitting generated files. Add an
+     explicit `--asset-root` or equivalent build option that resolves logical asset paths,
+     reports missing files with their source locations, and keeps the default build portable
+     when assets are resolved by another packaging step. This is the generic part extracted
+     from the Pixel Dungeon adapter; asset naming, packaging and runtime resolution remain
+     game-owned.~~
+
+~~212. JavaScript AI module: provide a renderer-free, game-neutral foundation for authoring and
+     running game AI in JavaScript, building on the `ScriptHost` boundary from item 210. The
+     module should cover named behaviours or planners, perception supplied by the game,
+     deterministic seeded decisions, explicit action requests, cancellation, and a per-turn
+     or per-frame budget so an AI cannot stall the game loop. It should expose observable
+     decisions and diagnostics for replay, tests and debugging, while keeping navigation,
+     combat rules, world data and game-specific goals in the owning game. It must work with
+     MWL-authored AI configuration without turning authored content into framework-specific
+     code.~~ - `mwg/ai` now provides `JavaScriptAI`, explicit JSON-shaped actions and state,
+     seeded decisions, cooperative cancellation and budgets, emitted diagnostics, and
+     versioned state import/export. `alphaBetaSearch` adds bounded minimax with a typed,
+     game-owned state adapter, so the same module serves a local actor or a top-level
+     controller. The renderer-free contract keeps navigation and game rules in the owning
+     game, while MWL supplies the profile and operation names.
+
+~~213. Lua AI module: add an optional Lua implementation of the AI contract from item 212,
+     sharing the same perception, action, determinism, budget, diagnostics and persistence
+     boundaries as the JavaScript module. Keep Lua outside the core package and preserve the
+     local-file deployment story. The adapter must be sandboxed, exclude filesystem, process,
+     clock and network access, use only seeded randomness, enforce an instruction budget, and
+     define how scripts resume after save and load. Lua is a content and modding boundary,
+     not a reason to move game rules into the framework or to ship any reference game's Lua
+     code or data.~~ - `mwg/ai/lua` provides the optional Fengari-backed `LuaAI` adapter with
+     the shared action and state envelope, sandboxed deterministic execution, instruction
+     budgets, explicit events, and no reference-game content. Lua alpha-beta search calls
+     named Lua operations for current player, legal moves, transitions, terminal detection and
+     evaluation, so it has the same actor and controller capability as JavaScript.
+
+214. ~~Typed tables and rows in MWL: add a game-neutral table/row/column primitive, or an
+     equivalent declaration on an MWL effect, so structured values are validated at compile
+     time instead of remaining opaque strings. It must support typed columns, explicit
+     delimiters, compile-time arity checks, and a typed accessor in the content catalog. Reuse
+     the existing `CsvColumnType` vocabulary and RFC-4180 parsing rules where possible. This
+     closes the gap between MWL and `core.parseCSV`, and prevents malformed room-count,
+     probability and similar content tables from surviving compilation until first runtime
+     generation. The framework owns the shape and diagnostics; game-specific tables remain
+     game-owned.~~
+
+215. ~~Generic reference and foreign-key values in MWL: add an `MwlValueType` of `ref`, with a
+     declared target tag or id namespace, so a value can be checked against existing node ids
+     during compilation. Report missing and duplicate targets with source locations, and
+     provide cycle diagnostics where a declared reference graph requires acyclic data. Keep
+     domain rules in the game adapter: MWL should validate that an enchant, roster member,
+     asset or transition names something that exists, not decide what that relationship means.~~
+
+216. ~~Caller-chosen `EntityId`: extend the entity registry boundary with an optional caller-
+     supplied id, while preserving generated ids as the default. The id must reject duplicates,
+     remain stable through save/load, and follow the existing `Registry.register(name, value)`
+     convention so games can persist meaningful hero and item identities without a parallel
+     id-minting layer.~~
+
+217. ~~Value positions in `Types2D`: replace type-only aliases with value-capable renderer
+     boundary types wherever a game needs to extend or construct a Pixi object. Keep the
+     renderer isolation rule intact, and measure the resulting import and bundle cost before
+     widening the public surface.~~
+
+218. ~~Deterministic generated-artifact emission: provide an `onEmit` or `emitArtifacts` hook for
+     MWL builds, with a built-in compile-twice-and-compare determinism check. It should cover
+     the generated module, i18n catalog, asset manifest and game-defined generated artifacts,
+     replacing repeated port-owned emission glue without taking ownership of game content.~~
+
+219. ~~Affix pool filtering: extend `rollAffix` with an optional curse or pool predicate, or add
+     a `splitAffixTable` helper, so games can select curse and non-curse pools without
+     hand-splitting the same table. The helper must preserve seeded determinism and leave the
+     affix definitions and balance values game-owned.~~
+
+### High-value, small-surface event work
+
+220. ~~Numeric event-condition equality: event conditions currently compare `world.variables[x]`
+     with `attributes.equals` using strict equality, so numeric variables never match string
+     attributes. Coerce values when both sides are numeric, or reuse `evaluateCondition` for
+     condition children, with tests for counters and turn gates.~~
+
+221. ~~Expression-backed `set_variable`: connect the existing `expression.ts` evaluator to
+     `set_variable` values so counters and arithmetic do not need game-side hook round trips.
+     Preserve the bounded, game-neutral expression rules and deterministic runtime behavior.~~
+
+222. ~~Public fire-by-id: add `MwlRuntime.fireEvent(id)` using the existing claim-and-execute
+     path, so content can trigger a named event without build-time inlining or game-specific
+     event plumbing.~~
+
+223. ~~Moveto coordinate lists and ranges: accept comma-separated coordinates and inclusive
+     `a-b` ranges in event `x` and `y` attributes, expanding them during compilation or into
+     the runtime matcher with deterministic validation and no duplicated event execution.~~
+
+### Medium event and objective work
+
+224. ~~Unit-id event filters: allow event filters to match the unit's world key in addition to
+     side, type, position and other existing criteria, enabling death-of-a-named-unit triggers
+     without variable smuggling.~~
+
+225. ~~Side-aware `unit_at` objectives: honor an optional `side` or `side_filter` on
+     `unit_at`, matching the existing side semantics of `units_dead`.~~
+
+226. ~~Top-level event dialogue: execute a top-level `say` child in an event, or reject it at
+     validation time. Content must never silently drop a schema-legal command.~~
+
+227. ~~Dialogue branches: implement the currently schema-legal `branch` runtime behavior, or
+     remove it from the schema until supported, so authored content cannot rely on a dead tag.~~
+
+### Dialogue persistence and documentation
+
+228. ~~Persist pending dialogue choices: save and restore pending `{ id, choices }` state beside
+     fired events, or explicitly document and enforce that games must resolve choices before
+     saving. Prefer persistence so mid-choice saves do not lose player input.~~
+
+229. ~~Document post-dialogue event ordering: explain that commands after a dialogue in the same
+     event run immediately before the player answers, and that follow-up commands belong in
+     the selected choice event when they must wait for the answer.~~
+
+230. ~~Document dialogue choices in the public MWG documentation: record that dialogue choices are supported and that
+     `MwlMessage.choices` together with `answerDialogue` is the answering contract.~~
+
+231. ~~MWL campaign tag: add a game-level `[campaign]` container with validated metadata for
+     `id`, `name`, `title`, `description`, and `start_scene`, while leaving scenario and
+     progression children game-owned. Expose the metadata through `contentCatalog(game).campaigns`.~~
+
+232. ~~Multi-turn actions: provide a game-neutral primitive for actions that persist across turns,
+     including beam traversal, path resolution, interruption or cancellation, and per-step damage
+     or effect handling. Add an example that exercises a multi-turn beam with blockers, movement,
+     targets and deterministic replay, so the framework and example can be simplified together
+     rather than duplicating action-state logic in the game.~~ - `roguelike.MultiTurnBeam` advances
+     a captured line one cell per turn, checks opaque and dynamic blockers at reach time, looks up
+     live targets, delegates damage to the game, supports cancellation and JSON save/restore, and
+     is covered by the `multi-turn-beam` example and focused tests.
+
+233. ~~Hex-map parity for map functions: implement the same map-facing capabilities for hex grids
+     that exist for square maps, including minimap rendering, automap rules, exploration and
+     remembered terrain, field of view, targeting shapes, movement/path queries, map transitions
+     and any related map helpers. Keep coordinate and neighbour semantics consistent with the
+     existing odd-q hex topology, and add topology-specific tests and examples so a hex game does
+     not need parallel game-owned implementations for features already available on square maps.~~
+     Existing FOV, exploration memory, pathfinding, auto-explore, map transitions and TileMap
+     projection already use the shared hex topology. The remaining seams now use it too:
+     `resolveAreaOnLevel`, `hexConeCells`, topology-aware line-of-sight and range checks,
+     hex `Minimap` geometry and markers, hex-compatible automap rules, and hex traversal in
+     `MultiTurnBeam`, with focused parity tests.
+
+234. ~~Game-defined terrain data: extend `TerrainKind` with an optional game-defined payload such
+     as `flags` or `extras`, returned by `kindAt(x, y)`. Keep MWG unaware of game-specific
+     concepts while removing duplicated terrain tables and hand-written flag tests in adapters.
+     The payload must support flags such as flammable, solid, line-of-sight blocking, avoid,
+     pit and liquid without changing the generic terrain contract.~~ `TerrainKind` now carries
+     optional numeric `flags` and boolean `extras` without interpreting either payload.
+
+235. ~~Level view distance: add an optional `viewDistance` to `Level`, and let `FieldOfView` use
+     it as the default radius. This gives heroes, mobs and observers one shared visibility value,
+     while allowing game effects to change it for darkness, boss phases or other mechanics.~~
+     `Level.viewDistance` is optional, mutable, validated, persisted, and used by `FieldOfView`
+     when `update` receives no explicit radius.
+
+236. ~~Priority and deferred actors: extend `Scheduler` with priority-ordered actions, or provide
+     a generic `DeferredEffect` actor that runs once per turn, self-removes and returns a removal
+     handle. It must resolve before ordinary creature actions when requested, so telegraphs,
+     delayed attacks and temporary visual effects do not need game-owned scheduling fields.~~
+     `Scheduler.add` now accepts a priority and orders equal-time entries from highest to
+     lowest priority, with snapshot/restore support. A deferred effect can use an ordinary
+     `Actor` with a finite lifetime and remove itself through the existing scheduler API.
+
+237. ~~Ballistica-style paths: add a game-neutral path query such as
+     `ballistica(from, to, { stop })`, returning traversed cells and the collision or stopping
+     cell. Support configurable stop modes for beams, cones, projectiles and impacts while
+     preserving the existing `traceLine` primitive for simple Bresenham queries.~~
+     `ballistica(level, from, to, { stop })` supports opaque, impassable, outside and no-stop
+     modes, follows square or hex topology, and includes the collision cell in its result.
+
+238. ~~[Critical] Extensible MWL event loops: add game-neutral `while`, `foreach`, `switch`,
+     conditional branches and structured variables to the MWL runtime. Keep loop limits,
+     recursion limits and diagnostics explicit so authored content cannot hang a game.~~ The
+     runtime now supports bounded `while`, `foreach` and `switch` nodes, nested variable paths,
+     and expression-backed branch tests with focused coverage.
+
+239. ~~[Critical] Extensible transactional state: provide a framework state extension registry
+     with snapshot, restore and transaction boundaries, so games can persist their own data
+     atomically without fragile synchronization between unrelated systems.~~ `StateRegistry`
+     now coordinates named game-owned extensions with deep-cloned snapshots and rollback on
+     failed transactions.
+
+240. ~~[High] Generic action journal: record serializable actions and outcomes with deterministic
+     ordering, supporting replay, undo, synchronization and debugging without imposing game
+     combat rules on MWG.~~ `ActionJournal` now records cloned action/event batches, contiguous
+     sequence checkpoints, incremental reads, truncation and validated JSON restore.
+
+241. ~~[High] MWL event tracing: expose an opt-in observer for event claims, hooks, variable
+     changes, content diagnostics and runtime errors, with enough context to reproduce a trace
+     without logging game-owned data by default.~~ `MwlRuntimeOptions.onTrace` now reports
+     event claims/completions, variable writes and runtime errors without enabling logging by
+     default.
+
+242. ~~[High] Extensible filter and predicate registry: let adapters register typed predicates and
+     compose them in MWL events, so games do not encode every filter as an opaque string while
+     the framework remains unaware of Wesnoth-specific filter semantics.~~ `MwlHookRegistry`
+     now accepts named predicates for typed adapter-owned filter conditions, with schema
+     validation and focused runtime coverage.
+
+243. ~~[High] Robust save migrations: version game extensions independently, support ordered
+     migrations with diagnostics, and define an explicit policy for entities removed from a
+     roster during restore.~~ `StateExtension` now supports independent versions, ordered
+     migrations, restore diagnostics, and explicit `keep`/`reset`/`remove` handling for
+     extensions absent from a snapshot.
+
+244. ~~[Medium] Diagnostic content loading: standardize a content-load report covering resources,
+     validation errors, dependencies and intentionally ignored elements, without deciding the
+     meaning of game-specific tags.~~ `loadContent` now returns resources, references/dependencies,
+     ignored opaque tags and structured compile/validation diagnostics.
+
+245. ~~[Medium] Generic scenario and campaign API: model level order, results, carry-over,
+     reminders and transitions without embedding Wesnoth recruitment, recall, campaign or WML
+     semantics in MWG.~~ `Campaign` now provides game-neutral level sequencing, results,
+     carry-over state, reminders, transitions and JSON-safe snapshots.
+
+246. ~~[Medium] Headless scenario harness: run a scenario from a seed and action sequence, expose
+     a verifiable final state and ordered outputs, and make the harness suitable for continuous
+     integration and deterministic regression tests.~~ `runHeadlessScenario` now runs a seeded,
+     renderer-free command sequence and returns final state, ordered events and resumable random
+     state.
+
+The following remain responsibilities of the Wesnoth adapter: combat, terrain and unit rules;
+exact WML filter semantics; recruitment, recall and Wesnoth carry-over; Wesnoth-only tags;
+Lua compatibility; and Wesnoth campaign data.
+
+### Wesnoth port gaps
+
+Opened by the Wesnoth port's own gap analysis (2026-09-11), read from this side: `mwl`, `two-d`,
+`ui`, `core`, `ai` and `simulation` against what a faithful Wesnoth port needs. Each item says
+whether the capability is missing outright (Absent) or present in a shape that does not fit (Ne
+correspond pas), because that decides whether a port extends or builds. The structural blockers
+the analysis names are 247, 248, 254, 255, 257, 258, 261, 262, 266 and 268.
+
+Two of these sit against the paragraph above, which lists Wesnoth campaign data and carry-over as
+adapter responsibilities. That paragraph stands, and the data still stays the adapter's: what the
+analysis asks the framework for is the shape (the fields, the end-of-level semantics, the save)
+so that a port is not hand-rolling a campaign sequencer `simulation/Campaign.ts` already
+half-provides.
+
+The analysis also names what is **not** a gap, and that is worth keeping: dialogue
+(`DialogueStage`/`StageScript`), the minimap, fog (`FactionFog`), saves (`SaveSystem`), rebinding
+(`RebindScreen`), `MessageBox`, `Tooltip`, `Toast`, the base widgets, `TileMap`'s hex shape with
+chunks and `setCellColor`, `LayeredSprite`, `StatusVisuals`, `NinePatch`, `Bar`, `IconGrid`,
+`StatsScreen`, `HelpScreen`, `Camera`, `Generator`, `parseTerrain` and the `MwlRuntime` hooks all
+exist already. Several gaps felt on the port side are non-reuse of `mwg` rather than absence from
+it.
+
+247. [High] MWL campaign chaining (Absent). `MwlCampaignDefinition` (`src/mwl/content.ts`) carries
+     `startScene`, a scene/RPG model, and the `[campaign]` schema (`src/mwl/schema.ts`) reads only
+     `id`/`name`/`title`/`description`/`start_scene`. A Wesnoth campaign needs `first_scenario`,
+     per-scenario `next_scenario`, and the scenario list itself. `simulation/Campaign.ts` already
+     models level order, `next` and a snapshot, so the work is pointing `[campaign]` at that
+     sequencer, not inventing one.
+248. [High] `[endlevel]` and carry-over (Absent). `MwlCommand` (`src/mwl/runtime.ts`) is
+     `set_variable`/`modify_gold`/`move`/`spawn`/`kill`/`attack`/`end_turn`/`win`/`lose`, and
+     `MwlWorld.status` is `playing | won | lost`, so everything stops at the current scenario.
+     Missing: `result` victory/defeat, `bonus`, `carryover_percentage`, gold and unit carry-over
+     between scenarios, and the recall list.
+249. [Medium] One save for a whole campaign (Absent). `SaveSystem<T>` (`src/core/Save.ts`) is
+     per-system (slots, meta, list, delete) and `mwl/persistence.ts` serializes only `MwlWorld`,
+     so nothing saves campaign progress, the world and the simulation state together.
+250. [Medium] WML action vocabulary in `[event]` (Ne correspond pas). MWL's `[event]` set is
+     RPG-shaped (`while`/`foreach`/`switch`/`command`/`say`/`dialogue`/`move`/`attack`/`spawn`/
+     `kill`/`gold`/`set_variable`/`if`/`else`/`message`/`teleport`/`end_turn`/`win`/`lose`/`hook`,
+     `src/mwl/schema.ts`). Missing the WML ones: `store_unit`, `unstore_unit`, `modify_unit`,
+     `heal_unit`, `recall`, `endlevel`, `story`, `set_terrain`, `capture_village`, `clear_shroud`,
+     `fire_event`, `role`, and scenario-level `[object]`/`[item]`.
+251. [Medium] `[kill]` as a filter (Ne correspond pas). `killUnit` throws `MWL unit is not alive`
+     when nothing matches, where WML's `[kill]` is a no-op on an empty match. A content error and
+     an empty filter are different things and the runtime cannot tell them apart today.
+252. [Medium] `[side]` attribute surface (Ne correspond pas). `[side]` reads
+     `id`/`controller`/`gold`/`income`/`income_base`/`income_per_village`/`leader`/`team`/
+     `recruit`/`color`, and `MwlWorld.sides` keeps gold/income/leader/controller/recruit. Missing
+     `share_vision`, `fog`, `shroud`, `team_name`, `user_team_name`, `flag`, `village_gold`,
+     `heal`, `hidden`, and per-side `defeat`/`victory` conditions.
+253. [Medium] Turn limit as a native end condition (Absent). "Time over" as a scenario predicate
+     has no framework home; the port had to add `predicate:turn_limit` itself. (`[objectives]`
+     with a `condition=hook` does exist.)
+254. [High] Per-frame animation timing (Absent). `AnimatedSprite`/`ActorAnimator`
+     (`src/two-d/render/`) run at a fixed fps (`frameDuration = 1/fps`). Wesnoth needs a duration
+     per frame (`image:120,80,...`), `start_time`, per-frame x/y offsets, and `[missile_frame]`.
+255. [High] Image modifiers beyond the four implemented (Ne correspond pas).
+     `applyImageModifiers` handles FL/SCALE/GS/CS and `croppedTexture` handles CROP; ~BLIT, ~RC,
+     ~CHAN, ~PAL, ~MASK, ~BLEND, ~O, ~R/~G/~B and ~ROTATE are missing. ~RC and ~BLIT are the two
+     named as blockers, because team colours and recoloured art depend on them.
+256. [Medium] Team colour by palette remap (Ne correspond pas). Team colour is
+     `TintedSprite`/`registerColorTransform` (multiply plus add), not a remap of the palette range
+     a `team-colors.cfg` defines.
+257. [High] `[terrain_graphics]` (Ne correspond pas). `Autotile` (blob shapes) and `TileMap` (one
+     sprite per cell per layer, hex included) exist, but not the tile-rule model: flags,
+     rotations, multi-hex `[tile]`, and an image per neighbour combination. A 72px source sprite
+     that overlaps into neighbouring hexes cannot be expressed in a one-sprite-per-cell grid.
+258. [High] Typographic markup in text (Ne correspond pas). Text is markdown (`RichLabel`,
+     `**bold**`) where Wesnoth content is written with `<b>`, `<span color>`, `<img>` and `$var`.
+259. [Medium] Hex projection options (Ne correspond pas). `src/core/Hex.ts` fixes flat-top odd-q
+     with no orientation or offset-parity option - it says so itself about pointy-top - and
+     `TileMap`/`TiledMap` refuse hexagonal orientation, so a Wesnoth map cannot be projected
+     exactly.
+260. [Medium] Halos (Absent). `[halo]`/`[halo_frame]` have no equivalent; floating labels do
+     (`FloatingTextStack`).
+261. [High] Missing widgets (Absent). No Slider, Checkbox/Toggle, Dropdown/OptionButton,
+     TextInput/TextArea, Table/data grid, collapsible TreeView, Spinner or ScrollBox. Present:
+     Button, Label, RichLabel, ListView, IconGrid, Bar, Window, WindowStack, MessageBox,
+     NinePatch, Tooltip, Toast.
+262. [High] Text input (Absent). `src/core/Input.ts` offers named actions and a raw `onKey`; there
+     is no `onText` and no composition event, so a free text field cannot be built.
+263. [Medium] Data-driven shell layout and skins (Ne correspond pas). GUI2's `data/gui/*.cfg`,
+     anchors and grids have no counterpart; the theme is global (`theme()`/`setTheme`) with one
+     padding, and there are no per-widget or per-state skins.
+264. [Medium] Story screens (Absent). Wesnoth's storyscreen (backdrop, title, text, music) has no
+     equivalent: `DialogueStage`/`StageScript` is a visual-novel model.
+265. [Medium] Battle UI (Absent). The attack dialog with an animated damage preview, the unit
+     selector, and whiteboard/undo are all missing.
+266. [High] Wesnoth-compatible RNG (Ne correspond pas). `core/Random.ts` is its own generator
+     (splitmix32/xoshiro, `getState()` in four words), not `mt_rng`/`random_synced`, and it has no
+     per-entity or per-usage streams, so a Wesnoth-compatible seed or replay is out of reach.
+267. [Medium] Turns as Wesnoth counts them (Ne correspond pas). `simulation/Turns.ts` is a cost
+     scheduler and `world/TurnClock`/`EnvironmentClock` are generic day phases; there is no
+     side/round/schedule model and no per-hex `lawful_bonus`.
+268. [High] Shared team vision (Ne correspond pas). `FactionFog` (`src/board/FogOfWar.ts`) is
+     per-faction with no union of allies' vision, which is what `share_vision` means.
+269. [Medium] AI as Wesnoth builds it (Absent). The framework's AI is alpha-beta search
+     (`src/ai/search.ts`) plus optional Lua and a JSON action protocol; Wesnoth's is heuristic:
+     candidate actions, aspects and stages, with `goals`, `keep_away` and `recruitment_pattern`,
+     plus native difficulty levels. A Lua VM is already available (`src/mwl/fengari.ts`,
+     `src/mwl/scripts.ts`, `src/ai/lua.ts`), but not a `wesnoth.*` API.
+270. [Medium] gettext i18n (Ne correspond pas). i18n is Fluent (`parseFTL`, `src/i18n/Fluent.ts`),
+     not `.po` files and gettext domains.
+271. [Medium] Positional audio (Ne correspond pas). `Sound`/`Music`/`Orchestrator`/`Synth`/`Midi`
+     are the framework's own engine; there is no `[sound]`/`[music]`/`sound_source` model with
+     listeners at a position.
+272. [Medium] Replays, undo, and a server (Absent). No replay or action journal and no
+     out-of-sync detection, no undo, and no multiplayer server: a `LockstepClient` over WebSocket
+     exists, its server side does not.
+273. [Medium] Achievements and statistics (Absent). `PlayerStats`/`RunHistory`/`StatsScreen` are
+     generic; Wesnoth's achievement and statistics model has no equivalent.
+
+### Parked decisions
+
+Not open work, and not forgotten: these are decisions this project has deliberately
+deferred, each with a note on what would un-park it. They stay out of the numbered list
+until someone actually picks them up, because the list records shipped capabilities, not
+standing intentions.
+
+- **Items 28/30: the next reference pick.** Every genre the capability spec committed to
+  is covered by the shipped `mwg/board` work (hex tactics, action points, cover,
+  overwatch, shared turns, generic pieces). Picking another reference title is only worth
+  doing when a game project actually needs a capability no current reference demands;
+  the pick itself is a project decision, not framework work.
+- **Item 41: board-game semantics beyond the generic piece.** `BoardGrid`/`BoardPiece`
+  shipped the primitive shape. What "owned", "captured" and "promoted" should mean is
+  tied to whichever board game item 30 eventually picks, so it un-parks together with 28/30.
+
+### 1.0 exit checklist
+
+The definition of done for 1.0. Each line is a check to run, not a feature to build. The numbered
+list above is shipped except for the Wesnoth-port cluster (247 and up), which is open work for
+that port rather than a gate on 1.0: the framework's 1.0 is what the ports build against, and
+both of them being complete is the line below that says so.
+
+- [x] `npm run check`, `npm test`, `npm run build`, and `npm run audit` are all green on
+      the release commit. (2026-09-11: green on the 0.7.6 release commit `98c64df`, whose own CI
+      run passed all five jobs - 1501 tests, 0 vulnerabilities, clean build. Re-run on the 1.0
+      release commit itself, which is the wording this line keeps.)
+- [x] `npm run api:check` passes: the committed `API_REPORT.md` matches the built
+      declarations exactly. (2026-09-11: passes, after regenerating for `Blob.spread`'s
+      return value.)
+- [x] `npm publish --dry-run` shows the intended package contents and no `tools/docs`
+      leakage (the getting-started page's own hazard, re-checked each release).
+      (2026-09-11: 975 files, 1.0 MB packed, 3.8 MB unpacked, and the listing holds no
+      `tools/docs` and no `node_modules` entry.)
+- [x] The npm package's map files are decided explicitly, not left to drift: `dist` ships a
+      `.js.map` and a `.d.ts.map` beside most modules, a deliberate debuggability choice.
+      (2026-09-11: **kept**, with the numbers re-measured - they are 482 of 965 files and
+      24% of the gzipped bytes, not the "422 of 845, a much smaller share of the bytes" this
+      line used to claim. Kept because what a player downloads is the 1.0 MB tarball, and the
+      reader these serve is a consumer debugging a bundled game: the `.d.ts.map` is also what
+      makes an editor's go-to-definition land in TypeScript instead of emitted JavaScript.
+      Re-decide on packed size, not file count.)
+- [x] The getting-started tutorial is followed from scratch, in an empty directory
+      outside this repo, once for each documented path: `npm install @datamoc/mw_games
+      pixi.js vite`, the `npm pack` + install-by-path `.tgz` fallback, and the no-install
+      `mw_games.global.js` script tag. All three reach a working `file://` page.
+      (2026-09-11: all three, each a WebGL, game-ready page with no page errors. The registry
+      path in `C:\Users\miche\dev\_mwg-tutorial-registry`, against the published 0.7.4 and
+      re-run against 0.7.6 once it landed; the `.tgz` and global paths through
+      `npm run package:smoke`, whose scratch directory is outside the repo. `package:smoke` now
+      names `pixi.js` in the consumer install, so it fails if the tutorial's install line ever
+      stops being enough.)
+- [x] `pixi.js` moves from `dependencies` to optional `peerDependencies` (item 175's
+      decision) and the two npm paths above are re-verified under that new install
+      contract before the move ships. (2026-09-11: moved, with `pixi.js` also in
+      `devDependencies` so this repo still builds and tests, and the install line named in
+      `README`, `REFERENCE.md` and the getting-started page. Re-verified twice: `package:smoke`
+      installs the packed tarball plus `pixi.js` and reaches a working `file://` page, and once
+      0.7.6 was on the registry the literal registry path was re-run against it - installing
+      `@datamoc/mw_games@^0.7.6` alone leaves `node_modules/pixi.js` absent (checked directly),
+      the published `dependencies` is `rot-js` only with `pixi.js` a peer `^8.20.1` marked
+      `optional`, and `@datamoc/mw_games/core` imports and runs with no Pixi present. 0.7.4 had
+      still listed `pixi.js` under `dependencies`, which is exactly why this belonged to 1.0.)
+- [x] The public API gets a stability-marker contract: `@experimental` on anything not
+      intended as 1.0-stable, called out in release notes, and a `DEPRECATED` convention, so
+      1.0 is the last release where a rename or an unstable surface moves silently.
+      (2026-09-11: the contract is written in README's API stability note and wired into
+      DEVELOPMENT.md's release step 2. Nothing under `src/` carries `@experimental` today,
+      which is the honest state rather than an omission: every shipped surface is intended
+      stable, so the tag is there for what comes next. Held by review, not by a check.)
+- [x] A browser smoke check opens one built example from `file://` and looks at it:
+      `npm run visual:smoke:ui` runs the check and writes a screenshot, but a human still
+      has to look at it - the class of layout bug 1.0 must not ship is invisible to every
+      automated check above. (2026-09-11: looked at
+      `benchmark-results/visual-smoke/examples-interface-dist-index.png`. No window off-screen
+      or clipped, no text over text, canvas painted to all four edges. The three things the
+      eye catches are the demo's own intended widgets, checked in the source rather than
+      assumed: the blue square that reads as a detached checkbox is `motionDot`, the animated
+      element the label beside it deliberately sits away from, the bare readout is the
+      frame-time display, and the unindented bag row is the deliberately un-carryable entry.
+      No framework layout defect to fix.)
+- [x] CHANGELOG, REFERENCE.md and the website's documentation page are regenerated or
+      updated for whatever changed since the last release. (2026-09-11: `npm run webpage:docs`
+      regenerates REFERENCE.md and the documentation page, both current; REFERENCE.md gained
+      the peer-dependency sentence. CHANGELOG carries a new `[Unreleased]` section covering
+      the `Blob` hook and the pixi move, moved to the top where Keep a Changelog puts it, from
+      the stale empty one that had been sitting between 0.7.2 and 0.7.1.)
+- [ ] **Both reference ports are complete and playable end to end against this release**
+      (requested directly, 2026-09-11): the Shattered Pixel Dungeon port
+      (`mwg-pixel-dungeon`) and the Wesnoth port (`mwg-wesno`, an empty directory today). This
+      is the one line here that is not a check to run in this repo - it depends on two other
+      projects - and it earns its place in the 1.0 definition of done because finished games are
+      what validate the framework, where the examples only exercise it. The current 0.x release
+      is what the ports build against in the meantime.
 
 </script>
 <script src="./roadmapProgress.js"></script>

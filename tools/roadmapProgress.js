@@ -5,17 +5,42 @@
 'use strict';
 
 /**
+ * The 1.0 exit checklist is checks to run rather than numbered capabilities, so it is reported
+ * beside the numbered list instead of being mixed into its counts: that separation is the
+ * roadmap process speaking, not an accident. It is still surfaced, because a dashboard that
+ * hides an open release gate is worse than one that shows two kinds of work.
+ */
+function summarizeChecklist(items) {
+	const boxes = items.filter((item) => item.type === 'checkbox');
+	if (boxes.length === 0) return null;
+	const open = boxes.filter((item) => !item.done);
+	return {
+		name: boxes[0].heading || 'Checklist',
+		done: boxes.length - open.length,
+		total: boxes.length,
+		open,
+	};
+}
+
+/**
  * Parses markdown roadmaps supporting both:
  * 1. Checkbox conventions (`- [ ]` / `- [x]`, grouped under `## ` section headers)
- * 2. Numbered items (`1. ~~shipped~~` / `2. open item`, with or without section headers)
+ * 2. Numbered items (`1. ~~shipped~~`, `~~1. shipped~~` / `2. open item`, with or without
+ *    section headers)
  */
 function parseRoadmap(markdown) {
 	const lines = markdown.replace(/\r\n/g, '\n').split('\n');
 	const sections = [];
 	let currentSection = null;
+	// Nearest heading of any level, kept only to name the group an item belongs to (the 1.0
+	// checklist sits under `### 1.0 exit checklist`). Sectioning itself stays `##`-only.
+	let currentHeading = null;
 	const items = [];
 
 	for (const line of lines) {
+		const labelMatch = line.match(/^#{1,6}\s+(.+)$/);
+		if (labelMatch) currentHeading = labelMatch[1].trim();
+
 		const headingMatch = line.match(/^##\s+(.+)$/);
 		if (headingMatch) {
 			currentSection = { name: headingMatch[1].trim(), done: 0, total: 0, items: [] };
@@ -27,7 +52,7 @@ function parseRoadmap(markdown) {
 		if (checkboxMatch) {
 			const done = checkboxMatch[1].toLowerCase() === 'x';
 			const text = checkboxMatch[2].trim();
-			const item = { type: 'checkbox', done, text };
+			const item = { type: 'checkbox', done, text, heading: currentHeading };
 			items.push(item);
 			if (currentSection) {
 				currentSection.total++;
@@ -37,11 +62,14 @@ function parseRoadmap(markdown) {
 			continue;
 		}
 
-		const numberedMatch = line.match(/^\s*(\d+)\.\s+(.*)$/);
+		// Both strikethrough conventions mean done: `12. ~~text~~` and `~~12. text~~`. Only the
+		// first used to be seen, and the roadmap writes nine real items (205-213) the second
+		// way, so they were counted nowhere and never reached the item panel.
+		const numberedMatch = line.match(/^\s*(~~\s*)?(\d+)\.\s+(.*)$/);
 		if (numberedMatch) {
-			const num = parseInt(numberedMatch[1], 10);
-			const rawText = numberedMatch[2].trim();
-			const done = rawText.startsWith('~~');
+			const num = parseInt(numberedMatch[2], 10);
+			const rawText = numberedMatch[3].trim();
+			const done = Boolean(numberedMatch[1]) || rawText.startsWith('~~');
 			const item = { type: 'numbered', num, done, text: rawText };
 			items.push(item);
 			if (currentSection) {
@@ -99,6 +127,7 @@ function parseRoadmap(markdown) {
 			overallTotal,
 			openItems: numberedItems.filter((i) => !i.done),
 			allItems: numberedItems,
+			checklist: summarizeChecklist(items),
 		};
 	}
 
@@ -119,10 +148,11 @@ function parseRoadmap(markdown) {
 			overallTotal,
 			openItems: checkboxItems.filter((i) => !i.done),
 			allItems: checkboxItems,
+			checklist: summarizeChecklist(items),
 		};
 	}
 
-	return { sections: [], overallDone: 0, overallTotal: 0, openItems: [], allItems: [] };
+	return { sections: [], overallDone: 0, overallTotal: 0, openItems: [], allItems: [], checklist: null };
 }
 
 const Scene2DBase = typeof mw_games !== 'undefined' && mw_games.Scene2D ? mw_games.Scene2D : class {};
@@ -204,10 +234,39 @@ class RoadmapScene extends Scene2DBase {
 			y += rowHeight - 18;
 		}
 
-		if (openItems && openItems.length > 0) {
+		// Checks to run rather than numbered capabilities, but the last gate before 1.0, so the
+		// dashboard gives them their own row instead of folding them into the numbered totals.
+		const checklist = data.checklist;
+		if (checklist && checklist.total > 0) {
+			const checklistPct = Math.round((100 * checklist.done) / checklist.total);
+			const checklistLabel = new mw_games.Label({
+				text: `${checklist.name}  (${checklist.done}/${checklist.total} - ${checklistPct}%)`,
+				size: 13,
+				color: 0xdddddd,
+			});
+			checklistLabel.position.set(left, y);
+			this.stage.addChild(checklistLabel);
+			y += 18;
+
+			const checklistBar = new mw_games.Bar({
+				width: barWidth,
+				height: 10,
+				color: checklist.done === checklist.total ? 0x06d6a0 : 0xffd166,
+				value: checklist.done,
+				max: Math.max(1, checklist.total),
+			});
+			checklistBar.position.set(left, y);
+			this.stage.addChild(checklistBar);
+			y += rowHeight - 18;
+		}
+
+		// The checklist's open boxes are checks rather than numbered items, but they are what is
+		// left before 1.0, so they belong in the same "what is left" list.
+		const pending = [...(openItems || []), ...((checklist && checklist.open) || [])];
+		if (pending.length > 0) {
 			y += 12;
 			const openHeader = new mw_games.Label({
-				text: `Open items (${openItems.length}):`,
+				text: `Open items (${pending.length}):`,
 				size: 14,
 				bold: true,
 				color: 0xf78c6c,
@@ -216,7 +275,7 @@ class RoadmapScene extends Scene2DBase {
 			this.stage.addChild(openHeader);
 			y += 20;
 
-			for (const item of openItems.slice(0, 8)) {
+			for (const item of pending.slice(0, 8)) {
 				const itemText = item.num ? `#${item.num}: ${item.text}` : item.text;
 				const trimmed = itemText.length > 70 ? itemText.slice(0, 67) + '...' : itemText;
 				const itemLabel = new mw_games.Label({
@@ -228,9 +287,9 @@ class RoadmapScene extends Scene2DBase {
 				this.stage.addChild(itemLabel);
 				y += 18;
 			}
-			if (openItems.length > 8) {
+			if (pending.length > 8) {
 				const moreLabel = new mw_games.Label({
-					text: `... and ${openItems.length - 8} more open items`,
+					text: `... and ${pending.length - 8} more open items`,
 					size: 12,
 					color: 0x888888,
 				});

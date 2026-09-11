@@ -51,9 +51,21 @@ for (const section of data.sections) {
 	console.log(`  ${label} ${counts} ${pctStr} ${renderProgressBar(section.done, section.total, 24)}`);
 }
 
-if (data.openItems && data.openItems.length > 0) {
-	console.log(`\n  Open items (${data.openItems.length}):`);
-	for (const item of data.openItems) {
+// Checks to run rather than numbered capabilities, so they get their own row instead of being
+// folded into the numbered totals (see summarizeChecklist).
+const checklist = data.checklist;
+if (checklist && checklist.total > 0) {
+	const pct = Math.round((100 * checklist.done) / checklist.total);
+	const label = `${checklist.name}:`.padEnd(20);
+	const counts = `${checklist.done}/${checklist.total}`.padStart(7);
+	const pctStr = `(${String(pct).padStart(3)}%)`;
+	console.log(`  ${label} ${counts} ${pctStr} ${renderProgressBar(checklist.done, checklist.total, 24)}`);
+}
+
+const pending = [...(data.openItems || []), ...((checklist && checklist.open) || [])];
+if (pending.length > 0) {
+	console.log(`\n  Open items (${pending.length}):`);
+	for (const item of pending) {
 		const prefix = item.num ? `    #${item.num}: ` : '    - ';
 		const text = item.text.length > 90 ? item.text.slice(0, 87) + '...' : item.text;
 		console.log(`${prefix}${text}`);

@@ -4,16 +4,19 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import '../tools/roadmapProgress.js';
 
+type RoadmapItem = { type: string; done: boolean; text: string; num?: number };
+
 interface RoadmapResult {
 	sections: Array<{
 		name: string;
 		done: number;
 		total: number;
-		items: Array<{ type: string; done: boolean; text: string; num?: number }>;
+		items: RoadmapItem[];
 	}>;
 	overallDone: number;
 	overallTotal: number;
-	openItems: Array<{ type: string; done: boolean; text: string; num?: number }>;
+	openItems: RoadmapItem[];
+	checklist: { name: string; done: number; total: number; open: RoadmapItem[] } | null;
 }
 
 interface RoadmapResultWithAllItems extends RoadmapResult {
@@ -116,16 +119,22 @@ test('parses repository ROADMAP.md correctly', () => {
 	assert.ok(result.overallDone >= 160, `expected at least 160 done items, got ${result.overallDone}`);
 	assert.ok(result.sections.length >= 6, `expected at least 6 milestone batches, got ${result.sections.length}`);
 	// The numbered list is append-only, so a recorded but not-yet-built idea sits at the
-	// tail, after every shipped item, never interleaved with history. Item 192 (accessibility)
-	// is the one such item right now; asserting the ordering rather than a fixed open set
-	// means the next recorded idea needs no test edit. The 1.0 exit checklist stays prose
-	// (checks to run, not items), so it must not show up here as open work.
+	// tail, after every shipped item, never interleaved with history. The open tail is the
+	// Wesnoth-port cluster right now; asserting the ordering rather than a fixed open set
+	// means the next recorded idea needs no test edit.
 	const openNumbers = result.openItems.map((item) => item.num ?? 0);
 	const closedNumbers = result.allItems.filter((item) => item.done).map((item) => item.num ?? 0);
 	assert.ok(
 		openNumbers.every((open) => closedNumbers.every((closed) => open > closed)),
 		'open numbered items must sit at the end of the append-only list',
 	);
+
+	// The 1.0 exit checklist is checks to run, not numbered capabilities, so it stays out of the
+	// totals above. It is reported separately, under its own heading, because a dashboard that
+	// hides an open release gate is worse than one that shows two kinds of work.
+	assert.ok(result.checklist, 'expected the 1.0 exit checklist to be reported');
+	assert.equal(result.checklist.name, '1.0 exit checklist');
+	assert.ok(result.checklist.total >= 9, `expected at least 9 checks, got ${result.checklist.total}`);
 
 	// Item 175 (the pixi.js dependency-shape decision) is closed by decision, not left open
 	const item175 = result.allItems.find((item) => item.num === 175);
@@ -146,4 +155,65 @@ test('allItems exposes every parsed item in document order, for item management 
 test('allItems is present (possibly empty) even for item-free markdown', () => {
 	const result = parseRoadmap('# Just a title\nSome description.');
 	assert.deepEqual(result.allItems, []);
+});
+
+test('parses items struck before the number as done', () => {
+	// `~~12. text~~` strikes the whole item; `12. ~~text~~` only its text. Both mean done, and
+	// the second form used to be invisible, which is how nine real items went uncounted.
+	const markdown = `# Roadmap\n\n~~12. Closed item twelve~~\n13. Open item thirteen\n`;
+	const result = parseRoadmap(markdown);
+
+	assert.equal(result.overallTotal, 2);
+	assert.equal(result.overallDone, 1);
+	assert.equal(result.allItems[0].num, 12);
+	assert.equal(result.allItems[0].done, true);
+	assert.equal(result.allItems[1].num, 13);
+	assert.equal(result.allItems[1].done, false);
+	assert.equal(result.openItems.length, 1);
+	assert.equal(result.openItems[0].num, 13);
+});
+
+test('counts both done conventions in the same list', () => {
+	const markdown = `# Roadmap\n\n1. ~~Struck text~~\n~~2. Struck whole item~~\n3. Open item\n`;
+	const result = parseRoadmap(markdown);
+
+	assert.equal(result.overallTotal, 3);
+	assert.equal(result.overallDone, 2);
+	assert.equal(result.openItems.length, 1);
+	assert.equal(result.openItems[0].num, 3);
+});
+
+test('reports the checklist beside the numbered list instead of inside it', () => {
+	const markdown = `# Roadmap\n\n### 1.0 exit checklist\n\n- [x] A check that passes\n- [ ] A check still open\n\n1. ~~Shipped item~~\n`;
+	const result = parseRoadmap(markdown);
+
+	// Checks to run are not capabilities, so the numbered totals ignore them...
+	assert.equal(result.overallTotal, 1);
+	assert.equal(result.overallDone, 1);
+	assert.equal(result.openItems.length, 0);
+
+	// ...and the checklist is surfaced on its own, named by the heading it sits under.
+	assert.ok(result.checklist, 'expected a checklist summary');
+	assert.equal(result.checklist.name, '1.0 exit checklist');
+	assert.equal(result.checklist.total, 2);
+	assert.equal(result.checklist.done, 1);
+	assert.equal(result.checklist.open.length, 1);
+	assert.equal(result.checklist.open[0].text, 'A check still open');
+});
+
+test('no numbered item of the repository roadmap is invisible to the parser', () => {
+	const realRoadmap = readFileSync(resolve(import.meta.dirname, '../ROADMAP.md'), 'utf8');
+	const result = parseRoadmap(realRoadmap);
+
+	// The list is dense: every number from 1 to its last one exists, no gaps and no repeats. A
+	// missing number here means a strike form stopped being recognised, not that the list has a
+	// hole, which is exactly how items 205-213 went missing.
+	const numbers = result.allItems.map((item) => item.num ?? 0).sort((a, b) => a - b);
+	const last = numbers[numbers.length - 1];
+	assert.deepEqual(
+		numbers,
+		Array.from({ length: last }, (_, index) => index + 1),
+		'numbered items must be contiguous from 1 with no repeats',
+	);
+	assert.ok(last > 200, `expected the list to reach past 200, got ${last}`);
 });
