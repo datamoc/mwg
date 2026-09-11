@@ -16,7 +16,7 @@ export type {
 	SavedInventoryItem,
 } from './Inventory.ts';
 export { craft } from './craft.ts';
-export type { Recipe } from './craft.ts';
+export type { Ingredient, Recipe } from './craft.ts';
 export { applyStatusEffect } from './StatusEffect.ts';
 export type { EffectClock, StatusEffectOptions, StatusEffectHandle } from './StatusEffect.ts';
 export { identify, enchant, damageItem, repairItem } from './ItemState.ts';

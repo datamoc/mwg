@@ -531,8 +531,12 @@ on. This is the *shape* - a game names its own attributes and formulas.
   `Inventory`. `toJSON` saves per-item instance state (level, wear, affix, identified,
   `instanceId`) while `fromJSON(defs, data)` takes kind-level fields from the game's item
   table, so a rebalanced weight reaches an old save.
-- `craft`/`Recipe` - resolves a recipe against an `Inventory`: all-or-nothing, with a
-  capacity-rollback path if the result doesn't fit.
+- `craft`/`Recipe`/`Ingredient` - resolves a recipe against an `Inventory`: all-or-nothing, with a
+  capacity-rollback path if the result doesn't fit. An ingredient may match an exact `id` (or a
+  list of them), a `category` on the item's definition ("any herb"), or a `matches` predicate; the
+  allocation is made against a working copy so two flexible ingredients cannot count one stack
+  twice. `InventoryItem.category`/`ItemDefinition` carry the kind-level grouping (supplied by the
+  game on load, like `stackable` and `weight`).
 - `applyStatusEffect`/`EffectClock`/`StatusEffectHandle` - a `StatBlock` modifier tied to a
   `TurnClock`'s automatic expiry; `cancel()` for early removal.
 - `identify`/`enchant`/`damageItem`/`repairItem` - identification; enchant/upgrade level

@@ -4,14 +4,14 @@
 	"version": "0.7.6",
 	"releaseDate": "2026-09-11",
 	"source": {
-		"files": 257,
-		"lines": 38019,
+		"files": 258,
+		"lines": 38155,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 65,
-				"lines": 11703
+				"files": 66,
+				"lines": 11785
 			},
 			{
 				"name": "core",
@@ -36,7 +36,7 @@
 			{
 				"name": "actors",
 				"files": 24,
-				"lines": 2399
+				"lines": 2453
 			},
 			{
 				"name": "i18n",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 192,
-		"lines": 24727,
-		"cases": 1791
+		"files": 194,
+		"lines": 24877,
+		"cases": 1805
 	},
 	"tools": {
 		"files": 35,
@@ -123,17 +123,17 @@
 	},
 	"roadmap": {
 		"items": 293,
-		"completed": 279,
-		"open": 14,
-		"percent": 95
+		"completed": 282,
+		"open": 11,
+		"percent": 96
 	},
 	"api": {
 		"declarationFiles": 0
 	},
 	"bundle": {
-		"globalRaw": 941520,
-		"globalGzip": 279972,
-		"distRaw": 2879520
+		"globalRaw": null,
+		"globalGzip": null,
+		"distRaw": null
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

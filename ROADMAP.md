@@ -3935,11 +3935,19 @@ only for the square grid they are easiest to reason about.
      modifiers that can legitimately stack with it.~~ Fixed alongside 255: `GS` now appends
      (`sprite.filters = [...(sprite.filters ?? []), filter]`), the same pattern `CS` already
      used, so it composes with `~R`/`~G`/`~B`/`~BLEND`/`~CHAN` instead of dropping them.
-289. [Medium] Category-shaped crafting ingredients. `actors/craft.d.ts`'s recipe ingredient is
+289. ~~[Medium] Category-shaped crafting ingredients. `actors/craft.d.ts`'s recipe ingredient is
      `{ id: string; quantity: number }` only: one exact item id, no "any item of this kind".
      A recipe that wants "any herb plus any runestone" cannot be expressed and has to be left
      unported. Generic shape, no reference-specific vocabulary: `id: string | string[] | {
-     category: string }`, or a `matches(item)` predicate on the ingredient.
+     category: string }`, or a `matches(item)` predicate on the ingredient.~~ Landed as the
+     `Ingredient` type: `id` is now `string | string[]` (one exact id, or any of several),
+     `category` matches the item definition's own new `category` field, and `matches(item)` is the
+     predicate escape hatch. `InventoryItem.category` is kind-level like `stackable`/`weight`, so
+     it is supplied by the game's item table on load and stays out of saves. `craft` allocates
+     against a working copy of the stacks, so two flexible ingredients cannot both count the same
+     stack and "any herb" twice needs two herbs; a malformed ingredient (no matcher) or a
+     non-positive quantity throws by name. Ten tests in `tests/craft-ingredients.test.ts`, the
+     original eight unchanged.
 290. ~~[Medium] `ui.Window.close()` destroys the instance it is called on (`destroy({children:
      true})`), so the ordinary `this.someWindow = w` pattern followed by a later `w.x = ...`
      throws on a null internal rather than failing predictably. Either a `destroyed` getter

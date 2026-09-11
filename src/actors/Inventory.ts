@@ -27,6 +27,13 @@ export interface InventoryItem {
 	weight?: number;
 
 	/**
+	 * A kind-level grouping - `'herb'`, `'runestone'`, `'potion'` - so a recipe can ask for "any
+	 * herb" rather than one exact id. Like `stackable` and `weight` it describes the item's kind,
+	 * so it comes from the game's item definitions on load and is not part of a save.
+	 */
+	category?: string;
+
+	/**
 	 * Distinguishes otherwise-identical instances of the same item id - two `"sword"`s, one
 	 * enchanted and one not, or two enchanted differently - so they never silently merge into
 	 * one stack the way plain quantity stacking assumes every unit of an id is interchangeable.
@@ -209,7 +216,7 @@ export class Inventory {
 }
 
 /** the kind-level fields a game's own item table supplies, rather than the save file */
-export type ItemDefinition = Pick<InventoryItem, 'stackable' | 'weight'>;
+export type ItemDefinition = Pick<InventoryItem, 'stackable' | 'weight' | 'category'>;
 
 /** one slot as saved: instance state only, no kind-level fields */
 export interface SavedInventoryItem {

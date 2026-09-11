@@ -9,6 +9,10 @@ the public API may still change between minor versions.
 
 ### Added
 
+- `actors.craft` category-shaped ingredients (item 289): `Ingredient` now accepts `id` as a string
+  or a list, a `category` matched against the item definition's new `InventoryItem.category`
+  (kind-level, so it stays out of saves), or a `matches(item)` predicate. `craft` allocates against
+  a working copy so two flexible ingredients cannot count one stack twice.
 - `two-d/render/SpriteAttachment.ts`: `SpriteAttachment` (item 291), ties a second sprite's
   position to a first one's - `follow(x, y)` applies an offset, an optional `duration` makes
   `update(dt)` report `done` once it elapses, so a permanent shadow and a temporary status icon
