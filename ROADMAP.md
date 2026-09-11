@@ -3432,11 +3432,24 @@ it.
      groups `FactionFog.share` takes. `none` is honoured and `all`/`shroud` are treated alike,
      because the fog shares sight and memory as one thing; telling those two apart is a fog change
      rather than an attribute change, and the doc says so. Six tests in `tests/mwl-sides.test.ts`.
-283. [Medium] Per-side victory and defeat conditions. `[side]` in Wesnoth can carry its own defeat
+283. ~~[Medium] Per-side victory and defeat conditions. `[side]` in Wesnoth can carry its own defeat
      and victory conditions, which is how a scenario says "this side loses if its leader dies" or
      "wins by surviving"; today only the scenario-wide `[objectives]` `condition=hook` exists, and
      `world.status` is one value for the whole scenario rather than one per side. Found while
-     landing 252, which the item above used to include in its own scope.
+     landing 252, which the item above used to include in its own scope.~~ Landed: a `[side]` may
+     carry `[victory]`/`[defeat]` children using the same condition vocabulary the scenario-wide
+     `[objectives]` does, and `checkObjectives` now evaluates the scenario-wide pair first (so an
+     existing scenario behaves exactly as before) then each side's own, recording the result in
+     `MwlWorld.sideStatus` keyed by the side id. A side condition that names no `side`/`side_filter`
+     reads as that side's own, so "this side loses when it has no units left" is written once,
+     without repeating the id; the scenario-wide `status` stays the aggregate, ending won or lost
+     when a side condition fires, with a side victory outranking another side's defeat in the same
+     evaluation (the precedence the scenario-wide pair already had). `[win]`/`[lose]` record the
+     side they name too, so a content command and a condition land in the same place. Only sides
+     whose conditions fired get an entry, the same "only what the content made" rule `world.sides`
+     follows, and `sideStatus` survives a save/restore. Six tests in
+     `tests/mwl-side-objectives.test.ts`, including that a side's `[victory]` is not read as a
+     scenario-wide one.
 253. ~~[Medium] Turn limit as a native end condition (Absent). "Time over" as a scenario predicate
      has no framework home; the port had to add `predicate:turn_limit` itself. (`[objectives]`
      with a `condition=hook` does exist.)~~ Landed, in the shape the rest of the runtime already

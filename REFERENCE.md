@@ -853,6 +853,11 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   `hidden` and `flag` are read onto `MwlWorld.sides` as written, `yes`/`no` becoming booleans.
   `sideVisionGroups` turns `team_name` and `share_vision` into the groups `FactionFog.share` takes,
   so a scenario's teams see together without every game re-deriving who shares with whom.
+- A `[side]`'s own `[victory]`/`[defeat]` children (item 283): a side condition that names no
+  `side`/`side_filter` reads as that side's own, its result lands in `MwlWorld.sideStatus` keyed by
+  the side id, and the aggregate `MwlWorld.status` ends the scenario as a scenario-wide condition
+  would (a side victory outranking another side's defeat when both fire at once). `[win]`/`[lose]`
+  record the side they name too.
 - Public MWL exports - `MwlRuntime`, `MwlSyntaxError`, `collectHookReferences`, `compileNodes`,
   `compileSources`, `compileAndEmitSources`, `emitArtifacts`, `coerceTableValue`,
   `parseTableColumns`, `contentCatalog`, `createWorld`, `decodeSave`, `effectToModifier`,

@@ -44,6 +44,10 @@ the public API may still change between minor versions.
 - `simulation.EventPresentation`/`EventPresentationOptions` (item 282): the documented recipe
   tying a `SimulationRuntime` to a `PresentationQueue` - command result, animation lock,
   scheduled secondary actor, cancellation, and save/load that resumes idle.
+- `MwlWorld.sideStatus` and per-side `[victory]`/`[defeat]` under `[side]` (item 283): a side's
+  own condition is evaluated after the scenario-wide `[objectives]` ones, its result recorded by
+  side id, and `[win]`/`[lose]` record the side they name too. `MwlCommand`'s `win`/`lose` gained an
+  optional `side`.
 - `ai.personalScoreView`/`ai.sideScoreView`/`ai.scoreWith`, over `ScoreSubject`/`ScoreView`/
   `ScorePersonality` (items 274-276): the numbers a mind needs when a search is the wrong tool.
   The game supplies what anything is worth, the framework assembles the view (own, allies and

@@ -4764,8 +4764,12 @@ build instead.
         private nodeConditionMatches;
 
         private filterConditionMatches;
+
         private conditionMet;
+
         private checkObjectives;
+
+        private markSideResult;
         private worldView;
         private emit;
         private attack;

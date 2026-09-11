@@ -68,6 +68,13 @@ export interface MwlWorld {
 	gold: Record<string, number>;
 	turn: number;
 	status: 'playing' | 'won' | 'lost';
+	/**
+	 * What each side's own `[victory]`/`[defeat]` conditions decided, keyed by the side id
+	 * `[side]` declared. Only sides whose conditions fired appear here; a side that wrote none
+	 * keeps no entry, the same "only what the content made" rule `world.sides` follows. The
+	 * scenario-wide `status` is the aggregate: a side that won or lost ends it too.
+	 */
+	sideStatus?: Record<string, 'playing' | 'won' | 'lost'>;
 	/** what `[endlevel]` decided this scenario hands to the next one, until it is applied */
 	carryover?: MwlCarryover;
 	/** the primary map, when the content declares one */
@@ -141,8 +148,9 @@ export type MwlCommand =
 	| { readonly name: 'kill'; readonly target?: string; readonly filter?: Readonly<Record<string, string>> }
 	| { readonly name: 'attack'; readonly target: string; readonly amount: number }
 	| { readonly name: 'end_turn' }
-	| { readonly name: 'win' }
-	| { readonly name: 'lose' }
+	/** `side` records which side won or lost in `world.sideStatus`; the scenario status follows */
+	| { readonly name: 'win'; readonly side?: string }
+	| { readonly name: 'lose'; readonly side?: string }
 	| {
 			readonly name: 'endlevel';
 			readonly result: 'victory' | 'defeat';
@@ -163,6 +171,7 @@ export function createWorld(): MwlWorld {
 		gold: {},
 		turn: 1,
 		status: 'playing',
+		sideStatus: {},
 		map: null,
 		timeOfDay: '',
 		scheduleIndex: 0,
@@ -450,6 +459,7 @@ export class MwlRuntime {
 		Object.assign(this.world.gold, restored.gold ?? {});
 		this.world.turn = restored.turn;
 		this.world.status = restored.status;
+		this.world.sideStatus = { ...(restored.sideStatus ?? {}) };
 		this.world.map = restored.map ?? null;
 		this.world.timeOfDay = restored.timeOfDay ?? this.schedule[0] ?? '';
 		this.world.scheduleIndex = restored.scheduleIndex ?? 0;
@@ -676,9 +686,11 @@ export class MwlRuntime {
 				this.endTurn();
 				break;
 			case 'win':
+				this.markSideResult(node.attributes.side, 'won');
 				this.world.status = 'won';
 				break;
 			case 'lose':
+				this.markSideResult(node.attributes.side, 'lost');
 				this.world.status = 'lost';
 				break;
 			case 'endlevel': {
@@ -956,9 +968,14 @@ export class MwlRuntime {
 		});
 	}
 
-	private conditionMet(node: MwlCompiledNode): boolean {
+	/**
+	 * Whether one objective's condition holds. `defaultSide` is the side whose own
+	 * `[victory]`/`[defeat]` node this is, so a condition that names no side (a side losing
+	 * when its own units are gone) reads as that side rather than as nobody.
+	 */
+	private conditionMet(node: MwlCompiledNode, defaultSide?: string): boolean {
 		const condition = node.attributes.condition ?? '';
-		const side = optionalInteger(node, 'side');
+		const side = optionalInteger(node, 'side') ?? (defaultSide === undefined ? undefined : Number(defaultSide));
 		switch (condition) {
 			case 'units_dead': {
 				const target = optionalInteger(node, 'side_filter') ?? side;
@@ -971,11 +988,8 @@ export class MwlRuntime {
 			}
 			case 'gold_at_least': {
 				const gold = optionalInteger(node, 'gold');
-				return (
-					gold !== undefined &&
-					node.attributes.side !== undefined &&
-					(this.world.gold[node.attributes.side] ?? 0) >= gold
-				);
+				const goldSide = node.attributes.side ?? defaultSide;
+				return gold !== undefined && goldSide !== undefined && (this.world.gold[goldSide] ?? 0) >= gold;
 			}
 			case 'unit_at': {
 				const x = optionalInteger(node, 'x');
@@ -1004,13 +1018,58 @@ export class MwlRuntime {
 		}
 	}
 
+	/**
+	 * Evaluates the scenario-wide `[objectives]` conditions first, exactly as before, then each
+	 * side's own `[victory]`/`[defeat]` children. The scenario ends on the first side whose own
+	 * condition fires, recording that side in `world.sideStatus`; a side's victory outranks
+	 * another side's defeat when both fire in the same evaluation, which is the same precedence
+	 * the scenario-wide pair has always had. A side condition with no `side`/`side_filter` reads
+	 * as that side's own, so "this side loses when it has no units left" is written without
+	 * repeating the id.
+	 */
 	private checkObjectives(): void {
 		if (this.world.status !== 'playing') return;
-		if (this.nodes('victory').some((node) => this.conditionMet(node))) {
+
+		// a `[victory]`/`[defeat]` under a `[side]` is that side's own, never the scenario's
+		const sideConditions = new Set<MwlCompiledNode>();
+		const sides = this.nodes('side');
+		for (const side of sides) {
+			for (const child of side.children) {
+				if (child.tag === 'victory' || child.tag === 'defeat') sideConditions.add(child);
+			}
+		}
+
+		if (this.nodes('victory').some((node) => !sideConditions.has(node) && this.conditionMet(node))) {
 			this.world.status = 'won';
 			return;
 		}
-		if (this.nodes('defeat').some((node) => this.conditionMet(node))) this.world.status = 'lost';
+		if (this.nodes('defeat').some((node) => !sideConditions.has(node) && this.conditionMet(node))) {
+			this.world.status = 'lost';
+			return;
+		}
+
+		let sideWon = false;
+		let sideLost = false;
+		for (const side of sides) {
+			const id = side.attributes.id;
+			if (!id || (this.world.sideStatus?.[id] ?? 'playing') !== 'playing') continue;
+			if (side.children.some((child) => child.tag === 'victory' && this.conditionMet(child, id))) {
+				this.markSideResult(id, 'won');
+				sideWon = true;
+			} else if (side.children.some((child) => child.tag === 'defeat' && this.conditionMet(child, id))) {
+				this.markSideResult(id, 'lost');
+				sideLost = true;
+			}
+		}
+
+		if (sideWon) this.world.status = 'won';
+		else if (sideLost) this.world.status = 'lost';
+	}
+
+	/** Records one side's own result; the scenario status is set by whichever side fired first. */
+	private markSideResult(side: string | number | undefined, result: 'won' | 'lost'): void {
+		if (side === undefined || side === '') return;
+		(this.world.sideStatus ??= {})[String(side)] = result;
 	}
 
 	private worldView(): HookWorld {
@@ -1038,10 +1097,12 @@ export class MwlRuntime {
 			},
 			message: (speaker, text) => this.onMessage?.({ text, ...(speaker ? { speaker } : {}) }),
 			endTurn: () => this.endTurn(),
-			win: (_side) => {
+			win: (side) => {
+				this.markSideResult(side, 'won');
 				this.world.status = 'won';
 			},
-			lose: (_side) => {
+			lose: (side) => {
+				this.markSideResult(side, 'lost');
 				this.world.status = 'lost';
 			},
 		};
@@ -1091,9 +1152,11 @@ export function execute(world: MwlWorld, command: MwlCommand): void {
 			world.turn++;
 			break;
 		case 'win':
+			if (command.side !== undefined && command.side !== '') (world.sideStatus ??= {})[command.side] = 'won';
 			world.status = 'won';
 			break;
 		case 'lose':
+			if (command.side !== undefined && command.side !== '') (world.sideStatus ??= {})[command.side] = 'lost';
 			world.status = 'lost';
 			break;
 		case 'endlevel':
