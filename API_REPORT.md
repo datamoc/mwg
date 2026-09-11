@@ -138,6 +138,10 @@ build instead.
 
     export declare function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, scale?: number): void;
 
+### `applyTextureModifiers` (function)
+
+    export declare function applyTextureModifiers(texture: Texture, parsed: ParsedImagePath, probe?: ImageTextureProbe): Texture;
+
 ### `Audio` (namespace)
 
     export * as Audio from './audio/index.ts'
@@ -196,6 +200,10 @@ build instead.
 ### `bitmapLabelStyle` (function)
 
     export declare function bitmapLabelStyle(opts: BitmapLabelOptions, t: Theme): TextStyleOptions;
+
+### `blendMatrix` (function)
+
+    export declare function blendMatrix(color: number, ratio: number): ColorMatrixFilter['matrix'];
 
 ### `Blob` (class)
 
@@ -349,6 +357,15 @@ build instead.
         private clampedCentre;
         private apply;
     }
+
+### `channelScaleMatrix` (function)
+
+    export declare function channelScaleMatrix(scale: {
+        red?: number;
+
+### `channelSwapMatrix` (function)
+
+    export declare function channelSwapMatrix(sources: readonly ChannelSource[]): ColorMatrixFilter['matrix'];
 
 ### `checkNoControlCharacters` (function)
 
@@ -696,6 +713,11 @@ build instead.
 
     export declare function hexRange(center: HexCoord, radius: number): HexCoord[];
 
+### `hexRotate` (function)
+
+    export declare function hexRotate(dx: number, dy: number, rotationIndex: number, rotations: number): {
+        dx: number;
+
 ### `hexToPixel` (function)
 
     export declare function hexToPixel(x: number, y: number, tileWidth: number, tileHeight: number, shape?: HexShape): {
@@ -836,6 +858,10 @@ build instead.
         private resort;
     }
 
+### `layoutMarkupLines` (function)
+
+    export declare function layoutMarkupLines(spans: readonly MarkupSpan[], measure: MarkupMeasure, maxWidth: number): MarkupLine[];
+
 ### `layoutVertical` (function)
 
     export declare function layoutVertical(text: string, options: VerticalLayoutOptions): GlyphLayout[];
@@ -964,9 +990,22 @@ build instead.
         private write;
     }
 
+### `markupAccessibilityText` (function)
+
+    export declare function markupAccessibilityText(spans: readonly MarkupSpan[], options?: {
+        describeImage?: (path: string) => string;
+
 ### `markupToHtml` (function)
 
     export declare function markupToHtml(spans: readonly MarkupSpan[]): string;
+
+### `maskPixels` (function)
+
+    export declare function maskPixels(base: Uint8ClampedArray, baseWidth: number, baseHeight: number, mask: Uint8ClampedArray, maskWidth: number, maskHeight: number, offsetX: number, offsetY: number): Uint8ClampedArray;
+
+### `matchTerrainRule` (function)
+
+    export declare function matchTerrainRule(rule: TerrainRule, x: number, y: number, flagsAt: TerrainFlagsAt, rotate?: TerrainRotate, rotationIndex?: number): boolean;
 
 ### `meetsContrast` (function)
 
@@ -1138,6 +1177,10 @@ build instead.
 ### `packTintAdd` (function)
 
     export declare function packTintAdd(color: number, strength: number): number;
+
+### `paletteRangeMapping` (function)
+
+    export declare function paletteRangeMapping(reference: readonly number[], range: PaletteRange): PaletteMapping;
 
 ### `parseCSV` (function)
 
@@ -1376,6 +1419,10 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `recolorTexture` (function)
+
+    export declare function recolorTexture(texture: Texture, mapping: PaletteMapping, probe?: RecolorProbe): Texture;
+
 ### `Recorder` (class)
 
     export declare class Recorder {
@@ -1425,9 +1472,17 @@ build instead.
 
     export declare function relativeLuminance(color: number): number;
 
+### `remapPixels` (function)
+
+    export declare function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping): Uint8ClampedArray;
+
 ### `RENDERING_DECISIONS` (const)
 
     export declare const RENDERING_DECISIONS: readonly RenderingDecision[];
+
+### `resolveTerrainGraphics` (function)
+
+    export declare function resolveTerrainGraphics(width: number, height: number, rules: readonly TerrainRule[], flagsAt: TerrainFlagsAt, options?: ResolveTerrainGraphicsOptions): TerrainPlacement[];
 
 ### `Resources` (namespace)
 
@@ -1762,6 +1817,11 @@ build instead.
 
         pick(...frames: Array<number | string>): Texture2D[];
     }
+
+### `squareRotate` (function)
+
+    export declare function squareRotate(dx: number, dy: number, rotationIndex: number, rotations: number): {
+        dx: number;
 
 ### `StageScript` (class)
 
@@ -5863,6 +5923,10 @@ build instead.
 
     export declare function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, scale?: number): void;
 
+### `applyTextureModifiers` (function)
+
+    export declare function applyTextureModifiers(texture: Texture, parsed: ParsedImagePath, probe?: ImageTextureProbe): Texture;
+
 ### `autotileFrames` (function)
 
     export declare function autotileFrames(width: number, height: number, sameTerrain: (x: number, y: number) => boolean, frames: readonly number[]): Int32Array;
@@ -5913,6 +5977,10 @@ build instead.
 ### `bitmapLabelStyle` (function)
 
     export declare function bitmapLabelStyle(opts: BitmapLabelOptions, t: Theme): TextStyleOptions;
+
+### `blendMatrix` (function)
+
+    export declare function blendMatrix(color: number, ratio: number): ColorMatrixFilter['matrix'];
 
 ### `BLOB_SHAPES` (const)
 
@@ -6022,6 +6090,15 @@ build instead.
         private clampedCentre;
         private apply;
     }
+
+### `channelScaleMatrix` (function)
+
+    export declare function channelScaleMatrix(scale: {
+        red?: number;
+
+### `channelSwapMatrix` (function)
+
+    export declare function channelSwapMatrix(sources: readonly ChannelSource[]): ColorMatrixFilter['matrix'];
 
 ### `COLOR_BLINDNESS_MATRICES` (const)
 
@@ -6272,6 +6349,11 @@ build instead.
         handleAction(action: Action): boolean;
     }
 
+### `hexRotate` (function)
+
+    export declare function hexRotate(dx: number, dy: number, rotationIndex: number, rotations: number): {
+        dx: number;
+
 ### `highContrastTheme` (const)
 
     export declare const highContrastTheme: Theme;
@@ -6383,6 +6465,10 @@ build instead.
         private resort;
     }
 
+### `layoutMarkupLines` (function)
+
+    export declare function layoutMarkupLines(spans: readonly MarkupSpan[], measure: MarkupMeasure, maxWidth: number): MarkupLine[];
+
 ### `layoutVertical` (function)
 
     export declare function layoutVertical(text: string, options: VerticalLayoutOptions): GlyphLayout[];
@@ -6450,9 +6536,22 @@ build instead.
 
     export declare function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSheet[]): LoadedTiledMap;
 
+### `markupAccessibilityText` (function)
+
+    export declare function markupAccessibilityText(spans: readonly MarkupSpan[], options?: {
+        describeImage?: (path: string) => string;
+
 ### `markupToHtml` (function)
 
     export declare function markupToHtml(spans: readonly MarkupSpan[]): string;
+
+### `maskPixels` (function)
+
+    export declare function maskPixels(base: Uint8ClampedArray, baseWidth: number, baseHeight: number, mask: Uint8ClampedArray, maskWidth: number, maskHeight: number, offsetX: number, offsetY: number): Uint8ClampedArray;
+
+### `matchTerrainRule` (function)
+
+    export declare function matchTerrainRule(rule: TerrainRule, x: number, y: number, flagsAt: TerrainFlagsAt, rotate?: TerrainRotate, rotationIndex?: number): boolean;
 
 ### `meetsContrast` (function)
 
@@ -6572,6 +6671,10 @@ build instead.
 
     export declare function packTintAdd(color: number, strength: number): number;
 
+### `paletteRangeMapping` (function)
+
+    export declare function paletteRangeMapping(reference: readonly number[], range: PaletteRange): PaletteMapping;
+
 ### `parseImagePath` (function)
 
     export declare function parseImagePath(value: string): ParsedImagePath;
@@ -6671,6 +6774,10 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `recolorTexture` (function)
+
+    export declare function recolorTexture(texture: Texture, mapping: PaletteMapping, probe?: RecolorProbe): Texture;
+
 ### `Rectangle2D` (export)
 
     export { Rectangle2D }
@@ -6687,9 +6794,17 @@ build instead.
 
     export declare function relativeLuminance(color: number): number;
 
+### `remapPixels` (function)
+
+    export declare function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping): Uint8ClampedArray;
+
 ### `RENDERING_DECISIONS` (const)
 
     export declare const RENDERING_DECISIONS: readonly RenderingDecision[];
+
+### `resolveTerrainGraphics` (function)
+
+    export declare function resolveTerrainGraphics(width: number, height: number, rules: readonly TerrainRule[], flagsAt: TerrainFlagsAt, options?: ResolveTerrainGraphicsOptions): TerrainPlacement[];
 
 ### `revealComplete` (function)
 
@@ -6836,6 +6951,11 @@ build instead.
 
         pick(...frames: Array<number | string>): Texture2D[];
     }
+
+### `squareRotate` (function)
+
+    export declare function squareRotate(dx: number, dy: number, rotationIndex: number, rotations: number): {
+        dx: number;
 
 ### `StageScript` (class)
 
@@ -7350,9 +7470,17 @@ build instead.
 
     export declare function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, scale?: number): void;
 
+### `applyTextureModifiers` (function)
+
+    export declare function applyTextureModifiers(texture: Texture, parsed: ParsedImagePath, probe?: ImageTextureProbe): Texture;
+
 ### `autotileFrames` (function)
 
     export declare function autotileFrames(width: number, height: number, sameTerrain: (x: number, y: number) => boolean, frames: readonly number[]): Int32Array;
+
+### `blendMatrix` (function)
+
+    export declare function blendMatrix(color: number, ratio: number): ColorMatrixFilter['matrix'];
 
 ### `BLOB_SHAPES` (const)
 
@@ -7432,6 +7560,15 @@ build instead.
         private apply;
     }
 
+### `channelScaleMatrix` (function)
+
+    export declare function channelScaleMatrix(scale: {
+        red?: number;
+
+### `channelSwapMatrix` (function)
+
+    export declare function channelSwapMatrix(sources: readonly ChannelSource[]): ColorMatrixFilter['matrix'];
+
 ### `COLOR_BLINDNESS_MATRICES` (const)
 
     export declare const COLOR_BLINDNESS_MATRICES: Record<ColorBlindnessType, ColorMatrix>;
@@ -7502,6 +7639,11 @@ build instead.
 
     export declare const HALO_ANIMATION = "halo";
 
+### `hexRotate` (function)
+
+    export declare function hexRotate(dx: number, dy: number, rotationIndex: number, rotations: number): {
+        dx: number;
+
 ### `imageModifier` (function)
 
     export declare function imageModifier(path: ParsedImagePath, name: string): ImageModifier | undefined;
@@ -7527,6 +7669,14 @@ build instead.
 ### `loadTiledMap` (function)
 
     export declare function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSheet[]): LoadedTiledMap;
+
+### `maskPixels` (function)
+
+    export declare function maskPixels(base: Uint8ClampedArray, baseWidth: number, baseHeight: number, mask: Uint8ClampedArray, maskWidth: number, maskHeight: number, offsetX: number, offsetY: number): Uint8ClampedArray;
+
+### `matchTerrainRule` (function)
+
+    export declare function matchTerrainRule(rule: TerrainRule, x: number, y: number, flagsAt: TerrainFlagsAt, rotate?: TerrainRotate, rotationIndex?: number): boolean;
 
 ### `Minimap` (class)
 
@@ -7577,6 +7727,10 @@ build instead.
 ### `packTintAdd` (function)
 
     export declare function packTintAdd(color: number, strength: number): number;
+
+### `paletteRangeMapping` (function)
+
+    export declare function paletteRangeMapping(reference: readonly number[], range: PaletteRange): PaletteMapping;
 
 ### `parseImagePath` (function)
 
@@ -7646,6 +7800,10 @@ build instead.
         update(dt: number): boolean;
     }
 
+### `recolorTexture` (function)
+
+    export declare function recolorTexture(texture: Texture, mapping: PaletteMapping, probe?: RecolorProbe): Texture;
+
 ### `Rectangle2D` (export)
 
     export { Rectangle2D }
@@ -7658,9 +7816,17 @@ build instead.
 
     export declare function registerColorTransform(): void;
 
+### `remapPixels` (function)
+
+    export declare function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping): Uint8ClampedArray;
+
 ### `RENDERING_DECISIONS` (const)
 
     export declare const RENDERING_DECISIONS: readonly RenderingDecision[];
+
+### `resolveTerrainGraphics` (function)
+
+    export declare function resolveTerrainGraphics(width: number, height: number, rules: readonly TerrainRule[], flagsAt: TerrainFlagsAt, options?: ResolveTerrainGraphicsOptions): TerrainPlacement[];
 
 ### `ScreenEffects` (class)
 
@@ -7745,6 +7911,11 @@ build instead.
 
         pick(...frames: Array<number | string>): Texture2D[];
     }
+
+### `squareRotate` (function)
+
+    export declare function squareRotate(dx: number, dy: number, rotationIndex: number, rotations: number): {
+        dx: number;
 
 ### `StatusVisuals` (class)
 
@@ -8224,6 +8395,10 @@ build instead.
         destroy(options?: Parameters<Text['destroy']>[0]): void;
     }
 
+### `layoutMarkupLines` (function)
+
+    export declare function layoutMarkupLines(spans: readonly MarkupSpan[], measure: MarkupMeasure, maxWidth: number): MarkupLine[];
+
 ### `layoutVertical` (function)
 
     export declare function layoutVertical(text: string, options: VerticalLayoutOptions): GlyphLayout[];
@@ -8286,6 +8461,11 @@ build instead.
         resize(width: number, height: number): void;
         private layout;
     }
+
+### `markupAccessibilityText` (function)
+
+    export declare function markupAccessibilityText(spans: readonly MarkupSpan[], options?: {
+        describeImage?: (path: string) => string;
 
 ### `markupToHtml` (function)
 

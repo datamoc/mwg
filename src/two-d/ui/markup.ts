@@ -167,9 +167,11 @@ export function stripMarkup(source: string, options: MarkupOptions = {}): string
 
 /**
  * Spans as an HTML fragment for a renderer that speaks HTML text, which is what the ui's `RichLabel`
- * is. Emphasis is rendered and the text is escaped, so `a < b` can never turn into a tag; colour,
- * size and images are left to the renderer that asked for this, because the HTML dialect an
- * `HTMLText` accepts is narrower than the markup a game may write.
+ * is. Emphasis, colour and size all render - `HTMLText`'s dialect is real CSS, so a `color`/`size`
+ * span becomes a `<span style="...">` wrapper - and the text is escaped, so `a < b` can never turn
+ * into a tag. An image span renders as nothing here: `HTMLText` has no inline-image primitive, so a
+ * caller that wants the image drawn positions a sprite itself, at the position `layoutMarkupLines`
+ * reports for that span.
  */
 export function markupToHtml(spans: readonly MarkupSpan[]): string {
 	return spans
@@ -178,9 +180,145 @@ export function markupToHtml(spans: readonly MarkupSpan[]): string {
 			let text = escapeHtml(span.text);
 			if (span.italic) text = `<i>${text}</i>`;
 			if (span.bold) text = `<b>${text}</b>`;
+			const style = [
+				span.color !== undefined ? `color:${span.color}` : undefined,
+				span.size !== undefined ? `font-size:${span.size}px` : undefined,
+			].filter((declaration): declaration is string => declaration !== undefined);
+			if (style.length > 0) text = `<span style="${style.join(';')}">${text}</span>`;
 			return text;
 		})
 		.join('');
+}
+
+/**
+ * The plain-text projection for a place that cannot render any markup at all - a screen reader, a
+ * log line, a tooltip that only takes a string. Unlike `stripMarkup` (which keeps an image span's
+ * raw path, useful for round-tripping but not for reading aloud), an image becomes `describeImage`'s
+ * result, defaulting to `[image]` so an image is at least announced as present rather than silently
+ * dropped or read as a file path.
+ *
+ * @example
+ * ```ts
+ * import { markupAccessibilityText, parseMarkup } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const spans = parseMarkup("Pay <b>10</b> gold<img>coin.png</img>");
+ * console.log(markupAccessibilityText(spans)); // 'Pay 10 gold[image]'
+ * console.log(markupAccessibilityText(spans, { describeImage: () => ' (coin icon)' }));
+ * // 'Pay 10 gold (coin icon)'
+ * ```
+ */
+export function markupAccessibilityText(
+	spans: readonly MarkupSpan[],
+	options: { describeImage?: (path: string) => string } = {},
+): string {
+	const describeImage = options.describeImage ?? (() => '[image]');
+	return spans.map((span) => (span.image !== undefined ? describeImage(span.image) : span.text)).join('');
+}
+
+/** One already-measured, already-wrapped line: the spans that belong on it, and its total width. */
+export interface MarkupLine {
+	readonly spans: readonly MarkupSpan[];
+	readonly width: number;
+}
+
+/**
+ * Measures one atomic layout piece - a word, a single space, or an image span - under whatever
+ * style it carries. A canvas backend measures with `TextMetrics`; a fixed-width test double can
+ * measure with a plain character count. `piece.image` is set instead of `piece.text` for an image
+ * span, so a measurer can give it the icon's own width rather than treating it as zero-width text.
+ */
+export type MarkupMeasure = (piece: Pick<MarkupSpan, 'text' | 'bold' | 'italic' | 'size' | 'image'>) => number;
+
+/**
+ * Wraps already-parsed spans into lines, word by word, each word measured under its own span's
+ * style - which is the acceptance this item was missing: wrapping computed *after* styling, not
+ * before it, so a bold or larger run wraps where its own wider glyphs actually land rather than
+ * where the plain text would have. An explicit line break (`<br/>`, which `parseMarkup` turns into
+ * a literal `\n`) always starts a new line; otherwise a word moves to the next line only once it
+ * would overflow `maxWidth`, so a single word wider than `maxWidth` still renders (not clipped) as
+ * ever a caller's original design.
+ *
+ * Backend-neutral by construction: the same spans, the same `measure` function and the same
+ * `maxWidth` given to `layoutMarkupLines` decide the exact same line breaks whether the caller then
+ * draws each line through `markupToHtml`/`HTMLText` or through a canvas `Text2D` per run - which is
+ * what makes the two backends render "equivalent runs" rather than each doing its own wrapping.
+ *
+ * @example
+ * ```ts
+ * import { layoutMarkupLines, parseMarkup } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const spans = parseMarkup('Take <b>two small</b> coins');
+ * const lines = layoutMarkupLines(spans, (piece) => piece.text.length * 8, 100);
+ * console.log(lines.map((line) => line.spans.map((span) => span.text).join('')));
+ * ```
+ */
+export function layoutMarkupLines(spans: readonly MarkupSpan[], measure: MarkupMeasure, maxWidth: number): MarkupLine[] {
+	type Piece = MarkupSpan & { readonly hardBreak?: boolean };
+	const pieces: Piece[] = [];
+	for (const span of spans) {
+		if (span.image !== undefined) {
+			pieces.push({ ...span });
+			continue;
+		}
+		const parts = span.text.split('\n');
+		parts.forEach((part, index) => {
+			if (index > 0) pieces.push({ text: '', bold: span.bold, italic: span.italic, hardBreak: true });
+			for (const word of part.match(/\S+|\s+/g) ?? []) {
+				pieces.push({ text: word, bold: span.bold, italic: span.italic, color: span.color, size: span.size });
+			}
+		});
+	}
+
+	const lines: MarkupLine[] = [];
+	let current: Piece[] = [];
+	let width = 0;
+
+	const flushLine = (): void => {
+		//trailing whitespace never counts toward a line's own width or survives into it
+		while (current.length > 0 && current[current.length - 1].text.trim() === '' && !current[current.length - 1].image) {
+			width -= measure(current[current.length - 1]);
+			current.pop();
+		}
+		lines.push({ spans: mergeMarkupSpans(current), width: Math.max(0, width) });
+		current = [];
+		width = 0;
+	};
+
+	for (const piece of pieces) {
+		if (piece.hardBreak) {
+			flushLine();
+			continue;
+		}
+		const pieceWidth = measure(piece);
+		const isSpace = piece.image === undefined && piece.text.trim() === '';
+		if (width > 0 && !isSpace && width + pieceWidth > maxWidth) flushLine();
+		current.push(piece);
+		width += pieceWidth;
+	}
+	if (current.length > 0 || lines.length === 0) flushLine();
+
+	return lines;
+}
+
+function mergeMarkupSpans(pieces: readonly MarkupSpan[]): MarkupSpan[] {
+	const merged: MarkupSpan[] = [];
+	for (const piece of pieces) {
+		const last = merged[merged.length - 1];
+		if (
+			last &&
+			piece.image === undefined &&
+			last.image === undefined &&
+			last.bold === piece.bold &&
+			last.italic === piece.italic &&
+			last.color === piece.color &&
+			last.size === piece.size
+		) {
+			last.text += piece.text;
+		} else {
+			merged.push({ ...piece });
+		}
+	}
+	return merged;
 }
 
 /** escapes the five characters that would otherwise read as syntax */

@@ -4,12 +4,17 @@ export type { HasColorAdd } from './ColorTransformBatcher.ts';
 export { TintedSprite, registerColorTransform } from './TintedSprite.ts';
 export {
 	applyImageModifiers,
+	applyTextureModifiers,
+	blendMatrix,
+	channelScaleMatrix,
+	channelSwapMatrix,
 	colorShiftMatrix,
 	croppedTexture,
 	imageModifier,
+	maskPixels,
 	parseImagePath,
 } from './ImageModifiers.ts';
-export type { ImageModifier, ParsedImagePath } from './ImageModifiers.ts';
+export type { ChannelSource, ImageModifier, ImageTextureProbe, ParsedImagePath } from './ImageModifiers.ts';
 export { AnimatedSprite, Animation } from './AnimatedSprite.ts';
 export type { AnimationFrame, AnimationFrameInput, AnimationOptions } from './AnimatedSprite.ts';
 export { SpriteSheet } from './SpriteSheet.ts';
@@ -45,6 +50,17 @@ export type { TintTarget, StatusVisualStyle, StatusVisualsOptions } from './Stat
 export { blobIndex, autotileFrames, BLOB_SHAPES } from './Autotile.ts';
 export type { NeighborMask } from './Autotile.ts';
 
+export { hexRotate, matchTerrainRule, resolveTerrainGraphics, squareRotate } from './TerrainGraphics.ts';
+export type {
+	ResolveTerrainGraphicsOptions,
+	TerrainCondition,
+	TerrainFlagsAt,
+	TerrainImage,
+	TerrainPlacement,
+	TerrainRotate,
+	TerrainRule,
+} from './TerrainGraphics.ts';
+
 export { inspectGraphicsCapabilities, detectWebGpu, RENDERING_DECISIONS } from './Capabilities.ts';
 export type {
 	GraphicsCapabilities,
@@ -57,6 +73,9 @@ export type {
 export { Container2D, Rectangle2D, Texture2D, rectOf } from './Types2D.ts';
 export type { Rect, TextureRegion } from './Types2D.ts';
 export { Node2D, Shape2D, Text2D, Sprite2D, TiledSprite, Gradient } from './Shape2D.ts';
+
+export { paletteRangeMapping, recolorTexture, remapPixels } from './PaletteRemap.ts';
+export type { PaletteMapping, PaletteRange, RecolorProbe, RemapCanvas, RemapCanvasContext } from './PaletteRemap.ts';
 
 export { loadTiledMap } from './TiledMap.ts';
 export type {

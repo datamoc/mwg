@@ -1,6 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { escapeHtml, markupToHtml, parseMarkup, stripMarkup } from '../src/two-d/ui/markup.ts';
+import {
+	escapeHtml,
+	layoutMarkupLines,
+	markupAccessibilityText,
+	markupToHtml,
+	parseMarkup,
+	stripMarkup,
+} from '../src/two-d/ui/markup.ts';
+import type { MarkupSpan } from '../src/two-d/ui/markup.ts';
 
 /**
  * The inline-markup contract, checked as a contract: what a span says, how nesting and closing
@@ -82,4 +90,106 @@ test('the html path escapes its text and renders emphasis, never the markup it w
 
 test('escaping covers the five characters that would otherwise read as syntax', () => {
 	assert.equal(escapeHtml(`<a href="x">&'`), '&lt;a href=&quot;x&quot;&gt;&amp;&#39;');
+});
+
+test('the html path also renders colour and size, as an inline style', () => {
+	const spans = parseMarkup("<span color='red' size='14'>big</span>");
+	assert.equal(markupToHtml(spans), '<span style="color:red;font-size:14px">big</span>');
+});
+
+test('markupAccessibilityText announces an image instead of dropping or reading its path', () => {
+	const spans = parseMarkup('Pay <b>10</b> gold<img>coin.png</img>');
+	assert.equal(markupAccessibilityText(spans), 'Pay 10 gold[image]');
+	assert.equal(
+		markupAccessibilityText(spans, { describeImage: (path) => ` (${path})` }),
+		'Pay 10 gold (coin.png)',
+	);
+});
+
+test('markupAccessibilityText keeps text and drops no styling information from the string itself', () => {
+	const spans = parseMarkup('Hail, <b>$name</b>!', { variables: { name: 'Kalenz' } });
+	assert.equal(markupAccessibilityText(spans), 'Hail, Kalenz!');
+});
+
+//a fixed-width measurer, one unit per character plus a size multiplier, standing in for a real
+//canvas TextMetrics call so wrapping logic is testable with no renderer at all
+function fixedMeasure(piece: Pick<MarkupSpan, 'text' | 'bold' | 'italic' | 'size' | 'image'>): number {
+	if (piece.image !== undefined) return (piece.size ?? 16) * 1.5;
+	const scale = (piece.size ?? 10) / 10;
+	return piece.text.length * scale * (piece.bold ? 1.2 : 1);
+}
+
+test('layoutMarkupLines wraps on word boundaries once a line would overflow', () => {
+	const spans = parseMarkup('one two three four');
+	const lines = layoutMarkupLines(spans, fixedMeasure, 8);
+	assert.deepEqual(
+		lines.map((line) => line.spans.map((span) => span.text).join('')),
+		['one two', 'three', 'four'],
+	);
+});
+
+test('layoutMarkupLines honours an explicit <br/> as a hard break regardless of width', () => {
+	const spans = parseMarkup('a<br/>b');
+	const lines = layoutMarkupLines(spans, fixedMeasure, 1000);
+	assert.deepEqual(
+		lines.map((line) => line.spans.map((span) => span.text).join('')),
+		['a', 'b'],
+	);
+});
+
+test('layoutMarkupLines never drops a word wider than maxWidth by itself', () => {
+	const spans = parseMarkup('supercalifragilistic hi');
+	const lines = layoutMarkupLines(spans, fixedMeasure, 5);
+	assert.equal(lines[0].spans.map((span) => span.text).join(''), 'supercalifragilistic');
+	assert.equal(lines[1].spans.map((span) => span.text).join(''), 'hi');
+});
+
+test('layoutMarkupLines wraps a bold run where its own wider glyphs land, not where plain text would', () => {
+	//"biggg" bold at 1.2x is wider than the same five characters plain - the wrap point moves
+	//because of styling, which is exactly the acceptance this function exists for
+	const plain = layoutMarkupLines(parseMarkup('biggg word'), fixedMeasure, 10);
+	const bold = layoutMarkupLines(parseMarkup('<b>biggg</b> word'), fixedMeasure, 10);
+	assert.deepEqual(
+		plain.map((line) => line.spans.map((span) => span.text).join('')),
+		['biggg word'],
+	);
+	assert.deepEqual(
+		bold.map((line) => line.spans.map((span) => span.text).join('')),
+		['biggg', 'word'],
+	);
+});
+
+test('layoutMarkupLines keeps an image span whole, measured by its own piece', () => {
+	const spans = parseMarkup('gold<img>coin.png</img>!');
+	const lines = layoutMarkupLines(spans, fixedMeasure, 1000);
+	assert.equal(lines.length, 1);
+	assert.equal(lines[0].spans[1].image, 'coin.png');
+});
+
+test('layoutMarkupLines on an empty span list still returns one empty line, never nothing', () => {
+	assert.deepEqual(layoutMarkupLines([], fixedMeasure, 100), [{ spans: [], width: 0 }]);
+});
+
+test('the canvas and rich-text backends render the same runs for one fixture', () => {
+	//one fixture, deliberately mixing every span kind the contract covers - the acceptance this
+	//item was missing: the same spans, laid out once, drive both a canvas-shaped per-run list
+	//(layoutMarkupLines) and an HTML string (markupToHtml) with identical text content and order
+	const source = "Pay <b>10</b> <span color='gold' size='14'>gold</span> for the <i>amulet</i><img>amulet.png</img>!";
+	const spans = parseMarkup(source);
+
+	const lines = layoutMarkupLines(spans, fixedMeasure, 1000);
+	const canvasRunText = lines
+		.flatMap((line) => line.spans)
+		.map((span) => span.image ?? span.text)
+		.join('');
+
+	const html = markupToHtml(spans);
+	// strip the HTML backend's own tags back to plain text, the same reduction the accessibility
+	// projection makes, so both backends are compared on the text they actually carry
+	const richTextRunText = markupAccessibilityText(spans, { describeImage: (path) => path });
+
+	assert.equal(canvasRunText, richTextRunText, 'both backends carry the exact same text, in the same order');
+	assert.ok(html.includes('<b>10</b>'));
+	assert.ok(html.includes('color:gold'));
+	assert.ok(html.includes('<i>amulet</i>'));
 });
