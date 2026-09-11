@@ -569,6 +569,11 @@ the dungeon-crawl half of the capability spec.
 - `chebyshevDistance`/`traceLine`/`ballistica`/`hasLineOfSight`/`canTarget`/`resolveArea` -
   targeting and collision paths: range/line-of-sight checks, configurable stopping cells,
   and single/line/burst/cone area resolution.
+- `TargetingController` - the input-facing half of targeting: a cursor moved by keyboard
+  (`move`) or by a caller-resolved pointer cell (`moveTo`), range and line-of-sight
+  validation with an optional game `validate` hook, a `preview` of the shape's cells, and a
+  `confirm`/`cancel` result. It returns cells only; the game keeps legality details, damage
+  and drawing.
 - `coneCells`/`chainTargets`/`knockbackPath` - a widening cone spray, a greedy nearest-hop
   chain, and a shove's path until the first impassable cell.
 - `resolveAreaOnLevel`/`hexConeCells` - topology-aware area resolution and widening hex cones,

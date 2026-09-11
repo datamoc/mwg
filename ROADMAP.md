@@ -3676,11 +3676,21 @@ source rather than against the note, so neither is an item:
      sequence an existing replay recorded is unchanged; `life` already was the lifetime envelope.
      Five tests in `tests/particles.test.ts` pin the bounds, the ellipse's edge (direction, not
      only magnitude), local-space movement and seeded reproducibility.
-280. [Medium] A renderer-neutral grid targeting controller (the port's P1). The *geometry* is here
+280. ~~[Medium] A renderer-neutral grid targeting controller (the port's P1). The *geometry* is here
      (`AreaShape`, `traceLine`, `ballistica`, `Level` line of sight) and nothing drives it from
      input: needs pointer and keyboard navigation over cells, range and line-of-sight validation
      hooks, an optional area preview, and a confirm/cancel result. It must return cells or ids only:
-     targeting legality, damage and visuals stay with the game.
+     targeting legality, damage and visuals stay with the game.~~ Landed as
+     `roguelike.TargetingController`. It holds a cursor over a `Level`, moved a cell at a time by
+     `move(dx, dy)` for keyboard/gamepad (on a hex level the offset is looked up among the level's
+     own six neighbours, since only the level knows which offset is which direction there) or by
+     `moveTo(cell)` for pointer input, where the caller has already turned its screen point into a
+     cell through its own camera. `valid` is range plus sight unless waived plus an optional game
+     `validate` hook, `preview()` resolves the shape's affected cells or returns empty while the aim
+     is illegal, and `confirm()` returns those cells or null; `onMove`/`onConfirm`/`onCancel` carry
+     each step. It returns cells only - damage, legality details and drawing stay with the game.
+     Thirteen tests in `tests/targeting-controller.test.ts`, including the range boundary, a wall
+     between origin and cursor, hex neighbour stepping and hex distance.
 281. [Low] Tabbed, paginated list primitives (the port's P2). `ListView`/`IconGrid` cover the list
      itself; a contract for tabs, filtered rows, selection, paging and a detail/close action would
      serve inventories, journals, shops and codices across games. Caller-supplied labels and rows,

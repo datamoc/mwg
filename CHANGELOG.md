@@ -14,6 +14,11 @@ the public API may still change between minor versions.
   instead of every particle starting at the emitter's single origin (a forge mouth, a flame
   column, rain across a room). A point emitter draws nothing extra, so the seeded sequence an
   existing replay recorded is unchanged.
+- `roguelike.TargetingController` (item 280): the input-facing half of targeting, renderer-free.
+  A cursor moved by `move(dx, dy)` or a caller-resolved `moveTo(cell)`, range and line-of-sight
+  validation with an optional `validate` hook, a `preview()` of the shape's cells and a
+  `confirm()`/`cancel()` result carrying cells only, so damage, legality details and drawing stay
+  with the game. Hex levels step by their own six neighbours and measure in hex distance.
 - `ai.personalScoreView`/`ai.sideScoreView`/`ai.scoreWith`, over `ScoreSubject`/`ScoreView`/
   `ScorePersonality` (items 274-276): the numbers a mind needs when a search is the wrong tool.
   The game supplies what anything is worth, the framework assembles the view (own, allies and

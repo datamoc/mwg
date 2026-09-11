@@ -1,6 +1,7 @@
 import type { Level } from './Level.ts';
 import type { Step } from './Pathfinder.ts';
 import { hexDistance, hexLine, hexRange } from '../core/Hex.ts';
+import { Signal } from '../core/Signal.ts';
 
 /**
  * How a target resolves into the cells it actually affects.
@@ -351,4 +352,174 @@ export function knockbackPath(level: Level, from: Step, direction: Step, distanc
 		cells.push(at);
 	}
 	return cells;
+}
+
+export interface TargetingControllerOptions {
+	/** where the aim starts: the thrower's own cell */
+	origin: Step;
+
+	/** how far the aim reaches, in the owning shape's own ruler (`canTarget`'s) */
+	range: number;
+
+	/** whether a wall between origin and cursor blocks the aim; on by default */
+	requireLineOfSight?: boolean;
+
+	/** how a confirmed aim resolves into cells; a single cell by default */
+	shape?: AreaShape;
+
+	/** the cursor's first cell; defaults to `origin` */
+	cursor?: Step;
+
+	/**
+	 * A game's own rule on top of range and sight (not through an ally, not an empty floor
+	 * tile). The controller never guesses what is in a cell: only the game knows.
+	 */
+	validate?: (target: Step) => boolean;
+}
+
+/** What `TargetingController.confirm` returns, and what its `onConfirm` carries. Cells only. */
+export interface TargetResult {
+	readonly origin: Step;
+	readonly target: Step;
+	readonly shape: AreaShape;
+
+	/** the cells the shape affects, resolved through the level's own topology */
+	readonly cells: readonly Step[];
+}
+
+/**
+ * The input-facing half of targeting: a cursor a player moves over cells, the range and
+ * line-of-sight rule that decides whether the current aim is legal, an optional preview of
+ * the shape, and a confirm/cancel result. It carries no renderer: `moveTo` takes a cell, so
+ * a game converts its own pointer position through its own camera, and the controller hands
+ * back cells for the game to draw and resolve. Legality beyond range and sight is the
+ * optional `validate` hook's job, and damage is never the controller's business.
+ *
+ * @example
+ * ```ts
+ * import { Level, FLOOR, WALL, TargetingController } from '@datamoc/mw_games/roguelike';
+ *
+ * const level = new Level(12, 12, [WALL, FLOOR], 1);
+ * const aiming = new TargetingController(level, {
+ *   origin: { x: 2, y: 2 },
+ *   range: 6,
+ *   shape: { kind: 'burst', radius: 1 },
+ * });
+ *
+ * aiming.move(1, 0); // keyboard: one cell east
+ * aiming.moveTo({ x: 5, y: 2 }); // pointer: the caller resolved the screen point first
+ * console.log(aiming.valid); // in range and in sight
+ * console.log(aiming.preview()); // the burst's cells, or [] while the aim is illegal
+ *
+ * const shot = aiming.confirm(); // null when illegal, the target cells when not
+ * ```
+ */
+export class TargetingController {
+	readonly onMove = new Signal<Step>();
+	readonly onConfirm = new Signal<TargetResult>();
+	readonly onCancel = new Signal<void>();
+
+	private readonly level: Level;
+	private readonly origin: Step;
+	private readonly range: number;
+	private readonly requireLineOfSight: boolean;
+	private readonly validate?: (target: Step) => boolean;
+	private shape: AreaShape;
+	private cursor: Step;
+
+	constructor(level: Level, options: TargetingControllerOptions) {
+		if (!Number.isFinite(options.range) || options.range < 0) {
+			throw new Error('targeting range must be a finite non-negative number');
+		}
+		this.level = level;
+		this.origin = { ...options.origin };
+		this.range = options.range;
+		this.requireLineOfSight = options.requireLineOfSight ?? true;
+		this.validate = options.validate;
+		this.shape = options.shape ?? { kind: 'single' };
+		this.cursor = { ...(options.cursor ?? options.origin) };
+	}
+
+	/** the cell the cursor is on now, as a copy - mutating it does not move the aim */
+	get target(): Step {
+		return { ...this.cursor };
+	}
+
+	/** how many cells the cursor is from the origin, in the level's own ruler */
+	get distance(): number {
+		return this.level.shape === 'hex'
+			? hexDistance(this.origin, this.cursor)
+			: chebyshevDistance(this.origin, this.cursor);
+	}
+
+	get inRange(): boolean {
+		return this.distance <= this.range;
+	}
+
+	get inSight(): boolean {
+		return hasLineOfSight(this.level, this.origin, this.cursor);
+	}
+
+	/** whether the current aim is legal: range, sight unless waived, and the game's own rule */
+	get valid(): boolean {
+		if (!this.inRange) return false;
+		if (this.requireLineOfSight && !this.inSight) return false;
+		return this.validate ? this.validate(this.cursor) : true;
+	}
+
+	/**
+	 * Moves the cursor one cell, for keyboard and gamepad navigation. On a square level the
+	 * offset is added directly; on a hex level it is looked up among the cursor's six
+	 * neighbours, since only the level knows which offset means which direction there. A move
+	 * that would leave the map is ignored rather than clamped to its edge.
+	 */
+	move(dx: number, dy: number): void {
+		if (this.level.shape === 'hex') {
+			const next = this.level
+				.neighbors(this.cursor.x, this.cursor.y)
+				.find((neighbor) => neighbor.x - this.cursor.x === dx && neighbor.y - this.cursor.y === dy);
+			if (next) this.moveTo(next);
+			return;
+		}
+		this.moveTo({ x: this.cursor.x + dx, y: this.cursor.y + dy });
+	}
+
+	/**
+	 * Moves the cursor to a specific cell, for pointer navigation: the caller has already
+	 * turned a screen point into a cell through its own camera. Off-map cells are ignored.
+	 */
+	moveTo(cell: Step): void {
+		if (!this.level.inside(cell.x, cell.y)) return;
+		this.cursor = { x: cell.x, y: cell.y };
+		this.onMove.dispatch({ ...this.cursor });
+	}
+
+	/** Replaces the shape a confirm resolves to, keeping the cursor where it is. */
+	setShape(shape: AreaShape): void {
+		this.shape = shape;
+	}
+
+	/** The cells the current aim would affect, for a preview overlay; empty while illegal. */
+	preview(): Step[] {
+		if (!this.valid) return [];
+		return resolveAreaOnLevel(this.level, this.origin, this.cursor, this.shape);
+	}
+
+	/** Returns the confirmed target, or null when the current aim is illegal. */
+	confirm(): TargetResult | null {
+		if (!this.valid) return null;
+		const result: TargetResult = {
+			origin: { ...this.origin },
+			target: { ...this.cursor },
+			shape: this.shape,
+			cells: this.preview(),
+		};
+		this.onConfirm.dispatch(result);
+		return result;
+	}
+
+	/** Abandons the aim without confirming; the game closes its own overlay on `onCancel`. */
+	cancel(): void {
+		this.onCancel.dispatch();
+	}
 }

@@ -5147,6 +5147,42 @@ build instead.
         reset(): void;
     }
 
+### `TargetingController` (class)
+
+    export declare class TargetingController {
+        readonly onMove: Signal<Step>;
+        readonly onConfirm: Signal<TargetResult>;
+        readonly onCancel: Signal<void>;
+        private readonly level;
+        private readonly origin;
+        private readonly range;
+        private readonly requireLineOfSight;
+        private readonly validate?;
+        private shape;
+        private cursor;
+        constructor(level: Level, options: TargetingControllerOptions);
+
+        get target(): Step;
+
+        get distance(): number;
+        get inRange(): boolean;
+        get inSight(): boolean;
+
+        get valid(): boolean;
+
+        move(dx: number, dy: number): void;
+
+        moveTo(cell: Step): void;
+
+        setShape(shape: AreaShape): void;
+
+        preview(): Step[];
+
+        confirm(): TargetResult | null;
+
+        cancel(): void;
+    }
+
 ### `traceLine` (function)
 
     export declare function traceLine(from: Step, to: Step): Step[];
