@@ -252,7 +252,11 @@ export type MarkupMeasure = (piece: Pick<MarkupSpan, 'text' | 'bold' | 'italic' 
  * console.log(lines.map((line) => line.spans.map((span) => span.text).join('')));
  * ```
  */
-export function layoutMarkupLines(spans: readonly MarkupSpan[], measure: MarkupMeasure, maxWidth: number): MarkupLine[] {
+export function layoutMarkupLines(
+	spans: readonly MarkupSpan[],
+	measure: MarkupMeasure,
+	maxWidth: number,
+): MarkupLine[] {
 	type Piece = MarkupSpan & { readonly hardBreak?: boolean };
 	const pieces: Piece[] = [];
 	for (const span of spans) {
@@ -275,7 +279,11 @@ export function layoutMarkupLines(spans: readonly MarkupSpan[], measure: MarkupM
 
 	const flushLine = (): void => {
 		//trailing whitespace never counts toward a line's own width or survives into it
-		while (current.length > 0 && current[current.length - 1].text.trim() === '' && !current[current.length - 1].image) {
+		while (
+			current.length > 0 &&
+			current[current.length - 1].text.trim() === '' &&
+			!current[current.length - 1].image
+		) {
 			width -= measure(current[current.length - 1]);
 			current.pop();
 		}
@@ -319,6 +327,88 @@ function mergeMarkupSpans(pieces: readonly MarkupSpan[]): MarkupSpan[] {
 		}
 	}
 	return merged;
+}
+
+/** a line's flow direction; the same values `i18n.direction()` reports */
+export type MarkupDirection = 'ltr' | 'rtl';
+
+/** where a line sits within the wrap width, when it is shorter than that width */
+export type MarkupAlign = 'left' | 'center' | 'right';
+
+/** One run of a laid-out line, already measured and placed. */
+export interface PositionedMarkupSpan {
+	/** the span this run draws; `image` is set for an image run, `text` otherwise */
+	readonly span: MarkupSpan;
+	/** left edge of the run, in the same coordinate space the line was measured in */
+	readonly x: number;
+	/** top edge of the run's line */
+	readonly y: number;
+	/** the measured width of this run */
+	readonly width: number;
+}
+
+export interface MarkupLayout {
+	/** measures a piece under its own style, the same function `layoutMarkupLines` was given */
+	readonly measure: MarkupMeasure;
+	/** the wrap width the lines were laid out against, used to align each shorter line within it */
+	readonly maxWidth: number;
+	/** distance between baselines */
+	readonly lineHeight: number;
+	/** flow direction; defaults to `'ltr'` */
+	readonly direction?: MarkupDirection;
+	/** line alignment; defaults to `'right'` in `rtl`, `'left'` otherwise */
+	readonly align?: MarkupAlign;
+}
+
+/**
+ * Positions already-laid-out lines into a flat list of placed runs, one per span, so a canvas
+ * backend draws each span as its own `Text2D` (or an image as its own sprite) at the reported
+ * `x`/`y`. This is the half `layoutMarkupLines` deliberately leaves out: it decides *which*
+ * spans share a line, this decides *where* on the line each one lands.
+ *
+ * Direction is what makes the two backends equivalent rather than merely identical in text: an
+ * `rtl` line places its first (logical) span at the right edge and flows left from it, while an
+ * `ltr` line flows right from the left edge, so the same spans read in the language's own order
+ * on either side. Alignment then moves the whole line within `maxWidth`, defaulting to the
+ * direction's natural edge (`'right'` for `rtl`, `'left'` for `ltr`). A line wider than
+ * `maxWidth` is not clipped - the same "a single long word still renders" rule
+ * `layoutMarkupLines` already keeps - it simply starts left of zero.
+ *
+ * @example
+ * ```ts
+ * import { layoutMarkupLines, parseMarkup, positionMarkupLines } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const spans = parseMarkup('Take <b>two</b> coins<img>coin.png</img>');
+ * const measure = (piece: { text: string; image?: string }) =>
+ * 	piece.image !== undefined ? 16 : piece.text.length * 8;
+ * const lines = layoutMarkupLines(spans, measure, 120);
+ * const runs = positionMarkupLines(lines, { measure, maxWidth: 120, lineHeight: 16 });
+ * console.log(runs.map((run) => run.span.image ?? run.span.text).join(''));
+ * ```
+ */
+export function positionMarkupLines(lines: readonly MarkupLine[], layout: MarkupLayout): PositionedMarkupSpan[] {
+	const direction = layout.direction ?? 'ltr';
+	const align = layout.align ?? (direction === 'rtl' ? 'right' : 'left');
+	const placed: PositionedMarkupSpan[] = [];
+
+	for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+		const line = lines[lineIndex];
+		const y = lineIndex * layout.lineHeight;
+		const widths = line.spans.map((span) => layout.measure(span));
+		const total = widths.reduce((sum, width) => sum + width, 0);
+		const startX =
+			align === 'left' ? 0 : align === 'right' ? layout.maxWidth - total : (layout.maxWidth - total) / 2;
+
+		let cursor = direction === 'rtl' ? startX + total : startX;
+		for (let index = 0; index < line.spans.length; index++) {
+			const width = widths[index];
+			const x = direction === 'rtl' ? cursor - width : cursor;
+			cursor = direction === 'rtl' ? cursor - width : cursor + width;
+			placed.push({ span: line.spans[index], x, y, width });
+		}
+	}
+
+	return placed;
 }
 
 /** escapes the five characters that would otherwise read as syntax */

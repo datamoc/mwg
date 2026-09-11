@@ -23,6 +23,57 @@ export interface ScoreSubject<T> {
 
 	readonly x: number;
 	readonly y: number;
+
+	/** its unit type, when the game's world has one (a Wesnoth `[unit] type=`) */
+	readonly type?: string;
+
+	/** its role/function, e.g. `leader` or `courier` */
+	readonly role?: string;
+
+	/** whether it can recruit, i.e. is a leader; a missing value reads as `false` */
+	readonly can_recruit?: boolean;
+
+	/** its own name, when it has one */
+	readonly name?: string;
+}
+
+/** What `subjectsWhere` selects on: the unit attributes a `ScoreSubject` may carry, each optional. */
+export interface ScoreSubjectFilter {
+	readonly side?: string;
+	readonly type?: string;
+	readonly role?: string;
+	readonly can_recruit?: boolean;
+	readonly name?: string;
+}
+
+/**
+ * The subjects a filter selects, matching only the attributes the filter names.
+ *
+ * This is how a mind finds "the enemy leader" without re-deriving it from ids, the gap a bare
+ * `ScoreSubject` left: `subjectsWhere(world, { side: 'red', can_recruit: true })`. `can_recruit`
+ * reads a missing value as `false`, so `{ can_recruit: false }` selects everyone who is not a
+ * leader, and `{ role: 'courier' }` selects a named function.
+ *
+ * @example
+ * ```ts
+ * import { subjectsWhere } from '@datamoc/mw_games/ai';
+ *
+ * const world = [
+ *   { id: 'hero', side: 'blue', x: 0, y: 0, role: 'leader', can_recruit: true },
+ *   { id: 'grunt', side: 'blue', x: 1, y: 0 },
+ * ];
+ * console.log(subjectsWhere(world, { can_recruit: true }).map((subject) => subject.id)); // ['hero']
+ * ```
+ */
+export function subjectsWhere<T>(world: readonly ScoreSubject<T>[], filter: ScoreSubjectFilter): ScoreSubject<T>[] {
+	return world.filter(
+		(subject) =>
+			(filter.side === undefined || subject.side === filter.side) &&
+			(filter.type === undefined || subject.type === filter.type) &&
+			(filter.role === undefined || subject.role === filter.role) &&
+			(filter.can_recruit === undefined || (subject.can_recruit ?? false) === filter.can_recruit) &&
+			(filter.name === undefined || subject.name === filter.name),
+	);
 }
 
 /**

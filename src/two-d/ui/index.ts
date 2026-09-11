@@ -7,6 +7,9 @@ export type { LabelOptions } from './Label.ts';
 export { RichLabel } from './RichLabel.ts';
 export type { RichLabelOptions } from './RichLabel.ts';
 
+export { MarkupText } from './MarkupText.ts';
+export type { MarkupTextOptions } from './MarkupText.ts';
+
 export { parseMarkdown, stripMarkdown, sliceSpans } from './markdown.ts';
 export type { MarkdownSpan } from './markdown.ts';
 export {
@@ -15,9 +18,19 @@ export {
 	markupAccessibilityText,
 	markupToHtml,
 	parseMarkup,
+	positionMarkupLines,
 	stripMarkup,
 } from './markup.ts';
-export type { MarkupLine, MarkupMeasure, MarkupOptions, MarkupSpan } from './markup.ts';
+export type {
+	MarkupAlign,
+	MarkupDirection,
+	MarkupLayout,
+	MarkupLine,
+	MarkupMeasure,
+	MarkupOptions,
+	MarkupSpan,
+	PositionedMarkupSpan,
+} from './markup.ts';
 
 export { startReveal, advanceReveal, completeReveal, revealComplete } from './reveal.ts';
 export type { RevealState } from './reveal.ts';

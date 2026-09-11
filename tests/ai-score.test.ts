@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { personalScoreView, scoreWith, sideScoreView, type ScoreSubject } from '../src/ai/score.ts';
+import { personalScoreView, scoreWith, sideScoreView, subjectsWhere, type ScoreSubject } from '../src/ai/score.ts';
 
 /**
  * The score views are arithmetic over what a mind can see, so they are checked here as arithmetic:
@@ -123,4 +123,21 @@ test('reading a view changes nothing it was given', () => {
 		personalScoreView(hero, world, scoreOf, reachOf(2)),
 		personalScoreView(hero, world, scoreOf, reachOf(2)),
 	);
+});
+
+test('subjectsWhere selects the units a filter names, on any of their attributes', () => {
+	const party: ScoreSubject<Unit>[] = [
+		{ id: 'hero', side: 'blue', x: 0, y: 0, type: 'Swordsman', role: 'leader', can_recruit: true, name: 'Kalenz' },
+		{ id: 'courier', side: 'blue', x: 1, y: 0, type: 'Scout', role: 'courier' },
+		{ id: 'warlord', side: 'red', x: 5, y: 0, type: 'Warlord', can_recruit: true },
+	];
+	const ids = (filter: Parameters<typeof subjectsWhere<Unit>>[1]) =>
+		subjectsWhere(party, filter).map((unit) => unit.id);
+
+	assert.deepEqual(ids({ can_recruit: true }), ['hero', 'warlord'], 'leaders, on either side');
+	assert.deepEqual(ids({ can_recruit: false }), ['courier'], 'a missing flag reads as a non-leader');
+	assert.deepEqual(ids({ side: 'blue', role: 'courier' }), ['courier']);
+	assert.deepEqual(ids({ name: 'Kalenz' }), ['hero']);
+	assert.deepEqual(ids({ type: 'Scout' }), ['courier']);
+	assert.deepEqual(ids({}), ['hero', 'courier', 'warlord'], 'no attribute named selects everyone');
 });

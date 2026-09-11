@@ -31,7 +31,11 @@ export function integerAttribute(node: MwlCompiledNode, name: string, fallback?:
 }
 
 export function booleanAttribute(node: MwlCompiledNode, name: string): boolean | undefined {
-	const value = node.attributes[name];
+	return booleanValue(node.attributes[name]);
+}
+
+/** a raw MWL boolean value (`yes`/`true`, `no`/`false`), or `undefined` when absent */
+export function booleanValue(value: string | undefined): boolean | undefined {
 	return value === undefined ? undefined : value === 'true' || value === 'yes';
 }
 

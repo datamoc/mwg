@@ -28,24 +28,16 @@ where those live.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** the Wesnoth port's gaps, items 247-273, added
-2026-09-11 after that port's own analysis, with the structural blockers first (247, 248, 254,
-255, 257, 258, 261, 262, 266, 268): campaign chaining and `[endlevel]`, per-frame animation timing,
-the image modifiers, `[terrain_graphics]`, typographic markup, the missing widgets and text input,
-a Wesnoth-compatible RNG, and shared team vision. The score-driven AI items 274-276, asked for
-directly the same day, landed first: they are self-contained where those blockers are not, and
-the order here is priority, not number. Items 277-282 are the framework's side of two other lists:
-the `MwlWorld` side-identity cleanup found while building carry-over, and the five proposals the
-Pixel Dungeon port keeps in its own roadmap section 11A, each re-checked against the code here
-before being written down; 283-286 came the same way, found while landing 252 and 259 or asked for
-directly (map view rotation). Everything else numbered has shipped: the data-extraction
-cluster 205-213 (whose items say what landed), the former priority cluster (28, 30, 41, 45), the
-verification and accessibility tail (192-197), the SVG and benchmark follow-up (198) and the
-reduced-motion cluster (199-202). Numbers are never reassigned once given - the list is an
-append-only history, including for what is not done yet - so priority order lives in prose rather
-than in the list's own sequence. What remains before 1.0 is recorded in the [1.0 exit
-checklist](#10-exit-checklist) at the end of this file, and the deliberate non-decisions (which
-reference title, if any, a future genre pick should study) in
+**Everything numbered has shipped.** The Wesnoth-port cluster (247-273) and the follow-ups it
+pulled in (274-276 score-driven AI, 277-282 the side-identity cleanup and the Pixel Dungeon port's
+proposals, 283-294) all landed in 2026-09; the last open pieces were item 258's canvas backend,
+drawn image sprites and RTL sample. Earlier clusters - the data-extraction set 205-213, the former
+priority cluster (28, 30, 41, 45), the verification and accessibility tail (192-197), the SVG and
+benchmark follow-up (198) and the reduced-motion cluster (199-202) - had already shipped. Numbers
+are never reassigned once given - the list is an append-only history, including for what was open
+at the time - so priority order lives in prose rather than in the list's own sequence. What remains
+before 1.0 is recorded in the [1.0 exit checklist](#10-exit-checklist) at the end of this file, and
+the deliberate non-decisions (which reference title, if any, a future genre pick should study) in
 [Parked decisions](#parked-decisions) rather than left as phantom open items.
 
 17. ~~`mwg/render` + `mwg/roguelike` - hexagonal tile maps, and FOV/pathfinding over a hex
@@ -3564,12 +3556,16 @@ it.
      covers every direction a symmetric transition needs) and a `probability` that breaks a tie
      among rules matching a cell at equal specificity - specificity (most conditions) decides the
      match first, the same precedence a hand-authored rule set expects. Probabilistic choice runs
-     through `core.Generator`, so a seeded generator makes the result reproducible. Deliberately
-     out of scope here, and still open: actually drawing the resolved placements through
-     `TileMap` or a custom sprite pass - this function returns plain data (`TerrainPlacement[]`)
-     and never touches a renderer, matching the shape `autotileFrames` already uses. Twelve tests
-     in `tests/terrain-graphics.test.ts`, including a probability distribution checked over many
-     trials and a seeded reproducibility check.
+     through `core.Generator`, so a seeded generator makes the result reproducible. Drawing them
+     is `TerrainGraphicsLayer`: one `Sprite2D` per placement, added in `layer` order (a stable
+     sort, so the rule pass's own row-major walk survives within a layer) at the pixel position
+     the caller's own `project` callback reports, images resolved through the asset resolver.
+     The rule pass itself stays renderer-free and returns plain data (`TerrainPlacement[]`), the
+     same split `autotileFrames` already uses; the layer is the renderer half that used to be
+     left to the caller. Twelve tests in `tests/terrain-graphics.test.ts`, including a probability
+     distribution checked over many trials and a seeded reproducibility check, and six in
+     `tests/terrain-graphics-layer.test.ts` for placement, layer order, stable ordering and
+     replacement.
 258. ~~[High] Typographic markup in text (Ne correspond pas). **The contract has landed; the
      acceptance below has not.** `MarkupSpan`, `parseMarkup`, `stripMarkup`, `markupToHtml` and
      `escapeHtml` (`src/two-d/ui/markup.ts`, twelve tests in `tests/markup.test.ts`, exported from
@@ -3596,12 +3592,16 @@ it.
      `Text2D`-per-run pass and an `HTMLText` pass render "equivalent runs" from one fixture,
      checked directly in `tests/markup.test.ts`. `MarkupSpan[]` itself is the "single documented
      `MarkupText` value" the acceptance asked for - already exported, already the shared input to
-     every function here - rather than a new wrapper type over the same data. Still open: no
-     canvas backend actually exists yet to be the other half of the "equivalent runs" fixture (the
-     test compares `layoutMarkupLines`'s output against `markupToHtml`'s, not two real renderers),
-     images are still not wired into `RichLabel` as drawn sprites (a caller positions one itself at
-     the offset `layoutMarkupLines` reports), and no RTL sample is covered by a test yet. Ten new
-     tests, twenty in the file total.
+     every function here - rather than a new wrapper type over the same data. The three pieces the
+     acceptance named as still open then landed. `positionMarkupLines` places `layoutMarkupLines`'s
+     lines into `PositionedMarkupSpan` runs under a `MarkupLayout`'s `direction`/`align`, so an `rtl`
+     line flows right to left and alignment defaults to the direction's own edge - the other half of
+     the "equivalent runs" fixture, now checked run by run in the test rather than only as text.
+     `MarkupText` is the canvas backend itself, the counterpart to `RichLabel`'s HTML text: one
+     `Text2D` per styled run and one `Sprite2D` per `<img>` span resolved through the asset resolver,
+     so an image is drawn instead of a caller positioning it itself at a `layoutMarkupLines` offset.
+     And an RTL sample, a Hebrew sentence with inline emphasis, is covered by a test. Twenty-seven
+     tests in the file.
 259. ~~[Medium] Hex projection options (Ne correspond pas). `src/core/Hex.ts` fixes flat-top odd-q
      with no orientation or offset-parity option - it says so itself about pointy-top - and
      `TileMap`/`TiledMap` refuse hexagonal orientation, so a Wesnoth map cannot be projected
@@ -4148,6 +4148,18 @@ only for the square grid they are easiest to reason about.
      `pixi-interop.ts`'s own doc comment so the next reader does not have to rediscover it. The
      footgun is real for the port's own slimmed bundle, which is where it stays their problem
      to solve, not `mwg`'s.
+294. ~~[High] Unit identity the AI can act on. A port reported the AI could not use a unit's type,
+     function (a leader, for example) or name: MWL units carried only `type`/`side`, and
+     `unitMatchesFilter` matched neither a unit's name nor its role, so "attack the enemy leader"
+     and "hold the named courier" had nothing to key on - the `[filter]` schema already allowed
+     `can_recruit`, but the runtime ignored it.~~ Landed: `MwlWorld.units` entries carry `name`,
+     `role`/function and `can_recruit` (`[unit]` sets them, a side's own leader is `can_recruit`,
+     `[role]` stamps the role onto the units it matches, and `[store_unit]`/the save keep them),
+     and `unitMatchesFilter` reads all three - which also wires up the `can_recruit` the filter
+     schema already allowed. On the AI side, `ai.ScoreSubject` and `ai.HeuristicCandidate` carry
+     `type`/`role`/`can_recruit`/`name`, and `ai.subjectsWhere`/`ScoreSubjectFilter` select a world
+     on any of them, so `{ side: 'red', can_recruit: true }` finds the enemy leader without
+     re-deriving it from ids. Three new tests, plus two extended assertions.
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list

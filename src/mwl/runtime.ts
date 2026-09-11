@@ -12,7 +12,7 @@ import type {
 import { decodeSave, encodeSave, type MwlPersistenceOptions } from './persistence.ts';
 import { evaluateCondition } from './conditions.ts';
 import { evaluateExpression } from './expression.ts';
-import { booleanAttribute, integerAttribute, numberAttribute, requiredAttribute } from './utils.ts';
+import { booleanAttribute, booleanValue, integerAttribute, numberAttribute, requiredAttribute } from './utils.ts';
 import { endLevelCarryover } from './carryover.ts';
 import type { MwlCarryover, MwlSideRef } from './carryover.ts';
 
@@ -41,7 +41,21 @@ export interface MwlWorld {
 	readonly variables: Record<string, MwlValue>;
 	readonly units: Record<
 		string,
-		{ hp: number; x: number; y: number; alive: boolean; type?: string; side?: string; moves?: number }
+		{
+			hp: number;
+			x: number;
+			y: number;
+			alive: boolean;
+			type?: string;
+			side?: string;
+			moves?: number;
+			/** the unit's own name, as `[unit] name=` wrote it */
+			name?: string;
+			/** the unit's role/function: `[unit] role=`, or stamped from `[role]` */
+			role?: string;
+			/** whether the unit can recruit, i.e. is a leader: `[unit] can_recruit=`, or a side's own leader */
+			can_recruit?: boolean;
+		}
 	>;
 	readonly sides: Record<
 		string,
@@ -586,9 +600,16 @@ export class MwlRuntime {
 		for (const role of this.topLevelNodes('role')) {
 			const name = role.attributes.role ?? role.attributes.name;
 			if (name === undefined) continue;
-			(this.world.roles ??= {})[name] = Object.entries(this.world.units)
-				.filter(([id, unit]) => unit.alive && unitMatchesFilter(unit, id, role.attributes))
-				.map(([id]) => id);
+			//`role`/`name` on this tag name the role being assigned, not a unit to match, so the
+			//filter must not read either back as one - the same double duty `[store_unit]`'s
+			//`variable`/`name` has
+			const filter = withoutAttributes(role.attributes, 'role', 'name');
+			const matched = Object.entries(this.world.units).filter(
+				([id, unit]) => unit.alive && unitMatchesFilter(unit, id, filter),
+			);
+			//a unit learns the role it was assigned, so a later `[filter] role=courier` finds it
+			for (const [, unit] of matched) unit.role = name;
+			(this.world.roles ??= {})[name] = matched.map(([id]) => id);
 		}
 	}
 
@@ -622,6 +643,10 @@ export class MwlRuntime {
 				if (stats) entry.moves = stats.movement;
 			}
 			if (unit.attributes.side !== undefined) entry.side = unit.attributes.side;
+			if (unit.attributes.name !== undefined) entry.name = unit.attributes.name;
+			if (unit.attributes.role !== undefined) entry.role = unit.attributes.role;
+			const can_recruit = booleanAttribute(unit, 'can_recruit');
+			if (can_recruit !== undefined) entry.can_recruit = can_recruit;
 			this.world.units[id] = entry;
 		}
 	}
@@ -646,6 +671,7 @@ export class MwlRuntime {
 					type: leader,
 					side: sideId,
 					moves: stats?.movement ?? 0,
+					can_recruit: true,
 				};
 			}
 		}
@@ -699,7 +725,7 @@ export class MwlRuntime {
 				const variable = node.attributes.variable ?? node.attributes.name ?? required(node, 'variable');
 				this.setVariableAt(
 					variable,
-					this.matchingUnits(node).map(([id, unit]) => ({ id, ...unitSnapshot(unit) })),
+					this.matchingUnits(node, ['variable', 'name']).map(([id, unit]) => ({ id, ...unitSnapshot(unit) })),
 				);
 				break;
 			}
@@ -1004,9 +1030,14 @@ export class MwlRuntime {
 	 * own attributes, read by the same `unitMatchesFilter` an event filter and `[kill]` use. An
 	 * empty filter matches every live unit, the rule `[kill]` already documents.
 	 */
-	private matchingUnits(node: MwlCompiledNode): Array<[string, MwlWorld['units'][string]]> {
+	private matchingUnits(
+		node: MwlCompiledNode,
+		exclude: readonly string[] = [],
+	): Array<[string, MwlWorld['units'][string]]> {
 		const filter = node.children.find((child) => child.tag === 'filter');
-		const attributes = filter?.attributes ?? node.attributes;
+		//a `[filter]` child is a real unit filter and keeps every attribute; the node's own
+		//attributes are the fallback, minus whatever they mean to this command instead of a unit
+		const attributes = filter ? filter.attributes : withoutAttributes(node.attributes, ...exclude);
 		return Object.entries(this.world.units).filter(
 			([id, unit]) => unit.alive && unitMatchesFilter(unit, id, attributes),
 		);
@@ -1036,6 +1067,9 @@ export class MwlRuntime {
 		const side = placement.side ?? (typeof entry.side === 'string' ? entry.side : undefined);
 		if (side !== undefined) unit.side = side;
 		if (typeof entry.moves === 'number') unit.moves = entry.moves;
+		if (typeof entry.name === 'string') unit.name = entry.name;
+		if (typeof entry.role === 'string') unit.role = entry.role;
+		if (typeof entry.can_recruit === 'boolean') unit.can_recruit = entry.can_recruit;
 		this.world.units[id] = unit;
 	}
 
@@ -1425,6 +1459,9 @@ function unitSnapshot(unit: MwlWorld['units'][string]): Record<string, MwlValue>
 	if (unit.type !== undefined) snapshot.type = unit.type;
 	if (unit.side !== undefined) snapshot.side = unit.side;
 	if (unit.moves !== undefined) snapshot.moves = unit.moves;
+	if (unit.name !== undefined) snapshot.name = unit.name;
+	if (unit.role !== undefined) snapshot.role = unit.role;
+	if (unit.can_recruit !== undefined) snapshot.can_recruit = unit.can_recruit;
 	return snapshot;
 }
 
@@ -1436,7 +1473,12 @@ function applyUnitChanges(unit: MwlWorld['units'][string], changes: Readonly<Rec
 	if (moves !== undefined) unit.moves = moves;
 	if (changes.type !== undefined) unit.type = changes.type;
 	if (changes.side !== undefined) unit.side = changes.side;
-	if (changes.alive !== undefined) unit.alive = changes.alive === 'yes' || changes.alive === 'true';
+	const alive = booleanValue(changes.alive);
+	if (alive !== undefined) unit.alive = alive;
+	if (changes.name !== undefined) unit.name = changes.name;
+	if (changes.role !== undefined) unit.role = changes.role;
+	const canRecruit = booleanValue(changes.can_recruit);
+	if (canRecruit !== undefined) unit.can_recruit = canRecruit;
 }
 
 function finiteNumber(value: string | undefined): number | undefined {
@@ -1497,11 +1539,21 @@ function variableMatches(
 
 /**
  * One alive unit against `filter`/`have_unit` attributes: side, type (with
- * comma-list `not_type` exclusion), world key (`unit`, or `id` on
- * `have_unit`), and coordinates all have to match when present.
+ * comma-list `not_type` exclusion), the unit's own name and role, whether it
+ * can recruit, world key (`unit`, or `id` on `have_unit`), and coordinates all
+ * have to match when present.
  */
 function unitMatchesFilter(
-	unit: { alive: boolean; type?: string; side?: string; x: number; y: number },
+	unit: {
+		alive: boolean;
+		type?: string;
+		side?: string;
+		x: number;
+		y: number;
+		name?: string;
+		role?: string;
+		can_recruit?: boolean;
+	},
 	id: string,
 	attributes: Readonly<Record<string, string>>,
 ): boolean {
@@ -1509,15 +1561,30 @@ function unitMatchesFilter(
 		.split(',')
 		.map((entry) => entry.trim())
 		.filter(Boolean);
+	const wantedCanRecruit = booleanValue(attributes.can_recruit);
 	const key = attributes.unit ?? attributes.id;
 	return (
 		(key === undefined || id === key) &&
 		(attributes.side === undefined || unit.side === attributes.side) &&
 		(attributes.type === undefined || unit.type === attributes.type) &&
 		(excluded.length === 0 || !excluded.includes(unit.type ?? '')) &&
+		(attributes.name === undefined || unit.name === attributes.name) &&
+		(attributes.role === undefined || unit.role === attributes.role) &&
+		(wantedCanRecruit === undefined || (unit.can_recruit ?? false) === wantedCanRecruit) &&
 		(attributes.x === undefined || unit.x === Number(attributes.x)) &&
 		(attributes.y === undefined || unit.y === Number(attributes.y))
 	);
+}
+
+/** a copy of `attributes` without the given keys, for a command whose own attribute names are not a unit filter */
+function withoutAttributes(
+	attributes: Readonly<Record<string, string>>,
+	...excluded: readonly string[]
+): Record<string, string> {
+	if (excluded.length === 0) return { ...attributes };
+	const copy = { ...attributes };
+	for (const key of excluded) delete copy[key];
+	return copy;
 }
 
 function sameValue(value: MwlValue | undefined, expected: string | number | boolean | undefined): boolean {

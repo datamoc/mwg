@@ -240,6 +240,14 @@ export interface HeuristicCandidate<A = unknown> {
 	 * `distance` is special: with a `keep_away` aspect it is penalised by `keepAwayScore`.
 	 */
 	factors?: Readonly<Record<string, number>>;
+	/** the acting unit's type, when the candidate carries one */
+	type?: string;
+	/** the acting unit's role/function, e.g. `leader` or `courier` */
+	role?: string;
+	/** whether the acting unit can recruit */
+	can_recruit?: boolean;
+	/** the acting unit's own name */
+	name?: string;
 }
 
 export interface HeuristicContext {

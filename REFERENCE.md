@@ -309,8 +309,12 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   express: flag conditions at arbitrary offsets, one rule placing more than one image (so a
   piece bigger than one cell is the rule's own data, not something `TileMap` has to hold),
   `rotations` (`squareRotate`'s 4 exact steps or `hexRotate`'s 6) and `probability` breaking a
-  tie among rules matching at equal specificity. Returns plain placement data; drawing it
-  through a renderer is the caller's own pass.
+  tie among rules matching at equal specificity. Returns plain placement data.
+- `TerrainGraphicsLayer` over `TerrainGraphicsLayerOptions` - the renderer for that data: one
+  `Sprite2D` per placement, added in `layer` order (a stable sort, so the rule pass's own
+  row-major walk survives within a layer), each resolved through the asset resolver at the pixel
+  position the caller's `project` callback reports. `setPlacements` redraws; z-order against the
+  rest of the scene is the caller's, as it is for `Halo`.
 - `inspectGraphicsCapabilities`/`detectWebGpu`/`RENDERING_DECISIONS` - checks
   WebGL/WebGPU/WGSL support and records this project's own rendering-backend decisions.
 - `Container2D`/`Texture2D`/`Rectangle2D`/`Rect`/`TextureRegion`/`rectOf` - the renderer
@@ -345,9 +349,16 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   `stripMarkup` keeps for round-tripping instead). `layoutMarkupLines` wraps already-parsed spans
   word by word against a caller-supplied `MarkupMeasure`, each word measured under its own
   span's style - wrapping computed *after* styling, so a bold or larger run wraps where its own
-  wider glyphs actually land - and is backend-neutral: the same spans, `measure` and `maxWidth`
-  decide the same line breaks whether a caller then draws them through `HTMLText` or a canvas
-  `Text2D` pass.
+  wider glyphs actually land - and `positionMarkupLines` places those already-laid-out lines into
+  `PositionedMarkupSpan` runs (one `x`/`y` per span) under a `MarkupLayout`'s `direction`/`align`,
+  so an `rtl` line flows right to left and alignment defaults to the direction's own edge. Both
+  are backend-neutral: the same spans, `measure` and `maxWidth` decide the same line breaks and
+  the same runs whether a caller then draws them through `HTMLText` or a canvas `Text2D` pass.
+- `MarkupText`/`MarkupTextOptions` - the canvas backend for that contract, the counterpart to
+  `RichLabel`'s HTML text: one `Text2D` per styled run and one `Sprite2D` per `<img>` span,
+  resolved through the asset resolver, so an image is drawn rather than a caller positioning it
+  itself at a `layoutMarkupLines` offset. It reads `direction` from the theme and takes
+  `maxWidth`/`lineHeight`/`align`/`resolveImage`/`variables`/`resolution` options.
 - `RichLabel`/`parseMarkdown`/`stripMarkdown`/`sliceSpans` - basic inline markdown (`**bold**`,
   `*italic*`, combined `***both***`, backslash escapes) through Pixi `HTMLText`, which is
   what makes mixed styles inside one string possible at all. `parseMarkdown` is pure
@@ -1021,13 +1032,17 @@ the answer, so deferred follow-up commands belong in the selected choice event.
 The WML action vocabulary (item 250) is on the same event surface. `fire_event` runs another event
 by id. `store_unit` writes matching units into a world variable, `unstore_unit` and `recall` write
 them back (recall can move one to a chosen hex and side), `modify_unit` changes what its `[set]`
-names and `heal_unit` adds `amount` (or sets `hp`). `set_terrain` changes one map cell,
-`capture_village` records ownership in `MwlWorld.villages`, and `clear_shroud` records the hexes a
-side has uncovered in `MwlWorld.clearedShroud`; the fog itself stays a game layer. At scenario
-level, `[role]` fills `MwlWorld.roles`, `[object]` lands in `MwlWorld.objects`, and `[story]` in
-`MwlWorld.story` as data (rendering a story screen is its own item), all kept in the save.
-`[item]` is deliberately not among them: the tag already means an inventory item definition here,
-so WML's map-placement shape would have collided with it.
+names and `heal_unit` adds `amount` (or sets `hp`). A unit carries its own `name`, `role`/function
+and `can_recruit` leader flag: `[unit]` sets them, a side's own leader is `can_recruit`, and
+`unitMatchesFilter` reads all three, so `[filter] role=courier`, `name=Kalenz` and
+`can_recruit=yes` select on them (`[store_unit]` and the save keep them too). `set_terrain` changes
+one map cell, `capture_village` records ownership in `MwlWorld.villages`, and `clear_shroud`
+records the hexes a side has uncovered in `MwlWorld.clearedShroud`; the fog itself stays a game
+layer. At scenario level, `[role]` fills `MwlWorld.roles` and stamps the role onto the units it
+matches, `[object]` lands in `MwlWorld.objects`, and `[story]` in `MwlWorld.story` as data
+(rendering a story screen is its own item), all kept in the save. `[item]` is deliberately not
+among them: the tag already means an inventory item definition here, so WML's map-placement shape
+would have collided with it.
 
 Typical build-time usage:
 
@@ -1062,7 +1077,10 @@ actions, serialisable state, diagnostics and budgets.
   view is assembled (own, allies and enemies kept apart, plus a `seen` count), and the mind owns
   what it cares about: a personality is weights, so a selfish scout and a loyal one are content
   rather than two AI implementations. Both scopes read through the same code and differ only in
-  the visibility set they are handed, a unit's own sight or `FactionFog.sees(side)`.
+  the visibility set they are handed, a unit's own sight or `FactionFog.sees(side)`. `ScoreSubject`
+  also carries an optional `type`, `role`/function, `can_recruit` leader flag and `name`, and
+  `subjectsWhere`/`ScoreSubjectFilter` select a world on any of them, so a mind finds "the enemy
+  leader" (`{ side: 'red', can_recruit: true }`) without re-deriving it from ids.
 
 - The heuristic AI (item 269): `Aspects`/`AspectValues`/`AspectValue` - the named tuning knobs
   (`aggression`, `caution`, `keep_away`, `recruitment_pattern`, ...) with typed readers and no
@@ -1070,9 +1088,10 @@ actions, serialisable state, diagnostics and budgets.
   aspect overrides on a base set; `Goals`/`Goal`/`GoalKind` - per-unit orders a stage's `weigh`
   reads; `RecruitmentPattern` - a side's recruit order, cycled, with a fallback. `HeuristicAI`
   runs candidate actions through `HeuristicStage`s in order, the first whose `when` passes scoring
-  every `HeuristicCandidate` and taking the best (earlier candidate on a tie). `defaultWeigh` is
-  each factor times the aspect of the same name with `keepAwayScore` for a candidate's `distance`;
-  `goalScore` is what a custom `weigh` adds for a goal.
+  every `HeuristicCandidate` and taking the best (earlier candidate on a tie); a candidate may carry
+  the acting unit's own `type`/`role`/`can_recruit`/`name` for a custom `weigh` to read.
+  `defaultWeigh` is each factor times the aspect of the same name with `keepAwayScore` for a
+  candidate's `distance`; `goalScore` is what a custom `weigh` adds for a goal.
 - `AIDecision`/`AIDecisionInput`/`AIAction` - the shared contract for perception, explicit
   action objects, status (`action`, `idle`, `cancelled`, or `budget-exceeded`), emitted
   diagnostics and state snapshots.

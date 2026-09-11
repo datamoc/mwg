@@ -10,7 +10,7 @@ export type {
 	LuaSearchValueAdapter,
 } from './search.ts';
 
-export { personalScoreView, scoreWith, sideScoreView } from './score.ts';
+export { personalScoreView, scoreWith, sideScoreView, subjectsWhere } from './score.ts';
 export {
 	Aspects,
 	Difficulty,
@@ -32,7 +32,7 @@ export type {
 	HeuristicDecision,
 	HeuristicStage,
 } from './Heuristics.ts';
-export type { ScorePersonality, ScoreSubject, ScoreView } from './score.ts';
+export type { ScorePersonality, ScoreSubject, ScoreSubjectFilter, ScoreView } from './score.ts';
 
 /** JSON-shaped values are the only values that cross the AI boundary. */
 export type AIValue = null | boolean | number | string | AIValue[] | { readonly [key: string]: AIValue };

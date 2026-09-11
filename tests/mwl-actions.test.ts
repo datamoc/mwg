@@ -153,10 +153,11 @@ test('clear_shroud records the hexes a side has uncovered', () => {
 	assert.ok(cleared.includes('1,1') && cleared.includes('2,2') && cleared.includes('3,3'));
 });
 
-test('a scenario-level role names the units it matches', () => {
+test('a scenario-level role names the units it matches, and stamps the role on them', () => {
 	const runtime = runtimeFor('[role]\nrole=courier\ntype=Swordsman\n[/role]');
 
 	assert.deepEqual(runtime.world.roles, { courier: ['hero'] });
+	assert.equal(runtime.world.units.hero.role, 'courier', 'the matched unit learns the role it was given');
 });
 
 test('a scenario-level object and story beat are kept as data', () => {
@@ -195,4 +196,88 @@ test('village ownership and scenario data survive a save and restore', () => {
 
 	assert.deepEqual(restored.world.villages, { '2,1': { x: 2, y: 1, side: '1' } });
 	assert.deepEqual(restored.world.roles, { guard: ['grunt'] });
+});
+
+/** one named leader (name/role/can_recruit) and one plain unit, for the attribute tests below */
+const namedSource = (body: string) => `[game]
+[side]
+id=1
+controller=human
+[/side]
+[side]
+id=2
+controller=ai
+[/side]
+[unit]
+id=hero
+hp=10
+x=1
+y=1
+side=1
+type=Swordsman
+name=Kalenz
+role=courier
+can_recruit=yes
+[/unit]
+[unit]
+id=grunt
+hp=6
+x=3
+y=3
+side=2
+type=Grunt
+[/unit]
+[map]
+id=m
+file=m.map
+[/map]
+${body}
+[/game]`;
+
+test('a unit carries its own name, role and leader flag, and a filter selects by all three', () => {
+	const runtime = new MwlRuntime(
+		compile(
+			namedSource(
+				event(
+					'[store_unit]\nvariable=leaders\n[filter]\ncan_recruit=yes\nrole=courier\nname=Kalenz\n[/filter]\n[/store_unit]\n[store_unit]\nvariable=others\n[filter]\ncan_recruit=no\n[/filter]\n[/store_unit]',
+				),
+			),
+		),
+		{ resolveMap: () => MAP },
+	);
+	runtime.run('go');
+
+	assert.equal(runtime.world.units.hero.name, 'Kalenz');
+	assert.equal(runtime.world.units.hero.role, 'courier');
+	assert.equal(runtime.world.units.hero.can_recruit, true);
+	const ids = (variable: string) =>
+		(runtime.world.variables[variable] as Array<{ id: string }>).map((unit) => unit.id);
+	assert.deepEqual(ids('leaders'), ['hero'], 'only the unit matching every named attribute');
+	assert.deepEqual(ids('others'), ['grunt'], 'can_recruit=no reads a missing flag as a non-leader');
+});
+
+test('store_unit keeps a unit s name, role and leader flag, and unstore_unit puts them back', () => {
+	const runtime = new MwlRuntime(
+		compile(
+			namedSource(
+				event(
+					'[store_unit]\nvariable=party\n[filter]\nunit=hero\n[/filter]\n[/store_unit]\n[kill]\nunit=hero\n[/kill]\n[unstore_unit]\nvariable=party\n[/unstore_unit]',
+				),
+			),
+		),
+		{ resolveMap: () => MAP },
+	);
+	runtime.run('go');
+
+	assert.deepEqual(runtime.world.units.hero, {
+		hp: 10,
+		x: 1,
+		y: 1,
+		alive: true,
+		type: 'Swordsman',
+		side: '1',
+		name: 'Kalenz',
+		role: 'courier',
+		can_recruit: true,
+	});
 });

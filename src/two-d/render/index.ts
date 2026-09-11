@@ -18,7 +18,13 @@ export {
 	parsePaletteLists,
 	rotatePixels,
 } from './ImageModifiers.ts';
-export type { ChannelSource, ImageModifier, ImageTextureProbe, ParsedImagePath, RotatedPixels } from './ImageModifiers.ts';
+export type {
+	ChannelSource,
+	ImageModifier,
+	ImageTextureProbe,
+	ParsedImagePath,
+	RotatedPixels,
+} from './ImageModifiers.ts';
 export { AnimatedSprite, Animation } from './AnimatedSprite.ts';
 export type { AnimationFrame, AnimationFrameInput, AnimationOptions } from './AnimatedSprite.ts';
 export { SpriteSheet } from './SpriteSheet.ts';
@@ -68,6 +74,9 @@ export type {
 	TerrainRotate,
 	TerrainRule,
 } from './TerrainGraphics.ts';
+
+export { TerrainGraphicsLayer } from './TerrainGraphicsLayer.ts';
+export type { TerrainGraphicsLayerOptions } from './TerrainGraphicsLayer.ts';
 
 export { inspectGraphicsCapabilities, detectWebGpu, RENDERING_DECISIONS } from './Capabilities.ts';
 export type {

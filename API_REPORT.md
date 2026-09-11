@@ -1175,6 +1175,22 @@ build instead.
     export declare function markupAccessibilityText(spans: readonly MarkupSpan[], options?: {
         describeImage?: (path: string) => string;
 
+### `MarkupText` (class)
+
+    export declare class MarkupText extends Container {
+        private readonly opts;
+        private readonly themeListener;
+        constructor(options?: MarkupTextOptions);
+
+        setText(value: string): void;
+
+        private rebuild;
+        private measurePiece;
+        private textFor;
+        private spriteFor;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
 ### `markupToHtml` (function)
 
     export declare function markupToHtml(spans: readonly MarkupSpan[]): string;
@@ -1491,6 +1507,10 @@ build instead.
 
         reset(): void;
     }
+
+### `positionMarkupLines` (function)
+
+    export declare function positionMarkupLines(lines: readonly MarkupLine[], layout: MarkupLayout): PositionedMarkupSpan[];
 
 ### `prefersReducedMotion` (function)
 
@@ -2389,6 +2409,18 @@ build instead.
         setConsent(granted: boolean): void;
 
         send(event: TelemetryEvent): Promise<TelemetryResponse | null>;
+    }
+
+### `TerrainGraphicsLayer` (class)
+
+    export declare class TerrainGraphicsLayer extends Node2D {
+        private placements;
+        private readonly project;
+        private readonly resolveImage;
+        constructor(options: TerrainGraphicsLayerOptions);
+
+        setPlacements(placements: readonly TerrainPlacement[]): void;
+        private rebuild;
     }
 
 ### `Text2D` (class)
@@ -3523,6 +3555,10 @@ build instead.
 ### `sideScoreView` (function)
 
     export declare function sideScoreView<T>(side: string, world: readonly ScoreSubject<T>[], scoreOf: (id: T) => number, sees: (x: number, y: number) => boolean): ScoreView;
+
+### `subjectsWhere` (function)
+
+    export declare function subjectsWhere<T>(world: readonly ScoreSubject<T>[], filter: ScoreSubjectFilter): ScoreSubject<T>[];
 
 ## `./ai/lua`
 
@@ -7427,6 +7463,22 @@ build instead.
     export declare function markupAccessibilityText(spans: readonly MarkupSpan[], options?: {
         describeImage?: (path: string) => string;
 
+### `MarkupText` (class)
+
+    export declare class MarkupText extends Container {
+        private readonly opts;
+        private readonly themeListener;
+        constructor(options?: MarkupTextOptions);
+
+        setText(value: string): void;
+
+        private rebuild;
+        private measurePiece;
+        private textFor;
+        private spriteFor;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
 ### `markupToHtml` (function)
 
     export declare function markupToHtml(spans: readonly MarkupSpan[]): string;
@@ -7625,6 +7677,10 @@ build instead.
 
         clear(): void;
     }
+
+### `positionMarkupLines` (function)
+
+    export declare function positionMarkupLines(lines: readonly MarkupLine[], layout: MarkupLayout): PositionedMarkupSpan[];
 
 ### `Projectile` (class)
 
@@ -8184,6 +8240,18 @@ build instead.
 
         private recompute;
         private emit;
+    }
+
+### `TerrainGraphicsLayer` (class)
+
+    export declare class TerrainGraphicsLayer extends Node2D {
+        private placements;
+        private readonly project;
+        private readonly resolveImage;
+        constructor(options: TerrainGraphicsLayerOptions);
+
+        setPlacements(placements: readonly TerrainPlacement[]): void;
+        private rebuild;
     }
 
 ### `Text2D` (class)
@@ -9201,6 +9269,18 @@ build instead.
         update(dt: number): void;
     }
 
+### `TerrainGraphicsLayer` (class)
+
+    export declare class TerrainGraphicsLayer extends Node2D {
+        private placements;
+        private readonly project;
+        private readonly resolveImage;
+        constructor(options: TerrainGraphicsLayerOptions);
+
+        setPlacements(placements: readonly TerrainPlacement[]): void;
+        private rebuild;
+    }
+
 ### `Text2D` (class)
 
     export declare class Text2D extends Text {
@@ -9914,6 +9994,22 @@ build instead.
     export declare function markupAccessibilityText(spans: readonly MarkupSpan[], options?: {
         describeImage?: (path: string) => string;
 
+### `MarkupText` (class)
+
+    export declare class MarkupText extends Container {
+        private readonly opts;
+        private readonly themeListener;
+        constructor(options?: MarkupTextOptions);
+
+        setText(value: string): void;
+
+        private rebuild;
+        private measurePiece;
+        private textFor;
+        private spriteFor;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
 ### `markupToHtml` (function)
 
     export declare function markupToHtml(spans: readonly MarkupSpan[]): string;
@@ -9993,6 +10089,10 @@ build instead.
 ### `parseMarkup` (function)
 
     export declare function parseMarkup(source: string, options?: MarkupOptions): MarkupSpan[];
+
+### `positionMarkupLines` (function)
+
+    export declare function positionMarkupLines(lines: readonly MarkupLine[], layout: MarkupLayout): PositionedMarkupSpan[];
 
 ### `RebindScreen` (class)
 

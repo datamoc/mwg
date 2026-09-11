@@ -120,9 +120,27 @@ test('MWL runtime loads the map, sides, and leaders', () => {
 	const units = Object.values(runtime.world.units);
 	assert.equal(units.length, 2);
 	const swordsman = units.find((unit) => unit.type === 'Swordsman');
-	assert.deepEqual(swordsman, { hp: 10, x: 0, y: 0, alive: true, type: 'Swordsman', side: '1', moves: 3 });
+	assert.deepEqual(swordsman, {
+		hp: 10,
+		x: 0,
+		y: 0,
+		alive: true,
+		type: 'Swordsman',
+		side: '1',
+		moves: 3,
+		can_recruit: true,
+	});
 	const archer = units.find((unit) => unit.type === 'Archer');
-	assert.deepEqual(archer, { hp: 6, x: 2, y: 2, alive: true, type: 'Archer', side: '2', moves: 3 });
+	assert.deepEqual(archer, {
+		hp: 6,
+		x: 2,
+		y: 2,
+		alive: true,
+		type: 'Archer',
+		side: '2',
+		moves: 3,
+		can_recruit: true,
+	});
 });
 
 test('MWL runtime runs events, moves a unit, and spends its moves', () => {
@@ -198,7 +216,16 @@ test('MWL runtime loads the EXAMPLES skirmish and spawns its leader on the keep'
 
 	const units = Object.values(runtime.world.units);
 	assert.equal(units.length, 1, 'only side 1 declares a leader');
-	assert.deepEqual(units[0], { hp: 36, x: 2, y: 1, alive: true, type: 'Spearman', side: '1', moves: 5 });
+	assert.deepEqual(units[0], {
+		hp: 36,
+		x: 2,
+		y: 1,
+		alive: true,
+		type: 'Spearman',
+		side: '1',
+		moves: 5,
+		can_recruit: true,
+	});
 	assert.equal(runtime.world.status, 'playing');
 });
 

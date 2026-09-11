@@ -5,6 +5,30 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
+## [Unreleased]
+
+### Added
+
+- Unit identity usable by the AI. MWL units now carry their own `name`, `role`/function and
+  `can_recruit` leader flag: `[unit]` sets them, a side's own leader is `can_recruit`, `[role]`
+  stamps the role onto the units it matches, `[store_unit]`/save keep them, and `unitMatchesFilter`
+  reads all three - which also wires up the `can_recruit` the `[filter]` schema already allowed but
+  the runtime ignored. On the AI side, `ScoreSubject` and `HeuristicCandidate` carry
+  `type`/`role`/`can_recruit`/`name`, and the new `subjectsWhere`/`ScoreSubjectFilter` select a world
+  on any of them, so a mind can find "the enemy leader" without re-deriving it from ids.
+- `TerrainGraphicsLayer` (item 257): the renderer half of `[terrain_graphics]`, drawing
+  `resolveTerrainGraphics`'s placements as one `Sprite2D` per placement, in `layer` order (a stable
+  sort, so the rule pass's own row-major walk survives within a layer) at the pixel position a
+  caller-supplied `project` callback reports, with images resolved through the asset resolver.
+  `setPlacements` redraws in place.
+- The canvas backend for inline markup, closing the three pieces item 258's acceptance still
+  named as open: `positionMarkupLines` places `layoutMarkupLines`'s lines into positioned
+  `PositionedMarkupSpan` runs under a `MarkupLayout`'s `direction`/`align`, so an `rtl` line flows
+  right to left and alignment defaults to the direction's own edge, and `MarkupText` draws them as
+  the counterpart to `RichLabel`'s HTML text - one `Text2D` per styled run, one `Sprite2D` per
+  `<img>` span resolved through the asset resolver, so an image is drawn rather than left to the
+  caller to position. An RTL sample is now covered by `tests/markup.test.ts`.
+
 ## [0.7.7] - 2026-09-11
 
 ### Added
