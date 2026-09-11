@@ -5,13 +5,13 @@
 	"releaseDate": "2026-09-11",
 	"source": {
 		"files": 259,
-		"lines": 38209,
+		"lines": 38774,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 66,
-				"lines": 11785
+				"lines": 12081
 			},
 			{
 				"name": "core",
@@ -21,7 +21,7 @@
 			{
 				"name": "mwl",
 				"files": 21,
-				"lines": 4271
+				"lines": 4540
 			},
 			{
 				"name": "roguelike",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 196,
-		"lines": 25095,
-		"cases": 1822
+		"files": 197,
+		"lines": 25344,
+		"cases": 1844
 	},
 	"tools": {
 		"files": 35,
@@ -123,8 +123,8 @@
 	},
 	"roadmap": {
 		"items": 293,
-		"completed": 284,
-		"open": 9,
+		"completed": 285,
+		"open": 8,
 		"percent": 97
 	},
 	"api": {

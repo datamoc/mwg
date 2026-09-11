@@ -4900,6 +4900,10 @@ build instead.
         private loadUnitTypes;
         private loadSchedule;
         private loadInitialContent;
+
+        private topLevelNodes;
+
+        private loadScenarioExtras;
         private buildMap;
         private loadInitialUnits;
         private loadLeaders;
@@ -4916,6 +4920,14 @@ build instead.
         private setVariableAt;
         private spawnUnit;
         private killUnit;
+
+        private matchingUnits;
+
+        private storedUnits;
+
+        private restoreUnit;
+
+        private setTerrain;
         private addGold;
         private endTurn;
 

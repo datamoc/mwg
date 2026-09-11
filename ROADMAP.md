@@ -3409,12 +3409,24 @@ it.
      `SimulationRuntime.restore` read back. Seven tests in `tests/campaign-save.test.ts`, including
      a migration that rewrites the whole envelope, two independent slots, and a real `Campaign` and
      a real `SimulationRuntime` round-tripping through a load.
-250. [Medium] WML action vocabulary in `[event]` (Ne correspond pas). MWL's `[event]` set is
+250. ~~[Medium] WML action vocabulary in `[event]` (Ne correspond pas). MWL's `[event]` set is
      RPG-shaped (`while`/`foreach`/`switch`/`command`/`say`/`dialogue`/`move`/`attack`/`spawn`/
      `kill`/`gold`/`set_variable`/`if`/`else`/`message`/`teleport`/`end_turn`/`win`/`lose`/`hook`,
      `src/mwl/schema.ts`). Missing the WML ones: `store_unit`, `unstore_unit`, `modify_unit`,
      `heal_unit`, `recall`, `endlevel`, `story`, `set_terrain`, `capture_village`, `clear_shroud`,
-     `fire_event`, `role`, and scenario-level `[object]`/`[item]`.
+     `fire_event`, `role`, and scenario-level `[object]`/`[item]`.~~ `endlevel` had already landed
+     under 248. The rest landed on the same event surface: `fire_event`; `store_unit` (a variable
+     holding unit snapshots), `unstore_unit` and `recall` (with an optional hex/side placement);
+     `modify_unit` (a `[filter]` chooses the units, `[set]` the changes) and `heal_unit` (`amount`
+     or absolute `hp`); `set_terrain`; `capture_village` and `clear_shroud`, backed by two new
+     `MwlWorld` records (`villages`, `clearedShroud`) that are data the game reads, not a fog or an
+     income rule minted here; and scenario-level `[role]`, `[object]` and `[story]`, which fill
+     `roles`/`objects`/`story` and all survive a save. One honest gap, named rather than faked:
+     WML's scenario-level `[item]` is *not* implemented, because `[item]` already means an inventory
+     item definition in MWL and adding `x`/`y`/`image` to that tag would overload it, while renaming
+     a shipped tag would break content. The `[set]` child is `[modify_unit]`'s WML shape; a bare
+     `[modify_unit] hp=5` changes every unit it matches without a filter. Thirteen tests in
+     `tests/mwl-actions.test.ts`; the existing 117 MWL tests pass unchanged.
 251. ~~[Medium] `[kill]` as a filter (Ne correspond pas). `killUnit` throws `MWL unit is not alive`
      when nothing matches, where WML's `[kill]` is a no-op on an empty match. A content error and
      an empty filter are different things and the runtime cannot tell them apart today.~~ Landed:

@@ -962,6 +962,17 @@ delivered in `MwlMessage.choices` and answered with `answerDialogue`; pending ch
 included in save data. Commands after a dialogue in the same event run immediately, before
 the answer, so deferred follow-up commands belong in the selected choice event.
 
+The WML action vocabulary (item 250) is on the same event surface. `fire_event` runs another event
+by id. `store_unit` writes matching units into a world variable, `unstore_unit` and `recall` write
+them back (recall can move one to a chosen hex and side), `modify_unit` changes what its `[set]`
+names and `heal_unit` adds `amount` (or sets `hp`). `set_terrain` changes one map cell,
+`capture_village` records ownership in `MwlWorld.villages`, and `clear_shroud` records the hexes a
+side has uncovered in `MwlWorld.clearedShroud`; the fog itself stays a game layer. At scenario
+level, `[role]` fills `MwlWorld.roles`, `[object]` lands in `MwlWorld.objects`, and `[story]` in
+`MwlWorld.story` as data (rendering a story screen is its own item), all kept in the save.
+`[item]` is deliberately not among them: the tag already means an inventory item definition here,
+so WML's map-placement shape would have collided with it.
+
 Typical build-time usage:
 
 ```sh

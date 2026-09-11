@@ -85,6 +85,21 @@ export interface MwlWorld {
 	/** ids of one-shot events that already fired, so a restore keeps them spent */
 	firedEvents?: string[];
 	pendingDialogue?: { id: string; choices: readonly MwlDialogueChoice[] };
+
+	/**
+	 * Village ownership, keyed `"x,y"`: what `[capture_village]` records. The framework owns the
+	 * fact of who holds a village; what holding one is worth stays the game's rule (income is
+	 * `world.sides[id].villageGold` applied by the game, not minted here).
+	 */
+	villages?: Record<string, { x: number; y: number; side: string; name?: string }>;
+	/** hexes `[clear_shroud]` has uncovered, by side id, as `"x,y"`; the fog itself is a game layer */
+	clearedShroud?: Record<string, string[]>;
+	/** unit ids `[role]` assigned to a named role, so a later event can say `role=courier` */
+	roles?: Record<string, string[]>;
+	/** scenario `[object]` placements, as data; what an object does on pickup is the game's */
+	objects?: Array<{ x: number; y: number; id?: string; name?: string; image?: string; side?: string }>;
+	/** scenario `[story]` entries, as data; rendering them is the story-screen work (item 264) */
+	story?: Array<{ text: string; title?: string; image?: string; music?: string }>;
 }
 
 /** One `[message]`: the text plus whatever a game needs to show it. */
@@ -246,6 +261,8 @@ export class MwlRuntime {
 		this.loadInitialContent();
 		this.loadInitialUnits();
 		this.loadLeaders();
+		//roles filter over the units, so this runs once they and the leaders are in the world
+		this.loadScenarioExtras();
 	}
 
 	run(trigger: string): void {
@@ -467,6 +484,13 @@ export class MwlRuntime {
 		this.world.scheduleIndex = restored.scheduleIndex ?? 0;
 		// One-shot events stay spent across a load.
 		this.world.firedEvents = [...(restored.firedEvents ?? [])];
+		// Scenario data a command may have changed, restored wholesale rather than merged: a load
+		// is that save's world, not this scenario's with a few fields over it.
+		this.world.villages = restored.villages ? structuredClone(restored.villages) : undefined;
+		this.world.clearedShroud = restored.clearedShroud ? structuredClone(restored.clearedShroud) : undefined;
+		this.world.roles = restored.roles ? structuredClone(restored.roles) : undefined;
+		this.world.objects = restored.objects ? structuredClone(restored.objects) : undefined;
+		this.world.story = restored.story ? structuredClone(restored.story) : undefined;
 		this.world.pendingDialogue = restored.pendingDialogue;
 		this.pendingDialogue = restored.pendingDialogue
 			? { id: restored.pendingDialogue.id, choices: [...restored.pendingDialogue.choices] }
@@ -522,6 +546,49 @@ export class MwlRuntime {
 			const id = map.attributes.id ?? map.attributes.name ?? 'map';
 			this.world.maps[id] = { terrain: map.attributes.terrain ?? '', file: map.attributes.file };
 			if (!this.world.map) this.world.map = this.buildMap(id, map);
+		}
+	}
+
+	/** Direct children of `[game]` with a tag, as opposed to `nodes` which searches the whole tree. */
+	private topLevelNodes(tag: string): MwlCompiledNode[] {
+		const game = this.game.roots.find((root) => root.tag === 'game');
+		return (game?.children ?? this.game.roots).filter((root) => root.tag === tag);
+	}
+
+	/**
+	 * Scenario-level data that is not a side, a map or a unit: `[object]` placements, the `[story]`
+	 * beats, and the `[role]` table. Kept as plain data on the world - the framework sequences and
+	 * serialises it, and the game decides what an object does, what a story beat looks like, and
+	 * what a role is for.
+	 */
+	private loadScenarioExtras(): void {
+		for (const object of this.topLevelNodes('object')) {
+			const x = integer(object, 'x', 0);
+			const y = integer(object, 'y', 0);
+			const entry: NonNullable<MwlWorld['objects']>[number] = { x, y };
+			if (object.attributes.id !== undefined) entry.id = object.attributes.id;
+			if (object.attributes.name !== undefined) entry.name = object.attributes.name;
+			if (object.attributes.image !== undefined) entry.image = object.attributes.image;
+			if (object.attributes.side !== undefined) entry.side = object.attributes.side;
+			(this.world.objects ??= []).push(entry);
+		}
+
+		for (const story of this.topLevelNodes('story')) {
+			const text = story.attributes.text ?? story.attributes.value;
+			if (text === undefined) continue;
+			const entry: NonNullable<MwlWorld['story']>[number] = { text };
+			if (story.attributes.title !== undefined) entry.title = story.attributes.title;
+			if (story.attributes.image !== undefined) entry.image = story.attributes.image;
+			if (story.attributes.music !== undefined) entry.music = story.attributes.music;
+			(this.world.story ??= []).push(entry);
+		}
+
+		for (const role of this.topLevelNodes('role')) {
+			const name = role.attributes.role ?? role.attributes.name;
+			if (name === undefined) continue;
+			(this.world.roles ??= {})[name] = Object.entries(this.world.units)
+				.filter(([id, unit]) => unit.alive && unitMatchesFilter(unit, id, role.attributes))
+				.map(([id]) => id);
 		}
 	}
 
@@ -620,6 +687,78 @@ export class MwlRuntime {
 				const named = node.attributes.unit ?? node.attributes.target;
 				if (named === undefined) killMatching(this.world, node.attributes);
 				else this.killUnit(named);
+				break;
+			}
+			case 'fire_event': {
+				const id = node.attributes.id ?? node.attributes.name;
+				if (!id) throw new Error('[fire_event] requires id');
+				this.fireEvent(id);
+				break;
+			}
+			case 'store_unit': {
+				const variable = node.attributes.variable ?? node.attributes.name ?? required(node, 'variable');
+				this.setVariableAt(variable, this.matchingUnits(node).map(([id, unit]) => ({ id, ...unitSnapshot(unit) })));
+				break;
+			}
+			case 'unstore_unit': {
+				const variable = required(node, 'variable');
+				for (const entry of this.storedUnits(variable)) this.restoreUnit(entry, {});
+				break;
+			}
+			case 'recall': {
+				const stored = this.storedUnits(required(node, 'variable'));
+				const wanted = node.attributes.id ?? node.attributes.unit;
+				const entry = wanted === undefined ? stored[0] : stored.find((candidate) => candidate.id === wanted);
+				if (!entry)
+					throw new Error(`[recall] found no stored unit${wanted === undefined ? '' : ` named ${wanted}`}`);
+				const placement: { x?: number; y?: number; side?: string } = {};
+				if (node.attributes.x !== undefined) placement.x = integer(node, 'x', 0);
+				if (node.attributes.y !== undefined) placement.y = integer(node, 'y', 0);
+				if (node.attributes.side !== undefined) placement.side = node.attributes.side;
+				this.restoreUnit(entry, placement);
+				break;
+			}
+			case 'modify_unit': {
+				//WML separates which units (`[filter]`) from what changes (`[set]`); a bare
+				//`[modify_unit] hp=5` with no `[set]` changes every unit it matches
+				const changes = node.children.find((child) => child.tag === 'set')?.attributes ?? node.attributes;
+				for (const [, unit] of this.matchingUnits(node)) applyUnitChanges(unit, changes);
+				break;
+			}
+			case 'heal_unit': {
+				const amount = optionalInteger(node, 'amount');
+				const absolute = optionalInteger(node, 'hp');
+				if (amount === undefined && absolute === undefined)
+					throw new Error('[heal_unit] requires amount or hp');
+				for (const [, unit] of this.matchingUnits(node)) unit.hp = absolute ?? unit.hp + (amount ?? 0);
+				break;
+			}
+			case 'set_terrain':
+				this.setTerrain(integer(node, 'x', 0), integer(node, 'y', 0), required(node, 'terrain'));
+				break;
+			case 'capture_village': {
+				const x = integer(node, 'x', 0);
+				const y = integer(node, 'y', 0);
+				const entry: NonNullable<MwlWorld['villages']>[string] = { x, y, side: required(node, 'side') };
+				if (node.attributes.name !== undefined) entry.name = node.attributes.name;
+				(this.world.villages ??= {})[`${x},${y}`] = entry;
+				break;
+			}
+			case 'clear_shroud': {
+				const side = required(node, 'side');
+				const x = integer(node, 'x', 0);
+				const y = integer(node, 'y', 0);
+				const radius = integer(node, 'radius', 1);
+				const cleared = new Set(this.world.clearedShroud?.[side] ?? []);
+				for (let dy = -radius; dy <= radius; dy++)
+					for (let dx = -radius; dx <= radius; dx++) cleared.add(`${x + dx},${y + dy}`);
+				(this.world.clearedShroud ??= {})[side] = [...cleared];
+				break;
+			}
+			case 'role': {
+				const name = node.attributes.role ?? node.attributes.name;
+				if (!name) throw new Error('[role] requires role');
+				(this.world.roles ??= {})[name] = this.matchingUnits(node).map(([id]) => id);
 				break;
 			}
 			case 'attack':
@@ -855,6 +994,57 @@ export class MwlRuntime {
 		const unit = this.world.units[id];
 		if (!unit || !unit.alive) throw new Error(`MWL unit is not alive: ${id}`);
 		unit.alive = false;
+	}
+
+	/**
+	 * Live units a command's filter selects: its `[filter]` child when it has one, otherwise its
+	 * own attributes, read by the same `unitMatchesFilter` an event filter and `[kill]` use. An
+	 * empty filter matches every live unit, the rule `[kill]` already documents.
+	 */
+	private matchingUnits(node: MwlCompiledNode): Array<[string, MwlWorld['units'][string]]> {
+		const filter = node.children.find((child) => child.tag === 'filter');
+		const attributes = filter?.attributes ?? node.attributes;
+		return Object.entries(this.world.units).filter(
+			([id, unit]) => unit.alive && unitMatchesFilter(unit, id, attributes),
+		);
+	}
+
+	/** The unit snapshots `[store_unit]` wrote into a world variable, or a named content error. */
+	private storedUnits(variable: string): Array<Record<string, MwlValue>> {
+		const stored = this.world.variables[variable];
+		if (!Array.isArray(stored))
+			throw new Error(`MWL variable ${variable} is not a stored unit list; store one first`);
+		return stored.filter(
+			(entry): entry is Record<string, MwlValue> => !!entry && typeof entry === 'object' && !Array.isArray(entry),
+		);
+	}
+
+	/** Writes a stored snapshot back into the world, applying any placement overrides. */
+	private restoreUnit(entry: Record<string, MwlValue>, placement: { x?: number; y?: number; side?: string }): void {
+		const id = typeof entry.id === 'string' ? entry.id : undefined;
+		if (!id) throw new Error('a stored unit snapshot is missing its id');
+		const unit: MwlWorld['units'][string] = {
+			hp: typeof entry.hp === 'number' ? entry.hp : 1,
+			x: placement.x ?? (typeof entry.x === 'number' ? entry.x : 0),
+			y: placement.y ?? (typeof entry.y === 'number' ? entry.y : 0),
+			alive: entry.alive !== false,
+		};
+		if (typeof entry.type === 'string') unit.type = entry.type;
+		const side = placement.side ?? (typeof entry.side === 'string' ? entry.side : undefined);
+		if (side !== undefined) unit.side = side;
+		if (typeof entry.moves === 'number') unit.moves = entry.moves;
+		this.world.units[id] = unit;
+	}
+
+	/** Changes one cell of the primary map, keeping the parsed grid and its size in step. */
+	private setTerrain(x: number, y: number, terrain: string): void {
+		const map = this.world.map;
+		if (!map) throw new Error('[set_terrain] needs a loaded map');
+		if (x < 0 || y < 0 || x >= map.width || y >= map.height)
+			throw new Error(`[set_terrain] is outside the map: ${x},${y}`);
+		const codes = [...map.codes];
+		codes[y * map.width + x] = terrain;
+		this.world.map = { ...map, codes };
 	}
 
 	private addGold(side: string, delta: number): void {
@@ -1224,6 +1414,32 @@ function killMatching(world: MwlWorld, attributes: Readonly<Record<string, strin
 		killed++;
 	}
 	return killed;
+}
+
+/** One unit as `[store_unit]` writes it: only the fields it has, so a variable stays small. */
+function unitSnapshot(unit: MwlWorld['units'][string]): Record<string, MwlValue> {
+	const snapshot: Record<string, MwlValue> = { hp: unit.hp, x: unit.x, y: unit.y, alive: unit.alive };
+	if (unit.type !== undefined) snapshot.type = unit.type;
+	if (unit.side !== undefined) snapshot.side = unit.side;
+	if (unit.moves !== undefined) snapshot.moves = unit.moves;
+	return snapshot;
+}
+
+/** Applies `[modify_unit]`'s chosen attributes to one unit, ignoring anything it did not name. */
+function applyUnitChanges(unit: MwlWorld['units'][string], changes: Readonly<Record<string, string>>): void {
+	const hp = finiteNumber(changes.hp);
+	if (hp !== undefined) unit.hp = hp;
+	const moves = finiteNumber(changes.moves);
+	if (moves !== undefined) unit.moves = moves;
+	if (changes.type !== undefined) unit.type = changes.type;
+	if (changes.side !== undefined) unit.side = changes.side;
+	if (changes.alive !== undefined) unit.alive = changes.alive === 'yes' || changes.alive === 'true';
+}
+
+function finiteNumber(value: string | undefined): number | undefined {
+	if (value === undefined || value === '') return undefined;
+	const parsed = Number(value);
+	return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 function optionalInteger(node: MwlCompiledNode, attribute: string): number | undefined {

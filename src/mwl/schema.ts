@@ -82,6 +82,10 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			'type_matchup',
 			'evolution',
 			'table',
+			//scenario-level data: placements, story beats, and named roles
+			'object',
+			'story',
+			'role',
 		],
 	},
 	campaign: {
@@ -241,6 +245,17 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			'win',
 			'lose',
 			'hook',
+			//WML action vocabulary: unit bookkeeping, terrain/village/fog, and firing an event
+			'fire_event',
+			'store_unit',
+			'unstore_unit',
+			'recall',
+			'modify_unit',
+			'heal_unit',
+			'set_terrain',
+			'capture_village',
+			'clear_shroud',
+			'role',
 		],
 	},
 	objectives: {
@@ -500,6 +515,44 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	// A hook call: `name` is `type:hookName` and any further attributes are
 	// passed to the hook as context.
 	hook: { attributes: { name: 'string' }, openAttributes: 'string' },
+	//WML action vocabulary (item 250). `[item]` is deliberately absent: the tag already means an
+	//inventory item definition here, and WML's map placement would collide with it.
+	fire_event: { attributes: { id: 'id', name: 'string' } },
+	store_unit: { attributes: { variable: 'string', name: 'string' }, children: ['filter'] },
+	unstore_unit: { attributes: { variable: 'string', name: 'string' } },
+	recall: {
+		attributes: { variable: 'string', id: 'string', unit: 'string', side: 'string', x: 'integer', y: 'integer' },
+	},
+	modify_unit: {
+		attributes: { hp: 'integer', moves: 'integer', type: 'string', side: 'string', alive: 'boolean' },
+		children: ['filter', 'set'],
+	},
+	set: { openAttributes: 'string' },
+	heal_unit: {
+		attributes: { amount: 'integer', hp: 'integer', side: 'string', type: 'string', x: 'integer', y: 'integer' },
+		children: ['filter'],
+	},
+	set_terrain: { attributes: { terrain: 'string', x: 'integer', y: 'integer' } },
+	capture_village: { attributes: { side: 'string', x: 'integer', y: 'integer', name: 'string' } },
+	clear_shroud: { attributes: { side: 'string', x: 'integer', y: 'integer', radius: 'integer' } },
+	role: {
+		attributes: {
+			role: 'string',
+			name: 'string',
+			type: 'string',
+			not_type: 'string',
+			unit: 'string',
+			side: 'string',
+			x: 'integer',
+			y: 'integer',
+		},
+		children: ['filter'],
+	},
+	object: {
+		attributes: { id: 'id', name: 'string', image: 'string', side: 'string', x: 'integer', y: 'integer' },
+		children: ['filter'],
+	},
+	story: { attributes: { text: 'string', value: 'string', title: 'string', image: 'string', music: 'string' } },
 	item: {
 		attributes: { id: 'id', name: 'string', slot: 'id', stackable: 'boolean', weight: 'number' },
 		children: ['effect'],

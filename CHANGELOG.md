@@ -9,6 +9,11 @@ the public API may still change between minor versions.
 
 ### Added
 
+- WML action vocabulary in `[event]` (item 250): `fire_event`, `store_unit`/`unstore_unit`/`recall`,
+  `modify_unit`/`heal_unit`, `set_terrain`, `capture_village`, `clear_shroud`, and the scenario-level
+  `[role]`/`[object]`/`[story]`, backed by `MwlWorld.villages`/`clearedShroud`/`roles`/`objects`/
+  `story` (all saved). WML's scenario `[item]` is deliberately not added: the tag already means an
+  inventory item definition.
 - `blendPixels`/`rotatePixels` in `ImageModifiers.ts`: `~BLEND` and `~ROTATE` moved from a
   runtime sprite-property/`ColorMatrixFilter` approximation to an exact, baked-once per-pixel
   operation in `applyTextureModifiers` (`~ROTATE` in particular now rotates the source pixels
