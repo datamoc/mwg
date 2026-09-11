@@ -24,7 +24,8 @@ export interface HookWorld {
 				readonly y: number;
 				readonly alive: boolean;
 				readonly type?: string;
-				readonly side?: number;
+				/** the id `[side]` declared, the same key `world.sides` and `world.gold` use */
+				readonly side?: string;
 			}
 		>
 	>;
@@ -36,14 +37,14 @@ export interface HookWorld {
 export interface Emit {
 	move(unit: string, x: number, y: number): void;
 	attack(attacker: string, defender: string, weapon?: string): void;
-	spawn(type: string, side: number, x: number, y: number): void;
+	spawn(type: string, side: string, x: number, y: number): void;
 	kill(unit: string): void;
-	gold(side: number, delta: number): void;
+	gold(side: string, delta: number): void;
 	setVariable(name: string, value: MwlValue): void;
 	message(speaker: string, text: string): void;
 	endTurn(): void;
-	win(side: number): void;
-	lose(side: number): void;
+	win(side: string): void;
+	lose(side: string): void;
 }
 
 export type HookContext = Readonly<Record<string, string>>;

@@ -9,6 +9,30 @@ the public API may still change between minor versions.
 
 ### Added
 
+- `blendPixels`/`rotatePixels` in `ImageModifiers.ts`: `~BLEND` and `~ROTATE` moved from a
+  runtime sprite-property/`ColorMatrixFilter` approximation to an exact, baked-once per-pixel
+  operation in `applyTextureModifiers` (`~ROTATE` in particular now rotates the source pixels
+  and expands the surface, which a sprite's own `rotation` cannot do - needed for terrain and
+  anything else that must keep tiling after the rotation). `blendMatrix` stays available for a
+  caller that explicitly wants the cheaper live approximation instead.
+- `PaletteRemapMode` (`'exact'` | `'nearest'`) on `remapPixels`/`recolorTexture`, defaulting to
+  `'exact'`: a pixel is now repainted only on an exact match to a `from` colour unless
+  `'nearest'` is asked for explicitly. The old always-nearest behaviour silently recoloured an
+  entire image the first time `~RC`/`~PAL` met a short, specific palette instead of a full
+  covering; `paletteRangeMapping`'s own gradient usage opts into `'nearest'` explicitly, since
+  that is the one case it is correct for.
+- `ImageTextureProbe.resolveColor` and the exported `parseColorPairs`/`parsePaletteLists`: `~RC`
+  and `~PAL` now accept a named colour (`~RC(magenta>red)`), not hex only, and `~PAL`'s two
+  comma-separated colour lists parse correctly instead of only the first colour of each list
+  (`parseImagePath`'s own comma split does not respect that list's internal boundary, which
+  `parsePaletteLists` now reconstructs).
+- `~BLIT`/`~MASK` now hand `resolveTexture` the argument exactly as written, nested modifiers
+  included (`~BLIT(unit.png~RC(magenta>red),0,0)` calls it with the full string, not a bare
+  path with the modifier silently dropped).
+- `withTextureCanvas` is now exported from `two-d/render`, so a caller building its own
+  texture-level modifier can reuse the same canvas bookkeeping `recolorTexture`/`~BLIT`/`~MASK`/
+  `~BLEND`/`~ROTATE` all share instead of duplicating it.
+
 - `mwl.parseMapFile`/`MwlMapFile` (item 284): a Wesnoth-shaped `.map` loader. The `key=value`
   header is split off and kept (keys not interpreted), and the comma-separated grid goes through
   the same `parseTerrain` an inline `[map] terrain=` uses.
@@ -201,6 +225,14 @@ the public API may still change between minor versions.
 - A stack keys on `key` alone, as Java's `stacks.get(key)` does. The old rule wanted the same key
   *and* the same origin, which this framework had invented. A caller that reused one key for two
   different targets now sees their lines stacked together, and has to give each target its own key.
+
+### Changed
+
+- One side identity in `MwlWorld` (item 277): `unit.side`, `MwlMessage.side`, `MwlMap.starts` keys
+  and every `side`/`side_filter` attribute now hold the string `id` `[side]` declares, so a named
+  side (`id=rebels`) works throughout. `MwlSideRef` is just that id. The `[side] id` and the other
+  side-identifying schema attributes accept a string (numbers still validate), and the map
+  `<side> <code>` keep marker accepts a name.
 
 ### Fixed
 

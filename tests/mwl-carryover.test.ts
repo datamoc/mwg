@@ -15,16 +15,16 @@ import {
  * through the real runtime, because `[endlevel]` is what a scenario actually writes.
  */
 
-const side: MwlSideRef = { id: '1', unitSide: 1 };
+const side: MwlSideRef = { id: '1' };
 
 const world = (overrides: Partial<MwlWorld> = {}): MwlWorld => ({
 	...createWorld(),
 	gold: { '1': 200 },
 	sides: { '1': { gold: 0, income: 2, controller: 'human' } },
 	units: {
-		hero: { hp: 30, x: 1, y: 1, alive: true, side: 1 },
-		fallen: { hp: 0, x: 2, y: 1, alive: false, side: 1 },
-		rat: { hp: 4, x: 3, y: 3, alive: true, side: 2 },
+		hero: { hp: 30, x: 1, y: 1, alive: true, side: '1' },
+		fallen: { hp: 0, x: 2, y: 1, alive: false, side: '1' },
+		rat: { hp: 4, x: 3, y: 3, alive: true, side: '2' },
 	},
 	...overrides,
 });
@@ -101,7 +101,7 @@ result=defeat
 test('[endlevel] ends the scenario, records the carry-over, and says where the campaign goes', () => {
 	const runtime = new MwlRuntime(compile(SOURCE));
 	runtime.world.gold['1'] = 200;
-	runtime.world.units.hero = { hp: 30, x: 1, y: 1, alive: true, side: 1 };
+	runtime.world.units.hero = { hp: 30, x: 1, y: 1, alive: true, side: '1' };
 
 	assert.equal(runtime.world.status, 'playing');
 
@@ -132,9 +132,9 @@ test('carrying the side a scenario names, rather than the human one', () => {
 	const runtime = new MwlRuntime(compile(SOURCE));
 	runtime.world.sides['2'] = { gold: 0, income: 0, controller: 'ai' };
 	runtime.world.gold['2'] = 50;
-	runtime.world.units.enemy = { hp: 10, x: 5, y: 5, alive: true, side: 2 };
+	runtime.world.units.enemy = { hp: 10, x: 5, y: 5, alive: true, side: '2' };
 
-	const carried = endLevelCarryover(runtime.world, { id: '2', unitSide: 2 }, { result: 'defeat' });
+	const carried = endLevelCarryover(runtime.world, { id: '2' }, { result: 'defeat' });
 
 	assert.equal(carried.gold, 40);
 	assert.deepEqual(carried.recall, ['enemy']);

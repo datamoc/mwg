@@ -31,8 +31,8 @@ export interface MwlMap {
 	readonly height: number;
 	/** row-major terrain codes, keep markers stripped */
 	readonly codes: readonly string[];
-	/** side number -> keep/start positions */
-	readonly starts: Readonly<Record<number, readonly MwlMapStart[]>>;
+	/** side id -> keep/start positions; the id a `<side> <code>` token names, number or not */
+	readonly starts: Readonly<Record<string, readonly MwlMapStart[]>>;
 }
 
 export type MwlValue = string | number | boolean | MwlValue[] | { [key: string]: MwlValue };
@@ -41,7 +41,7 @@ export interface MwlWorld {
 	readonly variables: Record<string, MwlValue>;
 	readonly units: Record<
 		string,
-		{ hp: number; x: number; y: number; alive: boolean; type?: string; side?: number; moves?: number }
+		{ hp: number; x: number; y: number; alive: boolean; type?: string; side?: string; moves?: number }
 	>;
 	readonly sides: Record<
 		string,
@@ -92,7 +92,7 @@ export interface MwlMessage {
 	readonly text: string;
 	readonly speaker?: string;
 	readonly portrait?: string;
-	readonly side?: number;
+	readonly side?: string;
 	/** choices waiting on the player; answer with `answerDialogue` */
 	readonly choices?: readonly MwlDialogueChoice[];
 	/** identifies the pending dialogue this message's choices belong to */
@@ -187,7 +187,7 @@ export function parseTerrain(text: string): {
 	width: number;
 	height: number;
 	codes: string[];
-	starts: Record<number, { x: number; y: number }[]>;
+	starts: Record<string, { x: number; y: number }[]>;
 } {
 	const rows = text
 		.split(/\r?\n/)
@@ -196,14 +196,15 @@ export function parseTerrain(text: string): {
 	const height = rows.length;
 	const width = rows.length ? Math.max(...rows.map((row) => row.length)) : 0;
 	const codes: string[] = [];
-	const starts: Record<number, { x: number; y: number }[]> = {};
+	const starts: Record<string, { x: number; y: number }[]> = {};
 	for (let y = 0; y < height; y++) {
 		for (let x = 0; x < width; x++) {
 			const token = rows[y]?.[x] ?? '_off^_usr';
-			const keep = /^([0-9]+)\s+(.+)$/.exec(token);
+			//`<side> <code>`: the side is the id `[side]` declares, so a named side works here too
+			const keep = /^([A-Za-z0-9_][\w.-]*)\s+(\S.*)$/.exec(token);
 			if (keep) {
 				codes.push(keep[2]);
-				(starts[Number(keep[1])] ??= []).push({ x, y });
+				(starts[keep[1]] ??= []).push({ x, y });
 			} else codes.push(token);
 		}
 	}
@@ -284,7 +285,7 @@ export class MwlRuntime {
 			if (event.attributes.x !== undefined && !coordinateMatches(event.attributes.x, unit.x)) continue;
 			if (event.attributes.y !== undefined && !coordinateMatches(event.attributes.y, unit.y)) continue;
 			if (event.attributes.unit !== undefined && event.attributes.unit !== id) continue;
-			if (event.attributes.side !== undefined && integer(event, 'side', Number.NaN) !== unit.side) continue;
+			if (event.attributes.side !== undefined && event.attributes.side !== unit.side) continue;
 			if (!this.eventFiltersMatch(event)) continue;
 			if (!this.claimEvent(event)) continue;
 			this.executeTracedEvent(event, 'moveto');
@@ -352,16 +353,17 @@ export class MwlRuntime {
 	 * world variable matches.
 	 */
 	private showDialogue(node: MwlCompiledNode): void {
-		let last: { text: string; speaker?: string; portrait?: string; side?: number } | null = null;
+		let last: { text: string; speaker?: string; portrait?: string; side?: string } | null = null;
 		for (const child of node.children) {
 			if (child.tag === 'message') {
 				this.showMessage(child.attributes);
-				const side = Number.parseInt(child.attributes.side ?? '', 10);
 				last = {
 					text: child.attributes.text ?? child.attributes.value ?? '',
 					...(child.attributes.speaker === undefined ? {} : { speaker: child.attributes.speaker }),
 					...(child.attributes.portrait === undefined ? {} : { portrait: child.attributes.portrait }),
-					...(Number.isFinite(side) ? { side } : {}),
+					...(child.attributes.side === undefined || child.attributes.side === ''
+						? {}
+						: { side: child.attributes.side }),
 				};
 			} else if (child.tag === 'say') {
 				this.showSay(child);
@@ -530,7 +532,7 @@ export class MwlRuntime {
 		const parsed = parseTerrain(text);
 		for (const start of node.children) {
 			if (start.tag !== 'start') continue;
-			const side = optionalInteger(start, 'side');
+			const side = start.attributes.side;
 			const x = optionalInteger(start, 'x');
 			const y = optionalInteger(start, 'y');
 			if (side !== undefined && x !== undefined && y !== undefined) (parsed.starts[side] ??= []).push({ x, y });
@@ -552,7 +554,7 @@ export class MwlRuntime {
 				const stats = this.unitTypes.get(unit.attributes.type);
 				if (stats) entry.moves = stats.movement;
 			}
-			if (unit.attributes.side !== undefined) entry.side = integer(unit, 'side', 0);
+			if (unit.attributes.side !== undefined) entry.side = unit.attributes.side;
 			this.world.units[id] = entry;
 		}
 	}
@@ -561,21 +563,21 @@ export class MwlRuntime {
 		for (const side of this.nodes('side')) {
 			const leader = side.attributes.leader;
 			if (!leader) continue;
-			const sideNumber = optionalInteger(side, 'id');
-			if (sideNumber === undefined) continue;
-			const starts = this.world.map?.starts[sideNumber];
+			const sideId = side.attributes.id;
+			if (!sideId) continue;
+			const starts = this.world.map?.starts[sideId];
 			if (!starts?.length) continue;
 			const stats = this.unitTypes.get(leader);
 			for (const start of starts) {
 				if (this.unitAt(start.x, start.y)) continue;
-				const id = `${leader} ${sideNumber} (${start.x},${start.y})`;
+				const id = `${leader} ${sideId} (${start.x},${start.y})`;
 				this.world.units[id] = {
 					hp: stats?.hitpoints ?? 1,
 					x: start.x,
 					y: start.y,
 					alive: true,
 					type: leader,
-					side: sideNumber,
+					side: sideId,
 					moves: stats?.movement ?? 0,
 				};
 			}
@@ -597,7 +599,7 @@ export class MwlRuntime {
 			case 'spawn':
 				this.spawnUnit(
 					node.attributes.type ?? '',
-					node.attributes.side === undefined ? undefined : integer(node, 'side', 0),
+					node.attributes.side,
 					integer(node, 'x', 0),
 					integer(node, 'y', 0),
 					node.attributes.id ?? node.attributes.target,
@@ -750,12 +752,11 @@ export class MwlRuntime {
 	/** Deliver a `[message]` to the game, with speaker and portrait when given. */
 	private showMessage(attributes: Readonly<Record<string, string>>): void {
 		if (!this.onMessage) return;
-		const side = Number.parseInt(attributes.side ?? '', 10);
 		const message: MwlMessage = {
 			text: this.interpolate(attributes.text ?? attributes.value ?? ''),
 			...(attributes.speaker === undefined ? {} : { speaker: attributes.speaker }),
 			...(attributes.portrait === undefined ? {} : { portrait: attributes.portrait }),
-			...(Number.isFinite(side) ? { side } : {}),
+			...(attributes.side === undefined || attributes.side === '' ? {} : { side: attributes.side }),
 		};
 		this.onMessage(message);
 	}
@@ -836,9 +837,9 @@ export class MwlRuntime {
 		this.onTrace?.({ type: 'variable', name: path, ...(previous === undefined ? {} : { previous }), value });
 	}
 
-	private spawnUnit(type: string, side: number | undefined, x: number, y: number, id?: string, hp?: number): void {
+	private spawnUnit(type: string, side: string | undefined, x: number, y: number, id?: string, hp?: number): void {
 		const stats = type ? this.unitTypes.get(type) : undefined;
-		const key = id ?? `${type || 'unit'}#${side ?? 0}@${x},${y}`;
+		const key = id ?? `${type || 'unit'}#${side ?? ''}@${x},${y}`;
 		this.world.units[key] = {
 			hp: hp ?? stats?.hitpoints ?? 1,
 			x,
@@ -975,10 +976,10 @@ export class MwlRuntime {
 	 */
 	private conditionMet(node: MwlCompiledNode, defaultSide?: string): boolean {
 		const condition = node.attributes.condition ?? '';
-		const side = optionalInteger(node, 'side') ?? (defaultSide === undefined ? undefined : Number(defaultSide));
+		const side = node.attributes.side ?? defaultSide;
 		switch (condition) {
 			case 'units_dead': {
-				const target = optionalInteger(node, 'side_filter') ?? side;
+				const target = node.attributes.side_filter ?? side;
 				if (target === undefined) return false;
 				return !Object.values(this.world.units).some((unit) => unit.alive && unit.side === target);
 			}
@@ -994,7 +995,7 @@ export class MwlRuntime {
 			case 'unit_at': {
 				const x = optionalInteger(node, 'x');
 				const y = optionalInteger(node, 'y');
-				const targetSide = optionalInteger(node, 'side_filter') ?? side;
+				const targetSide = node.attributes.side_filter ?? side;
 				return Object.values(this.world.units).some(
 					(unit) =>
 						unit.alive &&
@@ -1067,9 +1068,9 @@ export class MwlRuntime {
 	}
 
 	/** Records one side's own result; the scenario status is set by whichever side fired first. */
-	private markSideResult(side: string | number | undefined, result: 'won' | 'lost'): void {
+	private markSideResult(side: string | undefined, result: 'won' | 'lost'): void {
 		if (side === undefined || side === '') return;
-		(this.world.sideStatus ??= {})[String(side)] = result;
+		(this.world.sideStatus ??= {})[side] = result;
 	}
 
 	private worldView(): HookWorld {
@@ -1091,7 +1092,7 @@ export class MwlRuntime {
 			},
 			spawn: (type, side, x, y) => this.spawnUnit(type, side, x, y),
 			kill: (unit) => this.killUnit(unit),
-			gold: (side, delta) => this.addGold(String(side), delta),
+			gold: (side, delta) => this.addGold(side, delta),
 			setVariable: (name, value) => {
 				this.world.variables[name] = value;
 			},
@@ -1174,11 +1175,7 @@ export function execute(world: MwlWorld, command: MwlCommand): void {
 function endLevelSide(world: MwlWorld, named: string | undefined): MwlSideRef | null {
 	const id = named ?? Object.entries(world.sides).find(([, side]) => side.controller === 'human')?.[0];
 	if (!id || !(id in world.sides)) return null;
-
-	//units carry a side number while sides and gold carry its id, so the pair is named here rather
-	//than guessed at; unifying the two identities is roadmap item 277
-	const unitSide = Number(id);
-	return { id, unitSide: Number.isFinite(unitSide) ? unitSide : -1 };
+	return { id };
 }
 
 /**
@@ -1285,7 +1282,7 @@ function variableMatches(
  * `have_unit`), and coordinates all have to match when present.
  */
 function unitMatchesFilter(
-	unit: { alive: boolean; type?: string; side?: number; x: number; y: number },
+	unit: { alive: boolean; type?: string; side?: string; x: number; y: number },
 	id: string,
 	attributes: Readonly<Record<string, string>>,
 ): boolean {
@@ -1296,7 +1293,7 @@ function unitMatchesFilter(
 	const key = attributes.unit ?? attributes.id;
 	return (
 		(key === undefined || id === key) &&
-		(attributes.side === undefined || unit.side === Number(attributes.side)) &&
+		(attributes.side === undefined || unit.side === attributes.side) &&
 		(attributes.type === undefined || unit.type === attributes.type) &&
 		(excluded.length === 0 || !excluded.includes(unit.type ?? '')) &&
 		(attributes.x === undefined || unit.x === Number(attributes.x)) &&

@@ -3489,31 +3489,55 @@ it.
      `applyImageModifiers` handles FL/SCALE/GS/CS and `croppedTexture` handles CROP; ~BLIT, ~RC,
      ~CHAN, ~PAL, ~MASK, ~BLEND, ~O, ~R/~G/~B and ~ROTATE are missing. ~RC and ~BLIT are the two
      named as blockers, because team colours and recoloured art depend on them.~~ All eleven
-     landed in `ImageModifiers.ts`, split the way the modifiers themselves split: `~O`, `~R`/`~G`/
-     `~B`, `~BLEND`, `~CHAN` and `~ROTATE` stay sprite-property/`ColorMatrixFilter` operations
-     (`channelScaleMatrix`, `blendMatrix`, `channelSwapMatrix`, all plain data so they are
-     unit-tested without a renderer, the same way `colorShiftMatrix` already was), joining
+     landed in `ImageModifiers.ts`, split the way the modifiers themselves split. `~O` and
+     `~R`/`~G`/`~B` stay sprite-property/`ColorMatrixFilter` operations (`channelScaleMatrix`,
+     unit-tested as plain data the same way `colorShiftMatrix` already was), joining
      `applyImageModifiers` alongside FL/SCALE/GS/CS - GS no longer clobbers a filter already on
-     the sprite (288, fixed alongside). `~RC`/`~PAL`/`~BLIT`/`~MASK` genuinely needed per-pixel
-     reads or a sibling texture, so they are `applyTextureModifiers`, a canvas-backed pipeline
-     built on 256's `withTextureCanvas`: `~RC`/`~PAL` are an exact palette swap (feeding straight
-     into `recolorTexture`), `~BLIT` composites a caller-resolved sibling texture at an offset,
-     `~MASK` takes its alpha at an offset via the new pure `maskPixels` (base colour kept, alpha
-     multiplied, tested with no canvas at all). `~BLIT`'s one real limit, stated rather than
-     hidden: the nested path's own modifiers (`~BLIT(claws.png~FL(horiz),4,4)`) are not resolved
-     recursively - the caller's `resolveTexture` is expected to hand back an already-modified
-     texture. Nineteen new tests in `tests/image-modifiers.test.ts`.
+     the sprite (288, fixed alongside). Everything else needed real pixel access, a sibling
+     texture, or had to rotate the actual art rather than a sprite transform, so it lives in
+     `applyTextureModifiers`, a canvas-backed pipeline built on 256's `withTextureCanvas`:
+     - `~RC`/`~PAL` are an exact palette swap (`recolorTexture` in its `'exact'` mode - see 256),
+       accepting hex (`#c0ffee`) or, through `probe.resolveColor`, a named colour like
+       `~RC(magenta>red)`, via the exported `parseColorPairs`. `~PAL(a,b,c>x,y,z)`'s two
+       comma-separated lists are reconstructed from the modifier's own comma-split arguments
+       (`parsePaletteLists`) rather than assumed to land on an argument boundary, since a naive
+       `args[0]`/`args[1]` read silently parsed only the first colour of each list.
+     - `~BLIT`/`~MASK` composite/mask against a caller-resolved sibling texture at an offset,
+       `~MASK`'s alpha multiply via the pure `maskPixels` (base colour kept, tested with no
+       canvas at all). `probe.resolveTexture` receives the argument exactly as written, nested
+       modifiers included (`~BLIT(unit.png~RC(magenta>red),0,0)` calls it with
+       `'unit.png~RC(magenta>red)'`, not a bare `'unit.png'` with the modifier silently
+       dropped) - parsing and re-applying that recursively is the caller's own job.
+     - `~BLEND` is an exact per-pixel lerp towards a colour (`blendPixels`), baked into the
+       texture once rather than approximated by a runtime `ColorMatrixFilter` (`blendMatrix`
+       still exists, for a caller that explicitly wants the cheaper live approximation instead).
+     - `~ROTATE` rotates the source pixels themselves and expands the surface to fit
+       (`rotatePixels`, nearest-neighbour, exact at 90-degree multiples), rather than only
+       turning `sprite.rotation` - the art itself has to rotate for terrain and anything else
+       that must keep tiling afterward, which a display-object transform cannot do.
+     One honest gap, not attempted: `~CHAN` here is a channel-source swap/constant
+     (`channelSwapMatrix`), not Wesnoth's own formula-per-channel `adjust_channels_modification`
+     (1 to 4 arithmetic expressions, one per output channel) - a real expression-language
+     mismatch, not a bug, and a full formula evaluator is its own item if a port needs it rather
+     than this one's scope. Twenty-five tests in `tests/image-modifiers.test.ts`.
 256. ~~[Medium] Team colour by palette remap (Ne correspond pas). Team colour is
      `TintedSprite`/`registerColorTransform` (multiply plus add), not a remap of the palette range
      a `team-colors.cfg` defines.~~ Landed as `PaletteRemap.ts`: `remapPixels` is the renderer-free
-     core (nearest-colour lookup over raw RGBA data, alpha and fully transparent pixels
-     untouched, unit-tested with plain typed arrays), `paletteRangeMapping` builds the
-     `[color_range]` shape - a reference palette's own lightest-to-darkest order placed along a
-     `min -> mid -> max` gradient, so recolouring never has to know what the reference colours
-     actually are - and `recolorTexture` is the canvas-backed wrapper the other two feed into,
-     via the new `withTextureCanvas` helper (draw a texture in, hand the 2D context to a
-     paint callback, wrap the result back into a `Texture`) that 255's `~RC`/`~PAL`/`~BLIT`/
-     `~MASK` also build on. Fourteen tests.
+     core, alpha and fully transparent pixels always untouched, unit-tested with plain typed
+     arrays. It takes a `PaletteRemapMode`, `'exact'` by default: a pixel is repainted only when
+     it matches a `from` colour exactly, everything else left alone, which is what a short,
+     specific list like an `~RC`/`~PAL` swap needs - the original `'nearest'`-only behaviour
+     (every opaque pixel repainted with whichever `from` entry is closest) silently recoloured
+     the *entire* image the first time it met a sparse reference list instead of a full
+     covering, and is now opt-in for exactly the case it is right for: `paletteRangeMapping`
+     builds the `[color_range]` shape - a reference palette's own lightest-to-darkest order
+     placed along a `min -> mid -> max` gradient - which does cover the whole image and wants
+     `'nearest'` explicitly. `recolorTexture` is the canvas-backed wrapper both modes feed
+     through, via `withTextureCanvas` (draw a texture in, hand the 2D context to a paint
+     callback, wrap the result back into a `Texture`), now exported in its own right so a caller
+     needing the same canvas bookkeeping for something `PaletteRemap.ts` does not cover can reuse
+     it directly rather than duplicating it - 255's `~RC`/`~PAL`/`~BLIT`/`~MASK`/`~BLEND`/
+     `~ROTATE` all build on it. Eight tests.
 257. ~~[High] `[terrain_graphics]` (Ne correspond pas). `Autotile` (blob shapes) and `TileMap` (one
      sprite per cell per layer, hex included) exist, but not the tile-rule model: flags,
      rotations, multi-hex `[tile]`, and an image per neighbour combination. A 72px source sprite
@@ -3761,13 +3785,22 @@ same day; the notes on each say what shipped.
 
 Found while building carry-over (248), recorded rather than fixed in passing.
 
-277. [Low] One side identity in `MwlWorld`. A side is keyed by the `id` `[side]` declares in
+277. ~~[Low] One side identity in `MwlWorld`. A side is keyed by the `id` `[side]` declares in
      `world.sides` and `world.gold`, while its units carry a *number* in `unit.side` (`[spawn]
      side=1`), so "the units of side `1`" is a mapping between two identifiers rather than a lookup.
      `MwlSideRef` in `src/mwl/carryover.ts` names the pair so carry-over can be honest about it, and
      `endLevelSide` derives the number from the id, which is guesswork a named side (`id=rebels`)
      cannot survive. One identity, string or number, would remove the guess; it touches the world
-     shape, the moveto filter and every consumer of `unit.side`, which is why it is its own item.
+     shape, the moveto filter and every consumer of `unit.side`, which is why it is its own item.~~
+     Unified on the string id. `unit.side`, `MwlMessage.side`, `MwlMap.starts` keys, `HookWorld` and
+     `Emit`, and every `side`/`side_filter` attribute hold the `id` `[side]` declares; `MwlSideRef`
+     is just that id and `endLevelSide` no longer derives a number, so a named side survives
+     carry-over. The `[side] id` schema went from `integer` to `string` (numbers still validate) and
+     with it the twelve other side-identifying attributes, and `parseTerrain`'s `<side> <code>`
+     marker now accepts a name (`rebels Kh`) as well as a number. `[spawn]` without a side keys on
+     `unit#@x,y` rather than a magic `0`. Five new tests in `tests/mwl-side-identity.test.ts` cover
+     a named side's keep, a `[kill]` filter, a side condition, `[endlevel] side=rebels` and
+     carry-over; the existing 112 MWL tests pass unchanged.
 
 ### Requested by the Pixel Dungeon port
 
@@ -3985,13 +4018,27 @@ only for the square grid they are easiest to reason about.
      for a tether following two moving units, and an optional `flickerInterval` re-rolls the
      jitter on a timer instead of holding one fixed shape. A caller draws the points through
      `Shape2D`'s `Graphics`; this never touches a renderer itself. Nine tests.
-293. [Medium] The value-level Pixi facade item 167 shipped covers `Container`/`Texture`/
+293. ~~[Medium] The value-level Pixi facade item 167 shipped covers `Container`/`Texture`/
      `Rectangle`, but `Sprite` (used directly, unwrapped, in roughly a dozen call sites),
      `Graphics`, `FillGradient` and `TilingSprite`, plus the `extensions.add(...)` calls that
      register `TilingSpritePipe`/`NineSliceSpritePipe`, still force `import 'pixi.js'`
      wherever a game touches them. The pipe-registration piece is the same class of footgun
      as any other missing-extension black-screen bug: worth a supported registration story,
-     not just a type.
+     not just a type.~~ Narrower once actually checked against this repo rather than the port
+     that raised it: `Sprite2D`/`Shape2D`/`Text2D`/`TiledSprite`/`Gradient` already named
+     `Sprite`/`Graphics`/`Text`/`TilingSprite`/`FillGradient` at the facade level, item 167's own
+     work - the "dozen call sites" and the missing types were the port's own source, not `mwg`'s;
+     grepping this repo found exactly one direct `Sprite` import (`TintedSprite.ts`, which
+     legitimately extends it) and zero direct `Graphics` imports. What was a genuine gap:
+     `two-d/pixi-interop.ts`, the escape hatch for the rare need the facade does not cover, had
+     `Container`/`Sprite`/`Texture`/`Graphics`/`Rectangle`/`Text` but not `FillGradient`/
+     `TilingSprite` - now added. The pipe-registration question resolves without new code:
+     `TilingSpritePipe`/`NineSliceSpritePipe` need registering only for a trimmed custom Pixi
+     bundle, and `mwg` imports the full `pixi.js` package everywhere, which registers every
+     built-in pipe (both included) as a side effect of the import itself - documented in
+     `pixi-interop.ts`'s own doc comment so the next reader does not have to rediscover it. The
+     footgun is real for the port's own slimmed bundle, which is where it stays their problem
+     to solve, not `mwg`'s.
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list

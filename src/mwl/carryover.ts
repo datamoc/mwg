@@ -8,18 +8,12 @@ import type { MwlWorld } from './runtime.ts';
 export const MWL_DEFAULT_CARRYOVER_PERCENTAGE = 80;
 
 /**
- * Which side an ending scenario hands on.
- *
- * Two identities, because the world has two: `[side]` declares an `id`, and that is how
- * `world.sides` and `world.gold` key it, while units carry the side's *number* in `unit.side`.
- * Unifying those is a change to the world model rather than to carry-over, so it is recorded as
- * its own roadmap item and this type is honest about the pair in the meantime.
+ * Which side an ending scenario hands on: the id `[side]` declared, which is the one identity the
+ * world uses, keying `world.sides` and `world.gold` and carried by `unit.side` alike (item 277).
  */
 export interface MwlSideRef {
-	/** the id `[side]` declared, the key `world.sides` and `world.gold` use */
+	/** the id `[side]` declared, the key `world.sides` and `world.gold` use, and `unit.side` holds */
 	readonly id: string;
-	/** the number that side's units carry in `unit.side` */
-	readonly unitSide: number;
 }
 
 /** What `[endlevel]` says when a scenario ends. */
@@ -71,13 +65,13 @@ export interface MwlCarryover {
  *   variables: {},
  *   gold: { '1': 200 },
  *   sides: { '1': { gold: 0, income: 2, controller: 'human' } },
- *   units: { hero: { hp: 30, x: 1, y: 1, alive: true, side: 1 } },
+ *   units: { hero: { hp: 30, x: 1, y: 1, alive: true, side: '1' } },
  *   maps: {},
  *   turn: 1,
  *   status: 'playing' as const,
  * };
  *
- * const carried = endLevelCarryover(world, { id: '1', unitSide: 1 }, {
+ * const carried = endLevelCarryover(world, { id: '1' }, {
  *   result: 'victory',
  *   bonus: 50,
  *   nextScenario: 'siege',
@@ -98,7 +92,7 @@ export function endLevelCarryover(world: MwlWorld, side: MwlSideRef | null, end:
 		add: end.carryoverAdd ?? false,
 		recall: side
 			? Object.entries(world.units)
-					.filter(([, unit]) => unit.alive && unit.side === side.unitSide)
+					.filter(([, unit]) => unit.alive && unit.side === side.id)
 					.map(([id]) => id)
 					.sort()
 			: [],

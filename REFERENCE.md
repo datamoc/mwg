@@ -224,16 +224,28 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
 - `parseImagePath`/`imageModifier`/`colorShiftMatrix`/`applyImageModifiers`/`croppedTexture` - parses common
   image suffix modifiers such as `~FL`, `~GS`, `~SCALE` and `~CROP`, then applies the supported
   Pixi presentation changes without mutating shared source textures. `channelScaleMatrix`
-  (`~R`/`~G`/`~B`), `blendMatrix` (`~BLEND`) and `channelSwapMatrix` (`~CHAN`) build the
-  `ColorMatrixFilter` matrices `applyImageModifiers` also applies for `~O` (opacity) and
-  `~ROTATE` (sprite rotation). `applyTextureModifiers`/`ImageTextureProbe`/`maskPixels` cover the
-  four modifiers that need real pixel access or a sibling texture rather than a sprite property:
-  `~RC`/`~PAL` (exact palette swap, via `recolorTexture` below), `~BLIT` (composite a
-  caller-resolved sibling texture at an offset) and `~MASK` (take alpha from a sibling texture at
-  an offset, `maskPixels` being the renderer-free core of that).
+  (`~R`/`~G`/`~B`) builds the `ColorMatrixFilter` matrix `applyImageModifiers` also applies for
+  `~O` (opacity) and `~CHAN` (`channelSwapMatrix` - a channel-source swap/constant, not
+  Wesnoth's own per-channel formula language). `applyTextureModifiers`/`ImageTextureProbe`
+  cover the modifiers that need real pixel access, a sibling texture, or have to rotate the
+  actual art rather than a sprite transform: `~RC`/`~PAL` (exact palette swap - see
+  `recolorTexture` below - accepting hex or, via `probe.resolveColor`, a named colour;
+  `parseColorPairs`/`parsePaletteLists` are the argument parsers, the latter reconstructing
+  `~PAL`'s two comma-separated colour lists since `parseImagePath`'s own comma split does not
+  respect that list boundary), `~BLIT`/`~MASK` (composite/mask against a `probe.resolveTexture`-
+  resolved sibling texture at an offset - it receives the argument exactly as written, nested
+  modifiers included, not a bare path; `maskPixels` is `~MASK`'s renderer-free alpha-multiply
+  core), `~BLEND` (`blendPixels`, an exact per-pixel lerp towards a colour, baked once - not the
+  runtime `ColorMatrixFilter` approximation `blendMatrix` still offers on its own) and `~ROTATE`
+  (`rotatePixels`, which rotates the source pixels and expands the surface, unlike a sprite's own
+  `rotation`).
 - `remapPixels`/`paletteRangeMapping`/`recolorTexture`/`withTextureCanvas`/`PaletteMapping`/
-  `PaletteRange` - palette-remap recolouring (team colour by range, not multiply/add): `remapPixels`
-  is the renderer-free nearest-colour lookup over raw RGBA data, `paletteRangeMapping` builds a
+  `PaletteRange`/`PaletteRemapMode` - palette-remap recolouring (team colour by range, not
+  multiply/add): `remapPixels` is the renderer-free core, `'exact'` by default (a pixel is
+  repainted only on an exact match to a `from` colour, correct for a short specific list like
+  `~RC`/`~PAL`) or `'nearest'` (every opaque pixel repainted by closest match, correct for a
+  `paletteRangeMapping` gradient meant to cover the whole reference palette - the wrong mode for
+  a sparse list silently recolours the entire image). `paletteRangeMapping` builds a
   `[color_range]`-shaped mapping (a reference palette's own light-to-dark order placed along a
   `min -> mid -> max` gradient), and `recolorTexture` is the canvas-backed wrapper, built on the
   shared `withTextureCanvas` helper `applyTextureModifiers` above also uses.
@@ -887,9 +899,11 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 - `endLevelCarryover`/`carryoverIntoScenario`/`MWL_DEFAULT_CARRYOVER_PERCENTAGE` with `[endlevel]` -
   a scenario's end as the reference models it: a share of the side's gold (80% by default), a bonus
   on top, that side's surviving units as the recall list, and the next scenario. `result=victory`
-  ends it won, `result=defeat` lost, and the arithmetic is the same for both. `MwlSideRef` names the
-  two identities a side has today (`[side]`'s id for gold, its number for units), which is roadmap
-  item 277 rather than a guess made here.
+  ends it won, `result=defeat` lost, and the arithmetic is the same for both.
+- One side identity (item 277): the `id` a `[side]` declares (now a `string`, so a named side like
+  `id=rebels` validates) keys `world.sides` and `world.gold`, marks a map keep (`rebels Kh`), and
+  is what `unit.side`, `MwlMessage.side` and every `side`/`side_filter` filter hold. `MwlSideRef`
+  is just that id.
 - `readAttributes` / `readChildren` - shared typed readers for compiled nodes. They coerce
   scalars and lists and return source-located diagnostics instead of silently guessing.
 - MWL tables use `[table] columns=name:type|...` with typed `[row]` attributes. The compiler

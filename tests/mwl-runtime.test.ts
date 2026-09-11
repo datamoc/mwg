@@ -105,14 +105,14 @@ test('parseTerrain reads rows, keep markers, and pads short rows', () => {
 	assert.equal(parsed.width, 3);
 	assert.equal(parsed.height, 2);
 	assert.deepEqual(parsed.codes, ['Gg', 'Gg', 'Kh', 'Gg', 'Gg', 'Gg']);
-	assert.deepEqual(parsed.starts, { 1: [{ x: 2, y: 0 }] });
+	assert.deepEqual(parsed.starts, { '1': [{ x: 2, y: 0 }] });
 });
 
 test('MWL runtime loads the map, sides, and leaders', () => {
 	const runtime = arena();
 	assert.equal(runtime.world.map?.width, 3);
 	assert.equal(runtime.world.map?.height, 3);
-	assert.deepEqual(runtime.world.map?.starts, { 1: [{ x: 0, y: 0 }], 2: [{ x: 2, y: 2 }] });
+	assert.deepEqual(runtime.world.map?.starts, { '1': [{ x: 0, y: 0 }], '2': [{ x: 2, y: 2 }] });
 	assert.equal(runtime.world.sides['1'].leader, 'Swordsman');
 	assert.equal(runtime.world.sides['1'].gold, 20);
 	assert.equal(runtime.world.timeOfDay, 'dawn');
@@ -120,9 +120,9 @@ test('MWL runtime loads the map, sides, and leaders', () => {
 	const units = Object.values(runtime.world.units);
 	assert.equal(units.length, 2);
 	const swordsman = units.find((unit) => unit.type === 'Swordsman');
-	assert.deepEqual(swordsman, { hp: 10, x: 0, y: 0, alive: true, type: 'Swordsman', side: 1, moves: 3 });
+	assert.deepEqual(swordsman, { hp: 10, x: 0, y: 0, alive: true, type: 'Swordsman', side: '1', moves: 3 });
 	const archer = units.find((unit) => unit.type === 'Archer');
-	assert.deepEqual(archer, { hp: 6, x: 2, y: 2, alive: true, type: 'Archer', side: 2, moves: 3 });
+	assert.deepEqual(archer, { hp: 6, x: 2, y: 2, alive: true, type: 'Archer', side: '2', moves: 3 });
 });
 
 test('MWL runtime runs events, moves a unit, and spends its moves', () => {
@@ -155,7 +155,7 @@ test('MWL runtime resolves win and lose objectives', () => {
 
 	// A game that resolves its own actions writes the result and asks for a check.
 	const checked = arena();
-	for (const unit of Object.values(checked.world.units)) if (unit.side === 2) unit.alive = false;
+	for (const unit of Object.values(checked.world.units)) if (unit.side === '2') unit.alive = false;
 	assert.equal(checked.evaluate(), 'won');
 });
 
@@ -192,13 +192,13 @@ test('MWL runtime loads the EXAMPLES skirmish and spawns its leader on the keep'
 	});
 	assert.equal(runtime.world.map?.width, 7);
 	assert.equal(runtime.world.map?.height, 5);
-	assert.deepEqual(runtime.world.map?.starts, { 1: [{ x: 2, y: 1 }], 2: [{ x: 2, y: 4 }] });
+	assert.deepEqual(runtime.world.map?.starts, { '1': [{ x: 2, y: 1 }], '2': [{ x: 2, y: 4 }] });
 	assert.deepEqual(Object.keys(runtime.world.sides).sort(), ['1', '2']);
 	assert.equal(runtime.world.timeOfDay, 'dawn');
 
 	const units = Object.values(runtime.world.units);
 	assert.equal(units.length, 1, 'only side 1 declares a leader');
-	assert.deepEqual(units[0], { hp: 36, x: 2, y: 1, alive: true, type: 'Spearman', side: 1, moves: 5 });
+	assert.deepEqual(units[0], { hp: 36, x: 2, y: 1, alive: true, type: 'Spearman', side: '1', moves: 5 });
 	assert.equal(runtime.world.status, 'playing');
 });
 
@@ -322,7 +322,7 @@ test('a moveto event fires once, and not for the other side', () => {
 
 test('a game engine can report a move it resolved itself', () => {
 	const { runtime, messages } = moving();
-	const unit = Object.values(runtime.world.units).find((candidate) => candidate.side === 1);
+	const unit = Object.values(runtime.world.units).find((candidate) => candidate.side === '1');
 	assert.ok(unit);
 	unit.x = 1;
 	unit.y = 0;
@@ -331,14 +331,14 @@ test('a game engine can report a move it resolved itself', () => {
 	assert.equal(messages[0].text, 'The ford is guarded.');
 
 	// The side filter matches the other side's unit, and fires its own event.
-	const grunt = Object.values(runtime.world.units).find((candidate) => candidate.side === 2);
+	const grunt = Object.values(runtime.world.units).find((candidate) => candidate.side === '2');
 	assert.ok(grunt);
 	runtime.fireMoveto(Object.keys(runtime.world.units).find((id) => runtime.world.units[id] === grunt) ?? '');
 	assert.deepEqual(
 		messages.map((message) => message.text),
 		['The ford is guarded.', 'A grunt arrives.'],
 	);
-	assert.equal(messages[1].side, 2);
+	assert.equal(messages[1].side, '2');
 });
 
 test('a spent moveto event stays spent across a save and restore', () => {
@@ -380,7 +380,7 @@ text=_ "Skipped"
 	);
 	runtime.run('defaults');
 	assert.deepEqual(messages, [{ text: 'Fallback' }]);
-	assert.deepEqual(runtime.world.units['unit#0@2,3'], { hp: 1, x: 2, y: 3, alive: true });
+	assert.deepEqual(runtime.world.units['unit#@2,3'], { hp: 1, x: 2, y: 3, alive: true });
 });
 
 test('moveto supports repeatable events and ignores invalid arrivals', () => {

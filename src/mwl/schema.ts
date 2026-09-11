@@ -147,7 +147,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 		},
 		children: ['attack', 'trait', 'ability'],
 	},
-	unit: { attributes: { id: 'id', type: 'string', side: 'integer', hp: 'integer', x: 'integer', y: 'integer' } },
+	unit: { attributes: { id: 'id', type: 'string', side: 'string', hp: 'integer', x: 'integer', y: 'integer' } },
 	attack: {
 		attributes: {
 			id: 'id',
@@ -171,8 +171,9 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	},
 	side: {
 		attributes: {
-			// Side ids are numbers in MWL content and in converted Wesnoth data.
-			id: 'integer',
+			// Side ids are usually numbers in MWL content and converted Wesnoth data, but the
+			// world keys sides by this id and `unit.side` holds it, so a named side is allowed.
+			id: 'string',
 			controller: 'id',
 			gold: 'integer',
 			income: 'integer',
@@ -197,7 +198,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 		},
 	},
 	map: { attributes: { id: 'id', name: 'string', file: 'string', terrain: 'string' }, children: ['start'] },
-	start: { attributes: { side: 'integer', x: 'integer', y: 'integer' } },
+	start: { attributes: { side: 'string', x: 'integer', y: 'integer' } },
 	schedule: { attributes: { id: 'id' }, children: ['time'] },
 	time: { attributes: { id: 'id', name: 'string', lawful_bonus: 'number' } },
 	event: {
@@ -209,7 +210,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			// for any hex that unit reaches, `x`/`y` narrow it to one hex.
 			x: 'coordinate',
 			y: 'coordinate',
-			side: 'integer',
+			side: 'string',
 			unit: 'string',
 			// Defaults to true for moveto (a story beat fires once) and false for
 			// start/turn (a per-turn event has to repeat).
@@ -243,17 +244,17 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 		],
 	},
 	objectives: {
-		attributes: { side: 'integer', victory: 'string', defeat: 'string' },
+		attributes: { side: 'string', victory: 'string', defeat: 'string' },
 		children: ['victory', 'defeat'],
 	},
 	victory: {
 		attributes: {
-			side: 'integer',
+			side: 'string',
 			condition: 'id',
 			type: 'string',
 			x: 'integer',
 			y: 'integer',
-			side_filter: 'integer',
+			side_filter: 'string',
 			turns: 'integer',
 			gold: 'integer',
 			hook: 'string',
@@ -263,12 +264,12 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	},
 	defeat: {
 		attributes: {
-			side: 'integer',
+			side: 'string',
 			condition: 'id',
 			type: 'string',
 			x: 'integer',
 			y: 'integer',
-			side_filter: 'integer',
+			side_filter: 'string',
 			turns: 'integer',
 			gold: 'integer',
 			hook: 'string',
@@ -290,7 +291,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	},
 	filter: {
 		attributes: {
-			side: 'integer',
+			side: 'string',
 			type: 'string',
 			not_type: 'string',
 			unit: 'string',
@@ -319,7 +320,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 		attributes: {
 			id: 'string',
 			type: 'string',
-			side: 'integer',
+			side: 'string',
 			x: 'integer',
 			y: 'integer',
 		},
@@ -337,7 +338,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 		},
 	},
 	move: { attributes: { unit: 'string', target: 'string', x: 'integer', y: 'integer' } },
-	spawn: { attributes: { id: 'string', type: 'string', side: 'integer', x: 'integer', y: 'integer', hp: 'integer' } },
+	spawn: { attributes: { id: 'string', type: 'string', side: 'string', x: 'integer', y: 'integer', hp: 'integer' } },
 	kill: { attributes: { unit: 'string', target: 'string' }, openAttributes: 'string' },
 	gold: { attributes: { side: 'string', delta: 'integer', amount: 'integer' } },
 	endlevel: {
@@ -480,12 +481,12 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	},
 	message: {
 		// `speaker` is a display name, so it may contain spaces ("Orcish Grunt").
-		attributes: { speaker: 'string', text: 'string', value: 'string', portrait: 'string', side: 'integer' },
+		attributes: { speaker: 'string', text: 'string', value: 'string', portrait: 'string', side: 'string' },
 	},
 	teleport: { attributes: { unit: 'string', target: 'string', x: 'integer', y: 'integer' } },
 	end_turn: { attributes: {} },
-	win: { attributes: { side: 'integer' } },
-	lose: { attributes: { side: 'integer' } },
+	win: { attributes: { side: 'string' } },
+	lose: { attributes: { side: 'string' } },
 	say: { attributes: { speaker: 'id', text: 'string' } },
 	dialogue: { attributes: { id: 'id', ref: 'id' }, children: ['say', 'choice', 'branch', 'message'] },
 	choice: { attributes: { text: 'string', event: 'id', variable: 'id', equals: 'string' }, children: ['branch'] },
@@ -503,7 +504,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 		attributes: { id: 'id', name: 'string', slot: 'id', stackable: 'boolean', weight: 'number' },
 		children: ['effect'],
 	},
-	inventory: { attributes: { unit: 'string', side: 'integer', items: 'string' } },
+	inventory: { attributes: { unit: 'string', side: 'string', items: 'string' } },
 	monster: {
 		attributes: {
 			id: 'string',

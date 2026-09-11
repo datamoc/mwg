@@ -25,10 +25,10 @@ const runtimeWith = (command: string) => {
 	const runtime = new MwlRuntime(compile(source(command)));
 	//entries rather than the whole map: `world.units` itself is readonly, as the world shape should be
 	const standing: MwlWorld['units'] = {
-		hero: { hp: 10, x: 1, y: 1, alive: true, side: 1, type: 'Swordsman' },
-		buddy: { hp: 8, x: 2, y: 1, alive: true, side: 1, type: 'Bowman' },
-		rat: { hp: 3, x: 3, y: 3, alive: true, side: 2, type: 'Rat' },
-		corpse: { hp: 0, x: 4, y: 4, alive: false, side: 2, type: 'Rat' },
+		hero: { hp: 10, x: 1, y: 1, alive: true, side: '1', type: 'Swordsman' },
+		buddy: { hp: 8, x: 2, y: 1, alive: true, side: '1', type: 'Bowman' },
+		rat: { hp: 3, x: 3, y: 3, alive: true, side: '2', type: 'Rat' },
+		corpse: { hp: 0, x: 4, y: 4, alive: false, side: '2', type: 'Rat' },
 	};
 	for (const [id, unit] of Object.entries(standing)) runtime.world.units[id] = unit;
 	return runtime;
