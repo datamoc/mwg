@@ -494,6 +494,10 @@ build instead.
         submit(request: FeedbackRequest): Promise<FeedbackResponse>;
     }
 
+### `FLOATING_TEXT_STACK_GAP` (const)
+
+    export declare const FLOATING_TEXT_STACK_GAP = 4;
+
 ### `FloatingText` (class)
 
     export declare class FloatingText extends Container {
@@ -504,13 +508,20 @@ build instead.
         private readonly rising;
         private elapsed;
         private done;
-        private baseY;
         constructor(options: FloatingTextOptions);
 
         get finished(): boolean;
 
+        get riseOffset(): number;
+
+        ageAtLeast(seconds: number): void;
+
         update(dt: number): void;
     }
+
+### `floatingTextAgeAtLeast` (function)
+
+    export declare function floatingTextAgeAtLeast(elapsed: number, duration: number, atLeast: number): number;
 
 ### `floatingTextAlpha` (function)
 
@@ -534,9 +545,17 @@ build instead.
         clear(): void;
     }
 
-### `floatingTextStackOffset` (function)
+### `floatingTextStackLifePenalty` (function)
 
-    export declare function floatingTextStackOffset(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry): number;
+    export declare function floatingTextStackLifePenalty(linesBelow: number): number;
+
+### `floatingTextStackLift` (function)
+
+    export declare function floatingTextStackLift(older: FloatingTextStackEntry, below: FloatingTextStackEntry, gap?: number): number;
+
+### `floatingTextStackMoves` (function)
+
+    export declare function floatingTextStackMoves(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry, gap?: number): FloatingTextStackMove[];
 
 ### `Game` (class)
 
@@ -5672,6 +5691,10 @@ build instead.
 
     export declare const EMPTY = -1;
 
+### `FLOATING_TEXT_STACK_GAP` (const)
+
+    export declare const FLOATING_TEXT_STACK_GAP = 4;
+
 ### `FloatingText` (class)
 
     export declare class FloatingText extends Container {
@@ -5682,13 +5705,20 @@ build instead.
         private readonly rising;
         private elapsed;
         private done;
-        private baseY;
         constructor(options: FloatingTextOptions);
 
         get finished(): boolean;
 
+        get riseOffset(): number;
+
+        ageAtLeast(seconds: number): void;
+
         update(dt: number): void;
     }
+
+### `floatingTextAgeAtLeast` (function)
+
+    export declare function floatingTextAgeAtLeast(elapsed: number, duration: number, atLeast: number): number;
 
 ### `floatingTextAlpha` (function)
 
@@ -5712,9 +5742,17 @@ build instead.
         clear(): void;
     }
 
-### `floatingTextStackOffset` (function)
+### `floatingTextStackLifePenalty` (function)
 
-    export declare function floatingTextStackOffset(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry): number;
+    export declare function floatingTextStackLifePenalty(linesBelow: number): number;
+
+### `floatingTextStackLift` (function)
+
+    export declare function floatingTextStackLift(older: FloatingTextStackEntry, below: FloatingTextStackEntry, gap?: number): number;
+
+### `floatingTextStackMoves` (function)
+
+    export declare function floatingTextStackMoves(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry, gap?: number): FloatingTextStackMove[];
 
 ### `Game` (class)
 
@@ -7463,6 +7501,10 @@ build instead.
 
     export declare const defaultTheme: Theme;
 
+### `FLOATING_TEXT_STACK_GAP` (const)
+
+    export declare const FLOATING_TEXT_STACK_GAP = 4;
+
 ### `FloatingText` (class)
 
     export declare class FloatingText extends Container {
@@ -7473,13 +7515,20 @@ build instead.
         private readonly rising;
         private elapsed;
         private done;
-        private baseY;
         constructor(options: FloatingTextOptions);
 
         get finished(): boolean;
 
+        get riseOffset(): number;
+
+        ageAtLeast(seconds: number): void;
+
         update(dt: number): void;
     }
+
+### `floatingTextAgeAtLeast` (function)
+
+    export declare function floatingTextAgeAtLeast(elapsed: number, duration: number, atLeast: number): number;
 
 ### `floatingTextAlpha` (function)
 
@@ -7503,9 +7552,17 @@ build instead.
         clear(): void;
     }
 
-### `floatingTextStackOffset` (function)
+### `floatingTextStackLifePenalty` (function)
 
-    export declare function floatingTextStackOffset(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry): number;
+    export declare function floatingTextStackLifePenalty(linesBelow: number): number;
+
+### `floatingTextStackLift` (function)
+
+    export declare function floatingTextStackLift(older: FloatingTextStackEntry, below: FloatingTextStackEntry, gap?: number): number;
+
+### `floatingTextStackMoves` (function)
+
+    export declare function floatingTextStackMoves(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry, gap?: number): FloatingTextStackMove[];
 
 ### `HelpScreen` (class)
 

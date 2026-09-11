@@ -272,7 +272,8 @@ test('without reduced motion the floating text rises as it fades', () => {
 		const popup = new FloatingText({ text: '+1', duration: 1, rise: 24 });
 		popup.update(0.5);
 
-		assert.equal(popup.y, -12);
+		assert.equal(popup.y, 0, 'the pop-up itself stays where it was placed');
+		assert.equal(popup.riseOffset, -12, 'and the rise carries it up');
 		assert.equal(popup.alpha, 0.5);
 	} finally {
 		setReducedMotion(null);

@@ -5,6 +5,44 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
+## [Unreleased]
+
+### Fixed
+
+- `FloatingTextStack` stacked the wrong way round: it moved the **newcomer** down by
+  `height + 1`, where Java's `FloatingText.push()` anchors the newcomer on the target and lifts
+  the lines already there to `below.top - height - 4`. A second pop-up on one target in one turn
+  therefore landed *below* the target instead of above the first - found by a consumer measuring
+  it, not by the tests, which asserted the offset's magnitude and never its direction.
+  `floatingTextStackOffset` is replaced by `floatingTextStackLift` (the position the older line
+  must take, rather than an offset the caller adds, so the sign cannot be got wrong quietly) and
+  by `floatingTextStackMoves`, the whole policy: which lines move, newest first, where each one
+  ends up, and what age each is forced to. The loop is arithmetic now, so it is checked as
+  arithmetic rather than through a rendered label. `FLOATING_TEXT_STACK_GAP` names Java's 4px gap.
+- The lift survived exactly one frame. `FloatingText.update` wrote its own `y` from a base captured
+  on the first frame, so a line the stack had just moved snapped back on the next one: measured, a
+  line lifted to 166.6 was back at 194.4 beside the newcomer at 200, still overlapping it. The rise
+  now moves the pop-up's inner layer and never its position, which belongs to the caller and to the
+  stack; `baseY` is gone. A consumer repositioning a pop-up mid-flight no longer loses the position
+  on the next frame either.
+- A pop-up scaled *after* `push` was measured before the scale, because a `FloatingText`'s `height`
+  includes its own scale. A port rasterising at 21px and drawing at 7 therefore spaced lifted lines
+  33.4 world pixels apart for lines 9.8 tall. `push` now takes a `scale`, applied before the pop-up
+  is measured, so the entry records the size the line is actually drawn at.
+
+### Changed
+
+- `FloatingText.shortenLife(seconds)` becomes `FloatingText.ageAtLeast(seconds)`, which does what
+  Java's rule says rather than something close: `above.timeLeft = Math.min(above.timeLeft,
+  LIFESPAN - numBelow / 5f)` caps what is *left*, and a cap on what is left is a floor under the
+  age. A line that has already lived past the floor keeps the age it has, where subtracting the
+  floor shortened it a second time. `floatingTextAgeAtLeast` is that arithmetic as a pure function,
+  so the difference is checked by a test; `floatingTextStackLifePenalty(linesBelow)` stays the
+  floor itself, a fifth of a second per line below.
+- A stack keys on `key` alone, as Java's `stacks.get(key)` does. The old rule wanted the same key
+  *and* the same origin, which this framework had invented. A caller that reused one key for two
+  different targets now sees their lines stacked together, and has to give each target its own key.
+
 ## [0.7.6] - 2026-09-11
 
 ### Added

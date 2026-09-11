@@ -289,9 +289,11 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   and/or text, optional per-button nine-patch skin with per-state tints.
 - `Bar` - a filled-proportion track (health/mana/XP); flat colour or texture, optional
   `roundUpToPixel` so a nonzero value never rounds down to invisible.
-- `FloatingText`/`floatingTextAlpha`/`floatingTextRise` - a rising, fading damage/pickup
-  number and its pure motion/opacity curves; `FloatingTextStack`/`floatingTextStackOffset`
-  stacks simultaneous pop-ups at one world point without overlap.
+- `FloatingText`/`floatingTextAlpha`/`floatingTextRise`/`floatingTextAgeAtLeast` - a rising, fading
+  damage/pickup number and its pure motion, opacity and age curves; `FloatingTextStack` with
+  `floatingTextStackLift`/`floatingTextStackMoves`/`floatingTextStackLifePenalty` and
+  `FLOATING_TEXT_STACK_GAP` stacks simultaneous pop-ups at one world point without overlap, lifting
+  the lines already there the way Java's `FloatingText.push()` does.
 - `Toast` - a queued, timed pop-up notification (fade in, hold, fade out).
 - `Tooltip` - a hover explanation over a themed `Window`: a frame-driven hover delay, and
   edge-aware placement that flips rather than letting the panel run off screen.
