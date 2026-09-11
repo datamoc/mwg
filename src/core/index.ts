@@ -72,5 +72,6 @@ export { EntityRegistry } from './Entity.ts';
 export type { EntityId } from './Entity.ts';
 export { PresentationQueue } from './Presentation.ts';
 export type { PresentationQueueOptions } from './Presentation.ts';
+export { SyncGuard, stateChecksum } from './SyncGuard.ts';
 export { parseCSV } from './Csv.ts';
 export type { CsvOptions, CsvColumnType } from './Csv.ts';

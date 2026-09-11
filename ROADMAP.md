@@ -3691,9 +3691,19 @@ it.
      deliberately still global, because background music is not placed in a scene. Eleven tests in
      `tests/positional-audio.test.ts` cover both boundaries, the rolloff exponent, pan direction
      under a turned listener, and the gain actually reaching the pooled `Playable`.
-272. [Medium] Replays, undo, and a server (Absent). No replay or action journal and no
+272. ~~[Medium] Replays, undo, and a server (Absent). No replay or action journal and no
      out-of-sync detection, no undo, and no multiplayer server: a `LockstepClient` over WebSocket
-     exists, its server side does not.
+     exists, its server side does not.~~ The note was already mostly stale when it was re-read: the
+     replay pair (`Recorder`/`Player` plus `serializeReplay`), the `ActionJournal`, `UndoHistory`
+     and the reference lockstep server (`tools/multiplayer-server.mjs`, with `LockstepClient` as
+     its client) had all landed under their own items. The one genuinely missing piece was
+     out-of-sync detection, which lockstep cannot get from comparing inputs because it never
+     compares state: landed as `core.stateChecksum` (a key-order-stable 32-bit FNV-1a of JSON
+     state, so two machines hash equal values alike) and `core.SyncGuard` (the first checksum seen
+     for a tick is the reference, a disagreement marks the run divergent and remembers the first
+     such tick). A game computes the checksum each tick and compares peers' through whatever
+     channel it already has; the checksum is a drift detector, not a security primitive, and the
+     doc says so. Ten tests in `tests/sync-guard.test.ts`.
 273. [Medium] Achievements and statistics (Absent). `PlayerStats`/`RunHistory`/`StatsScreen` are
      generic; Wesnoth's achievement and statistics model has no equivalent.
 

@@ -4,8 +4,8 @@
 	"version": "0.7.6",
 	"releaseDate": "2026-09-11",
 	"source": {
-		"files": 252,
-		"lines": 36647,
+		"files": 253,
+		"lines": 36738,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -16,7 +16,7 @@
 			{
 				"name": "core",
 				"files": 41,
-				"lines": 5002
+				"lines": 5003
 			},
 			{
 				"name": "mwl",
@@ -65,8 +65,8 @@
 			},
 			{
 				"name": "simulation",
-				"files": 7,
-				"lines": 607
+				"files": 8,
+				"lines": 697
 			},
 			{
 				"name": "world",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 186,
-		"lines": 23691,
-		"cases": 1715
+		"files": 187,
+		"lines": 23881,
+		"cases": 1722
 	},
 	"tools": {
 		"files": 35,
@@ -123,9 +123,9 @@
 	},
 	"roadmap": {
 		"items": 293,
-		"completed": 273,
-		"open": 20,
-		"percent": 93
+		"completed": 274,
+		"open": 19,
+		"percent": 94
 	},
 	"api": {
 		"declarationFiles": 0
@@ -133,9 +133,9 @@
 	"bundle": {
 		"globalRaw": 941520,
 		"globalGzip": 279972,
-		"distRaw": 2819001
+		"distRaw": 2838880
 	},
 	"quality": {
-		"testToSourceRatio": 0.6
+		"testToSourceRatio": 0.7
 	}
 }

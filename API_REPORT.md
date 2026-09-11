@@ -1793,6 +1793,10 @@ build instead.
 
     export declare function startReveal(total: number, speed?: number): RevealState;
 
+### `stateChecksum` (function)
+
+    export declare function stateChecksum(value: unknown): number;
+
 ### `StateRegistry` (class)
 
     export declare class StateRegistry {
@@ -1840,6 +1844,21 @@ build instead.
 ### `stripMarkup` (function)
 
     export declare function stripMarkup(source: string, options?: MarkupOptions): string;
+
+### `SyncGuard` (class)
+
+    export declare class SyncGuard {
+        private readonly reference;
+        private desyncTick;
+
+        observe(tick: number, checksum: number): boolean;
+
+        get divergent(): boolean;
+
+        get atTick(): number | null;
+
+        reset(): void;
+    }
 
 ### `TabbedList` (class)
 
@@ -4284,6 +4303,10 @@ build instead.
         get isComplete(): boolean;
     }
 
+### `stateChecksum` (function)
+
+    export declare function stateChecksum(value: unknown): number;
+
 ### `StateRegistry` (class)
 
     export declare class StateRegistry {
@@ -4295,6 +4318,21 @@ build instead.
             readonly onDiagnostic?: (diagnostic: StateRestoreDiagnostic) => void;
         }): readonly StateRestoreDiagnostic[];
         transaction<T>(work: () => T): T;
+    }
+
+### `SyncGuard` (class)
+
+    export declare class SyncGuard {
+        private readonly reference;
+        private desyncTick;
+
+        observe(tick: number, checksum: number): boolean;
+
+        get divergent(): boolean;
+
+        get atTick(): number | null;
+
+        reset(): void;
     }
 
 ### `TelemetryClient` (class)

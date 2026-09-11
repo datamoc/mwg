@@ -74,6 +74,9 @@ the public API may still change between minor versions.
 - `simulation.CampaignSave`/`CampaignSaveState`/`CampaignSaveParts` (item 249): one `SaveSystem`
   slot for a whole campaign, holding the campaign, world and simulation snapshots together, with
   the world payload left opaque.
+- `core.stateChecksum`/`core.SyncGuard` (item 272): a key-order-stable 32-bit checksum of JSON
+  state and a guard comparing the checksums peers compute per tick, so a lockstep run can notice
+  and locate a divergence.
 - `ai.personalScoreView`/`ai.sideScoreView`/`ai.scoreWith`, over `ScoreSubject`/`ScoreView`/
   `ScorePersonality` (items 274-276): the numbers a mind needs when a search is the wrong tool.
   The game supplies what anything is worth, the framework assembles the view (own, allies and

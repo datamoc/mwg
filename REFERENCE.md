@@ -137,6 +137,9 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
 - `scramble`/`unscramble` - light save-data obfuscation, not encryption.
 - `SaveSyncClient` - pushes/pulls save data to a server the game supplies.
 - `LockstepClient` - deterministic multiplayer over an injectable WebSocket, tick-driven.
+- `stateChecksum`/`SyncGuard` - out-of-sync detection for lockstep: a key-order-stable 32-bit
+  checksum of JSON state, and a guard comparing the checksums two peers compute for each tick,
+  recording the first tick they disagree on.
 - `RunHistory` - a local record of completed runs (score, cause of death, whatever a game's
   own `summary` holds), distinct from `SaveSystem`'s continuable slots.
 - `PlayerStats` - a lifetime running total folded in one run's summary at a time, distinct
@@ -220,7 +223,20 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   batcher; register the extension once via `GameOptions.extensions`.
 - `parseImagePath`/`imageModifier`/`colorShiftMatrix`/`applyImageModifiers`/`croppedTexture` - parses common
   image suffix modifiers such as `~FL`, `~GS`, `~SCALE` and `~CROP`, then applies the supported
-  Pixi presentation changes without mutating shared source textures.
+  Pixi presentation changes without mutating shared source textures. `channelScaleMatrix`
+  (`~R`/`~G`/`~B`), `blendMatrix` (`~BLEND`) and `channelSwapMatrix` (`~CHAN`) build the
+  `ColorMatrixFilter` matrices `applyImageModifiers` also applies for `~O` (opacity) and
+  `~ROTATE` (sprite rotation). `applyTextureModifiers`/`ImageTextureProbe`/`maskPixels` cover the
+  four modifiers that need real pixel access or a sibling texture rather than a sprite property:
+  `~RC`/`~PAL` (exact palette swap, via `recolorTexture` below), `~BLIT` (composite a
+  caller-resolved sibling texture at an offset) and `~MASK` (take alpha from a sibling texture at
+  an offset, `maskPixels` being the renderer-free core of that).
+- `remapPixels`/`paletteRangeMapping`/`recolorTexture`/`withTextureCanvas`/`PaletteMapping`/
+  `PaletteRange` - palette-remap recolouring (team colour by range, not multiply/add): `remapPixels`
+  is the renderer-free nearest-colour lookup over raw RGBA data, `paletteRangeMapping` builds a
+  `[color_range]`-shaped mapping (a reference palette's own light-to-dark order placed along a
+  `min -> mid -> max` gradient), and `recolorTexture` is the canvas-backed wrapper, built on the
+  shared `withTextureCanvas` helper `applyTextureModifiers` above also uses.
 - `AnimatedSprite`/`Animation` - frame-sequence sprite animation. A frame may carry its own
   duration (Wesnoth's `image=a.png:120,b.png:80`), and an animation may start partway into itself
   or after a delay (`startTime`, which is what `start_time=-450` on an attack means: begin four and
@@ -259,6 +275,14 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   builds is a `TileMap` out of `SpriteSheet`s.
 - `blobIndex`/`autotileFrames`/`BLOB_SHAPES` - auto-tiling: the 47-shape "blob tile"
   reduction of 8-neighbour terrain matches.
+- `resolveTerrainGraphics`/`matchTerrainRule`/`squareRotate`/`hexRotate` over `TerrainRule`/
+  `TerrainCondition`/`TerrainImage`/`TerrainPlacement`/`TerrainFlagsAt` - a rule-driven
+  `[terrain_graphics]`-style transition pass for what `Autotile`'s fixed 47-shape table cannot
+  express: flag conditions at arbitrary offsets, one rule placing more than one image (so a
+  piece bigger than one cell is the rule's own data, not something `TileMap` has to hold),
+  `rotations` (`squareRotate`'s 4 exact steps or `hexRotate`'s 6) and `probability` breaking a
+  tie among rules matching at equal specificity. Returns plain placement data; drawing it
+  through a renderer is the caller's own pass.
 - `inspectGraphicsCapabilities`/`detectWebGpu`/`RENDERING_DECISIONS` - checks
   WebGL/WebGPU/WGSL support and records this project's own rendering-backend decisions.
 - `Container2D`/`Texture2D`/`Rectangle2D`/`Rect`/`TextureRegion`/`rectOf` - the renderer
@@ -287,7 +311,15 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   five entities) as a renderer-neutral contract: a `MarkupSpan` is a `MarkdownSpan` plus the colour,
   size and image a renderer may use, kept as written because resolving them is the renderer's
   business. Unknown tags, malformed tags and unset variables stay literal rather than disappearing,
-  and `markupToHtml` is the escaped HTML fragment for a renderer that speaks HTML text.
+  and `markupToHtml` is the escaped HTML fragment for a renderer that speaks HTML text - it now
+  also renders colour and size, as an inline style. `markupAccessibilityText` is the proper
+  accessibility projection (an image becomes a caller-described string, not its raw path, which
+  `stripMarkup` keeps for round-tripping instead). `layoutMarkupLines` wraps already-parsed spans
+  word by word against a caller-supplied `MarkupMeasure`, each word measured under its own
+  span's style - wrapping computed *after* styling, so a bold or larger run wraps where its own
+  wider glyphs actually land - and is backend-neutral: the same spans, `measure` and `maxWidth`
+  decide the same line breaks whether a caller then draws them through `HTMLText` or a canvas
+  `Text2D` pass.
 - `RichLabel`/`parseMarkdown`/`stripMarkdown`/`sliceSpans` - basic inline markdown (`**bold**`,
   `*italic*`, combined `***both***`, backslash escapes) through Pixi `HTMLText`, which is
   what makes mixed styles inside one string possible at all. `parseMarkdown` is pure
