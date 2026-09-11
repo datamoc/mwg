@@ -182,6 +182,18 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			team: 'integer',
 			recruit: 'string',
 			color: 'string',
+			// Wesnoth's own side keys, as its data writes them: team_name groups sides into teams,
+			// share_vision says whether a side shares what it sees, and the rest are flags a game
+			// reads (fog/shroud/hidden/heal are yes/no there, not numbers).
+			team_name: 'string',
+			user_team_name: 'string',
+			share_vision: 'string',
+			village_gold: 'integer',
+			heal: 'boolean',
+			fog: 'boolean',
+			shroud: 'boolean',
+			hidden: 'boolean',
+			flag: 'string',
 		},
 	},
 	map: { attributes: { id: 'id', name: 'string', file: 'string', terrain: 'string' }, children: ['start'] },

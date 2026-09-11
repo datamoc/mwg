@@ -3416,11 +3416,26 @@ it.
      writes one. `MwlCommand`'s `kill` variant takes an optional `filter` for the same two shapes,
      and the `[kill]` schema entry is open on attributes now, since a filter is not a fixed list.
      Six tests in `tests/mwl-kill.test.ts`.
-252. [Medium] `[side]` attribute surface (Ne correspond pas). `[side]` reads
+252. ~~[Medium] `[side]` attribute surface (Ne correspond pas). `[side]` reads
      `id`/`controller`/`gold`/`income`/`income_base`/`income_per_village`/`leader`/`team`/
      `recruit`/`color`, and `MwlWorld.sides` keeps gold/income/leader/controller/recruit. Missing
      `share_vision`, `fog`, `shroud`, `team_name`, `user_team_name`, `flag`, `village_gold`,
-     `heal`, `hidden`, and per-side `defeat`/`victory` conditions.
+     `heal`, `hidden`, and per-side `defeat`/`victory` conditions.~~ Landed except the last clause,
+     which is 283: the keys are read onto `MwlWorld.sides` exactly as written, checked against
+     Wesnoth's own data first (`team_name=north`, `share_vision=shroud|none`, `village_gold=2`,
+     `fog=yes`, `shroud=yes`, `hidden=yes`, `heal=yes`, `user_team_name=_"..."`) - which is what
+     showed `heal` is a boolean there and not a number, where guessing would have typed it wrong.
+     `yes`/`no`/`true`/`false` all read as booleans, and a side that wrote none of it keeps none of
+     it, so a world stays as small as the content that made it. One key has behaviour rather than
+     being carried: `team_name` with `share_vision`, through `sideVisionGroups`, which returns the
+     groups `FactionFog.share` takes. `none` is honoured and `all`/`shroud` are treated alike,
+     because the fog shares sight and memory as one thing; telling those two apart is a fog change
+     rather than an attribute change, and the doc says so. Six tests in `tests/mwl-sides.test.ts`.
+283. [Medium] Per-side victory and defeat conditions. `[side]` in Wesnoth can carry its own defeat
+     and victory conditions, which is how a scenario says "this side loses if its leader dies" or
+     "wins by surviving"; today only the scenario-wide `[objectives]` `condition=hook` exists, and
+     `world.status` is one value for the whole scenario rather than one per side. Found while
+     landing 252, which the item above used to include in its own scope.
 253. ~~[Medium] Turn limit as a native end condition (Absent). "Time over" as a scenario predicate
      has no framework home; the port had to add `predicate:turn_limit` itself. (`[objectives]`
      with a `condition=hook` does exist.)~~ Landed, in the shape the rest of the runtime already

@@ -42,7 +42,7 @@ export type {
 	ModifierHook,
 	PredicateHook,
 } from './hooks.ts';
-export { createWorld, execute, MwlRuntime, parseTerrain } from './runtime.ts';
+export { createWorld, execute, MwlRuntime, parseTerrain, sideVisionGroups } from './runtime.ts';
 export type {
 	MwlCommand,
 	MwlDialogueChoice,

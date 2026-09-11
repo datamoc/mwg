@@ -4624,6 +4624,10 @@ build instead.
 
     export declare const schema01: Readonly<Record<string, MwlTagSchema>>;
 
+### `sideVisionGroups` (function)
+
+    export declare function sideVisionGroups(world: MwlWorld): readonly (readonly string[])[];
+
 ### `validate` (function)
 
     export declare function validate(nodes: readonly MwlNode[], schemas?: Readonly<Record<string, MwlTagSchema>>): MwlDiagnostic[];

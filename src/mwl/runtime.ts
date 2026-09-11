@@ -45,7 +45,24 @@ export interface MwlWorld {
 	>;
 	readonly sides: Record<
 		string,
-		{ gold: number; income: number; leader?: string; controller?: string; recruit?: string }
+		{
+			gold: number;
+			income: number;
+			leader?: string;
+			controller?: string;
+			recruit?: string;
+			/** the team a side belongs to, which is what `sideVisionGroups` reads */
+			teamName?: string;
+			/** `all`, `shroud` or `none`, as `[side]` wrote it */
+			shareVision?: string;
+			villageGold?: number;
+			heal?: boolean;
+			fog?: boolean;
+			shroud?: boolean;
+			hidden?: boolean;
+			flag?: string;
+			userTeamName?: string;
+		}
 	>;
 	readonly maps: Record<string, { terrain: string; file?: string }>;
 	gold: Record<string, number>;
@@ -477,6 +494,16 @@ export class MwlRuntime {
 			if (side.attributes.leader !== undefined) entry.leader = side.attributes.leader;
 			if (side.attributes.controller !== undefined) entry.controller = side.attributes.controller;
 			if (side.attributes.recruit !== undefined) entry.recruit = side.attributes.recruit;
+			//only what was written, so a world stays as small as the content that made it
+			if (side.attributes.team_name !== undefined) entry.teamName = side.attributes.team_name;
+			if (side.attributes.user_team_name !== undefined) entry.userTeamName = side.attributes.user_team_name;
+			if (side.attributes.share_vision !== undefined) entry.shareVision = side.attributes.share_vision;
+			if (side.attributes.flag !== undefined) entry.flag = side.attributes.flag;
+			if (side.attributes.village_gold !== undefined) entry.villageGold = integer(side, 'village_gold', 0);
+			for (const key of ['heal', 'fog', 'shroud', 'hidden'] as const) {
+				const written = side.attributes[key];
+				if (written !== undefined) entry[key] = written === 'yes' || written === 'true';
+			}
 			this.world.sides[required(side, 'id')] = entry;
 		}
 		for (const map of this.nodes('map')) {
@@ -1089,6 +1116,37 @@ function endLevelSide(world: MwlWorld, named: string | undefined): MwlSideRef | 
 	//than guessed at; unifying the two identities is roadmap item 277
 	const unitSide = Number(id);
 	return { id, unitSide: Number.isFinite(unitSide) ? unitSide : -1 };
+}
+
+/**
+ * The sides a scenario's content says see together, as groups ready for `FactionFog.share`.
+ *
+ * Wesnoth groups sides into teams with `[side] team_name`, and `share_vision` says whether a side
+ * shares what it sees with its team. `none` does not; `all` and `shroud` are treated alike here
+ * because `FactionFog` shares sight and memory as one thing rather than keeping them apart, and a
+ * fog that separated them would be the place to tell the two apart. A side with no `team_name`
+ * shares with nobody, and a team of one is not returned, since sharing with nobody is what it
+ * already does.
+ *
+ * @example
+ * ```ts
+ * import { sideVisionGroups, type MwlWorld } from '@datamoc/mw_games/mwl';
+ *
+ * declare const world: MwlWorld;
+ *
+ * // sides 1 and 2 both wrote team_name=north, and side 3 asked for share_vision=none
+ * console.log(sideVisionGroups(world)); // [['1', '2']]
+ * ```
+ */
+export function sideVisionGroups(world: MwlWorld): readonly (readonly string[])[] {
+	const teams = new Map<string, string[]>();
+	for (const [id, side] of Object.entries(world.sides)) {
+		if (!side.teamName || side.shareVision === 'none') continue;
+		const group = teams.get(side.teamName);
+		if (group) group.push(id);
+		else teams.set(side.teamName, [id]);
+	}
+	return [...teams.values()].filter((group) => group.length > 1);
 }
 
 function requireUnit(world: MwlWorld, id: string): { hp: number; x: number; y: number; alive: boolean } {

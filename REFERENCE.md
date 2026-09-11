@@ -807,6 +807,11 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 - `parse`/`compile`/`validate`/`extractI18n` - the programmatic compiler surface exported from
   `@datamoc/mw_games/mwl`; games provide their own hook implementations and interpret
   game-specific effects.
+- The `[side]` surface Wesnoth's own data writes, and the one key of it with behaviour here (item
+  252): `team_name`, `user_team_name`, `share_vision`, `village_gold`, `heal`, `fog`, `shroud`,
+  `hidden` and `flag` are read onto `MwlWorld.sides` as written, `yes`/`no` becoming booleans.
+  `sideVisionGroups` turns `team_name` and `share_vision` into the groups `FactionFog.share` takes,
+  so a scenario's teams see together without every game re-deriving who shares with whom.
 - Public MWL exports - `MwlRuntime`, `MwlSyntaxError`, `collectHookReferences`, `compileNodes`,
   `compileSources`, `compileAndEmitSources`, `emitArtifacts`, `coerceTableValue`,
   `parseTableColumns`, `contentCatalog`, `createWorld`, `decodeSave`, `effectToModifier`,
