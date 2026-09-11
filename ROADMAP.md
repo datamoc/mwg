@@ -3512,11 +3512,15 @@ it.
      round-trip property over every cell of a grid in all four combinations. **What remains is the
      other half of the item, and it is its own work: 284** - `TileMap`/`TiledMap` still refuse a
      hexagonal orientation, which is the part that draws the map rather than projecting one cell.
-284. [Medium] Hexagonal tile maps. `Hex.ts` projects a hex cell in any orientation now (259), but
-     `TileMap` and `TiledMap` accept square grids only, so a hex map cannot be drawn from content:
-     needs per-cell placement through the hex projection, the hex's own pick/click mapping, and the
-     asset-side question of what a hex tile image is anchored to (a 72px source sprite overlapping
-     into neighbouring hexes is not expressible in a one-sprite-per-cell grid, see 257).
+284. [Medium] Hexagonal and isometric maps, narrowed to what is actually missing. Corrected the day
+     it was written: `TileMap` already draws all four shapes - `shape: 'square' | 'hex' |
+     'isometric' | 'staggered'` - importing `hexToPixel`/`pixelToHex` for the hex case, and item 18
+     landed the diamond projections, so "accepts square grids only" was wrong about the renderer and
+     is withdrawn here rather than left to mislead the next reader. What is genuinely missing is the
+     *asset* side and the file side: a hex or diamond cell whose art is bigger than the cell and
+     overlaps its neighbours (a 72px Wesnoth source sprite) cannot be expressed in a
+     one-sprite-per-cell grid, which is 257's `[terrain_graphics]`, and a Wesnoth `.map` has no
+     loader at all, since `rpg`'s map loading is Tiled-shaped.
 260. ~~[Medium] Halos (Absent). `[halo]`/`[halo_frame]` have no equivalent; floating labels do
      (`FloatingTextStack`).~~ Landed as `Halo`: an `AnimatedSprite` that follows a target through
      `follow(x, y)`, applying its own `x`/`y` offset once rather than in every game that draws a
@@ -3690,6 +3694,15 @@ What exists today, checked rather than assumed: `Camera` has zoom, bounds, follo
 `toScreen`/`toWorld` pair, and **no rotation**; individual sprites can rotate (the particle emitter
 and `VerticalLabel` both use it), so a game *can* rotate a world container by hand - Pixi will - but
 nothing in the framework makes that usable. That is the gap both items describe.
+
+Two things that were already here, found in the same pass, and they change what these items are. A
+**fixed angle in the projection sense already exists**: `TileMap` draws all four shapes, including
+the isometric and staggered diamond views (item 18), so 285 is about *changing* the angle at runtime
+rather than about drawing one. And **the 3D path already rotates freely**: `Engine3D`'s camera is
+Babylon's `ArcRotateCamera`, with a radius limit. That is both the existence proof that the 2D gap is
+worth closing and a shape worth copying - a camera that orbits a target under limits, rather than a
+knob on every tile - and it means 285 and 286 have to hold for the hex and diamond shapes too, not
+only for the square grid they are easiest to reason about.
 
 285. [Medium] Fixed-angle map rotation. Turn the view in quarter turns (0/90/180/270), which is what a
      strategy game wants for "look at the map from another side" without a free camera. The grid
