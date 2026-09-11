@@ -42,3 +42,23 @@ test('reveal lifts shroud without changing current vision', () => {
 	assert.equal(fog.isVisible('red', 2, 2), false);
 	assert.equal(fog.isExplored('red', 1, 1), false);
 });
+
+test('sees() answers exactly what isVisible() answers, and follows a later sync', () => {
+	const fog = new FactionFog(3, 3);
+	fog.sync('blue', [{ x: 1, y: 1 }], (source) => [source, { x: source.x + 1, y: source.y }]);
+
+	const sees = fog.sees('blue');
+	for (let y = 0; y < 3; y++) {
+		for (let x = 0; x < 3; x++) {
+			assert.equal(sees(x, y), fog.isVisible('blue', x, y), `cell ${x},${y} must read the same either way`);
+		}
+	}
+	assert.equal(sees(2, 1), true);
+	assert.equal(sees(0, 0), false);
+
+	// the predicate is a view of the shroud, not a copy of it: a caller holding one across a sync
+	// sees the update, which is what lets a score view be handed the same predicate every turn
+	fog.sync('blue', [{ x: 0, y: 0 }], (source) => [source]);
+	assert.equal(sees(2, 1), false);
+	assert.equal(sees(0, 0), true);
+});

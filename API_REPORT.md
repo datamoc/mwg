@@ -2728,6 +2728,18 @@ build instead.
         readonly seed?: number;
     }
 
+### `personalScoreView` (function)
+
+    export declare function personalScoreView<T>(subject: ScoreSubject<T>, world: readonly ScoreSubject<T>[], scoreOf: (id: T) => number, sees: (x: number, y: number) => boolean): ScoreView;
+
+### `scoreWith` (function)
+
+    export declare function scoreWith(view: ScoreView, personality: ScorePersonality): number;
+
+### `sideScoreView` (function)
+
+    export declare function sideScoreView<T>(side: string, world: readonly ScoreSubject<T>[], scoreOf: (id: T) => number, sees: (x: number, y: number) => boolean): ScoreView;
+
 ## `./ai/lua`
 
 ### `createLuaAI` (function)
@@ -3238,6 +3250,8 @@ build instead.
 
         reveal(faction: string, cells: Iterable<VisionCell>): void;
         isVisible(faction: string, x: number, y: number): boolean;
+
+        sees(faction: string): (x: number, y: number) => boolean;
         isExplored(faction: string, x: number, y: number): boolean;
         visibleCells(faction: string): readonly number[];
         exploredCells(faction: string): readonly number[];

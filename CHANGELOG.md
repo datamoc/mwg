@@ -7,6 +7,17 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `ai.personalScoreView`/`ai.sideScoreView`/`ai.scoreWith`, over `ScoreSubject`/`ScoreView`/
+  `ScorePersonality` (items 274-276): the numbers a mind needs when a search is the wrong tool.
+  The game supplies what anything is worth, the framework assembles the view (own, allies and
+  enemies kept apart, with a `seen` count), and a personality is weights over the three, so a
+  selfish scout and a loyal one are content rather than two AI implementations. A unit's sight and a
+  whole side's read through the same two functions and differ only in the visibility set they are
+  handed, and `board.FactionFog.sees(side)` is that set as a predicate: it reads the shroud as it is
+  when called, not as it was when the predicate was made.
+
 ### Fixed
 
 - `FloatingTextStack` stacked the wrong way round: it moved the **newcomer** down by

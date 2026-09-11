@@ -30,9 +30,11 @@ where those live.
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
 **Priority order among what's still open:** the Wesnoth port's gaps, items 247-273, added
 2026-09-11 after that port's own analysis, with the structural blockers first (247, 248, 254,
-255, 257, 258, 261, 262, 266, 268); then the score-driven AI items 274-276, asked for directly the
-same day and the framework work most likely to come first, since 274 is what an AI that weighs
-instead of following a script is missing. Everything else numbered has shipped: the data-extraction
+255, 257, 258, 261, 262, 266, 268): campaign chaining and `[endlevel]`, per-frame animation timing,
+the image modifiers, `[terrain_graphics]`, typographic markup, the missing widgets and text input,
+a Wesnoth-compatible RNG, and shared team vision. The score-driven AI items 274-276, asked for
+directly the same day, landed first: they are self-contained where those blockers are not, and
+the order here is priority, not number. Everything else numbered has shipped: the data-extraction
 cluster 205-213 (whose items say what landed), the former priority cluster (28, 30, 41, 45), the
 verification and accessibility tail (192-197), the SVG and benchmark follow-up (198) and the
 reduced-motion cluster (199-202). Numbers are never reassigned once given - the list is an
@@ -3457,28 +3459,44 @@ it.
 Asked for directly (2026-09-11), and distinct from 269: Wesnoth's AI picks among candidate
 actions by heuristic aspects and stages, while this asks for an AI whose decisions rest on
 *numbers* it can read. The contract already declares the two granularities the request names -
-`AIAgentDefinition.scope` is `'actor' | 'controller'` (`src/ai/index.ts`) - so what is missing is
-not a new scope but a score, and a way to see only what each scope can see.
+`AIAgentDefinition.scope` is `'actor' | 'controller'` (`src/ai/index.ts`) - so what was missing was
+not a new scope but a score, and a way to see only what each scope can see. All three landed the
+same day; the notes on each say what shipped.
 
-274. [High] A score an AI can read, not only a search can use. A rules agent decides from an
+274. ~~[High] A score an AI can read, not only a search can use. A rules agent decides from an
      opaque `perception: AIValue` the game fills and its own `state`; a score exists only inside
      `alphaBetaSearch`, as the `evaluate(state, rootPlayer)` callback (`src/ai/search.ts`) the game
      hands its own search. So a non-procedural AI, one that weighs outcomes instead of matching a
      behaviour, has nothing to weigh: to compare attacking against holding it must re-derive the
      game's valuation from the perception blob, which is the duplication the envelope exists to
      prevent. Needs a score source the game supplies once and an AI reads at both scopes: numbers
-     in, decisions out, and the rules of valuation left where they belong, in the game.
-275. [Medium] Actor-scope scoring with a personality. A character's AI reads its own score, the
+     in, decisions out, and the rules of valuation left where they belong, in the game.~~ Landed as
+     `ai.personalScoreView`/`ai.sideScoreView` over `ScoreSubject`/`ScoreView`: the game hands in
+     `scoreOf`, the framework assembles own, allies and enemies plus a `seen` count, and both
+     `scope` values read through the same two functions. The valuation rules stayed in the game,
+     which is what the item asked for.
+275. ~~[Medium] Actor-scope scoring with a personality. A character's AI reads its own score, the
      score of every ally it can see and the score of every enemy it can see, and the personality
      attached to that character decides how much of each is its business: a selfish one weights
      its own score, a loyal one its allies'. Needs a score view filtered by that actor's vision
      and a personality that is data rather than code (weights over own, ally and enemy scores),
-     so temperaments are authored as content and not as one AI implementation each.
-276. [Medium] Controller-scope scoring under fog. A whole-map ("player") AI aggregates the scores
+     so temperaments are authored as content and not as one AI implementation each.~~ Landed:
+     `personalScoreView` takes the actor's own visibility predicate, and `ai.scoreWith` collapses a
+     view by `ScorePersonality` weights, which is data a game authors per character. Eight tests in
+     `tests/ai-score.test.ts`, one of them asserting that a personality is a reading and never a
+     mutation of the view.
+276. ~~[Medium] Controller-scope scoring under fog. A whole-map ("player") AI aggregates the scores
      of the allies and enemies *it* can see, which is a different visibility set from any single
      unit's: the union over the team's units, and `FactionFog` (`src/board/FogOfWar.ts`) has no
      such union today (268). Needs a team-scoped score view that respects the fog, so both scopes
-     run the same scoring code and differ only in which visibility set they are handed.
+     run the same scoring code and differ only in which visibility set they are handed.~~ Landed:
+     `sideScoreView`, over the same visibility-set shape, so the only difference from 275 is what
+     the caller hands in, plus `FactionFog.sees(side)` as that set. One test reads one world through
+     a unit's reach and through a side's union and checks they differ only where the second sees
+     more. The item's premise was one step off and is worth correcting: `FactionFog.sync` already
+     unions every source it is handed, so the union over a side's units was expressible all along,
+     and what was missing was a predicate to hand over. The half that is genuinely absent is allies
+     sharing one another's sight, which is 268 and stays open.
 
 ### Parked decisions
 

@@ -5,7 +5,7 @@
 	"releaseDate": "2026-09-11",
 	"source": {
 		"files": 242,
-		"lines": 33909,
+		"lines": 33921,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -31,7 +31,7 @@
 			{
 				"name": "board",
 				"files": 8,
-				"lines": 2619
+				"lines": 2628
 			},
 			{
 				"name": "actors",
@@ -61,7 +61,7 @@
 			{
 				"name": "ai",
 				"files": 3,
-				"lines": 678
+				"lines": 681
 			},
 			{
 				"name": "battle",
@@ -87,8 +87,8 @@
 	},
 	"tests": {
 		"files": 167,
-		"lines": 20743,
-		"cases": 1525
+		"lines": 20766,
+		"cases": 1526
 	},
 	"tools": {
 		"files": 34,
@@ -123,17 +123,17 @@
 	},
 	"roadmap": {
 		"items": 276,
-		"completed": 246,
-		"open": 30,
-		"percent": 89
+		"completed": 249,
+		"open": 27,
+		"percent": 90
 	},
 	"api": {
 		"declarationFiles": 0
 	},
 	"bundle": {
-		"globalRaw": 933549,
-		"globalGzip": 277188,
-		"distRaw": 2640732
+		"globalRaw": 934043,
+		"globalGzip": 277361,
+		"distRaw": 2653640
 	},
 	"quality": {
 		"testToSourceRatio": 0.6

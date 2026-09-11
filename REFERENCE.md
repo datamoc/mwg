@@ -831,6 +831,13 @@ actions, serialisable state, diagnostics and budgets.
   detection, current player and evaluation from the root player's perspective. `depth`,
   `maxNodes`, cancellation and node diagnostics bound the search; the same primitive works
   for a local actor and for a top-level controller such as a chess master.
+- `personalScoreView`/`sideScoreView`/`scoreWith` over `ScoreSubject`/`ScoreView`/
+  `ScorePersonality` - the numbers a mind that weighs outcomes needs, for the case where a search
+  is the wrong tool. The game owns what anything is worth (`scoreOf`), the framework owns how a
+  view is assembled (own, allies and enemies kept apart, plus a `seen` count), and the mind owns
+  what it cares about: a personality is weights, so a selfish scout and a loyal one are content
+  rather than two AI implementations. Both scopes read through the same code and differ only in
+  the visibility set they are handed, a unit's own sight or `FactionFog.sees(side)`.
 - `AIDecision`/`AIDecisionInput`/`AIAction` - the shared contract for perception, explicit
   action objects, status (`action`, `idle`, `cancelled`, or `budget-exceeded`), emitted
   diagnostics and state snapshots.

@@ -70,6 +70,15 @@ export class FactionFog {
 		return this.visible.get(faction)?.has(this.index(x, y)) ?? false;
 	}
 
+	/**
+	 * One faction's sight as a predicate, ready to hand to anything that asks what a side can see -
+	 * `ai`'s score views, for one. It reads the shroud as it is when called, not as it was when the
+	 * predicate was made, so a caller holding one across a `sync` sees the update.
+	 */
+	sees(faction: string): (x: number, y: number) => boolean {
+		return (x, y) => this.isVisible(faction, x, y);
+	}
+
 	isExplored(faction: string, x: number, y: number): boolean {
 		return this.explored.get(faction)?.has(this.index(x, y)) ?? false;
 	}

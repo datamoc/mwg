@@ -118,16 +118,19 @@ test('parses repository ROADMAP.md correctly', () => {
 	assert.ok(result.overallTotal >= 160, `expected at least 160 items, got ${result.overallTotal}`);
 	assert.ok(result.overallDone >= 160, `expected at least 160 done items, got ${result.overallDone}`);
 	assert.ok(result.sections.length >= 6, `expected at least 6 milestone batches, got ${result.sections.length}`);
-	// The numbered list is append-only, so a recorded but not-yet-built idea sits at the
-	// tail, after every shipped item, never interleaved with history. The open tail is the
-	// Wesnoth-port cluster right now; asserting the ordering rather than a fixed open set
-	// means the next recorded idea needs no test edit.
-	const openNumbers = result.openItems.map((item) => item.num ?? 0);
-	const closedNumbers = result.allItems.filter((item) => item.done).map((item) => item.num ?? 0);
-	assert.ok(
-		openNumbers.every((open) => closedNumbers.every((closed) => open > closed)),
-		'open numbered items must sit at the end of the append-only list',
+	// The list is append-only, but completion is not: work is taken in priority order, so a newer
+	// cluster can land while an older one is still open - items 274-276 landed with 247-273 open, and
+	// an earlier version of this test asserted the prefix rule that forbade exactly that. What stays
+	// true is narrower and still worth guarding: every number appears once, and every item is either
+	// done or open. Density from 1 is checked separately, in the test below.
+	const numbers = result.allItems.map((item) => item.num ?? 0);
+	assert.equal(new Set(numbers).size, numbers.length, 'no numbered item may be recorded twice');
+	assert.equal(
+		result.overallDone,
+		result.allItems.filter((item) => item.done).length,
+		'every item is either done or open, never both and never neither',
 	);
+	assert.ok(result.openItems.length > 0, 'expected the roadmap to still record open work');
 
 	// The 1.0 exit checklist is checks to run, not numbered capabilities, so it stays out of the
 	// totals above. It is reported separately, under its own heading, because a dashboard that
