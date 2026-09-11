@@ -523,10 +523,13 @@ in the same session they were logged in.
     `AbilityCycle` ticks named cooldowns down, lists what is ready, and spends on `use`.
     Both round-trip through JSON for a saved mid-fight boss. 11 unit tests
 63. ~~a spreading area effect over the grid: fire, gas, anything with a volume per cell~~ -
-    `roguelike.Blob` holds volumes, diffuses a share into passable 4-neighbours per step
+    `core.Blob` holds volumes, diffuses a share into passable 4-neighbours per step
     and decays the rest (`decay: 1` conserves and only moves volume around); the game
     decides what a volume means via `cellsAbove`. Float dust snaps to zero so a burned-out
-    effect reads as gone. 6 unit tests, including wall-blocking and the full decay-out
+    effect reads as gone, and `spread` hands back the cells it just emptied, so the ground
+    under a fire can turn to embers at the moment the flames leave it rather than the game
+    diffing `cellsAbove` between steps. 12 unit tests, including wall-blocking, the full
+    decay-out, and each cell reported on the step that empties it
 64. ~~floor serialization: a whole dungeon floor as save data~~ - `Level`, `Secrets` and
     `Doors` gained `toJSON`/`fromJSON` following `QuestLog`'s definitions-fresh convention
     (terrain ids and rooms persist; the game's own `kinds` table is supplied on load, and
@@ -3358,29 +3361,72 @@ standing intentions.
 The definition of done for 1.0. Each line is a check to run, not a feature to build;
 every numbered capability in the list above has already shipped.
 
-- [ ] `npm run check`, `npm test`, `npm run build`, and `npm run audit` are all green on
-      the release commit.
-- [ ] `npm run api:check` passes: the committed `API_REPORT.md` matches the built
-      declarations exactly.
-- [ ] `npm publish --dry-run` shows the intended package contents and no `tools/docs`
+- [x] `npm run check`, `npm test`, `npm run build`, and `npm run audit` are all green on
+      the release commit. (2026-09-11: green on the working tree - 1501 tests, 0
+      vulnerabilities, clean build. Re-run on the 1.0 release commit itself, which is the
+      wording this line keeps.)
+- [x] `npm run api:check` passes: the committed `API_REPORT.md` matches the built
+      declarations exactly. (2026-09-11: passes, after regenerating for `Blob.spread`'s
+      return value.)
+- [x] `npm publish --dry-run` shows the intended package contents and no `tools/docs`
       leakage (the getting-started page's own hazard, re-checked each release).
-- [ ] The npm package's map files are decided explicitly, not left to drift: `dist` ships a
-      `.js.map` and `.d.ts.map` beside most modules (422 of its 845 files, though a much
-      smaller share of the bytes), a deliberate debuggability choice. Keep or drop them for
-      1.0 and re-check the package contents with `npm publish --dry-run` either way.
-- [ ] The getting-started tutorial is followed from scratch, in an empty directory
+      (2026-09-11: 975 files, 1.0 MB packed, 3.8 MB unpacked, and the listing holds no
+      `tools/docs` and no `node_modules` entry.)
+- [x] The npm package's map files are decided explicitly, not left to drift: `dist` ships a
+      `.js.map` and a `.d.ts.map` beside most modules, a deliberate debuggability choice.
+      (2026-09-11: **kept**, with the numbers re-measured - they are 482 of 965 files and
+      24% of the gzipped bytes, not the "422 of 845, a much smaller share of the bytes" this
+      line used to claim. Kept because what a player downloads is the 1.0 MB tarball, and the
+      reader these serve is a consumer debugging a bundled game: the `.d.ts.map` is also what
+      makes an editor's go-to-definition land in TypeScript instead of emitted JavaScript.
+      Re-decide on packed size, not file count.)
+- [x] The getting-started tutorial is followed from scratch, in an empty directory
       outside this repo, once for each documented path: `npm install @datamoc/mw_games
-      vite`, the `npm pack` + install-by-path `.tgz` fallback, and the no-install
+      pixi.js vite`, the `npm pack` + install-by-path `.tgz` fallback, and the no-install
       `mw_games.global.js` script tag. All three reach a working `file://` page.
-- [ ] `pixi.js` moves from `dependencies` to optional `peerDependencies` (item 175's
+      (2026-09-11: all three, each a WebGL, game-ready page with no page errors. The registry
+      path in `C:\Users\miche\dev\_mwg-tutorial-registry`, against the published 0.7.4; the
+      `.tgz` and global paths through `npm run package:smoke`, whose scratch directory is
+      outside the repo. `package:smoke` now names `pixi.js` in the consumer install, so it
+      fails if the tutorial's install line ever stops being enough.)
+- [x] `pixi.js` moves from `dependencies` to optional `peerDependencies` (item 175's
       decision) and the two npm paths above are re-verified under that new install
-      contract before the move ships.
-- [ ] The public API gets a stability-marker contract: `@experimental` on anything not
+      contract before the move ships. (2026-09-11: moved, with `pixi.js` also in
+      `devDependencies` so this repo still builds and tests, and the install line named in
+      `README`, `REFERENCE.md` and the getting-started page. Re-verified: `package:smoke`
+      installs the packed tarball plus `pixi.js` and reaches a working `file://` page. The one
+      half that has to publish rather than build - a literal registry fetch of the new shape -
+      can only be re-run once 1.0 is on the registry; the tarball path exercises the same peer
+      resolution, since npm reads the same `package.json` out of it. The published 0.7.4 still
+      lists `pixi.js` under `dependencies`, which is exactly why this belongs to 1.0.)
+- [x] The public API gets a stability-marker contract: `@experimental` on anything not
       intended as 1.0-stable, called out in release notes, and a `DEPRECATED` convention, so
       1.0 is the last release where a rename or an unstable surface moves silently.
-- [ ] A browser smoke check opens one built example from `file://` and looks at it:
+      (2026-09-11: the contract is written in README's API stability note and wired into
+      DEVELOPMENT.md's release step 2. Nothing under `src/` carries `@experimental` today,
+      which is the honest state rather than an omission: every shipped surface is intended
+      stable, so the tag is there for what comes next. Held by review, not by a check.)
+- [x] A browser smoke check opens one built example from `file://` and looks at it:
       `npm run visual:smoke:ui` runs the check and writes a screenshot, but a human still
       has to look at it - the class of layout bug 1.0 must not ship is invisible to every
-      automated check above.
-- [ ] CHANGELOG, REFERENCE.md and the website's documentation page are regenerated or
-      updated for whatever changed since the last release.
+      automated check above. (2026-09-11: looked at
+      `benchmark-results/visual-smoke/examples-interface-dist-index.png`. No window off-screen
+      or clipped, no text over text, canvas painted to all four edges. The three things the
+      eye catches are the demo's own intended widgets, checked in the source rather than
+      assumed: the blue square that reads as a detached checkbox is `motionDot`, the animated
+      element the label beside it deliberately sits away from, the bare readout is the
+      frame-time display, and the unindented bag row is the deliberately un-carryable entry.
+      No framework layout defect to fix.)
+- [x] CHANGELOG, REFERENCE.md and the website's documentation page are regenerated or
+      updated for whatever changed since the last release. (2026-09-11: `npm run webpage:docs`
+      regenerates REFERENCE.md and the documentation page, both current; REFERENCE.md gained
+      the peer-dependency sentence. CHANGELOG carries a new `[Unreleased]` section covering
+      the `Blob` hook and the pixi move, moved to the top where Keep a Changelog puts it, from
+      the stale empty one that had been sitting between 0.7.2 and 0.7.1.)
+- [ ] **Both reference ports are complete and playable end to end against this release**
+      (requested directly, 2026-09-11): the Shattered Pixel Dungeon port
+      (`mwg-pixel-dungeon`) and the Wesnoth port (`mwg-wesno`, an empty directory today). This
+      is the one line here that is not a check to run in this repo - it depends on two other
+      projects - and it earns its place in the 1.0 definition of done because finished games are
+      what validate the framework, where the examples only exercise it. The current 0.x release
+      is what the ports build against in the meantime.

@@ -19,7 +19,11 @@
  * const fire = new Blob(20, 20);
  * fire.seed(5, 5, 10); // a fireball lands
  *
- * fire.spread((x, y) => x >= 0 && y >= 0 && x < 20 && y < 20, 0.25, 0.9); // one turn of spreading
+ * // one turn of spreading; it hands back whatever it just burned out, so the ground under
+ * // the fire can turn to embers at the moment the flames leave it
+ * const burntOut = fire.spread((x, y) => x >= 0 && y >= 0 && x < 20 && y < 20, 0.25, 0.9);
+ * for (const cell of burntOut) console.log('burned out at', cell.x, cell.y);
+ *
  * for (const cell of fire.cellsAbove(0.5)) console.log('burning at', cell.x, cell.y);
  *
  * fire.clear(5, 5); // someone douses that one tile
@@ -83,8 +87,12 @@ export class Blob {
 	 * `decay` of what it ends up with. `decay: 1` conserves volume and only moves it around;
 	 * anything lower thins the effect out over time. `open(x, y)` decides whether the effect
 	 * may cross into a cell, so the caller chooses what blocks it.
+	 *
+	 * Returns the cells this step emptied, in reading order: those holding a volume before the
+	 * step and none after it. That is the moment a game turns the grass under a fire to embers,
+	 * and reporting it here saves the game diffing `cellsAbove` between two steps to notice.
 	 */
-	spread(open: (x: number, y: number) => boolean, spread = 0.25, decay = 0.9): void {
+	spread(open: (x: number, y: number) => boolean, spread = 0.25, decay = 0.9): Array<{ x: number; y: number }> {
 		const next = new Float32Array(this.volume.length);
 
 		for (let y = 0; y < this.height; y++) {
@@ -111,11 +119,17 @@ export class Blob {
 			}
 		}
 
+		const emptied: Array<{ x: number; y: number }> = [];
 		for (let i = 0; i < next.length; i++) {
 			const kept = next[i] * decay;
 			//snap float dust to zero so a burned-out effect actually reads as gone
-			this.volume[i] = kept < 0.001 ? 0 : kept;
+			const volume = kept < 0.001 ? 0 : kept;
+			if (volume === 0 && this.volume[i] > 0) {
+				emptied.push({ x: i % this.width, y: Math.floor(i / this.width) });
+			}
+			this.volume[i] = volume;
 		}
+		return emptied;
 	}
 
 	/** every cell holding at least `minimum` - the cells a game applies its effect on */

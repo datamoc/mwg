@@ -28,6 +28,14 @@ and the [mwg Pixel Dungeon study](https://datamoc.github.io/mwg-pixel-dungeon/).
 > Each future major version is meant to carry a name, one per letter of the alphabet: 1.0 takes
 > a name beginning with A, 2.0 one beginning with B, and so on. None of the names are chosen
 > yet, and nothing depends on them until they are.
+>
+> **API stability:** everything documented in [REFERENCE.md](REFERENCE.md) and
+> [API_REPORT.md](API_REPORT.md) is meant to be stable from 1.0 on. Anything that is not carries
+> an `@experimental` tag in its own doc comment, and is called out as experimental in the release
+> notes that introduce it, so it can still change or disappear without a major version. A rename
+> or a removal is deprecated first: the old name keeps working, its doc comment carries
+> `@deprecated` naming the replacement, and the release notes list it. 1.0 is the last release
+> where either can move silently.
 
 ## What it is for
 
@@ -86,19 +94,24 @@ for free: a finished game is still a folder you double-click.
 **With a toolchain**, if you already use a bundler:
 
 ```
-npm install @datamoc/mw_games
+npm install @datamoc/mw_games pixi.js
 ```
 ```ts
 import { Game, Scene } from '@datamoc/mw_games/core';
 import { Sprite } from '@datamoc/mw_games/two-d/render';
 ```
 
+`pixi.js` is the 2D renderer, and it is an optional peer dependency rather than an installed
+one: a game that only uses `mwg/core`, `mwg/roguelike`, `mwg/actors`, `mwg/i18n` or the other
+logic modules never downloads it. Name it on the install line when a game draws, exactly as
+`@babylonjs/core` is named for 3D.
+
 No npm registry access (an offline machine, a pinned artifact for reproducible builds)?
 `npm pack @datamoc/mw_games` downloads the exact published tarball; install it by path
 instead of by name:
 
 ```
-npm install ./datamoc-mw_games-0.1.1.tgz
+npm install ./datamoc-mw_games-<version>.tgz pixi.js
 ```
 
 **Without either.** Drop one file next to your page and open it: this path exists because

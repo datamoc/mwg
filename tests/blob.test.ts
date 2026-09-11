@@ -79,3 +79,43 @@ test('a cleared cell stays gone through cellsAbove and a later spread', () => {
 	blob.spread(open, 0.5, 1);
 	assert.equal(blob.total(), 0, 'a cleared cell has nothing left to share');
 });
+
+test('spread reports nothing while the effect is still alive', () => {
+	const blob = new Blob(5, 5);
+	blob.seed(2, 2, 8);
+	assert.deepEqual(blob.spread(open, 0.5, 1), [], 'volume is conserved, so nothing dies');
+});
+
+test('spread reports a cell on the step that empties it, and only that step', () => {
+	const blob = new Blob(3, 3);
+	blob.seed(1, 1, 1);
+
+	const reportedPerStep: number[] = [];
+	while (blob.total() > 0) {
+		reportedPerStep.push(blob.spread(open, 0, 0.5).length);
+		assert.ok(reportedPerStep.length < 100, `the volume should die out, sat at ${blob.total()}`);
+	}
+
+	assert.equal(reportedPerStep.at(-1), 1, 'the emptying step is the one that reports the cell');
+	assert.equal(
+		reportedPerStep.slice(0, -1).reduce((sum, n) => sum + n, 0),
+		0,
+		'no earlier step reports anything',
+	);
+	assert.deepEqual(blob.spread(open, 0, 0.5), [], 'and an empty blob keeps reporting nothing');
+});
+
+test('a cell doused before the step is not reported as emptied by it', () => {
+	const blob = new Blob(3, 3);
+	blob.seed(1, 1, 5);
+	blob.clear(1, 1);
+	assert.deepEqual(blob.spread(open, 0.5, 1), [], 'clear() emptied it, the step did not');
+});
+
+test('an emptied cell is reported with its own coordinates, not its index', () => {
+	const blob = new Blob(3, 3);
+	blob.seed(2, 1, 0.0005); // index 5, x 2, y 1: a swapped pair would show
+	blob.seed(0, 0, 5);
+	assert.deepEqual(blob.spread(open, 0, 0.5), [{ x: 2, y: 1 }]);
+	assert.ok(blob.volumeAt(0, 0) > 0, 'the cell that survived is not reported');
+});

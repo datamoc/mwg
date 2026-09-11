@@ -153,7 +153,10 @@ try {
 	if (!tarball) throw new Error('npm pack produced no tarball');
 	console.log(`packed ${tarball}`);
 
-	// the with-npm path: install the tarball and build through the tutorial's own steps
+	// the with-npm path: install the tarball and build through the tutorial's own steps.
+	//`pixi.js` is named explicitly because it is an optional peer dependency now (item 175's
+	//1.0 decision), so npm no longer installs it on the consumer's behalf: the tutorial's own
+	//install line names it, and this smoke fails if that line stops being enough.
 	const npmApp = join(scratch, 'npm-app');
 	mkdirSync(npmApp, { recursive: true });
 	writeFileSync(
@@ -165,6 +168,7 @@ try {
 				type: 'module',
 				dependencies: {
 					'@datamoc/mw_games': `file:${join(scratch, tarball).replace(/\\/g, '/')}`,
+					'pixi.js': devDependencies['pixi.js'],
 					vite: devDependencies.vite,
 				},
 				//npm 12 refuses lifecycle scripts unless a project allows them by name; esbuild is

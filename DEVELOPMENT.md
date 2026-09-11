@@ -80,7 +80,9 @@ Do not replace this with a server-only solution for convenience.
 ## Release process
 
 1. Update `package.json` and `src/version.ts` to the same version.
-2. Add a dated Keep a Changelog entry describing what actually shipped.
+2. Add a dated Keep a Changelog entry describing what actually shipped, calling out anything
+   experimental or deprecated in it: a new `@experimental` surface (README's API stability note)
+   and every new `@deprecated` rename or removal.
 3. Run `npm run check`, `npm test`, `npm run build`, `npm run stats:write`,
    `npm run stats:check`, and `npm publish --dry-run`.
 4. Commit the release as one commit, using the existing `release: x.y.z, summary` style.

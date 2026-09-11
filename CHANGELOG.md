@@ -5,6 +5,23 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
+## [0.7.6] - 2026-09-11
+
+### Added
+
+- `Blob.spread` returns the cells it just emptied, in reading order, so a game can turn the ground
+  under a fire to embers at the moment the flames leave it instead of diffing `cellsAbove` between
+  two steps to notice. Cells emptied before the step (a doused one) are not reported.
+
+### Changed
+
+- `pixi.js` moved from `dependencies` to an optional peer dependency, the treatment
+  `@babylonjs/core` already had (item 175's 1.0 decision). The install line now names it:
+  `npm install @datamoc/mw_games pixi.js vite`. A game that only uses the renderer-free modules
+  never downloads it. Verified from an empty directory on all three documented paths: the
+  registry install, the `npm pack` tarball installed by path, and the no-install
+  `mw_games.global.js` script tag.
+
 ## [0.7.4] - 2026-09-11
 
 ### Added
@@ -54,8 +71,6 @@ the public API may still change between minor versions.
 - The chess example now uses the shared MWG alpha-beta primitive.
 - The standalone bundle baseline, API report, documentation, and roadmap were updated.
 - Release checks now isolate npm audit and package-smoke caches from user-level npm settings.
-
-## [Unreleased]
 
 ## [0.7.1] - 2026-09-10
 

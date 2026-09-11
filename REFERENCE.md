@@ -24,8 +24,10 @@ renders: the scene lifecycle, `SceneStack`, input, saves, RNG, signals, achievem
 | --- | --- | --- |
 | `core`, `i18n`, `actors`, `world`, `battle`, `simulation`, `roguelike`, `board`, `audio`, `rpg`, `assets/paths` | `two-d` (and `two-d/render`, `two-d/ui`, `two-d/stage`), `assets` | `3d` |
 
-`roguelike` adds only `rot-js`. A Babylon game importing `core` + `3d` pulls in no Pixi at
-all, and a 2D game importing `core` + `two-d` pulls in no Babylon. `rpg` is renderer-free too:
+`roguelike` adds only `rot-js`, and `pixi.js`, `@babylonjs/core`/`@babylonjs/loaders` and
+`@capacitor/core` are optional peer dependencies rather than installed ones, so a project names
+only the renderer it actually draws with. A Babylon game importing `core` + `3d` pulls in no Pixi
+at all, and a 2D game importing `core` + `two-d` pulls in no Babylon. `rpg` is renderer-free too:
 its event interpreter takes an injected `DialoguePresenter` rather than building a widget, so
 a 3D game can run map events, dialogue and quests without a 2D renderer anywhere in reach.
 

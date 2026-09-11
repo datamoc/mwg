@@ -198,7 +198,10 @@ build instead.
 
         clear(x: number, y: number): void;
 
-        spread(open: (x: number, y: number) => boolean, spread?: number, decay?: number): void;
+        spread(open: (x: number, y: number) => boolean, spread?: number, decay?: number): Array<{
+            x: number;
+            y: number;
+        }>;
 
         cellsAbove(minimum: number): Array<{
             x: number;
@@ -1978,7 +1981,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.7.4";
+    export declare const version = "0.7.6";
 
 ### `VerticalLabel` (class)
 
@@ -3447,7 +3450,10 @@ build instead.
 
         clear(x: number, y: number): void;
 
-        spread(open: (x: number, y: number) => boolean, spread?: number, decay?: number): void;
+        spread(open: (x: number, y: number) => boolean, spread?: number, decay?: number): Array<{
+            x: number;
+            y: number;
+        }>;
 
         cellsAbove(minimum: number): Array<{
             x: number;

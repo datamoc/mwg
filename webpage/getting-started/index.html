@@ -94,12 +94,14 @@
 					<div class="two-col">
 						<div class="panel" style="padding: 1rem">
 							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>With npm</strong></p>
-							<pre style="margin: 0"><code>npm install @datamoc/mw_games vite</code></pre>
+							<pre style="margin: 0"><code>npm install @datamoc/mw_games pixi.js vite</code></pre>
 							<p style="margin: 0.5rem 0 0; font-size: 0.85rem">
-								Fetches from the registry, what this tutorial uses from here on. No
-								registry access? Download <code>datamoc-mw_games-0.1.1.tgz</code> from a
+								Fetches from the registry, what this tutorial uses from here on.
+								<code>pixi.js</code> is the 2D renderer and an optional peer
+								dependency, so name it yourself, exactly as this line does. No
+								registry access? Download <code>datamoc-mw_games-&lt;version&gt;.tgz</code> from a
 								<a href="https://github.com/datamoc/mwg/releases">release</a> and run
-								<code>npm install ./datamoc-mw_games-0.1.1.tgz</code> instead, same
+								<code>npm install ./datamoc-mw_games-&lt;version&gt;.tgz pixi.js vite</code> instead, same
 								result, same <code>node_modules/@datamoc/mw_games/</code>, every later
 								step identical.
 							</p>
@@ -108,7 +110,7 @@
 							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>Without npm</strong></p>
 							<pre style="margin: 0"><code>&lt;script src="mw_games.global.js"&gt;&lt;/script&gt;</code></pre>
 							<p style="margin: 0.5rem 0 0; font-size: 0.85rem">
-								Download and unzip <code>mw_games-0.1.1.zip</code> from a
+								Download and unzip <code>mw_games-&lt;version&gt;.zip</code> from a
 								<a href="https://github.com/datamoc/mwg/releases">release</a>; it holds
 								one file, already <code>file://</code>-ready. No install step, no
 								<code>node_modules/</code>.
