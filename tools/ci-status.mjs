@@ -28,6 +28,8 @@ const deadline = Date.now() + timeoutSeconds * 1000;
 const short = head.slice(0, 7);
 
 function runsOnThisCommit() {
+	//a network hiccup is not a verdict about the commit, so it is reported rather than thrown: the
+	//loop below retries it, and a run that never became readable ends as "could not reach GitHub"
 	const output = execFileSync(
 		'gh',
 		['run', 'list', '--commit', head, '--limit', '30', '--json', 'databaseId,workflowName,status,conclusion'],
@@ -37,16 +39,26 @@ function runsOnThisCommit() {
 }
 
 let listed = [];
+let trouble = null;
 while (Date.now() < deadline) {
-	listed = runsOnThisCommit();
-	if (listed.length > 0 && listed.every((run) => run.status === 'completed')) break;
+	try {
+		listed = runsOnThisCommit();
+		trouble = null;
+	} catch (error) {
+		trouble = error instanceof Error ? error.message.split('\n')[0] : String(error);
+	}
+	if (trouble === null && listed.length > 0 && listed.every((run) => run.status === 'completed')) break;
 	//right after a push the runs for this commit may not exist yet, which is exactly the window in
 	//which asking for "the latest run" answers about someone else's commit
 	await new Promise((resolve) => setTimeout(resolve, 15000));
 }
 
 if (listed.length === 0) {
-	console.error(`no workflow run found for ${short} after ${timeoutSeconds}s`);
+	console.error(
+		trouble === null
+			? `no workflow run found for ${short} after ${timeoutSeconds}s`
+			: `could not reach GitHub for ${short} within ${timeoutSeconds}s: ${trouble}`,
+	);
 	process.exit(2);
 }
 if (!listed.every((run) => run.status === 'completed')) {
