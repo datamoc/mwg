@@ -3953,10 +3953,15 @@ only for the square grid they are easiest to reason about.
      spent and the caller's reference must be dropped. `WindowStack.push` on a closed window now
      throws a named `cannot open a window that was already closed` rather than failing somewhere
      deeper. Nine tests in `tests/window-close.test.ts`.
-291. [Low] Sprite attachments: a shadow flat under a sprite, a status icon floating above it.
+291. ~~[Low] Sprite attachments: a shadow flat under a sprite, a status icon floating above it.
      `StatusVisuals` only tints; nothing owns a second sprite's position relative to a first
      one with its own lifetime. Needs its own shape (attachment lifetimes differ per game),
-     not a copy of one game's version.
+     not a copy of one game's version.~~ Landed as `SpriteAttachment`, the same renderer-neutral
+     shape `Projectile`/`LightningArc` already use: it takes any `{ x, y }` point and only ever
+     writes to it, so a shadow (no lifetime, `follow` every frame) and a status icon (a
+     `duration`, `update(dt)` reporting `done` once) are the same class with different options
+     rather than two implementations. Z-order and parenting stay the caller's, as `Halo`'s own
+     doc already argues for the same reason. Five tests.
 292. ~~[Low] A temporised line-between-two-points visual (a lightning arc, a tether). No
      dedicated helper in `two-d/render` for a line that animates between two arbitrary world
      points over time; games building one draw it by hand.~~ Landed as `LightningArc`: owns

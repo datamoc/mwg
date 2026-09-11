@@ -34,6 +34,8 @@ export { Projectile } from './Projectile.ts';
 export type { ProjectilePoint, ProjectileOptions } from './Projectile.ts';
 export { LightningArc } from './LightningArc.ts';
 export type { LightningArcOptions, LightningArcPoint } from './LightningArc.ts';
+export { SpriteAttachment } from './SpriteAttachment.ts';
+export type { AttachmentPoint, SpriteAttachmentOptions } from './SpriteAttachment.ts';
 export { Halo, HALO_ANIMATION } from './Halo.ts';
 export type { HaloOptions } from './Halo.ts';
 

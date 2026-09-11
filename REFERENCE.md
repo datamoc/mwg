@@ -260,6 +260,10 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   `points` tapers to zero offset at both endpoints, `retarget` moves either endpoint for a
   tether following two moving units, and an optional `flickerInterval` re-rolls the jitter on a
   timer. Geometry only, drawn by the caller through `Shape2D`'s `Graphics`.
+- `SpriteAttachment` - ties a second sprite's position to a first one's: `follow(x, y)` applies
+  an offset, and an optional `duration` makes `update(dt)` report `done` once it elapses, so a
+  permanent shadow and a temporary status icon are the same class with different options.
+  Renderer-neutral like `Projectile`/`LightningArc`; z-order and parenting stay the caller's.
 - `Halo`/`HALO_ANIMATION` - the glow around a unit, an aura, a shrine's light: an `AnimatedSprite`
   drawn additively (Wesnoth's `[halo] blend_mode=add`) whose `follow(x, y)` applies the halo's own
   offset once instead of in every game that draws one. Z-order stays the caller's, because a halo

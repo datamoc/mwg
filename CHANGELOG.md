@@ -9,6 +9,11 @@ the public API may still change between minor versions.
 
 ### Added
 
+- `two-d/render/SpriteAttachment.ts`: `SpriteAttachment` (item 291), ties a second sprite's
+  position to a first one's - `follow(x, y)` applies an offset, an optional `duration` makes
+  `update(dt)` report `done` once it elapses, so a permanent shadow and a temporary status icon
+  are the same class with different options. Renderer-neutral like `Projectile`/`LightningArc`.
+
 - `two-d/render/LightningArc.ts`: `LightningArc` (item 292), the position data for a jittered
   line between two points - a lightning bolt, a tether, a chain-lightning link - geometry only,
   drawn by the caller through `Shape2D`'s `Graphics`. `retarget` moves either endpoint for a

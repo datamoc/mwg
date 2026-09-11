@@ -1814,6 +1814,23 @@ build instead.
     export declare class Sprite2D extends Sprite {
     }
 
+### `SpriteAttachment` (class)
+
+    export declare class SpriteAttachment {
+        private readonly child;
+        private readonly offsetX;
+        private readonly offsetY;
+        private readonly duration?;
+        private elapsed;
+        private expired;
+        constructor(child: AttachmentPoint, options?: SpriteAttachmentOptions);
+        get done(): boolean;
+
+        follow(ownerX: number, ownerY: number): this;
+
+        update(dt: number): boolean;
+    }
+
 ### `SpriteSheet` (class)
 
     export declare class SpriteSheet {
@@ -6983,6 +7000,23 @@ build instead.
     export declare class Sprite2D extends Sprite {
     }
 
+### `SpriteAttachment` (class)
+
+    export declare class SpriteAttachment {
+        private readonly child;
+        private readonly offsetX;
+        private readonly offsetY;
+        private readonly duration?;
+        private elapsed;
+        private expired;
+        constructor(child: AttachmentPoint, options?: SpriteAttachmentOptions);
+        get done(): boolean;
+
+        follow(ownerX: number, ownerY: number): this;
+
+        update(dt: number): boolean;
+    }
+
 ### `SpriteSheet` (class)
 
     export declare class SpriteSheet {
@@ -7970,6 +8004,23 @@ build instead.
 ### `Sprite2D` (class)
 
     export declare class Sprite2D extends Sprite {
+    }
+
+### `SpriteAttachment` (class)
+
+    export declare class SpriteAttachment {
+        private readonly child;
+        private readonly offsetX;
+        private readonly offsetY;
+        private readonly duration?;
+        private elapsed;
+        private expired;
+        constructor(child: AttachmentPoint, options?: SpriteAttachmentOptions);
+        get done(): boolean;
+
+        follow(ownerX: number, ownerY: number): this;
+
+        update(dt: number): boolean;
     }
 
 ### `SpriteSheet` (class)
