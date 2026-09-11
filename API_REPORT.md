@@ -2229,6 +2229,60 @@ build instead.
         update(dt: number): void;
     }
 
+### `StoryScreen` (class)
+
+    export declare class StoryScreen extends Container {
+        readonly sequence: StorySequence;
+        private readonly backdrop;
+        private readonly titleLabel;
+        private readonly textLabel;
+        private readonly textureFor;
+        private readonly playMusic;
+        private width_;
+        private height_;
+        constructor(options: StoryScreenOptions);
+
+        get current(): StoryBeat | null;
+
+        advance(): boolean;
+
+        skip(): void;
+        resize(width: number, height: number): void;
+        private readonly handleAdvance;
+        private readonly handleBeat;
+        private applyBeat;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `StorySequence` (class)
+
+    export declare class StorySequence {
+        readonly onChange: Signal<StoryBeat>;
+        readonly onMusic: Signal<string | null>;
+        private readonly beats;
+        private index;
+        constructor(beats: readonly StoryBeat[]);
+        get length(): number;
+
+        get position(): number;
+
+        get current(): StoryBeat | null;
+
+        get done(): boolean;
+
+        get music(): string | null;
+
+        goTo(index: number): void;
+
+        advance(): boolean;
+
+        back(): boolean;
+
+        skip(): void;
+        restart(): void;
+        private report;
+    }
+
 ### `stripMarkdown` (function)
 
     export declare function stripMarkdown(text: string): string;
@@ -7773,6 +7827,60 @@ build instead.
         update(dt: number): void;
     }
 
+### `StoryScreen` (class)
+
+    export declare class StoryScreen extends Container {
+        readonly sequence: StorySequence;
+        private readonly backdrop;
+        private readonly titleLabel;
+        private readonly textLabel;
+        private readonly textureFor;
+        private readonly playMusic;
+        private width_;
+        private height_;
+        constructor(options: StoryScreenOptions);
+
+        get current(): StoryBeat | null;
+
+        advance(): boolean;
+
+        skip(): void;
+        resize(width: number, height: number): void;
+        private readonly handleAdvance;
+        private readonly handleBeat;
+        private applyBeat;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `StorySequence` (class)
+
+    export declare class StorySequence {
+        readonly onChange: Signal<StoryBeat>;
+        readonly onMusic: Signal<string | null>;
+        private readonly beats;
+        private index;
+        constructor(beats: readonly StoryBeat[]);
+        get length(): number;
+
+        get position(): number;
+
+        get current(): StoryBeat | null;
+
+        get done(): boolean;
+
+        get music(): string | null;
+
+        goTo(index: number): void;
+
+        advance(): boolean;
+
+        back(): boolean;
+
+        skip(): void;
+        restart(): void;
+        private report;
+    }
+
 ### `stripMarkdown` (function)
 
     export declare function stripMarkdown(text: string): string;
@@ -9050,6 +9158,60 @@ build instead.
         private recordHistory;
 
         protected speak(text: string, as: string | undefined, speaker?: string, choices?: Choice[]): Promise<unknown>;
+    }
+
+### `StoryScreen` (class)
+
+    export declare class StoryScreen extends Container {
+        readonly sequence: StorySequence;
+        private readonly backdrop;
+        private readonly titleLabel;
+        private readonly textLabel;
+        private readonly textureFor;
+        private readonly playMusic;
+        private width_;
+        private height_;
+        constructor(options: StoryScreenOptions);
+
+        get current(): StoryBeat | null;
+
+        advance(): boolean;
+
+        skip(): void;
+        resize(width: number, height: number): void;
+        private readonly handleAdvance;
+        private readonly handleBeat;
+        private applyBeat;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `StorySequence` (class)
+
+    export declare class StorySequence {
+        readonly onChange: Signal<StoryBeat>;
+        readonly onMusic: Signal<string | null>;
+        private readonly beats;
+        private index;
+        constructor(beats: readonly StoryBeat[]);
+        get length(): number;
+
+        get position(): number;
+
+        get current(): StoryBeat | null;
+
+        get done(): boolean;
+
+        get music(): string | null;
+
+        goTo(index: number): void;
+
+        advance(): boolean;
+
+        back(): boolean;
+
+        skip(): void;
+        restart(): void;
+        private report;
     }
 
 ## `./two-d/ui`

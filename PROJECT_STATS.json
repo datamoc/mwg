@@ -4,14 +4,14 @@
 	"version": "0.7.6",
 	"releaseDate": "2026-09-11",
 	"source": {
-		"files": 267,
-		"lines": 40252,
+		"files": 269,
+		"lines": 40595,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 74,
-				"lines": 13554
+				"files": 76,
+				"lines": 13897
 			},
 			{
 				"name": "core",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 207,
-		"lines": 26380,
-		"cases": 1929
+		"files": 209,
+		"lines": 26541,
+		"cases": 1946
 	},
 	"tools": {
 		"files": 35,
@@ -123,9 +123,9 @@
 	},
 	"roadmap": {
 		"items": 293,
-		"completed": 288,
-		"open": 5,
-		"percent": 98
+		"completed": 289,
+		"open": 4,
+		"percent": 99
 	},
 	"api": {
 		"declarationFiles": 0

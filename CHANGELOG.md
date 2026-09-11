@@ -9,6 +9,9 @@ the public API may still change between minor versions.
 
 ### Added
 
+- Story screens (item 264): `StoryScreen` (a full-screen backdrop, title and text advanced by a
+  click) over the renderer-free `StorySequence` (`advance`/`back`/`goTo`/`skip`/`restart`, with the
+  current beat's `music` reported as a signal). `StoryBeat` matches `MwlWorld.story`'s shape.
 - Data-driven shell layout and skins (item 263): `Layout` (`resolveAnchor`/`anchorAlign` over nine
   named anchors plus `fill`, and a `Grid` of `size`-or-`grow` tracks) and `Skins` (per-widget,
   per-state looks with a widget-state -> widget-idle -> wildcard fallback chain, and `Skins.from`

@@ -3680,8 +3680,16 @@ it.
      overrides only what it must; `Skins.from` takes the plain data a config file would parse into,
      which is why the parser itself is not here. Seventeen tests in `tests/layout.test.ts` and
      `tests/skins.test.ts`.
-264. [Medium] Story screens (Absent). Wesnoth's storyscreen (backdrop, title, text, music) has no
-     equivalent: `DialogueStage`/`StageScript` is a visual-novel model.
+264. ~~[Medium] Story screens (Absent). Wesnoth's storyscreen (backdrop, title, text, music) has no
+     equivalent: `DialogueStage`/`StageScript` is a visual-novel model.~~ Landed as `StoryScreen`
+     over a renderer-free `StorySequence`: a full-screen beat (`StoryBeat` = `{ text, title, image,
+     music }`, the same shape `[story]` already loads into `MwlWorld.story` from item 250),
+     advanced by a click, with `advance`/`back`/`goTo`/`skip`/`restart` on the sequence and the
+     current beat's `music` reported as a signal so the game decides how to play it (a silent beat
+     reports `null`, stopping the previous track). The backdrop is scaled to cover without
+     distortion and the words are the same `Label` everything else uses. Nine tests in
+     `tests/story-screen.test.ts` cover the paging rules; the drawing itself is the screenshot kind
+     of check, as `Label` needs a DOM.
 265. [Medium] Battle UI (Absent). The attack dialog with an animated damage preview, the unit
      selector, and whiteboard/undo are all missing.
 266. ~~[High] Wesnoth-compatible RNG (Ne correspond pas). `core/Random.ts` is its own generator

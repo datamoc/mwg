@@ -438,6 +438,11 @@ Dialogue scenes: backdrop, characters, a script runner - the visual-novel half.
   `ScriptOptions.mode: 'nvl'` for the accumulating-block presentation.
 - `importTwee`/`TwineStory` - imports Twee-notation Twine stories into `StageScript`'s
   command format.
+- `StoryScreen`/`StoryScreenOptions` with `StorySequence`/`StoryBeat` - the between-scenario
+  interlude `DialogueStage` is not: a full-screen backdrop, title and text advanced by a click. The
+  sequencing (advance/back/`goTo`/`skip`/`restart`, and the current beat's `music` reported as a
+  signal so the game plays it) lives in the renderer-free `StorySequence`, and a `StoryBeat` has
+  the same `{ text, title, image, music }` shape as `MwlWorld.story`.
 
 ## `assets`
 
