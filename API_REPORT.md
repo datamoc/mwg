@@ -866,6 +866,31 @@ build instead.
 
     export declare function layoutVertical(text: string, options: VerticalLayoutOptions): GlyphLayout[];
 
+### `LightningArc` (class)
+
+    export declare class LightningArc {
+        private from;
+        private to;
+        private readonly segments;
+        private readonly jitter;
+        private readonly flickerInterval?;
+        private readonly random;
+        private readonly duration?;
+        private elapsed;
+        private sinceFlicker;
+        private expired;
+        private current;
+        constructor(from: LightningArcPoint, to: LightningArcPoint, options?: LightningArcOptions);
+
+        get points(): readonly LightningArcPoint[];
+        get done(): boolean;
+
+        retarget(from?: LightningArcPoint, to?: LightningArcPoint): void;
+
+        update(dt: number): boolean;
+        private reroll;
+    }
+
 ### `ListView` (class)
 
     export declare class ListView extends Container {
@@ -2282,6 +2307,7 @@ build instead.
         private currentWidth;
         private currentHeight;
         private readonly themeListener;
+        private isClosed;
         constructor(options: WindowOptions);
 
         private restyle;
@@ -2297,7 +2323,10 @@ build instead.
 
         handleAction(action: Action): boolean;
 
+        get closed(): boolean;
+
         update(_dt: number): void;
+
         close(): void;
 
         place(viewportWidth: number, viewportHeight: number): void;
@@ -3046,7 +3075,7 @@ build instead.
 
 ### `get` (function)
 
-    export declare function get<T>(path: string): T;
+    export declare function get<T>(path: string, fallback?: T): T;
 
 ### `getBinary` (function)
 
@@ -3098,7 +3127,7 @@ build instead.
 
 ### `texture` (function)
 
-    export declare function texture(path: string): Texture;
+    export declare function texture(path: string, fallback?: Texture): Texture;
 
 ## `./assets/binary`
 
@@ -6479,6 +6508,31 @@ build instead.
 
     export declare function layoutVertical(text: string, options: VerticalLayoutOptions): GlyphLayout[];
 
+### `LightningArc` (class)
+
+    export declare class LightningArc {
+        private from;
+        private to;
+        private readonly segments;
+        private readonly jitter;
+        private readonly flickerInterval?;
+        private readonly random;
+        private readonly duration?;
+        private elapsed;
+        private sinceFlicker;
+        private expired;
+        private current;
+        constructor(from: LightningArcPoint, to: LightningArcPoint, options?: LightningArcOptions);
+
+        get points(): readonly LightningArcPoint[];
+        get done(): boolean;
+
+        retarget(from?: LightningArcPoint, to?: LightningArcPoint): void;
+
+        update(dt: number): boolean;
+        private reroll;
+    }
+
 ### `ListView` (class)
 
     export declare class ListView extends Container {
@@ -7323,6 +7377,7 @@ build instead.
         private currentWidth;
         private currentHeight;
         private readonly themeListener;
+        private isClosed;
         constructor(options: WindowOptions);
 
         private restyle;
@@ -7338,7 +7393,10 @@ build instead.
 
         handleAction(action: Action): boolean;
 
+        get closed(): boolean;
+
         update(_dt: number): void;
+
         close(): void;
 
         place(viewportWidth: number, viewportHeight: number): void;
@@ -7670,6 +7728,31 @@ build instead.
 
         setTexture(name: string, texture: Texture2D): void;
         private resort;
+    }
+
+### `LightningArc` (class)
+
+    export declare class LightningArc {
+        private from;
+        private to;
+        private readonly segments;
+        private readonly jitter;
+        private readonly flickerInterval?;
+        private readonly random;
+        private readonly duration?;
+        private elapsed;
+        private sinceFlicker;
+        private expired;
+        private current;
+        constructor(from: LightningArcPoint, to: LightningArcPoint, options?: LightningArcOptions);
+
+        get points(): readonly LightningArcPoint[];
+        get done(): boolean;
+
+        retarget(from?: LightningArcPoint, to?: LightningArcPoint): void;
+
+        update(dt: number): boolean;
+        private reroll;
     }
 
 ### `loadTiledMap` (function)
@@ -8818,6 +8901,7 @@ build instead.
         private currentWidth;
         private currentHeight;
         private readonly themeListener;
+        private isClosed;
         constructor(options: WindowOptions);
 
         private restyle;
@@ -8833,7 +8917,10 @@ build instead.
 
         handleAction(action: Action): boolean;
 
+        get closed(): boolean;
+
         update(_dt: number): void;
+
         close(): void;
 
         place(viewportWidth: number, viewportHeight: number): void;

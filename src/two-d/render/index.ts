@@ -32,6 +32,8 @@ export type { TileMapOptions } from './TileMap.ts';
 export { LayeredSprite } from './LayeredSprite.ts';
 export { Projectile } from './Projectile.ts';
 export type { ProjectilePoint, ProjectileOptions } from './Projectile.ts';
+export { LightningArc } from './LightningArc.ts';
+export type { LightningArcOptions, LightningArcPoint } from './LightningArc.ts';
 export { Halo, HALO_ANIMATION } from './Halo.ts';
 export type { HaloOptions } from './Halo.ts';
 

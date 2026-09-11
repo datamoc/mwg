@@ -3949,9 +3949,15 @@ only for the square grid they are easiest to reason about.
      `StatusVisuals` only tints; nothing owns a second sprite's position relative to a first
      one with its own lifetime. Needs its own shape (attachment lifetimes differ per game),
      not a copy of one game's version.
-292. [Low] A temporised line-between-two-points visual (a lightning arc, a tether). No
+292. ~~[Low] A temporised line-between-two-points visual (a lightning arc, a tether). No
      dedicated helper in `two-d/render` for a line that animates between two arbitrary world
-     points over time; games building one draw it by hand.
+     points over time; games building one draw it by hand.~~ Landed as `LightningArc`: owns
+     geometry only, the same division `Projectile` already draws for a single moving point -
+     `points` is the jittered polyline between two endpoints (tapering to zero offset at both
+     ends so a bolt never visibly detaches from its target), `retarget` moves either endpoint
+     for a tether following two moving units, and an optional `flickerInterval` re-rolls the
+     jitter on a timer instead of holding one fixed shape. A caller draws the points through
+     `Shape2D`'s `Graphics`; this never touches a renderer itself. Nine tests.
 293. [Medium] The value-level Pixi facade item 167 shipped covers `Container`/`Texture`/
      `Rectangle`, but `Sprite` (used directly, unwrapped, in roughly a dozen call sites),
      `Graphics`, `FillGradient` and `TilingSprite`, plus the `extensions.add(...)` calls that

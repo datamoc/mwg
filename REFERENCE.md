@@ -256,6 +256,10 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   square/hex/isometric/staggered projections, multi-sheet tiles, elevation columns.
 - `LayeredSprite` - layered character sprites (body/hair/equipment as separate layers).
 - `Projectile` - tweens a sprite in a straight line for a thrown/shot visual flourish.
+- `LightningArc` - the position data for a jittered line between two points (a bolt, a tether):
+  `points` tapers to zero offset at both endpoints, `retarget` moves either endpoint for a
+  tether following two moving units, and an optional `flickerInterval` re-rolls the jitter on a
+  timer. Geometry only, drawn by the caller through `Shape2D`'s `Graphics`.
 - `Halo`/`HALO_ANIMATION` - the glow around a unit, an aura, a shrine's light: an `AnimatedSprite`
   drawn additively (Wesnoth's `[halo] blend_mode=add`) whose `follow(x, y)` applies the halo's own
   offset once instead of in every game that draws one. Z-order stays the caller's, because a halo
@@ -405,7 +409,10 @@ reach the compiled asset map without it.
   synchronously, and free GPU memory once a zone is no longer needed. `load(paths,
   { resolution })` rasterizes a vector source (SVG) at a multiple of its intrinsic size, so a
   game that zooms into an icon asks for a `2` or `3` instead of shipping a soft bitmap;
-  `onProgress` is the same `LoadQueue` seam whether passed alone or in the options.
+  `onProgress` is the same `LoadQueue` seam whether passed alone or in the options. `optional`
+  loads those paths separately so one missing file never aborts the required batch, calling
+  `onMissing` for each; `texture`/`get` take a `fallback` returned instead of a throw for a
+  path that never loaded, so a caller stops needing its own try/catch around a missing asset.
 - `loadBinary`/`getBinary`/`isBinaryLoaded`/`releaseBinary` - the renderer-free counterpart
   to `load`/`texture`/.../`release`, caching raw `ArrayBuffer`s instead of Pixi textures
   (also its own entry point, `@datamoc/mw_games/assets/binary`); `3d/models`' `Vox.parseVox`

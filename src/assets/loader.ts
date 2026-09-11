@@ -32,6 +32,18 @@ export interface LoadAssetsOptions {
 	 * own default, which is the SVG's intrinsic size.
 	 */
 	resolution?: number;
+
+	/**
+	 * Paths a game can do without - a portrait variant, an optional decal - loaded separately
+	 * from the rest of the batch so one missing file never aborts every other asset the batch
+	 * was loading. A path in here that fails to load is simply left unloaded: `isLoaded` reports
+	 * `false` for it and `texture`'s fallback argument (or `get`'s) is what a caller reads
+	 * instead, rather than every caller writing its own try/catch around `load()`.
+	 */
+	optional?: readonly string[];
+
+	/** called once per `optional` path that failed to load, with whatever `Assets.load` threw */
+	onMissing?: (path: string, error: unknown) => void;
 }
 
 /** the `Assets.add` descriptor for one path, with the resolution carried through */
@@ -49,34 +61,62 @@ interface AssetDescriptor {
  * (the original signature) or a `LoadAssetsOptions` object for the resolution option.
  */
 export async function load(paths: string[], options: AssetProgress | LoadAssetsOptions = {}): Promise<void> {
-	const { onProgress, resolution } =
-		typeof options === 'function' ? { onProgress: options, resolution: undefined } : options;
+	const { onProgress, resolution, optional, onMissing } =
+		typeof options === 'function'
+			? { onProgress: options, resolution: undefined, optional: undefined, onMissing: undefined }
+			: options;
 
+	const optionalPaths = new Set(optional ?? []);
 	const pending = paths.filter((path) => !Assets.cache.has(path));
-	if (pending.length === 0) {
+	const requiredPending = pending.filter((path) => !optionalPaths.has(path));
+	const optionalPending = pending.filter((path) => optionalPaths.has(path));
+
+	const add = (path: string): void => {
+		const descriptor: AssetDescriptor = { alias: path, src: resolve(path) };
+		if (resolution !== undefined) descriptor.data = { resolution };
+		Assets.add(descriptor);
+	};
+
+	if (optionalPending.length === 0 && requiredPending.length === 0) {
 		onProgress?.(1);
 		return;
 	}
 
-	for (const path of pending) {
-		const descriptor: AssetDescriptor = { alias: path, src: resolve(path) };
-		if (resolution !== undefined) descriptor.data = { resolution };
-		Assets.add(descriptor);
-	}
-	await Assets.load(pending, onProgress);
+	for (const path of requiredPending) add(path);
+	const requiredLoad = requiredPending.length > 0 ? Assets.load(requiredPending, onProgress) : Promise.resolve();
+
+	//loaded one at a time and never rejected past this function: one missing optional asset
+	//must never take the required batch (or any other optional path) down with it
+	const optionalLoads = optionalPending.map(async (path) => {
+		add(path);
+		try {
+			await Assets.load(path);
+		} catch (error) {
+			onMissing?.(path, error);
+		}
+	});
+
+	await Promise.all([requiredLoad, ...optionalLoads]);
+	if (optionalPending.length > 0 && requiredPending.length === 0) onProgress?.(1);
 }
 
-/** a loaded texture, by the same path it was loaded with */
-export function texture(path: string): Texture {
+/**
+ * A loaded texture, by the same path it was loaded with. `fallback` is what an `optional`
+ * `load()` path was for: pass it (typically `Texture.EMPTY`) to get that back instead of a
+ * throw when the path never loaded, rather than every caller writing its own `isLoaded` guard.
+ */
+export function texture(path: string, fallback?: Texture): Texture {
 	if (!Assets.cache.has(path)) {
+		if (fallback !== undefined) return fallback;
 		throw new Error(`texture "${path}" has not been loaded - pass it to load() first`);
 	}
 	return Assets.get<Texture>(path);
 }
 
-/** a loaded asset of any other kind, such as parsed JSON */
-export function get<T>(path: string): T {
+/** a loaded asset of any other kind, such as parsed JSON; `fallback` behaves as it does on `texture` */
+export function get<T>(path: string, fallback?: T): T {
 	if (!Assets.cache.has(path)) {
+		if (fallback !== undefined) return fallback;
 		throw new Error(`asset "${path}" has not been loaded - pass it to load() first`);
 	}
 	return Assets.get<T>(path);

@@ -9,6 +9,15 @@ the public API may still change between minor versions.
 
 ### Added
 
+- `two-d/render/LightningArc.ts`: `LightningArc` (item 292), the position data for a jittered
+  line between two points - a lightning bolt, a tether, a chain-lightning link - geometry only,
+  drawn by the caller through `Shape2D`'s `Graphics`. `retarget` moves either endpoint for a
+  tether following two moving units; an optional `flickerInterval` re-rolls the jitter on a
+  timer instead of holding one fixed shape.
+- `assets.load`'s `optional`/`onMissing` options (item 287): paths a game can do without load
+  separately from the required batch, so one missing file never aborts the rest; `texture`/`get`
+  take a `fallback` value returned instead of a throw for a path that never loaded.
+
 - `MultiTurnBeam` fronts, `blocker`, `onCell` and saved shape identity (item 278): a beam is now a
   sequence of per-turn fronts rather than one captured cell per turn, so a game-supplied
   `fronts(previous, turn)` expresses a cone, burst, fork or moving front. `BeamBlocker` replaces
