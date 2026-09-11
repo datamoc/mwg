@@ -117,9 +117,13 @@ export function channelScaleMatrix(scale: {
 }
 
 /**
- * Build the matrix for `~BLEND(color,ratio)`: lerps every pixel `ratio` of the way towards
- * `color` (0xRRGGBB), the same shape `TintedSprite.lerpTint` gives an additive-capable sprite,
- * expressed here as a plain colour matrix so a bare Pixi `Sprite` can use it too.
+ * A live, per-frame colour-matrix approximation of a blend towards `color` (0xRRGGBB) by
+ * `ratio`, the same shape `TintedSprite.lerpTint` gives an additive-capable sprite, expressed
+ * here as a plain matrix so a bare Pixi `Sprite` can use it too. This is *not* what
+ * `applyTextureModifiers` uses for `~BLEND` itself (that bakes an exact per-pixel blend once,
+ * via `blendPixels`, rather than attaching a runtime filter) - kept as its own export for a
+ * game that wants a cheap, adjustable-at-runtime approximation instead of a baked texture, the
+ * tradeoff `~CS`'s `colorShiftMatrix` already makes for an additive shift.
  *
  * @example
  * ```ts
@@ -241,16 +245,12 @@ export function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, sca
 		});
 		sprite.filters = [...(sprite.filters ?? []), filter];
 	}
-	const blend = imageModifier(parsed, 'BLEND');
-	if (blend) {
-		const color = parseHexColor(blend.args[0]);
-		const ratio = parsePercentOrRatio(blend.args[1]);
-		if (color !== undefined && ratio !== undefined) {
-			const filter = new ColorMatrixFilter();
-			filter.matrix = blendMatrix(color, Math.min(1, Math.max(0, ratio)));
-			sprite.filters = [...(sprite.filters ?? []), filter];
-		}
-	}
+	//~BLEND and ~ROTATE are NOT handled here: Wesnoth's ~BLEND is a per-pixel colour blend and
+	//its ~ROTATE rotates the source pixels and expands the surface, neither of which a sprite
+	//transform or a colour matrix can express exactly (a colour matrix's linear approximation of
+	//a blend is close but not the same operation; a sprite's own `rotation` turns the display
+	//object, not the art, which differs for terrain that must still tile after rotating). Both
+	//are in `applyTextureModifiers` instead, next to the other pixel-level modifiers.
 	const chan = imageModifier(parsed, 'CHAN');
 	if (chan && chan.args.length > 0) {
 		const sources = chan.args.map((arg) => arg.trim().toUpperCase()) as ChannelSource[];
@@ -262,11 +262,6 @@ export function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, sca
 	if (opacity) {
 		const ratio = parsePercentOrRatio(opacity.args[0]);
 		if (ratio !== undefined) sprite.alpha *= Math.min(1, Math.max(0, ratio));
-	}
-	const rotate = imageModifier(parsed, 'ROTATE');
-	if (rotate) {
-		const degrees = Number(rotate.args[0]);
-		if (Number.isFinite(degrees)) sprite.rotation += (degrees * Math.PI) / 180;
 	}
 }
 
@@ -293,13 +288,34 @@ export function croppedTexture(texture: Texture, parsed: ParsedImagePath): Textu
 		: texture;
 }
 
-function parseColorPairs(args: readonly string[]): PaletteMapping {
+/** hex first (`#c0ffee`, `c0ffee`), a caller's `resolveColor` (named colours) otherwise */
+function resolveColor(value: string, resolve?: (name: string) => number | undefined): number | undefined {
+	const trimmed = value.trim();
+	return parseHexColor(trimmed) ?? resolve?.(trimmed);
+}
+
+/**
+ * `~RC(src>dst,src>dst,...)`'s pairs, each side hex (`#c0ffee`, `c0ffee`) or, when `resolve` is
+ * given, a named colour (`~RC(magenta>red)`) it resolves. A pair whose either side is neither
+ * hex nor resolvable is dropped rather than aborting the whole list.
+ *
+ * @example
+ * ```ts
+ * import { parseColorPairs, parseImagePath, imageModifier } from '@datamoc/mw_games/two-d/render';
+ *
+ * const rc = imageModifier(parseImagePath('unit.png~RC(magenta>ff0000)'), 'RC')!;
+ * const mapping = parseColorPairs(rc.args, (name) => (name === 'magenta' ? 0xff00ff : undefined));
+ * console.log(mapping); // { from: [0xff00ff], to: [0xff0000] }
+ * ```
+ */
+export function parseColorPairs(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping {
 	const from: number[] = [];
 	const to: number[] = [];
 	for (const arg of args) {
 		const [source, target] = arg.split('>');
-		const sourceColor = parseHexColor(source);
-		const targetColor = parseHexColor(target);
+		if (source === undefined || target === undefined) continue;
+		const sourceColor = resolveColor(source, resolve);
+		const targetColor = resolveColor(target, resolve);
 		if (sourceColor !== undefined && targetColor !== undefined) {
 			from.push(sourceColor);
 			to.push(targetColor);
@@ -308,29 +324,69 @@ function parseColorPairs(args: readonly string[]): PaletteMapping {
 	return { from, to };
 }
 
-function parseColorList(value: string | undefined): readonly number[] {
-	if (value === undefined) return [];
-	return value
-		.split(';')
-		.map((entry) => parseHexColor(entry))
-		.filter((color): color is number => color !== undefined);
+/**
+ * `~PAL(a,b,c>x,y,z)`'s two comma-separated colour lists, one per side of a single `>`. The
+ * modifier's own args have already been comma-split by `parseImagePath` before this runs (the
+ * same naive split every modifier's argument list goes through), so `a,b,c>x,y,z` arrives as
+ * the four separate tokens `['a', 'b', 'c>x', 'y', 'z']` - rejoining them with `,` recovers the
+ * original text before this does its own split on `>` and then `,`, rather than assuming the
+ * list boundary landed on an argument boundary the way a naive `args[0]`/`args[1]` read would.
+ *
+ * @example
+ * ```ts
+ * import { parsePaletteLists, parseImagePath, imageModifier } from '@datamoc/mw_games/two-d/render';
+ *
+ * const pal = imageModifier(parseImagePath('unit.png~PAL(ff0000,00ff00>0000ff,ffff00)'), 'PAL')!;
+ * console.log(parsePaletteLists(pal.args)); // { from: [0xff0000, 0x00ff00], to: [0x0000ff, 0xffff00] }
+ * ```
+ */
+export function parsePaletteLists(
+	args: readonly string[],
+	resolve?: (name: string) => number | undefined,
+): PaletteMapping {
+	const raw = args.join(',');
+	const separator = raw.indexOf('>');
+	if (separator < 0) return { from: [], to: [] };
+
+	const parseList = (side: string): number[] =>
+		side
+			.split(',')
+			.map((entry) => resolveColor(entry, resolve))
+			.filter((color): color is number => color !== undefined);
+
+	return { from: parseList(raw.slice(0, separator)), to: parseList(raw.slice(separator + 1)) };
 }
 
-/** Resolves a nested `~BLIT`/`~MASK` image path to a texture already loaded by the caller. */
+/**
+ * Resolves a nested `~BLIT`/`~MASK` image path to a texture already loaded by the caller, and
+ * (`~RC`/`~PAL`) a named colour that is not hex. `resolveTexture` receives the raw argument text
+ * exactly as written, nested modifiers included (`unit.png~RC(magenta>red)`, not stripped down
+ * to `unit.png`) - parsing and applying those is the caller's own recursive call into
+ * `parseImagePath`/`applyImageModifiers`/`applyTextureModifiers`, not something this function
+ * does on the caller's behalf, since a caller with no sibling asset resolver has nothing to
+ * recurse into anyway.
+ */
 export interface ImageTextureProbe extends RecolorProbe {
-	resolveTexture?(path: string): Texture2D | undefined;
+	resolveTexture?(pathWithModifiers: string): Texture2D | undefined;
+	resolveColor?(name: string): number | undefined;
 }
 
 /**
  * Applies the modifiers that need real pixel access or a sibling texture rather than a sprite
- * property or a Pixi filter: `~RC` (exact palette swap, `src>dst` hex pairs), `~PAL` (the same
- * swap from two `;`-separated colour lists), `~BLIT` (composite another image on top at an
- * offset) and `~MASK` (take alpha from another image at an offset, keeping this image's own
- * colour). `~BLIT`/`~MASK` need `probe.resolveTexture` to find the sibling image; without it
- * they are skipped rather than treated as an error, since a caller that only wants `~RC`/`~PAL`
- * has no sibling image to resolve. The nested path's own modifiers (a `~BLIT` argument can
- * itself carry `~FL`, as in `~BLIT(claws.png~FL(horiz),4,4)`) are `resolveTexture`'s job to have
- * already applied - this function composites whatever texture it is handed, unparsed.
+ * property or a Pixi filter: `~RC` (exact palette swap, `src>dst` hex or named-colour pairs -
+ * see `resolveColor`/`parseColorPairs`), `~PAL` (the same swap from two comma-separated colour
+ * lists either side of one `>` - see `parsePaletteLists`), `~BLIT` (composite another image on
+ * top at an offset), `~MASK` (take alpha from another image at an offset, keeping this image's
+ * own colour), `~BLEND` (an exact per-pixel lerp towards a colour, via `blendPixels`) and
+ * `~ROTATE` (rotates the source pixels themselves and expands the surface, via `rotatePixels` -
+ * this is why `~ROTATE` lives here rather than as a sprite transform: it has to be right for
+ * terrain and anything else that must keep tiling after the rotation). `~BLIT`/`~MASK` need
+ * `probe.resolveTexture` to find the sibling image; without it they are skipped rather than
+ * treated as an error, since a caller that only wants `~RC`/`~PAL` has no sibling image to
+ * resolve. `resolveTexture` receives the argument exactly as written, nested modifiers included
+ * (`~BLIT(claws.png~FL(horiz),4,4)` calls it with `'claws.png~FL(horiz)'`, not `'claws.png'`) -
+ * parsing and applying those recursively is the caller's own job, this function composites
+ * whatever texture it is handed back.
  *
  * @example
  * ```ts
@@ -348,20 +404,23 @@ export function applyTextureModifiers(
 
 	const rc = imageModifier(parsed, 'RC');
 	if (rc && rc.args.length > 0) {
-		const mapping = parseColorPairs(rc.args);
-		if (mapping.from.length > 0) result = recolorTexture(result, mapping, probe);
+		const mapping = parseColorPairs(rc.args, probe.resolveColor);
+		//'exact' (recolorTexture's default): RC/PAL name a short, specific palette, not a
+		//covering of the whole image, so 'nearest' would repaint pixels that were never named
+		if (mapping.from.length > 0) result = recolorTexture(result, mapping, probe, 'exact');
 	}
 
 	const pal = imageModifier(parsed, 'PAL');
 	if (pal) {
-		const from = parseColorList(pal.args[0]);
-		const to = parseColorList(pal.args[1]);
-		if (from.length > 0 && from.length === to.length) result = recolorTexture(result, { from, to }, probe);
+		const mapping = parsePaletteLists(pal.args, probe.resolveColor);
+		if (mapping.from.length > 0 && mapping.from.length === mapping.to.length) {
+			result = recolorTexture(result, mapping, probe, 'exact');
+		}
 	}
 
 	const blit = imageModifier(parsed, 'BLIT');
 	if (blit && blit.args.length > 0 && probe.resolveTexture) {
-		const overlay = probe.resolveTexture(parseImagePath(blit.args[0]).path);
+		const overlay = probe.resolveTexture(blit.args[0]);
 		if (overlay) {
 			const x = Number(blit.args[1] ?? 0) || 0;
 			const y = Number(blit.args[2] ?? 0) || 0;
@@ -373,18 +432,14 @@ export function applyTextureModifiers(
 
 	const mask = imageModifier(parsed, 'MASK');
 	if (mask && mask.args.length > 0 && probe.resolveTexture) {
-		const overlay = probe.resolveTexture(parseImagePath(mask.args[0]).path);
+		const overlay = probe.resolveTexture(mask.args[0]);
 		if (overlay) {
 			const x = Number(mask.args[1] ?? 0) || 0;
 			const y = Number(mask.args[2] ?? 0) || 0;
 			result = withTextureCanvas(result, probe, (context, width, height) => {
 				const base = context.getImageData(0, 0, width, height);
-				const maskCanvas =
-					probe.createCanvas?.(overlay.width, overlay.height) ??
-					(typeof document === 'undefined' ? null : (document.createElement('canvas') as unknown as RemapCanvas));
+				const maskCanvas = createCanvas(overlay.width, overlay.height, probe);
 				if (!maskCanvas) return;
-				maskCanvas.width = overlay.width;
-				maskCanvas.height = overlay.height;
 				const maskContext = maskCanvas.getContext('2d');
 				if (!maskContext) return;
 				maskContext.drawImage(overlay.source.resource, 0, 0);
@@ -395,7 +450,58 @@ export function applyTextureModifiers(
 		}
 	}
 
+	const blend = imageModifier(parsed, 'BLEND');
+	if (blend) {
+		const color = resolveColor(blend.args[0] ?? '', probe.resolveColor);
+		const ratio = parsePercentOrRatio(blend.args[1]);
+		if (color !== undefined && ratio !== undefined) {
+			result = withTextureCanvas(result, probe, (context, width, height) => {
+				const imageData = context.getImageData(0, 0, width, height);
+				const blended = blendPixels(imageData.data, color, ratio);
+				context.putImageData({ data: blended, width, height }, 0, 0);
+			});
+		}
+	}
+
+	const rotate = imageModifier(parsed, 'ROTATE');
+	if (rotate) {
+		const degrees = Number(rotate.args[0]);
+		if (Number.isFinite(degrees) && degrees % 360 !== 0) {
+			const width = result.width;
+			const height = result.height;
+			if (width > 0 && height > 0 && result.source) {
+				const source = createCanvas(width, height, probe);
+				const sourceContext = source?.getContext('2d');
+				if (source && sourceContext) {
+					sourceContext.drawImage(result.source.resource, 0, 0);
+					const pixels = sourceContext.getImageData(0, 0, width, height);
+					const rotated = rotatePixels(pixels.data, width, height, degrees);
+					const destination = createCanvas(rotated.width, rotated.height, probe);
+					const destinationContext = destination?.getContext('2d');
+					if (destination && destinationContext) {
+						destinationContext.putImageData(
+							{ data: rotated.data, width: rotated.width, height: rotated.height },
+							0,
+							0,
+						);
+						result = Texture.from(destination as unknown as HTMLCanvasElement);
+					}
+				}
+			}
+		}
+	}
+
 	return result;
+}
+
+function createCanvas(width: number, height: number, probe: RecolorProbe): RemapCanvas | null {
+	const canvas =
+		probe.createCanvas?.(width, height) ??
+		(typeof document === 'undefined' ? null : (document.createElement('canvas') as unknown as RemapCanvas));
+	if (!canvas) return null;
+	canvas.width = width;
+	canvas.height = height;
+	return canvas;
 }
 
 /**
@@ -437,4 +543,114 @@ export function maskPixels(
 		}
 	}
 	return out;
+}
+
+/**
+ * The renderer-free core of `~BLEND`: every pixel's RGB is lerped `ratio` of the way towards
+ * `color` (0xRRGGBB), an exact per-pixel blend rather than `blendMatrix`'s runtime
+ * approximation - this is what `applyTextureModifiers` bakes into the texture once. Alpha is
+ * untouched; a fully transparent pixel is skipped entirely, matching `remapPixels`.
+ *
+ * @example
+ * ```ts
+ * import { blendPixels } from '@datamoc/mw_games/two-d/render';
+ *
+ * const pixels = new Uint8ClampedArray([0, 0, 0, 255]); // one opaque black pixel
+ * const out = blendPixels(pixels, 0xff0000, 0.5);
+ * console.log([...out]); // [128, 0, 0, 255] - half-way to red
+ * ```
+ */
+export function blendPixels(pixels: Uint8ClampedArray, color: number, ratio: number): Uint8ClampedArray {
+	const clamped = Math.min(1, Math.max(0, ratio));
+	const r = (color >> 16) & 0xff;
+	const g = (color >> 8) & 0xff;
+	const b = color & 0xff;
+	const out = new Uint8ClampedArray(pixels.length);
+	for (let index = 0; index < pixels.length; index += 4) {
+		const alpha = pixels[index + 3];
+		out[index + 3] = alpha;
+		if (alpha === 0) {
+			out[index] = pixels[index];
+			out[index + 1] = pixels[index + 1];
+			out[index + 2] = pixels[index + 2];
+			continue;
+		}
+		out[index] = pixels[index] * (1 - clamped) + r * clamped;
+		out[index + 1] = pixels[index + 1] * (1 - clamped) + g * clamped;
+		out[index + 2] = pixels[index + 2] * (1 - clamped) + b * clamped;
+	}
+	return out;
+}
+
+export interface RotatedPixels {
+	readonly data: Uint8ClampedArray;
+	readonly width: number;
+	readonly height: number;
+}
+
+/**
+ * The renderer-free core of `~ROTATE`: rotates the source pixels themselves by `degrees`
+ * (clockwise) around their centre and expands the surface to fit the rotated bounds, rather
+ * than turning a sprite's own transform - `applyImageModifiers`'s `sprite.rotation` leaves the
+ * art unrotated and does not grow the surface, which is wrong for terrain and anything else
+ * that has to keep tiling after the rotation. A destination pixel outside the source once
+ * rotated back is fully transparent. Sampling is nearest-neighbour, so an exact multiple of 90
+ * degrees round-trips pixel-for-pixel; other angles show the aliasing any nearest-neighbour
+ * rotation does.
+ *
+ * @example
+ * ```ts
+ * import { rotatePixels } from '@datamoc/mw_games/two-d/render';
+ *
+ * const pixels = new Uint8ClampedArray([255, 0, 0, 255, 0, 255, 0, 255]); // 2x1: red, green
+ * const rotated = rotatePixels(pixels, 2, 1, 90);
+ * console.log(rotated.width, rotated.height); // 1, 2 - the surface expanded to fit
+ * ```
+ */
+export function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number): RotatedPixels {
+	const radians = (degrees * Math.PI) / 180;
+	const cos = Math.cos(radians);
+	const sin = Math.sin(radians);
+
+	const halfW = width / 2;
+	const halfH = height / 2;
+	let maxX = 0;
+	let maxY = 0;
+	for (const [x, y] of [
+		[-halfW, -halfH],
+		[halfW, -halfH],
+		[halfW, halfH],
+		[-halfW, halfH],
+	]) {
+		maxX = Math.max(maxX, Math.abs(x * cos - y * sin));
+		maxY = Math.max(maxY, Math.abs(x * sin + y * cos));
+	}
+	const outWidth = Math.max(1, Math.round(maxX * 2));
+	const outHeight = Math.max(1, Math.round(maxY * 2));
+	const out = new Uint8ClampedArray(outWidth * outHeight * 4);
+
+	const cx = width / 2 - 0.5;
+	const cy = height / 2 - 0.5;
+	const ocx = outWidth / 2 - 0.5;
+	const ocy = outHeight / 2 - 0.5;
+
+	for (let oy = 0; oy < outHeight; oy += 1) {
+		for (let ox = 0; ox < outWidth; ox += 1) {
+			const dx = ox - ocx;
+			const dy = oy - ocy;
+			//inverse rotation: where in the source does this destination pixel come from
+			const sx = Math.round(dx * cos + dy * sin + cx);
+			const sy = Math.round(-dx * sin + dy * cos + cy);
+			if (sx < 0 || sx >= width || sy < 0 || sy >= height) continue;
+
+			const outIndex = (oy * outWidth + ox) * 4;
+			const inIndex = (sy * width + sx) * 4;
+			out[outIndex] = pixels[inIndex];
+			out[outIndex + 1] = pixels[inIndex + 1];
+			out[outIndex + 2] = pixels[inIndex + 2];
+			out[outIndex + 3] = pixels[inIndex + 3];
+		}
+	}
+
+	return { data: out, width: outWidth, height: outHeight };
 }

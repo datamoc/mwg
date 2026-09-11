@@ -6,6 +6,18 @@ export interface PaletteMapping {
 	readonly to: readonly number[];
 }
 
+/**
+ * How a pixel that is not an exact `from` colour is treated. `'exact'` (the default for
+ * `remapPixels`/`recolorTexture`) leaves it untouched - the correct behaviour for a discrete
+ * swap like `~RC`/`~PAL`, where `from` is a short, specific list rather than a covering of the
+ * whole image; `'nearest'` repaints every opaque pixel with whichever `from` entry it is
+ * closest to, which is what a `paletteRangeMapping` gradient over the *whole* palette a team's
+ * reference art uses (Wesnoth's magenta `TC` convention, or any equivalent) wants instead. Using
+ * `'nearest'` with a sparse `from` list (an `~RC` pair or two) would repaint the entire image
+ * toward whichever pair happens to be closest, which is the bug this mode exists to prevent.
+ */
+export type PaletteRemapMode = 'exact' | 'nearest';
+
 /** The three-stop gradient a team colour (or any palette range) is built from. */
 export interface PaletteRange {
 	readonly min: number;
@@ -61,35 +73,52 @@ export function paletteRangeMapping(reference: readonly number[], range: Palette
 }
 
 /**
- * The renderer-free core of a palette remap: every opaque pixel is repainted with the `to`
- * colour of whichever `from` entry it is nearest to in RGB space, alpha and fully transparent
- * pixels left untouched. Exported on its own so the remap logic is unit-testable without a
- * canvas or a texture.
+ * The renderer-free core of a palette remap. In `'exact'` mode (the default) a pixel is
+ * repainted only when it exactly matches one of `mapping.from`; every other pixel, including
+ * one close but not identical to a `from` colour, passes through unchanged. In `'nearest'` mode
+ * every opaque pixel is repainted with the `to` colour of whichever `from` entry it is nearest
+ * to in RGB space. Alpha and fully transparent pixels are always left untouched. Exported on
+ * its own so the remap logic is unit-testable without a canvas or a texture.
  *
  * @example
  * ```ts
  * import { remapPixels } from '@datamoc/mw_games/two-d/render';
  *
- * const pixels = new Uint8ClampedArray([255, 0, 255, 255]); // one opaque magenta pixel
- * const out = remapPixels(pixels, { from: [0xff00ff], to: [0xff0000] });
- * console.log([...out]); // [255, 0, 0, 255]
+ * const pixels = new Uint8ClampedArray([255, 0, 255, 255, 10, 10, 10, 255]); // magenta, then dark grey
+ * const out = remapPixels(pixels, { from: [0xff00ff], to: [0xff0000] }); // 'exact' by default
+ * console.log([...out.slice(0, 4)]); // [255, 0, 0, 255] - the exact match repainted
+ * console.log([...out.slice(4, 8)]); // [10, 10, 10, 255] - not a match, left alone
  * ```
  */
-export function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping): Uint8ClampedArray {
+export function remapPixels(
+	pixels: Uint8ClampedArray,
+	mapping: PaletteMapping,
+	mode: PaletteRemapMode = 'exact',
+): Uint8ClampedArray {
 	const from = mapping.from.map(hexToRgb);
 	const out = new Uint8ClampedArray(pixels.length);
 	for (let index = 0; index < pixels.length; index += 4) {
 		const alpha = pixels[index + 3];
-		if (alpha === 0 || from.length === 0) {
-			out[index] = pixels[index];
-			out[index + 1] = pixels[index + 1];
-			out[index + 2] = pixels[index + 2];
-			out[index + 3] = alpha;
-			continue;
-		}
 		const r = pixels[index];
 		const g = pixels[index + 1];
 		const b = pixels[index + 2];
+
+		out[index] = r;
+		out[index + 1] = g;
+		out[index + 2] = b;
+		out[index + 3] = alpha;
+		if (alpha === 0 || from.length === 0) continue;
+
+		if (mode === 'exact') {
+			const match = from.findIndex(([fr, fg, fb]) => fr === r && fg === g && fb === b);
+			if (match < 0) continue;
+			const [tr, tg, tb] = hexToRgb(mapping.to[match] ?? mapping.from[match]);
+			out[index] = tr;
+			out[index + 1] = tg;
+			out[index + 2] = tb;
+			continue;
+		}
+
 		let nearest = 0;
 		let nearestDistance = Infinity;
 		for (let paletteIndex = 0; paletteIndex < from.length; paletteIndex += 1) {
@@ -107,7 +136,6 @@ export function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping):
 		out[index] = tr;
 		out[index + 1] = tg;
 		out[index + 2] = tb;
-		out[index + 3] = alpha;
 	}
 	return out;
 }
@@ -133,9 +161,28 @@ export interface RecolorProbe {
  * Opens a canvas the size of `texture`, draws it in, and hands the 2D context to `paint` to
  * make whatever further edits it needs (a palette remap, a composited overlay, a rewritten
  * alpha channel); the result becomes the returned `Texture`. Shared by every texture-level
- * image modifier (`recolorTexture` here, `~BLIT`/`~MASK` in `ImageModifiers.ts`) so each one
- * only has to write its own pixel or compositing logic, not the canvas bookkeeping. Returns
- * `texture` unchanged if there is no usable 2D canvas.
+ * image modifier (`recolorTexture` here, `~BLIT`/`~MASK`/`~BLEND` in `ImageModifiers.ts`) so
+ * each one only has to write its own pixel or compositing logic, not the canvas bookkeeping.
+ * Returns `texture` unchanged if there is no usable 2D canvas.
+ *
+ * @example
+ * ```ts
+ * import { withTextureCanvas } from '@datamoc/mw_games/two-d/render';
+ * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * declare const texture: Texture2D;
+ *
+ * // a minimal custom modifier: invert every pixel's RGB, alpha untouched
+ * const inverted = withTextureCanvas(texture, {}, (context, width, height) => {
+ * 	const { data } = context.getImageData(0, 0, width, height);
+ * 	for (let i = 0; i < data.length; i += 4) {
+ * 		data[i] = 255 - data[i];
+ * 		data[i + 1] = 255 - data[i + 1];
+ * 		data[i + 2] = 255 - data[i + 2];
+ * 	}
+ * 	context.putImageData({ data, width, height }, 0, 0);
+ * });
+ * ```
  */
 export function withTextureCanvas(
 	texture: Texture,
@@ -167,6 +214,11 @@ export function withTextureCanvas(
  * caller. Needs a real 2D canvas context (unlike `remapPixels` itself), so pass `probe` in a
  * test or host integration with no DOM; omitting it uses `document.createElement('canvas')`.
  *
+ * `mode` defaults to `'exact'`, correct for a discrete swap (`~RC`/`~PAL`'s short, specific
+ * `from` list); a `paletteRangeMapping` gradient, meant to cover the whole reference palette a
+ * team's art is drawn against, wants `'nearest'` instead - see `PaletteRemapMode`'s own doc for
+ * why the wrong choice silently recolours far more of the image than intended.
+ *
  * @example
  * ```ts
  * import { paletteRangeMapping, recolorTexture } from '@datamoc/mw_games/two-d/render';
@@ -174,13 +226,18 @@ export function withTextureCanvas(
  *
  * declare const texture: Texture2D;
  * const mapping = paletteRangeMapping([0xffffff, 0x808080, 0x000000], { min: 0xffe0e0, mid: 0xc00000, max: 0x400000 });
- * const redTeam = recolorTexture(texture, mapping);
+ * const redTeam = recolorTexture(texture, mapping, {}, 'nearest');
  * ```
  */
-export function recolorTexture(texture: Texture, mapping: PaletteMapping, probe: RecolorProbe = {}): Texture {
+export function recolorTexture(
+	texture: Texture,
+	mapping: PaletteMapping,
+	probe: RecolorProbe = {},
+	mode: PaletteRemapMode = 'exact',
+): Texture {
 	return withTextureCanvas(texture, probe, (context, width, height) => {
 		const imageData = context.getImageData(0, 0, width, height);
-		const remapped = remapPixels(imageData.data, mapping);
+		const remapped = remapPixels(imageData.data, mapping, mode);
 		context.putImageData({ data: remapped, width, height }, 0, 0);
 	});
 }

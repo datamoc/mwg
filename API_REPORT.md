@@ -205,6 +205,10 @@ build instead.
 
     export declare function blendMatrix(color: number, ratio: number): ColorMatrixFilter['matrix'];
 
+### `blendPixels` (function)
+
+    export declare function blendPixels(pixels: Uint8ClampedArray, color: number, ratio: number): Uint8ClampedArray;
+
 ### `Blob` (class)
 
     export declare class Blob {
@@ -1207,6 +1211,10 @@ build instead.
 
     export declare function paletteRangeMapping(reference: readonly number[], range: PaletteRange): PaletteMapping;
 
+### `parseColorPairs` (function)
+
+    export declare function parseColorPairs(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
+
 ### `parseCSV` (function)
 
     export declare function parseCSV<T = Record<string, string>>(source: string, options?: CsvOptions): T[];
@@ -1222,6 +1230,10 @@ build instead.
 ### `parseMarkup` (function)
 
     export declare function parseMarkup(source: string, options?: MarkupOptions): MarkupSpan[];
+
+### `parsePaletteLists` (function)
+
+    export declare function parsePaletteLists(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
 
 ### `ParticleEmitter` (class)
 
@@ -1446,7 +1458,7 @@ build instead.
 
 ### `recolorTexture` (function)
 
-    export declare function recolorTexture(texture: Texture, mapping: PaletteMapping, probe?: RecolorProbe): Texture;
+    export declare function recolorTexture(texture: Texture, mapping: PaletteMapping, probe?: RecolorProbe, mode?: PaletteRemapMode): Texture;
 
 ### `Recorder` (class)
 
@@ -1499,7 +1511,7 @@ build instead.
 
 ### `remapPixels` (function)
 
-    export declare function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping): Uint8ClampedArray;
+    export declare function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping, mode?: PaletteRemapMode): Uint8ClampedArray;
 
 ### `RENDERING_DECISIONS` (const)
 
@@ -1542,6 +1554,10 @@ build instead.
 ### `Roguelike` (namespace)
 
     export * as Roguelike from './roguelike/index.ts'
+
+### `rotatePixels` (function)
+
+    export declare function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number): RotatedPixels;
 
 ### `Rpg` (namespace)
 
@@ -2379,6 +2395,10 @@ build instead.
         update(dt: number): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
+
+### `withTextureCanvas` (function)
+
+    export declare function withTextureCanvas(texture: Texture, probe: RecolorProbe, paint: (context: RemapCanvasContext, width: number, height: number) => void): Texture;
 
 ### `World` (namespace)
 
@@ -6038,6 +6058,10 @@ build instead.
 
     export declare function blendMatrix(color: number, ratio: number): ColorMatrixFilter['matrix'];
 
+### `blendPixels` (function)
+
+    export declare function blendPixels(pixels: Uint8ClampedArray, color: number, ratio: number): Uint8ClampedArray;
+
 ### `BLOB_SHAPES` (const)
 
     export declare const BLOB_SHAPES: readonly NeighborMask[];
@@ -6756,6 +6780,10 @@ build instead.
 
     export declare function paletteRangeMapping(reference: readonly number[], range: PaletteRange): PaletteMapping;
 
+### `parseColorPairs` (function)
+
+    export declare function parseColorPairs(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
+
 ### `parseImagePath` (function)
 
     export declare function parseImagePath(value: string): ParsedImagePath;
@@ -6767,6 +6795,10 @@ build instead.
 ### `parseMarkup` (function)
 
     export declare function parseMarkup(source: string, options?: MarkupOptions): MarkupSpan[];
+
+### `parsePaletteLists` (function)
+
+    export declare function parsePaletteLists(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
 
 ### `ParticleEmitter` (class)
 
@@ -6857,7 +6889,7 @@ build instead.
 
 ### `recolorTexture` (function)
 
-    export declare function recolorTexture(texture: Texture, mapping: PaletteMapping, probe?: RecolorProbe): Texture;
+    export declare function recolorTexture(texture: Texture, mapping: PaletteMapping, probe?: RecolorProbe, mode?: PaletteRemapMode): Texture;
 
 ### `Rectangle2D` (export)
 
@@ -6877,7 +6909,7 @@ build instead.
 
 ### `remapPixels` (function)
 
-    export declare function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping): Uint8ClampedArray;
+    export declare function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping, mode?: PaletteRemapMode): Uint8ClampedArray;
 
 ### `RENDERING_DECISIONS` (const)
 
@@ -6912,6 +6944,10 @@ build instead.
         private restyle;
         destroy(options?: Parameters<HTMLText['destroy']>[0]): void;
     }
+
+### `rotatePixels` (function)
+
+    export declare function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number): RotatedPixels;
 
 ### `Scene2D` (class)
 
@@ -7471,11 +7507,19 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `withTextureCanvas` (function)
+
+    export declare function withTextureCanvas(texture: Texture, probe: RecolorProbe, paint: (context: RemapCanvasContext, width: number, height: number) => void): Texture;
+
 ## `./two-d/pixi-interop`
 
 ### `Container` (re-export)
 
     export { Container } from 'pixi.js'
+
+### `FillGradient` (re-export)
+
+    export { FillGradient } from 'pixi.js'
 
 ### `Graphics` (re-export)
 
@@ -7496,6 +7540,10 @@ build instead.
 ### `Texture` (re-export)
 
     export { Texture } from 'pixi.js'
+
+### `TilingSprite` (re-export)
+
+    export { TilingSprite } from 'pixi.js'
 
 ## `./two-d/render`
 
@@ -7583,6 +7631,10 @@ build instead.
 ### `blendMatrix` (function)
 
     export declare function blendMatrix(color: number, ratio: number): ColorMatrixFilter['matrix'];
+
+### `blendPixels` (function)
+
+    export declare function blendPixels(pixels: Uint8ClampedArray, color: number, ratio: number): Uint8ClampedArray;
 
 ### `BLOB_SHAPES` (const)
 
@@ -7859,9 +7911,17 @@ build instead.
 
     export declare function paletteRangeMapping(reference: readonly number[], range: PaletteRange): PaletteMapping;
 
+### `parseColorPairs` (function)
+
+    export declare function parseColorPairs(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
+
 ### `parseImagePath` (function)
 
     export declare function parseImagePath(value: string): ParsedImagePath;
+
+### `parsePaletteLists` (function)
+
+    export declare function parsePaletteLists(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
 
 ### `ParticleEmitter` (class)
 
@@ -7929,7 +7989,7 @@ build instead.
 
 ### `recolorTexture` (function)
 
-    export declare function recolorTexture(texture: Texture, mapping: PaletteMapping, probe?: RecolorProbe): Texture;
+    export declare function recolorTexture(texture: Texture, mapping: PaletteMapping, probe?: RecolorProbe, mode?: PaletteRemapMode): Texture;
 
 ### `Rectangle2D` (export)
 
@@ -7945,7 +8005,7 @@ build instead.
 
 ### `remapPixels` (function)
 
-    export declare function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping): Uint8ClampedArray;
+    export declare function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping, mode?: PaletteRemapMode): Uint8ClampedArray;
 
 ### `RENDERING_DECISIONS` (const)
 
@@ -7954,6 +8014,10 @@ build instead.
 ### `resolveTerrainGraphics` (function)
 
     export declare function resolveTerrainGraphics(width: number, height: number, rules: readonly TerrainRule[], flagsAt: TerrainFlagsAt, options?: ResolveTerrainGraphicsOptions): TerrainPlacement[];
+
+### `rotatePixels` (function)
+
+    export declare function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number): RotatedPixels;
 
 ### `ScreenEffects` (class)
 
@@ -8210,6 +8274,10 @@ build instead.
         resize(x: number, y: number, width: number, height: number): void;
         update(dt: number): void;
     }
+
+### `withTextureCanvas` (function)
+
+    export declare function withTextureCanvas(texture: Texture, probe: RecolorProbe, paint: (context: RemapCanvasContext, width: number, height: number) => void): Texture;
 
 ## `./two-d/stage`
 

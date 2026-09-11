@@ -6,15 +6,19 @@ export {
 	applyImageModifiers,
 	applyTextureModifiers,
 	blendMatrix,
+	blendPixels,
 	channelScaleMatrix,
 	channelSwapMatrix,
 	colorShiftMatrix,
 	croppedTexture,
 	imageModifier,
 	maskPixels,
+	parseColorPairs,
 	parseImagePath,
+	parsePaletteLists,
+	rotatePixels,
 } from './ImageModifiers.ts';
-export type { ChannelSource, ImageModifier, ImageTextureProbe, ParsedImagePath } from './ImageModifiers.ts';
+export type { ChannelSource, ImageModifier, ImageTextureProbe, ParsedImagePath, RotatedPixels } from './ImageModifiers.ts';
 export { AnimatedSprite, Animation } from './AnimatedSprite.ts';
 export type { AnimationFrame, AnimationFrameInput, AnimationOptions } from './AnimatedSprite.ts';
 export { SpriteSheet } from './SpriteSheet.ts';
@@ -78,8 +82,15 @@ export { Container2D, Rectangle2D, Texture2D, rectOf } from './Types2D.ts';
 export type { Rect, TextureRegion } from './Types2D.ts';
 export { Node2D, Shape2D, Text2D, Sprite2D, TiledSprite, Gradient } from './Shape2D.ts';
 
-export { paletteRangeMapping, recolorTexture, remapPixels } from './PaletteRemap.ts';
-export type { PaletteMapping, PaletteRange, RecolorProbe, RemapCanvas, RemapCanvasContext } from './PaletteRemap.ts';
+export { paletteRangeMapping, recolorTexture, remapPixels, withTextureCanvas } from './PaletteRemap.ts';
+export type {
+	PaletteMapping,
+	PaletteRange,
+	PaletteRemapMode,
+	RecolorProbe,
+	RemapCanvas,
+	RemapCanvasContext,
+} from './PaletteRemap.ts';
 
 export { loadTiledMap } from './TiledMap.ts';
 export type {
