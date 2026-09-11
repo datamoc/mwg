@@ -5,13 +5,13 @@
 	"releaseDate": "2026-09-11",
 	"source": {
 		"files": 259,
-		"lines": 38864,
+		"lines": 38893,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 66,
-				"lines": 12171
+				"lines": 12195
 			},
 			{
 				"name": "core",
@@ -21,12 +21,12 @@
 			{
 				"name": "mwl",
 				"files": 21,
-				"lines": 4540
+				"lines": 4543
 			},
 			{
 				"name": "roguelike",
 				"files": 22,
-				"lines": 3423
+				"lines": 3429
 			},
 			{
 				"name": "board",
@@ -66,7 +66,7 @@
 			{
 				"name": "simulation",
 				"files": 8,
-				"lines": 703
+				"lines": 699
 			},
 			{
 				"name": "world",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 198,
-		"lines": 25541,
-		"cases": 1857
+		"files": 199,
+		"lines": 25675,
+		"cases": 1867
 	},
 	"tools": {
 		"files": 35,
@@ -123,8 +123,8 @@
 	},
 	"roadmap": {
 		"items": 293,
-		"completed": 286,
-		"open": 7,
+		"completed": 287,
+		"open": 6,
 		"percent": 98
 	},
 	"api": {

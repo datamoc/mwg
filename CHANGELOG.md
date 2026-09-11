@@ -9,6 +9,11 @@ the public API may still change between minor versions.
 
 ### Added
 
+- The missing UI widgets (item 261): `Slider` (`sliderFraction`/`sliderValueAt`), `Checkbox`,
+  `Spinner` (`spinValue`), `Dropdown`, `TextModel`, `DataTable`, `TreeView` and `ScrollBox`
+  (`scrollOffset`). The rule-bearing parts are pure functions or renderer-free models tested
+  headlessly, the drawing is a thin theme-driven shell, and text fields pair `TextModel` with a
+  `Label` rather than a separate `TextArea`.
 - Fixed-angle view rotation on `Camera` (item 285): `grid: 'square' | 'hex'` sets four quarter turns
   or six 60-degree steps, `setRotationStep`/`rotate` move through them, `toScreen`/`toWorld` invert
   the turn, `view` reports the box around the turned viewport for culling, and `uprightRotation`

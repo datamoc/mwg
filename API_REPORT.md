@@ -386,6 +386,28 @@ build instead.
 
     export declare function channelSwapMatrix(sources: readonly ChannelSource[]): ColorMatrixFilter['matrix'];
 
+### `Checkbox` (class)
+
+    export declare class Checkbox extends Container {
+        readonly onChange: Signal<boolean>;
+        private box;
+        private size_;
+        private checked_;
+        private disabled_;
+        private readonly themeListener;
+        constructor(options?: CheckboxOptions);
+        get checked(): boolean;
+        get disabled(): boolean;
+        setDisabled(disabled: boolean): void;
+
+        setChecked(checked: boolean): void;
+        toggle(): void;
+        resize(size: number): void;
+        private readonly handleTap;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
 ### `checkNoControlCharacters` (function)
 
     export declare function checkNoControlCharacters(text: string): void;
@@ -468,6 +490,44 @@ build instead.
 
     export declare function croppedTexture(texture: Texture, parsed: ParsedImagePath): Texture;
 
+### `DataTable` (class)
+
+    export declare class DataTable<T> {
+        readonly onChange: Signal<void>;
+        private columns_;
+        private rows_;
+        private pageSize_;
+        private current;
+        private sortKey_;
+        private ascending;
+        private readonly disabledOf;
+        constructor(options: DataTableOptions<T>);
+        get columns(): readonly TableColumn<T>[];
+        get rows(): readonly T[];
+        get pageSize(): number;
+        get sortKey(): string | null;
+        get sortAscending(): boolean;
+        get selectedIndex(): number;
+        get selected(): T | null;
+
+        get page(): number;
+
+        get pageCount(): number;
+        get pageRows(): readonly T[];
+        setRows(rows: readonly T[]): void;
+        setColumns(columns: readonly TableColumn<T>[]): void;
+        setPageSize(size: number): void;
+
+        sortBy(key: string): void;
+        select(index: number): void;
+
+        move(delta: number): void;
+
+        setPage(page: number): void;
+        nextPage(delta?: number): void;
+        private firstEnabled;
+    }
+
 ### `defaultTheme` (const)
 
     export declare const defaultTheme: Theme;
@@ -514,6 +574,44 @@ build instead.
         update(dt: number): void;
 
         get isBusy(): boolean;
+    }
+
+### `Dropdown` (class)
+
+    export declare class Dropdown {
+        readonly onChange: Signal<{
+            option: DropdownOption;
+            index: number;
+        }>;
+        private options_;
+        private current;
+        private highlight_;
+        private open_;
+        private disabled_;
+        constructor(options: DropdownOptions);
+        get options(): readonly DropdownOption[];
+        get selectedIndex(): number;
+
+        get selected(): DropdownOption | null;
+        get isOpen(): boolean;
+        get disabled(): boolean;
+
+        get highlight(): number;
+        setDisabled(disabled: boolean): void;
+        setOptions(options: readonly DropdownOption[]): void;
+
+        open(): void;
+        close(): void;
+        toggleOpen(): void;
+
+        move(delta: number): void;
+
+        setHighlight(index: number): void;
+
+        confirm(): boolean;
+
+        cancel(): void;
+        private firstEnabled;
     }
 
 ### `Easing` (const)
@@ -1766,6 +1864,43 @@ build instead.
         destroy(): void;
     }
 
+### `ScrollBox` (class)
+
+    export declare class ScrollBox extends Container {
+        readonly onChange: Signal<number>;
+
+        readonly content: Container<import("pixi.js").ContainerChild>;
+        private maskShape;
+        private track;
+        private thumb;
+        private width_;
+        private height_;
+        private contentHeight_;
+        private offset_;
+        private readonly themeListener;
+        constructor(options: ScrollBoxOptions);
+        get offset(): number;
+        get contentHeight(): number;
+        get viewportHeight(): number;
+
+        get maxOffset(): number;
+        get scrollable(): boolean;
+        setContentHeight(height: number): void;
+        resize(width: number, height: number): void;
+        scrollBy(delta: number): void;
+        scrollTo(offset: number): void;
+
+        scrollIntoView(top: number, height: number): void;
+        private setOffset;
+        private readonly handleWheel;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `scrollOffset` (function)
+
+    export declare function scrollOffset(offset: number, contentSize: number, viewportSize: number): number;
+
 ### `serializeReplay` (function)
 
     export declare function serializeReplay(events: readonly ReplayEvent[]): string;
@@ -1814,6 +1949,52 @@ build instead.
 
     export declare function sliceSpans(spans: readonly MarkdownSpan[], count: number): MarkdownSpan[];
 
+### `Slider` (class)
+
+    export declare class Slider extends Container {
+        readonly onChange: Signal<number>;
+        private track;
+        private fill;
+        private knob;
+        private width_;
+        private height_;
+        private knobSize;
+        private min;
+        private max;
+        private step;
+        private value_;
+        private disabled_;
+        private dragging;
+        private readonly themeListener;
+        constructor(options: SliderOptions);
+
+        get value(): number;
+
+        get fraction(): number;
+        get disabled(): boolean;
+        setDisabled(disabled: boolean): void;
+        setValue(value: number): void;
+
+        setFraction(fraction: number): void;
+        resize(width: number, height: number): void;
+        private get trackLength();
+        private snap;
+        private fractionAt;
+        private readonly handleDown;
+        private readonly handleMove;
+        private readonly handleUp;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `sliderFraction` (function)
+
+    export declare function sliderFraction(value: number, min?: number, max?: number): number;
+
+### `sliderValueAt` (function)
+
+    export declare function sliderValueAt(fraction: number, min?: number, max?: number, step?: number): number;
+
 ### `snapZoom` (function)
 
     export declare function snapZoom(zoom: number, tileSize: number): number;
@@ -1834,6 +2015,38 @@ build instead.
 
         get isComplete(): boolean;
     }
+
+### `Spinner` (class)
+
+    export declare class Spinner extends Container {
+        readonly onChange: Signal<number>;
+        private face;
+        private width_;
+        private height_;
+        private min;
+        private max;
+        private step;
+        private value_;
+        private wrap;
+        private disabled_;
+        private readonly themeListener;
+        constructor(options?: SpinnerOptions);
+        get value(): number;
+        get disabled(): boolean;
+        setDisabled(disabled: boolean): void;
+        setValue(value: number): void;
+        increment(): void;
+        decrement(): void;
+        resize(width: number, height: number): void;
+        private commit;
+        private readonly handleTap;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `spinValue` (function)
+
+    export declare function spinValue(value: number, delta: number, min: number, max: number, step?: number, wrap?: boolean): number;
 
 ### `splitScreenHalves` (function)
 
@@ -2069,6 +2282,45 @@ build instead.
     export declare class Text2D extends Text {
     }
 
+### `TextModel` (class)
+
+    export declare class TextModel {
+        private text;
+        private caretIndex;
+        private anchor;
+        private readonly maxLength?;
+        private readonly mask;
+        private readonly maskCharacter;
+        constructor(options?: TextModelOptions);
+        get value(): string;
+
+        get maskedValue(): string;
+        get length(): number;
+        get caret(): number;
+        get selectionStart(): number;
+        get selectionEnd(): number;
+        get hasSelection(): boolean;
+        get selectedText(): string;
+
+        setValue(value: string): void;
+        setCaret(index: number, extend?: boolean): void;
+
+        insert(text: string): void;
+
+        backspace(): void;
+
+        deleteForward(): void;
+
+        moveCaret(delta: number, extend?: boolean): void;
+        moveToStart(extend?: boolean): void;
+        moveToEnd(extend?: boolean): void;
+        selectAll(): void;
+        clearSelection(): void;
+
+        replaceSelection(text: string): void;
+        private limit;
+    }
+
 ### `Texture2D` (export)
 
     export { Texture2D }
@@ -2259,6 +2511,32 @@ build instead.
         };
 
         private place;
+    }
+
+### `TreeView` (class)
+
+    export declare class TreeView<T = unknown> {
+        readonly onChange: Signal<void>;
+        private roots_;
+        private expanded;
+        private current;
+        private readonly disabledOf;
+        constructor(options: TreeViewOptions<T>);
+        get roots(): readonly TreeNode<T>[];
+
+        get rows(): readonly TreeRow<T>[];
+        get selectedIndex(): number;
+        get selected(): TreeNode<T> | null;
+        isExpanded(id: string): boolean;
+        expand(id: string): void;
+        collapse(id: string): void;
+        toggle(id: string): void;
+        expandAll(): void;
+        collapseAll(): void;
+        select(index: number): void;
+
+        move(delta: number): void;
+        private firstEnabled;
     }
 
 ### `Tweener` (class)
@@ -6222,6 +6500,28 @@ build instead.
 
     export declare function channelSwapMatrix(sources: readonly ChannelSource[]): ColorMatrixFilter['matrix'];
 
+### `Checkbox` (class)
+
+    export declare class Checkbox extends Container {
+        readonly onChange: Signal<boolean>;
+        private box;
+        private size_;
+        private checked_;
+        private disabled_;
+        private readonly themeListener;
+        constructor(options?: CheckboxOptions);
+        get checked(): boolean;
+        get disabled(): boolean;
+        setDisabled(disabled: boolean): void;
+
+        setChecked(checked: boolean): void;
+        toggle(): void;
+        resize(size: number): void;
+        private readonly handleTap;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
 ### `COLOR_BLINDNESS_MATRICES` (const)
 
     export declare const COLOR_BLINDNESS_MATRICES: Record<ColorBlindnessType, ColorMatrix>;
@@ -6274,6 +6574,44 @@ build instead.
 
     export declare function croppedTexture(texture: Texture, parsed: ParsedImagePath): Texture;
 
+### `DataTable` (class)
+
+    export declare class DataTable<T> {
+        readonly onChange: Signal<void>;
+        private columns_;
+        private rows_;
+        private pageSize_;
+        private current;
+        private sortKey_;
+        private ascending;
+        private readonly disabledOf;
+        constructor(options: DataTableOptions<T>);
+        get columns(): readonly TableColumn<T>[];
+        get rows(): readonly T[];
+        get pageSize(): number;
+        get sortKey(): string | null;
+        get sortAscending(): boolean;
+        get selectedIndex(): number;
+        get selected(): T | null;
+
+        get page(): number;
+
+        get pageCount(): number;
+        get pageRows(): readonly T[];
+        setRows(rows: readonly T[]): void;
+        setColumns(columns: readonly TableColumn<T>[]): void;
+        setPageSize(size: number): void;
+
+        sortBy(key: string): void;
+        select(index: number): void;
+
+        move(delta: number): void;
+
+        setPage(page: number): void;
+        nextPage(delta?: number): void;
+        private firstEnabled;
+    }
+
 ### `defaultTheme` (const)
 
     export declare const defaultTheme: Theme;
@@ -6316,6 +6654,44 @@ build instead.
         update(dt: number): void;
 
         get isBusy(): boolean;
+    }
+
+### `Dropdown` (class)
+
+    export declare class Dropdown {
+        readonly onChange: Signal<{
+            option: DropdownOption;
+            index: number;
+        }>;
+        private options_;
+        private current;
+        private highlight_;
+        private open_;
+        private disabled_;
+        constructor(options: DropdownOptions);
+        get options(): readonly DropdownOption[];
+        get selectedIndex(): number;
+
+        get selected(): DropdownOption | null;
+        get isOpen(): boolean;
+        get disabled(): boolean;
+
+        get highlight(): number;
+        setDisabled(disabled: boolean): void;
+        setOptions(options: readonly DropdownOption[]): void;
+
+        open(): void;
+        close(): void;
+        toggleOpen(): void;
+
+        move(delta: number): void;
+
+        setHighlight(index: number): void;
+
+        confirm(): boolean;
+
+        cancel(): void;
+        private firstEnabled;
     }
 
 ### `EMPTY` (const)
@@ -7055,6 +7431,43 @@ build instead.
         destroy(): void;
     }
 
+### `ScrollBox` (class)
+
+    export declare class ScrollBox extends Container {
+        readonly onChange: Signal<number>;
+
+        readonly content: Container<import("pixi.js").ContainerChild>;
+        private maskShape;
+        private track;
+        private thumb;
+        private width_;
+        private height_;
+        private contentHeight_;
+        private offset_;
+        private readonly themeListener;
+        constructor(options: ScrollBoxOptions);
+        get offset(): number;
+        get contentHeight(): number;
+        get viewportHeight(): number;
+
+        get maxOffset(): number;
+        get scrollable(): boolean;
+        setContentHeight(height: number): void;
+        resize(width: number, height: number): void;
+        scrollBy(delta: number): void;
+        scrollTo(offset: number): void;
+
+        scrollIntoView(top: number, height: number): void;
+        private setOffset;
+        private readonly handleWheel;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `scrollOffset` (function)
+
+    export declare function scrollOffset(offset: number, contentSize: number, viewportSize: number): number;
+
 ### `setTheme` (function)
 
     export declare function setTheme(next: Partial<Theme>): void;
@@ -7068,9 +7481,87 @@ build instead.
 
     export declare function sliceSpans(spans: readonly MarkdownSpan[], count: number): MarkdownSpan[];
 
+### `Slider` (class)
+
+    export declare class Slider extends Container {
+        readonly onChange: Signal<number>;
+        private track;
+        private fill;
+        private knob;
+        private width_;
+        private height_;
+        private knobSize;
+        private min;
+        private max;
+        private step;
+        private value_;
+        private disabled_;
+        private dragging;
+        private readonly themeListener;
+        constructor(options: SliderOptions);
+
+        get value(): number;
+
+        get fraction(): number;
+        get disabled(): boolean;
+        setDisabled(disabled: boolean): void;
+        setValue(value: number): void;
+
+        setFraction(fraction: number): void;
+        resize(width: number, height: number): void;
+        private get trackLength();
+        private snap;
+        private fractionAt;
+        private readonly handleDown;
+        private readonly handleMove;
+        private readonly handleUp;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `sliderFraction` (function)
+
+    export declare function sliderFraction(value: number, min?: number, max?: number): number;
+
+### `sliderValueAt` (function)
+
+    export declare function sliderValueAt(fraction: number, min?: number, max?: number, step?: number): number;
+
 ### `snapZoom` (function)
 
     export declare function snapZoom(zoom: number, tileSize: number): number;
+
+### `Spinner` (class)
+
+    export declare class Spinner extends Container {
+        readonly onChange: Signal<number>;
+        private face;
+        private width_;
+        private height_;
+        private min;
+        private max;
+        private step;
+        private value_;
+        private wrap;
+        private disabled_;
+        private readonly themeListener;
+        constructor(options?: SpinnerOptions);
+        get value(): number;
+        get disabled(): boolean;
+        setDisabled(disabled: boolean): void;
+        setValue(value: number): void;
+        increment(): void;
+        decrement(): void;
+        resize(width: number, height: number): void;
+        private commit;
+        private readonly handleTap;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `spinValue` (function)
+
+    export declare function spinValue(value: number, delta: number, min: number, max: number, step?: number, wrap?: boolean): number;
 
 ### `splitScreenHalves` (function)
 
@@ -7259,6 +7750,45 @@ build instead.
 ### `Text2D` (class)
 
     export declare class Text2D extends Text {
+    }
+
+### `TextModel` (class)
+
+    export declare class TextModel {
+        private text;
+        private caretIndex;
+        private anchor;
+        private readonly maxLength?;
+        private readonly mask;
+        private readonly maskCharacter;
+        constructor(options?: TextModelOptions);
+        get value(): string;
+
+        get maskedValue(): string;
+        get length(): number;
+        get caret(): number;
+        get selectionStart(): number;
+        get selectionEnd(): number;
+        get hasSelection(): boolean;
+        get selectedText(): string;
+
+        setValue(value: string): void;
+        setCaret(index: number, extend?: boolean): void;
+
+        insert(text: string): void;
+
+        backspace(): void;
+
+        deleteForward(): void;
+
+        moveCaret(delta: number, extend?: boolean): void;
+        moveToStart(extend?: boolean): void;
+        moveToEnd(extend?: boolean): void;
+        selectAll(): void;
+        clearSelection(): void;
+
+        replaceSelection(text: string): void;
+        private limit;
     }
 
 ### `Texture2D` (export)
@@ -7451,6 +7981,32 @@ build instead.
         };
 
         private place;
+    }
+
+### `TreeView` (class)
+
+    export declare class TreeView<T = unknown> {
+        readonly onChange: Signal<void>;
+        private roots_;
+        private expanded;
+        private current;
+        private readonly disabledOf;
+        constructor(options: TreeViewOptions<T>);
+        get roots(): readonly TreeNode<T>[];
+
+        get rows(): readonly TreeRow<T>[];
+        get selectedIndex(): number;
+        get selected(): TreeNode<T> | null;
+        isExpanded(id: string): boolean;
+        expand(id: string): void;
+        collapse(id: string): void;
+        toggle(id: string): void;
+        expandAll(): void;
+        collapseAll(): void;
+        select(index: number): void;
+
+        move(delta: number): void;
+        private firstEnabled;
     }
 
 ### `VerticalLabel` (class)
@@ -8488,6 +9044,28 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `Checkbox` (class)
+
+    export declare class Checkbox extends Container {
+        readonly onChange: Signal<boolean>;
+        private box;
+        private size_;
+        private checked_;
+        private disabled_;
+        private readonly themeListener;
+        constructor(options?: CheckboxOptions);
+        get checked(): boolean;
+        get disabled(): boolean;
+        setDisabled(disabled: boolean): void;
+
+        setChecked(checked: boolean): void;
+        toggle(): void;
+        resize(size: number): void;
+        private readonly handleTap;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
 ### `completeReveal` (function)
 
     export declare function completeReveal(state: RevealState): void;
@@ -8496,9 +9074,85 @@ build instead.
 
     export declare function contrastRatio(a: number, b: number): number;
 
+### `DataTable` (class)
+
+    export declare class DataTable<T> {
+        readonly onChange: Signal<void>;
+        private columns_;
+        private rows_;
+        private pageSize_;
+        private current;
+        private sortKey_;
+        private ascending;
+        private readonly disabledOf;
+        constructor(options: DataTableOptions<T>);
+        get columns(): readonly TableColumn<T>[];
+        get rows(): readonly T[];
+        get pageSize(): number;
+        get sortKey(): string | null;
+        get sortAscending(): boolean;
+        get selectedIndex(): number;
+        get selected(): T | null;
+
+        get page(): number;
+
+        get pageCount(): number;
+        get pageRows(): readonly T[];
+        setRows(rows: readonly T[]): void;
+        setColumns(columns: readonly TableColumn<T>[]): void;
+        setPageSize(size: number): void;
+
+        sortBy(key: string): void;
+        select(index: number): void;
+
+        move(delta: number): void;
+
+        setPage(page: number): void;
+        nextPage(delta?: number): void;
+        private firstEnabled;
+    }
+
 ### `defaultTheme` (const)
 
     export declare const defaultTheme: Theme;
+
+### `Dropdown` (class)
+
+    export declare class Dropdown {
+        readonly onChange: Signal<{
+            option: DropdownOption;
+            index: number;
+        }>;
+        private options_;
+        private current;
+        private highlight_;
+        private open_;
+        private disabled_;
+        constructor(options: DropdownOptions);
+        get options(): readonly DropdownOption[];
+        get selectedIndex(): number;
+
+        get selected(): DropdownOption | null;
+        get isOpen(): boolean;
+        get disabled(): boolean;
+
+        get highlight(): number;
+        setDisabled(disabled: boolean): void;
+        setOptions(options: readonly DropdownOption[]): void;
+
+        open(): void;
+        close(): void;
+        toggleOpen(): void;
+
+        move(delta: number): void;
+
+        setHighlight(index: number): void;
+
+        confirm(): boolean;
+
+        cancel(): void;
+        private firstEnabled;
+    }
 
 ### `escapeHtml` (function)
 
@@ -8889,6 +9543,43 @@ build instead.
         destroy(): void;
     }
 
+### `ScrollBox` (class)
+
+    export declare class ScrollBox extends Container {
+        readonly onChange: Signal<number>;
+
+        readonly content: Container<import("pixi.js").ContainerChild>;
+        private maskShape;
+        private track;
+        private thumb;
+        private width_;
+        private height_;
+        private contentHeight_;
+        private offset_;
+        private readonly themeListener;
+        constructor(options: ScrollBoxOptions);
+        get offset(): number;
+        get contentHeight(): number;
+        get viewportHeight(): number;
+
+        get maxOffset(): number;
+        get scrollable(): boolean;
+        setContentHeight(height: number): void;
+        resize(width: number, height: number): void;
+        scrollBy(delta: number): void;
+        scrollTo(offset: number): void;
+
+        scrollIntoView(top: number, height: number): void;
+        private setOffset;
+        private readonly handleWheel;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `scrollOffset` (function)
+
+    export declare function scrollOffset(offset: number, contentSize: number, viewportSize: number): number;
+
 ### `setTheme` (function)
 
     export declare function setTheme(next: Partial<Theme>): void;
@@ -8896,6 +9587,84 @@ build instead.
 ### `sliceSpans` (function)
 
     export declare function sliceSpans(spans: readonly MarkdownSpan[], count: number): MarkdownSpan[];
+
+### `Slider` (class)
+
+    export declare class Slider extends Container {
+        readonly onChange: Signal<number>;
+        private track;
+        private fill;
+        private knob;
+        private width_;
+        private height_;
+        private knobSize;
+        private min;
+        private max;
+        private step;
+        private value_;
+        private disabled_;
+        private dragging;
+        private readonly themeListener;
+        constructor(options: SliderOptions);
+
+        get value(): number;
+
+        get fraction(): number;
+        get disabled(): boolean;
+        setDisabled(disabled: boolean): void;
+        setValue(value: number): void;
+
+        setFraction(fraction: number): void;
+        resize(width: number, height: number): void;
+        private get trackLength();
+        private snap;
+        private fractionAt;
+        private readonly handleDown;
+        private readonly handleMove;
+        private readonly handleUp;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `sliderFraction` (function)
+
+    export declare function sliderFraction(value: number, min?: number, max?: number): number;
+
+### `sliderValueAt` (function)
+
+    export declare function sliderValueAt(fraction: number, min?: number, max?: number, step?: number): number;
+
+### `Spinner` (class)
+
+    export declare class Spinner extends Container {
+        readonly onChange: Signal<number>;
+        private face;
+        private width_;
+        private height_;
+        private min;
+        private max;
+        private step;
+        private value_;
+        private wrap;
+        private disabled_;
+        private readonly themeListener;
+        constructor(options?: SpinnerOptions);
+        get value(): number;
+        get disabled(): boolean;
+        setDisabled(disabled: boolean): void;
+        setValue(value: number): void;
+        increment(): void;
+        decrement(): void;
+        resize(width: number, height: number): void;
+        private commit;
+        private readonly handleTap;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `spinValue` (function)
+
+    export declare function spinValue(value: number, delta: number, min: number, max: number, step?: number, wrap?: boolean): number;
 
 ### `startReveal` (function)
 
@@ -8977,6 +9746,45 @@ build instead.
         private emit;
     }
 
+### `TextModel` (class)
+
+    export declare class TextModel {
+        private text;
+        private caretIndex;
+        private anchor;
+        private readonly maxLength?;
+        private readonly mask;
+        private readonly maskCharacter;
+        constructor(options?: TextModelOptions);
+        get value(): string;
+
+        get maskedValue(): string;
+        get length(): number;
+        get caret(): number;
+        get selectionStart(): number;
+        get selectionEnd(): number;
+        get hasSelection(): boolean;
+        get selectedText(): string;
+
+        setValue(value: string): void;
+        setCaret(index: number, extend?: boolean): void;
+
+        insert(text: string): void;
+
+        backspace(): void;
+
+        deleteForward(): void;
+
+        moveCaret(delta: number, extend?: boolean): void;
+        moveToStart(extend?: boolean): void;
+        moveToEnd(extend?: boolean): void;
+        selectAll(): void;
+        clearSelection(): void;
+
+        replaceSelection(text: string): void;
+        private limit;
+    }
+
 ### `theme` (function)
 
     export declare function theme(): Theme;
@@ -9052,6 +9860,32 @@ build instead.
         };
 
         private place;
+    }
+
+### `TreeView` (class)
+
+    export declare class TreeView<T = unknown> {
+        readonly onChange: Signal<void>;
+        private roots_;
+        private expanded;
+        private current;
+        private readonly disabledOf;
+        constructor(options: TreeViewOptions<T>);
+        get roots(): readonly TreeNode<T>[];
+
+        get rows(): readonly TreeRow<T>[];
+        get selectedIndex(): number;
+        get selected(): TreeNode<T> | null;
+        isExpanded(id: string): boolean;
+        expand(id: string): void;
+        collapse(id: string): void;
+        toggle(id: string): void;
+        expandAll(): void;
+        collapseAll(): void;
+        select(index: number): void;
+
+        move(delta: number): void;
+        private firstEnabled;
     }
 
 ### `VerticalLabel` (class)

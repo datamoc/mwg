@@ -3638,10 +3638,24 @@ it.
      `addChild(halo, unit)` and in front is the other order, and the note says so where a game will
      look for it. Six tests in `tests/halo.test.ts`, all without a renderer - a sprite and its blend
      mode exist without one.
-261. [High] Missing widgets (Absent). No Slider, Checkbox/Toggle, Dropdown/OptionButton,
+261. ~~[High] Missing widgets (Absent). No Slider, Checkbox/Toggle, Dropdown/OptionButton,
      TextInput/TextArea, Table/data grid, collapsible TreeView, Spinner or ScrollBox. Present:
      Button, Label, RichLabel, ListView, IconGrid, Bar, Window, WindowStack, MessageBox,
-     NinePatch, Tooltip, Toast.
+     NinePatch, Tooltip, Toast.~~ All eight landed, split the way this repo splits a widget whose
+     interesting part is a rule: the rule is a pure function or a renderer-free model, tested
+     headlessly, and the drawing is a thin shell over it. `Slider` (`sliderFraction`/
+     `sliderValueAt`: clamping, the step grid, the degenerate range), `Checkbox` (a two-state box
+     whose `onChange` fires only on a real move), and `Spinner` (`spinValue`: snap then clamp or
+     wrap) draw themselves from the theme and draw no text, so their state machines are tested
+     directly. `Dropdown`, `TextModel` (the caret/anchor/selection editing `core.Input`'s `onText`
+     feeds, with a length cap and a mask), `DataTable` (sort-by-column, a page derived from the
+     highlight), and `TreeView` (visible rows derived from the expanded set; closing the branch the
+     highlight is inside lands it on the branch) are renderer-free, like `TabbedList`, and a game
+     draws them. `ScrollBox` clips its `content` behind a mask with a themed scrollbar, all through
+     `scrollOffset`. `TextArea` was left as `TextModel` plus a `Label` with wrapping rather than a
+     separate class, since the editing rules are identical and only the drawing wraps. Sixty-two
+     tests across `tests/slider.test.ts`, `checkbox`, `spinner`, `dropdown`, `text-model`,
+     `data-table`, `tree-view` and `scroll-box`.
 262. ~~[High] Text input (Absent). `src/core/Input.ts` offers named actions and a raw `onKey`; there
      is no `onText` and no composition event, so a free text field cannot be built.~~ Landed in
      `core.Input`: `onText` fires the character a key press produces (stack-mode, so a focused

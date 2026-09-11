@@ -371,6 +371,24 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   shop or codex: caller-supplied tabs and rows (no assumed taxonomy), an optional label,
   filter and disabled predicate, selection that skips disabled rows, a page derived from the
   selection rather than tracked beside it, and an `openDetail`/`closeDetail` state.
+- `Slider`/`SliderOptions` + `sliderFraction`/`sliderValueAt` - a draggable knob on a themed track;
+  the two pure functions are the value/track arithmetic (clamping, the step grid, the degenerate
+  range), so a game routing its own input snaps the same way.
+- `Checkbox`/`CheckboxOptions` - a ticked-or-not box; a caption is a `Label` the game places beside
+  it, and `onChange` fires only when the state moves.
+- `Spinner`/`SpinnerOptions` + `spinValue` - an up/down numeric stepper; `spinValue` is the rule
+  (snap to the step, then clamp at the ends or wrap past them).
+- `Dropdown`/`DropdownOption`/`DropdownOptions` - a renderer-free option button: a selected entry,
+  an open list, a highlight that starts on the selection and skips disabled options.
+- `TextModel`/`TextModelOptions` - the editing state behind a text field, fed by `core.Input`'s
+  `onText`: caret, anchor, selection-replacing edits, a length cap and a mask. Renderer-free.
+- `DataTable`/`TableColumn`/`DataTableOptions` - a renderer-free columned table: sort by a column
+  (toggling direction), a highlight that skips disabled rows, and a page derived from the
+  highlight.
+- `TreeView`/`TreeNode`/`TreeRow`/`TreeViewOptions` - a renderer-free collapsible tree, flattened to
+  the rows on screen; collapsing the branch the highlight is inside lands it on the branch.
+- `ScrollBox`/`ScrollBoxOptions` + `scrollOffset` - a clipped viewport with a themed scrollbar;
+  `scrollOffset` is the clamping rule the wheel, `scrollBy` and `scrollIntoView` all share.
 - `MessageBox` - dialogue text box: paged reveal, choices, ADV/NVL display modes,
   `autoAdvance`, and timed `{sound:path}` markers delivered through `onSound`.
 - `messageBoxPresenter` - wires `rpg.EventRunner`'s dialogue to a `MessageBox` on a

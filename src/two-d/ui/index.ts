@@ -48,6 +48,30 @@ export type { MessageBoxOptions, MessagePage, Choice } from './MessageBox.ts';
 export { VerticalLabel, layoutVertical } from './VerticalLabel.ts';
 export type { VerticalLabelOptions, VerticalLayoutOptions, GlyphLayout } from './VerticalLabel.ts';
 
+export { Slider, sliderFraction, sliderValueAt } from './Slider.ts';
+export type { SliderOptions } from './Slider.ts';
+
+export { Checkbox } from './Checkbox.ts';
+export type { CheckboxOptions } from './Checkbox.ts';
+
+export { Spinner, spinValue } from './Spinner.ts';
+export type { SpinnerOptions } from './Spinner.ts';
+
+export { Dropdown } from './Dropdown.ts';
+export type { DropdownOption, DropdownOptions } from './Dropdown.ts';
+
+export { TextModel } from './TextModel.ts';
+export type { TextModelOptions } from './TextModel.ts';
+
+export { DataTable } from './DataTable.ts';
+export type { DataTableOptions, TableColumn } from './DataTable.ts';
+
+export { TreeView } from './TreeView.ts';
+export type { TreeNode, TreeRow, TreeViewOptions } from './TreeView.ts';
+
+export { ScrollBox, scrollOffset } from './ScrollBox.ts';
+export type { ScrollBoxOptions } from './ScrollBox.ts';
+
 export { RebindScreen } from './RebindScreen.ts';
 export type { RebindScreenOptions } from './RebindScreen.ts';
 
