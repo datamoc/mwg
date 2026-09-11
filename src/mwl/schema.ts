@@ -55,6 +55,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			start_scene: 'id',
 			default_schedule: 'id',
 			save_slot: 'string',
+			turn_limit: 'integer',
 		},
 		children: [
 			'campaign',

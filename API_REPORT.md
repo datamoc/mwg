@@ -4527,6 +4527,8 @@ build instead.
         private killUnit;
         private addGold;
         private endTurn;
+
+        private checkTimeOver;
         private advanceSchedule;
         private resetMoves;
         private filterMatches;

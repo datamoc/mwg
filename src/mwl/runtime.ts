@@ -826,6 +826,22 @@ export class MwlRuntime {
 		this.advanceSchedule();
 		this.resetMoves();
 		this.run('turn');
+		this.checkTimeOver();
+	}
+
+	/**
+	 * Wesnoth's "time over", as a framework native: once the scenario's `turn_limit` has passed,
+	 * `time_over` becomes a variable content can test and an event trigger it can answer. The
+	 * framework reports it rather than ending anything, because a turn limit is usually a defeat and
+	 * occasionally the whole point of the scenario ("hold out until then"), so what it means is
+	 * content's business - `[endlevel]` is right there for it. Fired once, and derived from the turn
+	 * counter rather than kept in step with it.
+	 */
+	private checkTimeOver(): void {
+		const limit = integerAttribute(this.game.roots[0], 'turn_limit');
+		if (limit === undefined || this.world.turn <= limit || this.world.variables.time_over === 'yes') return;
+		this.world.variables.time_over = 'yes';
+		this.run('time_over');
 	}
 
 	private advanceSchedule(): void {

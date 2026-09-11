@@ -49,6 +49,10 @@ the public API may still change between minor versions.
   own `[kill]` is. It reads the same attributes an event filter does, an empty filter matches every
   unit (there as here), and the schema entry is open on attributes so a filter can say what it
   means.
+- A scenario turn limit, as a native condition (item 253): `[game] turn_limit=N` makes the runtime
+  set `time_over` as a world variable and fire the `time_over` event once the turn counter passes N.
+  Content tests it like any variable and answers it like any event, `[endlevel]` included, because a
+  limit is usually a defeat and sometimes the whole scenario.
 
 ### Fixed
 

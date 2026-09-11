@@ -3418,9 +3418,17 @@ it.
      `recruit`/`color`, and `MwlWorld.sides` keeps gold/income/leader/controller/recruit. Missing
      `share_vision`, `fog`, `shroud`, `team_name`, `user_team_name`, `flag`, `village_gold`,
      `heal`, `hidden`, and per-side `defeat`/`victory` conditions.
-253. [Medium] Turn limit as a native end condition (Absent). "Time over" as a scenario predicate
+253. ~~[Medium] Turn limit as a native end condition (Absent). "Time over" as a scenario predicate
      has no framework home; the port had to add `predicate:turn_limit` itself. (`[objectives]`
-     with a `condition=hook` does exist.)
+     with a `condition=hook` does exist.)~~ Landed, in the shape the rest of the runtime already
+     uses: a scenario declares `turn_limit` on `[game]`, and once the turn counter goes past it the
+     framework sets `time_over` as a world variable and fires the `time_over` event. So content
+     tests it the way it tests anything (`[condition] variable=time_over`) and answers it the way it
+     answers any event, including with `[endlevel]` now that 248 exists - which is the point: a limit
+     is usually a defeat and sometimes the whole scenario ("hold out until then"), so the framework
+     reports and content decides. Fired once, derived from the turn counter rather than kept in step
+     with it, and `turn_limit` is in the `[game]` schema. Four tests in
+     `tests/mwl-turn-limit.test.ts`.
 254. ~~[High] Per-frame animation timing (Absent). `AnimatedSprite`/`ActorAnimator`
      (`src/two-d/render/`) run at a fixed fps (`frameDuration = 1/fps`). Wesnoth needs a duration
      per frame (`image:120,80,...`), `start_time`, per-frame x/y offsets, and `[missile_frame]`.~~
@@ -3448,7 +3456,20 @@ it.
      rotations, multi-hex `[tile]`, and an image per neighbour combination. A 72px source sprite
      that overlaps into neighbouring hexes cannot be expressed in a one-sprite-per-cell grid.
 258. [High] Typographic markup in text (Ne correspond pas). Text is markdown (`RichLabel`,
-     `**bold**`) where Wesnoth content is written with `<b>`, `<span color>`, `<img>` and `$var`.
+     `**bold**`) where Wesnoth content is written with `<b>`, `<i>`, `<span color>`, `<img>`
+     and `$var`. The framework-side target is a renderer-neutral inline-markup contract, not a
+     Wesnoth parser: `Text`/`Label`/`RichLabel` should accept a common token stream (or a single
+     documented `MarkupText` value) with escaped literal text, nested emphasis, named and hex
+     colours, images supplied through the asset resolver, variable interpolation supplied by the
+     caller, and line breaks/wrapping measured after styling. Unknown or malformed tags must be
+     visible as text or safely ignored by policy, never leak raw HTML into a UI and never execute
+     arbitrary HTML. The contract must work in `file://` builds, remain accessible through a
+     plain-text projection, and expose enough style runs for canvas/WebGL renderers to batch
+     predictable runs. Acceptance: the same fixture renders equivalent runs through the canvas
+     and any rich-text backend; nested tags, colour changes, inline images, escaping, wrapping,
+     interpolation and an RTL sample are covered by unit tests; existing plain `Label` text is
+     unchanged. The Wesnoth adapter will map its `<b>`, `<i>`, `<span color>`, `<img>` and `$var`
+     syntax to this contract; no Wesnoth-specific tag names belong in MWG.
 259. [Medium] Hex projection options (Ne correspond pas). `src/core/Hex.ts` fixes flat-top odd-q
      with no orientation or offset-parity option - it says so itself about pointy-top - and
      `TileMap`/`TiledMap` refuse hexagonal orientation, so a Wesnoth map cannot be projected
