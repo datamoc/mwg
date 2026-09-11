@@ -158,10 +158,11 @@ function renderMarkdown(stats) {
 }
 
 function renderPage(stats) {
+	const maxModuleLines = Math.max(...stats.source.breakdown.map((module) => module.lines), 1);
 	const moduleRows = stats.source.breakdown
 		.map(
 			(module) =>
-				`<tr><th scope="row">${escapeHtml(module.name)}</th><td>${module.files}</td><td>${module.lines.toLocaleString('en-US')}</td></tr>`,
+				`<div class="bar-row"><div class="bar-label"><strong>${escapeHtml(module.name)}</strong><span>${module.lines.toLocaleString('en-US')} lines · ${module.files} files</span></div><div class="bar-track"><span class="bar-fill" style="width:${Math.max((module.lines / maxModuleLines) * 100, 2)}%"></span></div></div>`,
 		)
 		.join('');
 	const rows = [
@@ -183,9 +184,9 @@ function renderPage(stats) {
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Project statistics - mwg</title><meta name="description" content="Release statistics for the mwg game framework.">
 <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg"><link rel="stylesheet" href="../assets/site.css">
-<style>.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem}.stat{padding:1.2rem;border:1px solid var(--line-strong);border-radius:.6rem;background:var(--panel-raised)}.stat dt{color:var(--muted);font-size:.9rem}.stat dd{margin:.35rem 0 0;color:var(--paper);font-size:1.25rem;font-weight:650}.module-table{width:100%;margin-top:1.5rem;border-collapse:collapse}.module-table th,.module-table td{padding:.6rem;border-bottom:1px solid var(--line-strong);text-align:left}.module-table td{text-align:right;color:var(--muted)}</style></head>
+<style>.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem}.stat{padding:1.2rem;border:1px solid var(--line-strong);border-radius:.6rem;background:var(--panel-raised)}.stat dt{color:var(--muted);font-size:.9rem}.stat dd{margin:.35rem 0 0;color:var(--paper);font-size:1.25rem;font-weight:650}.bar-chart{display:grid;gap:1.05rem;margin-top:1.5rem;max-width:58rem}.bar-label{display:flex;justify-content:space-between;gap:1rem;align-items:baseline;color:var(--paper);font-family:var(--font-display);font-size:.78rem}.bar-label span{color:var(--muted);font-family:var(--font-body);font-size:.8rem;text-align:right}.bar-track{height:.7rem;margin-top:.45rem;background:var(--panel-raised);border:1px solid var(--line-strong);overflow:hidden}.bar-fill{display:block;height:100%;background:linear-gradient(90deg,var(--add),var(--moss));transform-origin:left;animation:bar-in .55s ease-out both}@keyframes bar-in{from{transform:scaleX(0)}}@media(prefers-reduced-motion:reduce){.bar-fill{animation:none}}@media(max-width:600px){.bar-label{display:block}.bar-label span{display:block;margin-top:.2rem;text-align:left}}</style></head>
 <body><header class="site-header"><div class="wrap"><a class="brand" href="../index.html"><img src="../assets/logo.svg" alt="mwg"></a><nav class="site-nav"><a href="../examples/index.html">Examples</a><a href="../getting-started/index.html">Getting started</a><a href="../documentation/index.html">Documentation</a><a href="../features/index.html">Features</a><a href="../statistics/index.html" aria-current="page">Statistics</a><a href="https://github.com/datamoc/mwg">GitHub</a></nav></div></header>
-<main><section class="hero"><div class="wrap"><p class="eyebrow">release evidence</p><h1>Project statistics</h1><p class="lede">A reproducible snapshot of the framework, its tests, examples, roadmap, API and shipped bundle.</p></div></section><section class="wrap"><dl class="stats-grid">${table}</dl><h2 style="margin-top:3rem">Source modules</h2><table class="module-table"><thead><tr><th scope="col">Module</th><th scope="col">Files</th><th scope="col">Lines</th></tr></thead><tbody>${moduleRows}</tbody></table><p class="help" style="margin-top:2rem">Generated from the release checkout by <code>tools/project-stats.mjs</code>.</p></section></main></body></html>
+<main><section class="hero"><div class="wrap"><p class="eyebrow">release evidence</p><h1>Project statistics</h1><p class="lede">A reproducible snapshot of the framework, its tests, examples, roadmap, API and shipped bundle.</p></div></section><section class="wrap"><dl class="stats-grid">${table}</dl><h2 style="margin-top:3rem">Source modules</h2><div class="bar-chart" role="img" aria-label="Source module size comparison">${moduleRows}</div><p class="help" style="margin-top:2rem">Generated from the release checkout by <code>tools/project-stats.mjs</code>.</p></section></main></body></html>
 `;
 }
 
