@@ -32,6 +32,9 @@ the public API may still change between minor versions.
   vector) and named, independent streams derived from one base seed, so per-entity and per-usage
   draws never shift each other. C++'s `uniform_int_distribution` is implementation-defined, so the
   int mapping is MWG's own and documented as such.
+- `i18n.parsePo`/`PoOptions` (item 270): a gettext `.po` loader into the same `Catalog` surface
+  as `parseFTL`, with `msgctxt`, `msgstr[N]` mapped onto the locale's CLDR categories,
+  untranslated entries left out for base fallback, and gettext `domain`-prefixed keys.
 - `ai.personalScoreView`/`ai.sideScoreView`/`ai.scoreWith`, over `ScoreSubject`/`ScoreView`/
   `ScorePersonality` (items 274-276): the numbers a mind needs when a search is the wrong tool.
   The game supplies what anything is worth, the framework assembles the view (own, allies and

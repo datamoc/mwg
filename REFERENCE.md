@@ -737,6 +737,10 @@ Message tables, plurals, interpolation, and direction - pure logic, no Pixi depe
 - `has` - whether a key resolves to something real, in either language.
 - `parseFTL`/`FluentOptions` - parses Project Fluent `.ftl` message resources into the same
   `Catalog`/`t()` surface, with variables, exact and plural variants.
+- `parsePo`/`PoOptions` - parses a gettext `.po` file into the same `Catalog`/`t()` surface:
+  `msgid`/`msgstr`, `msgctxt`, `msgid_plural` with `msgstr[N]` mapped onto the locale's CLDR
+  categories, the header entry dropped, untranslated entries left out for base fallback, and
+  a non-default gettext `domain` prefixing keys.
 - `SemanticMessage`/`MessageChannel`/`MessageFormatter`/`createCatalogFormatter` - a typed
   `{ type, params }` communication intent rendered differently per channel (log/compact/
   accessibility/debug/audio) from the same underlying catalog: `createCatalogFormatter` looks up

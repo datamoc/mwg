@@ -4433,6 +4433,10 @@ build instead.
 
     export declare function parseFTL(locale: string, source: string, options?: FluentOptions): Catalog;
 
+### `parsePo` (function)
+
+    export declare function parsePo(locale: string, source: string, options?: PoOptions): Catalog;
+
 ### `parseSoundMarkers` (function)
 
     export declare function parseSoundMarkers(source: string): ParsedSoundText;

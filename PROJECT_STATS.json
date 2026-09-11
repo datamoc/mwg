@@ -5,7 +5,7 @@
 	"releaseDate": "2026-09-11",
 	"source": {
 		"files": 248,
-		"lines": 35736,
+		"lines": 35739,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -41,7 +41,7 @@
 			{
 				"name": "i18n",
 				"files": 9,
-				"lines": 1630
+				"lines": 1633
 			},
 			{
 				"name": "rpg",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 180,
-		"lines": 22588,
-		"cases": 1642
+		"files": 181,
+		"lines": 22738,
+		"cases": 1653
 	},
 	"tools": {
 		"files": 35,
@@ -123,8 +123,8 @@
 	},
 	"roadmap": {
 		"items": 286,
-		"completed": 263,
-		"open": 23,
+		"completed": 264,
+		"open": 22,
 		"percent": 92
 	},
 	"api": {
@@ -133,7 +133,7 @@
 	"bundle": {
 		"globalRaw": 941520,
 		"globalGzip": 279972,
-		"distRaw": 2752608
+		"distRaw": 2761903
 	},
 	"quality": {
 		"testToSourceRatio": 0.6

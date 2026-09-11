@@ -3586,8 +3586,20 @@ it.
      candidate actions, aspects and stages, with `goals`, `keep_away` and `recruitment_pattern`,
      plus native difficulty levels. A Lua VM is already available (`src/mwl/fengari.ts`,
      `src/mwl/scripts.ts`, `src/ai/lua.ts`), but not a `wesnoth.*` API.
-270. [Medium] gettext i18n (Ne correspond pas). i18n is Fluent (`parseFTL`, `src/i18n/Fluent.ts`),
-     not `.po` files and gettext domains.
+270. ~~[Medium] gettext i18n (Ne correspond pas). i18n is Fluent (`parseFTL`, `src/i18n/Fluent.ts`),
+     not `.po` files and gettext domains.~~ Landed as `i18n.parsePo`, producing the same `Catalog`
+     `parseFTL` does, so `t()`/`setActive`/the semantic formatter need no gettext path of their
+     own. It reads `msgid`/`msgstr`, multi-line strings and escapes, `msgctxt` (keyed with
+     gettext's own EOT separator), and `msgid_plural`/`msgstr[N]`; the header entry is dropped and
+     an empty `msgstr` is left out as "untranslated", which is what lets the base language fall
+     back. Gettext's positional plural forms map onto the locale's CLDR categories by position
+     (English one/other, Arabic zero/one/two/few/many/other), and a file with more forms than the
+     locale declares throws rather than mislabelling one. A non-default gettext `domain` prefixes
+     keys (`units:sword`), so several `.po` files can share one catalog; the default `messages`
+     domain stays bare. Malformed lines, duplicates, an orphan `msgstr` and a plural with no
+     `msgstr[N]` all throw with the line or key named. Seventeen tests in `tests/gettext-po.test.ts`,
+     including a plural round-trip through `t()` and `Intl.PluralRules`. `.mo` compilation is not
+     attempted: a game ships the `.po` text the way it ships any other asset.
 271. ~~[Medium] Positional audio (Ne correspond pas). `Sound`/`Music`/`Orchestrator`/`Synth`/`Midi`
      are the framework's own engine; there is no `[sound]`/`[music]`/`sound_source` model with
      listeners at a position.~~ Landed as `AudioListener`/`SoundSource` over `audioGain` and

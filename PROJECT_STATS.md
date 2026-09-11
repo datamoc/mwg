@@ -4,14 +4,14 @@ Generated for **mwg 0.7.6** on 2026-09-11.
 
 | Area | Statistics |
 | --- | ---: |
-| Source | 248 TypeScript files, 35,736 lines, 15 modules |
-| Tests | 180 files, 1,642 test cases, 22,588 lines |
+| Source | 248 TypeScript files, 35,739 lines, 15 modules |
+| Tests | 181 files, 1,653 test cases, 22,738 lines |
 | Tools | 35 files, 6,335 lines |
 | Examples | 22 runnable examples |
-| Roadmap | 263/286 items complete, 23 open |
+| Roadmap | 264/286 items complete, 22 open |
 | API | 0 declaration files |
 | Bundle | 919.5 kB raw, 273.4 kB gzip |
-| Published dist | 2688.1 kB excluding source maps |
+| Published dist | 2697.2 kB excluding source maps |
 | Test-to-source ratio | 0.6x by line count |
 
 ## Source modules
@@ -24,7 +24,7 @@ Generated for **mwg 0.7.6** on 2026-09-11.
 | roguelike | 22 | 3,340 |
 | board | 8 | 2,683 |
 | actors | 24 | 2,399 |
-| i18n | 9 | 1,630 |
+| i18n | 9 | 1,633 |
 | rpg | 11 | 1,609 |
 | audio | 9 | 987 |
 | ai | 4 | 856 |

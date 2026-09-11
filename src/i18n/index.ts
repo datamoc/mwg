@@ -356,6 +356,9 @@ export function reset(): void {
 export { parseFTL } from './Fluent.ts';
 export type { FluentOptions } from './Fluent.ts';
 
+export { parsePo } from './Po.ts';
+export type { PoOptions } from './Po.ts';
+
 export { parseSoundMarkers, stripSoundMarkers } from './SoundMarkers.ts';
 export type { InlineSoundCue, ParsedSoundText } from './SoundMarkers.ts';
 
