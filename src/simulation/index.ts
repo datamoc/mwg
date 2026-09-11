@@ -10,6 +10,8 @@ export { SimulationRuntime } from './Runtime.ts';
 export type { SimulationContext, SimulationOutcome, SimulationRuntimeRule, SimulationSnapshot } from './Runtime.ts';
 export { EventPresentation } from './EventPresentation.ts';
 export type { EventPresentationOptions } from './EventPresentation.ts';
+export { CampaignSave } from './CampaignSave.ts';
+export type { CampaignSaveState, CampaignSaveParts } from './CampaignSave.ts';
 
 /**
  * Re-exported from `roguelike` (its own home - it also drives FOV/pathfinding turn order

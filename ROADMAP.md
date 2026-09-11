@@ -3397,9 +3397,18 @@ it.
      for it, a floor under it otherwise. `MWL_DEFAULT_CARRYOVER_PERCENTAGE` names the default. Eight
      tests in `tests/mwl-carryover.test.ts`, half of them arithmetic and half through the real
      runtime, and the schema now accepts `[endlevel]` and `first_scenario`.
-249. [Medium] One save for a whole campaign (Absent). `SaveSystem<T>` (`src/core/Save.ts`) is
+249. ~~[Medium] One save for a whole campaign (Absent). `SaveSystem<T>` (`src/core/Save.ts`) is
      per-system (slots, meta, list, delete) and `mwl/persistence.ts` serializes only `MwlWorld`,
-     so nothing saves campaign progress, the world and the simulation state together.
+     so nothing saves campaign progress, the world and the simulation state together.~~ Landed as
+     `simulation.CampaignSave`, a thin composition over `core.SaveSystem` rather than a second save
+     format: one slot's state is `{ campaign, world, simulation }`, captured through each live
+     piece's own `snapshot()` (`Campaign.snapshot()` and `SimulationRuntime.snapshot()`), with the
+     world left opaque so an `MwlWorld`, a `roguelike.Level` or a game's own scenario object all
+     fit. Versioning, migrations, previews, the `localStorage`/in-memory fallback and slot listing
+     stay `SaveSystem`'s; `load` hands back the three plain snapshots, which `Campaign.restore` and
+     `SimulationRuntime.restore` read back. Seven tests in `tests/campaign-save.test.ts`, including
+     a migration that rewrites the whole envelope, two independent slots, and a real `Campaign` and
+     a real `SimulationRuntime` round-tripping through a load.
 250. [Medium] WML action vocabulary in `[event]` (Ne correspond pas). MWL's `[event]` set is
      RPG-shaped (`while`/`foreach`/`switch`/`command`/`say`/`dialogue`/`move`/`attack`/`spawn`/
      `kill`/`gold`/`set_variable`/`if`/`else`/`message`/`teleport`/`end_turn`/`win`/`lose`/`hook`,
@@ -3476,18 +3485,56 @@ it.
      sprite: it reports `frameOffset` and the caller adds it, because this sprite is a `Sprite`
      whose position a `GridMover` or a walk tween owns, and a container wrapper would have broken
      the construction call every caller already uses (`new AnimatedSprite(texture)`).
-255. [High] Image modifiers beyond the four implemented (Ne correspond pas).
+255. ~~[High] Image modifiers beyond the four implemented (Ne correspond pas).
      `applyImageModifiers` handles FL/SCALE/GS/CS and `croppedTexture` handles CROP; ~BLIT, ~RC,
      ~CHAN, ~PAL, ~MASK, ~BLEND, ~O, ~R/~G/~B and ~ROTATE are missing. ~RC and ~BLIT are the two
-     named as blockers, because team colours and recoloured art depend on them.
-256. [Medium] Team colour by palette remap (Ne correspond pas). Team colour is
+     named as blockers, because team colours and recoloured art depend on them.~~ All eleven
+     landed in `ImageModifiers.ts`, split the way the modifiers themselves split: `~O`, `~R`/`~G`/
+     `~B`, `~BLEND`, `~CHAN` and `~ROTATE` stay sprite-property/`ColorMatrixFilter` operations
+     (`channelScaleMatrix`, `blendMatrix`, `channelSwapMatrix`, all plain data so they are
+     unit-tested without a renderer, the same way `colorShiftMatrix` already was), joining
+     `applyImageModifiers` alongside FL/SCALE/GS/CS - GS no longer clobbers a filter already on
+     the sprite (288, fixed alongside). `~RC`/`~PAL`/`~BLIT`/`~MASK` genuinely needed per-pixel
+     reads or a sibling texture, so they are `applyTextureModifiers`, a canvas-backed pipeline
+     built on 256's `withTextureCanvas`: `~RC`/`~PAL` are an exact palette swap (feeding straight
+     into `recolorTexture`), `~BLIT` composites a caller-resolved sibling texture at an offset,
+     `~MASK` takes its alpha at an offset via the new pure `maskPixels` (base colour kept, alpha
+     multiplied, tested with no canvas at all). `~BLIT`'s one real limit, stated rather than
+     hidden: the nested path's own modifiers (`~BLIT(claws.png~FL(horiz),4,4)`) are not resolved
+     recursively - the caller's `resolveTexture` is expected to hand back an already-modified
+     texture. Nineteen new tests in `tests/image-modifiers.test.ts`.
+256. ~~[Medium] Team colour by palette remap (Ne correspond pas). Team colour is
      `TintedSprite`/`registerColorTransform` (multiply plus add), not a remap of the palette range
-     a `team-colors.cfg` defines.
-257. [High] `[terrain_graphics]` (Ne correspond pas). `Autotile` (blob shapes) and `TileMap` (one
+     a `team-colors.cfg` defines.~~ Landed as `PaletteRemap.ts`: `remapPixels` is the renderer-free
+     core (nearest-colour lookup over raw RGBA data, alpha and fully transparent pixels
+     untouched, unit-tested with plain typed arrays), `paletteRangeMapping` builds the
+     `[color_range]` shape - a reference palette's own lightest-to-darkest order placed along a
+     `min -> mid -> max` gradient, so recolouring never has to know what the reference colours
+     actually are - and `recolorTexture` is the canvas-backed wrapper the other two feed into,
+     via the new `withTextureCanvas` helper (draw a texture in, hand the 2D context to a
+     paint callback, wrap the result back into a `Texture`) that 255's `~RC`/`~PAL`/`~BLIT`/
+     `~MASK` also build on. Fourteen tests.
+257. ~~[High] `[terrain_graphics]` (Ne correspond pas). `Autotile` (blob shapes) and `TileMap` (one
      sprite per cell per layer, hex included) exist, but not the tile-rule model: flags,
      rotations, multi-hex `[tile]`, and an image per neighbour combination. A 72px source sprite
-     that overlaps into neighbouring hexes cannot be expressed in a one-sprite-per-cell grid.
-258. [High] Typographic markup in text (Ne correspond pas). **The contract has landed; the
+     that overlaps into neighbouring hexes cannot be expressed in a one-sprite-per-cell grid.~~
+     Landed as `TerrainGraphics.ts`'s `resolveTerrainGraphics`, the rule-driven pass `Autotile`'s
+     fixed 47-shape table cannot express: a `TerrainRule` tests arbitrary flags (not only "same
+     terrain") at arbitrary offsets (not only the 8 immediate neighbours) via `hasAll`/`hasAny`/
+     `hasNone`, places one or more images each at its own offset and layer (so a piece bigger
+     than one cell is one rule's `images` array, decoupled from `TileMap`'s one-sprite-per-cell
+     grid), and can declare `rotations` (`squareRotate`'s 4 exact 90-degree steps or `hexRotate`'s
+     6 exact 60-degree steps, both plain integer/cube-coordinate rotation, so one authored rule
+     covers every direction a symmetric transition needs) and a `probability` that breaks a tie
+     among rules matching a cell at equal specificity - specificity (most conditions) decides the
+     match first, the same precedence a hand-authored rule set expects. Probabilistic choice runs
+     through `core.Generator`, so a seeded generator makes the result reproducible. Deliberately
+     out of scope here, and still open: actually drawing the resolved placements through
+     `TileMap` or a custom sprite pass - this function returns plain data (`TerrainPlacement[]`)
+     and never touches a renderer, matching the shape `autotileFrames` already uses. Twelve tests
+     in `tests/terrain-graphics.test.ts`, including a probability distribution checked over many
+     trials and a seeded reproducibility check.
+258. ~~[High] Typographic markup in text (Ne correspond pas). **The contract has landed; the
      acceptance below has not.** `MarkupSpan`, `parseMarkup`, `stripMarkup`, `markupToHtml` and
      `escapeHtml` (`src/two-d/ui/markup.ts`, twelve tests in `tests/markup.test.ts`, exported from
      `two-d/ui` and written up in REFERENCE) cover the renderer-neutral token stream the item asks
@@ -3497,22 +3544,28 @@ it.
      can leak. What the acceptance still wants, and why each is not a formality: one fixture
      rendering equivalent runs through a canvas and a rich-text backend (the ui's own path renders
      emphasis only, since Pixi's `HTMLText` dialect is narrower than this markup), wrapping measured
-     after styling, images resolved through the asset resolver, and an accessibility projection.
-     Text is markdown (`RichLabel`,
-     `**bold**`) where Wesnoth content is written with `<b>`, `<i>`, `<span color>`, `<img>`
-     and `$var`. The framework-side target is a renderer-neutral inline-markup contract, not a
-     Wesnoth parser: `Text`/`Label`/`RichLabel` should accept a common token stream (or a single
-     documented `MarkupText` value) with escaped literal text, nested emphasis, named and hex
-     colours, images supplied through the asset resolver, variable interpolation supplied by the
-     caller, and line breaks/wrapping measured after styling. Unknown or malformed tags must be
-     visible as text or safely ignored by policy, never leak raw HTML into a UI and never execute
-     arbitrary HTML. The contract must work in `file://` builds, remain accessible through a
-     plain-text projection, and expose enough style runs for canvas/WebGL renderers to batch
-     predictable runs. Acceptance: the same fixture renders equivalent runs through the canvas
-     and any rich-text backend; nested tags, colour changes, inline images, escaping, wrapping,
-     interpolation and an RTL sample are covered by unit tests; existing plain `Label` text is
-     unchanged. The Wesnoth adapter will map its `<b>`, `<i>`, `<span color>`, `<img>` and `$var`
-     syntax to this contract; no Wesnoth-specific tag names belong in MWG.
+     after styling, images resolved through the asset resolver, and an accessibility projection.~~
+     Most of the acceptance landed this pass. `markupToHtml` now renders colour and size too, as
+     an inline `<span style="color:...;font-size:...px">` - `HTMLText`'s dialect is real CSS, so
+     this needed no new plumbing, only actually writing the style attribute. `markupAccessibilityText`
+     is the accessibility projection: unlike `stripMarkup` (which keeps an image span's raw path,
+     useful for round-tripping but not for reading aloud), an image becomes a caller-supplied
+     `describeImage` result, defaulting to `[image]` so an image is announced as present rather
+     than silently dropped or read as a file path. `layoutMarkupLines` is the wrapping-measured-
+     after-styling piece: it tokenizes spans into words (and images, kept whole) and wraps them
+     against an injected `measure` function that receives each piece *with* its own style, so a
+     bold or larger run wraps where its own wider glyphs actually land, not where the plain text
+     would have - and because the same spans, `measure` and `maxWidth` decide the exact same
+     line breaks regardless of which backend then draws them, it is what makes a canvas
+     `Text2D`-per-run pass and an `HTMLText` pass render "equivalent runs" from one fixture,
+     checked directly in `tests/markup.test.ts`. `MarkupSpan[]` itself is the "single documented
+     `MarkupText` value" the acceptance asked for - already exported, already the shared input to
+     every function here - rather than a new wrapper type over the same data. Still open: no
+     canvas backend actually exists yet to be the other half of the "equivalent runs" fixture (the
+     test compares `layoutMarkupLines`'s output against `markupToHtml`'s, not two real renderers),
+     images are still not wired into `RichLabel` as drawn sprites (a caller positions one itself at
+     the offset `layoutMarkupLines` reports), and no RTL sample is covered by a test yet. Ten new
+     tests, twenty in the file total.
 259. ~~[Medium] Hex projection options (Ne correspond pas). `src/core/Hex.ts` fixes flat-top odd-q
      with no orientation or offset-parity option - it says so itself about pointy-top - and
      `TileMap`/`TiledMap` refuse hexagonal orientation, so a Wesnoth map cannot be projected

@@ -9,6 +9,29 @@ the public API may still change between minor versions.
 
 ### Added
 
+- `two-d/render/PaletteRemap.ts`: `remapPixels`/`paletteRangeMapping`/`recolorTexture` (item
+  256), a nearest-colour palette remap for team-colour-by-range - `paletteRangeMapping` places a
+  reference palette's own lightest-to-darkest order along a `min -> mid -> max` gradient,
+  `remapPixels` is the renderer-free pixel core, and `recolorTexture` (via the new shared
+  `withTextureCanvas` helper) is the canvas-backed wrapper.
+- Eleven more `image~MOD` suffixes in `ImageModifiers.ts` (item 255): `~O`, `~R`/`~G`/`~B`,
+  `~BLEND` and `~CHAN` join `~FL`/`~SCALE`/`~GS`/`~CS` as sprite-property/`ColorMatrixFilter`
+  operations on `applyImageModifiers`; `~ROTATE` sets the sprite's own rotation. `~RC`, `~PAL`,
+  `~BLIT` and `~MASK` needed real pixel access or a sibling texture, so they are the new
+  `applyTextureModifiers`, built on 256's `withTextureCanvas`. `~GS` no longer replaces a filter
+  already on the sprite (was clobbering, now appends).
+- `two-d/render/TerrainGraphics.ts`: `resolveTerrainGraphics`/`TerrainRule`/`matchTerrainRule`/
+  `squareRotate`/`hexRotate` (item 257), a rule-driven `[terrain_graphics]`-style transition pass
+  generalising `Autotile`'s fixed 47-shape blob table: arbitrary flag conditions at arbitrary
+  offsets, multi-image placement (so a piece bigger than one cell is one rule's own data, not
+  something `TileMap`'s one-sprite-per-cell grid has to hold), rotation and probability. Returns
+  plain placement data; drawing it through a renderer is still open.
+- `markupToHtml` now renders colour and size as an inline style; `markupAccessibilityText` is a
+  proper accessibility projection for markup (an image becomes a caller-described string instead
+  of its raw path); `layoutMarkupLines` wraps already-parsed spans word by word, each word
+  measured under its own span's style, so a bold or larger run wraps where its own wider glyphs
+  actually land (item 258's remaining acceptance, in part - see ROADMAP for what is still open).
+
 - `ParticleEmitter` spawn bounds (item 279): `ParticleSpawnArea` is an optional `spawn` on the
   emitter's options, a `rect` or `ellipse` in local space so a burst spreads across an extent
   instead of every particle starting at the emitter's single origin (a forge mouth, a flame
@@ -48,6 +71,9 @@ the public API may still change between minor versions.
   own condition is evaluated after the scenario-wide `[objectives]` ones, its result recorded by
   side id, and `[win]`/`[lose]` record the side they name too. `MwlCommand`'s `win`/`lose` gained an
   optional `side`.
+- `simulation.CampaignSave`/`CampaignSaveState`/`CampaignSaveParts` (item 249): one `SaveSystem`
+  slot for a whole campaign, holding the campaign, world and simulation snapshots together, with
+  the world payload left opaque.
 - `ai.personalScoreView`/`ai.sideScoreView`/`ai.scoreWith`, over `ScoreSubject`/`ScoreView`/
   `ScorePersonality` (items 274-276): the numbers a mind needs when a search is the wrong tool.
   The game supplies what anything is worth, the framework assembles the view (own, allies and

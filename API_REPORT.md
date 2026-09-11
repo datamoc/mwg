@@ -5634,6 +5634,23 @@ build instead.
         }): Campaign<State, Result>;
     }
 
+### `CampaignSave` (class)
+
+    export declare class CampaignSave<CampaignState extends StateValue, Result extends StateValue, World, TurnState> {
+        private readonly saves;
+        constructor(options: SaveSystemOptions);
+
+        save(slot: string, parts: CampaignSaveParts<CampaignState, Result, World, TurnState>, preview?: unknown): void;
+
+        load(slot: string): CampaignSaveState<CampaignState, Result, World, TurnState> | null;
+
+        list(): Array<{
+            slot: string;
+            meta: SaveMeta;
+        }>;
+        delete(slot: string): void;
+    }
+
 ### `EventPresentation` (class)
 
     export declare class EventPresentation<State, Command, Event, A extends Actor> {

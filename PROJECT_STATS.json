@@ -5,7 +5,7 @@
 	"releaseDate": "2026-09-11",
 	"source": {
 		"files": 252,
-		"lines": 36645,
+		"lines": 36647,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -66,7 +66,7 @@
 			{
 				"name": "simulation",
 				"files": 7,
-				"lines": 605
+				"lines": 607
 			},
 			{
 				"name": "world",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 185,
-		"lines": 23486,
-		"cases": 1709
+		"files": 186,
+		"lines": 23691,
+		"cases": 1715
 	},
 	"tools": {
 		"files": 35,
@@ -123,9 +123,9 @@
 	},
 	"roadmap": {
 		"items": 293,
-		"completed": 268,
-		"open": 25,
-		"percent": 91
+		"completed": 273,
+		"open": 20,
+		"percent": 93
 	},
 	"api": {
 		"declarationFiles": 0
@@ -133,7 +133,7 @@
 	"bundle": {
 		"globalRaw": 941520,
 		"globalGzip": 279972,
-		"distRaw": 2813344
+		"distRaw": 2819001
 	},
 	"quality": {
 		"testToSourceRatio": 0.6

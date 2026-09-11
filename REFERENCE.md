@@ -674,6 +674,11 @@ live game loop.
 - `Scheduler`/`Actor`/`SchedulerSnapshot` - re-exported here from `roguelike` (its real home),
   since every `SimulationRuntime` needs one; a simulation-first game need not import a second
   module just to construct the class its own runtime is built around.
+- `CampaignSave`/`CampaignSaveState`/`CampaignSaveParts` - one `core.SaveSystem` slot for a whole
+  campaign: `save` captures the `Campaign` snapshot, the game's own world payload and the
+  `SimulationRuntime` snapshot together, `load` reads them back migrated, and `list`/`delete` are
+  `SaveSystem`'s. The world is opaque, so an `MwlWorld`, a `Level` or a game's own scenario object
+  all fit.
 
 ## `three-d` (optional)
 
