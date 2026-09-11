@@ -49,6 +49,44 @@ test('unknown ids throw instead of guessing', () => {
 	assert.throws(() => achievements.progress('missing'), /no such achievement/);
 });
 
+test('a multi-criteria achievement unlocks only once every criterion is met', () => {
+	const achievements = new Achievements();
+	achievements.define({
+		id: 'diverse-army',
+		criteria: [
+			{ counter: 'recruited-archer', target: 1 },
+			{ counter: 'recruited-knight', target: 1 },
+		],
+	});
+	assert.deepEqual(achievements.increment('recruited-archer'), [], 'one of two criteria met');
+	assert.equal(achievements.unlocked('diverse-army'), false);
+	assert.deepEqual(achievements.increment('recruited-knight'), ['diverse-army']);
+	assert.equal(achievements.unlocked('diverse-army'), true);
+	assert.deepEqual(achievements.increment('recruited-archer'), [], 'already earned, nothing new');
+});
+
+test('subProgress reports each criterion of a multi-criteria achievement', () => {
+	const achievements = new Achievements();
+	achievements.define({
+		id: 'diverse-army',
+		criteria: [
+			{ counter: 'recruited-archer', target: 1 },
+			{ counter: 'recruited-knight', target: 2 },
+		],
+	});
+	achievements.increment('recruited-archer');
+	assert.deepEqual(achievements.subProgress('diverse-army'), [
+		{ counter: 'recruited-archer', count: 1, target: 1, met: true },
+		{ counter: 'recruited-knight', count: 0, target: 2, met: false },
+	]);
+});
+
+test('progress refuses a multi-criteria achievement, since one count/target pair cannot describe it', () => {
+	const achievements = new Achievements();
+	achievements.define({ id: 'diverse-army', criteria: [{ counter: 'a', target: 1 }, { counter: 'b', target: 1 }] });
+	assert.throws(() => achievements.progress('diverse-army'), /several criteria/);
+});
+
 test('save and restore keeps counts but announces nothing', () => {
 	const achievements = tracker();
 	achievements.increment('kills', 10);

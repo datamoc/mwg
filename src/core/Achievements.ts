@@ -9,6 +9,13 @@
  * count behind it. Descriptions are display text `mwg` never reads; persistence is the
  * usual definitions-fresh, progress-saved split (`QuestLog`'s own convention).
  *
+ * An achievement can also name several criteria instead of one - Wesnoth's own
+ * "sub-achievements" shape, such as "recruit one of every unit type" being six counters
+ * that must each reach 1 - and it unlocks only once every one of them has. A single
+ * `counter`/`target` is shorthand for a one-criterion achievement; both forms share the
+ * same unlock, progress and save code, since a one-element criteria list behaves
+ * identically to the shorthand.
+ *
  * @example
  * ```ts
  * import { Achievements } from '@datamoc/mw_games/core';
@@ -16,6 +23,13 @@
  * const achievements = new Achievements();
  * achievements.define({ id: 'first-blood', counter: 'kills', target: 1 });
  * achievements.define({ id: 'slayer', counter: 'kills', target: 100 });
+ * achievements.define({
+ * 	id: 'diverse-army',
+ * 	criteria: [
+ * 		{ counter: 'recruited-archer', target: 1 },
+ * 		{ counter: 'recruited-knight', target: 1 },
+ * 	],
+ * });
  *
  * const unlocked = achievements.increment('kills', 1);
  * console.log(unlocked); // ['first-blood']
@@ -25,17 +39,36 @@
  * ```
  */
 
+export interface AchievementCriterion {
+	/** the counter this criterion watches, incremented by the game as things happen */
+	counter: string;
+
+	/** the counter value that satisfies this criterion */
+	target: number;
+}
+
 export interface AchievementDef {
 	id: string;
 
-	/** the counter this watches, incremented by the game as things happen */
-	counter: string;
+	/** shorthand for a single-criterion achievement; mutually exclusive with `criteria` */
+	counter?: string;
 
-	/** the counter value that earns this */
-	target: number;
+	/** shorthand for a single-criterion achievement; mutually exclusive with `criteria` */
+	target?: number;
+
+	/** every criterion here must be met before this achievement unlocks; mutually exclusive with `counter`/`target` */
+	criteria?: AchievementCriterion[];
 
 	/** shown on an achievement screen; `mwg` never reads this itself */
 	description?: string;
+}
+
+function criteriaOf(definition: AchievementDef): readonly AchievementCriterion[] {
+	if (definition.criteria) return definition.criteria;
+	if (definition.counter === undefined || definition.target === undefined) {
+		throw new Error(`achievement "${definition.id}" needs either counter/target or criteria`);
+	}
+	return [{ counter: definition.counter, target: definition.target }];
 }
 
 export class Achievements {
@@ -55,7 +88,8 @@ export class Achievements {
 	}
 
 	/**
-	 * Adds to a counter, unlocking whatever that newly earns.
+	 * Adds to a counter, unlocking whatever that newly earns - a multi-criteria achievement
+	 * unlocks only on the increment that leaves every one of its criteria met.
 	 *
 	 * @returns the ids unlocked by exactly this increment, so a game can announce each
 	 * one once ("Achievement unlocked: ...") rather than re-scanning everything
@@ -66,8 +100,14 @@ export class Achievements {
 
 		const earned: string[] = [];
 		for (const definition of this.definitions.values()) {
-			if (definition.counter !== counter) continue;
-			if (before < definition.target && before + amount >= definition.target) {
+			const criteria = criteriaOf(definition);
+			if (!criteria.some((criterion) => criterion.counter === counter)) continue;
+			const wasMet = criteria.every((criterion) =>
+				criterion.counter === counter ? before >= criterion.target : this.count(criterion.counter) >= criterion.target,
+			);
+			if (wasMet) continue;
+			const nowMet = criteria.every((criterion) => this.count(criterion.counter) >= criterion.target);
+			if (nowMet) {
 				earned.push(definition.id);
 				this.fresh.push(definition.id);
 			}
@@ -75,18 +115,33 @@ export class Achievements {
 		return earned;
 	}
 
-	/** whether an achievement's counter has reached its target - throws for an unknown id */
+	/** whether every one of an achievement's criteria has reached its target - throws for an unknown id */
 	unlocked(id: string): boolean {
 		const definition = this.definitions.get(id);
 		if (!definition) throw new Error(`no such achievement: "${id}"`);
-		return this.count(definition.counter) >= definition.target;
+		return criteriaOf(definition).every((criterion) => this.count(criterion.counter) >= criterion.target);
 	}
 
-	/** progress towards an achievement: current count and target - throws for an unknown id */
+	/**
+	 * Progress towards a single-criterion achievement: current count and target - throws for
+	 * an unknown id or a multi-criteria one (use `subProgress` there instead).
+	 */
 	progress(id: string): { count: number; target: number } {
 		const definition = this.definitions.get(id);
 		if (!definition) throw new Error(`no such achievement: "${id}"`);
-		return { count: this.count(definition.counter), target: definition.target };
+		const criteria = criteriaOf(definition);
+		if (criteria.length !== 1) throw new Error(`achievement "${id}" has several criteria - use subProgress`);
+		return { count: this.count(criteria[0].counter), target: criteria[0].target };
+	}
+
+	/** progress towards each of an achievement's criteria, in definition order - throws for an unknown id */
+	subProgress(id: string): readonly { counter: string; count: number; target: number; met: boolean }[] {
+		const definition = this.definitions.get(id);
+		if (!definition) throw new Error(`no such achievement: "${id}"`);
+		return criteriaOf(definition).map((criterion) => {
+			const count = this.count(criterion.counter);
+			return { counter: criterion.counter, count, target: criterion.target, met: count >= criterion.target };
+		});
 	}
 
 	/** every id unlocked but not yet announced, clearing the queue as it reads */

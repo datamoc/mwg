@@ -154,7 +154,9 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
 - `Recorder`/`Player`/`serializeReplay`/`deserializeReplay` - records `Input.onAction`
   against `Game`'s own frame counter and replays it deterministically, for testing.
 - `Achievements` - counters crossing a target unlock a named milestone; `drainNew()`
-  queues unlocks for a UI to announce.
+  queues unlocks for a UI to announce. An achievement can name several `criteria`
+  instead of one `counter`/`target` (item 273's sub-achievements, "recruit every unit
+  type"), unlocking only once every criterion is met; `subProgress` reads them individually.
 - `Session` - counts launches over the same storage `SaveSystem` uses, for a native
   wrapper's own rating-prompt timing; never prompts itself.
 - `FeedbackClient`/`HttpTransportOptions` - an injectable HTTPS JSON transport for
@@ -524,6 +526,11 @@ No move, formula, or number belongs here - only the shape.
   as targets; `back` undoes the attacker choice.
 - `Whiteboard`/`WhiteboardEntry` - planned turn orders with one plan per unit, `undo`/`redo` (a new
   plan clears the redo stack) and `commit` handing the plans back.
+- `BattleStats`/`BattleStatCategory` (item 273) - a per-run breakdown by category (`recruits`,
+  `recalls`, `advances`, `kills`, `deaths`, `damageDealt`, `damageTaken`) and unit type, the shape
+  `core.PlayerStats`'s opaque `T` cannot give a game for free; `record` adds to one unit type's
+  count, `total`/`breakdown` read a category back summed or per type, and `toJSON` folds into a
+  `core.RunHistory` entry or `core.PlayerStats` total like any other run summary.
 
 ## `board`
 

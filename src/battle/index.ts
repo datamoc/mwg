@@ -21,3 +21,5 @@ export { UnitSelector } from './UnitSelector.ts';
 export type { SelectableUnit, SelectorStage, UnitSelectorOptions } from './UnitSelector.ts';
 export { Whiteboard } from './Whiteboard.ts';
 export type { WhiteboardEntry } from './Whiteboard.ts';
+export { BattleStats } from './BattleStats.ts';
+export type { BattleStatCategory } from './BattleStats.ts';

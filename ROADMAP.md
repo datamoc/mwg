@@ -3802,8 +3802,22 @@ it.
      such tick). A game computes the checksum each tick and compares peers' through whatever
      channel it already has; the checksum is a drift detector, not a security primitive, and the
      doc says so. Ten tests in `tests/sync-guard.test.ts`.
-273. [Medium] Achievements and statistics (Absent). `PlayerStats`/`RunHistory`/`StatsScreen` are
-     generic; Wesnoth's achievement and statistics model has no equivalent.
+273. ~~[Medium] Achievements and statistics (Absent). `PlayerStats`/`RunHistory`/`StatsScreen` are
+     generic; Wesnoth's achievement and statistics model has no equivalent.~~ `PlayerStats`/
+     `RunHistory`/`StatsScreen`/`Achievements` were already generic building blocks; the two
+     genuinely Wesnoth-shaped pieces they can't express on their own are what landed. `core.Achievements`
+     gained sub-achievements: an `AchievementDef` can name several `criteria` (counter/target pairs)
+     instead of one, unlocking only once every criterion is met ("recruit one of every unit type" as
+     six counters rather than one), with `subProgress` reading each criterion back; the single
+     `counter`/`target` shorthand is unchanged and is just a one-criterion `criteria` underneath.
+     `battle.BattleStats` is the categorized breakdown Wesnoth's statistics dialog shows and a bare
+     `PlayerStats<T>` cannot give a game for free: `record(category, unitType, amount)` against the
+     seven categories (`recruits`/`recalls`/`advances`/`kills`/`deaths`/`damageDealt`/`damageTaken`),
+     `total`/`breakdown` read a category back summed or per unit type, and `toJSON` folds into a
+     `RunHistory` entry or a `PlayerStats` total the way any other run summary would - `StatsScreen`
+     already renders whatever rows a game builds from either. Ten tests in
+     `tests/battle-stats.test.ts`, three more added to `tests/achievements.test.ts` for the
+     multi-criteria path.
 
 ### Score-driven AI
 

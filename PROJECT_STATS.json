@@ -4,8 +4,8 @@
 	"version": "0.7.6",
 	"releaseDate": "2026-09-11",
 	"source": {
-		"files": 275,
-		"lines": 41755,
+		"files": 276,
+		"lines": 41885,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -16,7 +16,7 @@
 			{
 				"name": "core",
 				"files": 42,
-				"lines": 5122
+				"lines": 5177
 			},
 			{
 				"name": "mwl",
@@ -55,8 +55,8 @@
 			},
 			{
 				"name": "battle",
-				"files": 14,
-				"lines": 1087
+				"files": 15,
+				"lines": 1162
 			},
 			{
 				"name": "audio",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 215,
-		"lines": 27237,
-		"cases": 2003
+		"files": 216,
+		"lines": 27334,
+		"cases": 2012
 	},
 	"tools": {
 		"files": 35,
@@ -123,9 +123,9 @@
 	},
 	"roadmap": {
 		"items": 293,
-		"completed": 291,
-		"open": 2,
-		"percent": 99
+		"completed": 292,
+		"open": 1,
+		"percent": 100
 	},
 	"api": {
 		"declarationFiles": 0

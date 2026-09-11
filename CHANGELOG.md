@@ -12,6 +12,10 @@ the public API may still change between minor versions.
 - Heuristic AI (item 269): `Aspects`, `Difficulty`, `Goals`, `RecruitmentPattern`, and a
   `HeuristicAI` candidate/stage pipeline with `defaultWeigh`/`keepAwayScore`/`goalScore`. Aspects
   ship no values; the numbers stay content, and `keep_away` is a real penalty.
+- Achievements and battle statistics (item 273): `core.Achievements` gained sub-achievements
+  (multi-criterion unlocks via `AchievementDef.criteria`, read back with `subProgress`), and
+  `battle.BattleStats` tracks recruits/recalls/advances/kills/deaths/damage dealt/damage taken by
+  unit type for a `PlayerStats`/`RunHistory` summary to fold in.
 - Battle UI models (item 265): `AttackPreview` (damage totals and an animated frame timeline from
   the game's own numbers), `AttackDialog` (the selector plus the preview and its clock),
   `UnitSelector` (attacker then target), and `Whiteboard` (planned orders with undo/redo). All

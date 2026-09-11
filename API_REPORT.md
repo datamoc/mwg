@@ -26,6 +26,13 @@ build instead.
             target: number;
         };
 
+        subProgress(id: string): readonly {
+            counter: string;
+            count: number;
+            target: number;
+            met: boolean;
+        }[];
+
         drainNew(): string[];
         toJSON(): {
             counts: [string, number][];
@@ -3895,6 +3902,29 @@ build instead.
     export declare function battleOrder<A extends {
         speed: number;
 
+### `BattleStats` (class)
+
+    export declare class BattleStats {
+        private counts;
+
+        record(category: BattleStatCategory, unitType: string, amount?: number): void;
+
+        forType(category: BattleStatCategory, unitType: string): number;
+
+        total(category: BattleStatCategory): number;
+
+        breakdown(category: BattleStatCategory): readonly {
+            unitType: string;
+            count: number;
+        }[];
+        toJSON(): {
+            counts: [BattleStatCategory, [string, number][]][];
+        };
+        static fromJSON(data: {
+            counts: [BattleStatCategory, [string, number][]][];
+        }): BattleStats;
+    }
+
 ### `checkEvolution` (function)
 
     export declare function checkEvolution<S>(rules: readonly EvolutionRule<S>[], level: number): S | null;
@@ -4367,6 +4397,13 @@ build instead.
             count: number;
             target: number;
         };
+
+        subProgress(id: string): readonly {
+            counter: string;
+            count: number;
+            target: number;
+            met: boolean;
+        }[];
 
         drainNew(): string[];
         toJSON(): {
