@@ -9,6 +9,9 @@ the public API may still change between minor versions.
 
 ### Added
 
+- Heuristic AI (item 269): `Aspects`, `Difficulty`, `Goals`, `RecruitmentPattern`, and a
+  `HeuristicAI` candidate/stage pipeline with `defaultWeigh`/`keepAwayScore`/`goalScore`. Aspects
+  ship no values; the numbers stay content, and `keep_away` is a real penalty.
 - Battle UI models (item 265): `AttackPreview` (damage totals and an animated frame timeline from
   the game's own numbers), `AttackDialog` (the selector plus the preview and its clock),
   `UnitSelector` (attacker then target), and `Whiteboard` (planned orders with undo/redo). All

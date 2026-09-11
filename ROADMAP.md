@@ -3744,11 +3744,24 @@ it.
      until asked, and because the group is read when a cell is queried rather than when it is
      synced, a share declared after a `sync` still counts. `sees(side)` follows a share, so the
      score views of 276 read the team's eyes with no change of their own.
-269. [Medium] AI as Wesnoth builds it (Absent). The framework's AI is alpha-beta search
+269. ~~[Medium] AI as Wesnoth builds it (Absent). The framework's AI is alpha-beta search
      (`src/ai/search.ts`) plus optional Lua and a JSON action protocol; Wesnoth's is heuristic:
      candidate actions, aspects and stages, with `goals`, `keep_away` and `recruitment_pattern`,
      plus native difficulty levels. A Lua VM is already available (`src/mwl/fengari.ts`,
-     `src/mwl/scripts.ts`, `src/ai/lua.ts`), but not a `wesnoth.*` API.
+     `src/mwl/scripts.ts`, `src/ai/lua.ts`), but not a `wesnoth.*` API.~~ Landed as the heuristic
+     half in `ai/Heuristics.ts`, alongside the search that was already there. `Aspects` is the named
+     tuning knobs with typed readers and no shipped values (the numbers are content, the same rule
+     the damage formula follows); `Difficulty` is named levels as aspect overrides on a base set,
+     which is what "native difficulty" actually is; `Goals` is the per-unit order registry a stage's
+     `weigh` reads; `RecruitmentPattern` is the cycled recruit order with a fallback. `HeuristicAI`
+     is the pipeline the item names - candidate actions through `HeuristicStage`s in order, the
+     first whose `when` passes scoring every candidate and taking the best - with `defaultWeigh`
+     (factor x same-named aspect, plus `keepAwayScore` on a candidate's `distance`) as the default
+     and a game's own `weigh` as the escape hatch, pointing at `goalScore` for goal priorities.
+     `keep_away` is real behaviour here rather than a stored name. The `wesnoth.*` Lua API is
+     deliberately *not* attempted: a heuristic AI does not need a Lua bridge, and inventing that
+     API is a much larger surface than the item's own words ask for. Sixteen tests in
+     `tests/heuristic-ai.test.ts`.
 270. ~~[Medium] gettext i18n (Ne correspond pas). i18n is Fluent (`parseFTL`, `src/i18n/Fluent.ts`),
      not `.po` files and gettext domains.~~ Landed as `i18n.parsePo`, producing the same `Catalog`
      `parseFTL` does, so `t()`/`setActive`/the semantic formatter need no gettext path of their

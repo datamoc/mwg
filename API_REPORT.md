@@ -3395,6 +3395,68 @@ build instead.
 
     export declare function alphaBetaSearch<State, Move>(game: AlphaBetaGame<State, Move>, state: State, options: AlphaBetaOptions): AlphaBetaResult<State, Move>;
 
+### `Aspects` (class)
+
+    export declare class Aspects {
+        private values;
+        constructor(defaults?: AspectValues);
+        has(name: string): boolean;
+        get(name: string): AspectValue | undefined;
+        set(name: string, value: AspectValue): void;
+
+        number(name: string, fallback?: number): number;
+        flag(name: string, fallback?: boolean): boolean;
+
+        list(name: string): readonly string[];
+        names(): string[];
+
+        with(overrides: AspectValues): Aspects;
+        toJSON(): Record<string, AspectValue>;
+        static fromJSON(values: Readonly<Record<string, AspectValue>>): Aspects;
+    }
+
+### `defaultWeigh` (function)
+
+    export declare function defaultWeigh<A>(candidate: HeuristicCandidate<A>, context: HeuristicContext): number;
+
+### `Difficulty` (class)
+
+    export declare class Difficulty {
+        private readonly levels;
+        private readonly base;
+        constructor(levels?: readonly DifficultyLevel[], base?: AspectValues);
+        get ids(): string[];
+        get(id: string): DifficultyLevel | undefined;
+
+        aspectsFor(id: string): Aspects;
+    }
+
+### `Goals` (class)
+
+    export declare class Goals {
+        private readonly byUnit;
+        set(goal: Goal): void;
+        clear(unit: string): void;
+        get(unit: string): Goal | undefined;
+        all(): readonly Goal[];
+        get isEmpty(): boolean;
+    }
+
+### `goalScore` (function)
+
+    export declare function goalScore(goal: Goal | undefined): number;
+
+### `HeuristicAI` (class)
+
+    export declare class HeuristicAI<A = unknown> {
+        private readonly stages;
+        constructor(options: {
+            stages: readonly HeuristicStage<A>[];
+        });
+
+        decide(candidates: readonly HeuristicCandidate<A>[], context: HeuristicContext): HeuristicDecision<A> | null;
+    }
+
 ### `JavaScriptAI` (class)
 
     export declare class JavaScriptAI implements AIModule {
@@ -3419,9 +3481,26 @@ build instead.
         readonly seed?: number;
     }
 
+### `keepAwayScore` (function)
+
+    export declare function keepAwayScore(distance: number, keepAway: number): number;
+
 ### `personalScoreView` (function)
 
     export declare function personalScoreView<T>(subject: ScoreSubject<T>, world: readonly ScoreSubject<T>[], scoreOf: (id: T) => number, sees: (x: number, y: number) => boolean): ScoreView;
+
+### `RecruitmentPattern` (class)
+
+    export declare class RecruitmentPattern {
+        private readonly order;
+        private readonly fallback;
+        constructor(order: readonly string[], fallback?: string | null);
+        get length(): number;
+
+        at(index: number): string | null;
+
+        next(after: string | null): string | null;
+    }
 
 ### `scoreWith` (function)
 

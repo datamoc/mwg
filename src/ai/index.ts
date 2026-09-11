@@ -11,6 +11,27 @@ export type {
 } from './search.ts';
 
 export { personalScoreView, scoreWith, sideScoreView } from './score.ts';
+export {
+	Aspects,
+	Difficulty,
+	Goals,
+	HeuristicAI,
+	RecruitmentPattern,
+	defaultWeigh,
+	goalScore,
+	keepAwayScore,
+} from './Heuristics.ts';
+export type {
+	AspectValue,
+	AspectValues,
+	DifficultyLevel,
+	Goal,
+	GoalKind,
+	HeuristicCandidate,
+	HeuristicContext,
+	HeuristicDecision,
+	HeuristicStage,
+} from './Heuristics.ts';
 export type { ScorePersonality, ScoreSubject, ScoreView } from './score.ts';
 
 /** JSON-shaped values are the only values that cross the AI boundary. */

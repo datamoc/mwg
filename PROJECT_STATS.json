@@ -4,8 +4,8 @@
 	"version": "0.7.6",
 	"releaseDate": "2026-09-11",
 	"source": {
-		"files": 270,
-		"lines": 40838,
+		"files": 275,
+		"lines": 41755,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -49,14 +49,19 @@
 				"lines": 1609
 			},
 			{
+				"name": "ai",
+				"files": 5,
+				"lines": 1249
+			},
+			{
+				"name": "battle",
+				"files": 14,
+				"lines": 1087
+			},
+			{
 				"name": "audio",
 				"files": 9,
 				"lines": 987
-			},
-			{
-				"name": "ai",
-				"files": 4,
-				"lines": 856
 			},
 			{
 				"name": "three-d",
@@ -74,11 +79,6 @@
 				"lines": 603
 			},
 			{
-				"name": "battle",
-				"files": 10,
-				"lines": 563
-			},
-			{
 				"name": "assets",
 				"files": 6,
 				"lines": 532
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 210,
-		"lines": 26641,
-		"cases": 1955
+		"files": 215,
+		"lines": 27237,
+		"cases": 2003
 	},
 	"tools": {
 		"files": 35,
@@ -123,8 +123,8 @@
 	},
 	"roadmap": {
 		"items": 293,
-		"completed": 290,
-		"open": 3,
+		"completed": 291,
+		"open": 2,
 		"percent": 99
 	},
 	"api": {

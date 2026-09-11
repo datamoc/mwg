@@ -1054,6 +1054,16 @@ actions, serialisable state, diagnostics and budgets.
   what it cares about: a personality is weights, so a selfish scout and a loyal one are content
   rather than two AI implementations. Both scopes read through the same code and differ only in
   the visibility set they are handed, a unit's own sight or `FactionFog.sees(side)`.
+
+- The heuristic AI (item 269): `Aspects`/`AspectValues`/`AspectValue` - the named tuning knobs
+  (`aggression`, `caution`, `keep_away`, `recruitment_pattern`, ...) with typed readers and no
+  built-in values, since the numbers are content; `Difficulty`/`DifficultyLevel` - named levels as
+  aspect overrides on a base set; `Goals`/`Goal`/`GoalKind` - per-unit orders a stage's `weigh`
+  reads; `RecruitmentPattern` - a side's recruit order, cycled, with a fallback. `HeuristicAI`
+  runs candidate actions through `HeuristicStage`s in order, the first whose `when` passes scoring
+  every `HeuristicCandidate` and taking the best (earlier candidate on a tie). `defaultWeigh` is
+  each factor times the aspect of the same name with `keepAwayScore` for a candidate's `distance`;
+  `goalScore` is what a custom `weigh` adds for a goal.
 - `AIDecision`/`AIDecisionInput`/`AIAction` - the shared contract for perception, explicit
   action objects, status (`action`, `idle`, `cancelled`, or `budget-exceeded`), emitted
   diagnostics and state snapshots.
