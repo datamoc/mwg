@@ -23,6 +23,10 @@ the public API may still change between minor versions.
   audio, renderer-free. A listener the game moves and turns, a `Sound` placed at a world point,
   and the distance gain and stereo pan between them. `SoundSource.playFor(listener)` applies the
   gain through `Sound.play`, which now takes an optional gain argument.
+- `Input.onText`/`Input.onComposition`/`Input.textFromKey`/`Input.dispatchText`/
+  `Input.dispatchComposition` (item 262): the character a key press produces, and the three
+  phases of an input-method composition, so a free text field can be built. `onText` is a
+  stack-mode signal a focused field can consume.
 - `ai.personalScoreView`/`ai.sideScoreView`/`ai.scoreWith`, over `ScoreSubject`/`ScoreView`/
   `ScorePersonality` (items 274-276): the numbers a mind needs when a search is the wrong tool.
   The game supplies what anything is worth, the framework assembles the view (own, allies and

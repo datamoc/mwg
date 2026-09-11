@@ -115,7 +115,9 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
 - `Input` (namespace) - named-action input: `bind`/`isDown`/`justPressed`/`justReleased`
   over keyboard, `bindButton`/`bindAxis`/`pollGamepads` over a gamepad,
   `bindTouch`/`pressTouch`/`releaseTouch`/`attachSwipe` over touch, `actionsForKey` for
-  rebind-conflict detection, `rumble` for gamepad haptics.
+  rebind-conflict detection, `rumble` for gamepad haptics. `onText` carries the character a
+  key press produces (via `textFromKey`/`dispatchText`) and `onComposition` follows an IME
+  through `start`/`update`/`end`, so a free text field can be built on top.
 - `PlayerInput` - a per-player scoped `Input`, for local multiplayer/split-screen.
 - `SaveSystem` - named, versioned save slots over `localStorage` (in-memory fallback under
   `file://`); a `migrations` chain, and `importExternal` as a plug-in point for a foreign

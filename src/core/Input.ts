@@ -38,6 +38,60 @@ export const onAction = new Signal<Action>(true);
 export const onKey = new Signal<KeyboardEvent>(true);
 
 /**
+ * Fires for the text a key press produces, one call per character - the signal a free text
+ * field listens to. `onAction` carries named intent and `onKey` carries the physical key;
+ * neither carries `event.key`, so neither can type a name or a save-slot label. A listener
+ * returning true stops the text reaching anything else, the same convention the other input
+ * signals use, so a focused field can swallow it.
+ */
+export const onText = new Signal<string>(true);
+
+/** the three phases of an input-method composition: CJK, dead keys, emoji pickers */
+export type CompositionPhase = 'start' | 'update' | 'end';
+
+export interface CompositionInput {
+	phase: CompositionPhase;
+
+	/** the composition string so far; on 'end' this is the text finally committed */
+	text: string;
+}
+
+/**
+ * Fires through an input-method composition, so a text field can show the underlined
+ * in-progress characters without committing them: 'update' replaces the preview and 'end'
+ * commits `text`. Keys typed while composing are not also reported by `onText`
+ * (`KeyboardEvent.isComposing` suppresses them), so a field follows one path or the other,
+ * never both.
+ */
+export const onComposition = new Signal<CompositionInput>(true);
+
+/**
+ * The text a keydown produces, or null when it produces none.
+ *
+ * A printable key is one whose `event.key` is a single character, held without Ctrl/Cmd/Alt
+ * (those are shortcuts) and outside a composition (the IME's own events carry that text).
+ * Named keys - 'Enter', 'Backspace', 'ArrowLeft', 'Dead', 'Unidentified' - are longer than
+ * one character, which is what keeps them out without a hand-maintained exclusion list.
+ */
+export function textFromKey(
+	event: Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'metaKey' | 'altKey' | 'isComposing'>,
+): string | null {
+	if (event.isComposing) return null;
+	if (event.ctrlKey || event.metaKey || event.altKey) return null;
+	return event.key.length === 1 ? event.key : null;
+}
+
+/** Fires `onText` for a non-empty string; empty is a no-op rather than a signal with nothing. */
+export function dispatchText(text: string): void {
+	if (text.length > 0) onText.dispatch(text);
+}
+
+/** Fires `onComposition`, copying the input so a listener cannot mutate the caller's object. */
+export function dispatchComposition(input: CompositionInput): void {
+	onComposition.dispatch({ phase: input.phase, text: input.text });
+}
+
+/**
  * What one wheel notch means, decided by whichever modifier key was held - the same
  * physical wheel serves three different intents depending on it. `'zoom'` is for a game's
  * own in-scene zoom (`render.Camera.zoom`, typically), never the browser's own page/pinch
@@ -209,19 +263,38 @@ export function endFrame(): void {
 	releasedThisFrame.clear();
 }
 
+function emitTypedText(event: KeyboardEvent): void {
+	const text = textFromKey(event);
+	if (text !== null) dispatchText(text);
+}
+
 function handleKeyDown(event: KeyboardEvent): void {
-	//a held key repeats; the action already started, so only the raw signal repeats
+	//a held key repeats; the action already started, so only the raw and text signals repeat
 	if (event.repeat) {
 		onKey.dispatch(event);
+		emitTypedText(event);
 		return;
 	}
 
 	pressCode(event.code);
 	onKey.dispatch(event);
+	emitTypedText(event);
 }
 
 function handleKeyUp(event: KeyboardEvent): void {
 	releaseCode(event.code);
+}
+
+function handleCompositionStart(event: CompositionEvent): void {
+	dispatchComposition({ phase: 'start', text: event.data ?? '' });
+}
+
+function handleCompositionUpdate(event: CompositionEvent): void {
+	dispatchComposition({ phase: 'update', text: event.data ?? '' });
+}
+
+function handleCompositionEnd(event: CompositionEvent): void {
+	dispatchComposition({ phase: 'end', text: event.data ?? '' });
 }
 
 function handleBlur(): void {
@@ -482,6 +555,9 @@ export function attach(target: EventTarget = window): void {
 
 	target.addEventListener('keydown', handleKeyDown as EventListener);
 	target.addEventListener('keyup', handleKeyUp as EventListener);
+	target.addEventListener('compositionstart', handleCompositionStart as EventListener);
+	target.addEventListener('compositionupdate', handleCompositionUpdate as EventListener);
+	target.addEventListener('compositionend', handleCompositionEnd as EventListener);
 	window.addEventListener('blur', handleBlur);
 	//not passive: a zoom notch calls preventDefault() to stop the browser's own page/pinch
 	//zoom, which a passive listener is not allowed to do
@@ -494,6 +570,9 @@ export function detach(target: EventTarget = window): void {
 
 	target.removeEventListener('keydown', handleKeyDown as EventListener);
 	target.removeEventListener('keyup', handleKeyUp as EventListener);
+	target.removeEventListener('compositionstart', handleCompositionStart as EventListener);
+	target.removeEventListener('compositionupdate', handleCompositionUpdate as EventListener);
+	target.removeEventListener('compositionend', handleCompositionEnd as EventListener);
 	target.removeEventListener('wheel', handleWheel as EventListener);
 	window.removeEventListener('blur', handleBlur);
 	handleBlur();

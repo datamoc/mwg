@@ -4,8 +4,8 @@
 	"version": "0.7.6",
 	"releaseDate": "2026-09-11",
 	"source": {
-		"files": 247,
-		"lines": 35260,
+		"files": 248,
+		"lines": 35525,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -16,7 +16,7 @@
 			{
 				"name": "core",
 				"files": 41,
-				"lines": 4712
+				"lines": 4791
 			},
 			{
 				"name": "mwl",
@@ -49,14 +49,14 @@
 				"lines": 1609
 			},
 			{
+				"name": "audio",
+				"files": 9,
+				"lines": 987
+			},
+			{
 				"name": "ai",
 				"files": 4,
 				"lines": 856
-			},
-			{
-				"name": "audio",
-				"files": 8,
-				"lines": 801
 			},
 			{
 				"name": "three-d",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 178,
-		"lines": 22328,
-		"cases": 1622
+		"files": 179,
+		"lines": 22454,
+		"cases": 1633
 	},
 	"tools": {
 		"files": 35,
@@ -123,9 +123,9 @@
 	},
 	"roadmap": {
 		"items": 286,
-		"completed": 261,
-		"open": 25,
-		"percent": 91
+		"completed": 262,
+		"open": 24,
+		"percent": 92
 	},
 	"api": {
 		"declarationFiles": 0
@@ -133,7 +133,7 @@
 	"bundle": {
 		"globalRaw": 941520,
 		"globalGzip": 279972,
-		"distRaw": 2736400
+		"distRaw": 2741442
 	},
 	"quality": {
 		"testToSourceRatio": 0.6

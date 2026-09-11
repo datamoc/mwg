@@ -3534,8 +3534,17 @@ it.
      TextInput/TextArea, Table/data grid, collapsible TreeView, Spinner or ScrollBox. Present:
      Button, Label, RichLabel, ListView, IconGrid, Bar, Window, WindowStack, MessageBox,
      NinePatch, Tooltip, Toast.
-262. [High] Text input (Absent). `src/core/Input.ts` offers named actions and a raw `onKey`; there
-     is no `onText` and no composition event, so a free text field cannot be built.
+262. ~~[High] Text input (Absent). `src/core/Input.ts` offers named actions and a raw `onKey`; there
+     is no `onText` and no composition event, so a free text field cannot be built.~~ Landed in
+     `core.Input`: `onText` fires the character a key press produces (stack-mode, so a focused
+     field that returns true swallows it, the same convention `onAction`/`onKey` use), and
+     `onComposition` follows an input-method composition through `start`/`update`/`end` so a CJK
+     or dead-key field can preview the underlined text before committing it. `textFromKey` is the
+     rule deciding whether a keydown carries text (a one-character `event.key`, no Ctrl/Cmd/Alt,
+     not `isComposing`), and `dispatchText`/`dispatchComposition` are the injectable seams the DOM
+     handlers and tests share. Held printable keys repeat into `onText` as a real field expects,
+     while keys typed during a composition are not double-reported. Nine tests in
+     `tests/text-input.test.ts`; the widget built on top is 261.
 263. [Medium] Data-driven shell layout and skins (Ne correspond pas). GUI2's `data/gui/*.cfg`,
      anchors and grids have no counterpart; the theme is global (`theme()`/`setTheme`) with one
      padding, and there are no per-widget or per-state skins.
