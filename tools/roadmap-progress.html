@@ -3647,6 +3647,20 @@ Each of these is expected to arrive the way everything else here does: renderer-
 tests, a minimal `@example`, save compatibility notes and an API report entry, in a release the port
 can then check its declarations against.
 
+Two further proposals its section 11 still lists as blocking are already here, checked against the
+source rather than against the note, so neither is an item:
+
+- **Caller-chosen entity ids.** `EntityRegistry.add(entity, requestedId?)` exists (`src/core/Entity.ts`)
+  and is asserted by "EntityRegistry accepts stable caller-chosen ids and rejects collisions" in
+  `tests/mwl.test.ts`. The "mints opaque ids with no caller-chosen-id primitive" note describes an
+  older release.
+- **A value-position 2D surface.** `two-d/render/Types2D.ts` re-exports the classes themselves -
+  `Container2D`, `Texture2D`, `Rectangle2D`, with `Rect`/`TextureRegion`/`rectOf` alongside - so
+  `extends Container2D`, `new Texture2D(...)` and `Texture2D.from(...)` are all available without
+  naming `pixi.js`, which is what that proposal asked for. One piece of it is genuinely not covered:
+  constructing a Pixi *extension* object still means importing `pixi.js` where the object is written,
+  though `GameOptions.extensions` is where the framework applies it.
+
 278. [High] Generalise `MultiTurnBeam` traversal (the port's P0). `roguelike/MultiTurnBeam` walks a
      *captured* straight path, one front per turn. Missing: an opt-in sequence of per-turn fronts or
      a game-supplied next-front resolver, an explicit blocker policy, per-cell callbacks, and shape
