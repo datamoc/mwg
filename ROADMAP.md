@@ -3690,8 +3690,19 @@ it.
      distortion and the words are the same `Label` everything else uses. Nine tests in
      `tests/story-screen.test.ts` cover the paging rules; the drawing itself is the screenshot kind
      of check, as `Label` needs a DOM.
-265. [Medium] Battle UI (Absent). The attack dialog with an animated damage preview, the unit
-     selector, and whiteboard/undo are all missing.
+265. ~~[Medium] Battle UI (Absent). The attack dialog with an animated damage preview, the unit
+     selector, and whiteboard/undo are all missing.~~ Landed as four renderer-free models in
+     `battle`, which is where the repo already keeps battle state and, deliberately, no damage
+     formula: `AttackPreview` takes the per-strike damage a game's own rules computed and adds what
+     a dialog needs - the totals (`totalDamage`, chance-weighted `expectedDamage`, `hits` for a
+     rolled outcome) and a one-frame-per-strike `sampleAt` timeline; `AttackDialog` ties that to a
+     `UnitSelector` (candidates on the selecting side, then the enemies `canTarget` allows, with
+     `back` undoing the attacker choice) and runs the animation clock (`update(dt)`, `finished`);
+     and `Whiteboard` is the planned-orders undo, one plan per unit, a new plan clearing the redo
+     stack. Thirty-two tests across `tests/attack-preview.test.ts`, `attack-dialog`,
+     `unit-selector` and `whiteboard`. What is *not* here is the dialog's pixels - the hp bars and
+     labels are `Bar`/`Label` a game composes from these models, the same split the rest of the UI
+     keeps, and no damage formula was invented to have something to draw.
 266. ~~[High] Wesnoth-compatible RNG (Ne correspond pas). `core/Random.ts` is its own generator
      (splitmix32/xoshiro, `getState()` in four words), not `mt_rng`/`random_synced`, and it has no
      per-entity or per-usage streams, so a Wesnoth-compatible seed or replay is out of reach.~~

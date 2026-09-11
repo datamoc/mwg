@@ -3756,6 +3756,56 @@ build instead.
 
 ## `./battle`
 
+### `AttackDialog` (class)
+
+    export declare class AttackDialog {
+        readonly onChange: Signal<void>;
+        readonly selector: UnitSelector;
+        private readonly damageFor;
+        private readonly strikeDuration;
+        private built;
+        private elapsed_;
+        constructor(options: AttackDialogOptions);
+        get stage(): SelectorStage;
+        get attacker(): SelectableUnit | null;
+        get target(): SelectableUnit | null;
+
+        get preview(): AttackPreview | null;
+
+        get elapsed(): number;
+
+        get finished(): boolean;
+
+        get frame(): AttackFrame | null;
+        move(delta: number): void;
+        select(): boolean;
+        back(): void;
+
+        update(dt: number): AttackFrame | null;
+
+        finish(): void;
+        reset(): void;
+        private readonly handleSelectorChange;
+    }
+
+### `AttackPreview` (class)
+
+    export declare class AttackPreview {
+        readonly frames: readonly AttackFrame[];
+        readonly totalDamage: number;
+        readonly expectedDamage: number;
+        readonly chanceToHit: number;
+        private readonly strikeDuration;
+        private readonly defenderHp0;
+        constructor(options: AttackPreviewOptions);
+
+        get duration(): number;
+
+        get defenderKilled(): boolean;
+
+        sampleAt(time: number): AttackFrame;
+    }
+
 ### `BattleHooks` (class)
 
     export declare class BattleHooks<C> extends HookRegistry<[creature: C, context?: unknown]> {
@@ -3851,6 +3901,65 @@ build instead.
         get(attacking: string, defending: string): number;
 
         multiplierFor(attacking: string, defendingTypes: readonly string[]): number;
+    }
+
+### `UnitSelector` (class)
+
+    export declare class UnitSelector {
+        readonly onChange: Signal<void>;
+        private readonly units;
+        private readonly side?;
+        private readonly disabledOf;
+        private readonly canTarget;
+        private stage_;
+        private charge;
+        private victim;
+        private highlight_;
+        constructor(options: UnitSelectorOptions);
+        get stage(): SelectorStage;
+        get attacker(): SelectableUnit | null;
+        get target(): SelectableUnit | null;
+
+        get done(): boolean;
+
+        get candidates(): readonly SelectableUnit[];
+
+        get targets(): readonly SelectableUnit[];
+
+        get highlight(): number;
+        get highlighted(): SelectableUnit | null;
+
+        move(delta: number): void;
+
+        select(): boolean;
+
+        back(): void;
+        reset(): void;
+        private active;
+    }
+
+### `Whiteboard` (class)
+
+    export declare class Whiteboard<T extends WhiteboardEntry = WhiteboardEntry> {
+        readonly onChange: Signal<void>;
+        private planned;
+        private undone;
+        get plans(): readonly T[];
+        get isEmpty(): boolean;
+        get canUndo(): boolean;
+        get canRedo(): boolean;
+
+        plannedFor(unit: string): T | undefined;
+
+        plan(action: T): void;
+
+        undo(): T | null;
+
+        redo(): T | null;
+
+        clear(): void;
+
+        commit(): T[];
     }
 
 ## `./board`

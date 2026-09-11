@@ -9,6 +9,10 @@ the public API may still change between minor versions.
 
 ### Added
 
+- Battle UI models (item 265): `AttackPreview` (damage totals and an animated frame timeline from
+  the game's own numbers), `AttackDialog` (the selector plus the preview and its clock),
+  `UnitSelector` (attacker then target), and `Whiteboard` (planned orders with undo/redo). All
+  renderer-free; the dialog's pixels are `Bar`/`Label` a game composes.
 - Story screens (item 264): `StoryScreen` (a full-screen backdrop, title and text advanced by a
   click) over the renderer-free `StorySequence` (`advance`/`back`/`goTo`/`skip`/`restart`, with the
   current beat's `music` reported as a signal). `StoryBeat` matches `MwlWorld.story`'s shape.

@@ -512,6 +512,18 @@ No move, formula, or number belongs here - only the shape.
   turn-skipping statuses.
 - `Field`/`FieldCondition` - field-wide conditions: weather, terrain, screens; named,
   optionally timed, ticked down by `advance(rounds)`.
+- `AttackPreview`/`AttackPreviewOptions`/`AttackFrame`/`PreviewCombatant` - the damage totals and
+  one-frame-per-strike timeline an attack dialog prints and animates, from damage the game's own
+  formula produced (`totalDamage`, chance-weighted `expectedDamage`, `hits` for a rolled outcome,
+  `sampleAt` on the animation clock). It computes no damage itself.
+- `AttackDialog`/`AttackDialogOptions`/`StrikeNumbers` - the dialog's whole renderer-free state: a
+  `UnitSelector` to choose the pair, the `AttackPreview` built from a game-supplied `damageFor`, and
+  the `update(dt)`/`finished` clock that drives the animation.
+- `UnitSelector`/`UnitSelectorOptions`/`SelectableUnit`/`SelectorStage` - the two-step attack
+  selector: enabled units on the selecting side as candidates, then the enemies `canTarget` allows
+  as targets; `back` undoes the attacker choice.
+- `Whiteboard`/`WhiteboardEntry` - planned turn orders with one plan per unit, `undo`/`redo` (a new
+  plan clears the redo stack) and `commit` handing the plans back.
 
 ## `board`
 
