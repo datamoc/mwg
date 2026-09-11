@@ -121,7 +121,7 @@ export type MwlCommand =
 	| { readonly name: 'modify_gold'; readonly target: string; readonly amount: number }
 	| { readonly name: 'move'; readonly target: string; readonly x: number; readonly y: number }
 	| { readonly name: 'spawn'; readonly target: string; readonly x: number; readonly y: number; readonly hp: number }
-	| { readonly name: 'kill'; readonly target: string }
+	| { readonly name: 'kill'; readonly target?: string; readonly filter?: Readonly<Record<string, string>> }
 	| { readonly name: 'attack'; readonly target: string; readonly amount: number }
 	| { readonly name: 'end_turn' }
 	| { readonly name: 'win' }
@@ -574,9 +574,15 @@ export class MwlRuntime {
 					integer(node, 'y', 0),
 				);
 				break;
-			case 'kill':
-				this.killUnit(node.attributes.unit ?? required(node, 'target'));
+			case 'kill': {
+				//a named unit that is not there is a content error; a filter that matches nobody is not,
+				//which is what WML's own `[kill]` does. An empty filter matches every unit, there as
+				//here, which is worth knowing before writing one.
+				const named = node.attributes.unit ?? node.attributes.target;
+				if (named === undefined) killMatching(this.world, node.attributes);
+				else this.killUnit(named);
 				break;
+			}
 			case 'attack':
 				this.attack(
 					node.attributes.defender ?? node.attributes.target ?? required(node, 'target'),
@@ -1035,7 +1041,8 @@ export function execute(world: MwlWorld, command: MwlCommand): void {
 			world.units[command.target] = { hp: command.hp, x: command.x, y: command.y, alive: true };
 			break;
 		case 'kill':
-			requireUnit(world, command.target).alive = false;
+			if (command.target !== undefined) requireUnit(world, command.target).alive = false;
+			else killMatching(world, command.filter ?? {});
 			break;
 		case 'end_turn':
 			world.turn++;
@@ -1072,6 +1079,17 @@ function requireUnit(world: MwlWorld, id: string): { hp: number; x: number; y: n
 	const unit = world.units[id];
 	if (!unit || !unit.alive) throw new Error(`MWL unit is not alive: ${id}`);
 	return unit;
+}
+
+/** Kills every alive unit a `[kill]` filter matches, and says how many it killed. */
+function killMatching(world: MwlWorld, attributes: Readonly<Record<string, string>>): number {
+	let killed = 0;
+	for (const [id, unit] of Object.entries(world.units)) {
+		if (!unit.alive || !unitMatchesFilter(unit, id, attributes)) continue;
+		unit.alive = false;
+		killed++;
+	}
+	return killed;
 }
 
 function optionalInteger(node: MwlCompiledNode, attribute: string): number | undefined {

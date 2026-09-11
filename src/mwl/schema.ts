@@ -325,7 +325,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	},
 	move: { attributes: { unit: 'string', target: 'string', x: 'integer', y: 'integer' } },
 	spawn: { attributes: { id: 'string', type: 'string', side: 'integer', x: 'integer', y: 'integer', hp: 'integer' } },
-	kill: { attributes: { unit: 'string', target: 'string' } },
+	kill: { attributes: { unit: 'string', target: 'string' }, openAttributes: 'string' },
 	gold: { attributes: { side: 'string', delta: 'integer', amount: 'integer' } },
 	endlevel: {
 		attributes: {

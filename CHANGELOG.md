@@ -44,6 +44,11 @@ the public API may still change between minor versions.
   hook `campaignChain` already honours). `carryoverIntoScenario` is the other half of the rule: the
   carried share is added to what the next scenario declares when `carryover_add` asks for it, and is
   otherwise a floor under it. `MWL_DEFAULT_CARRYOVER_PERCENTAGE` names the default.
+- `[kill]` as a filter (item 251): naming a unit that is not there still throws, while a `[kill]`
+  whose attributes are a filter over the world's units is a no-op when it matches nobody, as WML's
+  own `[kill]` is. It reads the same attributes an event filter does, an empty filter matches every
+  unit (there as here), and the schema entry is open on attributes so a filter can say what it
+  means.
 
 ### Fixed
 

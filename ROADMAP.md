@@ -3402,9 +3402,17 @@ it.
      `src/mwl/schema.ts`). Missing the WML ones: `store_unit`, `unstore_unit`, `modify_unit`,
      `heal_unit`, `recall`, `endlevel`, `story`, `set_terrain`, `capture_village`, `clear_shroud`,
      `fire_event`, `role`, and scenario-level `[object]`/`[item]`.
-251. [Medium] `[kill]` as a filter (Ne correspond pas). `killUnit` throws `MWL unit is not alive`
+251. ~~[Medium] `[kill]` as a filter (Ne correspond pas). `killUnit` throws `MWL unit is not alive`
      when nothing matches, where WML's `[kill]` is a no-op on an empty match. A content error and
-     an empty filter are different things and the runtime cannot tell them apart today.
+     an empty filter are different things and the runtime cannot tell them apart today.~~ Landed:
+     `[kill]` now has two shapes that fail differently, on purpose. Naming a unit (`unit=`/`target=`)
+     still throws when that unit is not standing, because that is a content mistake. Anything else is
+     a *filter* over the world's units - the same attributes an event filter reads, via
+     `unitMatchesFilter` - and a filter that matches nobody is a no-op, which is what WML does. An
+     empty filter matches every unit there as here, and the doc comment says so before someone
+     writes one. `MwlCommand`'s `kill` variant takes an optional `filter` for the same two shapes,
+     and the `[kill]` schema entry is open on attributes now, since a filter is not a fixed list.
+     Six tests in `tests/mwl-kill.test.ts`.
 252. [Medium] `[side]` attribute surface (Ne correspond pas). `[side]` reads
      `id`/`controller`/`gold`/`income`/`income_base`/`income_per_village`/`leader`/`team`/
      `recruit`/`color`, and `MwlWorld.sides` keeps gold/income/leader/controller/recruit. Missing
