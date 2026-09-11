@@ -9,6 +9,7 @@ npm run check          # tsc --noEmit, typechecks src/examples/tools/tests
 npm test                # node --test "tests/**/*.test.ts"; runs a single file: node --test tests/random.test.ts
 npm run build           # library build: tsc emit + the standalone mw_games.global.js IIFE
 npm run audit           # npm dependency audit, fails for high or critical advisories
+npm run ci:status       # waits for every workflow run of HEAD and fails if any of them did
 npm run benchmark:browser # builds the dungeon example and measures headless Chrome rendering/FPS
 npm run cap:sync        # builds the mobile web output and synchronizes Capacitor platforms
 npm run cap:add:android # creates the Android platform after building the mobile web output

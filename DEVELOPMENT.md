@@ -103,6 +103,13 @@ The GitHub release triggers the npm publishing workflow. If npm staging is enabl
 repository owner completes the final 2FA approval with `npm stage list` and
 `npm stage approve <stage-id>`.
 
+After any push, check the workflows **by commit**, with `npm run ci:status`: it waits for every run
+of that sha and exits non-zero if one failed. Asking `gh run list --limit=1` instead is wrong in a
+way that looks right, because right after a push it still answers about the previous commit, which
+is how a commit once shipped here reported green while its CI had failed on `stats:check`. A failed
+run of a commit that has since been fixed is worth leaving in history rather than rewriting: say so,
+and check the tip.
+
 ## Website and tutorial verification
 
 When the getting-started tutorial changes, test both documented paths from an empty

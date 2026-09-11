@@ -167,6 +167,7 @@
 		"size:check": "node tools/bundle-size.mjs",
 		"size:update": "node tools/bundle-size.mjs --update",
 		"audit": "node tools/npm-audit.mjs",
+		"ci:status": "node tools/ci-status.mjs",
 		"example": "vite --config examples/colour-transform/vite.config.ts",
 		"example:build": "vite build --config examples/colour-transform/vite.config.ts && node tools/emit-page.mjs examples/colour-transform",
 		"test": "node --test \"tests/**/*.test.ts\"",
