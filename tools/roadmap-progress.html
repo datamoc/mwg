@@ -80,7 +80,8 @@ directly the same day, landed first: they are self-contained where those blocker
 the order here is priority, not number. Items 277-282 are the framework's side of two other lists:
 the `MwlWorld` side-identity cleanup found while building carry-over, and the five proposals the
 Pixel Dungeon port keeps in its own roadmap section 11A, each re-checked against the code here
-before being written down. Everything else numbered has shipped: the data-extraction
+before being written down; 283-286 came the same way, found while landing 252 and 259 or asked for
+directly (map view rotation). Everything else numbered has shipped: the data-extraction
 cluster 205-213 (whose items say what landed), the former priority cluster (28, 30, 41, 45), the
 verification and accessibility tail (192-197), the SVG and benchmark follow-up (198) and the
 reduced-motion cluster (199-202). Numbers are never reassigned once given - the list is an
@@ -3722,7 +3723,38 @@ source rather than against the note, so neither is an item:
      secondary actor, an animation lock, cancellation and save/load interacting. The goal is a
      stable integration pattern for turn-based games, not any one game's combat pipeline.
 
-### Parked decisions
+### Map view rotation
+
+Asked for directly, 2026-09-11. Two items rather than one because the two halves differ by an order
+of magnitude in cost and in what they break, and because a fixed angle is a thing a strategy game
+can ship this month while free rotation is a rendering project.
+
+What exists today, checked rather than assumed: `Camera` has zoom, bounds, following, shake and the
+`toScreen`/`toWorld` pair, and **no rotation**; individual sprites can rotate (the particle emitter
+and `VerticalLabel` both use it), so a game *can* rotate a world container by hand - Pixi will - but
+nothing in the framework makes that usable. That is the gap both items describe.
+
+285. [Medium] Fixed-angle map rotation. Turn the view in quarter turns (0/90/180/270), which is what a
+     strategy game wants for "look at the map from another side" without a free camera. The grid
+     stays axis-aligned at these angles, so tile choice, fog and pathfinding are untouched, and what
+     has to be built is the layer between them and the screen: `Camera.toScreen`/`toWorld` must invert
+     the quarter turn so a click lands on the cell the player aimed at, `TiledMap`'s culling must use
+     the rotated view rather than an axis-aligned rectangle, and anything drawn *into* the world that
+     must stay upright - labels, health bars, damage numbers, the selection cursor's text - needs a
+     counter-rotation, since a 180 degree turn would otherwise put every label upside down. A quarter
+     turn is exact, so it belongs in the same place the projection options landed (259, 284) rather
+     than in the renderer.
+286. [Medium] Free map rotation. Any angle, including smooth animation between angles. Beyond 285's
+     inverse mapping, this is where the real costs are, and each is a decision rather than a detail:
+     adjacent rotated tiles show hairline seams unless they are drawn as one mesh or with a bleed
+     margin, so a per-tile rotation is not the same thing as a rotated layer; picking needs the
+     inverse of an arbitrary angle with a tolerance, since a click near a corner is ambiguous in
+     world space once the screen has been turned; culling has to use the rotated view's bounding box
+     or the map will pop at its edges; text and pixel-snapped UI must stay outside or counter-rotate
+     within the rotated layer; and the per-frame cost has to be a transform on the layer rather than
+     on every tile, which is worth measuring before it is adopted the way 254 and the batcher were.
+     Also worth deciding here: whether "rotation" means the camera turning or the world turning,
+     which only shows up once terrain has a light direction or a shadow.
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list
