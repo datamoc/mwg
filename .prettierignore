@@ -5,6 +5,7 @@ examples/assets
 benchmark-results
 .example-check
 .scratch-check
+.remember
 webpage
 android
 desktop
