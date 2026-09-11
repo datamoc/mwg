@@ -1146,6 +1146,8 @@ build instead.
         private readonly spin;
 
         private readonly frames?;
+
+        private readonly spawnArea;
         private emitting;
 
         private poolCursor;
@@ -1164,6 +1166,8 @@ build instead.
 
         burst(count: number): number;
         private spawn;
+
+        private spawnOffset;
         update(dt: number): void;
 
         private draw;
@@ -6277,6 +6281,8 @@ build instead.
         private readonly spin;
 
         private readonly frames?;
+
+        private readonly spawnArea;
         private emitting;
 
         private poolCursor;
@@ -6295,6 +6301,8 @@ build instead.
 
         burst(count: number): number;
         private spawn;
+
+        private spawnOffset;
         update(dt: number): void;
 
         private draw;
@@ -7213,6 +7221,8 @@ build instead.
         private readonly spin;
 
         private readonly frames?;
+
+        private readonly spawnArea;
         private emitting;
 
         private poolCursor;
@@ -7231,6 +7241,8 @@ build instead.
 
         burst(count: number): number;
         private spawn;
+
+        private spawnOffset;
         update(dt: number): void;
 
         private draw;

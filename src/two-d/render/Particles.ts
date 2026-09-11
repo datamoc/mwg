@@ -44,6 +44,25 @@ export interface Particle {
 /** a `[min, max]` range picked per particle; a bare number means that value exactly */
 export type ParticleRange = number | readonly [number, number];
 
+/**
+ * Where in the emitter's local space a particle is born. Without one every particle starts at
+ * the emitter's origin, which is right for a hit spark and wrong for anything with an extent:
+ * the width of a forge, the mouth of a flame column, rain across a room.
+ *
+ * A `rect` spreads births uniformly across `width` x `height`; an `ellipse` spreads them
+ * uniformly inside it (the square-root of the radius, so they do not bunch at the centre).
+ * Both are centred on the emitter and move with it, since this is local space.
+ */
+export interface ParticleSpawnArea {
+	shape: 'rect' | 'ellipse';
+
+	/** full width of the area, in world units */
+	width: number;
+
+	/** full height; defaults to `width`, so a square rectangle or a circle */
+	height?: number;
+}
+
 export interface ParticleEmitterOptions {
 	/** drawn per particle; omit for a pure simulation that renders nothing (tests, headless) */
 	texture?: Texture2D;
@@ -82,6 +101,9 @@ export interface ParticleEmitterOptions {
 
 	/** rotation change in radians per second */
 	spin?: ParticleRange;
+
+	/** where in local space particles are born; without one they all start at the origin */
+	spawn?: ParticleSpawnArea;
 
 	/** multiplied into every particle sprite; ignored without a `texture` */
 	tint?: number;
@@ -145,6 +167,9 @@ export class ParticleEmitter extends Container {
 	/** the frame sequence to walk, if one was given - `texture` is ignored in its favour */
 	private readonly frames?: readonly Texture2D[];
 
+	/** where in local space births happen, or null for a single point at the origin */
+	private readonly spawnArea: ParticleSpawnArea | null;
+
 	private emitting = false;
 
 	/** where the next pool search starts, so reuse stays O(1) amortised rather than O(pool) */
@@ -167,6 +192,7 @@ export class ParticleEmitter extends Container {
 		this.alphaRange = options.alpha ?? [1, 0];
 		this.spin = options.spin ?? 0;
 		this.frames = options.frames;
+		this.spawnArea = options.spawn ?? null;
 
 		for (let i = 0; i < max; i++) {
 			this.pool.push({
@@ -255,9 +281,10 @@ export class ParticleEmitter extends Container {
 		const speed = pick(this.speed);
 		//reduced motion keeps the puff and its fade but drops the travel and spin
 		const motion = reducedMotion() ? 0 : 1;
+		const offset = this.spawnOffset();
 
-		particle.x = this.x;
-		particle.y = this.y;
+		particle.x = this.x + offset.x;
+		particle.y = this.y + offset.y;
 		particle.vx = Math.cos(angle) * speed * motion;
 		particle.vy = Math.sin(angle) * speed * motion;
 		particle.age = 0;
@@ -269,6 +296,27 @@ export class ParticleEmitter extends Container {
 		particle.frame = 0;
 		particle.active = true;
 		return true;
+	}
+
+	/**
+	 * One seeded draw for where in local space this birth happens. A point emitter draws
+	 * nothing here, which is what keeps an emitter without a spawn area on exactly the random
+	 * sequence it had before, so an existing seeded replay does not shift.
+	 */
+	private spawnOffset(): { x: number; y: number } {
+		const area = this.spawnArea;
+		if (!area) return { x: 0, y: 0 };
+
+		const height = area.height ?? area.width;
+		if (area.shape === 'rect') {
+			return { x: (Random.float() - 0.5) * area.width, y: (Random.float() - 0.5) * height };
+		}
+
+		//the square root of the radius spreads points uniformly over the ellipse's area
+		//instead of clustering them at the centre, the same correction a uniform disc needs
+		const radius = Math.sqrt(Random.float());
+		const angle = Random.float() * Math.PI * 2;
+		return { x: Math.cos(angle) * radius * (area.width / 2), y: Math.sin(angle) * radius * (height / 2) };
 	}
 
 	update(dt: number): void {

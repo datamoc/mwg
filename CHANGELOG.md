@@ -9,6 +9,11 @@ the public API may still change between minor versions.
 
 ### Added
 
+- `ParticleEmitter` spawn bounds (item 279): `ParticleSpawnArea` is an optional `spawn` on the
+  emitter's options, a `rect` or `ellipse` in local space so a burst spreads across an extent
+  instead of every particle starting at the emitter's single origin (a forge mouth, a flame
+  column, rain across a room). A point emitter draws nothing extra, so the seeded sequence an
+  existing replay recorded is unchanged.
 - `ai.personalScoreView`/`ai.sideScoreView`/`ai.scoreWith`, over `ScoreSubject`/`ScoreView`/
   `ScorePersonality` (items 274-276): the numbers a mind needs when a search is the wrong tool.
   The game supplies what anything is worth, the framework assembles the view (own, allies and

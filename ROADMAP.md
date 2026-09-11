@@ -3664,11 +3664,18 @@ source rather than against the note, so neither is an item:
      identity in the saved state so a reload resumes the same shape. That would cover cone, burst,
      forked and moving-front effects without putting any game's rules here. The port asked for
      deterministic square and hex tests in this repository before it adopts any of it.
-279. [Medium] Particle spawn bounds (the port's P1). `ParticleEmitter` pools and reuses particles
+279. ~~[Medium] Particle spawn bounds (the port's P1). `ParticleEmitter` pools and reuses particles
      renderer-agnostically, but its `spawn()` is private and unbounded, so a controlled spread or a
      capped flame column is presentation glue in the game. Needs a seeded local rectangle or
      ellipse for spawning, and an optional local height or lifetime envelope, with the pooled
-     behaviour unchanged.
+     behaviour unchanged.~~ Landed as `ParticleSpawnArea`, an optional `spawn` on the emitter's
+     options: a `rect` or `ellipse` in local space, so a birth spreads across an extent instead of
+     all landing on the emitter's origin. `height` defaults to `width` (a square or a circle), the
+     ellipse's radius is square-rooted so births do not cluster at its centre, and the area moves
+     with the emitter because it is local space. A point emitter draws nothing extra, so the seeded
+     sequence an existing replay recorded is unchanged; `life` already was the lifetime envelope.
+     Five tests in `tests/particles.test.ts` pin the bounds, the ellipse's edge (direction, not
+     only magnitude), local-space movement and seeded reproducibility.
 280. [Medium] A renderer-neutral grid targeting controller (the port's P1). The *geometry* is here
      (`AreaShape`, `traceLine`, `ballistica`, `Level` line of sight) and nothing drives it from
      input: needs pointer and keyboard navigation over cells, range and line-of-sight validation

@@ -239,7 +239,8 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   a framework that guessed would be wrong half the time.
 - `ParticleEmitter`/`Particle` - a pooled, seeded particle emitter (sparks, dust, rain):
   `burst`/`start`/`stop` over a pool allocated once at `max`. Runs the whole simulation with
-  no `texture` given, which is how it is tested without a renderer.
+  no `texture` given, which is how it is tested without a renderer. `ParticleSpawnArea` gives
+  births a local `rect` or `ellipse` extent instead of the emitter's single origin.
 - `ScreenEffects` - a full-screen colour wash: `fadeOut`/`fadeIn`/`flash`/`setTint`, driven by
   `update(dt)` returning true on the frame an effect completes.
 - `ActorAnimator` - an idle/move/action animation state machine with one interruption rule.

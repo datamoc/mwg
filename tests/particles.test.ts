@@ -181,3 +181,113 @@ test('a frame sequence is what creates the sprites, standing in for texture', ()
 	const emitter = new ParticleEmitter({ max: 2, frames: [Texture.WHITE, Texture.WHITE] });
 	assert.equal(emitter.children.length, 2, 'one sprite per pooled particle');
 });
+
+test('a rect spawn area is centred on the emitter and births inside it', () => {
+	Random.push(1);
+	try {
+		const emitter = new ParticleEmitter({
+			max: 200,
+			life: 100,
+			speed: 0,
+			spawn: { shape: 'rect', width: 40, height: 20 },
+		});
+		emitter.x = 100;
+		emitter.y = 50;
+		emitter.burst(200);
+
+		let reachX = 0;
+		let reachY = 0;
+		for (const particle of emitter.particles) {
+			const dx = particle.x - 100;
+			const dy = particle.y - 50;
+			assert.ok(Math.abs(dx) <= 20 + 1e-9, `x ${dx} stays within the half width`);
+			assert.ok(Math.abs(dy) <= 10 + 1e-9, `y ${dy} stays within the half height`);
+			reachX = Math.max(reachX, Math.abs(dx));
+			reachY = Math.max(reachY, Math.abs(dy));
+		}
+		//not every draw landing at the origin: the spread really uses the area's extent
+		assert.ok(reachX > 15, `some birth reached near the x edge (got ${reachX})`);
+		assert.ok(reachY > 7, `some birth reached near the y edge (got ${reachY})`);
+	} finally {
+		Random.pop();
+	}
+});
+
+test('a rect spawn area defaults its height to its width, so it is a square', () => {
+	Random.push(2);
+	try {
+		const emitter = new ParticleEmitter({ max: 100, life: 100, speed: 0, spawn: { shape: 'rect', width: 30 } });
+		emitter.burst(100);
+		for (const particle of emitter.particles) {
+			assert.ok(Math.abs(particle.x) <= 15 + 1e-9);
+			assert.ok(Math.abs(particle.y) <= 15 + 1e-9);
+		}
+	} finally {
+		Random.pop();
+	}
+});
+
+test('an ellipse spawn area births inside the ellipse, not its bounding box', () => {
+	Random.push(3);
+	try {
+		const emitter = new ParticleEmitter({
+			max: 400,
+			life: 100,
+			speed: 0,
+			spawn: { shape: 'ellipse', width: 40, height: 20 },
+		});
+		emitter.burst(400);
+
+		let reach = 0;
+		for (const particle of emitter.particles) {
+			const nx = particle.x / 20;
+			const ny = particle.y / 10;
+			const radius = Math.hypot(nx, ny);
+			assert.ok(radius <= 1 + 1e-9, `birth ${radius} stays inside the unit ellipse`);
+			reach = Math.max(reach, radius);
+		}
+		//the sqrt correction fills the ellipse rather than clustering everything at the centre
+		assert.ok(reach > 0.9, `some birth reached near the ellipse's edge (got ${reach})`);
+	} finally {
+		Random.pop();
+	}
+});
+
+test('a spawn area moves with the emitter, since it is local space', () => {
+	Random.push(5);
+	try {
+		const emitter = new ParticleEmitter({
+			max: 50,
+			life: 100,
+			speed: 0,
+			spawn: { shape: 'ellipse', width: 10, height: 10 },
+		});
+		emitter.x = 200;
+		emitter.y = -80;
+		emitter.burst(50);
+		for (const particle of emitter.particles) {
+			assert.ok(Math.hypot(particle.x - 200, particle.y + 80) <= 5 + 1e-9);
+		}
+	} finally {
+		Random.pop();
+	}
+});
+
+test('the same seed reproduces the same spawn-area births', () => {
+	const run = () => {
+		Random.push(9);
+		try {
+			const emitter = new ParticleEmitter({
+				max: 32,
+				life: 100,
+				speed: 0,
+				spawn: { shape: 'ellipse', width: 12, height: 6 },
+			});
+			emitter.burst(32);
+			return emitter.particles.map((p) => ({ x: p.x, y: p.y }));
+		} finally {
+			Random.pop();
+		}
+	};
+	assert.deepEqual(run(), run());
+});
