@@ -130,7 +130,10 @@ test('parses repository ROADMAP.md correctly', () => {
 		result.allItems.filter((item) => item.done).length,
 		'every item is either done or open, never both and never neither',
 	);
-	assert.ok(result.openItems.length > 0, 'expected the roadmap to still record open work');
+	// The roadmap can legitimately reach zero open numbered items - it did, 2026-09-11 - so this
+	// only checks openItems is the same list the done/total counts already imply, not that it is
+	// nonempty forever.
+	assert.equal(result.openItems.length, result.overallTotal - result.overallDone);
 
 	// The 1.0 exit checklist is checks to run, not numbered capabilities, so it stays out of the
 	// totals above. It is reported separately, under its own heading, because a dashboard that

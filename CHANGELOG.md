@@ -16,6 +16,9 @@ the public API may still change between minor versions.
   (multi-criterion unlocks via `AchievementDef.criteria`, read back with `subProgress`), and
   `battle.BattleStats` tracks recruits/recalls/advances/kills/deaths/damage dealt/damage taken by
   unit type for a `PlayerStats`/`RunHistory` summary to fold in.
+- Free map rotation (item 286): `Camera.rotateTo`/`animateRotationTo` turn the view to any angle,
+  not only a grid's whole steps, sharing 285's layer-level transform and taking the shorter way
+  around a full turn when animated.
 - Battle UI models (item 265): `AttackPreview` (damage totals and an animated frame timeline from
   the game's own numbers), `AttackDialog` (the selector plus the preview and its clock),
   `UnitSelector` (attacker then target), and `Whiteboard` (planned orders with undo/redo). All

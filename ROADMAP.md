@@ -4042,7 +4042,7 @@ only for the square grid they are easiest to reason about.
      step count is the only grid-dependent thing here. Eleven tests in
      `tests/camera-rotation.test.ts`, plus the existing camera tests unchanged. Free rotation
      (item 286, arbitrary angles and animation between them) stays separate.
-286. [Medium] Free map rotation. Any angle, including smooth animation between angles (and for hex,
+286. ~~[Medium] Free map rotation. Any angle, including smooth animation between angles (and for hex,
      animation *between* the six exact positions above rather than only landing on them). Beyond
      285's inverse mapping, this is where the real costs are, and each is a decision rather than a
      detail: adjacent rotated tiles show hairline seams unless they are drawn as one mesh or with a
@@ -4053,7 +4053,22 @@ only for the square grid they are easiest to reason about.
      within the rotated layer; and the per-frame cost has to be a transform on the layer rather than
      on every tile, which is worth measuring before it is adopted the way 254 and the batcher were.
      Also worth deciding here: whether "rotation" means the camera turning or the world turning,
-     which only shows up once terrain has a light direction or a shadow.
+     which only shows up once terrain has a light direction or a shadow.~~ Landed in `Camera`, on top
+     of 285's layer-level transform rather than beside it: `_angle` (radians) is now the one source
+     of the view's turn, with `setRotationStep`/`rotate` just computing a step's whole multiple of
+     it. `rotateTo(angle)` jumps there immediately; `animateRotationTo(angle, intensity)` eases
+     towards it the shorter way around a full turn (an `angleDiff` helper in `(-pi, pi]`), so turning
+     from a hex view's fifth step back to its first sweeps the one 60-degree gap rather than the
+     long way, and reduced motion jumps in one frame the same way `follow`'s easing already does.
+     Every cost 286 named was already paid by 285's design rather than newly owed here: the layer
+     turns once as a whole (`world.rotation`), never per tile, so there are no seams to fix and the
+     per-frame cost stays flat; `toScreen`/`toWorld` already invert an arbitrary angle, not only a
+     step's multiple, so picking needed no change; `view`'s four-corner bounding box already covers
+     any angle once its `this.step === 0` fast path became `this._angle === 0`; and
+     `uprightRotation` already cancels whatever `rotation` is, stepped or free. The camera-vs-world
+     question the item asks about is answered in `Camera`'s own class doc: the layer turns, the
+     camera itself never moves. Seven tests in `tests/camera-free-rotation.test.ts`, the existing
+     `tests/camera-rotation.test.ts` unchanged.
 287. ~~[Low] `Assets.load` missing-asset policy. There is no way to ask for an optional asset;
      a caller that wants one has to wrap `assetUrl` in try/catch and fall back to
      `Texture.EMPTY` by hand. An `onMissing` handler or a per-path `optional` flag would move

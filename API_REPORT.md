@@ -331,6 +331,9 @@ build instead.
 
         readonly stepsPerTurn: number;
         private step;
+        private _angle;
+        private targetAngle;
+        private angleIntensity;
         constructor(options?: CameraOptions);
 
         get rotationSteps(): number;
@@ -342,6 +345,10 @@ build instead.
         setRotationStep(step: number): void;
 
         rotate(delta?: number): void;
+
+        rotateTo(angle: number): void;
+
+        animateRotationTo(angle: number, intensity?: number): void;
 
         private get spin();
         get zoom(): number;
@@ -6763,6 +6770,9 @@ build instead.
 
         readonly stepsPerTurn: number;
         private step;
+        private _angle;
+        private targetAngle;
+        private angleIntensity;
         constructor(options?: CameraOptions);
 
         get rotationSteps(): number;
@@ -6774,6 +6784,10 @@ build instead.
         setRotationStep(step: number): void;
 
         rotate(delta?: number): void;
+
+        rotateTo(angle: number): void;
+
+        animateRotationTo(angle: number, intensity?: number): void;
 
         private get spin();
         get zoom(): number;
@@ -8694,6 +8708,9 @@ build instead.
 
         readonly stepsPerTurn: number;
         private step;
+        private _angle;
+        private targetAngle;
+        private angleIntensity;
         constructor(options?: CameraOptions);
 
         get rotationSteps(): number;
@@ -8705,6 +8722,10 @@ build instead.
         setRotationStep(step: number): void;
 
         rotate(delta?: number): void;
+
+        rotateTo(angle: number): void;
+
+        animateRotationTo(angle: number, intensity?: number): void;
 
         private get spin();
         get zoom(): number;

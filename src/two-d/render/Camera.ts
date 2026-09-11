@@ -8,9 +8,19 @@ import { reducedMotion } from '../../core/Motion.ts';
  *
  * The camera does not move: it moves the world under a fixed viewport, which is what a
  * renderer actually wants. `world` is the container to put the map and its inhabitants in;
- * anything that should stay put on screen (the HUD, a dialogue box) goes outside it.
+ * anything that should stay put on screen (the HUD, a dialogue box) goes outside it. The
+ * same answers "does rotation turn the camera or the world": the layer turns, once, about
+ * the view centre - never a per-tile transform, which is what keeps rotated tiles seamless
+ * and the per-frame cost flat regardless of map size.
  *
  * Positions are in world units. At `zoom = 3` a 16px tile is 48 screen pixels.
+ *
+ * Rotation has two APIs sharing one angle: `setRotationStep`/`rotate` turn in the whole
+ * steps a grid closes on (item 285 - four quarter turns for a square map, six 60-degree
+ * steps for a hex one), while `rotateTo`/`animateRotationTo` turn to any angle at all (item
+ * 286), animating smoothly between two steps rather than only landing on them. `toScreen`/
+ * `toWorld`/`view`'s culling box already work at any angle, not only a step's whole
+ * multiple, so free rotation needed no change to either.
  *
  * @example
  * ```ts
@@ -121,6 +131,13 @@ export class Camera {
 	readonly stepsPerTurn: number;
 	private step = 0;
 
+	//the one true source of the view's turn, in radians; `step` above only tracks where
+	//setRotationStep/rotate last left it, for rotationSteps to report. rotateTo/
+	//animateRotationTo move this directly, to any angle, not only a step's whole multiple
+	private _angle = 0;
+	private targetAngle: number | null = null;
+	private angleIntensity = 0;
+
 	constructor(options: CameraOptions = {}) {
 		if (options.grid !== undefined && options.grid !== 'square' && options.grid !== 'hex')
 			throw new Error(`camera grid must be "square" or "hex", not "${options.grid}"`);
@@ -138,7 +155,7 @@ export class Camera {
 
 	/** the view's rotation, in radians, positive turning the world counter-clockwise */
 	get rotation(): number {
-		return (this.step / this.stepsPerTurn) * Math.PI * 2;
+		return this._angle;
 	}
 
 	/**
@@ -154,12 +171,38 @@ export class Camera {
 	setRotationStep(step: number): void {
 		if (!Number.isInteger(step)) throw new Error('camera rotation step must be an integer');
 		this.step = ((step % this.stepsPerTurn) + this.stepsPerTurn) % this.stepsPerTurn;
+		this._angle = (this.step / this.stepsPerTurn) * Math.PI * 2;
+		this.targetAngle = null;
 		this.apply();
 	}
 
 	/** turns the view by whole steps; `rotate(1)` is the next position, `rotate(-1)` the last */
 	rotate(delta = 1): void {
 		this.setRotationStep(this.step + delta);
+	}
+
+	/**
+	 * Turns the view to an arbitrary angle immediately, no animation - free rotation, not
+	 * confined to a grid's whole steps. `rotationSteps` is left as it was: it names where
+	 * `setRotationStep`/`rotate` last put the view, not this angle, so the two APIs are best
+	 * used one at a time rather than interleaved.
+	 */
+	rotateTo(angle: number): void {
+		this._angle = angle;
+		this.targetAngle = null;
+		this.angleIntensity = 0;
+		this.apply();
+	}
+
+	/**
+	 * Eases the view towards an arbitrary angle, taking whichever way around the turn is
+	 * shorter - so animating from a hex view's fifth step back to its first sweeps the one
+	 * 60-degree gap between them rather than the long way around. `intensity` behaves like
+	 * `follow`'s: the remaining angle closes by that fraction each second.
+	 */
+	animateRotationTo(angle: number, intensity = 4): void {
+		this.targetAngle = angle;
+		this.angleIntensity = intensity;
 	}
 
 	/** cos/sin of the current rotation, the shared arithmetic `toScreen`/`toWorld`/`view` use */
@@ -202,7 +245,7 @@ export class Camera {
 		const width = this.viewWidth / this._zoom;
 		const height = this.viewHeight / this._zoom;
 		const { x: centreX, y: centreY } = this.clampedCentre(this.x, this.y);
-		if (this.step === 0) return { x: centreX - width / 2, y: centreY - height / 2, width, height };
+		if (this._angle === 0) return { x: centreX - width / 2, y: centreY - height / 2, width, height };
 
 		const corners = [
 			this.toWorld(this.screenX, this.screenY),
@@ -282,6 +325,14 @@ export class Camera {
 			this.y += dy * t;
 		}
 
+		if (this.targetAngle !== null && this.angleIntensity > 0) {
+			const diff = angleDiff(this._angle, this.targetAngle);
+			//reduced motion jumps straight there in one frame instead of easing continuously,
+			//the same trade `update`'s follow-target easing above makes
+			const t = reducedMotion() ? 1 : 1 - Math.exp(-this.angleIntensity * dt);
+			this._angle += diff * t;
+		}
+
 		if (this.shakeRemaining > 0) {
 			this.shakeRemaining -= dt;
 			//the shake fades out over its duration rather than stopping dead
@@ -344,7 +395,7 @@ export class Camera {
 		const { x: centreX, y: centreY } = this.clampedCentre(this.x + this.shakeX, this.y + this.shakeY);
 
 		this.world.scale.set(this._zoom);
-		if (this.step === 0) {
+		if (this._angle === 0) {
 			//unturned: rotate about the origin, the transform every existing camera had
 			this.world.rotation = 0;
 			this.world.pivot.set(0, 0);
@@ -365,6 +416,16 @@ export class Camera {
 
 function clamp(value: number, min: number, max: number): number {
 	return value < min ? min : value > max ? max : value;
+}
+
+//the signed turn from `from` to `to`, in (-pi, pi], so easing always takes the shorter way
+//around rather than winding the long way when the two angles straddle a full turn
+function angleDiff(from: number, to: number): number {
+	const twoPi = Math.PI * 2;
+	let diff = (to - from) % twoPi;
+	if (diff > Math.PI) diff -= twoPi;
+	if (diff < -Math.PI) diff += twoPi;
+	return diff;
 }
 
 /**

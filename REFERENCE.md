@@ -264,7 +264,9 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   quarter turns (square, the default) or six 60-degree steps (hex), `setRotationStep`/`rotate`
   move through them, `toScreen`/`toWorld` invert the turn so a click still lands on the cell aimed
   at, `view` reports the box around the turned viewport for culling, and `uprightRotation` is the
-  angle that keeps a label drawn into the world upright.
+  angle that keeps a label drawn into the world upright. Free rotation (item 286): `rotateTo` turns
+  to any angle immediately and `animateRotationTo` eases towards one, shorter way around the turn,
+  sharing the same angle and the same `toScreen`/`toWorld`/`view` math the stepped API uses.
 - `Viewport`/`splitScreenHalves` - a camera scoped to one screen region, for split-screen.
 - `createColorBlindnessFilter`/`COLOR_BLINDNESS_MATRICES` - accessibility colour filters.
 - `Minimap`/`newlyRevealed`/`minimapCellCenter`/`MinimapMarker` - bakes an explored-cell set
