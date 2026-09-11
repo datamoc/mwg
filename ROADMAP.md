@@ -3552,9 +3552,25 @@ it.
      equivalent: `DialogueStage`/`StageScript` is a visual-novel model.
 265. [Medium] Battle UI (Absent). The attack dialog with an animated damage preview, the unit
      selector, and whiteboard/undo are all missing.
-266. [High] Wesnoth-compatible RNG (Ne correspond pas). `core/Random.ts` is its own generator
+266. ~~[High] Wesnoth-compatible RNG (Ne correspond pas). `core/Random.ts` is its own generator
      (splitmix32/xoshiro, `getState()` in four words), not `mt_rng`/`random_synced`, and it has no
-     per-entity or per-usage streams, so a Wesnoth-compatible seed or replay is out of reach.
+     per-entity or per-usage streams, so a Wesnoth-compatible seed or replay is out of reach.~~
+     Landed as `MersenneTwister` plus `RandomStreams`, both exported from `core`. `MersenneTwister`
+     is MT19937 with `mt_rng`'s own bookkeeping: a 32-bit `seed`, `discard(count)`, `discardCount`
+     (what `get_discard()` saves) and a full `getState`/`setState` so a save resumes the exact
+     position. The engine is the specified one, and `tests/random-mersenne.test.ts` checks it
+     against the standard seed-5489 test vector (the first ten outputs), so "compatible engine" is
+     verifiable rather than asserted. `RandomStreams` is the other half: named MT19937 streams
+     derived from one base seed by `baseSeed ^ FNV-1a(name)`, created on first use and kept, so a
+     loot draw and an AI draw never shift each other and adding a new consumer does not change
+     existing results; `getState`/`setState`/`reseed` cover a save. One honest limit, stated in the
+     class doc rather than glossed: the reference then runs this engine through C++
+     `std::uniform_int_distribution`, which the C++ standard leaves implementation-defined, so no
+     portable implementation can be bit-identical to a particular standard library's range mapping.
+     `int` here is the framework's own unbiased rejection (the same rule `Generator` uses), which
+     makes a replay deterministic within MWG; a port consuming the raw 32-bit stream lines up with
+     the reference engine exactly. The `Random`/`Generator` xoshiro path is unchanged and still the
+     default. Eleven tests.
 267. [Medium] Turns as Wesnoth counts them (Ne correspond pas). `simulation/Turns.ts` is a cost
      scheduler and `world/TurnClock`/`EnvironmentClock` are generic day phases; there is no
      side/round/schedule model and no per-hex `lawful_bonus`.

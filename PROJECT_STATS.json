@@ -5,7 +5,7 @@
 	"releaseDate": "2026-09-11",
 	"source": {
 		"files": 248,
-		"lines": 35525,
+		"lines": 35736,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -16,7 +16,7 @@
 			{
 				"name": "core",
 				"files": 41,
-				"lines": 4791
+				"lines": 5002
 			},
 			{
 				"name": "mwl",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 179,
-		"lines": 22454,
-		"cases": 1633
+		"files": 180,
+		"lines": 22588,
+		"cases": 1642
 	},
 	"tools": {
 		"files": 35,
@@ -123,8 +123,8 @@
 	},
 	"roadmap": {
 		"items": 286,
-		"completed": 262,
-		"open": 24,
+		"completed": 263,
+		"open": 23,
 		"percent": 92
 	},
 	"api": {
@@ -133,7 +133,7 @@
 	"bundle": {
 		"globalRaw": 941520,
 		"globalGzip": 279972,
-		"distRaw": 2741442
+		"distRaw": 2752608
 	},
 	"quality": {
 		"testToSourceRatio": 0.6

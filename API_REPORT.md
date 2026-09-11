@@ -972,6 +972,31 @@ build instead.
 
     export declare function meetsContrast(foreground: number, background: number, level?: ContrastLevel, large?: boolean): boolean;
 
+### `MersenneTwister` (class)
+
+    export declare class MersenneTwister {
+        private state;
+        private index;
+        private seedValue;
+        private produced;
+        constructor(seed?: number);
+
+        seed(seed: number): void;
+        private generate;
+
+        nextUint32(): number;
+
+        float(): number;
+
+        int(bound: number): number;
+
+        discard(count: number): void;
+
+        get discardCount(): number;
+        getState(): MersenneTwisterState;
+        setState(state: MersenneTwisterState): void;
+    }
+
 ### `MessageBox` (class)
 
     export declare class MessageBox extends Window {
@@ -1281,6 +1306,25 @@ build instead.
 ### `Random` (namespace)
 
     export * as Random from './Random.ts'
+
+### `RandomStreams` (class)
+
+    export declare class RandomStreams {
+        private baseSeed;
+        private streams;
+        constructor(seed?: number);
+
+        stream(name: string): MersenneTwister;
+
+        seedOf(name: string): number | undefined;
+
+        reseed(seed: number): void;
+
+        names(): string[];
+        getState(): Record<string, MersenneTwisterState>;
+
+        setState(state: Readonly<Record<string, MersenneTwisterState>>): void;
+    }
 
 ### `ReactionTable` (class)
 
@@ -3790,6 +3834,31 @@ build instead.
         private write;
     }
 
+### `MersenneTwister` (class)
+
+    export declare class MersenneTwister {
+        private state;
+        private index;
+        private seedValue;
+        private produced;
+        constructor(seed?: number);
+
+        seed(seed: number): void;
+        private generate;
+
+        nextUint32(): number;
+
+        float(): number;
+
+        int(bound: number): number;
+
+        discard(count: number): void;
+
+        get discardCount(): number;
+        getState(): MersenneTwisterState;
+        setState(state: MersenneTwisterState): void;
+    }
+
 ### `motionDuration` (function)
 
     export declare function motionDuration(duration: number, intent?: MotionIntent): number;
@@ -3905,6 +3974,25 @@ build instead.
 ### `Random` (namespace)
 
     export * as Random from './Random.ts'
+
+### `RandomStreams` (class)
+
+    export declare class RandomStreams {
+        private baseSeed;
+        private streams;
+        constructor(seed?: number);
+
+        stream(name: string): MersenneTwister;
+
+        seedOf(name: string): number | undefined;
+
+        reseed(seed: number): void;
+
+        names(): string[];
+        getState(): Record<string, MersenneTwisterState>;
+
+        setState(state: Readonly<Record<string, MersenneTwisterState>>): void;
+    }
 
 ### `ReactionTable` (class)
 

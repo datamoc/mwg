@@ -112,6 +112,12 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
 - `Random` (namespace) - seeded RNG: `int`, `float`, `weighted`, `element`, `shuffle` and the
   rest; every "pick one" returns `null` when there is nothing to pick.
 - `Generator` - the seeded RNG class `Random` wraps directly, for a game that wants its own instance.
+- `MersenneTwister`/`MersenneTwisterState` - MT19937 with `mt_rng`'s `seed`/`discard`/
+  `discardCount` bookkeeping, for a port that consumes the reference's raw 32-bit stream; the
+  engine matches the standard test vector, while the int mapping is MWG's own unbiased
+  reduction (C++'s `uniform_int_distribution` is implementation-defined).
+- `RandomStreams` - named, independent MT19937 streams over one base seed, so a loot draw and
+  an AI draw never shift each other, with `getState`/`setState` for a save and `reseed`.
 - `Input` (namespace) - named-action input: `bind`/`isDown`/`justPressed`/`justReleased`
   over keyboard, `bindButton`/`bindAxis`/`pollGamepads` over a gamepad,
   `bindTouch`/`pressTouch`/`releaseTouch`/`attachSwipe` over touch, `actionsForKey` for

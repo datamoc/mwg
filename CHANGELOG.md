@@ -27,6 +27,11 @@ the public API may still change between minor versions.
   `Input.dispatchComposition` (item 262): the character a key press produces, and the three
   phases of an input-method composition, so a free text field can be built. `onText` is a
   stack-mode signal a focused field can consume.
+- `MersenneTwister`/`MersenneTwisterState`/`RandomStreams` (item 266): MT19937 with the reference
+  `mt_rng`'s `seed`/`discard`/`discardCount` bookkeeping (verified against the standard test
+  vector) and named, independent streams derived from one base seed, so per-entity and per-usage
+  draws never shift each other. C++'s `uniform_int_distribution` is implementation-defined, so the
+  int mapping is MWG's own and documented as such.
 - `ai.personalScoreView`/`ai.sideScoreView`/`ai.scoreWith`, over `ScoreSubject`/`ScoreView`/
   `ScorePersonality` (items 274-276): the numbers a mind needs when a search is the wrong tool.
   The game supplies what anything is worth, the framework assembles the view (own, allies and
