@@ -3793,12 +3793,26 @@ source rather than against the note, so neither is an item:
   constructing a Pixi *extension* object still means importing `pixi.js` where the object is written,
   though `GameOptions.extensions` is where the framework applies it.
 
-278. [High] Generalise `MultiTurnBeam` traversal (the port's P0). `roguelike/MultiTurnBeam` walks a
+278. ~~[High] Generalise `MultiTurnBeam` traversal (the port's P0). `roguelike/MultiTurnBeam` walks a
      *captured* straight path, one front per turn. Missing: an opt-in sequence of per-turn fronts or
      a game-supplied next-front resolver, an explicit blocker policy, per-cell callbacks, and shape
      identity in the saved state so a reload resumes the same shape. That would cover cone, burst,
      forked and moving-front effects without putting any game's rules here. The port asked for
-     deterministic square and hex tests in this repository before it adopts any of it.
+     deterministic square and hex tests in this repository before it adopts any of it.~~ All four
+     landed. The internal unit is now a **front** (a set of cells), not one cell: the default
+     `'line'` shape is still the captured straight path, and `fronts(previous, turn)` opts into a
+     per-turn resolver that sees the cells the last front actually reached and returns this turn's
+     cells - a cone widens, a burst holds, a fork splits, a moving front is whatever the game
+     returns, and none of those rules live in the framework. `blocker` is one explicit policy
+     (`'terrain'` | `'none'` | a function) instead of the old implicit flag combination, with
+     `isBlocked` kept as an extra game rule; `onCell` is the per-cell callback; and a save now
+     carries `fronts`, `index` and a `shape` name, so `fromJSON` refuses to resume a beam as a shape
+     it was not, and a pre-fronts save (its `path` and `index`) still loads as a line. A multi-cell
+     front drops blocked cells and keeps the rest, ending blocked only when nothing got through.
+     Eleven tests in `tests/multi-turn-beam-fronts.test.ts` cover the blocker policies, a
+     deterministic square cone, a deterministic hex run, a partial and a full block, per-cell
+     callbacks, shape refusal, resume-without-re-resolving, and the legacy save; the original three
+     tests still pass unchanged.
 279. ~~[Medium] Particle spawn bounds (the port's P1). `ParticleEmitter` pools and reuses particles
      renderer-agnostically, but its `spawn()` is private and unbounded, so a controlled spread or a
      capped flame column is presentation glue in the game. Needs a seeded local rectangle or
@@ -3907,14 +3921,20 @@ only for the square grid they are easiest to reason about.
      on every tile, which is worth measuring before it is adopted the way 254 and the batcher were.
      Also worth deciding here: whether "rotation" means the camera turning or the world turning,
      which only shows up once terrain has a light direction or a shadow.
-287. [Low] `Assets.load` missing-asset policy. There is no way to ask for an optional asset;
+287. ~~[Low] `Assets.load` missing-asset policy. There is no way to ask for an optional asset;
      a caller that wants one has to wrap `assetUrl` in try/catch and fall back to
      `Texture.EMPTY` by hand. An `onMissing` handler or a per-path `optional` flag would move
-     that glue into the framework once a second caller needs it.
-288. [Low] `applyImageModifiers`'s `GS` sets `sprite.filters = [filter]`, replacing whatever
+     that glue into the framework once a second caller needs it.~~ Landed: `load()` takes
+     `optional`/`onMissing`, loading those paths separately from the required batch so one
+     missing optional asset never aborts everything else; `texture()`/`get()` take a `fallback`
+     argument returned instead of a throw for a path that never loaded, which is what removes
+     the by-hand try/catch this item named.
+288. ~~[Low] `applyImageModifiers`'s `GS` sets `sprite.filters = [filter]`, replacing whatever
      filters were already on the sprite rather than appending to them. Fine while `GS` is the
      only filter a caller applies; worth fixing to append once 255 adds more filter-shaped
-     modifiers that can legitimately stack with it.
+     modifiers that can legitimately stack with it.~~ Fixed alongside 255: `GS` now appends
+     (`sprite.filters = [...(sprite.filters ?? []), filter]`), the same pattern `CS` already
+     used, so it composes with `~R`/`~G`/`~B`/`~BLEND`/`~CHAN` instead of dropping them.
 289. [Medium] Category-shaped crafting ingredients. `actors/craft.d.ts`'s recipe ingredient is
      `{ id: string; quantity: number }` only: one exact item id, no "any item of this kind".
      A recipe that wants "any herb plus any runestone" cannot be expressed and has to be left

@@ -4,19 +4,19 @@
 	"version": "0.7.6",
 	"releaseDate": "2026-09-11",
 	"source": {
-		"files": 253,
-		"lines": 36738,
+		"files": 256,
+		"lines": 37830,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 62,
-				"lines": 10670
+				"files": 64,
+				"lines": 11554
 			},
 			{
 				"name": "core",
-				"files": 41,
-				"lines": 5003
+				"files": 42,
+				"lines": 5122
 			},
 			{
 				"name": "mwl",
@@ -26,7 +26,7 @@
 			{
 				"name": "roguelike",
 				"files": 22,
-				"lines": 3340
+				"lines": 3423
 			},
 			{
 				"name": "board",
@@ -66,7 +66,7 @@
 			{
 				"name": "simulation",
 				"files": 8,
-				"lines": 697
+				"lines": 703
 			},
 			{
 				"name": "world",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 187,
-		"lines": 23881,
-		"cases": 1722
+		"files": 190,
+		"lines": 24359,
+		"cases": 1767
 	},
 	"tools": {
 		"files": 35,
@@ -123,8 +123,8 @@
 	},
 	"roadmap": {
 		"items": 293,
-		"completed": 274,
-		"open": 19,
+		"completed": 276,
+		"open": 17,
 		"percent": 94
 	},
 	"api": {
@@ -133,9 +133,9 @@
 	"bundle": {
 		"globalRaw": 941520,
 		"globalGzip": 279972,
-		"distRaw": 2838880
+		"distRaw": 2869210
 	},
 	"quality": {
-		"testToSourceRatio": 0.7
+		"testToSourceRatio": 0.6
 	}
 }

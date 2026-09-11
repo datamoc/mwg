@@ -9,6 +9,11 @@ the public API may still change between minor versions.
 
 ### Added
 
+- `MultiTurnBeam` fronts, `blocker`, `onCell` and saved shape identity (item 278): a beam is now a
+  sequence of per-turn fronts rather than one captured cell per turn, so a game-supplied
+  `fronts(previous, turn)` expresses a cone, burst, fork or moving front. `BeamBlocker` replaces
+  the implicit blocker flags with one policy, `BeamStep.cells` reports every reached cell, and a
+  save carries the shape name so `fromJSON` refuses a mismatched shape; pre-fronts saves still load.
 - `two-d/render/PaletteRemap.ts`: `remapPixels`/`paletteRangeMapping`/`recolorTexture` (item
   256), a nearest-colour palette remap for team-colour-by-range - `paletteRangeMapping` places a
   reference palette's own lightest-to-darkest order along a `min -> mid -> max` gradient,

@@ -4,24 +4,24 @@ Generated for **mwg 0.7.6** on 2026-09-11.
 
 | Area | Statistics |
 | --- | ---: |
-| Source | 253 TypeScript files, 36,738 lines, 15 modules |
-| Tests | 187 files, 1,722 test cases, 23,881 lines |
+| Source | 256 TypeScript files, 37,830 lines, 15 modules |
+| Tests | 190 files, 1,767 test cases, 24,359 lines |
 | Tools | 35 files, 6,335 lines |
 | Examples | 22 runnable examples |
-| Roadmap | 274/293 items complete, 19 open |
+| Roadmap | 276/293 items complete, 17 open |
 | API | 0 declaration files |
 | Bundle | 919.5 kB raw, 273.4 kB gzip |
-| Published dist | 2772.3 kB excluding source maps |
-| Test-to-source ratio | 0.7x by line count |
+| Published dist | 2802.0 kB excluding source maps |
+| Test-to-source ratio | 0.6x by line count |
 
 ## Source modules
 
 | Module | Files | Lines |
 | --- | ---: | ---: |
-| two-d | 62 | 10,670 |
-| core | 41 | 5,003 |
+| two-d | 64 | 11,554 |
+| core | 42 | 5,122 |
 | mwl | 20 | 4,217 |
-| roguelike | 22 | 3,340 |
+| roguelike | 22 | 3,423 |
 | board | 8 | 2,683 |
 | actors | 24 | 2,399 |
 | i18n | 10 | 1,835 |
@@ -29,7 +29,7 @@ Generated for **mwg 0.7.6** on 2026-09-11.
 | audio | 9 | 987 |
 | ai | 4 | 856 |
 | three-d | 9 | 756 |
-| simulation | 8 | 697 |
+| simulation | 8 | 703 |
 | world | 7 | 603 |
 | battle | 10 | 555 |
 | assets | 6 | 492 |

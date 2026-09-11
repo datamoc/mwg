@@ -64,7 +64,13 @@ export { MultiStageAbility } from './MultiStageAbility.ts';
 export type { AbilityStage } from './MultiStageAbility.ts';
 
 export { MultiTurnBeam } from './MultiTurnBeam.ts';
-export type { BeamDamageContext, BeamStep, MultiTurnBeamOptions, MultiTurnBeamSave } from './MultiTurnBeam.ts';
+export type {
+	BeamBlocker,
+	BeamDamageContext,
+	BeamStep,
+	MultiTurnBeamOptions,
+	MultiTurnBeamSave,
+} from './MultiTurnBeam.ts';
 
 export { candidateCells, cellsNear, selectDistinctCells } from './Placement.ts';
 export type { PlacementFilter, PlacementResult, PlacementTraceEntry } from './Placement.ts';

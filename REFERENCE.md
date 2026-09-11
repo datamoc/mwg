@@ -640,8 +640,13 @@ the dungeon-crawl half of the capability spec.
   stages (windup/active/recovery) once started.
 - `Minimap`/`minimapCellCenter` - exploration minimap rendering and overlay coordinates for
   square and odd-q hex maps.
-- `MultiTurnBeam` - a deterministic one-cell-per-turn beam with opaque or dynamic blockers,
-  live target lookup, game-owned damage application, cancellation and save/restore.
+- `MultiTurnBeam` - a deterministic one-front-per-turn beam. The default shape is a straight line;
+  `fronts` opts into a per-turn front resolver (cone, burst, fork, moving front), `blocker` is the
+  explicit terrain/`none`/custom policy with `isBlocked` as an extra game rule, `onCell` sees every
+  reached cell, and a save carries the shape name so a reload resumes the same one. Live target
+  lookup, game-owned damage application, cancellation and save/restore as before.
+- `BeamBlocker`/`BeamStep`/`MultiTurnBeamSave` - the blocker policy, one turn's reached cells and
+  damage, and the serialisable front list with its shape identity.
 
 ## `rpg`
 

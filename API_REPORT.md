@@ -5301,12 +5301,16 @@ build instead.
 
     export declare class MultiTurnBeam<T = unknown> {
         private options;
-        private path;
+        private fronts;
         private index;
         private state;
+        private shape;
         constructor(options: MultiTurnBeamOptions<T>);
         get active(): boolean;
         get done(): boolean;
+
+        get beamShape(): string;
+
         get currentPath(): readonly Step[];
         start(): boolean;
 
@@ -5314,6 +5318,8 @@ build instead.
         cancel(): void;
         toJSON(): MultiTurnBeamSave;
         static fromJSON<T>(options: Omit<MultiTurnBeamOptions<T>, 'from' | 'target'>, data: MultiTurnBeamSave): MultiTurnBeam<T>;
+        private blocked;
+        private inactiveStep;
     }
 
 ### `neighbourOffsets` (function)
