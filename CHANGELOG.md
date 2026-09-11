@@ -25,6 +25,11 @@ the public API may still change between minor versions.
   `Animation.frameAt`/`frameIndexAt` are the rule, the sprite advances on its own elapsed time
   rather than a leftover timer, and a frame's offset is reported through `AnimatedSprite.frameOffset`
   for the caller to add where it already positions the sprite.
+- `FactionFog.share(factions)` (item 268): factions put on one map, what is lit now and the shroud
+  they remember alike, which is what Wesnoth's `share_vision` means. Nothing shares until asked,
+  growing a group widens it rather than replacing it, and a share declared after a `sync` still
+  counts because the group is read when a cell is asked about. `sees(side)` follows it, so a side's
+  score view reads the team's eyes.
 
 ### Fixed
 

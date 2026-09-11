@@ -413,7 +413,9 @@ borrowed from any licensed game.
   `tacticalAttack`/`endTacticalTurn` - squad tactics: action points, cover, overwatch, and
   zone of control baked into `tacticalMoves`/move cost.
 - `FactionFog`/`VisionCell` - fog of war as a per-faction union of every controlled unit's
-  own vision, with explored memory retained.
+  own vision, with explored memory retained. `share` puts factions on one map, sight and memory
+  alike, which is Wesnoth's `share_vision`; nothing shares until asked. `sees` hands a side's sight
+  out as a predicate for anything that asks what it can see.
 - **army** (`Army.ts`): `startingArmy`/`recruit`/`recall`/`bankUnit`/`armyIncome`/
   `applyUpkeep` - recruiting/recalling units against a currency total, per-turn income and
   upkeep, no specific rate baked in.

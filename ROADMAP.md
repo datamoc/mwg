@@ -3448,8 +3448,13 @@ it.
 267. [Medium] Turns as Wesnoth counts them (Ne correspond pas). `simulation/Turns.ts` is a cost
      scheduler and `world/TurnClock`/`EnvironmentClock` are generic day phases; there is no
      side/round/schedule model and no per-hex `lawful_bonus`.
-268. [High] Shared team vision (Ne correspond pas). `FactionFog` (`src/board/FogOfWar.ts`) is
-     per-faction with no union of allies' vision, which is what `share_vision` means.
+268. ~~[High] Shared team vision (Ne correspond pas). `FactionFog` (`src/board/FogOfWar.ts`) is
+     per-faction with no union of allies' vision, which is what `share_vision` means.~~ Landed:
+     `FactionFog.share(factions)` puts factions on one map, for what is lit now and for the shroud
+     they remember, and calling it again widens the group rather than replacing it. Nothing shares
+     until asked, and because the group is read when a cell is queried rather than when it is
+     synced, a share declared after a `sync` still counts. `sees(side)` follows a share, so the
+     score views of 276 read the team's eyes with no change of their own.
 269. [Medium] AI as Wesnoth builds it (Absent). The framework's AI is alpha-beta search
      (`src/ai/search.ts`) plus optional Lua and a JSON action protocol; Wesnoth's is heuristic:
      candidate actions, aspects and stages, with `goals`, `keep_away` and `recruitment_pattern`,

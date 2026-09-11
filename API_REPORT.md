@@ -3262,7 +3262,11 @@ build instead.
         readonly height: number;
         private visible;
         private explored;
+
+        private readonly shared;
         constructor(width: number, height: number);
+
+        share(factions: readonly string[]): void;
         sync(faction: string, sources: readonly VisionCell[], cells: (source: VisionCell) => Iterable<VisionCell>): void;
 
         reveal(faction: string, cells: Iterable<VisionCell>): void;
@@ -3272,6 +3276,10 @@ build instead.
         isExplored(faction: string, x: number, y: number): boolean;
         visibleCells(faction: string): readonly number[];
         exploredCells(faction: string): readonly number[];
+
+        private seenBy;
+
+        private cellsSeenBy;
         private inside;
         private index;
     }
