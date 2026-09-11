@@ -28,19 +28,17 @@ where those live.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Priority order among what's still open:** items 205-210, all opened by port work
-against real game data. 206 and 209 come first (they remove hand-written data plumbing and make
-extraction regressions visible in CI), then 208 and 205 (the formula subset covers most content
-conditions and values), then 207, then 210, which stays parked until a game must run existing Lua
-content unmodified. Everything numbered below 205
-has shipped, including the
-former priority cluster (28, 30, 41, 45), the verification and accessibility tail (192-197), the
-SVG and benchmark follow-up (198) and the reduced-motion cluster (199-202). Numbers are never
-reassigned once given - the list is an append-only history, including for what is not done yet -
-so priority order lives in prose, rather than in the list's own sequence. What remains before 1.0
-is recorded in the [1.0 exit checklist](#10-exit-checklist) at the end of this file; the few
-deliberate non-decisions (which reference title, if any, a future genre pick should study) are
-parked in [Parked decisions](#parked-decisions) rather than left as phantom open items.
+**Priority order among what's still open:** the Wesnoth port's gaps, items 247 and up, added
+2026-09-11 after that port's own analysis, with the structural blockers first (247, 248, 254,
+255, 257, 258, 261, 262, 266, 268). Everything else numbered has shipped: the data-extraction
+cluster 205-213 (whose items say what landed), the former priority cluster (28, 30, 41, 45), the
+verification and accessibility tail (192-197), the SVG and benchmark follow-up (198) and the
+reduced-motion cluster (199-202). Numbers are never reassigned once given - the list is an
+append-only history, including for what is not done yet - so priority order lives in prose rather
+than in the list's own sequence. What remains before 1.0 is recorded in the [1.0 exit
+checklist](#10-exit-checklist) at the end of this file, and the deliberate non-decisions (which
+reference title, if any, a future genre pick should study) in
+[Parked decisions](#parked-decisions) rather than left as phantom open items.
 
 17. ~~`mwg/render` + `mwg/roguelike` - hexagonal tile maps, and FOV/pathfinding over a hex
     grid~~ - flat-top, matching Wesnoth. `Level` and `TileMap` both gained a `shape` option
@@ -3340,6 +3338,118 @@ The following remain responsibilities of the Wesnoth adapter: combat, terrain an
 exact WML filter semantics; recruitment, recall and Wesnoth carry-over; Wesnoth-only tags;
 Lua compatibility; and Wesnoth campaign data.
 
+### Wesnoth port gaps
+
+Opened by the Wesnoth port's own gap analysis (2026-09-11), read from this side: `mwl`, `two-d`,
+`ui`, `core`, `ai` and `simulation` against what a faithful Wesnoth port needs. Each item says
+whether the capability is missing outright (Absent) or present in a shape that does not fit (Ne
+correspond pas), because that decides whether a port extends or builds. The structural blockers
+the analysis names are 247, 248, 254, 255, 257, 258, 261, 262, 266 and 268.
+
+Two of these sit against the paragraph above, which lists Wesnoth campaign data and carry-over as
+adapter responsibilities. That paragraph stands, and the data still stays the adapter's: what the
+analysis asks the framework for is the shape (the fields, the end-of-level semantics, the save)
+so that a port is not hand-rolling a campaign sequencer `simulation/Campaign.ts` already
+half-provides.
+
+The analysis also names what is **not** a gap, and that is worth keeping: dialogue
+(`DialogueStage`/`StageScript`), the minimap, fog (`FactionFog`), saves (`SaveSystem`), rebinding
+(`RebindScreen`), `MessageBox`, `Tooltip`, `Toast`, the base widgets, `TileMap`'s hex shape with
+chunks and `setCellColor`, `LayeredSprite`, `StatusVisuals`, `NinePatch`, `Bar`, `IconGrid`,
+`StatsScreen`, `HelpScreen`, `Camera`, `Generator`, `parseTerrain` and the `MwlRuntime` hooks all
+exist already. Several gaps felt on the port side are non-reuse of `mwg` rather than absence from
+it.
+
+247. [High] MWL campaign chaining (Absent). `MwlCampaignDefinition` (`src/mwl/content.ts`) carries
+     `startScene`, a scene/RPG model, and the `[campaign]` schema (`src/mwl/schema.ts`) reads only
+     `id`/`name`/`title`/`description`/`start_scene`. A Wesnoth campaign needs `first_scenario`,
+     per-scenario `next_scenario`, and the scenario list itself. `simulation/Campaign.ts` already
+     models level order, `next` and a snapshot, so the work is pointing `[campaign]` at that
+     sequencer, not inventing one.
+248. [High] `[endlevel]` and carry-over (Absent). `MwlCommand` (`src/mwl/runtime.ts`) is
+     `set_variable`/`modify_gold`/`move`/`spawn`/`kill`/`attack`/`end_turn`/`win`/`lose`, and
+     `MwlWorld.status` is `playing | won | lost`, so everything stops at the current scenario.
+     Missing: `result` victory/defeat, `bonus`, `carryover_percentage`, gold and unit carry-over
+     between scenarios, and the recall list.
+249. [Medium] One save for a whole campaign (Absent). `SaveSystem<T>` (`src/core/Save.ts`) is
+     per-system (slots, meta, list, delete) and `mwl/persistence.ts` serializes only `MwlWorld`,
+     so nothing saves campaign progress, the world and the simulation state together.
+250. [Medium] WML action vocabulary in `[event]` (Ne correspond pas). MWL's `[event]` set is
+     RPG-shaped (`while`/`foreach`/`switch`/`command`/`say`/`dialogue`/`move`/`attack`/`spawn`/
+     `kill`/`gold`/`set_variable`/`if`/`else`/`message`/`teleport`/`end_turn`/`win`/`lose`/`hook`,
+     `src/mwl/schema.ts`). Missing the WML ones: `store_unit`, `unstore_unit`, `modify_unit`,
+     `heal_unit`, `recall`, `endlevel`, `story`, `set_terrain`, `capture_village`, `clear_shroud`,
+     `fire_event`, `role`, and scenario-level `[object]`/`[item]`.
+251. [Medium] `[kill]` as a filter (Ne correspond pas). `killUnit` throws `MWL unit is not alive`
+     when nothing matches, where WML's `[kill]` is a no-op on an empty match. A content error and
+     an empty filter are different things and the runtime cannot tell them apart today.
+252. [Medium] `[side]` attribute surface (Ne correspond pas). `[side]` reads
+     `id`/`controller`/`gold`/`income`/`income_base`/`income_per_village`/`leader`/`team`/
+     `recruit`/`color`, and `MwlWorld.sides` keeps gold/income/leader/controller/recruit. Missing
+     `share_vision`, `fog`, `shroud`, `team_name`, `user_team_name`, `flag`, `village_gold`,
+     `heal`, `hidden`, and per-side `defeat`/`victory` conditions.
+253. [Medium] Turn limit as a native end condition (Absent). "Time over" as a scenario predicate
+     has no framework home; the port had to add `predicate:turn_limit` itself. (`[objectives]`
+     with a `condition=hook` does exist.)
+254. [High] Per-frame animation timing (Absent). `AnimatedSprite`/`ActorAnimator`
+     (`src/two-d/render/`) run at a fixed fps (`frameDuration = 1/fps`). Wesnoth needs a duration
+     per frame (`image:120,80,...`), `start_time`, per-frame x/y offsets, and `[missile_frame]`.
+255. [High] Image modifiers beyond the four implemented (Ne correspond pas).
+     `applyImageModifiers` handles FL/SCALE/GS/CS and `croppedTexture` handles CROP; ~BLIT, ~RC,
+     ~CHAN, ~PAL, ~MASK, ~BLEND, ~O, ~R/~G/~B and ~ROTATE are missing. ~RC and ~BLIT are the two
+     named as blockers, because team colours and recoloured art depend on them.
+256. [Medium] Team colour by palette remap (Ne correspond pas). Team colour is
+     `TintedSprite`/`registerColorTransform` (multiply plus add), not a remap of the palette range
+     a `team-colors.cfg` defines.
+257. [High] `[terrain_graphics]` (Ne correspond pas). `Autotile` (blob shapes) and `TileMap` (one
+     sprite per cell per layer, hex included) exist, but not the tile-rule model: flags,
+     rotations, multi-hex `[tile]`, and an image per neighbour combination. A 72px source sprite
+     that overlaps into neighbouring hexes cannot be expressed in a one-sprite-per-cell grid.
+258. [High] Typographic markup in text (Ne correspond pas). Text is markdown (`RichLabel`,
+     `**bold**`) where Wesnoth content is written with `<b>`, `<span color>`, `<img>` and `$var`.
+259. [Medium] Hex projection options (Ne correspond pas). `src/core/Hex.ts` fixes flat-top odd-q
+     with no orientation or offset-parity option - it says so itself about pointy-top - and
+     `TileMap`/`TiledMap` refuse hexagonal orientation, so a Wesnoth map cannot be projected
+     exactly.
+260. [Medium] Halos (Absent). `[halo]`/`[halo_frame]` have no equivalent; floating labels do
+     (`FloatingTextStack`).
+261. [High] Missing widgets (Absent). No Slider, Checkbox/Toggle, Dropdown/OptionButton,
+     TextInput/TextArea, Table/data grid, collapsible TreeView, Spinner or ScrollBox. Present:
+     Button, Label, RichLabel, ListView, IconGrid, Bar, Window, WindowStack, MessageBox,
+     NinePatch, Tooltip, Toast.
+262. [High] Text input (Absent). `src/core/Input.ts` offers named actions and a raw `onKey`; there
+     is no `onText` and no composition event, so a free text field cannot be built.
+263. [Medium] Data-driven shell layout and skins (Ne correspond pas). GUI2's `data/gui/*.cfg`,
+     anchors and grids have no counterpart; the theme is global (`theme()`/`setTheme`) with one
+     padding, and there are no per-widget or per-state skins.
+264. [Medium] Story screens (Absent). Wesnoth's storyscreen (backdrop, title, text, music) has no
+     equivalent: `DialogueStage`/`StageScript` is a visual-novel model.
+265. [Medium] Battle UI (Absent). The attack dialog with an animated damage preview, the unit
+     selector, and whiteboard/undo are all missing.
+266. [High] Wesnoth-compatible RNG (Ne correspond pas). `core/Random.ts` is its own generator
+     (splitmix32/xoshiro, `getState()` in four words), not `mt_rng`/`random_synced`, and it has no
+     per-entity or per-usage streams, so a Wesnoth-compatible seed or replay is out of reach.
+267. [Medium] Turns as Wesnoth counts them (Ne correspond pas). `simulation/Turns.ts` is a cost
+     scheduler and `world/TurnClock`/`EnvironmentClock` are generic day phases; there is no
+     side/round/schedule model and no per-hex `lawful_bonus`.
+268. [High] Shared team vision (Ne correspond pas). `FactionFog` (`src/board/FogOfWar.ts`) is
+     per-faction with no union of allies' vision, which is what `share_vision` means.
+269. [Medium] AI as Wesnoth builds it (Absent). The framework's AI is alpha-beta search
+     (`src/ai/search.ts`) plus optional Lua and a JSON action protocol; Wesnoth's is heuristic:
+     candidate actions, aspects and stages, with `goals`, `keep_away` and `recruitment_pattern`,
+     plus native difficulty levels. A Lua VM is already available (`src/mwl/fengari.ts`,
+     `src/mwl/scripts.ts`, `src/ai/lua.ts`), but not a `wesnoth.*` API.
+270. [Medium] gettext i18n (Ne correspond pas). i18n is Fluent (`parseFTL`, `src/i18n/Fluent.ts`),
+     not `.po` files and gettext domains.
+271. [Medium] Positional audio (Ne correspond pas). `Sound`/`Music`/`Orchestrator`/`Synth`/`Midi`
+     are the framework's own engine; there is no `[sound]`/`[music]`/`sound_source` model with
+     listeners at a position.
+272. [Medium] Replays, undo, and a server (Absent). No replay or action journal and no
+     out-of-sync detection, no undo, and no multiplayer server: a `LockstepClient` over WebSocket
+     exists, its server side does not.
+273. [Medium] Achievements and statistics (Absent). `PlayerStats`/`RunHistory`/`StatsScreen` are
+     generic; Wesnoth's achievement and statistics model has no equivalent.
+
 ### Parked decisions
 
 Not open work, and not forgotten: these are decisions this project has deliberately
@@ -3358,8 +3468,10 @@ standing intentions.
 
 ### 1.0 exit checklist
 
-The definition of done for 1.0. Each line is a check to run, not a feature to build;
-every numbered capability in the list above has already shipped.
+The definition of done for 1.0. Each line is a check to run, not a feature to build. The numbered
+list above is shipped except for the Wesnoth-port cluster (247 and up), which is open work for
+that port rather than a gate on 1.0: the framework's 1.0 is what the ports build against, and
+both of them being complete is the line below that says so.
 
 - [x] `npm run check`, `npm test`, `npm run build`, and `npm run audit` are all green on
       the release commit. (2026-09-11: green on the 0.7.6 release commit `98c64df`, whose own CI
