@@ -5,13 +5,13 @@
 	"releaseDate": "2026-09-11",
 	"source": {
 		"files": 259,
-		"lines": 38774,
+		"lines": 38864,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 66,
-				"lines": 12081
+				"lines": 12171
 			},
 			{
 				"name": "core",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 197,
-		"lines": 25344,
-		"cases": 1844
+		"files": 198,
+		"lines": 25541,
+		"cases": 1857
 	},
 	"tools": {
 		"files": 35,
@@ -123,9 +123,9 @@
 	},
 	"roadmap": {
 		"items": 293,
-		"completed": 285,
-		"open": 8,
-		"percent": 97
+		"completed": 286,
+		"open": 7,
+		"percent": 98
 	},
 	"api": {
 		"declarationFiles": 0

@@ -316,7 +316,22 @@ build instead.
         private shakeY;
 
         private bounds;
+
+        readonly stepsPerTurn: number;
+        private step;
         constructor(options?: CameraOptions);
+
+        get rotationSteps(): number;
+
+        get rotation(): number;
+
+        get uprightRotation(): number;
+
+        setRotationStep(step: number): void;
+
+        rotate(delta?: number): void;
+
+        private get spin();
         get zoom(): number;
         set zoom(value: number);
 
@@ -6137,7 +6152,22 @@ build instead.
         private shakeY;
 
         private bounds;
+
+        readonly stepsPerTurn: number;
+        private step;
         constructor(options?: CameraOptions);
+
+        get rotationSteps(): number;
+
+        get rotation(): number;
+
+        get uprightRotation(): number;
+
+        setRotationStep(step: number): void;
+
+        rotate(delta?: number): void;
+
+        private get spin();
         get zoom(): number;
         set zoom(value: number);
 
@@ -7680,7 +7710,22 @@ build instead.
         private shakeY;
 
         private bounds;
+
+        readonly stepsPerTurn: number;
+        private step;
         constructor(options?: CameraOptions);
+
+        get rotationSteps(): number;
+
+        get rotation(): number;
+
+        get uprightRotation(): number;
+
+        setRotationStep(step: number): void;
+
+        rotate(delta?: number): void;
+
+        private get spin();
         get zoom(): number;
         set zoom(value: number);
 

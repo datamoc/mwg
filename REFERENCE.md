@@ -258,7 +258,11 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   every frame would undo it every frame.
 - `SpriteSheet` - a grid-sliced sprite sheet.
 - `Camera`/`createCamera`/`snapZoom` - world-to-screen camera; `snapZoom` keeps tile edges
-  pixel-aligned at a fractional zoom.
+  pixel-aligned at a fractional zoom. Fixed-angle view rotation (item 285): `grid` picks four
+  quarter turns (square, the default) or six 60-degree steps (hex), `setRotationStep`/`rotate`
+  move through them, `toScreen`/`toWorld` invert the turn so a click still lands on the cell aimed
+  at, `view` reports the box around the turned viewport for culling, and `uprightRotation` is the
+  angle that keeps a label drawn into the world upright.
 - `Viewport`/`splitScreenHalves` - a camera scoped to one screen region, for split-screen.
 - `createColorBlindnessFilter`/`COLOR_BLINDNESS_MATRICES` - accessibility colour filters.
 - `Minimap`/`newlyRevealed`/`minimapCellCenter`/`MinimapMarker` - bakes an explored-cell set

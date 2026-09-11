@@ -3940,7 +3940,7 @@ worth closing and a shape worth copying - a camera that orbits a target under li
 knob on every tile - and it means 285 and 286 have to hold for the hex and diamond shapes too, not
 only for the square grid they are easiest to reason about.
 
-285. [Medium] Fixed-angle map rotation. Turn the view in whole steps, which is what a strategy game
+285. ~~[Medium] Fixed-angle map rotation. Turn the view in whole steps, which is what a strategy game
      wants for "look at the map from another side" without a free camera. **The step depends on the
      grid, and hex is not a quarter turn**: a hex lattice comes back onto itself every **60 degrees**,
      so there are **six** positions in a full turn (the hexagon's own 6-fold symmetry), where a
@@ -3959,7 +3959,19 @@ only for the square grid they are easiest to reason about.
      steps the player has turned. And because the projection options landed in `Hex.ts` (259), the
      step belongs next to them - a rotated hex view is a projection change, not a sprite rotation,
      and it has to be true for pointy-top as well as flat-top, since the Wesnoth-shaped map is
-     pointy-top.
+     pointy-top.~~ Landed in `Camera`, as the turn on the layer `apply()` already renders: `grid`
+     sets the step count (four quarter turns for a square grid, six 60-degree steps for hex), and
+     `setRotationStep`/`rotate` move through them, wrapping a full turn. `toScreen`/`toWorld` now
+     rotate by the step and invert that rotation, so a click at any step lands on the cell aimed
+     at; `view` returns the box around the four turned viewport corners so `TileMap` culling stays
+     correct (and is exactly the old rectangle at step 0, where the transform is unchanged);
+     `uprightRotation` is the counter-angle a label, health bar or damage number drawn into the
+     world applies so it does not go upside down. The hex re-origining detail resolved by *not*
+     re-projecting: the same cell keeps its own pixel through the step and the layer turns about
+     the view centre, so odd-q parity never changes and no addressing has to move, which is why the
+     step count is the only grid-dependent thing here. Eleven tests in
+     `tests/camera-rotation.test.ts`, plus the existing camera tests unchanged. Free rotation
+     (item 286, arbitrary angles and animation between them) stays separate.
 286. [Medium] Free map rotation. Any angle, including smooth animation between angles (and for hex,
      animation *between* the six exact positions above rather than only landing on them). Beyond
      285's inverse mapping, this is where the real costs are, and each is a decision rather than a

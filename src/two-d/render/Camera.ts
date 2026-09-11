@@ -34,6 +34,14 @@ export interface CameraOptions {
 	zoom?: number;
 
 	/**
+	 * The grid whose symmetry `rotate`/`setRotationStep` step in: `'square'` (the default)
+	 * turns in four quarter turns, `'hex'` in six 60-degree steps, because a hex lattice comes
+	 * back onto itself every 60 degrees. Only the step count depends on this; the layer and its
+	 * inverse mapping are the same shape either way.
+	 */
+	grid?: 'square' | 'hex';
+
+	/**
 	 * How much of the screen the target may drift across before the camera follows, 0 to 1.
 	 *
 	 * 0 pins the target to the centre, which is precise but makes the world lurch on every
@@ -109,11 +117,55 @@ export class Camera {
 	/** clamps the view to these world bounds when set, so the map's edge is never crossed */
 	private bounds: { minX: number; minY: number; maxX: number; maxY: number } | null = null;
 
+	/** how many whole-angle positions a full turn has: 4 for a square grid, 6 for a hex one */
+	readonly stepsPerTurn: number;
+	private step = 0;
+
 	constructor(options: CameraOptions = {}) {
+		if (options.grid !== undefined && options.grid !== 'square' && options.grid !== 'hex')
+			throw new Error(`camera grid must be "square" or "hex", not "${options.grid}"`);
+		this.stepsPerTurn = options.grid === 'hex' ? 6 : 4;
 		this.deadzone = options.deadzone ?? 0;
 		this.pixelPerfectTileSize = options.pixelPerfectTileSize;
 		this._zoom = 1;
 		this.zoom = options.zoom ?? 1;
+	}
+
+	/** the rotation step this view is turned to, always in `0 .. stepsPerTurn - 1` */
+	get rotationSteps(): number {
+		return this.step;
+	}
+
+	/** the view's rotation, in radians, positive turning the world counter-clockwise */
+	get rotation(): number {
+		return (this.step / this.stepsPerTurn) * Math.PI * 2;
+	}
+
+	/**
+	 * The angle that cancels `rotation`: draw a label, health bar or damage number into `world`
+	 * with this and it stays upright however the view is turned. A half turn would otherwise put
+	 * every label upside down.
+	 */
+	get uprightRotation(): number {
+		return -this.rotation;
+	}
+
+	/** turns the view to a whole step, wrapping around a full turn */
+	setRotationStep(step: number): void {
+		if (!Number.isInteger(step)) throw new Error('camera rotation step must be an integer');
+		this.step = ((step % this.stepsPerTurn) + this.stepsPerTurn) % this.stepsPerTurn;
+		this.apply();
+	}
+
+	/** turns the view by whole steps; `rotate(1)` is the next position, `rotate(-1)` the last */
+	rotate(delta = 1): void {
+		this.setRotationStep(this.step + delta);
+	}
+
+	/** cos/sin of the current rotation, the shared arithmetic `toScreen`/`toWorld`/`view` use */
+	private get spin(): { cos: number; sin: number } {
+		const angle = this.rotation;
+		return { cos: Math.cos(angle), sin: Math.sin(angle) };
 	}
 
 	get zoom(): number {
@@ -138,12 +190,31 @@ export class Camera {
 		this.screenY = screenY;
 	}
 
-	/** the visible rectangle, in world units: use it to cull */
+	/**
+	 * The visible region, in world units, as an axis-aligned box: use it to cull.
+	 *
+	 * With the view turned, the visible region is the viewport rectangle rotated in world space,
+	 * so this is the box around its four corners instead of the rectangle itself - over-inclusive
+	 * rather than clipping tiles that are actually on screen. Unturned, it is the rectangle, at
+	 * its exact numbers.
+	 */
 	get view(): { x: number; y: number; width: number; height: number } {
 		const width = this.viewWidth / this._zoom;
 		const height = this.viewHeight / this._zoom;
 		const { x: centreX, y: centreY } = this.clampedCentre(this.x, this.y);
-		return { x: centreX - width / 2, y: centreY - height / 2, width, height };
+		if (this.step === 0) return { x: centreX - width / 2, y: centreY - height / 2, width, height };
+
+		const corners = [
+			this.toWorld(this.screenX, this.screenY),
+			this.toWorld(this.screenX + this.viewWidth, this.screenY),
+			this.toWorld(this.screenX + this.viewWidth, this.screenY + this.viewHeight),
+			this.toWorld(this.screenX, this.screenY + this.viewHeight),
+		];
+		const xs = corners.map((corner) => corner.x);
+		const ys = corners.map((corner) => corner.y);
+		const minX = Math.min(...xs);
+		const minY = Math.min(...ys);
+		return { x: minX, y: minY, width: Math.max(...xs) - minX, height: Math.max(...ys) - minY };
 	}
 
 	/** stops the camera leaving the map; pass null to allow it again */
@@ -224,25 +295,31 @@ export class Camera {
 		this.apply();
 	}
 
-	/** world point to screen pixels */
+	/** world point to screen pixels, through the current rotation */
 	toScreen(x: number, y: number): { x: number; y: number } {
 		//must agree with apply()'s clamped centre (shake included), or a point converted
 		//with this and placed on screen lands somewhere other than where the camera
 		//actually drew it - exactly what happens near a bound, or on an axis the map is
 		//narrower than the view
 		const { x: centreX, y: centreY } = this.clampedCentre(this.x + this.shakeX, this.y + this.shakeY);
+		const { cos, sin } = this.spin;
+		const dx = x - centreX;
+		const dy = y - centreY;
 		return {
-			x: (x - centreX) * this._zoom + this.screenX + this.viewWidth / 2,
-			y: (y - centreY) * this._zoom + this.screenY + this.viewHeight / 2,
+			x: (dx * cos - dy * sin) * this._zoom + this.screenX + this.viewWidth / 2,
+			y: (dx * sin + dy * cos) * this._zoom + this.screenY + this.viewHeight / 2,
 		};
 	}
 
-	/** screen pixels to world point, for turning a click into a tile */
+	/** screen pixels to world point, for turning a click into a tile; the inverse of `toScreen` */
 	toWorld(x: number, y: number): { x: number; y: number } {
 		const { x: centreX, y: centreY } = this.clampedCentre(this.x + this.shakeX, this.y + this.shakeY);
+		const { cos, sin } = this.spin;
+		const rx = (x - this.screenX - this.viewWidth / 2) / this._zoom;
+		const ry = (y - this.screenY - this.viewHeight / 2) / this._zoom;
 		return {
-			x: (x - this.screenX - this.viewWidth / 2) / this._zoom + centreX,
-			y: (y - this.screenY - this.viewHeight / 2) / this._zoom + centreY,
+			x: centreX + rx * cos + ry * sin,
+			y: centreY - rx * sin + ry * cos,
 		};
 	}
 
@@ -267,9 +344,22 @@ export class Camera {
 		const { x: centreX, y: centreY } = this.clampedCentre(this.x + this.shakeX, this.y + this.shakeY);
 
 		this.world.scale.set(this._zoom);
-		//rounding to whole screen pixels stops pixel art shimmering as the camera moves
-		this.world.x = Math.round(this.screenX + this.viewWidth / 2 - centreX * this._zoom);
-		this.world.y = Math.round(this.screenY + this.viewHeight / 2 - centreY * this._zoom);
+		if (this.step === 0) {
+			//unturned: rotate about the origin, the transform every existing camera had
+			this.world.rotation = 0;
+			this.world.pivot.set(0, 0);
+			//rounding to whole screen pixels stops pixel art shimmering as the camera moves
+			this.world.x = Math.round(this.screenX + this.viewWidth / 2 - centreX * this._zoom);
+			this.world.y = Math.round(this.screenY + this.viewHeight / 2 - centreY * this._zoom);
+			return;
+		}
+
+		//turned: pivot on the view centre so the layer turns about what the player is looking
+		//at, and the centre lands on the same screen point the unturned camera would use
+		this.world.rotation = this.rotation;
+		this.world.pivot.set(centreX, centreY);
+		this.world.x = Math.round(this.screenX + this.viewWidth / 2);
+		this.world.y = Math.round(this.screenY + this.viewHeight / 2);
 	}
 }
 

@@ -9,6 +9,10 @@ the public API may still change between minor versions.
 
 ### Added
 
+- Fixed-angle view rotation on `Camera` (item 285): `grid: 'square' | 'hex'` sets four quarter turns
+  or six 60-degree steps, `setRotationStep`/`rotate` move through them, `toScreen`/`toWorld` invert
+  the turn, `view` reports the box around the turned viewport for culling, and `uprightRotation`
+  keeps a label drawn into the world upright.
 - WML action vocabulary in `[event]` (item 250): `fire_event`, `store_unit`/`unstore_unit`/`recall`,
   `modify_unit`/`heal_unit`, `set_terrain`, `capture_village`, `clear_shroud`, and the scenario-level
   `[role]`/`[object]`/`[story]`, backed by `MwlWorld.villages`/`clearedShroud`/`roles`/`objects`/
