@@ -9,6 +9,9 @@ the public API may still change between minor versions.
 
 ### Added
 
+- `mwl.parseMapFile`/`MwlMapFile` (item 284): a Wesnoth-shaped `.map` loader. The `key=value`
+  header is split off and kept (keys not interpreted), and the comma-separated grid goes through
+  the same `parseTerrain` an inline `[map] terrain=` uses.
 - `actors.craft` category-shaped ingredients (item 289): `Ingredient` now accepts `id` as a string
   or a list, a `category` matched against the item definition's new `InventoryItem.category`
   (kind-level, so it stays out of saves), or a `matches(item)` predicate. `craft` allocates against

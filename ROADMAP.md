@@ -3578,7 +3578,7 @@ it.
      round-trip property over every cell of a grid in all four combinations. **What remains is the
      other half of the item, and it is its own work: 284** - `TileMap`/`TiledMap` still refuse a
      hexagonal orientation, which is the part that draws the map rather than projecting one cell.
-284. [Medium] Hexagonal and isometric maps, narrowed to what is actually missing. Corrected the day
+284. ~~[Medium] Hexagonal and isometric maps, narrowed to what is actually missing. Corrected the day
      it was written: `TileMap` already draws all four shapes - `shape: 'square' | 'hex' |
      'isometric' | 'staggered'` - importing `hexToPixel`/`pixelToHex` for the hex case, and item 18
      landed the diamond projections, so "accepts square grids only" was wrong about the renderer and
@@ -3586,7 +3586,13 @@ it.
      *asset* side and the file side: a hex or diamond cell whose art is bigger than the cell and
      overlaps its neighbours (a 72px Wesnoth source sprite) cannot be expressed in a
      one-sprite-per-cell grid, which is 257's `[terrain_graphics]`, and a Wesnoth `.map` has no
-     loader at all, since `rpg`'s map loading is Tiled-shaped.
+     loader at all, since `rpg`'s map loading is Tiled-shaped.~~ Both halves have now landed. The
+     asset half is item 257's `[terrain_graphics]`, and the file half is `mwl.parseMapFile`: it
+     splits a Wesnoth-shaped `.map`'s `key=value` header (`border_size`, `usage`, and whatever else
+     the file carries) from the comma-separated grid and hands the grid to the same `parseTerrain`
+     an inline `[map] terrain=` uses, so overlays (`Gg^Vh`) and `<side> <code>` starts behave
+     identically in both. The loader deliberately does not interpret the header keys, the same way
+     `[terrain_graphics]` rules stay content's business. Seven tests in `tests/map-file.test.ts`.
 260. ~~[Medium] Halos (Absent). `[halo]`/`[halo_frame]` have no equivalent; floating labels do
      (`FloatingTextStack`).~~ Landed as `Halo`: an `AnimatedSprite` that follows a target through
      `follow(x, y)`, applying its own `x`/`y` offset once rather than in every game that draws a

@@ -1,5 +1,7 @@
 export { MwlSyntaxError, isGettext, parse, parseValue, preprocess } from './grammar.ts';
 export type { MwlDiagnostic, MwlLocation, MwlNode, MwlPreprocessOptions } from './grammar.ts';
+export { parseMapFile } from './MapFile.ts';
+export type { MwlMapFile } from './MapFile.ts';
 export { coerceTableValue, parseTableColumns, schema01, validate } from './schema.ts';
 export type { MwlTableColumn, MwlTagSchema, MwlValueType } from './schema.ts';
 export {

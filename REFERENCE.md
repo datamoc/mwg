@@ -922,8 +922,12 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   `parseTableColumns`, `contentCatalog`, `createWorld`, `decodeSave`, `effectToModifier`,
   `emitHooksDeclaration`, `emitModule`, `encodeSave`, `evaluateExpression`, `execute`,
   `extractCatalog`, `hookTypes`, `inventoryItem`, `isGettext`, `itemDefinition`,
-  `parseExpression`, `parseHookReference`, `parseTerrain`, `parseValue`, `preprocess`,
+  `parseExpression`, `parseHookReference`, `parseMapFile`, `parseTerrain`, `parseValue`, `preprocess`,
   `schema01`, `validateCatalogNodes`, `validateHookReferences`, `loadContent`, and `validateWorld`.
+- `parseMapFile`/`MwlMapFile` (item 284) - reads a Wesnoth-shaped `.map`: the `key=value` header
+  is split off and kept, and the comma-separated rows go through the same `parseTerrain` an inline
+  `[map] terrain=` uses, overlays (`Gg^Vh`) and `<side> <code>` starts included. Header keys are
+  not interpreted here, the same way `[terrain_graphics]` rules stay content's business.
 - `MwlTraceEvent`/`MwlRuntimeOptions.onTrace` - opt-in lifecycle tracing for event claims,
   completions, variable writes and runtime errors. `MwlHookRegistry.predicate` lets an adapter
   register named, typed filter predicates without putting game-specific semantics in MWG.

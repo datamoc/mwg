@@ -4940,6 +4940,10 @@ build instead.
     export declare function parseHookReference(value: string): {
         type: HookType;
 
+### `parseMapFile` (function)
+
+    export declare function parseMapFile(text: string): MwlMapFile;
+
 ### `parseTableColumns` (function)
 
     export declare function parseTableColumns(value: string): MwlTableColumn[];
