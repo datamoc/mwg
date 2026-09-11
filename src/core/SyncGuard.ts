@@ -73,6 +73,9 @@ export function stateChecksum(value: unknown): number {
  * ```ts
  * import { SyncGuard, stateChecksum } from '@datamoc/mw_games/core';
  *
+ * const localState = { hp: 7 };
+ * const remoteState = { hp: 6 };
+ *
  * const guard = new SyncGuard();
  * guard.observe(12, stateChecksum(localState)); // true
  * guard.observe(12, stateChecksum(remoteState)); // false if the two peers disagree

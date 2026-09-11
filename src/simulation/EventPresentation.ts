@@ -52,13 +52,19 @@ export interface EventPresentationOptions<State, Command, Event, A extends Actor
  * ```ts
  * import { EventPresentation } from '@datamoc/mw_games/simulation';
  * import type { SimulationRuntime } from '@datamoc/mw_games/simulation';
+ * import type { Actor } from '@datamoc/mw_games/roguelike';
  *
- * declare const runtime: SimulationRuntime<{ hp: number }, 'attack' | 'counter', { amount: number }, { id: string }>;
+ * interface Fighter extends Actor {
+ *   id: string;
+ * }
+ *
+ * declare const runtime: SimulationRuntime<{ hp: number }, 'attack' | 'counter', { amount: number }, Fighter>;
  *
  * const presentation = new EventPresentation({
  *   runtime,
  *   play: (event) => 0.25 * event.amount, // a hit is a quarter second per point
- *   followUp: (outcome) => (outcome.events.length > 0 ? ['counter'] : []),
+ *   followUp: (outcome): readonly ('attack' | 'counter')[] =>
+ *     outcome.events.length > 0 ? ['counter'] : [],
  * });
  *
  * presentation.submit('attack'); // commits the attack and starts its animation
