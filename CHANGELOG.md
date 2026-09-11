@@ -37,6 +37,13 @@ the public API may still change between minor versions.
   `[endlevel]` will hook in. Malformed chains (no scenarios, one id twice, an unknown
   `first_scenario`) throw by name. The `[campaign]` schema now accepts `first_scenario`, and
   `contentCatalog` exposes each campaign's scenario links.
+- `[endlevel]` and carry-over (item 248): a scenario ends with `result=victory|defeat`, and what it
+  hands on is `endLevelCarryover` - `bonus` plus a share of the side's gold (`carryover_percentage`,
+  80% when unset, which is the reference's own default rather than an invented one), the units of
+  that side still standing as the recall list, and `next_scenario` for where the campaign goes (the
+  hook `campaignChain` already honours). `carryoverIntoScenario` is the other half of the rule: the
+  carried share is added to what the next scenario declares when `carryover_add` asks for it, and is
+  otherwise a floor under it. `MWL_DEFAULT_CARRYOVER_PERCENTAGE` names the default.
 
 ### Fixed
 

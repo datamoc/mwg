@@ -217,6 +217,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			'spawn',
 			'kill',
 			'gold',
+			'endlevel',
 			'set_variable',
 			'if',
 			'else',
@@ -326,6 +327,16 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	spawn: { attributes: { id: 'string', type: 'string', side: 'integer', x: 'integer', y: 'integer', hp: 'integer' } },
 	kill: { attributes: { unit: 'string', target: 'string' } },
 	gold: { attributes: { side: 'string', delta: 'integer', amount: 'integer' } },
+	endlevel: {
+		attributes: {
+			result: 'id',
+			side: 'string',
+			bonus: 'integer',
+			carryover_percentage: 'integer',
+			carryover_add: 'boolean',
+			next_scenario: 'id',
+		},
+	},
 	set_variable: { attributes: { name: 'id', target: 'id', value: 'string' } },
 	if: {
 		attributes: { test: 'string' },

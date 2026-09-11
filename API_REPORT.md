@@ -4355,6 +4355,10 @@ build instead.
     export declare function campaignChain<State extends StateValue, Result extends StateValue = StateValue>(definition: MwlCampaignDefinition, options: {
         readonly run: MwlScenarioRunner<State, Result>;
 
+### `carryoverIntoScenario` (function)
+
+    export declare function carryoverIntoScenario(carryover: MwlCarryover, declaredGold: number): number;
+
 ### `coerceTableValue` (function)
 
     export declare function coerceTableValue(raw: string, type: CsvColumnType, column: string, listDelimiter?: string, mapDelimiter?: string): unknown;
@@ -4423,6 +4427,10 @@ build instead.
 
     export declare function encodeSave(world: MwlWorld, options: MwlPersistenceOptions): string;
 
+### `endLevelCarryover` (function)
+
+    export declare function endLevelCarryover(world: MwlWorld, side: MwlSideRef | null, end: MwlEndLevel): MwlCarryover;
+
 ### `evaluateCondition` (function)
 
     export declare function evaluateCondition(source: string, context: MwlConditionContext, options?: MwlConditionOptions): boolean;
@@ -4458,6 +4466,10 @@ build instead.
 ### `loadContent` (function)
 
     export declare function loadContent(files: readonly MwlSourceFile[], options?: MwlCompileOptions): MwlContentLoadReport;
+
+### `MWL_DEFAULT_CARRYOVER_PERCENTAGE` (const)
+
+    export declare const MWL_DEFAULT_CARRYOVER_PERCENTAGE = 80;
 
 ### `MwlRuntime` (class)
 

@@ -3378,11 +3378,21 @@ it.
      tests in `tests/mwl-campaign.test.ts` go through the real parser into the real sequencer, and
      malformed chains throw by name (no scenarios, an id twice, a `first_scenario` nothing
      declares). Carrying gold and units from one scenario into the next is 248, still open.
-248. [High] `[endlevel]` and carry-over (Absent). `MwlCommand` (`src/mwl/runtime.ts`) is
+248. ~~[High] `[endlevel]` and carry-over (Absent). `MwlCommand` (`src/mwl/runtime.ts`) is
      `set_variable`/`modify_gold`/`move`/`spawn`/`kill`/`attack`/`end_turn`/`win`/`lose`, and
      `MwlWorld.status` is `playing | won | lost`, so everything stops at the current scenario.
      Missing: `result` victory/defeat, `bonus`, `carryover_percentage`, gold and unit carry-over
-     between scenarios, and the recall list.
+     between scenarios, and the recall list.~~ Landed: `[endlevel]` is a command in both paths (the
+     MWL tag and the `MwlCommand` union), it ends the scenario won or lost, and it records what is
+     handed on in `world.carryover`. The arithmetic is `endLevelCarryover`, checked against the
+     reference rather than remembered: a share of the side's gold (`carryover_percentage`, 80% when
+     unset, which is the engine's own default), plus `bonus`, plus that side's surviving units as
+     the recall list, plus `next_scenario` - which is the `next` hook 247 already honours, so a
+     campaign chains on without either item knowing about the other. `carryoverIntoScenario` is the
+     second half of the rule: added to the next scenario's declared gold when `carryover_add` asks
+     for it, a floor under it otherwise. `MWL_DEFAULT_CARRYOVER_PERCENTAGE` names the default. Eight
+     tests in `tests/mwl-carryover.test.ts`, half of them arithmetic and half through the real
+     runtime, and the schema now accepts `[endlevel]` and `first_scenario`.
 249. [Medium] One save for a whole campaign (Absent). `SaveSystem<T>` (`src/core/Save.ts`) is
      per-system (slots, meta, list, delete) and `mwl/persistence.ts` serializes only `MwlWorld`,
      so nothing saves campaign progress, the world and the simulation state together.
@@ -3522,6 +3532,18 @@ same day; the notes on each say what shipped.
      unions every source it is handed, so the union over a side's units was expressible all along,
      and what was missing was a predicate to hand over. The half that is genuinely absent is allies
      sharing one another's sight, which is 268 and stays open.
+
+### World-model cleanup
+
+Found while building carry-over (248), recorded rather than fixed in passing.
+
+277. [Low] One side identity in `MwlWorld`. A side is keyed by the `id` `[side]` declares in
+     `world.sides` and `world.gold`, while its units carry a *number* in `unit.side` (`[spawn]
+     side=1`), so "the units of side `1`" is a mapping between two identifiers rather than a lookup.
+     `MwlSideRef` in `src/mwl/carryover.ts` names the pair so carry-over can be honest about it, and
+     `endLevelSide` derives the number from the id, which is guesswork a named side (`id=rebels`)
+     cannot survive. One identity, string or number, would remove the guess; it touches the world
+     shape, the moveto filter and every consumer of `unit.side`, which is why it is its own item.
 
 ### Parked decisions
 

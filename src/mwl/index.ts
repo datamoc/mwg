@@ -54,6 +54,8 @@ export type {
 	MwlTraceEvent,
 	MwlWorld,
 } from './runtime.ts';
+export { carryoverIntoScenario, endLevelCarryover, MWL_DEFAULT_CARRYOVER_PERCENTAGE } from './carryover.ts';
+export type { MwlCarryover, MwlEndLevel, MwlSideRef } from './carryover.ts';
 export { campaignChain } from './campaign.ts';
 export type { MwlCampaignChain, MwlScenarioRunner } from './campaign.ts';
 export { contentCatalog } from './content.ts';

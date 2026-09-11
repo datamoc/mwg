@@ -12,7 +12,9 @@ import type {
 import { decodeSave, encodeSave, type MwlPersistenceOptions } from './persistence.ts';
 import { evaluateCondition } from './conditions.ts';
 import { evaluateExpression } from './expression.ts';
-import { integerAttribute, requiredAttribute } from './utils.ts';
+import { booleanAttribute, integerAttribute, numberAttribute, requiredAttribute } from './utils.ts';
+import { endLevelCarryover } from './carryover.ts';
+import type { MwlCarryover, MwlSideRef } from './carryover.ts';
 
 const required = requiredAttribute;
 const integer = (node: MwlCompiledNode, attribute: string, fallback: number): number =>
@@ -49,6 +51,8 @@ export interface MwlWorld {
 	gold: Record<string, number>;
 	turn: number;
 	status: 'playing' | 'won' | 'lost';
+	/** what `[endlevel]` decided this scenario hands to the next one, until it is applied */
+	carryover?: MwlCarryover;
 	/** the primary map, when the content declares one */
 	map?: MwlMap | null;
 	/** the current schedule entry, by id */
@@ -121,7 +125,17 @@ export type MwlCommand =
 	| { readonly name: 'attack'; readonly target: string; readonly amount: number }
 	| { readonly name: 'end_turn' }
 	| { readonly name: 'win' }
-	| { readonly name: 'lose' };
+	| { readonly name: 'lose' }
+	| {
+			readonly name: 'endlevel';
+			readonly result: 'victory' | 'defeat';
+			/** whose gold and units are carried; without it, the result is recorded and nothing moves */
+			readonly side?: MwlSideRef;
+			readonly bonus?: number;
+			readonly carryoverPercentage?: number;
+			readonly carryoverAdd?: boolean;
+			readonly nextScenario?: string | null;
+	  };
 
 export function createWorld(): MwlWorld {
 	return {
@@ -634,6 +648,18 @@ export class MwlRuntime {
 			case 'lose':
 				this.world.status = 'lost';
 				break;
+			case 'endlevel': {
+				const result = node.attributes.result === 'defeat' ? ('defeat' as const) : ('victory' as const);
+				this.world.status = result === 'defeat' ? 'lost' : 'won';
+				this.world.carryover = endLevelCarryover(this.world, endLevelSide(this.world, node.attributes.side), {
+					result,
+					bonus: integerAttribute(node, 'bonus'),
+					carryoverPercentage: numberAttribute(node, 'carryover_percentage'),
+					carryoverAdd: booleanAttribute(node, 'carryover_add'),
+					nextScenario: node.attributes.next_scenario ?? null,
+				});
+				break;
+			}
 			case 'if':
 				if (!this.nodeConditionMatches(node)) break;
 				for (const child of node.children) this.executeNode(child);
@@ -1020,7 +1046,26 @@ export function execute(world: MwlWorld, command: MwlCommand): void {
 		case 'lose':
 			world.status = 'lost';
 			break;
+		case 'endlevel':
+			world.status = command.result === 'defeat' ? 'lost' : 'won';
+			world.carryover = endLevelCarryover(world, command.side ?? null, command);
+			break;
 	}
+}
+
+/**
+ * Which side an `[endlevel]` carries: the one it names, or the human-controlled side when it names
+ * none. `null` when there is no such side, which is not an error - a scenario can end with nobody
+ * to carry.
+ */
+function endLevelSide(world: MwlWorld, named: string | undefined): MwlSideRef | null {
+	const id = named ?? Object.entries(world.sides).find(([, side]) => side.controller === 'human')?.[0];
+	if (!id || !(id in world.sides)) return null;
+
+	//units carry a side number while sides and gold carry its id, so the pair is named here rather
+	//than guessed at; unifying the two identities is roadmap item 277
+	const unitSide = Number(id);
+	return { id, unitSide: Number.isFinite(unitSide) ? unitSide : -1 };
 }
 
 function requireUnit(world: MwlWorld, id: string): { hp: number; x: number; y: number; alive: boolean } {

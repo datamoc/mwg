@@ -773,6 +773,12 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   chain ends the campaign. The order is content, the playing stays the game's (`run` is a callback),
   and a scenario that decides for itself - a runtime `[endlevel]` - keeps its decision. The
   `[campaign]` schema reads `first_scenario`, and the catalog exposes each campaign's `scenarios`.
+- `endLevelCarryover`/`carryoverIntoScenario`/`MWL_DEFAULT_CARRYOVER_PERCENTAGE` with `[endlevel]` -
+  a scenario's end as the reference models it: a share of the side's gold (80% by default), a bonus
+  on top, that side's surviving units as the recall list, and the next scenario. `result=victory`
+  ends it won, `result=defeat` lost, and the arithmetic is the same for both. `MwlSideRef` names the
+  two identities a side has today (`[side]`'s id for gold, its number for units), which is roadmap
+  item 277 rather than a guess made here.
 - `readAttributes` / `readChildren` - shared typed readers for compiled nodes. They coerce
   scalars and lists and return source-located diagnostics instead of silently guessing.
 - MWL tables use `[table] columns=name:type|...` with typed `[row]` attributes. The compiler
