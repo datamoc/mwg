@@ -19,6 +19,10 @@ the public API may still change between minor versions.
   validation with an optional `validate` hook, a `preview()` of the shape's cells and a
   `confirm()`/`cancel()` result carrying cells only, so damage, legality details and drawing stay
   with the game. Hex levels step by their own six neighbours and measure in hex distance.
+- `AudioListener`/`SoundSource`/`audioGain`/`audioPan`/`AudioFalloff` (item 271): positional
+  audio, renderer-free. A listener the game moves and turns, a `Sound` placed at a world point,
+  and the distance gain and stereo pan between them. `SoundSource.playFor(listener)` applies the
+  gain through `Sound.play`, which now takes an optional gain argument.
 - `ai.personalScoreView`/`ai.sideScoreView`/`ai.scoreWith`, over `ScoreSubject`/`ScoreView`/
   `ScorePersonality` (items 274-276): the numbers a mind needs when a search is the wrong tool.
   The game supplies what anything is worth, the framework assembles the view (own, allies and

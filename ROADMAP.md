@@ -3563,9 +3563,19 @@ it.
      `src/mwl/scripts.ts`, `src/ai/lua.ts`), but not a `wesnoth.*` API.
 270. [Medium] gettext i18n (Ne correspond pas). i18n is Fluent (`parseFTL`, `src/i18n/Fluent.ts`),
      not `.po` files and gettext domains.
-271. [Medium] Positional audio (Ne correspond pas). `Sound`/`Music`/`Orchestrator`/`Synth`/`Midi`
+271. ~~[Medium] Positional audio (Ne correspond pas). `Sound`/`Music`/`Orchestrator`/`Synth`/`Midi`
      are the framework's own engine; there is no `[sound]`/`[music]`/`sound_source` model with
-     listeners at a position.
+     listeners at a position.~~ Landed as `AudioListener`/`SoundSource` over `audioGain` and
+     `audioPan`: a listener the game moves and turns, a `Sound` placed at a world point, and pure
+     functions turning distance into a gain (1 inside `refDistance`, an inverse-distance curve to 0
+     at `maxDistance`, `rolloff` shaping it) and heading plus offset into a stereo pan. The three
+     falloff names are the Web Audio `PannerNode`'s own, so a game that later swaps in a real
+     panner reuses them. `SoundSource.playFor` applies the gain through a new optional `Sound.play`
+     argument and stays silent past `maxDistance` rather than playing at volume 0; panning is
+     reported rather than faked, since the framework has no panner of its own. `Music` is
+     deliberately still global, because background music is not placed in a scene. Eleven tests in
+     `tests/positional-audio.test.ts` cover both boundaries, the rolloff exponent, pan direction
+     under a turned listener, and the gain actually reaching the pooled `Playable`.
 272. [Medium] Replays, undo, and a server (Absent). No replay or action journal and no
      out-of-sync detection, no undo, and no multiplayer server: a `LockstepClient` over WebSocket
      exists, its server side does not.

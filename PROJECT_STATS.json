@@ -5,7 +5,7 @@
 	"releaseDate": "2026-09-11",
 	"source": {
 		"files": 247,
-		"lines": 35252,
+		"lines": 35260,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -56,7 +56,7 @@
 			{
 				"name": "audio",
 				"files": 8,
-				"lines": 793
+				"lines": 801
 			},
 			{
 				"name": "three-d",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 177,
-		"lines": 22123,
-		"cases": 1609
+		"files": 178,
+		"lines": 22328,
+		"cases": 1622
 	},
 	"tools": {
 		"files": 35,
@@ -123,8 +123,8 @@
 	},
 	"roadmap": {
 		"items": 286,
-		"completed": 260,
-		"open": 26,
+		"completed": 261,
+		"open": 25,
 		"percent": 91
 	},
 	"api": {
@@ -133,7 +133,7 @@
 	"bundle": {
 		"globalRaw": 941520,
 		"globalGzip": 279972,
-		"distRaw": 2725819
+		"distRaw": 2736400
 	},
 	"quality": {
 		"testToSourceRatio": 0.6

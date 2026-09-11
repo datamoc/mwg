@@ -2972,6 +2972,31 @@ build instead.
 
 ## `./audio`
 
+### `audioGain` (function)
+
+    export declare function audioGain(distance: number, falloff?: AudioFalloff): number;
+
+### `AudioListener` (class)
+
+    export declare class AudioListener implements AudioPoint {
+        x: number;
+        y: number;
+
+        facing: number;
+        constructor(options?: {
+            x?: number;
+            y?: number;
+            facing?: number;
+        });
+        moveTo(x: number, y: number): void;
+        face(radians: number): void;
+    }
+
+### `audioPan` (function)
+
+    export declare function audioPan(listener: AudioPoint & {
+        facing: number;
+
 ### `createAudio` (function)
 
     export declare function createAudio(path: string): Playable;
@@ -3063,8 +3088,26 @@ build instead.
         private caption?;
         volume: number;
         constructor(path: string, options?: SoundOptions);
-        play(): void;
+
+        play(gain?: number): void;
         stopAll(): void;
+    }
+
+### `SoundSource` (class)
+
+    export declare class SoundSource implements AudioPoint {
+        x: number;
+        y: number;
+        private readonly sound;
+        private readonly falloff;
+        constructor(sound: Sound, options?: SoundSourceOptions);
+        moveTo(x: number, y: number): void;
+        gainTo(listener: AudioPoint): number;
+        panTo(listener: AudioPoint & {
+            facing: number;
+        }): number;
+
+        playFor(listener: AudioPoint): number;
     }
 
 ### `synthesizeTone` (function)

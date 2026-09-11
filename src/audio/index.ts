@@ -12,3 +12,5 @@ export { synthesizeTone, playTone } from './Synth.ts';
 export type { Waveform, ToneOptions } from './Synth.ts';
 export { parseMidi, scheduleMidi, noteToFrequency, MidiPlayer } from './Midi.ts';
 export type { MidiFile, MidiEvent, MidiNoteEvent, MidiTempoEvent, ScheduledNote, MidiPlayerOptions } from './Midi.ts';
+export { AudioListener, SoundSource, audioGain, audioPan } from './Positional.ts';
+export type { AudioPoint, AudioFalloff, SoundSourceOptions } from './Positional.ts';

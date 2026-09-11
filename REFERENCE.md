@@ -381,6 +381,10 @@ reach the compiled asset map without it.
 - `Orchestrator`/`OrchestratorState` - maps a named game state ("combat", "boss") to a
   `Music` track and crossfade, and fires one-shot cues by event name; re-entering the same
   state never restarts its track.
+- `AudioListener`/`SoundSource`/`AudioFalloff` - positional audio: a listener the game moves,
+  a `Sound` placed at a point, and `audioGain`/`audioPan` turning distance and heading into a
+  volume and a stereo position. `SoundSource.playFor` applies the distance gain through
+  `Sound.play`; panning is reported for a backend that has a panner. `Music` stays global.
 - `synthesizeTone`/`playTone`/`Waveform` - a runtime square/triangle/sine/noise waveform
   synth for a procedural tone or SFX, no sample library.
 - `parseMidi`/`scheduleMidi`/`noteToFrequency`/`MidiPlayer` - a small `.mid` file player

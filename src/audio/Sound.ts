@@ -41,11 +41,17 @@ export class Sound {
 		this.pool = Array.from({ length: size }, () => create(path));
 	}
 
-	play(): void {
+	/**
+	 * Plays one instance from the pool.
+	 *
+	 * @param gain multiplied into the sound's own volume, for a distance-attenuated one-shot
+	 * (`Positional.SoundSource.playFor`); 1 leaves it at `volume`.
+	 */
+	play(gain = 1): void {
 		const audio = this.pool[this.next];
 		this.next = (this.next + 1) % this.pool.length;
 
-		audio.volume = this.volume;
+		audio.volume = this.volume * gain;
 		audio.currentTime = 0;
 		// play() can return a Promise that rejects if this reuse interrupts its own prior,
 		// still-loading play() (a real browser, not the fakes tests supply) - swallow it the
