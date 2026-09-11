@@ -51,6 +51,10 @@ function exportedNames(file: string, seen: Set<string> = new Set()): Map<string,
 	const names = new Map<string, string>();
 
 	function add(name: string, from: string): void {
+		// Prettier leaves a trailing comma in a wrapped `export { a, b, } from './x.ts'`, and
+		// splitting that on commas yields an empty name. Two such lists in one star barrel then
+		// collide on "" and fail the test over a name no consumer can ever import.
+		if (!name) return;
 		if (!names.has(name)) names.set(name, from);
 	}
 
