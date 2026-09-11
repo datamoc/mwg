@@ -71,6 +71,8 @@ id=opening
 			title: 'The Beginning',
 			description: 'A first journey',
 			startScene: 'opening',
+			firstScenario: undefined,
+			scenarios: [{ id: 'opening', nextScenario: undefined }],
 		},
 	]);
 	assert.equal(game.roots[0].children[0].children[0].tag, 'scenario');

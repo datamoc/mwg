@@ -54,8 +54,10 @@ export type {
 	MwlTraceEvent,
 	MwlWorld,
 } from './runtime.ts';
+export { campaignChain } from './campaign.ts';
+export type { MwlCampaignChain, MwlScenarioRunner } from './campaign.ts';
 export { contentCatalog } from './content.ts';
-export type { MwlCampaignDefinition } from './content.ts';
+export type { MwlCampaignDefinition, MwlScenarioLink } from './content.ts';
 export type {
 	MwlContentCatalog,
 	MwlEffectDefinition,

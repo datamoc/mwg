@@ -4350,6 +4350,11 @@ build instead.
 
 ## `./mwl`
 
+### `campaignChain` (function)
+
+    export declare function campaignChain<State extends StateValue, Result extends StateValue = StateValue>(definition: MwlCampaignDefinition, options: {
+        readonly run: MwlScenarioRunner<State, Result>;
+
 ### `coerceTableValue` (function)
 
     export declare function coerceTableValue(raw: string, type: CsvColumnType, column: string, listDelimiter?: string, mapDelimiter?: string): unknown;

@@ -30,6 +30,13 @@ the public API may still change between minor versions.
   growing a group widens it rather than replacing it, and a share declared after a `sync` still
   counts because the group is read when a cell is asked about. `sees(side)` follows it, so a side's
   score view reads the team's eyes.
+- `campaignChain` (item 247): a `[campaign]` pointed at `simulation.Campaign`. `first_scenario` opens
+  it, each `[scenario]`'s `next_scenario` is where it goes when it is won, and the chain ends where a
+  scenario has no next one. The order is content and the playing stays the game's, since the runner
+  is a callback; a scenario that decides for itself keeps its decision, which is where a runtime
+  `[endlevel]` will hook in. Malformed chains (no scenarios, one id twice, an unknown
+  `first_scenario`) throw by name. The `[campaign]` schema now accepts `first_scenario`, and
+  `contentCatalog` exposes each campaign's scenario links.
 
 ### Fixed
 

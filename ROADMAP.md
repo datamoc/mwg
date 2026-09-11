@@ -3364,12 +3364,20 @@ chunks and `setCellColor`, `LayeredSprite`, `StatusVisuals`, `NinePatch`, `Bar`,
 exist already. Several gaps felt on the port side are non-reuse of `mwg` rather than absence from
 it.
 
-247. [High] MWL campaign chaining (Absent). `MwlCampaignDefinition` (`src/mwl/content.ts`) carries
+247. ~~[High] MWL campaign chaining (Absent). `MwlCampaignDefinition` (`src/mwl/content.ts`) carries
      `startScene`, a scene/RPG model, and the `[campaign]` schema (`src/mwl/schema.ts`) reads only
      `id`/`name`/`title`/`description`/`start_scene`. A Wesnoth campaign needs `first_scenario`,
      per-scenario `next_scenario`, and the scenario list itself. `simulation/Campaign.ts` already
      models level order, `next` and a snapshot, so the work is pointing `[campaign]` at that
-     sequencer, not inventing one.
+     sequencer, not inventing one.~~ Landed: the `[campaign]` schema accepts `first_scenario`,
+     `contentCatalog` exposes each campaign's `scenarios` as `{ id, nextScenario }` read from its
+     `[scenario]` children, and `mwl.campaignChain` points that chain at `simulation.Campaign` -
+     the work the item said it was, no new sequencer. The order is content and the playing stays the
+     game's, since the runner is a callback; a scenario whose result carries `next` keeps it, which
+     is the hook a runtime `[endlevel]` needs and the only thing missing between this and 248. Seven
+     tests in `tests/mwl-campaign.test.ts` go through the real parser into the real sequencer, and
+     malformed chains throw by name (no scenarios, an id twice, a `first_scenario` nothing
+     declares). Carrying gold and units from one scenario into the next is 248, still open.
 248. [High] `[endlevel]` and carry-over (Absent). `MwlCommand` (`src/mwl/runtime.ts`) is
      `set_variable`/`modify_gold`/`move`/`spawn`/`kill`/`attack`/`end_turn`/`win`/`lose`, and
      `MwlWorld.status` is `playing | won | lost`, so everything stops at the current scenario.

@@ -26,12 +26,26 @@ export interface MwlTableDefinition {
 	readonly columns: readonly MwlTableColumn[];
 	readonly rows: readonly Readonly<Record<string, unknown>>[];
 }
+/** One scenario in a campaign's chain: where it goes when it is won. */
+export interface MwlScenarioLink {
+	readonly id: string;
+
+	/** the scenario that follows, `next_scenario`; absent means this one ends the campaign */
+	readonly nextScenario?: string;
+}
+
 export interface MwlCampaignDefinition {
 	readonly id: string;
 	readonly name?: string;
 	readonly title?: string;
 	readonly description?: string;
 	readonly startScene?: string;
+
+	/** the scenario the campaign opens on, `first_scenario`; the first declared one when unset */
+	readonly firstScenario?: string;
+
+	/** the campaign's scenarios in declared order, each with the one that follows it */
+	readonly scenarios: readonly MwlScenarioLink[];
 }
 export interface MwlItemDefinition {
 	readonly id: string;
@@ -138,6 +152,14 @@ export function contentCatalog(game: MwlCompiledGame): MwlContentCatalog {
 				title: node.attributes.title,
 				description: node.attributes.description,
 				startScene: node.attributes.start_scene,
+				firstScenario: node.attributes.first_scenario,
+				scenarios: node.children
+					.filter((child) => child.tag === 'scenario')
+					.map((child) => ({
+						id: required(child, 'id'),
+						//an empty `next_scenario` is the same as none: the campaign ends there
+						nextScenario: child.attributes.next_scenario || undefined,
+					})),
 			})),
 		items: nodes
 			.filter((node) => node.tag === 'item')

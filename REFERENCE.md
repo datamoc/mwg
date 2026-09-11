@@ -768,6 +768,11 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   `description`, and `start_scene`). Its children are intentionally open so a game can define
   scenario and progression tags without changing the core MWL schema; metadata is exposed by
   `contentCatalog(game).campaigns`.
+- `campaignChain` - points a `[campaign]` at `simulation.Campaign`: `first_scenario` opens the chain,
+  each `[scenario]`'s `next_scenario` is where it goes when it is won, and a scenario that ends the
+  chain ends the campaign. The order is content, the playing stays the game's (`run` is a callback),
+  and a scenario that decides for itself - a runtime `[endlevel]` - keeps its decision. The
+  `[campaign]` schema reads `first_scenario`, and the catalog exposes each campaign's `scenarios`.
 - `readAttributes` / `readChildren` - shared typed readers for compiled nodes. They coerce
   scalars and lists and return source-located diagnostics instead of silently guessing.
 - MWL tables use `[table] columns=name:type|...` with typed `[row]` attributes. The compiler

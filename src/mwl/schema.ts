@@ -90,6 +90,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			title: 'string',
 			description: 'string',
 			start_scene: 'id',
+			first_scenario: 'id',
 		},
 		// Scenario and campaign-extension tags belong to the owning game.
 		openChildren: true,
