@@ -122,10 +122,10 @@
 		]
 	},
 	"roadmap": {
-		"items": 277,
+		"items": 282,
 		"completed": 255,
-		"open": 22,
-		"percent": 92
+		"open": 27,
+		"percent": 90
 	},
 	"api": {
 		"declarationFiles": 0

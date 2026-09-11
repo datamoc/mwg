@@ -73,9 +73,14 @@ where those live.
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
 **Priority order among what's still open:** the Wesnoth port's gaps, items 247-273, added
 2026-09-11 after that port's own analysis, with the structural blockers first (247, 248, 254,
-255, 257, 258, 261, 262, 266, 268); then the score-driven AI items 274-276, asked for directly the
-same day and the framework work most likely to come first, since 274 is what an AI that weighs
-instead of following a script is missing. Everything else numbered has shipped: the data-extraction
+255, 257, 258, 261, 262, 266, 268): campaign chaining and `[endlevel]`, per-frame animation timing,
+the image modifiers, `[terrain_graphics]`, typographic markup, the missing widgets and text input,
+a Wesnoth-compatible RNG, and shared team vision. The score-driven AI items 274-276, asked for
+directly the same day, landed first: they are self-contained where those blockers are not, and
+the order here is priority, not number. Items 277-282 are the framework's side of two other lists:
+the `MwlWorld` side-identity cleanup found while building carry-over, and the five proposals the
+Pixel Dungeon port keeps in its own roadmap section 11A, each re-checked against the code here
+before being written down. Everything else numbered has shipped: the data-extraction
 cluster 205-213 (whose items say what landed), the former priority cluster (28, 30, 41, 45), the
 verification and accessibility tail (192-197), the SVG and benchmark follow-up (198) and the
 reduced-motion cluster (199-202). Numbers are never reassigned once given - the list is an
@@ -3405,17 +3410,35 @@ chunks and `setCellColor`, `LayeredSprite`, `StatusVisuals`, `NinePatch`, `Bar`,
 exist already. Several gaps felt on the port side are non-reuse of `mwg` rather than absence from
 it.
 
-247. [High] MWL campaign chaining (Absent). `MwlCampaignDefinition` (`src/mwl/content.ts`) carries
+247. ~~[High] MWL campaign chaining (Absent). `MwlCampaignDefinition` (`src/mwl/content.ts`) carries
      `startScene`, a scene/RPG model, and the `[campaign]` schema (`src/mwl/schema.ts`) reads only
      `id`/`name`/`title`/`description`/`start_scene`. A Wesnoth campaign needs `first_scenario`,
      per-scenario `next_scenario`, and the scenario list itself. `simulation/Campaign.ts` already
      models level order, `next` and a snapshot, so the work is pointing `[campaign]` at that
-     sequencer, not inventing one.
-248. [High] `[endlevel]` and carry-over (Absent). `MwlCommand` (`src/mwl/runtime.ts`) is
+     sequencer, not inventing one.~~ Landed: the `[campaign]` schema accepts `first_scenario`,
+     `contentCatalog` exposes each campaign's `scenarios` as `{ id, nextScenario }` read from its
+     `[scenario]` children, and `mwl.campaignChain` points that chain at `simulation.Campaign` -
+     the work the item said it was, no new sequencer. The order is content and the playing stays the
+     game's, since the runner is a callback; a scenario whose result carries `next` keeps it, which
+     is the hook a runtime `[endlevel]` needs and the only thing missing between this and 248. Seven
+     tests in `tests/mwl-campaign.test.ts` go through the real parser into the real sequencer, and
+     malformed chains throw by name (no scenarios, an id twice, a `first_scenario` nothing
+     declares). Carrying gold and units from one scenario into the next is 248, still open.
+248. ~~[High] `[endlevel]` and carry-over (Absent). `MwlCommand` (`src/mwl/runtime.ts`) is
      `set_variable`/`modify_gold`/`move`/`spawn`/`kill`/`attack`/`end_turn`/`win`/`lose`, and
      `MwlWorld.status` is `playing | won | lost`, so everything stops at the current scenario.
      Missing: `result` victory/defeat, `bonus`, `carryover_percentage`, gold and unit carry-over
-     between scenarios, and the recall list.
+     between scenarios, and the recall list.~~ Landed: `[endlevel]` is a command in both paths (the
+     MWL tag and the `MwlCommand` union), it ends the scenario won or lost, and it records what is
+     handed on in `world.carryover`. The arithmetic is `endLevelCarryover`, checked against the
+     reference rather than remembered: a share of the side's gold (`carryover_percentage`, 80% when
+     unset, which is the engine's own default), plus `bonus`, plus that side's surviving units as
+     the recall list, plus `next_scenario` - which is the `next` hook 247 already honours, so a
+     campaign chains on without either item knowing about the other. `carryoverIntoScenario` is the
+     second half of the rule: added to the next scenario's declared gold when `carryover_add` asks
+     for it, a floor under it otherwise. `MWL_DEFAULT_CARRYOVER_PERCENTAGE` names the default. Eight
+     tests in `tests/mwl-carryover.test.ts`, half of them arithmetic and half through the real
+     runtime, and the schema now accepts `[endlevel]` and `first_scenario`.
 249. [Medium] One save for a whole campaign (Absent). `SaveSystem<T>` (`src/core/Save.ts`) is
      per-system (slots, meta, list, delete) and `mwl/persistence.ts` serializes only `MwlWorld`,
      so nothing saves campaign progress, the world and the simulation state together.
@@ -3425,20 +3448,48 @@ it.
      `src/mwl/schema.ts`). Missing the WML ones: `store_unit`, `unstore_unit`, `modify_unit`,
      `heal_unit`, `recall`, `endlevel`, `story`, `set_terrain`, `capture_village`, `clear_shroud`,
      `fire_event`, `role`, and scenario-level `[object]`/`[item]`.
-251. [Medium] `[kill]` as a filter (Ne correspond pas). `killUnit` throws `MWL unit is not alive`
+251. ~~[Medium] `[kill]` as a filter (Ne correspond pas). `killUnit` throws `MWL unit is not alive`
      when nothing matches, where WML's `[kill]` is a no-op on an empty match. A content error and
-     an empty filter are different things and the runtime cannot tell them apart today.
+     an empty filter are different things and the runtime cannot tell them apart today.~~ Landed:
+     `[kill]` now has two shapes that fail differently, on purpose. Naming a unit (`unit=`/`target=`)
+     still throws when that unit is not standing, because that is a content mistake. Anything else is
+     a *filter* over the world's units - the same attributes an event filter reads, via
+     `unitMatchesFilter` - and a filter that matches nobody is a no-op, which is what WML does. An
+     empty filter matches every unit there as here, and the doc comment says so before someone
+     writes one. `MwlCommand`'s `kill` variant takes an optional `filter` for the same two shapes,
+     and the `[kill]` schema entry is open on attributes now, since a filter is not a fixed list.
+     Six tests in `tests/mwl-kill.test.ts`.
 252. [Medium] `[side]` attribute surface (Ne correspond pas). `[side]` reads
      `id`/`controller`/`gold`/`income`/`income_base`/`income_per_village`/`leader`/`team`/
      `recruit`/`color`, and `MwlWorld.sides` keeps gold/income/leader/controller/recruit. Missing
      `share_vision`, `fog`, `shroud`, `team_name`, `user_team_name`, `flag`, `village_gold`,
      `heal`, `hidden`, and per-side `defeat`/`victory` conditions.
-253. [Medium] Turn limit as a native end condition (Absent). "Time over" as a scenario predicate
+253. ~~[Medium] Turn limit as a native end condition (Absent). "Time over" as a scenario predicate
      has no framework home; the port had to add `predicate:turn_limit` itself. (`[objectives]`
-     with a `condition=hook` does exist.)
-254. [High] Per-frame animation timing (Absent). `AnimatedSprite`/`ActorAnimator`
+     with a `condition=hook` does exist.)~~ Landed, in the shape the rest of the runtime already
+     uses: a scenario declares `turn_limit` on `[game]`, and once the turn counter goes past it the
+     framework sets `time_over` as a world variable and fires the `time_over` event. So content
+     tests it the way it tests anything (`[condition] variable=time_over`) and answers it the way it
+     answers any event, including with `[endlevel]` now that 248 exists - which is the point: a limit
+     is usually a defeat and sometimes the whole scenario ("hold out until then"), so the framework
+     reports and content decides. Fired once, derived from the turn counter rather than kept in step
+     with it, and `turn_limit` is in the `[game]` schema. Four tests in
+     `tests/mwl-turn-limit.test.ts`.
+254. ~~[High] Per-frame animation timing (Absent). `AnimatedSprite`/`ActorAnimator`
      (`src/two-d/render/`) run at a fixed fps (`frameDuration = 1/fps`). Wesnoth needs a duration
-     per frame (`image:120,80,...`), `start_time`, per-frame x/y offsets, and `[missile_frame]`.
+     per frame (`image:120,80,...`), `start_time`, per-frame x/y offsets, and `[missile_frame]`.~~
+     Landed: `Animation` takes frames as textures or as `{ texture, duration, offsetX, offsetY }`,
+     so a frame carries its own time and its own place, and `AnimationOptions.startTime` is signed
+     exactly as Wesnoth writes it: positive holds the first frame, negative skips the leading ones
+     (`start_time=-450` over 100ms frames opens on the fifth). `frameAt`/`frameIndexAt` are the
+     arithmetic, twelve tests in `tests/animation.test.ts` check it, and the sprite advances on
+     `elapsed` rather than a leftover timer, so a long frame lands on the right frame rather than
+     catching up through each. `[missile_frame]` needs nothing beyond this: `Projectile` already
+     flies a sprite along a path, and the frames it shows are now timed (the item's own "Absent"
+     was about the frame model, not about flight). Per-frame offsets are *not* applied by the
+     sprite: it reports `frameOffset` and the caller adds it, because this sprite is a `Sprite`
+     whose position a `GridMover` or a walk tween owns, and a container wrapper would have broken
+     the construction call every caller already uses (`new AnimatedSprite(texture)`).
 255. [High] Image modifiers beyond the four implemented (Ne correspond pas).
      `applyImageModifiers` handles FL/SCALE/GS/CS and `croppedTexture` handles CROP; ~BLIT, ~RC,
      ~CHAN, ~PAL, ~MASK, ~BLEND, ~O, ~R/~G/~B and ~ROTATE are missing. ~RC and ~BLIT are the two
@@ -3450,8 +3501,32 @@ it.
      sprite per cell per layer, hex included) exist, but not the tile-rule model: flags,
      rotations, multi-hex `[tile]`, and an image per neighbour combination. A 72px source sprite
      that overlaps into neighbouring hexes cannot be expressed in a one-sprite-per-cell grid.
-258. [High] Typographic markup in text (Ne correspond pas). Text is markdown (`RichLabel`,
-     `**bold**`) where Wesnoth content is written with `<b>`, `<span color>`, `<img>` and `$var`.
+258. [High] Typographic markup in text (Ne correspond pas). **The contract has landed; the
+     acceptance below has not.** `MarkupSpan`, `parseMarkup`, `stripMarkup`, `markupToHtml` and
+     `escapeHtml` (`src/two-d/ui/markup.ts`, twelve tests in `tests/markup.test.ts`, exported from
+     `two-d/ui` and written up in REFERENCE) cover the renderer-neutral token stream the item asks
+     for: nested emphasis, named and hex colours, a size, a break, an image span carrying a path,
+     interpolation supplied by the caller, the five entities as escapes, and the policy that unknown
+     or malformed tags and unset variables stay literal while output text is escaped so no raw HTML
+     can leak. What the acceptance still wants, and why each is not a formality: one fixture
+     rendering equivalent runs through a canvas and a rich-text backend (the ui's own path renders
+     emphasis only, since Pixi's `HTMLText` dialect is narrower than this markup), wrapping measured
+     after styling, images resolved through the asset resolver, and an accessibility projection.
+     Text is markdown (`RichLabel`,
+     `**bold**`) where Wesnoth content is written with `<b>`, `<i>`, `<span color>`, `<img>`
+     and `$var`. The framework-side target is a renderer-neutral inline-markup contract, not a
+     Wesnoth parser: `Text`/`Label`/`RichLabel` should accept a common token stream (or a single
+     documented `MarkupText` value) with escaped literal text, nested emphasis, named and hex
+     colours, images supplied through the asset resolver, variable interpolation supplied by the
+     caller, and line breaks/wrapping measured after styling. Unknown or malformed tags must be
+     visible as text or safely ignored by policy, never leak raw HTML into a UI and never execute
+     arbitrary HTML. The contract must work in `file://` builds, remain accessible through a
+     plain-text projection, and expose enough style runs for canvas/WebGL renderers to batch
+     predictable runs. Acceptance: the same fixture renders equivalent runs through the canvas
+     and any rich-text backend; nested tags, colour changes, inline images, escaping, wrapping,
+     interpolation and an RTL sample are covered by unit tests; existing plain `Label` text is
+     unchanged. The Wesnoth adapter will map its `<b>`, `<i>`, `<span color>`, `<img>` and `$var`
+     syntax to this contract; no Wesnoth-specific tag names belong in MWG.
 259. [Medium] Hex projection options (Ne correspond pas). `src/core/Hex.ts` fixes flat-top odd-q
      with no orientation or offset-parity option - it says so itself about pointy-top - and
      `TileMap`/`TiledMap` refuse hexagonal orientation, so a Wesnoth map cannot be projected
@@ -3477,8 +3552,13 @@ it.
 267. [Medium] Turns as Wesnoth counts them (Ne correspond pas). `simulation/Turns.ts` is a cost
      scheduler and `world/TurnClock`/`EnvironmentClock` are generic day phases; there is no
      side/round/schedule model and no per-hex `lawful_bonus`.
-268. [High] Shared team vision (Ne correspond pas). `FactionFog` (`src/board/FogOfWar.ts`) is
-     per-faction with no union of allies' vision, which is what `share_vision` means.
+268. ~~[High] Shared team vision (Ne correspond pas). `FactionFog` (`src/board/FogOfWar.ts`) is
+     per-faction with no union of allies' vision, which is what `share_vision` means.~~ Landed:
+     `FactionFog.share(factions)` puts factions on one map, for what is lit now and for the shroud
+     they remember, and calling it again widens the group rather than replacing it. Nothing shares
+     until asked, and because the group is read when a cell is queried rather than when it is
+     synced, a share declared after a `sync` still counts. `sees(side)` follows a share, so the
+     score views of 276 read the team's eyes with no change of their own.
 269. [Medium] AI as Wesnoth builds it (Absent). The framework's AI is alpha-beta search
      (`src/ai/search.ts`) plus optional Lua and a JSON action protocol; Wesnoth's is heuristic:
      candidate actions, aspects and stages, with `goals`, `keep_away` and `recruitment_pattern`,
@@ -3500,28 +3580,98 @@ it.
 Asked for directly (2026-09-11), and distinct from 269: Wesnoth's AI picks among candidate
 actions by heuristic aspects and stages, while this asks for an AI whose decisions rest on
 *numbers* it can read. The contract already declares the two granularities the request names -
-`AIAgentDefinition.scope` is `'actor' | 'controller'` (`src/ai/index.ts`) - so what is missing is
-not a new scope but a score, and a way to see only what each scope can see.
+`AIAgentDefinition.scope` is `'actor' | 'controller'` (`src/ai/index.ts`) - so what was missing was
+not a new scope but a score, and a way to see only what each scope can see. All three landed the
+same day; the notes on each say what shipped.
 
-274. [High] A score an AI can read, not only a search can use. A rules agent decides from an
+274. ~~[High] A score an AI can read, not only a search can use. A rules agent decides from an
      opaque `perception: AIValue` the game fills and its own `state`; a score exists only inside
      `alphaBetaSearch`, as the `evaluate(state, rootPlayer)` callback (`src/ai/search.ts`) the game
      hands its own search. So a non-procedural AI, one that weighs outcomes instead of matching a
      behaviour, has nothing to weigh: to compare attacking against holding it must re-derive the
      game's valuation from the perception blob, which is the duplication the envelope exists to
      prevent. Needs a score source the game supplies once and an AI reads at both scopes: numbers
-     in, decisions out, and the rules of valuation left where they belong, in the game.
-275. [Medium] Actor-scope scoring with a personality. A character's AI reads its own score, the
+     in, decisions out, and the rules of valuation left where they belong, in the game.~~ Landed as
+     `ai.personalScoreView`/`ai.sideScoreView` over `ScoreSubject`/`ScoreView`: the game hands in
+     `scoreOf`, the framework assembles own, allies and enemies plus a `seen` count, and both
+     `scope` values read through the same two functions. The valuation rules stayed in the game,
+     which is what the item asked for.
+275. ~~[Medium] Actor-scope scoring with a personality. A character's AI reads its own score, the
      score of every ally it can see and the score of every enemy it can see, and the personality
      attached to that character decides how much of each is its business: a selfish one weights
      its own score, a loyal one its allies'. Needs a score view filtered by that actor's vision
      and a personality that is data rather than code (weights over own, ally and enemy scores),
-     so temperaments are authored as content and not as one AI implementation each.
-276. [Medium] Controller-scope scoring under fog. A whole-map ("player") AI aggregates the scores
+     so temperaments are authored as content and not as one AI implementation each.~~ Landed:
+     `personalScoreView` takes the actor's own visibility predicate, and `ai.scoreWith` collapses a
+     view by `ScorePersonality` weights, which is data a game authors per character. Eight tests in
+     `tests/ai-score.test.ts`, one of them asserting that a personality is a reading and never a
+     mutation of the view.
+276. ~~[Medium] Controller-scope scoring under fog. A whole-map ("player") AI aggregates the scores
      of the allies and enemies *it* can see, which is a different visibility set from any single
      unit's: the union over the team's units, and `FactionFog` (`src/board/FogOfWar.ts`) has no
      such union today (268). Needs a team-scoped score view that respects the fog, so both scopes
-     run the same scoring code and differ only in which visibility set they are handed.
+     run the same scoring code and differ only in which visibility set they are handed.~~ Landed:
+     `sideScoreView`, over the same visibility-set shape, so the only difference from 275 is what
+     the caller hands in, plus `FactionFog.sees(side)` as that set. One test reads one world through
+     a unit's reach and through a side's union and checks they differ only where the second sees
+     more. The item's premise was one step off and is worth correcting: `FactionFog.sync` already
+     unions every source it is handed, so the union over a side's units was expressible all along,
+     and what was missing was a predicate to hand over. The half that is genuinely absent is allies
+     sharing one another's sight, which is 268 and stays open.
+
+### World-model cleanup
+
+Found while building carry-over (248), recorded rather than fixed in passing.
+
+277. [Low] One side identity in `MwlWorld`. A side is keyed by the `id` `[side]` declares in
+     `world.sides` and `world.gold`, while its units carry a *number* in `unit.side` (`[spawn]
+     side=1`), so "the units of side `1`" is a mapping between two identifiers rather than a lookup.
+     `MwlSideRef` in `src/mwl/carryover.ts` names the pair so carry-over can be honest about it, and
+     `endLevelSide` derives the number from the id, which is guesswork a named side (`id=rebels`)
+     cannot survive. One identity, string or number, would remove the guess; it touches the world
+     shape, the moveto filter and every consumer of `unit.side`, which is why it is its own item.
+
+### Requested by the Pixel Dungeon port
+
+Its own `ROADMAP.md` section 11A lists what that port would like from this framework, checked there
+against the installed 0.7.6 declarations and re-checked here against the code before being written
+down: each item below says what already exists and what would have to be added, which is the part
+that decides whether a proposal is a primitive or a game rule wearing a generic name.
+
+What stays with that port, and is not a gap here: appearance tables and identification, its
+combat, fire, monster, quest and dungeon rules, its derived numbers, and all of its art. "A generic
+primitive could represent it" is not a reason to move game content across a licence boundary, which
+is the same line this repository already draws for the Wesnoth port.
+
+Each of these is expected to arrive the way everything else here does: renderer-free determinism
+tests, a minimal `@example`, save compatibility notes and an API report entry, in a release the port
+can then check its declarations against.
+
+278. [High] Generalise `MultiTurnBeam` traversal (the port's P0). `roguelike/MultiTurnBeam` walks a
+     *captured* straight path, one front per turn. Missing: an opt-in sequence of per-turn fronts or
+     a game-supplied next-front resolver, an explicit blocker policy, per-cell callbacks, and shape
+     identity in the saved state so a reload resumes the same shape. That would cover cone, burst,
+     forked and moving-front effects without putting any game's rules here. The port asked for
+     deterministic square and hex tests in this repository before it adopts any of it.
+279. [Medium] Particle spawn bounds (the port's P1). `ParticleEmitter` pools and reuses particles
+     renderer-agnostically, but its `spawn()` is private and unbounded, so a controlled spread or a
+     capped flame column is presentation glue in the game. Needs a seeded local rectangle or
+     ellipse for spawning, and an optional local height or lifetime envelope, with the pooled
+     behaviour unchanged.
+280. [Medium] A renderer-neutral grid targeting controller (the port's P1). The *geometry* is here
+     (`AreaShape`, `traceLine`, `ballistica`, `Level` line of sight) and nothing drives it from
+     input: needs pointer and keyboard navigation over cells, range and line-of-sight validation
+     hooks, an optional area preview, and a confirm/cancel result. It must return cells or ids only:
+     targeting legality, damage and visuals stay with the game.
+281. [Low] Tabbed, paginated list primitives (the port's P2). `ListView`/`IconGrid` cover the list
+     itself; a contract for tabs, filtered rows, selection, paging and a detail/close action would
+     serve inventories, journals, shops and codices across games. Caller-supplied labels and rows,
+     no assumed item taxonomy.
+282. [Low] A documented event-to-presentation sequencing recipe (the port's P2). The split itself
+     exists (`simulation.SimulationRuntime` and `core.PresentationQueue`); what is missing is a
+     documented pattern, with a small example and a test, for a command result, a scheduled
+     secondary actor, an animation lock, cancellation and save/load interacting. The goal is a
+     stable integration pattern for turn-based games, not any one game's combat pipeline.
 
 ### Parked decisions
 

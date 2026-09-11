@@ -34,7 +34,10 @@ where those live.
 the image modifiers, `[terrain_graphics]`, typographic markup, the missing widgets and text input,
 a Wesnoth-compatible RNG, and shared team vision. The score-driven AI items 274-276, asked for
 directly the same day, landed first: they are self-contained where those blockers are not, and
-the order here is priority, not number. Everything else numbered has shipped: the data-extraction
+the order here is priority, not number. Items 277-282 are the framework's side of two other lists:
+the `MwlWorld` side-identity cleanup found while building carry-over, and the five proposals the
+Pixel Dungeon port keeps in its own roadmap section 11A, each re-checked against the code here
+before being written down. Everything else numbered has shipped: the data-extraction
 cluster 205-213 (whose items say what landed), the former priority cluster (28, 30, 41, 45), the
 verification and accessibility tail (192-197), the SVG and benchmark follow-up (198) and the
 reduced-motion cluster (199-202). Numbers are never reassigned once given - the list is an
@@ -3584,6 +3587,48 @@ Found while building carry-over (248), recorded rather than fixed in passing.
      `endLevelSide` derives the number from the id, which is guesswork a named side (`id=rebels`)
      cannot survive. One identity, string or number, would remove the guess; it touches the world
      shape, the moveto filter and every consumer of `unit.side`, which is why it is its own item.
+
+### Requested by the Pixel Dungeon port
+
+Its own `ROADMAP.md` section 11A lists what that port would like from this framework, checked there
+against the installed 0.7.6 declarations and re-checked here against the code before being written
+down: each item below says what already exists and what would have to be added, which is the part
+that decides whether a proposal is a primitive or a game rule wearing a generic name.
+
+What stays with that port, and is not a gap here: appearance tables and identification, its
+combat, fire, monster, quest and dungeon rules, its derived numbers, and all of its art. "A generic
+primitive could represent it" is not a reason to move game content across a licence boundary, which
+is the same line this repository already draws for the Wesnoth port.
+
+Each of these is expected to arrive the way everything else here does: renderer-free determinism
+tests, a minimal `@example`, save compatibility notes and an API report entry, in a release the port
+can then check its declarations against.
+
+278. [High] Generalise `MultiTurnBeam` traversal (the port's P0). `roguelike/MultiTurnBeam` walks a
+     *captured* straight path, one front per turn. Missing: an opt-in sequence of per-turn fronts or
+     a game-supplied next-front resolver, an explicit blocker policy, per-cell callbacks, and shape
+     identity in the saved state so a reload resumes the same shape. That would cover cone, burst,
+     forked and moving-front effects without putting any game's rules here. The port asked for
+     deterministic square and hex tests in this repository before it adopts any of it.
+279. [Medium] Particle spawn bounds (the port's P1). `ParticleEmitter` pools and reuses particles
+     renderer-agnostically, but its `spawn()` is private and unbounded, so a controlled spread or a
+     capped flame column is presentation glue in the game. Needs a seeded local rectangle or
+     ellipse for spawning, and an optional local height or lifetime envelope, with the pooled
+     behaviour unchanged.
+280. [Medium] A renderer-neutral grid targeting controller (the port's P1). The *geometry* is here
+     (`AreaShape`, `traceLine`, `ballistica`, `Level` line of sight) and nothing drives it from
+     input: needs pointer and keyboard navigation over cells, range and line-of-sight validation
+     hooks, an optional area preview, and a confirm/cancel result. It must return cells or ids only:
+     targeting legality, damage and visuals stay with the game.
+281. [Low] Tabbed, paginated list primitives (the port's P2). `ListView`/`IconGrid` cover the list
+     itself; a contract for tabs, filtered rows, selection, paging and a detail/close action would
+     serve inventories, journals, shops and codices across games. Caller-supplied labels and rows,
+     no assumed item taxonomy.
+282. [Low] A documented event-to-presentation sequencing recipe (the port's P2). The split itself
+     exists (`simulation.SimulationRuntime` and `core.PresentationQueue`); what is missing is a
+     documented pattern, with a small example and a test, for a command result, a scheduled
+     secondary actor, an animation lock, cancellation and save/load interacting. The goal is a
+     stable integration pattern for turn-based games, not any one game's combat pipeline.
 
 ### Parked decisions
 
