@@ -340,7 +340,9 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
 - `BitmapLabel`/`bitmapLabelStyle` - bitmap-font-backed text, for a HUD value redrawn
   every frame where `Label`'s per-string texture re-render would be wasteful.
 - `NinePatch` - a resizable nine-slice panel.
-- `Window` - a themed panel container.
+- `Window` - a themed panel container. `close()` frees the window and its contents and is
+  idempotent; `closed` is the guard for the caller's reference afterwards (input and `place` on a
+  closed window are no-ops), and `WindowStack.push` refuses one with a named error.
 - `WindowStack` - keyboard focus goes to the top window only; dims what's underneath.
 - `ListView` - a scrollable, keyboard- and pointer-navigable row list (click, wheel-scroll).
 - `IconGrid` - a multi-column icon-grid inventory view; tap-then-tap "drag and drop",

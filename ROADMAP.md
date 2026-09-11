@@ -3940,11 +3940,19 @@ only for the square grid they are easiest to reason about.
      A recipe that wants "any herb plus any runestone" cannot be expressed and has to be left
      unported. Generic shape, no reference-specific vocabulary: `id: string | string[] | {
      category: string }`, or a `matches(item)` predicate on the ingredient.
-290. [Medium] `ui.Window.close()` destroys the instance it is called on (`destroy({children:
+290. ~~[Medium] `ui.Window.close()` destroys the instance it is called on (`destroy({children:
      true})`), so the ordinary `this.someWindow = w` pattern followed by a later `w.x = ...`
      throws on a null internal rather than failing predictably. Either a `destroyed` getter
      callers can guard on, a doc note that the instance is spent after `close()`, or splitting
-     `close()` into a detach-only step with `destroy()` staying explicit.
+     `close()` into a detach-only step with `destroy()` staying explicit.~~ Landed the first two,
+     the least disruptive pair, rather than the detach-only split (which would change when GPU
+     resources are freed for every existing caller): `Window.closed` is a framework-owned getter
+     (true after `close()` or a direct `destroy()`), `close()` is idempotent so a `pop()` racing a
+     `cancel` is not a second destroy, `handleAction`/`place`/`update` are no-ops once closed
+     instead of throwing on freed internals, and the doc comment says plainly that the instance is
+     spent and the caller's reference must be dropped. `WindowStack.push` on a closed window now
+     throws a named `cannot open a window that was already closed` rather than failing somewhere
+     deeper. Nine tests in `tests/window-close.test.ts`.
 291. [Low] Sprite attachments: a shadow flat under a sprite, a status icon floating above it.
      `StatusVisuals` only tints; nothing owns a second sprite's position relative to a first
      one with its own lifetime. Needs its own shape (attachment lifetimes differ per game),

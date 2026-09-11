@@ -190,6 +190,12 @@ the public API may still change between minor versions.
   *and* the same origin, which this framework had invented. A caller that reused one key for two
   different targets now sees their lines stacked together, and has to give each target its own key.
 
+### Fixed
+
+- `ui.Window` (item 290): `closed` is now a getter to guard a caller's reference after `close()`,
+  `close()` is idempotent, input and layout on a closed window are no-ops rather than throws on
+  freed Pixi internals, and `WindowStack.push` refuses a closed window with a named error.
+
 ## [0.7.6] - 2026-09-11
 
 ### Added

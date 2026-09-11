@@ -70,6 +70,7 @@ export class Window extends Container {
 	private currentHeight = 0;
 
 	private readonly themeListener = () => this.restyle();
+	private isClosed = false;
 
 	constructor(options: WindowOptions) {
 		super();
@@ -166,6 +167,7 @@ export class Window extends Container {
 	 * @returns true if the window used it, which stops it going any further down
 	 */
 	handleAction(action: Action): boolean {
+		if (this.isClosed) return false;
 		if (this.delegate?.handleAction(action)) return true;
 
 		if (action === 'cancel' && this.closable) {
@@ -175,12 +177,29 @@ export class Window extends Container {
 		return false;
 	}
 
+	/**
+	 * true once `close()` (or `destroy()`) has run. A closed window is spent: `close()` freed it
+	 * and its contents through Pixi, so the caller's `this.someWindow` reference must not be
+	 * written to any more. Guard with this rather than discovering it as a null-internal throw,
+	 * and drop the reference.
+	 */
+	get closed(): boolean {
+		return this.isClosed;
+	}
+
 	/** called each frame while this window is the top of the stack */
 	update(_dt: number): void {
 		//most windows are static and need nothing here
 	}
 
+	/**
+	 * Announces the close and frees this window and its contents. Idempotent, so a second
+	 * `close()` (a `pop()` racing a `cancel`, a `closeAll()` after a manual close) is a no-op
+	 * rather than a second `destroy`. The instance is spent afterwards; see `closed`.
+	 */
 	close(): void {
+		if (this.isClosed) return;
+		this.isClosed = true;
 		this.onClose.dispatch();
 		this.parent?.removeChild(this);
 		this.destroy({ children: true });
@@ -188,6 +207,7 @@ export class Window extends Container {
 
 	/** positions the window in a viewport of the given size, per its anchor */
 	place(viewportWidth: number, viewportHeight: number): void {
+		if (this.isClosed) return;
 		const bounds = this.getLocalBounds();
 		const margin = theme().padding * 2;
 
@@ -203,6 +223,7 @@ export class Window extends Container {
 	}
 
 	override destroy(options?: Parameters<Container['destroy']>[0]): void {
+		this.isClosed = true;
 		themeChanged.remove(this.themeListener);
 		super.destroy(options);
 	}

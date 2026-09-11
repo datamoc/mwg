@@ -58,6 +58,7 @@ export class WindowStack extends Container {
 
 	/** opens a window on top; it takes the keyboard until it closes */
 	push(window: Window): Window {
+		if (window.closed) throw new Error('cannot open a window that was already closed');
 		this.windows.push(window);
 		this.addChild(window);
 
