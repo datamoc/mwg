@@ -3762,11 +3762,22 @@ source rather than against the note, so neither is an item:
      **derived** from the selection rather than tracked next to it, so the two can never disagree and
      `nextPage` is just a selection move of one page; `pageRows`, `selectedIndex` and `onChange` are
      what a renderer reads. Eighteen tests in `tests/tabbed-list.test.ts`, no DOM needed.
-282. [Low] A documented event-to-presentation sequencing recipe (the port's P2). The split itself
+282. ~~[Low] A documented event-to-presentation sequencing recipe (the port's P2). The split itself
      exists (`simulation.SimulationRuntime` and `core.PresentationQueue`); what is missing is a
      documented pattern, with a small example and a test, for a command result, a scheduled
      secondary actor, an animation lock, cancellation and save/load interacting. The goal is a
-     stable integration pattern for turn-based games, not any one game's combat pipeline.
+     stable integration pattern for turn-based games, not any one game's combat pipeline.~~ Landed
+     as `simulation.EventPresentation`, a small class over the two pieces that already existed
+     rather than a third kind of thing. It fixes the five interactions as named rules: `submit`
+     dispatches one command and hands its events to a `PresentationQueue` in one call (a command
+     result); `locked` is the queue's `isBusy` and `submit` refuses under it (an animation lock);
+     `followUp` returns the commands of a scheduled secondary actor, dispatched only after the
+     batch before them has presented (a counter-attack after an attack); `cancel` drops the rest
+     of the show while the committed turn stands (cancellation); and `snapshot`/`restore`
+     deliberately leave the queue out of a save, so a loaded run resumes idle instead of replaying
+     an interrupted animation (save/load). The class doc comment is the documented pattern and
+     carries a compiling `@example`; eight tests in `tests/event-presentation.test.ts` drive all
+     five interactions, including the ordering of the follow-up behind the primary batch.
 
 ### Map view rotation
 

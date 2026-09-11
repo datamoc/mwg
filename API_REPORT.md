@@ -5630,6 +5630,37 @@ build instead.
         }): Campaign<State, Result>;
     }
 
+### `EventPresentation` (class)
+
+    export declare class EventPresentation<State, Command, Event, A extends Actor> {
+        readonly runtime: SimulationRuntime<State, Command, Event, A>;
+        readonly queue: PresentationQueue<Event>;
+        private readonly followUpOf?;
+        private followUps;
+        constructor(options: EventPresentationOptions<State, Command, Event, A>);
+
+        get locked(): boolean;
+
+        submit(command: Command): SimulationOutcome<State, Event> | null;
+
+        update(dt: number): void;
+
+        cancel(): void;
+
+        snapshot(version?: number): SimulationSnapshot<State>;
+
+        static restore<State, Command, Event, A extends Actor>(snapshot: SimulationSnapshot<State>, options: {
+            play: (event: Event) => number | void;
+            followUp?: (outcome: SimulationOutcome<State, Event>) => readonly Command[];
+            rule: SimulationRuntimeRule<State, Command, Event, A>;
+            actorOf: (id: string) => A;
+            actorId: (actor: A) => string;
+        }): EventPresentation<State, Command, Event, A>;
+        private commit;
+
+        private drainFollowUps;
+    }
+
 ### `runHeadlessScenario` (function)
 
     export declare function runHeadlessScenario<State, Command, Event>(scenario: HeadlessScenario<State, Command, Event>): HeadlessScenarioResult<State, Event>;

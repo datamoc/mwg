@@ -665,6 +665,12 @@ live game loop.
   returned cost; `snapshot`/`restore` capture and rebuild the whole triple. Composes with
   `advanceToInput` against the same scheduler for the automatic-actor loop, rather than
   replacing it.
+- `EventPresentation`/`EventPresentationOptions` - the documented pattern tying a
+  `SimulationRuntime` to a `core.PresentationQueue`: `submit` commits a command and starts its
+  events, `locked` is the animation lock `submit` refuses under, `followUp` schedules a
+  secondary actor's commands for after the current batch, `cancel` drops the rest of the show
+  without rolling the committed turn back, and `snapshot`/`restore` deliberately leave the
+  queue out of a save so a load resumes idle.
 - `Scheduler`/`Actor`/`SchedulerSnapshot` - re-exported here from `roguelike` (its real home),
   since every `SimulationRuntime` needs one; a simulation-first game need not import a second
   module just to construct the class its own runtime is built around.
