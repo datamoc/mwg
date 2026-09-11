@@ -1,6 +1,6 @@
 # Project statistics
 
-Generated for **mwg 0.7.6** on 2026-09-11.
+Generated for **mwg 0.7.7** on 2026-09-11.
 
 | Area | Statistics |
 | --- | ---: |
@@ -10,8 +10,8 @@ Generated for **mwg 0.7.6** on 2026-09-11.
 | Examples | 22 runnable examples |
 | Roadmap | 293/293 items complete, 0 open |
 | API | 0 declaration files |
-| Bundle | Not built raw, Not built gzip |
-| Published dist | Not built excluding source maps |
+| Bundle | 981.9 kB raw, 290.6 kB gzip |
+| Published dist | 3069.3 kB excluding source maps |
 | Test-to-source ratio | 0.7x by line count |
 
 ## Source modules
