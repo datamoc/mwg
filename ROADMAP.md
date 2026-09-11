@@ -3254,6 +3254,89 @@ rather than someone else's build.
      hex `Minimap` geometry and markers, hex-compatible automap rules, and hex traversal in
      `MultiTurnBeam`, with focused parity tests.
 
+234. ~~Game-defined terrain data: extend `TerrainKind` with an optional game-defined payload such
+     as `flags` or `extras`, returned by `kindAt(x, y)`. Keep MWG unaware of game-specific
+     concepts while removing duplicated terrain tables and hand-written flag tests in adapters.
+     The payload must support flags such as flammable, solid, line-of-sight blocking, avoid,
+     pit and liquid without changing the generic terrain contract.~~ `TerrainKind` now carries
+     optional numeric `flags` and boolean `extras` without interpreting either payload.
+
+235. ~~Level view distance: add an optional `viewDistance` to `Level`, and let `FieldOfView` use
+     it as the default radius. This gives heroes, mobs and observers one shared visibility value,
+     while allowing game effects to change it for darkness, boss phases or other mechanics.~~
+     `Level.viewDistance` is optional, mutable, validated, persisted, and used by `FieldOfView`
+     when `update` receives no explicit radius.
+
+236. ~~Priority and deferred actors: extend `Scheduler` with priority-ordered actions, or provide
+     a generic `DeferredEffect` actor that runs once per turn, self-removes and returns a removal
+     handle. It must resolve before ordinary creature actions when requested, so telegraphs,
+     delayed attacks and temporary visual effects do not need game-owned scheduling fields.~~
+     `Scheduler.add` now accepts a priority and orders equal-time entries from highest to
+     lowest priority, with snapshot/restore support. A deferred effect can use an ordinary
+     `Actor` with a finite lifetime and remove itself through the existing scheduler API.
+
+237. ~~Ballistica-style paths: add a game-neutral path query such as
+     `ballistica(from, to, { stop })`, returning traversed cells and the collision or stopping
+     cell. Support configurable stop modes for beams, cones, projectiles and impacts while
+     preserving the existing `traceLine` primitive for simple Bresenham queries.~~
+     `ballistica(level, from, to, { stop })` supports opaque, impassable, outside and no-stop
+     modes, follows square or hex topology, and includes the collision cell in its result.
+
+238. ~~[Critical] Extensible MWL event loops: add game-neutral `while`, `foreach`, `switch`,
+     conditional branches and structured variables to the MWL runtime. Keep loop limits,
+     recursion limits and diagnostics explicit so authored content cannot hang a game.~~ The
+     runtime now supports bounded `while`, `foreach` and `switch` nodes, nested variable paths,
+     and expression-backed branch tests with focused coverage.
+
+239. ~~[Critical] Extensible transactional state: provide a framework state extension registry
+     with snapshot, restore and transaction boundaries, so games can persist their own data
+     atomically without fragile synchronization between unrelated systems.~~ `StateRegistry`
+     now coordinates named game-owned extensions with deep-cloned snapshots and rollback on
+     failed transactions.
+
+240. ~~[High] Generic action journal: record serializable actions and outcomes with deterministic
+     ordering, supporting replay, undo, synchronization and debugging without imposing game
+     combat rules on MWG.~~ `ActionJournal` now records cloned action/event batches, contiguous
+     sequence checkpoints, incremental reads, truncation and validated JSON restore.
+
+241. ~~[High] MWL event tracing: expose an opt-in observer for event claims, hooks, variable
+     changes, content diagnostics and runtime errors, with enough context to reproduce a trace
+     without logging game-owned data by default.~~ `MwlRuntimeOptions.onTrace` now reports
+     event claims/completions, variable writes and runtime errors without enabling logging by
+     default.
+
+242. ~~[High] Extensible filter and predicate registry: let adapters register typed predicates and
+     compose them in MWL events, so games do not encode every filter as an opaque string while
+     the framework remains unaware of Wesnoth-specific filter semantics.~~ `MwlHookRegistry`
+     now accepts named predicates for typed adapter-owned filter conditions, with schema
+     validation and focused runtime coverage.
+
+243. ~~[High] Robust save migrations: version game extensions independently, support ordered
+     migrations with diagnostics, and define an explicit policy for entities removed from a
+     roster during restore.~~ `StateExtension` now supports independent versions, ordered
+     migrations, restore diagnostics, and explicit `keep`/`reset`/`remove` handling for
+     extensions absent from a snapshot.
+
+244. ~~[Medium] Diagnostic content loading: standardize a content-load report covering resources,
+     validation errors, dependencies and intentionally ignored elements, without deciding the
+     meaning of game-specific tags.~~ `loadContent` now returns resources, references/dependencies,
+     ignored opaque tags and structured compile/validation diagnostics.
+
+245. ~~[Medium] Generic scenario and campaign API: model level order, results, carry-over,
+     reminders and transitions without embedding Wesnoth recruitment, recall, campaign or WML
+     semantics in MWG.~~ `Campaign` now provides game-neutral level sequencing, results,
+     carry-over state, reminders, transitions and JSON-safe snapshots.
+
+246. ~~[Medium] Headless scenario harness: run a scenario from a seed and action sequence, expose
+     a verifiable final state and ordered outputs, and make the harness suitable for continuous
+     integration and deterministic regression tests.~~ `runHeadlessScenario` now runs a seeded,
+     renderer-free command sequence and returns final state, ordered events and resumable random
+     state.
+
+The following remain responsibilities of the Wesnoth adapter: combat, terrain and unit rules;
+exact WML filter semantics; recruitment, recall and Wesnoth carry-over; Wesnoth-only tags;
+Lua compatibility; and Wesnoth campaign data.
+
 ### Parked decisions
 
 Not open work, and not forgotten: these are decisions this project has deliberately

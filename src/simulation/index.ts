@@ -2,6 +2,10 @@ export { advanceToInput } from './Turns.ts';
 export type { ScheduledTurns, TurnRules, TurnResult } from './Turns.ts';
 export { runScenario } from './Scenario.ts';
 export type { SimulationStatus, SimulationStep, SimulationRule, Scenario, ScenarioResult } from './Scenario.ts';
+export { Campaign } from './Campaign.ts';
+export type { CampaignOutcome, CampaignLevel, CampaignLevelResult, CampaignSnapshot } from './Campaign.ts';
+export { runHeadlessScenario } from './Harness.ts';
+export type { HeadlessScenario, HeadlessScenarioResult } from './Harness.ts';
 export { SimulationRuntime } from './Runtime.ts';
 export type { SimulationContext, SimulationOutcome, SimulationRuntimeRule, SimulationSnapshot } from './Runtime.ts';
 

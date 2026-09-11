@@ -29,6 +29,14 @@ export interface Particle {
 	scale: number;
 	alpha: number;
 
+	/**
+	 * Index into the emitter's `frames` for this particle's own age, or 0 without a frame
+	 * sequence. Readable here for the same reason the rest of this interface is: a frame
+	 * sequence is simulation state (which frame a flame is on), so a test asserts it without a
+	 * renderer.
+	 */
+	frame: number;
+
 	/** false for a pooled particle waiting to be reused */
 	active: boolean;
 }
@@ -39,6 +47,14 @@ export type ParticleRange = number | readonly [number, number];
 export interface ParticleEmitterOptions {
 	/** drawn per particle; omit for a pure simulation that renders nothing (tests, headless) */
 	texture?: Texture2D;
+
+	/**
+	 * A texture sequence each particle walks across its own life - the four frames of a flame,
+	 * the puff of smoke - taken in preference to `texture`, whose place it takes. Chosen by the
+	 * particle's age rather than the emitter's, so a burst does not flick through the frames in
+	 * lockstep.
+	 */
+	frames?: readonly Texture2D[];
 
 	/** how many particles can live at once. The pool is allocated once at this size and never grows */
 	max?: number;
@@ -126,6 +142,9 @@ export class ParticleEmitter extends Container {
 	private readonly alphaRange: readonly [number, number];
 	private readonly spin: ParticleRange;
 
+	/** the frame sequence to walk, if one was given - `texture` is ignored in its favour */
+	private readonly frames?: readonly Texture2D[];
+
 	private emitting = false;
 
 	/** where the next pool search starts, so reuse stays O(1) amortised rather than O(pool) */
@@ -147,6 +166,7 @@ export class ParticleEmitter extends Container {
 		this.scaleRange = options.scale ?? [1, 1];
 		this.alphaRange = options.alpha ?? [1, 0];
 		this.spin = options.spin ?? 0;
+		this.frames = options.frames;
 
 		for (let i = 0; i < max; i++) {
 			this.pool.push({
@@ -160,11 +180,13 @@ export class ParticleEmitter extends Container {
 				spin: 0,
 				scale: 1,
 				alpha: 1,
+				frame: 0,
 				active: false,
 			});
 
-			if (options.texture) {
-				const sprite = new Sprite(options.texture);
+			const base = this.frames?.[0] ?? options.texture;
+			if (base) {
+				const sprite = new Sprite(base);
 				sprite.anchor.set(0.5);
 				sprite.visible = false;
 				if (options.tint !== undefined) sprite.tint = options.tint;
@@ -244,6 +266,7 @@ export class ParticleEmitter extends Container {
 		particle.spin = pick(this.spin) * motion;
 		particle.scale = this.scaleRange[0];
 		particle.alpha = this.alphaRange[0];
+		particle.frame = 0;
 		particle.active = true;
 		return true;
 	}
@@ -290,6 +313,12 @@ export class ParticleEmitter extends Container {
 			const t = particle.age / particle.life;
 			particle.scale = this.scaleRange[0] + (this.scaleRange[1] - this.scaleRange[0]) * t;
 			particle.alpha = this.alphaRange[0] + (this.alphaRange[1] - this.alphaRange[0]) * t;
+			//a frame sequence plays across the particle's own life, so `t` picks the frame the
+			//same way it interpolates scale and alpha; the last frame holds until it dies rather
+			//than falling off the end of the array
+			if (this.frames) {
+				particle.frame = Math.min(this.frames.length - 1, Math.floor(t * this.frames.length));
+			}
 		}
 
 		this.draw();
@@ -312,6 +341,8 @@ export class ParticleEmitter extends Container {
 			sprite.rotation = particle.rotation;
 			sprite.alpha = particle.alpha;
 			sprite.scale.set(particle.scale);
+			//a frame sequence swaps the sprite's texture; a single-texture emitter leaves it
+			if (this.frames) sprite.texture = this.frames[particle.frame] ?? sprite.texture;
 		}
 	}
 

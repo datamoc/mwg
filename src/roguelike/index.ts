@@ -37,13 +37,14 @@ export { Doors } from './Doors.ts';
 export {
 	chebyshevDistance,
 	traceLine,
+	ballistica,
 	hasLineOfSight,
 	canTarget,
 	resolveArea,
 	resolveAreaOnLevel,
 	hexConeCells,
 } from './Targeting.ts';
-export type { AreaShape, TargetingOptions } from './Targeting.ts';
+export type { AreaShape, TargetingOptions, BallisticaStop, BallisticaOptions, BallisticaResult } from './Targeting.ts';
 export { coneCells, chainTargets, knockbackPath, rangeMultiplier, areaFalloffMultiplier } from './Targeting.ts';
 export type { RangeBand } from './Targeting.ts';
 

@@ -24,7 +24,7 @@ import { validateCatalog } from '../src/mwl/catalog.ts';
 import { decodeSave, encodeSave } from '../src/mwl/persistence.ts';
 import { createFengariScriptHost } from '../src/mwl/fengari.ts';
 import { createExpressionScriptHost } from '../src/mwl/scripts.ts';
-import { contentReport } from '../src/mwl/report.ts';
+import { contentReport, loadContent } from '../src/mwl/report.ts';
 import { readAttributes, readChildren } from '../src/mwl/readers.ts';
 import { evaluateCondition } from '../src/mwl/conditions.ts';
 import { EntityRegistry } from '../src/core/Entity.ts';
@@ -605,6 +605,18 @@ test('MWL content report counts tags and finds dangling references', () => {
 	);
 	assert.deepEqual(report.tags, { ability: 1, game: 1, loot: 1, unit_type: 1 });
 	assert.deepEqual(report.danglingReferences, ['missing']);
+});
+
+test('MWL content loading returns resources, dependencies and diagnostics', () => {
+	const loaded = loadContent([
+		{ file: 'content.mwl', source: '[game]\n[map]\nid=arena\nfile=hero.png\n[/map]\n[/game]' },
+	]);
+	assert.deepEqual(loaded.resources, ['hero.png']);
+	assert.deepEqual(loaded.diagnostics, []);
+	assert.ok(loaded.game);
+	const failed = loadContent([{ file: 'broken.mwl', source: '[unknown]\nvalue=x\n[/unknown]' }]);
+	assert.equal(failed.game, undefined);
+	assert.equal(failed.diagnostics[0]?.severity, 'error');
 });
 
 test('MWL readers coerce fields, collect children, and preserve diagnostics', () => {

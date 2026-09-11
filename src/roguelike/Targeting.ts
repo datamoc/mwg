@@ -82,6 +82,60 @@ export function traceLine(from: Step, to: Step): Step[] {
 	return points;
 }
 
+export type BallisticaStop = 'opaque' | 'impassable' | 'outside' | 'none';
+
+export interface BallisticaOptions {
+	/** what ends the path; the stopping cell is included in `cells` */
+	stop?: BallisticaStop;
+}
+
+export interface BallisticaResult {
+	/** cells from origin through the target or first stopping cell */
+	cells: Step[];
+	/** the first cell that satisfied `stop`, or null when the path reached its target */
+	stop: Step | null;
+}
+
+/**
+ * Traces a projectile-like path through a level and reports its first collision.
+ *
+ * Unlike `traceLine`, this understands the level topology and terrain. `opaque` is the
+ * default for beams and sight, `impassable` is useful for movement and projectiles that can
+ * cross transparent walls, and `outside` is useful when the requested target may be off-map.
+ * The collision cell is included in `cells`, so a caller can apply an impact there before
+ * deciding what the game should do with it.
+ *
+ * @example
+ * ```ts
+ * import { ballistica, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ *
+ * const level = new Level(10, 1, [WALL, FLOOR], 1);
+ * const result = ballistica(level, { x: 0, y: 0 }, { x: 9, y: 0 }, { stop: 'opaque' });
+ * console.log(result.cells, result.stop); // path and first blocking cell, if any
+ * ```
+ */
+export function ballistica(level: Level, from: Step, to: Step, options: BallisticaOptions = {}): BallisticaResult {
+	const line = level.shape === 'hex' ? hexLine(from, to) : traceLine(from, to);
+	const stopMode = options.stop ?? 'opaque';
+	const cells: Step[] = [];
+	let stop: Step | null = null;
+
+	for (const cell of line) {
+		cells.push(cell);
+		if (cells.length === 1 || stopMode === 'none') continue;
+		const blocked =
+			(stopMode === 'outside' && !level.inside(cell.x, cell.y)) ||
+			(stopMode === 'opaque' && level.inside(cell.x, cell.y) && !level.transparent(cell.x, cell.y)) ||
+			(stopMode === 'impassable' && level.inside(cell.x, cell.y) && !level.passable(cell.x, cell.y));
+		if (blocked) {
+			stop = cell;
+			break;
+		}
+	}
+
+	return { cells, stop };
+}
+
 /** true when nothing between `from` and `to` (both cells themselves excepted) blocks sight */
 export function hasLineOfSight(level: Level, from: Step, to: Step): boolean {
 	const line = level.shape === 'hex' ? hexLine(from, to) : traceLine(from, to);

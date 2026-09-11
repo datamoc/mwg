@@ -2,6 +2,14 @@ export { ColorTransformBatcher, packColorAdd, packTintAdd, NO_COLOR_ADD } from '
 export type { HasColorAdd } from './ColorTransformBatcher.ts';
 
 export { TintedSprite, registerColorTransform } from './TintedSprite.ts';
+export {
+	applyImageModifiers,
+	colorShiftMatrix,
+	croppedTexture,
+	imageModifier,
+	parseImagePath,
+} from './ImageModifiers.ts';
+export type { ImageModifier, ParsedImagePath } from './ImageModifiers.ts';
 export { AnimatedSprite, Animation } from './AnimatedSprite.ts';
 export type { AnimationOptions } from './AnimatedSprite.ts';
 export { SpriteSheet } from './SpriteSheet.ts';
@@ -13,7 +21,7 @@ export { createColorBlindnessFilter, COLOR_BLINDNESS_MATRICES } from './ColorBli
 export type { ColorBlindnessType } from './ColorBlindness.ts';
 
 export { Minimap, newlyRevealed, minimapCellCenter } from './Minimap.ts';
-export type { MinimapOptions } from './Minimap.ts';
+export type { MinimapMarker, MinimapOptions } from './Minimap.ts';
 export { TileMap, EMPTY, tileFrame, tileFrameSheet, tileFrameIndex } from './TileMap.ts';
 export type { TileMapOptions } from './TileMap.ts';
 export { LayeredSprite } from './LayeredSprite.ts';

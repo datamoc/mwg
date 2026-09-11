@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { Texture } from 'pixi.js';
 import * as Random from '../src/core/Random.ts';
 import { ParticleEmitter } from '../src/two-d/render/Particles.ts';
 
@@ -135,4 +136,48 @@ test('a textureless emitter runs the whole simulation and draws nothing', () => 
 	emitter.update(0.5);
 	assert.equal(emitter.activeCount, 4);
 	assert.equal(emitter.children.length, 0, 'no sprites were created without a texture');
+});
+
+test('a frame sequence is walked by each particle across its own life', () => {
+	const frames = [Texture.WHITE, Texture.WHITE, Texture.WHITE, Texture.WHITE];
+	const emitter = new ParticleEmitter({ max: 1, life: 1, speed: 0, frames });
+	emitter.burst(1);
+	const particle = emitter.particles[0];
+	assert.equal(particle.frame, 0, 'a particle starts on the first frame');
+
+	emitter.update(0.3);
+	assert.equal(particle.frame, 1);
+	emitter.update(0.3);
+	assert.equal(particle.frame, 2);
+	emitter.update(0.3);
+	assert.equal(particle.frame, 3);
+
+	//the last frame holds until the particle dies rather than running off the end of the array
+	emitter.update(0.05);
+	assert.equal(particle.frame, 3);
+});
+
+test('a reused pool slot starts its frame sequence over', () => {
+	const frames = [Texture.WHITE, Texture.WHITE];
+	const emitter = new ParticleEmitter({ max: 1, life: 0.5, speed: 0, frames });
+	emitter.burst(1);
+	emitter.update(0.4);
+	assert.equal(emitter.particles[0].frame, 1);
+
+	emitter.update(0.2); //the particle dies and frees its slot
+	assert.equal(emitter.activeCount, 0);
+	emitter.burst(1);
+	assert.equal(emitter.particles[0].frame, 0);
+});
+
+test('without a frame sequence a particle stays on frame zero', () => {
+	const emitter = new ParticleEmitter({ max: 1, life: 1, speed: 0 });
+	emitter.burst(1);
+	emitter.update(0.5);
+	assert.equal(emitter.particles[0].frame, 0);
+});
+
+test('a frame sequence is what creates the sprites, standing in for texture', () => {
+	const emitter = new ParticleEmitter({ max: 2, frames: [Texture.WHITE, Texture.WHITE] });
+	assert.equal(emitter.children.length, 2, 'one sprite per pooled particle');
 });

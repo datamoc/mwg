@@ -1,11 +1,58 @@
-import type { MwlCompiledGame } from './compiler.ts';
+import { compileSources, type MwlCompileOptions, type MwlCompiledGame, type MwlSourceFile } from './compiler.ts';
 import { schema01 } from './schema.ts';
 import { flattenNodes } from './utils.ts';
 
 export interface MwlContentReport {
 	readonly tags: Readonly<Record<string, number>>;
 	readonly opaqueTags: readonly string[];
+	readonly references: readonly string[];
 	readonly danglingReferences: readonly string[];
+}
+
+export interface MwlContentDiagnostic {
+	readonly severity: 'error' | 'warning';
+	readonly code: 'compile' | 'dangling-reference' | 'opaque-tag';
+	readonly message: string;
+	readonly file?: string;
+}
+
+export interface MwlContentLoadReport {
+	readonly game?: MwlCompiledGame;
+	readonly resources: readonly string[];
+	readonly dependencies: readonly string[];
+	readonly ignored: readonly string[];
+	readonly diagnostics: readonly MwlContentDiagnostic[];
+}
+
+/** Compile content and return a stable, machine-readable load report instead of throwing. */
+export function loadContent(files: readonly MwlSourceFile[], options: MwlCompileOptions = {}): MwlContentLoadReport {
+	try {
+		const game = compileSources(files, options);
+		const summary = contentReport(game);
+		const diagnostics: MwlContentDiagnostic[] = [];
+		for (const tag of summary.opaqueTags)
+			diagnostics.push({ severity: 'warning', code: 'opaque-tag', message: `ignored opaque tag: ${tag}` });
+		for (const reference of summary.danglingReferences)
+			diagnostics.push({
+				severity: 'error',
+				code: 'dangling-reference',
+				message: `dangling content reference: ${reference}`,
+			});
+		return {
+			game,
+			resources: [...game.assets],
+			dependencies: [...summary.references],
+			ignored: [...summary.opaqueTags],
+			diagnostics,
+		};
+	} catch (error) {
+		return {
+			resources: [],
+			dependencies: [],
+			ignored: [],
+			diagnostics: [{ severity: 'error', code: 'compile', message: String(error) }],
+		};
+	}
 }
 
 /** Summarise a compiled catalog for parity checks and CI output. */
@@ -37,6 +84,7 @@ export function contentReport(game: MwlCompiledGame): MwlContentReport {
 	return {
 		tags: Object.fromEntries(Object.entries(tags).sort(([a], [b]) => a.localeCompare(b))),
 		opaqueTags,
+		references: [...references].sort(),
 		danglingReferences: [...references].filter((reference) => !ids.has(reference)).sort(),
 	};
 }

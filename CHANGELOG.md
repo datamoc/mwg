@@ -5,6 +5,26 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
+## [0.7.4] - 2026-09-11
+
+### Added
+
+- `FloatingTextStack` owns the pop-ups a game spawns over world points: one `push` per number, one
+  `update(dt)` to drive them all, and pop-ups sharing a key and an origin stack apart instead of
+  overprinting. `FloatingText` gained a `hold` option for the classic hold-then-fade curve, and its
+  rise now moves an inner layer rather than the container itself - it used to overwrite the
+  container's own `y`, so a pop-up positioned at a world point jumped to `y = 0` on its first
+  update. The fade curve and the stacking rule are exported as pure functions, so both are tested
+  without a DOM.
+- `ParticleEmitter` accepts a `frames` texture sequence, walked per particle across its own life -
+  the four frames of a flame, the puff of smoke - in place of the single `texture`. The current
+  frame is exposed as `Particle.frame` for the same reason the rest of the particle state is.
+- `Bar` recolours its fill at runtime with `setColor(color)` and takes a `background` colour for its
+  track; both are readable back through `color`/`background`, and a runtime colour counts as
+  explicit so a later theme change cannot throw it away. These were the two blockers for a consumer
+  whose bars change colour with state (a health bar going red as it empties) and whose track is
+  black rather than the theme's panel fill.
+
 ## [0.7.3] - 2026-09-11
 
 ### Added

@@ -118,6 +118,12 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
 - `SaveSystem` - named, versioned save slots over `localStorage` (in-memory fallback under
   `file://`); a `migrations` chain, and `importExternal` as a plug-in point for a foreign
   save format's own `normalize` function.
+- `StateRegistry`/`StateExtension`/`StateRestoreDiagnostic` - named game-owned state extensions with deep-cloned
+  snapshots and transaction rollback, with independent versions, ordered migrations and
+  explicit handling of extensions absent from a restored save, so custom save data has one
+  atomic boundary.
+- `ActionJournal` - serializable ordered action and outcome batches with checkpoints,
+  incremental reads, truncation and validated restore for replay, undo and synchronization.
 - `scramble`/`unscramble` - light save-data obfuscation, not encryption.
 - `SaveSyncClient` - pushes/pulls save data to a server the game supplies.
 - `LockstepClient` - deterministic multiplayer over an injectable WebSocket, tick-driven.
@@ -144,6 +150,8 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   minigame), distinct from `roguelike.Scheduler`'s turn-order primitive.
 - `hexNeighbors`/`hexDistance`/`hexLine`/`hexRange`/`hexToPixel`/`pixelToHex` - flat-top,
   odd-q hex grid geometry.
+- `weightedFlood`/`WeightedCell`/`WeightedFloodOptions` - renderer- and rules-neutral Dijkstra
+  flood over any cell topology, with injected costs, blockers, budget and stopping rules.
 - `Blob` - a spreading volume field over a grid: a per-cell number that `spread` diffuses a
   share of into its open 4-neighbours and decays the rest (`decay: 1` conserves and only
   moves volume around). `seed` adds to a cell, `clear` zeroes one cell and leaves its
@@ -196,14 +204,18 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   `texel × M + A` colour transform (multiply *and* add) in the batch shader.
 - `TintedSprite`/`registerColorTransform` - a sprite drawn through the colour-transform
   batcher; register the extension once via `GameOptions.extensions`.
+- `parseImagePath`/`imageModifier`/`colorShiftMatrix`/`applyImageModifiers`/`croppedTexture` - parses common
+  image suffix modifiers such as `~FL`, `~GS`, `~SCALE` and `~CROP`, then applies the supported
+  Pixi presentation changes without mutating shared source textures.
 - `AnimatedSprite`/`Animation` - frame-sequence sprite animation.
 - `SpriteSheet` - a grid-sliced sprite sheet.
 - `Camera`/`createCamera`/`snapZoom` - world-to-screen camera; `snapZoom` keeps tile edges
   pixel-aligned at a fractional zoom.
 - `Viewport`/`splitScreenHalves` - a camera scoped to one screen region, for split-screen.
 - `createColorBlindnessFilter`/`COLOR_BLINDNESS_MATRICES` - accessibility colour filters.
-- `Minimap`/`newlyRevealed` - bakes an explored-cell set into a persistent `RenderTexture`,
-  never redrawing an already-baked cell.
+- `Minimap`/`newlyRevealed`/`minimapCellCenter`/`MinimapMarker` - bakes an explored-cell set
+  into a persistent `RenderTexture`, never redrawing an already-baked cell, and supports
+  several game-owned unit or quest markers.
 - `TileMap`/`EMPTY`/`tileFrame`/`tileFrameSheet`/`tileFrameIndex` - tile map rendering:
   square/hex/isometric/staggered projections, multi-sheet tiles, elevation columns.
 - `LayeredSprite` - layered character sprites (body/hair/equipment as separate layers).
@@ -275,7 +287,9 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   and/or text, optional per-button nine-patch skin with per-state tints.
 - `Bar` - a filled-proportion track (health/mana/XP); flat colour or texture, optional
   `roundUpToPixel` so a nonzero value never rounds down to invisible.
-- `FloatingText` - a rising, fading damage/pickup number.
+- `FloatingText`/`floatingTextAlpha`/`floatingTextRise` - a rising, fading damage/pickup
+  number and its pure motion/opacity curves; `FloatingTextStack`/`floatingTextStackOffset`
+  stacks simultaneous pop-ups at one world point without overlap.
 - `Toast` - a queued, timed pop-up notification (fade in, hold, fade out).
 - `Tooltip` - a hover explanation over a themed `Window`: a frame-driven hover delay, and
   edge-aware placement that flips rather than letting the panel run off screen.
@@ -524,8 +538,9 @@ the dungeon-crawl half of the capability spec.
 - `Secrets` - disguised terrain (secret doors, hidden traps) that passes every
   passable/transparent check as its disguise until revealed.
 - `Doors` - open/closed/locked door state; locking is independent of open/closed.
-- `chebyshevDistance`/`traceLine`/`hasLineOfSight`/`canTarget`/`resolveArea` - targeting:
-  range/line-of-sight checks and single/line/burst/cone area resolution.
+- `chebyshevDistance`/`traceLine`/`ballistica`/`hasLineOfSight`/`canTarget`/`resolveArea` -
+  targeting and collision paths: range/line-of-sight checks, configurable stopping cells,
+  and single/line/burst/cone area resolution.
 - `coneCells`/`chainTargets`/`knockbackPath` - a widening cone spray, a greedy nearest-hop
   chain, and a shove's path until the first impassable cell.
 - `resolveAreaOnLevel`/`hexConeCells` - topology-aware area resolution and widening hex cones,
@@ -575,8 +590,7 @@ the classic top-down RPG half.
   and a tracked-quest pointer/location.
 - `questsFromRows`/`QuestStageRow` - groups a flat table of stage rows (typically a
   `core.parseCSV` result, one row per stage sharing a `questId`) into `QuestDefinition`s a
-  `QuestLog` can `define` - a content designer edits a spreadsheet instead of a hand-written
-  `.ts` object literal nesting each quest's stage array.
+  `QuestLog` can `define`.
 - `decodeMarshal`/`encodeMarshal`/`RubySymbol` - Ruby `Marshal` 4.8 binary serialization
   (the container format RPG Maker's own `.rxdata` saves use).
 - `hashDefaultOf`/`withHashDefault` - reads and attaches a Ruby hash's default value, which
@@ -591,6 +605,10 @@ live game loop.
   rule set until the next input is due.
 - `runScenario`/`Scenario`/`ScenarioResult` - a bounded, scripted simulation run against a
   set of expectations.
+- `Campaign`/`CampaignLevel`/`CampaignLevelResult`/`CampaignSnapshot` - generic level order,
+  result, carry-over, reminder and transition state, with JSON-safe save/restore.
+- `runHeadlessScenario`/`HeadlessScenario`/`HeadlessScenarioResult` - seeded, renderer-free
+  scenario execution returning the final state, ordered events and resumable random state.
 - `SimulationRuntime`/`SimulationContext`/`SimulationOutcome`/`SimulationRuntimeRule`/
   `SimulationSnapshot` - a facade over one state + one `roguelike.Scheduler` + one `core.
   Generator`, for the interactive half of a turn-based simulation: `dispatch` runs a single
@@ -731,8 +749,9 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 - `mwl build --asset-root public/assets` - optionally verifies every extracted asset before
   emitting the generated files. Missing paths include their MWL source location; without this
   flag the build stays portable for games that resolve assets elsewhere.
-- `contentReport` / `mwl report` - counts tags, lists opaque names, and reports unresolved
-  content references for parity checks and CI.
+- `contentReport` / `loadContent` / `mwl report` - counts tags, lists opaque names, reports
+  resources, dependencies and unresolved references, and returns structured load diagnostics
+  for parity checks and CI.
 - `[campaign]` - declares game-owned campaign metadata (`id`, optional `name`, `title`,
   `description`, and `start_scene`). Its children are intentionally open so a game can define
   scenario and progression tags without changing the core MWL schema; metadata is exposed by
@@ -760,7 +779,10 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   `emitHooksDeclaration`, `emitModule`, `encodeSave`, `evaluateExpression`, `execute`,
   `extractCatalog`, `hookTypes`, `inventoryItem`, `isGettext`, `itemDefinition`,
   `parseExpression`, `parseHookReference`, `parseTerrain`, `parseValue`, `preprocess`,
-  `schema01`, `validateCatalogNodes`, `validateHookReferences`, and `validateWorld`.
+  `schema01`, `validateCatalogNodes`, `validateHookReferences`, `loadContent`, and `validateWorld`.
+- `MwlTraceEvent`/`MwlRuntimeOptions.onTrace` - opt-in lifecycle tracing for event claims,
+  completions, variable writes and runtime errors. `MwlHookRegistry.predicate` lets an adapter
+  register named, typed filter predicates without putting game-specific semantics in MWG.
 - `ScriptHost` and `createExpressionScriptHost` - the game-owned boundary for executable content.
   The expression host is the statement-free default. The main `mwl` entry point
   exports its types without loading a scripting VM. Projects that opt in to the optional

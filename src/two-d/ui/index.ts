@@ -45,8 +45,11 @@ export type { ButtonOptions, ButtonSkin, ButtonState } from './Button.ts';
 export { Bar } from './Bar.ts';
 export type { BarOptions } from './Bar.ts';
 
-export { FloatingText } from './FloatingText.ts';
+export { FloatingText, floatingTextAlpha, floatingTextRise } from './FloatingText.ts';
 export type { FloatingTextOptions } from './FloatingText.ts';
+
+export { FloatingTextStack, floatingTextStackOffset } from './FloatingTextStack.ts';
+export type { FloatingTextPush, FloatingTextStackEntry } from './FloatingTextStack.ts';
 
 export { Toast } from './Toast.ts';
 export type { ToastOptions } from './Toast.ts';

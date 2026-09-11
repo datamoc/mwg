@@ -51,6 +51,7 @@ export type {
 	MwlMapStart,
 	MwlMessage,
 	MwlRuntimeOptions,
+	MwlTraceEvent,
 	MwlWorld,
 } from './runtime.ts';
 export { contentCatalog } from './content.ts';
@@ -75,8 +76,8 @@ export { validateCatalog, validateCatalogNodes } from './catalog.ts';
 export type { MwlValidationOptions } from './catalog.ts';
 export { decodeSave, encodeSave, validateWorld } from './persistence.ts';
 export type { MwlMigration, MwlPersistenceOptions, MwlSaveEnvelope } from './persistence.ts';
-export { contentReport } from './report.ts';
-export type { MwlContentReport } from './report.ts';
+export { contentReport, loadContent } from './report.ts';
+export type { MwlContentDiagnostic, MwlContentLoadReport, MwlContentReport } from './report.ts';
 export { readAttributes, readChildren } from './readers.ts';
 export type { MwlFieldSpec, MwlReadResult, MwlReaderType } from './readers.ts';
 export { createExpressionScriptHost } from './scripts.ts';

@@ -16,6 +16,12 @@ export interface BarOptions {
 	/** the fill's own art, stretched to the filled width; a plain colour rect (the default) when omitted */
 	fillTexture?: Texture2D;
 
+	/**
+	 * The track's own colour; the theme's panel fill when omitted. Ignored when
+	 * `backgroundTexture` is given, which owns the track's appearance instead.
+	 */
+	background?: number;
+
 	/** the track's own art; a plain colour rect (the theme's panel fill) when omitted */
 	backgroundTexture?: Texture2D;
 
@@ -43,6 +49,7 @@ export interface BarOptions {
  *
  * hp.setValue(18, 30); // took damage
  * console.log(hp.value); // 0.6
+ * hp.setColor(0xff0000); // and it is bleeding
  *
  * hp.resize(160, 8); // the window around it grew
  * ```
@@ -53,11 +60,12 @@ export class Bar extends Container {
 
 	private width_: number;
 	private height_: number;
-	private readonly explicitColor: boolean;
-	private color: number;
+	private explicitColor: boolean;
+	private fillColor: number;
 	private fraction: number;
 	private readonly fillTexture?: Texture2D;
 	private readonly backgroundTexture?: Texture2D;
+	private readonly background_?: number;
 	private readonly roundUpToPixel: boolean;
 
 	private readonly themeListener = () => this.draw();
@@ -68,10 +76,11 @@ export class Bar extends Container {
 		this.width_ = options.width;
 		this.height_ = options.height;
 		this.explicitColor = options.color !== undefined;
-		this.color = options.color ?? theme().color.textHighlight;
+		this.fillColor = options.color ?? theme().color.textHighlight;
 		this.fraction = clamp((options.value ?? 1) / (options.max ?? 1));
 		this.fillTexture = options.fillTexture;
 		this.backgroundTexture = options.backgroundTexture;
+		this.background_ = options.background;
 		this.roundUpToPixel = options.roundUpToPixel ?? false;
 
 		this.addChild(this.track);
@@ -91,6 +100,29 @@ export class Bar extends Container {
 		this.draw();
 	}
 
+	/** the resolved fill colour: the explicit one, or the theme's highlight */
+	get color(): number {
+		return this.fillColor;
+	}
+
+	/**
+	 * Recolours the fill at runtime - the other half of what a bar does on screen, beside
+	 * `setValue`: a health bar going red as it empties, a boss bar while it bleeds.
+	 *
+	 * Counts as explicit, exactly as passing `color` to the constructor does, so a later theme
+	 * change cannot throw the game's own colour away.
+	 */
+	setColor(color: number): void {
+		this.explicitColor = true;
+		this.fillColor = color;
+		this.draw();
+	}
+
+	/** the resolved track colour: `background`, or the theme's panel fill */
+	get background(): number {
+		return this.background_ ?? theme().color.panelFill;
+	}
+
 	resize(width: number, height: number): void {
 		this.width_ = width;
 		this.height_ = height;
@@ -99,10 +131,10 @@ export class Bar extends Container {
 
 	private draw(): void {
 		const t = theme();
-		if (!this.explicitColor) this.color = t.color.textHighlight;
+		if (!this.explicitColor) this.fillColor = t.color.textHighlight;
 
 		this.track.clear().rect(0, 0, this.width_, this.height_);
-		this.track.fill(this.backgroundTexture ? { texture: this.backgroundTexture } : { color: t.color.panelFill });
+		this.track.fill(this.backgroundTexture ? { texture: this.backgroundTexture } : { color: this.background });
 
 		this.fill.clear();
 		if (this.fraction > 0) {
@@ -117,9 +149,9 @@ export class Bar extends Container {
 			this.fill.fill(
 				this.fillTexture
 					? this.explicitColor
-						? { texture: this.fillTexture, color: this.color }
+						? { texture: this.fillTexture, color: this.fillColor }
 						: { texture: this.fillTexture }
-					: { color: this.color },
+					: { color: this.fillColor },
 			);
 		}
 	}

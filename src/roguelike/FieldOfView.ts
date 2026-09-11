@@ -67,7 +67,8 @@ export class FieldOfView {
 	/**
 	 * Recomputes what is visible from a point.
 	 *
-	 * @param radius how far light reaches, in cells
+	 * @param radius how far light reaches, in cells. When omitted, the level's `viewDistance`
+	 * is used, falling back to the larger level dimension.
 	 * @param sight when given, sight is height-aware: every cell in range is
 	 * tested along the straight line to it, blocked by opaque terrain or by a
 	 * cell rising above viewer and target alike. That is line-of-sight per cell
@@ -76,7 +77,12 @@ export class FieldOfView {
 	 * callback only ever sees the blocking cell, never the target, so the
 	 * viewer-relative rule cannot live inside it.
 	 */
-	update(x: number, y: number, radius: number, sight?: HeightSight): void {
+	update(
+		x: number,
+		y: number,
+		radius = this.level.viewDistance ?? Math.max(this.level.width, this.level.height),
+		sight?: HeightSight,
+	): void {
 		this.visible.clear();
 		this.light.clear();
 

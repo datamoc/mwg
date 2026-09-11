@@ -1,32 +1,32 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.7.3",
+	"version": "0.7.4",
 	"releaseDate": "2026-09-11",
 	"source": {
-		"files": 235,
-		"lines": 32455,
+		"files": 242,
+		"lines": 33737,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 57,
-				"lines": 9322
+				"files": 59,
+				"lines": 9753
 			},
 			{
 				"name": "core",
-				"files": 38,
-				"lines": 4325
+				"files": 41,
+				"lines": 4640
 			},
 			{
 				"name": "mwl",
 				"files": 18,
-				"lines": 3503
+				"lines": 3773
 			},
 			{
 				"name": "roguelike",
 				"files": 22,
-				"lines": 3062
+				"lines": 3167
 			},
 			{
 				"name": "board",
@@ -74,21 +74,21 @@
 				"lines": 492
 			},
 			{
+				"name": "simulation",
+				"files": 6,
+				"lines": 443
+			},
+			{
 				"name": "world",
 				"files": 6,
 				"lines": 394
-			},
-			{
-				"name": "simulation",
-				"files": 4,
-				"lines": 282
 			}
 		]
 	},
 	"tests": {
-		"files": 163,
-		"lines": 19999,
-		"cases": 1472
+		"files": 167,
+		"lines": 20524,
+		"cases": 1509
 	},
 	"tools": {
 		"files": 34,
@@ -122,8 +122,8 @@
 		]
 	},
 	"roadmap": {
-		"items": 233,
-		"completed": 233,
+		"items": 246,
+		"completed": 246,
 		"open": 0,
 		"percent": 100
 	},
@@ -131,9 +131,9 @@
 		"declarationFiles": 0
 	},
 	"bundle": {
-		"globalRaw": 917253,
-		"globalGzip": 272227,
-		"distRaw": 2554943
+		"globalRaw": 932820,
+		"globalGzip": 276895,
+		"distRaw": 2625527
 	},
 	"quality": {
 		"testToSourceRatio": 0.6

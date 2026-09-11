@@ -1,5 +1,6 @@
 import type { MwlCompiledGame, MwlCompiledNode } from './compiler.ts';
 import type { MwlDiagnostic, MwlLocation } from './grammar.ts';
+import type { MwlValue } from './runtime.ts';
 
 /**
  * The hook boundary described in the MWG architecture documentation. Hooks are the only
@@ -13,7 +14,7 @@ export const hookTypes: readonly HookType[] = ['predicate', 'modifier', 'generat
 
 /** What a hook may read: a snapshot of the world, never engine internals. */
 export interface HookWorld {
-	readonly variables: Readonly<Record<string, string | number | boolean>>;
+	readonly variables: Readonly<Record<string, MwlValue>>;
 	readonly units: Readonly<
 		Record<
 			string,
@@ -38,7 +39,7 @@ export interface Emit {
 	spawn(type: string, side: number, x: number, y: number): void;
 	kill(unit: string): void;
 	gold(side: number, delta: number): void;
-	setVariable(name: string, value: string | number | boolean): void;
+	setVariable(name: string, value: MwlValue): void;
 	message(speaker: string, text: string): void;
 	endTurn(): void;
 	win(side: number): void;

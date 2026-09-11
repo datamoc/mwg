@@ -27,13 +27,16 @@
 export interface Actor {
 	/** actions per unit of time; 2 acts twice as often as 1 */
 	speed?: number;
+
+	/** higher-priority actors resolve first when their scheduled times tie */
+	priority?: number;
 }
 
 /** A serialisable record of a scheduler's queue, keyed by caller-supplied actor ids. */
 export interface SchedulerSnapshot {
 	now: number;
 	sequence: number;
-	entries: Array<{ id: string; time: number; sequence: number }>;
+	entries: Array<{ id: string; time: number; sequence: number; priority?: number }>;
 }
 
 interface Entry<A> {
@@ -42,6 +45,8 @@ interface Entry<A> {
 	time: number;
 	/** breaks ties in insertion order, so a turn is reproducible rather than arbitrary */
 	sequence: number;
+	/** higher-priority entries resolve first at the same scheduled time */
+	priority: number;
 }
 
 export class Scheduler<A extends Actor> {
@@ -68,9 +73,12 @@ export class Scheduler<A extends Actor> {
 	 *
 	 * @param delay time before its first turn. Spawning a monster with a small random delay
 	 * stops a room full of them from acting in lockstep.
+	 * @param priority higher-priority actors resolve first when scheduled at the same time.
 	 */
-	add(actor: A, delay = 0): void {
-		this.entries.push({ actor, time: this.now + delay, sequence: this.sequence++ });
+	add(actor: A, delay = 0, priority = actor.priority ?? 0): void {
+		if (!Number.isFinite(delay) || delay < 0) throw new Error('scheduler delay must be finite and non-negative');
+		if (!Number.isFinite(priority)) throw new Error('scheduler priority must be finite');
+		this.entries.push({ actor, time: this.now + delay, sequence: this.sequence++, priority });
 		this.sort();
 	}
 
@@ -146,6 +154,7 @@ export class Scheduler<A extends Actor> {
 				id: actorId(entry.actor),
 				time: entry.time,
 				sequence: entry.sequence,
+				...(entry.priority === 0 ? {} : { priority: entry.priority }),
 			})),
 		};
 	}
@@ -165,6 +174,7 @@ export class Scheduler<A extends Actor> {
 			actor: actorOf(entry.id),
 			time: entry.time,
 			sequence: entry.sequence,
+			priority: entry.priority ?? 0,
 		}));
 		scheduler.sort();
 		return scheduler;
@@ -173,6 +183,6 @@ export class Scheduler<A extends Actor> {
 	private sort(): void {
 		//few actors are ever queued, so a sort per action is cheaper than a heap and far
 		//easier to reason about; swap it out if a level ever holds thousands
-		this.entries.sort((a, b) => a.time - b.time || a.sequence - b.sequence);
+		this.entries.sort((a, b) => a.time - b.time || b.priority - a.priority || a.sequence - b.sequence);
 	}
 }

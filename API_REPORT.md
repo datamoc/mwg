@@ -36,6 +36,23 @@ build instead.
         }): Achievements;
     }
 
+### `ActionJournal` (class)
+
+    export declare class ActionJournal<Action, Event> {
+        private entries;
+        private nextSequence;
+        append(action: Action, events?: readonly Event[]): ActionJournalEntry<Action, Event>;
+        get size(): number;
+        get all(): readonly ActionJournalEntry<Action, Event>[];
+
+        mark(): number;
+        since(sequence: number): ActionJournalEntry<Action, Event>[];
+
+        truncate(sequence: number): void;
+        toJSON(): ActionJournalEntry<Action, Event>[];
+        static fromJSON<Action, Event>(entries: readonly ActionJournalEntry<Action, Event>[]): ActionJournal<Action, Event>;
+    }
+
 ### `ActorAnimator` (class)
 
     export declare class ActorAnimator {
@@ -100,6 +117,10 @@ build instead.
         get duration(): number;
     }
 
+### `applyImageModifiers` (function)
+
+    export declare function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, scale?: number): void;
+
 ### `Audio` (namespace)
 
     export * as Audio from './audio/index.ts'
@@ -115,17 +136,24 @@ build instead.
         private fill;
         private width_;
         private height_;
-        private readonly explicitColor;
-        private color;
+        private explicitColor;
+        private fillColor;
         private fraction;
         private readonly fillTexture?;
         private readonly backgroundTexture?;
+        private readonly background_?;
         private readonly roundUpToPixel;
         private readonly themeListener;
         constructor(options: BarOptions);
 
         get value(): number;
         setValue(value: number, max?: number): void;
+
+        get color(): number;
+
+        setColor(color: number): void;
+
+        get background(): number;
         resize(width: number, height: number): void;
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -336,6 +364,10 @@ build instead.
 
     export declare const COLOR_BLINDNESS_MATRICES: Record<ColorBlindnessType, ColorMatrix>;
 
+### `colorShiftMatrix` (function)
+
+    export declare function colorShiftMatrix(red: number, green: number, blue: number): ColorMatrixFilter['matrix'];
+
 ### `ColorTransformBatcher` (class)
 
     export declare class ColorTransformBatcher extends Batcher {
@@ -375,6 +407,10 @@ build instead.
 ### `createColorBlindnessFilter` (function)
 
     export declare function createColorBlindnessFilter(type: ColorBlindnessType): ColorMatrixFilter;
+
+### `croppedTexture` (function)
+
+    export declare function croppedTexture(texture: Texture, parsed: ParsedImagePath): Texture;
 
 ### `defaultTheme` (const)
 
@@ -460,14 +496,44 @@ build instead.
     export declare class FloatingText extends Container {
         private readonly duration;
         private readonly rise;
+        private readonly hold;
+
+        private readonly rising;
         private elapsed;
         private done;
+        private baseY;
         constructor(options: FloatingTextOptions);
 
         get finished(): boolean;
 
         update(dt: number): void;
     }
+
+### `floatingTextAlpha` (function)
+
+    export declare function floatingTextAlpha(t: number, hold: number): number;
+
+### `floatingTextRise` (function)
+
+    export declare function floatingTextRise(t: number, rise: number, reduce?: boolean): number;
+
+### `FloatingTextStack` (class)
+
+    export declare class FloatingTextStack extends Container {
+        private readonly live;
+
+        push(options: FloatingTextPush): FloatingText;
+
+        update(dt: number): void;
+
+        get count(): number;
+
+        clear(): void;
+    }
+
+### `floatingTextStackOffset` (function)
+
+    export declare function floatingTextStackOffset(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry): number;
 
 ### `Game` (class)
 
@@ -658,6 +724,10 @@ build instead.
         private cellRect;
         private refresh;
     }
+
+### `imageModifier` (function)
+
+    export declare function imageModifier(path: ParsedImagePath, name: string): ImageModifier | undefined;
 
 ### `importTwee` (function)
 
@@ -908,6 +978,8 @@ build instead.
 
         setMarker(x: number, y: number, facing?: number, color?: number): void;
 
+        setMarkers(markers: readonly MinimapMarker[]): void;
+
         reset(): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -985,6 +1057,10 @@ build instead.
 
     export declare function parseCSV<T = Record<string, string>>(source: string, options?: CsvOptions): T[];
 
+### `parseImagePath` (function)
+
+    export declare function parseImagePath(value: string): ParsedImagePath;
+
 ### `parseMarkdown` (function)
 
     export declare function parseMarkdown(text: string): MarkdownSpan[];
@@ -1003,6 +1079,8 @@ build instead.
         private readonly scaleRange;
         private readonly alphaRange;
         private readonly spin;
+
+        private readonly frames?;
         private emitting;
 
         private poolCursor;
@@ -1602,6 +1680,19 @@ build instead.
 
     export declare function startReveal(total: number, speed?: number): RevealState;
 
+### `StateRegistry` (class)
+
+    export declare class StateRegistry {
+        private extensions;
+        register<T extends StateValue>(extension: StateExtension<T>): () => void;
+        snapshot(): StateSnapshot;
+        restore(snapshot: StateSnapshot, options?: {
+            readonly missing?: 'keep' | 'reset' | 'remove';
+            readonly onDiagnostic?: (diagnostic: StateRestoreDiagnostic) => void;
+        }): readonly StateRestoreDiagnostic[];
+        transaction<T>(work: () => T): T;
+    }
+
 ### `StatsScreen` (class)
 
     export declare class StatsScreen extends Container {
@@ -1887,7 +1978,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.7.3";
+    export declare const version = "0.7.4";
 
 ### `VerticalLabel` (class)
 
@@ -1916,6 +2007,10 @@ build instead.
 ### `watchReducedMotion` (function)
 
     export declare function watchReducedMotion(listener: (reduced: boolean) => void): () => void;
+
+### `weightedFlood` (function)
+
+    export declare function weightedFlood<T, K>(start: T, options: WeightedFloodOptions<T, K>): Map<K, WeightedCell<T>>;
 
 ### `Window` (class)
 
@@ -3317,6 +3412,23 @@ build instead.
         }): Achievements;
     }
 
+### `ActionJournal` (class)
+
+    export declare class ActionJournal<Action, Event> {
+        private entries;
+        private nextSequence;
+        append(action: Action, events?: readonly Event[]): ActionJournalEntry<Action, Event>;
+        get size(): number;
+        get all(): readonly ActionJournalEntry<Action, Event>[];
+
+        mark(): number;
+        since(sequence: number): ActionJournalEntry<Action, Event>[];
+
+        truncate(sequence: number): void;
+        toJSON(): ActionJournalEntry<Action, Event>[];
+        static fromJSON<Action, Event>(entries: readonly ActionJournalEntry<Action, Event>[]): ActionJournal<Action, Event>;
+    }
+
 ### `Blob` (class)
 
     export declare class Blob {
@@ -3885,6 +3997,19 @@ build instead.
         get isComplete(): boolean;
     }
 
+### `StateRegistry` (class)
+
+    export declare class StateRegistry {
+        private extensions;
+        register<T extends StateValue>(extension: StateExtension<T>): () => void;
+        snapshot(): StateSnapshot;
+        restore(snapshot: StateSnapshot, options?: {
+            readonly missing?: 'keep' | 'reset' | 'remove';
+            readonly onDiagnostic?: (diagnostic: StateRestoreDiagnostic) => void;
+        }): readonly StateRestoreDiagnostic[];
+        transaction<T>(work: () => T): T;
+    }
+
 ### `TelemetryClient` (class)
 
     export declare class TelemetryClient extends HttpTransport {
@@ -3943,6 +4068,10 @@ build instead.
 ### `watchReducedMotion` (function)
 
     export declare function watchReducedMotion(listener: (reduced: boolean) => void): () => void;
+
+### `weightedFlood` (function)
+
+    export declare function weightedFlood<T, K>(start: T, options: WeightedFloodOptions<T, K>): Map<K, WeightedCell<T>>;
 
 ## `./i18n`
 
@@ -4257,6 +4386,10 @@ build instead.
 
     export declare function itemDefinition(item: MwlItemDefinition, context?: MwlExpressionContext): MwlActorItem;
 
+### `loadContent` (function)
+
+    export declare function loadContent(files: readonly MwlSourceFile[], options?: MwlCompileOptions): MwlContentLoadReport;
+
 ### `MwlRuntime` (class)
 
     export declare class MwlRuntime {
@@ -4265,6 +4398,7 @@ build instead.
         private readonly onMessage?;
         private readonly resolveMap?;
         private readonly hooks?;
+        private readonly onTrace?;
         private readonly persistence;
         private readonly unitTypes;
         private schedule;
@@ -4280,6 +4414,7 @@ build instead.
         private claimEvent;
         private eventFiltersMatch;
         private executeEvent;
+        private executeTracedEvent;
 
         private showDialogue;
         private showSay;
@@ -4305,6 +4440,8 @@ build instead.
 
         private interpolate;
         private setVariable;
+        private variableAt;
+        private setVariableAt;
         private spawnUnit;
         private killUnit;
         private addGold;
@@ -4314,6 +4451,7 @@ build instead.
         private filterMatches;
 
         private conditionMatches;
+        private nodeConditionMatches;
 
         private filterConditionMatches;
         private conditionMet;
@@ -4431,6 +4569,10 @@ build instead.
 ### `areaFalloffMultiplier` (function)
 
     export declare function areaFalloffMultiplier(index: number, steps: readonly number[]): number;
+
+### `ballistica` (function)
+
+    export declare function ballistica(level: Level, from: Step, to: Step, options?: BallisticaOptions): BallisticaResult;
 
 ### `BossPhases` (class)
 
@@ -4603,7 +4745,7 @@ build instead.
         readonly light: Map<number, number>;
         constructor(level: Level);
 
-        update(x: number, y: number, radius: number, sight?: HeightSight): void;
+        update(x: number, y: number, radius?: number, sight?: HeightSight): void;
 
         private lightCell;
 
@@ -4664,11 +4806,13 @@ build instead.
         readonly height: number;
         readonly shape: LevelShape;
 
+        viewDistance?: number;
+
         readonly terrain: Uint8Array;
         private kinds;
 
         rooms: Rect[];
-        constructor(width: number, height: number, kinds: TerrainKind[], fill?: number, shape?: LevelShape);
+        constructor(width: number, height: number, kinds: TerrainKind[], fill?: number, shape?: LevelShape, viewDistance?: number);
         get cellCount(): number;
         index(x: number, y: number): number;
         xOf(cell: number): number;
@@ -4697,6 +4841,7 @@ build instead.
             shape: LevelShape;
             terrain: number[];
             rooms: Rect[];
+            viewDistance?: number;
         };
 
         static fromJSON(kinds: TerrainKind[], data: {
@@ -4705,6 +4850,7 @@ build instead.
             shape: LevelShape;
             terrain: number[];
             rooms: Rect[];
+            viewDistance?: number;
         }): Level;
     }
 
@@ -4820,7 +4966,7 @@ build instead.
         get actors(): A[];
         has(actor: A): boolean;
 
-        add(actor: A, delay?: number): void;
+        add(actor: A, delay?: number, priority?: number): void;
         remove(actor: A): void;
         clear(): void;
 
@@ -5108,6 +5254,36 @@ build instead.
 
     export declare function advanceToInput<Actor>(rules: TurnRules<Actor>, budget: number): TurnResult<Actor>;
 
+### `Campaign` (class)
+
+    export declare class Campaign<State extends StateValue, Result extends StateValue = StateValue> {
+        private readonly levels;
+        private _currentLevel;
+        private _state;
+        private _reminders;
+        private _results;
+        constructor(options: {
+            readonly levels: readonly CampaignLevel<State, Result>[];
+            readonly start: string;
+            readonly state: State;
+        });
+        get currentLevel(): string | null;
+        get state(): State;
+        get reminders(): readonly string[];
+        get results(): Readonly<Record<string, Result>>;
+
+        playCurrent(): CampaignLevelResult<State, Result>;
+        completeCurrent(result: CampaignLevelResult<State, Result>): CampaignLevelResult<State, Result>;
+        snapshot(): CampaignSnapshot<State, Result>;
+        static restore<State extends StateValue, Result extends StateValue = StateValue>(snapshot: CampaignSnapshot<State, Result>, options: {
+            readonly levels: readonly CampaignLevel<State, Result>[];
+        }): Campaign<State, Result>;
+    }
+
+### `runHeadlessScenario` (function)
+
+    export declare function runHeadlessScenario<State, Command, Event>(scenario: HeadlessScenario<State, Command, Event>): HeadlessScenarioResult<State, Event>;
+
 ### `runScenario` (function)
 
     export declare function runScenario<State, Command, Event, Random>(scenario: Scenario<State, Command, Event, Random>): ScenarioResult<State, Event>;
@@ -5123,7 +5299,7 @@ build instead.
         get actors(): A[];
         has(actor: A): boolean;
 
-        add(actor: A, delay?: number): void;
+        add(actor: A, delay?: number, priority?: number): void;
         remove(actor: A): void;
         clear(): void;
 
@@ -5226,6 +5402,10 @@ build instead.
         get duration(): number;
     }
 
+### `applyImageModifiers` (function)
+
+    export declare function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, scale?: number): void;
+
 ### `autotileFrames` (function)
 
     export declare function autotileFrames(width: number, height: number, sameTerrain: (x: number, y: number) => boolean, frames: readonly number[]): Int32Array;
@@ -5237,17 +5417,24 @@ build instead.
         private fill;
         private width_;
         private height_;
-        private readonly explicitColor;
-        private color;
+        private explicitColor;
+        private fillColor;
         private fraction;
         private readonly fillTexture?;
         private readonly backgroundTexture?;
+        private readonly background_?;
         private readonly roundUpToPixel;
         private readonly themeListener;
         constructor(options: BarOptions);
 
         get value(): number;
         setValue(value: number, max?: number): void;
+
+        get color(): number;
+
+        setColor(color: number): void;
+
+        get background(): number;
         resize(width: number, height: number): void;
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -5383,6 +5570,10 @@ build instead.
 
     export declare const COLOR_BLINDNESS_MATRICES: Record<ColorBlindnessType, ColorMatrix>;
 
+### `colorShiftMatrix` (function)
+
+    export declare function colorShiftMatrix(red: number, green: number, blue: number): ColorMatrixFilter['matrix'];
+
 ### `ColorTransformBatcher` (class)
 
     export declare class ColorTransformBatcher extends Batcher {
@@ -5422,6 +5613,10 @@ build instead.
 ### `createColorBlindnessFilter` (function)
 
     export declare function createColorBlindnessFilter(type: ColorBlindnessType): ColorMatrixFilter;
+
+### `croppedTexture` (function)
+
+    export declare function croppedTexture(texture: Texture, parsed: ParsedImagePath): Texture;
 
 ### `defaultTheme` (const)
 
@@ -5476,14 +5671,44 @@ build instead.
     export declare class FloatingText extends Container {
         private readonly duration;
         private readonly rise;
+        private readonly hold;
+
+        private readonly rising;
         private elapsed;
         private done;
+        private baseY;
         constructor(options: FloatingTextOptions);
 
         get finished(): boolean;
 
         update(dt: number): void;
     }
+
+### `floatingTextAlpha` (function)
+
+    export declare function floatingTextAlpha(t: number, hold: number): number;
+
+### `floatingTextRise` (function)
+
+    export declare function floatingTextRise(t: number, rise: number, reduce?: boolean): number;
+
+### `FloatingTextStack` (class)
+
+    export declare class FloatingTextStack extends Container {
+        private readonly live;
+
+        push(options: FloatingTextPush): FloatingText;
+
+        update(dt: number): void;
+
+        get count(): number;
+
+        clear(): void;
+    }
+
+### `floatingTextStackOffset` (function)
+
+    export declare function floatingTextStackOffset(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry): number;
 
 ### `Game` (class)
 
@@ -5613,6 +5838,10 @@ build instead.
         private cellRect;
         private refresh;
     }
+
+### `imageModifier` (function)
+
+    export declare function imageModifier(path: ParsedImagePath, name: string): ImageModifier | undefined;
 
 ### `importTwee` (function)
 
@@ -5798,6 +6027,8 @@ build instead.
 
         setMarker(x: number, y: number, facing?: number, color?: number): void;
 
+        setMarkers(markers: readonly MinimapMarker[]): void;
+
         reset(): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -5843,6 +6074,10 @@ build instead.
 
     export declare function packTintAdd(color: number, strength: number): number;
 
+### `parseImagePath` (function)
+
+    export declare function parseImagePath(value: string): ParsedImagePath;
+
 ### `parseMarkdown` (function)
 
     export declare function parseMarkdown(text: string): MarkdownSpan[];
@@ -5861,6 +6096,8 @@ build instead.
         private readonly scaleRange;
         private readonly alphaRange;
         private readonly spin;
+
+        private readonly frames?;
         private emitting;
 
         private poolCursor;
@@ -6524,6 +6761,10 @@ build instead.
         get duration(): number;
     }
 
+### `applyImageModifiers` (function)
+
+    export declare function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, scale?: number): void;
+
 ### `autotileFrames` (function)
 
     export declare function autotileFrames(width: number, height: number, sameTerrain: (x: number, y: number) => boolean, frames: readonly number[]): Int32Array;
@@ -6610,6 +6851,10 @@ build instead.
 
     export declare const COLOR_BLINDNESS_MATRICES: Record<ColorBlindnessType, ColorMatrix>;
 
+### `colorShiftMatrix` (function)
+
+    export declare function colorShiftMatrix(red: number, green: number, blue: number): ColorMatrixFilter['matrix'];
+
 ### `ColorTransformBatcher` (class)
 
     export declare class ColorTransformBatcher extends Batcher {
@@ -6642,6 +6887,10 @@ build instead.
 
     export declare function createColorBlindnessFilter(type: ColorBlindnessType): ColorMatrixFilter;
 
+### `croppedTexture` (function)
+
+    export declare function croppedTexture(texture: Texture, parsed: ParsedImagePath): Texture;
+
 ### `detectWebGpu` (function)
 
     export declare function detectWebGpu(): Promise<WebGpuDetection>;
@@ -6653,6 +6902,10 @@ build instead.
 ### `Gradient` (const)
 
     export declare const Gradient: typeof FillGradient;
+
+### `imageModifier` (function)
+
+    export declare function imageModifier(path: ParsedImagePath, name: string): ImageModifier | undefined;
 
 ### `inspectGraphicsCapabilities` (function)
 
@@ -6694,6 +6947,8 @@ build instead.
 
         setMarker(x: number, y: number, facing?: number, color?: number): void;
 
+        setMarkers(markers: readonly MinimapMarker[]): void;
+
         reset(): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
@@ -6724,6 +6979,10 @@ build instead.
 
     export declare function packTintAdd(color: number, strength: number): number;
 
+### `parseImagePath` (function)
+
+    export declare function parseImagePath(value: string): ParsedImagePath;
+
 ### `ParticleEmitter` (class)
 
     export declare class ParticleEmitter extends Container {
@@ -6738,6 +6997,8 @@ build instead.
         private readonly scaleRange;
         private readonly alphaRange;
         private readonly spin;
+
+        private readonly frames?;
         private emitting;
 
         private poolCursor;
@@ -7113,17 +7374,24 @@ build instead.
         private fill;
         private width_;
         private height_;
-        private readonly explicitColor;
-        private color;
+        private explicitColor;
+        private fillColor;
         private fraction;
         private readonly fillTexture?;
         private readonly backgroundTexture?;
+        private readonly background_?;
         private readonly roundUpToPixel;
         private readonly themeListener;
         constructor(options: BarOptions);
 
         get value(): number;
         setValue(value: number, max?: number): void;
+
+        get color(): number;
+
+        setColor(color: number): void;
+
+        get background(): number;
         resize(width: number, height: number): void;
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -7194,14 +7462,44 @@ build instead.
     export declare class FloatingText extends Container {
         private readonly duration;
         private readonly rise;
+        private readonly hold;
+
+        private readonly rising;
         private elapsed;
         private done;
+        private baseY;
         constructor(options: FloatingTextOptions);
 
         get finished(): boolean;
 
         update(dt: number): void;
     }
+
+### `floatingTextAlpha` (function)
+
+    export declare function floatingTextAlpha(t: number, hold: number): number;
+
+### `floatingTextRise` (function)
+
+    export declare function floatingTextRise(t: number, rise: number, reduce?: boolean): number;
+
+### `FloatingTextStack` (class)
+
+    export declare class FloatingTextStack extends Container {
+        private readonly live;
+
+        push(options: FloatingTextPush): FloatingText;
+
+        update(dt: number): void;
+
+        get count(): number;
+
+        clear(): void;
+    }
+
+### `floatingTextStackOffset` (function)
+
+    export declare function floatingTextStackOffset(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry): number;
 
 ### `HelpScreen` (class)
 

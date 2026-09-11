@@ -69,6 +69,12 @@ export interface TerrainKind {
 
 	/** can something be seen through it */
 	transparent: boolean;
+
+	/** optional game-defined bit flags, carried without interpretation by MWG */
+	flags?: number;
+
+	/** optional game-defined boolean properties, carried without interpretation by MWG */
+	extras?: Readonly<Record<string, boolean>>;
 }
 
 /**
@@ -98,6 +104,9 @@ export class Level {
 	readonly height: number;
 	readonly shape: LevelShape;
 
+	/** default sight radius for observers that do not provide one explicitly */
+	viewDistance?: number;
+
 	/** terrain id per cell, indexing into `kinds` */
 	readonly terrain: Uint8Array;
 
@@ -106,10 +115,20 @@ export class Level {
 	/** rooms the generator carved, for placing stairs, monsters and treasure */
 	rooms: Rect[] = [];
 
-	constructor(width: number, height: number, kinds: TerrainKind[], fill = 0, shape: LevelShape = 'square') {
+	constructor(
+		width: number,
+		height: number,
+		kinds: TerrainKind[],
+		fill = 0,
+		shape: LevelShape = 'square',
+		viewDistance?: number,
+	) {
 		this.width = width;
 		this.shape = shape;
 		this.height = height;
+		if (viewDistance !== undefined && (!Number.isFinite(viewDistance) || viewDistance < 0))
+			throw new Error('viewDistance must be a finite non-negative number');
+		this.viewDistance = viewDistance;
 		this.kinds = kinds;
 		this.terrain = new Uint8Array(width * height).fill(fill);
 	}
@@ -208,13 +227,21 @@ export class Level {
 		return out;
 	}
 
-	toJSON(): { width: number; height: number; shape: LevelShape; terrain: number[]; rooms: Rect[] } {
+	toJSON(): {
+		width: number;
+		height: number;
+		shape: LevelShape;
+		terrain: number[];
+		rooms: Rect[];
+		viewDistance?: number;
+	} {
 		return {
 			width: this.width,
 			height: this.height,
 			shape: this.shape,
 			terrain: [...this.terrain],
 			rooms: this.rooms.map((room) => ({ ...room })),
+			...(this.viewDistance === undefined ? {} : { viewDistance: this.viewDistance }),
 		};
 	}
 
@@ -225,9 +252,16 @@ export class Level {
 	 */
 	static fromJSON(
 		kinds: TerrainKind[],
-		data: { width: number; height: number; shape: LevelShape; terrain: number[]; rooms: Rect[] },
+		data: {
+			width: number;
+			height: number;
+			shape: LevelShape;
+			terrain: number[];
+			rooms: Rect[];
+			viewDistance?: number;
+		},
 	): Level {
-		const level = new Level(data.width, data.height, kinds, 0, data.shape);
+		const level = new Level(data.width, data.height, kinds, 0, data.shape, data.viewDistance);
 		level.terrain.set(data.terrain.slice(0, level.terrain.length));
 		level.rooms = data.rooms.map((room) => ({ ...room }));
 		return level;

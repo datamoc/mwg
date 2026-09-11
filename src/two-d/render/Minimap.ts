@@ -34,6 +34,13 @@ export interface MinimapOptions {
 	shape?: 'square' | 'hex';
 }
 
+export interface MinimapMarker {
+	x: number;
+	y: number;
+	facing?: number;
+	color?: number;
+}
+
 /**
  * The minimap centre for a cell, useful for overlays that must share its topology.
  *
@@ -159,20 +166,25 @@ export class Minimap extends Container {
 
 	/** positions a marker at a cell, optionally pointing it in a facing direction (radians) */
 	setMarker(x: number, y: number, facing?: number, color = 0xffffff): void {
+		this.setMarkers([{ x, y, facing, color }]);
+	}
+
+	/** replaces the current overlay with zero or more unit/quest markers */
+	setMarkers(markers: readonly MinimapMarker[]): void {
 		this.marker.clear();
-		this.marker.circle(0, 0, Math.max(1, this.cellSize)).fill({ color });
+		for (const marker of markers) {
+			const markerColor = marker.color ?? 0xffffff;
+			const center = minimapCellCenter(marker.x, marker.y, this.cellSize, this.shape);
+			this.marker.circle(center.x, center.y, Math.max(1, this.cellSize)).fill({ color: markerColor });
 
-		if (facing !== undefined) {
-			const length = this.cellSize * 2;
-			this.marker
-				.moveTo(0, 0)
-				.lineTo(Math.cos(facing) * length, Math.sin(facing) * length)
-				.stroke({ color, width: 1 });
+			if (marker.facing !== undefined) {
+				const length = this.cellSize * 2;
+				this.marker
+					.moveTo(center.x, center.y)
+					.lineTo(center.x + Math.cos(marker.facing) * length, center.y + Math.sin(marker.facing) * length)
+					.stroke({ color: markerColor, width: 1 });
+			}
 		}
-
-		const center = minimapCellCenter(x, y, this.cellSize, this.shape);
-		this.marker.x = center.x;
-		this.marker.y = center.y;
 	}
 
 	/** forgets everything baked, so the next `sync` repaints from a clean texture - a fresh floor */

@@ -2,7 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
 	advanceToInput,
+	Campaign,
 	runScenario,
+	runHeadlessScenario,
 	SimulationRuntime,
 	type SimulationRule,
 	type SimulationRuntimeRule,
@@ -164,6 +166,49 @@ test('empty and already finished scenarios do not call the rules', () => {
 		assert.deepEqual(result.events, []);
 		assert.equal(result.processedCommands, 0);
 	}
+});
+
+test('headless scenario harness is deterministic and returns its seed and RNG state', () => {
+	const step: SimulationRule<{ value: number }, number, number, Generator> = (state, command, random) => ({
+		state: { value: state.value + command + random.int(4) },
+		events: [command],
+		status: 'ready',
+	});
+	const input = { seed: 42, initialState: { value: 0 }, commands: [1, 2], step };
+	const first = runHeadlessScenario(input);
+	assert.deepEqual(first, runHeadlessScenario(input));
+	assert.equal(first.seed, 42);
+	assert.equal(first.random.length, 4);
+});
+
+test('Campaign sequences levels, carries state, stores results and restores', () => {
+	const campaign = new Campaign({
+		levels: [
+			{
+				id: 'one',
+				run: (state) => ({ outcome: 'completed' as const, state: { score: state.score + 1 }, next: 'two' }),
+			},
+			{
+				id: 'two',
+				run: (state) => ({ outcome: 'completed' as const, state, next: null, result: { won: true } }),
+			},
+		],
+		start: 'one',
+		state: { score: 0 },
+	});
+	campaign.playCurrent();
+	assert.equal(campaign.currentLevel, 'two');
+	campaign.playCurrent();
+	assert.equal(campaign.currentLevel, null);
+	assert.deepEqual(campaign.results, { two: { won: true } });
+	const restored = Campaign.restore(campaign.snapshot(), {
+		levels: [
+			{ id: 'one', run: (state) => ({ outcome: 'completed' as const, state, next: null }) },
+			{ id: 'two', run: (state) => ({ outcome: 'completed' as const, state, next: null }) },
+		],
+	});
+	assert.equal(restored.currentLevel, null);
+	assert.deepEqual(restored.state, { score: 1 });
 });
 
 test('rule errors propagate without claiming a partial scenario succeeded', () => {

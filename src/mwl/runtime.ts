@@ -10,6 +10,7 @@ import type {
 	PredicateHook,
 } from './hooks.ts';
 import { decodeSave, encodeSave, type MwlPersistenceOptions } from './persistence.ts';
+import { evaluateCondition } from './conditions.ts';
 import { evaluateExpression } from './expression.ts';
 import { integerAttribute, requiredAttribute } from './utils.ts';
 
@@ -32,8 +33,10 @@ export interface MwlMap {
 	readonly starts: Readonly<Record<number, readonly MwlMapStart[]>>;
 }
 
+export type MwlValue = string | number | boolean | MwlValue[] | { [key: string]: MwlValue };
+
 export interface MwlWorld {
-	readonly variables: Record<string, string | number | boolean>;
+	readonly variables: Record<string, MwlValue>;
 	readonly units: Record<
 		string,
 		{ hp: number; x: number; y: number; alive: boolean; type?: string; side?: number; moves?: number }
@@ -86,6 +89,16 @@ export interface MwlHookRegistry {
 	readonly migration?: Readonly<Record<string, MigrationHook>>;
 }
 
+export type MwlTraceEvent =
+	| {
+			readonly type: 'event';
+			readonly phase: 'claimed' | 'completed';
+			readonly id: string;
+			readonly trigger?: string;
+	  }
+	| { readonly type: 'variable'; readonly name: string; readonly previous?: MwlValue; readonly value: MwlValue }
+	| { readonly type: 'error'; readonly message: string; readonly event?: string };
+
 export interface MwlRuntimeOptions {
 	readonly world?: MwlWorld;
 	/** called for every `[message]` command, with its speaker and portrait */
@@ -93,6 +106,8 @@ export interface MwlRuntimeOptions {
 	/** resolve a `[map] file=` reference to its text */
 	readonly resolveMap?: (file: string) => string;
 	readonly hooks?: MwlHookRegistry;
+	/** opt-in observer for event lifecycle, variable writes and content errors */
+	readonly onTrace?: (event: MwlTraceEvent) => void;
 	/** schema version and migrations used by save/restore; defaults to version 1 */
 	readonly persistence?: MwlPersistenceOptions;
 }
@@ -170,6 +185,7 @@ export class MwlRuntime {
 	private readonly onMessage?: (message: MwlMessage) => void;
 	private readonly resolveMap?: (file: string) => string;
 	private readonly hooks?: MwlHookRegistry;
+	private readonly onTrace?: (event: MwlTraceEvent) => void;
 	private readonly persistence: MwlPersistenceOptions;
 	private readonly unitTypes = new Map<string, { hitpoints: number; movement: number }>();
 	private schedule: string[] = [];
@@ -182,6 +198,7 @@ export class MwlRuntime {
 		this.onMessage = options.onMessage;
 		this.resolveMap = options.resolveMap;
 		this.hooks = options.hooks;
+		this.onTrace = options.onTrace;
 		this.persistence = options.persistence ?? { version: 1 };
 		this.loadUnitTypes();
 		this.loadSchedule();
@@ -195,7 +212,7 @@ export class MwlRuntime {
 			if ((event.attributes.on ?? event.attributes.trigger) !== trigger) continue;
 			if (!this.eventFiltersMatch(event)) continue;
 			if (!this.claimEvent(event)) continue;
-			this.executeEvent(event);
+			this.executeTracedEvent(event, trigger);
 		}
 		this.checkObjectives();
 	}
@@ -204,7 +221,7 @@ export class MwlRuntime {
 	fireEvent(id: string): boolean {
 		const event = this.nodes('event').find((candidate) => candidate.attributes.id === id);
 		if (!event || !this.eventFiltersMatch(event) || !this.claimEvent(event)) return false;
-		this.executeEvent(event);
+		this.executeTracedEvent(event, 'fireEvent');
 		this.checkObjectives();
 		return true;
 	}
@@ -230,7 +247,7 @@ export class MwlRuntime {
 			if (event.attributes.side !== undefined && integer(event, 'side', Number.NaN) !== unit.side) continue;
 			if (!this.eventFiltersMatch(event)) continue;
 			if (!this.claimEvent(event)) continue;
-			this.executeEvent(event);
+			this.executeTracedEvent(event, 'moveto');
 		}
 		this.checkObjectives();
 	}
@@ -269,6 +286,20 @@ export class MwlRuntime {
 				continue;
 			}
 			this.executeNode(command);
+		}
+	}
+
+	private executeTracedEvent(event: MwlCompiledNode, trigger: string): void {
+		const id =
+			event.attributes.id ??
+			`${event.attributes.on ?? event.attributes.trigger ?? 'event'}@${event.location?.line ?? 0}`;
+		this.onTrace?.({ type: 'event', phase: 'claimed', id, trigger });
+		try {
+			this.executeEvent(event);
+			this.onTrace?.({ type: 'event', phase: 'completed', id, trigger });
+		} catch (error) {
+			this.onTrace?.({ type: 'error', message: String(error), event: id });
+			throw error;
 		}
 	}
 
@@ -553,6 +584,47 @@ export class MwlRuntime {
 					node.attributes.value ?? '',
 				);
 				break;
+			case 'while': {
+				const limit = integer(node, 'max_iterations', 1000);
+				if (limit < 1 || limit > 100_000)
+					throw new Error('MWL while max_iterations must be between 1 and 100000');
+				for (let iteration = 0; iteration < limit && this.nodeConditionMatches(node); iteration++)
+					for (const child of node.children) this.executeNode(child);
+				break;
+			}
+			case 'foreach': {
+				const source = this.variableAt(required(node, 'variable'));
+				const entries = Array.isArray(source)
+					? source.map((value, index) => [String(index), value] as const)
+					: typeof source === 'string'
+						? source
+								.split(',')
+								.map((value, index) => [String(index), value.trim()] as const)
+								.filter(([, value]) => value !== '')
+						: source && typeof source === 'object'
+							? Object.entries(source)
+							: [];
+				const item = node.attributes.item ?? 'item';
+				const indexName = node.attributes.index ?? 'index';
+				for (let index = 0; index < entries.length; index++) {
+					this.setVariableAt(item, entries[index][1]);
+					this.setVariableAt(indexName, index);
+					for (const child of node.children) this.executeNode(child);
+				}
+				break;
+			}
+			case 'switch': {
+				const value = this.variableAt(required(node, 'variable'));
+				const selected = node.children.find(
+					(child) =>
+						child.tag === 'case' &&
+						child.attributes.equals !== undefined &&
+						sameValue(value, child.attributes.equals),
+				);
+				const fallback = node.children.find((child) => child.tag === 'default');
+				for (const child of (selected ?? fallback)?.children ?? []) this.executeNode(child);
+				break;
+			}
 			case 'end_turn':
 				this.endTurn();
 				break;
@@ -563,7 +635,7 @@ export class MwlRuntime {
 				this.world.status = 'lost';
 				break;
 			case 'if':
-				if (!this.conditionMatches(node)) break;
+				if (!this.nodeConditionMatches(node)) break;
 				for (const child of node.children) this.executeNode(child);
 				break;
 			case 'else':
@@ -643,7 +715,7 @@ export class MwlRuntime {
 	private setVariable(name: string, raw: string): void {
 		const numeric = Number(raw);
 		if (raw.trim() !== '' && Number.isFinite(numeric)) {
-			this.world.variables[name] = numeric;
+			this.setVariableAt(name, numeric);
 			return;
 		}
 		// A bare `$name` copies another variable (missing reads as empty),
@@ -651,7 +723,7 @@ export class MwlRuntime {
 		const reference = /^\$([A-Za-z_][A-Za-z0-9_.]*)$/.exec(raw.trim());
 		if (reference) {
 			const value = this.world.variables[reference[1]];
-			this.world.variables[name] = value === undefined ? '' : value;
+			this.setVariableAt(name, value === undefined ? '' : value);
 			return;
 		}
 		const context = Object.fromEntries(
@@ -660,10 +732,37 @@ export class MwlRuntime {
 			),
 		);
 		if (/[+*/^()]|\s-\s/.test(raw) || Object.prototype.hasOwnProperty.call(context, raw.trim())) {
-			this.world.variables[name] = evaluateExpression(raw, context);
+			this.setVariableAt(name, evaluateExpression(raw, context));
 			return;
 		}
-		this.world.variables[name] = raw;
+		this.setVariableAt(name, raw);
+	}
+
+	private variableAt(path: string): MwlValue | undefined {
+		let value: MwlValue | undefined = this.world.variables;
+		for (const part of path.split('.')) {
+			if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+			value = value[part];
+		}
+		return value;
+	}
+
+	private setVariableAt(path: string, value: MwlValue): void {
+		const previous = this.variableAt(path);
+		const parts = path.split('.');
+		if (parts.length === 1) {
+			this.world.variables[path] = value;
+			this.onTrace?.({ type: 'variable', name: path, ...(previous === undefined ? {} : { previous }), value });
+			return;
+		}
+		let current: Record<string, MwlValue> = this.world.variables;
+		for (const part of parts.slice(0, -1)) {
+			const child = current[part];
+			if (!child || typeof child !== 'object' || Array.isArray(child)) current[part] = {};
+			current = current[part] as { [key: string]: MwlValue };
+		}
+		current[parts.at(-1)!] = value;
+		this.onTrace?.({ type: 'variable', name: path, ...(previous === undefined ? {} : { previous }), value });
 	}
 
 	private spawnUnit(type: string, side: number | undefined, x: number, y: number, id?: string, hp?: number): void {
@@ -732,9 +831,15 @@ export class MwlRuntime {
 				variableMatches(
 					this.world.variables[condition.attributes.variable],
 					condition.attributes,
-					this.world.variables,
+					primitiveVariables(this.world.variables),
 				),
 			);
+	}
+
+	private nodeConditionMatches(node: MwlCompiledNode): boolean {
+		if (node.attributes.test !== undefined)
+			return evaluateCondition(node.attributes.test, primitiveVariables(this.world.variables));
+		return this.conditionMatches(node);
 	}
 
 	/**
@@ -750,7 +855,18 @@ export class MwlRuntime {
 			if (child.tag === 'variable') {
 				const name = child.attributes.name;
 				if (name === undefined) return false;
-				return variableMatches(this.world.variables[name], child.attributes, this.world.variables);
+				return variableMatches(
+					this.world.variables[name],
+					child.attributes,
+					primitiveVariables(this.world.variables),
+				);
+			}
+			if (child.tag === 'predicate') {
+				const name = child.attributes.name;
+				const predicate = name ? this.hooks?.predicate?.[name] : undefined;
+				if (!predicate) throw new Error(`MWL predicate ${name ?? '<missing>'} is not implemented`);
+				const { name: _name, ...context } = child.attributes;
+				return Boolean(predicate(this.worldView(), context));
 			}
 			// `have_unit` names the world key with `id` where a `filter`
 			// would say `unit`; everything else matches `filter` semantics.
@@ -927,7 +1043,7 @@ function optionalInteger(node: MwlCompiledNode, attribute: string): number | und
  * fail on anything non-numeric.
  */
 function variableMatches(
-	value: string | number | boolean | undefined,
+	value: MwlValue | undefined,
 	attributes: Readonly<Record<string, string>>,
 	variables: Readonly<Record<string, string | number | boolean>> = {},
 ): boolean {
@@ -988,16 +1104,22 @@ function unitMatchesFilter(
 	);
 }
 
-function sameValue(
-	value: string | number | boolean | undefined,
-	expected: string | number | boolean | undefined,
-): boolean {
+function sameValue(value: MwlValue | undefined, expected: string | number | boolean | undefined): boolean {
 	if (value === undefined || expected === undefined) return value === expected;
 	if (typeof expected !== 'string') return value === expected;
 	const numeric = Number(expected);
 	return typeof value === 'number' && expected.trim() !== '' && Number.isFinite(numeric)
 		? value === numeric
 		: value === expected;
+}
+
+function primitiveVariables(variables: Readonly<Record<string, MwlValue>>): Record<string, string | number | boolean> {
+	return Object.fromEntries(
+		Object.entries(variables).filter(
+			(entry): entry is [string, string | number | boolean] =>
+				typeof entry[1] === 'string' || typeof entry[1] === 'number' || typeof entry[1] === 'boolean',
+		),
+	);
 }
 
 function coordinateMatches(specification: string, coordinate: number): boolean {

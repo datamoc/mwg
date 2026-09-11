@@ -135,3 +135,52 @@ test('rtl still reflects a later setValue call, not just the constructor-time th
 	bar.destroy();
 	setTheme({ direction: 'ltr' });
 });
+
+// ------------------------------------------------------------------ colours, at runtime and on the track
+
+test('the resolved fill and track colours fall back to the theme', () => {
+	const bar = new Bar({ width: 20, height: 4 });
+	assert.equal(bar.color, defaultTheme.color.textHighlight);
+	assert.equal(bar.background, defaultTheme.color.panelFill);
+	bar.destroy();
+});
+
+test('an explicit fill colour and track colour are reported as given', () => {
+	const bar = new Bar({ width: 20, height: 4, color: 0xff00ff, background: 0x000000 });
+	assert.equal(bar.color, 0xff00ff);
+	assert.equal(bar.background, 0x000000);
+	bar.destroy();
+});
+
+test('setColor recolours the fill at runtime and stays explicit through a theme change', () => {
+	const bar = new Bar({ width: 20, height: 4 });
+	bar.setColor(0xff7777);
+	assert.equal(bar.color, 0xff7777);
+
+	setTheme({ color: { ...defaultTheme.color, textHighlight: 0x00ff00 } });
+	assert.equal(bar.color, 0xff7777, 'a theme change must not throw the game-supplied colour away');
+	setTheme(defaultTheme);
+
+	bar.destroy();
+});
+
+test('a bar left on the theme default follows a theme change', () => {
+	const bar = new Bar({ width: 20, height: 4 });
+
+	setTheme({ color: { ...defaultTheme.color, textHighlight: 0x00ff00 } });
+	assert.equal(bar.color, 0x00ff00);
+	setTheme(defaultTheme);
+
+	bar.destroy();
+});
+
+test('setColor on a textured fill is a tint, and does not disturb the fraction', () => {
+	const bar = new Bar({ width: 100, height: 10, fillTexture: Texture.WHITE, roundUpToPixel: true });
+	bar.setValue(1, 3);
+
+	bar.setColor(0xff0000);
+	assert.equal(bar.color, 0xff0000);
+	assert.equal(Math.round(fillWidth(bar)), 34, 'the fill still rounds up to 34 of 100');
+
+	bar.destroy();
+});
