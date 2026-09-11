@@ -3455,7 +3455,18 @@ it.
      sprite per cell per layer, hex included) exist, but not the tile-rule model: flags,
      rotations, multi-hex `[tile]`, and an image per neighbour combination. A 72px source sprite
      that overlaps into neighbouring hexes cannot be expressed in a one-sprite-per-cell grid.
-258. [High] Typographic markup in text (Ne correspond pas). Text is markdown (`RichLabel`,
+258. [High] Typographic markup in text (Ne correspond pas). **The contract has landed; the
+     acceptance below has not.** `MarkupSpan`, `parseMarkup`, `stripMarkup`, `markupToHtml` and
+     `escapeHtml` (`src/two-d/ui/markup.ts`, twelve tests in `tests/markup.test.ts`, exported from
+     `two-d/ui` and written up in REFERENCE) cover the renderer-neutral token stream the item asks
+     for: nested emphasis, named and hex colours, a size, a break, an image span carrying a path,
+     interpolation supplied by the caller, the five entities as escapes, and the policy that unknown
+     or malformed tags and unset variables stay literal while output text is escaped so no raw HTML
+     can leak. What the acceptance still wants, and why each is not a formality: one fixture
+     rendering equivalent runs through a canvas and a rich-text backend (the ui's own path renders
+     emphasis only, since Pixi's `HTMLText` dialect is narrower than this markup), wrapping measured
+     after styling, images resolved through the asset resolver, and an accessibility projection.
+     Text is markdown (`RichLabel`,
      `**bold**`) where Wesnoth content is written with `<b>`, `<i>`, `<span color>`, `<img>`
      and `$var`. The framework-side target is a renderer-neutral inline-markup contract, not a
      Wesnoth parser: `Text`/`Label`/`RichLabel` should accept a common token stream (or a single

@@ -504,6 +504,10 @@ build instead.
         get size(): number;
     }
 
+### `escapeHtml` (function)
+
+    export declare function escapeHtml(text: string): string;
+
 ### `FeedbackClient` (class)
 
     export declare class FeedbackClient extends HttpTransport {
@@ -946,6 +950,10 @@ build instead.
         private write;
     }
 
+### `markupToHtml` (function)
+
+    export declare function markupToHtml(spans: readonly MarkupSpan[]): string;
+
 ### `meetsContrast` (function)
 
     export declare function meetsContrast(foreground: number, background: number, level?: ContrastLevel, large?: boolean): boolean;
@@ -1103,6 +1111,10 @@ build instead.
 ### `parseMarkdown` (function)
 
     export declare function parseMarkdown(text: string): MarkdownSpan[];
+
+### `parseMarkup` (function)
+
+    export declare function parseMarkup(source: string, options?: MarkupOptions): MarkupSpan[];
 
 ### `ParticleEmitter` (class)
 
@@ -1762,6 +1774,10 @@ build instead.
 ### `stripMarkdown` (function)
 
     export declare function stripMarkdown(text: string): string;
+
+### `stripMarkup` (function)
+
+    export declare function stripMarkup(source: string, options?: MarkupOptions): string;
 
 ### `TelemetryClient` (class)
 
@@ -5766,6 +5782,10 @@ build instead.
 
     export declare const EMPTY = -1;
 
+### `escapeHtml` (function)
+
+    export declare function escapeHtml(text: string): string;
+
 ### `FLOATING_TEXT_STACK_GAP` (const)
 
     export declare const FLOATING_TEXT_STACK_GAP = 4;
@@ -6075,6 +6095,10 @@ build instead.
 
     export declare function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSheet[]): LoadedTiledMap;
 
+### `markupToHtml` (function)
+
+    export declare function markupToHtml(spans: readonly MarkupSpan[]): string;
+
 ### `meetsContrast` (function)
 
     export declare function meetsContrast(foreground: number, background: number, level?: ContrastLevel, large?: boolean): boolean;
@@ -6200,6 +6224,10 @@ build instead.
 ### `parseMarkdown` (function)
 
     export declare function parseMarkdown(text: string): MarkdownSpan[];
+
+### `parseMarkup` (function)
+
+    export declare function parseMarkup(source: string, options?: MarkupOptions): MarkupSpan[];
 
 ### `ParticleEmitter` (class)
 
@@ -6510,6 +6538,10 @@ build instead.
 ### `stripMarkdown` (function)
 
     export declare function stripMarkdown(text: string): string;
+
+### `stripMarkup` (function)
+
+    export declare function stripMarkup(source: string, options?: MarkupOptions): string;
 
 ### `Text2D` (class)
 
@@ -7593,6 +7625,10 @@ build instead.
 
     export declare const defaultTheme: Theme;
 
+### `escapeHtml` (function)
+
+    export declare function escapeHtml(text: string): string;
+
 ### `FLOATING_TEXT_STACK_GAP` (const)
 
     export declare const FLOATING_TEXT_STACK_GAP = 4;
@@ -7816,6 +7852,10 @@ build instead.
         private layout;
     }
 
+### `markupToHtml` (function)
+
+    export declare function markupToHtml(spans: readonly MarkupSpan[]): string;
+
 ### `meetsContrast` (function)
 
     export declare function meetsContrast(foreground: number, background: number, level?: ContrastLevel, large?: boolean): boolean;
@@ -7887,6 +7927,10 @@ build instead.
 ### `parseMarkdown` (function)
 
     export declare function parseMarkdown(text: string): MarkdownSpan[];
+
+### `parseMarkup` (function)
+
+    export declare function parseMarkup(source: string, options?: MarkupOptions): MarkupSpan[];
 
 ### `RebindScreen` (class)
 
@@ -7986,6 +8030,10 @@ build instead.
 ### `stripMarkdown` (function)
 
     export declare function stripMarkdown(text: string): string;
+
+### `stripMarkup` (function)
+
+    export declare function stripMarkup(source: string, options?: MarkupOptions): string;
 
 ### `theme` (function)
 

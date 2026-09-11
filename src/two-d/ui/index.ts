@@ -9,6 +9,8 @@ export type { RichLabelOptions } from './RichLabel.ts';
 
 export { parseMarkdown, stripMarkdown, sliceSpans } from './markdown.ts';
 export type { MarkdownSpan } from './markdown.ts';
+export { escapeHtml, markupToHtml, parseMarkup, stripMarkup } from './markup.ts';
+export type { MarkupOptions, MarkupSpan } from './markup.ts';
 
 export { startReveal, advanceReveal, completeReveal, revealComplete } from './reveal.ts';
 export type { RevealState } from './reveal.ts';

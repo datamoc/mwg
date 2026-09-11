@@ -53,6 +53,13 @@ the public API may still change between minor versions.
   set `time_over` as a world variable and fire the `time_over` event once the turn counter passes N.
   Content tests it like any variable and answers it like any event, `[endlevel]` included, because a
   limit is usually a defeat and sometimes the whole scenario.
+- An inline-markup contract, first half of item 258: `MarkupSpan` plus `parseMarkup`/`stripMarkup`/
+  `markupToHtml`/`escapeHtml` in `src/two-d/ui/markup.ts`. Nested emphasis, named and hex colours, a
+  size, a line break, an image span carrying a path, `$name` interpolation supplied by the caller,
+  and the five entities as escapes. Unknown or malformed tags and unset variables stay literal
+  rather than vanishing, and output text is escaped so no raw HTML can leak. What the item's
+  acceptance still wants (backend equivalence, wrapping after styling, images through the asset
+  resolver, an accessibility projection) is recorded on the item rather than implied here.
 
 ### Fixed
 

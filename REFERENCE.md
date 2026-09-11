@@ -264,6 +264,12 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   `setTheme` fires `themeChanged` so already-built widgets restyle in place.
 - `Label` - a themed text wrapper over Pixi `Text`; `stroke`/`resolution`/`roundPixels`
   options, useful for text over artwork.
+- `parseMarkup`/`stripMarkup`/`markupToHtml`/`escapeHtml` over `MarkupSpan`/`MarkupOptions` - inline
+  markup (`<b>`, `<i>`, `<span color='…' size='…'>`, `<br/>`, `<img>path</img>`, `$name`, and the
+  five entities) as a renderer-neutral contract: a `MarkupSpan` is a `MarkdownSpan` plus the colour,
+  size and image a renderer may use, kept as written because resolving them is the renderer's
+  business. Unknown tags, malformed tags and unset variables stay literal rather than disappearing,
+  and `markupToHtml` is the escaped HTML fragment for a renderer that speaks HTML text.
 - `RichLabel`/`parseMarkdown`/`stripMarkdown`/`sliceSpans` - basic inline markdown (`**bold**`,
   `*italic*`, combined `***both***`, backslash escapes) through Pixi `HTMLText`, which is
   what makes mixed styles inside one string possible at all. `parseMarkdown` is pure
