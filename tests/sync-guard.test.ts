@@ -38,7 +38,7 @@ test('values JSON cannot represent follow JSON own rules', () => {
 
 test('strings are escaped, so a quote cannot be confused with structure', () => {
 	assert.notEqual(stateChecksum('a"b'), stateChecksum('ab'));
-	assert.notEqual(stateChecksum({ "a\":1": 2 }), stateChecksum({ a: { 1: 2 } }));
+	assert.notEqual(stateChecksum({ 'a":1': 2 }), stateChecksum({ a: { 1: 2 } }));
 });
 
 test('the checksum is an unsigned 32-bit integer', () => {

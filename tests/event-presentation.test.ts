@@ -89,7 +89,8 @@ test('update drains the animation and releases the lock', () => {
 
 test('a scheduled secondary actor runs only after the batch before it has finished', () => {
 	const { sim, presentation, played } = setup({
-		followUp: (outcome) => (outcome.events.some((event) => event.text.startsWith('attack')) ? [{ kind: 'counter', amount: 1 }] : []),
+		followUp: (outcome) =>
+			outcome.events.some((event) => event.text.startsWith('attack')) ? [{ kind: 'counter', amount: 1 }] : [],
 	});
 
 	presentation.submit({ kind: 'attack', amount: 3 });
@@ -109,7 +110,8 @@ test('a scheduled secondary actor runs only after the batch before it has finish
 test('zero-duration events and their follow-ups chain within the submit call', () => {
 	const { sim, presentation, played } = setup({
 		seconds: 0,
-		followUp: (outcome) => (outcome.events.some((event) => event.text.startsWith('attack')) ? [{ kind: 'counter', amount: 1 }] : []),
+		followUp: (outcome) =>
+			outcome.events.some((event) => event.text.startsWith('attack')) ? [{ kind: 'counter', amount: 1 }] : [],
 	});
 
 	presentation.submit({ kind: 'attack', amount: 3 });

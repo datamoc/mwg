@@ -77,7 +77,9 @@ test('store_unit captures matching units and unstore_unit puts them back', () =>
 
 test('recall places a stored unit at a chosen hex and side', () => {
 	const runtime = runtimeFor(
-		event('[store_unit]\nvariable=party\n[/store_unit]\n[recall]\nvariable=party\nid=grunt\nx=0\ny=0\nside=1\n[/recall]'),
+		event(
+			'[store_unit]\nvariable=party\n[/store_unit]\n[recall]\nvariable=party\nid=grunt\nx=0\ny=0\nside=1\n[/recall]',
+		),
 	);
 
 	runtime.run('go');
@@ -108,9 +110,7 @@ test('modify_unit changes only what [set] names, on the units [filter] selects',
 });
 
 test('heal_unit adds its amount to the units it matches', () => {
-	const runtime = runtimeFor(
-		event('[heal_unit]\namount=4\n[filter]\nunit=hero\n[/filter]\n[/heal_unit]'),
-	);
+	const runtime = runtimeFor(event('[heal_unit]\namount=4\n[filter]\nunit=hero\n[/filter]\n[/heal_unit]'));
 
 	runtime.run('go');
 
@@ -134,9 +134,7 @@ test('set_terrain changes one cell of the primary map', () => {
 });
 
 test('capture_village records who holds a village, and a later capture changes it', () => {
-	const runtime = runtimeFor(
-		event('[capture_village]\nside=1\nx=2\ny=1\nname=Mill\n[/capture_village]'),
-	);
+	const runtime = runtimeFor(event('[capture_village]\nside=1\nx=2\ny=1\nname=Mill\n[/capture_village]'));
 	runtime.run('go');
 	assert.deepEqual(runtime.world.villages?.['2,1'], { x: 2, y: 1, side: '1', name: 'Mill' });
 
@@ -169,7 +167,9 @@ test('a scenario-level object and story beat are kept as data', () => {
 		].join('\n'),
 	);
 
-	assert.deepEqual(runtime.world.objects, [{ x: 4, y: 1, id: 'chest', name: 'Chest', image: 'items/chest.png', side: '1' }]);
+	assert.deepEqual(runtime.world.objects, [
+		{ x: 4, y: 1, id: 'chest', name: 'Chest', image: 'items/chest.png', side: '1' },
+	]);
 	assert.deepEqual(runtime.world.story, [
 		{ text: 'The war begins.', title: 'Prologue', image: 'story/intro.png', music: 'main.ogg' },
 	]);
@@ -183,7 +183,8 @@ test('unstore_unit on a variable that is not a stored unit list is a named error
 test('village ownership and scenario data survive a save and restore', () => {
 	const compiled = compile(
 		source(
-			event('[capture_village]\nside=1\nx=2\ny=1\n[/capture_village]') + '\n[role]\nrole=guard\ntype=Grunt\n[/role]',
+			event('[capture_village]\nside=1\nx=2\ny=1\n[/capture_village]') +
+				'\n[role]\nrole=guard\ntype=Grunt\n[/role]',
 		),
 	);
 	const runtime = new MwlRuntime(compiled);

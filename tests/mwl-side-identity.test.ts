@@ -65,7 +65,10 @@ test('a kill filter matches a named side', () => {
 	const runtime = new MwlRuntime(compile(NAMED));
 	runtime.fireEvent('purge');
 
-	assert.equal(Object.values(runtime.world.units).every((unit) => !unit.alive), true);
+	assert.equal(
+		Object.values(runtime.world.units).every((unit) => !unit.alive),
+		true,
+	);
 });
 
 test('a side condition with no side_filter reads as the named side itself', () => {

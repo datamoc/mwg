@@ -158,7 +158,9 @@ export class MultiTurnBeam<T = unknown> {
 			this.options.onCell?.({ ...raw }, context);
 			for (const target of this.options.targetsAt?.(raw) ?? []) {
 				const amount =
-					typeof this.options.damage === 'function' ? this.options.damage(target, context) : this.options.damage;
+					typeof this.options.damage === 'function'
+						? this.options.damage(target, context)
+						: this.options.damage;
 				if (!Number.isFinite(amount) || amount < 0)
 					throw new Error('beam damage callback must return a non-negative finite number');
 				damage += amount;
@@ -173,7 +175,10 @@ export class MultiTurnBeam<T = unknown> {
 		//a per-turn resolver extends the beam from what this front actually reached; a blocked
 		//cell does not propagate, and no cells at all ends the show
 		if (this.options.fronts && cells.length > 0) {
-			const next = this.options.fronts(cells.map((cell) => ({ ...cell })), this.index);
+			const next = this.options.fronts(
+				cells.map((cell) => ({ ...cell })),
+				this.index,
+			);
 			if (next.length) this.fronts.push(next.map((cell) => ({ ...cell })));
 		}
 
@@ -228,7 +233,8 @@ export class MultiTurnBeam<T = unknown> {
 		const blocker = this.options.blocker ?? (this.options.stopAtOpaque === false ? 'none' : 'terrain');
 		let blockedByPolicy = false;
 		if (blocker === 'terrain') {
-			blockedByPolicy = !this.options.level.inside(cell.x, cell.y) || !this.options.level.transparent(cell.x, cell.y);
+			blockedByPolicy =
+				!this.options.level.inside(cell.x, cell.y) || !this.options.level.transparent(cell.x, cell.y);
 		} else if (blocker !== 'none') {
 			blockedByPolicy = blocker({ ...cell }, context) === true;
 		}

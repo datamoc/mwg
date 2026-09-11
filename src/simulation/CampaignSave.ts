@@ -58,11 +58,7 @@ export class CampaignSave<CampaignState extends StateValue, Result extends State
 	}
 
 	/** Writes one slot: the campaign, the world and the simulation captured together. */
-	save(
-		slot: string,
-		parts: CampaignSaveParts<CampaignState, Result, World, TurnState>,
-		preview?: unknown,
-	): void {
+	save(slot: string, parts: CampaignSaveParts<CampaignState, Result, World, TurnState>, preview?: unknown): void {
 		this.saves.save(
 			slot,
 			{

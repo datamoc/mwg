@@ -697,7 +697,10 @@ export class MwlRuntime {
 			}
 			case 'store_unit': {
 				const variable = node.attributes.variable ?? node.attributes.name ?? required(node, 'variable');
-				this.setVariableAt(variable, this.matchingUnits(node).map(([id, unit]) => ({ id, ...unitSnapshot(unit) })));
+				this.setVariableAt(
+					variable,
+					this.matchingUnits(node).map(([id, unit]) => ({ id, ...unitSnapshot(unit) })),
+				);
 				break;
 			}
 			case 'unstore_unit': {
