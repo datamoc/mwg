@@ -9,6 +9,10 @@ the public API may still change between minor versions.
 
 ### Added
 
+- Data-driven shell layout and skins (item 263): `Layout` (`resolveAnchor`/`anchorAlign` over nine
+  named anchors plus `fill`, and a `Grid` of `size`-or-`grow` tracks) and `Skins` (per-widget,
+  per-state looks with a widget-state -> widget-idle -> wildcard fallback chain, and `Skins.from`
+  for plain data). Both renderer-free.
 - The missing UI widgets (item 261): `Slider` (`sliderFraction`/`sliderValueAt`), `Checkbox`,
   `Spinner` (`spinValue`), `Dropdown`, `TextModel`, `DataTable`, `TreeView` and `ScrollBox`
   (`scrollOffset`). The rule-bearing parts are pure functions or renderer-free models tested

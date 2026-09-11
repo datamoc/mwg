@@ -85,6 +85,11 @@ build instead.
 
     export * as AI from './ai/index.ts'
 
+### `anchorAlign` (function)
+
+    export declare function anchorAlign(anchor: Anchor): {
+        x: number;
+
 ### `AnimatedSprite` (class)
 
     export declare class AnimatedSprite extends TintedSprite {
@@ -787,6 +792,25 @@ build instead.
 ### `Gradient` (const)
 
     export declare const Gradient: typeof FillGradient;
+
+### `Grid` (class)
+
+    export declare class Grid {
+        private spec;
+        constructor(spec: GridSpec);
+        get columns(): readonly GridTrack[];
+        get rows(): readonly GridTrack[];
+
+        columnSizes(totalWidth: number): number[];
+
+        rowSizes(totalHeight: number): number[];
+
+        rect(row: number, column: number, bounds: LayoutRect, options?: {
+            rowSpan?: number;
+            columnSpan?: number;
+        }): LayoutRect;
+        private get gap();
+    }
 
 ### `Halo` (class)
 
@@ -1630,6 +1654,11 @@ build instead.
 
     export declare const RENDERING_DECISIONS: readonly RenderingDecision[];
 
+### `resolveAnchor` (function)
+
+    export declare function resolveAnchor(spec: AnchorSpec, bounds: LayoutRect, size?: {
+        width: number;
+
 ### `resolveTerrainGraphics` (function)
 
     export declare function resolveTerrainGraphics(width: number, height: number, rules: readonly TerrainRule[], flagsAt: TerrainFlagsAt, options?: ResolveTerrainGraphicsOptions): TerrainPlacement[];
@@ -1944,6 +1973,23 @@ build instead.
 ### `Simulation` (namespace)
 
     export * as Simulation from './simulation/index.ts'
+
+### `Skins` (class)
+
+    export declare class Skins {
+        private readonly map;
+
+        static readonly ANY = "*";
+        define(widget: string, state: WidgetState, skin: Skin): void;
+        has(widget: string): boolean;
+        widgets(): string[];
+
+        resolve(widget: string, state?: WidgetState): Skin;
+
+        statesOf(widget: string): WidgetState[];
+
+        static from(data: Readonly<Record<string, SkinData>>): Skins;
+    }
 
 ### `sliceSpans` (function)
 
@@ -6251,6 +6297,11 @@ build instead.
 
     export declare function advanceReveal(state: RevealState, dt: number): boolean;
 
+### `anchorAlign` (function)
+
+    export declare function anchorAlign(anchor: Anchor): {
+        x: number;
+
 ### `AnimatedSprite` (class)
 
     export declare class AnimatedSprite extends TintedSprite {
@@ -6821,6 +6872,25 @@ build instead.
 
     export declare const Gradient: typeof FillGradient;
 
+### `Grid` (class)
+
+    export declare class Grid {
+        private spec;
+        constructor(spec: GridSpec);
+        get columns(): readonly GridTrack[];
+        get rows(): readonly GridTrack[];
+
+        columnSizes(totalWidth: number): number[];
+
+        rowSizes(totalHeight: number): number[];
+
+        rect(row: number, column: number, bounds: LayoutRect, options?: {
+            rowSpan?: number;
+            columnSpan?: number;
+        }): LayoutRect;
+        private get gap();
+    }
+
 ### `Halo` (class)
 
     export declare class Halo extends AnimatedSprite {
@@ -7333,6 +7403,11 @@ build instead.
 
     export declare const RENDERING_DECISIONS: readonly RenderingDecision[];
 
+### `resolveAnchor` (function)
+
+    export declare function resolveAnchor(spec: AnchorSpec, bounds: LayoutRect, size?: {
+        width: number;
+
 ### `resolveTerrainGraphics` (function)
 
     export declare function resolveTerrainGraphics(width: number, height: number, rules: readonly TerrainRule[], flagsAt: TerrainFlagsAt, options?: ResolveTerrainGraphicsOptions): TerrainPlacement[];
@@ -7475,6 +7550,23 @@ build instead.
 ### `Shape2D` (class)
 
     export declare class Shape2D extends Graphics {
+    }
+
+### `Skins` (class)
+
+    export declare class Skins {
+        private readonly map;
+
+        static readonly ANY = "*";
+        define(widget: string, state: WidgetState, skin: Skin): void;
+        has(widget: string): boolean;
+        widgets(): string[];
+
+        resolve(widget: string, state?: WidgetState): Skin;
+
+        statesOf(widget: string): WidgetState[];
+
+        static from(data: Readonly<Record<string, SkinData>>): Skins;
     }
 
 ### `sliceSpans` (function)
@@ -8966,6 +9058,11 @@ build instead.
 
     export declare function advanceReveal(state: RevealState, dt: number): boolean;
 
+### `anchorAlign` (function)
+
+    export declare function anchorAlign(anchor: Anchor): {
+        x: number;
+
 ### `Bar` (class)
 
     export declare class Bar extends Container {
@@ -9220,6 +9317,25 @@ build instead.
 ### `floatingTextStackMoves` (function)
 
     export declare function floatingTextStackMoves(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry, gap?: number): FloatingTextStackMove[];
+
+### `Grid` (class)
+
+    export declare class Grid {
+        private spec;
+        constructor(spec: GridSpec);
+        get columns(): readonly GridTrack[];
+        get rows(): readonly GridTrack[];
+
+        columnSizes(totalWidth: number): number[];
+
+        rowSizes(totalHeight: number): number[];
+
+        rect(row: number, column: number, bounds: LayoutRect, options?: {
+            rowSpan?: number;
+            columnSpan?: number;
+        }): LayoutRect;
+        private get gap();
+    }
 
 ### `HelpScreen` (class)
 
@@ -9497,6 +9613,11 @@ build instead.
 
     export declare function relativeLuminance(color: number): number;
 
+### `resolveAnchor` (function)
+
+    export declare function resolveAnchor(spec: AnchorSpec, bounds: LayoutRect, size?: {
+        width: number;
+
 ### `revealComplete` (function)
 
     export declare function revealComplete(state: RevealState): boolean;
@@ -9583,6 +9704,23 @@ build instead.
 ### `setTheme` (function)
 
     export declare function setTheme(next: Partial<Theme>): void;
+
+### `Skins` (class)
+
+    export declare class Skins {
+        private readonly map;
+
+        static readonly ANY = "*";
+        define(widget: string, state: WidgetState, skin: Skin): void;
+        has(widget: string): boolean;
+        widgets(): string[];
+
+        resolve(widget: string, state?: WidgetState): Skin;
+
+        statesOf(widget: string): WidgetState[];
+
+        static from(data: Readonly<Record<string, SkinData>>): Skins;
+    }
 
 ### `sliceSpans` (function)
 

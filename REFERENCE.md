@@ -389,6 +389,14 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   the rows on screen; collapsing the branch the highlight is inside lands it on the branch.
 - `ScrollBox`/`ScrollBoxOptions` + `scrollOffset` - a clipped viewport with a themed scrollbar;
   `scrollOffset` is the clamping rule the wheel, `scrollBy` and `scrollIntoView` all share.
+- `Grid`/`GridSpec`/`GridTrack` + `resolveAnchor`/`anchorAlign` with `Anchor`/`AnchorSpec`/
+  `LayoutRect` - data-driven shell layout (item 263): named anchors placed inside bounds (margin,
+  offset, fill), and columns/rows that are `size` or `grow`, so one sidebar plus one content column
+  needs neither side to know the window's width. Pure geometry, renderer-free.
+- `Skins` with `Skin`/`SkinStates`/`SkinData`/`WidgetState` - per-widget, per-state looks looked up
+  by name, the counterpart the one global `Theme` has no room for. A lookup falls back widget state
+  -> widget idle -> wildcard state -> wildcard idle -> `{}`, and `Skins.from` reads the plain data a
+  config file would parse into.
 - `MessageBox` - dialogue text box: paged reveal, choices, ADV/NVL display modes,
   `autoAdvance`, and timed `{sound:path}` markers delivered through `onSound`.
 - `messageBoxPresenter` - wires `rpg.EventRunner`'s dialogue to a `MessageBox` on a

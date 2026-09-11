@@ -3667,9 +3667,19 @@ it.
      handlers and tests share. Held printable keys repeat into `onText` as a real field expects,
      while keys typed during a composition are not double-reported. Nine tests in
      `tests/text-input.test.ts`; the widget built on top is 261.
-263. [Medium] Data-driven shell layout and skins (Ne correspond pas). GUI2's `data/gui/*.cfg`,
+263. ~~[Medium] Data-driven shell layout and skins (Ne correspond pas). GUI2's `data/gui/*.cfg`,
      anchors and grids have no counterpart; the theme is global (`theme()`/`setTheme`) with one
-     padding, and there are no per-widget or per-state skins.
+     padding, and there are no per-widget or per-state skins.~~ Landed as two renderer-free pieces,
+     since that is what is actually missing: geometry and named looks, not a file parser. `Layout`
+     gives `resolveAnchor`/`anchorAlign` over the nine named anchors plus `fill` (margin, per-axis
+     offset, explicit alignment), and `Grid` packs `size`-or-`grow` columns and rows with a gap,
+     resolving grow tracks against the space left and giving the last one the rounding so a layout
+     always fills its bounds. `Skins` is the per-widget, per-state layer the global `Theme` has no
+     room for: `define(widget, state, skin)` and a `resolve` that falls back widget state -> widget
+     idle -> wildcard state -> wildcard idle -> `{}`, so a game writes a shared `*` skin once and
+     overrides only what it must; `Skins.from` takes the plain data a config file would parse into,
+     which is why the parser itself is not here. Seventeen tests in `tests/layout.test.ts` and
+     `tests/skins.test.ts`.
 264. [Medium] Story screens (Absent). Wesnoth's storyscreen (backdrop, title, text, music) has no
      equivalent: `DialogueStage`/`StageScript` is a visual-novel model.
 265. [Medium] Battle UI (Absent). The attack dialog with an animated damage preview, the unit
