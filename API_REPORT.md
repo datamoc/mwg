@@ -895,6 +895,7 @@ build instead.
     export declare class Minimap extends Container {
         private readonly widthInCells;
         private readonly cellSize;
+        private readonly shape;
         private renderTexture;
         private sprite;
         private drawn;
@@ -910,6 +911,11 @@ build instead.
         reset(): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
+
+### `minimapCellCenter` (function)
+
+    export declare function minimapCellCenter(x: number, y: number, cellSize: number, shape?: 'square' | 'hex'): {
+        x: number;
 
 ### `motionDuration` (function)
 
@@ -1881,7 +1887,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.7.2";
+    export declare const version = "0.7.3";
 
 ### `VerticalLabel` (class)
 
@@ -4636,6 +4642,10 @@ build instead.
 
     export declare function hasLineOfSight(level: Level, from: Step, to: Step): boolean;
 
+### `hexConeCells` (function)
+
+    export declare function hexConeCells(origin: Step, target: Step, width: number): Step[];
+
 ### `knockbackPath` (function)
 
     export declare function knockbackPath(level: Level, from: Step, direction: Step, distance: number): Step[];
@@ -4718,6 +4728,25 @@ build instead.
         }): MultiStageAbility;
     }
 
+### `MultiTurnBeam` (class)
+
+    export declare class MultiTurnBeam<T = unknown> {
+        private options;
+        private path;
+        private index;
+        private state;
+        constructor(options: MultiTurnBeamOptions<T>);
+        get active(): boolean;
+        get done(): boolean;
+        get currentPath(): readonly Step[];
+        start(): boolean;
+
+        advance(): BeamStep<T>;
+        cancel(): void;
+        toJSON(): MultiTurnBeamSave;
+        static fromJSON<T>(options: Omit<MultiTurnBeamOptions<T>, 'from' | 'target'>, data: MultiTurnBeamSave): MultiTurnBeam<T>;
+    }
+
 ### `neighbourOffsets` (function)
 
     export declare function neighbourOffsets(topology: 4 | 8): ReadonlyArray<readonly [number, number]>;
@@ -4764,6 +4793,10 @@ build instead.
 ### `resolveArea` (function)
 
     export declare function resolveArea(origin: Step, target: Step, shape: AreaShape): Step[];
+
+### `resolveAreaOnLevel` (function)
+
+    export declare function resolveAreaOnLevel(level: Level, origin: Step, target: Step, shape: AreaShape): Step[];
 
 ### `rollRoster` (function)
 
@@ -5745,6 +5778,7 @@ build instead.
     export declare class Minimap extends Container {
         private readonly widthInCells;
         private readonly cellSize;
+        private readonly shape;
         private renderTexture;
         private sprite;
         private drawn;
@@ -5760,6 +5794,11 @@ build instead.
         reset(): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
+
+### `minimapCellCenter` (function)
+
+    export declare function minimapCellCenter(x: number, y: number, cellSize: number, shape?: 'square' | 'hex'): {
+        x: number;
 
 ### `newlyRevealed` (function)
 
@@ -6635,6 +6674,7 @@ build instead.
     export declare class Minimap extends Container {
         private readonly widthInCells;
         private readonly cellSize;
+        private readonly shape;
         private renderTexture;
         private sprite;
         private drawn;
@@ -6650,6 +6690,11 @@ build instead.
         reset(): void;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
+
+### `minimapCellCenter` (function)
+
+    export declare function minimapCellCenter(x: number, y: number, cellSize: number, shape?: 'square' | 'hex'): {
+        x: number;
 
 ### `newlyRevealed` (function)
 

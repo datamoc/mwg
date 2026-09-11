@@ -1,5 +1,6 @@
 import type { Level } from './Level.ts';
 import type { Step } from './Pathfinder.ts';
+import { hexDistance, hexLine, hexRange } from '../core/Hex.ts';
 
 /**
  * How a target resolves into the cells it actually affects.
@@ -83,7 +84,7 @@ export function traceLine(from: Step, to: Step): Step[] {
 
 /** true when nothing between `from` and `to` (both cells themselves excepted) blocks sight */
 export function hasLineOfSight(level: Level, from: Step, to: Step): boolean {
-	const line = traceLine(from, to);
+	const line = level.shape === 'hex' ? hexLine(from, to) : traceLine(from, to);
 	for (let i = 1; i < line.length - 1; i++) {
 		if (!level.transparent(line[i].x, line[i].y)) return false;
 	}
@@ -92,7 +93,8 @@ export function hasLineOfSight(level: Level, from: Step, to: Step): boolean {
 
 /** whether `target` is a legal aim point from `origin`: in range, and in sight unless waived */
 export function canTarget(level: Level, origin: Step, target: Step, options: TargetingOptions): boolean {
-	if (chebyshevDistance(origin, target) > options.range) return false;
+	const distance = level.shape === 'hex' ? hexDistance(origin, target) : chebyshevDistance(origin, target);
+	if (distance > options.range) return false;
 	if ((options.requireLineOfSight ?? true) && !hasLineOfSight(level, origin, target)) return false;
 	return true;
 }
@@ -121,6 +123,48 @@ export function resolveArea(origin: Step, target: Step, shape: AreaShape): Step[
 			return cells;
 		}
 	}
+}
+
+/**
+ * Resolves an area using the level's topology, including hex lines, cones and bursts.
+ *
+ * @example
+ * ```ts
+ * import { Level, FLOOR, resolveAreaOnLevel } from '@datamoc/mw_games/roguelike';
+ * const level = new Level(8, 8, [{ passable: true, transparent: true }, FLOOR], 1, 'hex');
+ * const cells = resolveAreaOnLevel(level, { x: 2, y: 2 }, { x: 4, y: 2 }, { kind: 'line' });
+ * ```
+ */
+export function resolveAreaOnLevel(level: Level, origin: Step, target: Step, shape: AreaShape): Step[] {
+	if (level.shape !== 'hex') return resolveArea(origin, target, shape);
+	if (shape.kind === 'single') return [{ ...target }];
+	if (shape.kind === 'line') return hexLine(origin, target);
+	if (shape.kind === 'burst') return hexRange(target, shape.radius);
+	return hexConeCells(origin, target, shape.width);
+}
+
+/**
+ * A widening hex-grid cone, with `width` extra cells on each side at its far end.
+ *
+ * @example
+ * ```ts
+ * import { hexConeCells } from '@datamoc/mw_games/roguelike';
+ * const cells = hexConeCells({ x: 2, y: 2 }, { x: 5, y: 2 }, 2);
+ * ```
+ */
+export function hexConeCells(origin: Step, target: Step, width: number): Step[] {
+	const distance = hexDistance(origin, target);
+	if (distance === 0) return [{ ...origin }];
+	const line = hexLine(origin, target);
+	const cells: Step[] = [];
+	for (let i = 1; i <= distance; i++) {
+		const centre = line[i];
+		const radius = Math.round((i / distance) * width);
+		for (const cell of hexRange(centre, radius)) {
+			if (hexDistance(origin, cell) === i) cells.push(cell);
+		}
+	}
+	return cells;
 }
 
 /**

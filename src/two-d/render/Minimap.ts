@@ -1,5 +1,6 @@
 import { Container, Graphics, RenderTexture, Sprite } from 'pixi.js';
 import { Game } from '../Game.ts';
+import { hexToPixel } from '../../core/Hex.ts';
 
 /** the cell indices in `explored` not yet baked into a minimap's texture - pure, so it can
  * be tested without a renderer
@@ -29,6 +30,28 @@ export interface MinimapOptions {
 
 	/** screen pixels per cell; defaults to 2, small enough for an always-on-screen corner HUD */
 	cellSize?: number;
+	/** cell topology; hex uses the same flat-top odd-q projection as `TileMap` */
+	shape?: 'square' | 'hex';
+}
+
+/**
+ * The minimap centre for a cell, useful for overlays that must share its topology.
+ *
+ * @example
+ * ```ts
+ * import { minimapCellCenter } from '@datamoc/mw_games/two-d/render';
+ * const centre = minimapCellCenter(3, 2, 4, 'hex');
+ * ```
+ */
+export function minimapCellCenter(
+	x: number,
+	y: number,
+	cellSize: number,
+	shape: 'square' | 'hex' = 'square',
+): { x: number; y: number } {
+	return shape === 'hex'
+		? hexToPixel(x, y, cellSize, cellSize)
+		: { x: (x + 0.5) * cellSize, y: (y + 0.5) * cellSize };
 }
 
 /**
@@ -64,6 +87,7 @@ export interface MinimapOptions {
 export class Minimap extends Container {
 	private readonly widthInCells: number;
 	private readonly cellSize: number;
+	private readonly shape: 'square' | 'hex';
 
 	private renderTexture: RenderTexture;
 	private sprite: Sprite;
@@ -76,10 +100,17 @@ export class Minimap extends Container {
 
 		this.widthInCells = options.widthInCells;
 		this.cellSize = options.cellSize ?? 2;
+		this.shape = options.shape ?? 'square';
 
 		this.renderTexture = RenderTexture.create({
-			width: options.widthInCells * this.cellSize,
-			height: options.heightInCells * this.cellSize,
+			width:
+				this.shape === 'hex'
+					? Math.ceil((options.widthInCells - 1) * this.cellSize * 0.75 + this.cellSize)
+					: options.widthInCells * this.cellSize,
+			height:
+				this.shape === 'hex'
+					? options.heightInCells * this.cellSize + this.cellSize / 2
+					: options.heightInCells * this.cellSize,
 		});
 		this.sprite = new Sprite(this.renderTexture);
 		this.addChild(this.sprite);
@@ -106,9 +137,20 @@ export class Minimap extends Container {
 			this.drawn.add(index);
 			const x = index % this.widthInCells;
 			const y = Math.floor(index / this.widthInCells);
-			patch
-				.rect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize)
-				.fill({ color: colorFor(x, y) });
+			const center = minimapCellCenter(x, y, this.cellSize, this.shape);
+			if (this.shape === 'hex') {
+				const radius = this.cellSize / 2;
+				const points: number[] = [];
+				for (let corner = 0; corner < 6; corner++) {
+					const angle = (Math.PI / 3) * corner;
+					points.push(center.x + Math.cos(angle) * radius, center.y + Math.sin(angle) * radius);
+				}
+				patch.poly(points).fill({ color: colorFor(x, y) });
+			} else {
+				patch
+					.rect(center.x - this.cellSize / 2, center.y - this.cellSize / 2, this.cellSize, this.cellSize)
+					.fill({ color: colorFor(x, y) });
+			}
 		}
 
 		Game.current.app.renderer.render({ container: patch, target: this.renderTexture, clear: false });
@@ -128,8 +170,9 @@ export class Minimap extends Container {
 				.stroke({ color, width: 1 });
 		}
 
-		this.marker.x = (x + 0.5) * this.cellSize;
-		this.marker.y = (y + 0.5) * this.cellSize;
+		const center = minimapCellCenter(x, y, this.cellSize, this.shape);
+		this.marker.x = center.x;
+		this.marker.y = center.y;
 	}
 
 	/** forgets everything baked, so the next `sync` repaints from a clean texture - a fresh floor */

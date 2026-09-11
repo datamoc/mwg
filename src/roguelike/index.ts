@@ -34,7 +34,15 @@ export { Secrets } from './Secrets.ts';
 
 export { Doors } from './Doors.ts';
 
-export { chebyshevDistance, traceLine, hasLineOfSight, canTarget, resolveArea } from './Targeting.ts';
+export {
+	chebyshevDistance,
+	traceLine,
+	hasLineOfSight,
+	canTarget,
+	resolveArea,
+	resolveAreaOnLevel,
+	hexConeCells,
+} from './Targeting.ts';
 export type { AreaShape, TargetingOptions } from './Targeting.ts';
 export { coneCells, chainTargets, knockbackPath, rangeMultiplier, areaFalloffMultiplier } from './Targeting.ts';
 export type { RangeBand } from './Targeting.ts';
@@ -51,6 +59,9 @@ export { TriggerTracker } from './TriggerTracker.ts';
 
 export { MultiStageAbility } from './MultiStageAbility.ts';
 export type { AbilityStage } from './MultiStageAbility.ts';
+
+export { MultiTurnBeam } from './MultiTurnBeam.ts';
+export type { BeamDamageContext, BeamStep, MultiTurnBeamOptions, MultiTurnBeamSave } from './MultiTurnBeam.ts';
 
 export { candidateCells, cellsNear, selectDistinctCells } from './Placement.ts';
 export type { PlacementFilter, PlacementResult, PlacementTraceEntry } from './Placement.ts';

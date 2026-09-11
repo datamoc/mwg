@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.7.2",
+	"version": "0.7.3",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -188,6 +188,8 @@
 		"example:battle:build": "npm run mwl -- build examples/battle/content -o examples/battle/generated && vite build --config examples/battle/vite.config.ts && node tools/emit-page.mjs examples/battle",
 		"example:minigame": "vite --config examples/minigame/vite.config.ts",
 		"example:minigame:build": "vite build --config examples/minigame/vite.config.ts && node tools/emit-page.mjs examples/minigame",
+		"example:multi-turn-beam": "vite --config examples/multi-turn-beam/vite.config.ts",
+		"example:multi-turn-beam:build": "vite build --config examples/multi-turn-beam/vite.config.ts && node tools/emit-page.mjs examples/multi-turn-beam",
 		"example:chess": "vite --config examples/chess/vite.config.ts",
 		"example:chess:build": "vite build --config examples/chess/vite.config.ts && node tools/emit-page.mjs examples/chess",
 		"example:tower-defense": "vite --config examples/tower-defense/vite.config.ts",

@@ -3233,6 +3233,27 @@ rather than someone else's build.
      `id`, `name`, `title`, `description`, and `start_scene`, while leaving scenario and
      progression children game-owned. Expose the metadata through `contentCatalog(game).campaigns`.~~
 
+232. ~~Multi-turn actions: provide a game-neutral primitive for actions that persist across turns,
+     including beam traversal, path resolution, interruption or cancellation, and per-step damage
+     or effect handling. Add an example that exercises a multi-turn beam with blockers, movement,
+     targets and deterministic replay, so the framework and example can be simplified together
+     rather than duplicating action-state logic in the game.~~ - `roguelike.MultiTurnBeam` advances
+     a captured line one cell per turn, checks opaque and dynamic blockers at reach time, looks up
+     live targets, delegates damage to the game, supports cancellation and JSON save/restore, and
+     is covered by the `multi-turn-beam` example and focused tests.
+
+233. ~~Hex-map parity for map functions: implement the same map-facing capabilities for hex grids
+     that exist for square maps, including minimap rendering, automap rules, exploration and
+     remembered terrain, field of view, targeting shapes, movement/path queries, map transitions
+     and any related map helpers. Keep coordinate and neighbour semantics consistent with the
+     existing odd-q hex topology, and add topology-specific tests and examples so a hex game does
+     not need parallel game-owned implementations for features already available on square maps.~~
+     Existing FOV, exploration memory, pathfinding, auto-explore, map transitions and TileMap
+     projection already use the shared hex topology. The remaining seams now use it too:
+     `resolveAreaOnLevel`, `hexConeCells`, topology-aware line-of-sight and range checks,
+     hex `Minimap` geometry and markers, hex-compatible automap rules, and hex traversal in
+     `MultiTurnBeam`, with focused parity tests.
+
 ### Parked decisions
 
 Not open work, and not forgotten: these are decisions this project has deliberately

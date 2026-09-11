@@ -15,7 +15,7 @@ playable in the browser with no download, plus the generated API reference.
 planning or porting a demanding game with mwg, with links to the [mwg reference](REFERENCE.md)
 and the [mwg Pixel Dungeon study](https://datamoc.github.io/mwg-pixel-dungeon/).
 
-> **Status: pre-alpha (v0.7.2).** Every module in the shared floor below, plus optional
+> **Status: pre-alpha (v0.7.3).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
 > [ROADMAP.md](ROADMAP.md) for the full, numbered history.
 >

@@ -132,3 +132,19 @@ test('the automap wildcard stays equal to the render module own EMPTY', () => {
 	//renderer. That is only safe while the two values agree, which is what this pins.
 	assert.equal(AUTOMAP_EMPTY, TILEMAP_EMPTY);
 });
+
+test('automap accepts hex TileMaps and rejects a square-only rule', () => {
+	const map = new TileMap({ width: 3, height: 2, sheet: sheet(), shape: 'hex' });
+	map.addLayer('ground', [1, 1, 2, 2, 1, 1]);
+	assert.equal(
+		automap(map, [{ topology: 'hex', width: 1, height: 1, input: { ground: [1] }, outputs: [{ ground: [7] }] }]),
+		4,
+	);
+	assert.throws(
+		() =>
+			automap(map, [
+				{ topology: 'square', width: 1, height: 1, input: { ground: [7] }, outputs: [{ ground: [8] }] },
+			]),
+		/targets square cells, but the map is hex/,
+	);
+});

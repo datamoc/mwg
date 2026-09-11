@@ -528,6 +528,8 @@ the dungeon-crawl half of the capability spec.
   range/line-of-sight checks and single/line/burst/cone area resolution.
 - `coneCells`/`chainTargets`/`knockbackPath` - a widening cone spray, a greedy nearest-hop
   chain, and a shove's path until the first impassable cell.
+- `resolveAreaOnLevel`/`hexConeCells` - topology-aware area resolution and widening hex cones,
+  complementing the square-grid targeting helpers.
 - `rangeMultiplier`/`areaFalloffMultiplier`/`RangeBand` - a range-band damage multiplier
   lookup, and a per-target falloff multiplier for an area effect hitting several targets.
 - `BossPhases`/`AbilityCycle` - an HP-fraction phase ladder whose `check(hpFraction)` reports
@@ -540,6 +542,10 @@ the dungeon-crawl half of the capability spec.
   window and restarts once the window lapses.
 - `MultiStageAbility`/`AbilityStage` - an ability that unfolds through named, turn-timed
   stages (windup/active/recovery) once started.
+- `Minimap`/`minimapCellCenter` - exploration minimap rendering and overlay coordinates for
+  square and odd-q hex maps.
+- `MultiTurnBeam` - a deterministic one-cell-per-turn beam with opaque or dynamic blockers,
+  live target lookup, game-owned damage application, cancellation and save/restore.
 
 ## `rpg`
 

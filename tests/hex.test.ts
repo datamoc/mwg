@@ -7,6 +7,7 @@ import { hexNeighbors, hexDistance, hexLine, hexRange, hexToPixel, pixelToHex } 
 import { Level } from '../src/roguelike/Level.ts';
 import { Pathfinder } from '../src/roguelike/Pathfinder.ts';
 import { FieldOfView } from '../src/roguelike/FieldOfView.ts';
+import { canTarget, hasLineOfSight, resolveAreaOnLevel } from '../src/roguelike/Targeting.ts';
 import { TileMap } from '../src/two-d/render/TileMap.ts';
 import { SpriteSheet } from '../src/two-d/render/SpriteSheet.ts';
 import type { Camera } from '../src/two-d/render/Camera.ts';
@@ -303,6 +304,24 @@ test('hex FieldOfView dims with distance and reset forgets everything', () => {
 	fov.reset();
 	assert.equal(fov.isVisible(4, 4), false);
 	assert.equal(fov.isExplored(4, 4), false);
+});
+
+test('hex targeting uses hex distance, lines, cones and opaque blockers', () => {
+	const level = new Level(9, 9, HEX_KINDS, 1, 'hex');
+	const origin = { x: 4, y: 4 };
+	const target = hexNeighbors(origin.x, origin.y)[0];
+	assert.equal(canTarget(level, origin, target, { range: 1 }), true);
+	assert.deepEqual(resolveAreaOnLevel(level, origin, target, { kind: 'line' }), [origin, target]);
+	assert.deepEqual(resolveAreaOnLevel(level, origin, target, { kind: 'cone', width: 0 }), [target]);
+	level.set(target.x, target.y, 0);
+	assert.equal(hasLineOfSight(level, origin, target), true, 'the target cell itself may be opaque');
+	const behind = hexNeighbors(target.x, target.y).find(
+		(cell) =>
+			hexDistance(origin, cell) === 2 &&
+			hexLine(origin, cell)[1].x === target.x &&
+			hexLine(origin, cell)[1].y === target.y,
+	)!;
+	assert.equal(hasLineOfSight(level, origin, behind), false);
 });
 
 // ------------------------------------------------------------------ TileMap (hex)

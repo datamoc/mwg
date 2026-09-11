@@ -5,6 +5,19 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
+## [0.7.3] - 2026-09-11
+
+### Added
+
+- Hex-map parity for targeting, cones, area resolution, minimaps, markers, automap validation,
+  and multi-turn beam traversal, with topology-specific tests.
+- The `multi-turn-beam` example demonstrates blockers, moving targets, per-turn damage, and
+  deterministic multi-turn action state.
+
+### Changed
+
+- The public reference and API report document the new hex-aware map capabilities.
+
 ## [0.7.2] - 2026-09-11
 
 ### Added

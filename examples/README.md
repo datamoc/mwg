@@ -61,6 +61,9 @@ npm run example:battle:build    # MWL battle data plus the game, then open its d
 
 npm run example:minigame          # lockpicking timing game, dev server
 npm run example:minigame:build    # lockpicking, then open its dist/index.html
+
+npm run example:multi-turn-beam          # one-cell-per-turn beam with blockers and moving targets
+npm run example:multi-turn-beam:build
 ```
 
 ## Level 3 - Complete reference games
@@ -127,6 +130,7 @@ npm run cap:open:android
 | `audio` | 2 | `audio.Music.playTracks` cycling three generated tracks with crossfade, and `audio.Sound`'s pooled one-shot effects |
 | `battle` | 2 | `mwg/battle`: a creature battle - species, a type-effectiveness matrix, speed-ordered turns, and a level-up with an evolution check on winning. The damage formula is this example's own invention, not something `mwg` prescribes |
 | `minigame` | 2 | `mwg/core` scene stacking: a lockpicking timing challenge pauses the room underneath and returns a score through `onResume` |
+| `multi-turn-beam` | 2 | `mwg/roguelike.MultiTurnBeam`: a deterministic beam advances one cell per turn, resolves moving targets when reached, and stops at an opaque blocker |
 | `dungeon` | 3 | an SPD-shaped mockup: generated floors, three-state fog of war, bump-to-attack, monsters with their own wander/hunt/flee AI (each judges the hero by its own sight, not the hero's), a secret door hiding a small vault and a hidden trap that springs underfoot (`mwg/roguelike`'s `Secrets`), a flask of oil thrown at the nearest visible monster in range (`mwg/roguelike`'s targeting helpers picking the target, `mwg/render`'s `Projectile` flying the sprite there), stairs down, plus `mwg/actors` wired in: a `StatBlock` (attack/defense/max HP derived from strength/armor/vitality), items on the floor, and a dense icon-grid inventory screen (`Tab`, `mwg/ui`'s `IconGrid`) where equipping a weapon or armor applies its modifiers. Autosaves on every descend and offers to continue on reload, via `mwg/core`'s `SaveSystem` for permadeath: the save is deleted the moment the hero dies, so there is nothing to continue. Arrow keys or the numpad to move, `.` to descend, `F` to search for secrets, `T` to throw |
 | `chess` | 3 | `mwg/board`: chess against a small deterministic alpha-beta computer player, with legal moves, check, checkmate, stalemate, castling, en passant, and promotion. Click a square or move a held/repeating arrow-key cursor and press Enter |
 | `tower-defense` | 3 | `mwg/core.Spawner` driving timed overlapping waves, with a simple 2D path, tower targeting, damage, rewards, and lives |

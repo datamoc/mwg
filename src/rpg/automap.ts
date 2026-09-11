@@ -9,6 +9,8 @@
 export interface AutomapTarget {
 	readonly widthInTiles: number;
 	readonly heightInTiles: number;
+	/** optional topology, used to reject a rule authored for the other map shape */
+	readonly shape?: 'square' | 'hex' | 'isometric' | 'staggered';
 	getTile(layer: string | number, x: number, y: number): number;
 	setTile(layer: string | number, x: number, y: number, value: number): void;
 }
@@ -51,6 +53,8 @@ import { int } from '../core/Random.ts';
 export interface AutomapRule {
 	/** only used to name the rule in errors */
 	name?: string;
+	/** defaults to the target's topology; hex patterns use the same odd-q x/y addresses as Level */
+	topology?: 'square' | 'hex';
 	/** the pattern size, in cells; every input and output grid must hold exactly this many */
 	width: number;
 	height: number;
@@ -84,7 +88,7 @@ export function automap(map: AutomapTarget, rules: readonly AutomapRule[], optio
 
 	rules.forEach((rule, index) => {
 		const label = rule.name ?? `#${index + 1}`;
-		checkRule(rule, label);
+		checkRule(rule, label, map.shape);
 		const origins = findMatches(map, rule);
 		matches += origins.length;
 		if (origins.length === 0) return;
@@ -104,7 +108,10 @@ export function automap(map: AutomapTarget, rules: readonly AutomapRule[], optio
 	return matches;
 }
 
-function checkRule(rule: AutomapRule, label: string): void {
+function checkRule(rule: AutomapRule, label: string, mapShape?: 'square' | 'hex' | 'isometric' | 'staggered'): void {
+	if (rule.topology && (mapShape === 'square' || mapShape === 'hex') && rule.topology !== mapShape) {
+		throw new Error(`automap rule "${label}" targets ${rule.topology} cells, but the map is ${mapShape}`);
+	}
 	if (!Number.isInteger(rule.width) || rule.width <= 0 || !Number.isInteger(rule.height) || rule.height <= 0) {
 		throw new Error(`automap rule "${label}" needs a positive width and height`);
 	}

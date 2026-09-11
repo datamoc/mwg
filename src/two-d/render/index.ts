@@ -12,7 +12,7 @@ export type { ViewportOptions } from './Viewport.ts';
 export { createColorBlindnessFilter, COLOR_BLINDNESS_MATRICES } from './ColorBlindness.ts';
 export type { ColorBlindnessType } from './ColorBlindness.ts';
 
-export { Minimap, newlyRevealed } from './Minimap.ts';
+export { Minimap, newlyRevealed, minimapCellCenter } from './Minimap.ts';
 export type { MinimapOptions } from './Minimap.ts';
 export { TileMap, EMPTY, tileFrame, tileFrameSheet, tileFrameIndex } from './TileMap.ts';
 export type { TileMapOptions } from './TileMap.ts';
