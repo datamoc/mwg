@@ -131,6 +131,9 @@ export function parseMarkup(source: string, options: MarkupOptions = {}): Markup
 					index = tag.end;
 					continue;
 				} else if (!tag.closing) {
+					//flush before the style moves: the text so far belongs to the style it was written
+					//in, and accumulating across a tag would give all of it the last style seen
+					flush();
 					stack.push({ tag: tag.name, style });
 					style = opened(style, tag.name, tag.body);
 					index = tag.end;
@@ -138,6 +141,7 @@ export function parseMarkup(source: string, options: MarkupOptions = {}): Markup
 				} else {
 					const top = stack[stack.length - 1];
 					if (top?.tag === tag.name) {
+						flush();
 						style = top.style;
 						stack.pop();
 						index = tag.end;
