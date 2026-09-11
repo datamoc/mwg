@@ -4,9 +4,9 @@ Generated for **mwg 0.7.6** on 2026-09-11.
 
 | Area | Statistics |
 | --- | ---: |
-| Source | 242 TypeScript files, 33,921 lines, 15 modules |
-| Tests | 167 files, 1,526 test cases, 20,766 lines |
-| Tools | 34 files, 6,230 lines |
+| Source | 243 TypeScript files, 34,096 lines, 15 modules |
+| Tests | 168 files, 1,534 test cases, 20,892 lines |
+| Tools | 34 files, 6,256 lines |
 | Examples | 22 runnable examples |
 | Roadmap | 249/276 items complete, 27 open |
 | API | 0 declaration files |
@@ -26,9 +26,9 @@ Generated for **mwg 0.7.6** on 2026-09-11.
 | actors | 24 | 2,399 |
 | i18n | 9 | 1,630 |
 | rpg | 11 | 1,609 |
+| ai | 4 | 856 |
 | audio | 8 | 793 |
 | three-d | 9 | 756 |
-| ai | 3 | 681 |
 | battle | 10 | 555 |
 | assets | 6 | 492 |
 | simulation | 6 | 443 |

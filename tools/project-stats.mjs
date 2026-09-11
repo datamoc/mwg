@@ -10,6 +10,17 @@ const args = new Set(process.argv.slice(2));
 const check = args.has('--check');
 
 const stats = collectStats();
+const invisible = untrackedMeasuredFiles();
+if (invisible.length > 0) {
+	// The measurement reads git-tracked files only, so a file that has been created but not added
+	// yet is invisible to it: `stats:write` records a smaller tree than a clean checkout has,
+	// `stats:check` then passes here, and CI fails on the commit that adds the file. Climbing that
+	// hill takes an hour; saying so takes a line.
+	console.error(`these measured files are not tracked by git yet, so this tool cannot see them:`);
+	for (const path of invisible) console.error(`  ${path}`);
+	console.error('`git add` them first, then re-run.');
+	if (check) process.exit(1);
+}
 const outputs = {
 	json: JSON.stringify(stats, null, '\t') + '\n',
 	markdown: renderMarkdown(stats),
@@ -116,6 +127,21 @@ function trackedFiles(directory, extensions) {
 		.split(/\r?\n/)
 		.filter((path) => path && extensions.some((extension) => path.endsWith(extension)))
 		.map((path) => join(root, path));
+}
+
+/** the same files as `measureTree` would measure, but the ones git does not track yet */
+function untrackedMeasuredFiles() {
+	const output = execFileSync(
+		'git',
+		['ls-files', '--others', '--exclude-standard', '--', 'src/', 'tests/', 'tools/'],
+		{
+			cwd: root,
+			encoding: 'utf8',
+		},
+	);
+	return output
+		.split(/\r?\n/)
+		.filter((path) => path && ['.ts', '.mjs', '.js', '.cjs'].some((extension) => path.endsWith(extension)));
 }
 
 function readTracked(path) {

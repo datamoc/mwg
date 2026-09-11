@@ -4,8 +4,8 @@
 	"version": "0.7.6",
 	"releaseDate": "2026-09-11",
 	"source": {
-		"files": 242,
-		"lines": 33921,
+		"files": 243,
+		"lines": 34096,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -49,6 +49,11 @@
 				"lines": 1609
 			},
 			{
+				"name": "ai",
+				"files": 4,
+				"lines": 856
+			},
+			{
 				"name": "audio",
 				"files": 8,
 				"lines": 793
@@ -57,11 +62,6 @@
 				"name": "three-d",
 				"files": 9,
 				"lines": 756
-			},
-			{
-				"name": "ai",
-				"files": 3,
-				"lines": 681
 			},
 			{
 				"name": "battle",
@@ -86,13 +86,13 @@
 		]
 	},
 	"tests": {
-		"files": 167,
-		"lines": 20766,
-		"cases": 1526
+		"files": 168,
+		"lines": 20892,
+		"cases": 1534
 	},
 	"tools": {
 		"files": 34,
-		"lines": 6230
+		"lines": 6256
 	},
 	"examples": {
 		"count": 22,
