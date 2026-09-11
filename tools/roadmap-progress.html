@@ -3747,20 +3747,31 @@ worth closing and a shape worth copying - a camera that orbits a target under li
 knob on every tile - and it means 285 and 286 have to hold for the hex and diamond shapes too, not
 only for the square grid they are easiest to reason about.
 
-285. [Medium] Fixed-angle map rotation. Turn the view in quarter turns (0/90/180/270), which is what a
-     strategy game wants for "look at the map from another side" without a free camera. The grid
-     stays axis-aligned at these angles, so tile choice, fog and pathfinding are untouched, and what
-     has to be built is the layer between them and the screen: `Camera.toScreen`/`toWorld` must invert
-     the quarter turn so a click lands on the cell the player aimed at, `TiledMap`'s culling must use
-     the rotated view rather than an axis-aligned rectangle, and anything drawn *into* the world that
-     must stay upright - labels, health bars, damage numbers, the selection cursor's text - needs a
-     counter-rotation, since a 180 degree turn would otherwise put every label upside down. A quarter
-     turn is exact, so it belongs in the same place the projection options landed (259, 284) rather
-     than in the renderer.
-286. [Medium] Free map rotation. Any angle, including smooth animation between angles. Beyond 285's
-     inverse mapping, this is where the real costs are, and each is a decision rather than a detail:
-     adjacent rotated tiles show hairline seams unless they are drawn as one mesh or with a bleed
-     margin, so a per-tile rotation is not the same thing as a rotated layer; picking needs the
+285. [Medium] Fixed-angle map rotation. Turn the view in whole steps, which is what a strategy game
+     wants for "look at the map from another side" without a free camera. **The step depends on the
+     grid, and hex is not a quarter turn**: a hex lattice comes back onto itself every **60 degrees**,
+     so there are **six** positions in a full turn (the hexagon's own 6-fold symmetry), where a
+     square grid has four quarter turns. Both are exact, so the grid stays aligned with its own
+     addressing at every step, and tile choice, fog and pathfinding are untouched - what has to be
+     built is the layer between them and the screen: `Camera.toScreen`/`toWorld` must invert the step
+     so a click lands on the cell the player aimed at, `TiledMap`'s culling must use the rotated view
+     rather than an axis-aligned rectangle, and anything drawn *into* the world that must stay upright
+     - labels, health bars, damage numbers, the selection cursor's text - needs a counter-rotation,
+     since a half turn would otherwise put every label upside down.
+
+     The hex case has its own two details, both worth settling here rather than in the renderer. A
+     60 degree step maps the lattice onto itself but **re-origins the offset addressing**, so odd-q
+     becomes a different parity and origin for the next step: the step has to move the addressing
+     with it, or the same screen cell answers to a different column and row depending on how many
+     steps the player has turned. And because the projection options landed in `Hex.ts` (259), the
+     step belongs next to them - a rotated hex view is a projection change, not a sprite rotation,
+     and it has to be true for pointy-top as well as flat-top, since the Wesnoth-shaped map is
+     pointy-top.
+286. [Medium] Free map rotation. Any angle, including smooth animation between angles (and for hex,
+     animation *between* the six exact positions above rather than only landing on them). Beyond
+     285's inverse mapping, this is where the real costs are, and each is a decision rather than a
+     detail: adjacent rotated tiles show hairline seams unless they are drawn as one mesh or with a
+     bleed margin, so a per-tile rotation is not the same thing as a rotated layer; picking needs the
      inverse of an arbitrary angle with a tolerance, since a click near a corner is ambiguous in
      world space once the screen has been turned; culling has to use the rotated view's bounding box
      or the map will pop at its edges; text and pixel-snapped UI must stay outside or counter-rotate
