@@ -6,7 +6,84 @@
 	"source": {
 		"files": 235,
 		"lines": 32455,
-		"modules": 15
+		"modules": 15,
+		"breakdown": [
+			{
+				"name": "two-d",
+				"files": 57,
+				"lines": 9322
+			},
+			{
+				"name": "core",
+				"files": 38,
+				"lines": 4325
+			},
+			{
+				"name": "mwl",
+				"files": 18,
+				"lines": 3503
+			},
+			{
+				"name": "roguelike",
+				"files": 22,
+				"lines": 3062
+			},
+			{
+				"name": "board",
+				"files": 8,
+				"lines": 2619
+			},
+			{
+				"name": "actors",
+				"files": 24,
+				"lines": 2399
+			},
+			{
+				"name": "i18n",
+				"files": 9,
+				"lines": 1630
+			},
+			{
+				"name": "rpg",
+				"files": 11,
+				"lines": 1609
+			},
+			{
+				"name": "audio",
+				"files": 8,
+				"lines": 793
+			},
+			{
+				"name": "three-d",
+				"files": 9,
+				"lines": 756
+			},
+			{
+				"name": "ai",
+				"files": 3,
+				"lines": 678
+			},
+			{
+				"name": "battle",
+				"files": 10,
+				"lines": 555
+			},
+			{
+				"name": "assets",
+				"files": 6,
+				"lines": 492
+			},
+			{
+				"name": "world",
+				"files": 6,
+				"lines": 394
+			},
+			{
+				"name": "simulation",
+				"files": 4,
+				"lines": 282
+			}
+		]
 	},
 	"tests": {
 		"files": 163,
@@ -15,7 +92,7 @@
 	},
 	"tools": {
 		"files": 34,
-		"lines": 6143
+		"lines": 6154
 	},
 	"examples": {
 		"count": 22,
@@ -47,7 +124,8 @@
 	"roadmap": {
 		"items": 233,
 		"completed": 233,
-		"open": 0
+		"open": 0,
+		"percent": 100
 	},
 	"api": {
 		"declarationFiles": 0
@@ -56,5 +134,8 @@
 		"globalRaw": 917253,
 		"globalGzip": 272227,
 		"distRaw": 2554943
+	},
+	"quality": {
+		"testToSourceRatio": 0.6
 	}
 }
