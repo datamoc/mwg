@@ -209,7 +209,13 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
 - `parseImagePath`/`imageModifier`/`colorShiftMatrix`/`applyImageModifiers`/`croppedTexture` - parses common
   image suffix modifiers such as `~FL`, `~GS`, `~SCALE` and `~CROP`, then applies the supported
   Pixi presentation changes without mutating shared source textures.
-- `AnimatedSprite`/`Animation` - frame-sequence sprite animation.
+- `AnimatedSprite`/`Animation` - frame-sequence sprite animation. A frame may carry its own
+  duration (Wesnoth's `image=a.png:120,b.png:80`), and an animation may start partway into itself
+  or after a delay (`startTime`, which is what `start_time=-450` on an attack means: begin four and
+  a half frames in, so the hit lines up with the damage frame). A frame may also carry an offset,
+  reported through `AnimatedSprite.frameOffset` for the caller to add where it positions the sprite,
+  because that position is the caller's (`GridMover`, a walk tween) and a sprite that overwrote it
+  every frame would undo it every frame.
 - `SpriteSheet` - a grid-sliced sprite sheet.
 - `Camera`/`createCamera`/`snapZoom` - world-to-screen camera; `snapZoom` keeps tile edges
   pixel-aligned at a fractional zoom.

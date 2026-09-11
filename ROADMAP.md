@@ -3395,9 +3395,21 @@ it.
 253. [Medium] Turn limit as a native end condition (Absent). "Time over" as a scenario predicate
      has no framework home; the port had to add `predicate:turn_limit` itself. (`[objectives]`
      with a `condition=hook` does exist.)
-254. [High] Per-frame animation timing (Absent). `AnimatedSprite`/`ActorAnimator`
+254. ~~[High] Per-frame animation timing (Absent). `AnimatedSprite`/`ActorAnimator`
      (`src/two-d/render/`) run at a fixed fps (`frameDuration = 1/fps`). Wesnoth needs a duration
-     per frame (`image:120,80,...`), `start_time`, per-frame x/y offsets, and `[missile_frame]`.
+     per frame (`image:120,80,...`), `start_time`, per-frame x/y offsets, and `[missile_frame]`.~~
+     Landed: `Animation` takes frames as textures or as `{ texture, duration, offsetX, offsetY }`,
+     so a frame carries its own time and its own place, and `AnimationOptions.startTime` is signed
+     exactly as Wesnoth writes it: positive holds the first frame, negative skips the leading ones
+     (`start_time=-450` over 100ms frames opens on the fifth). `frameAt`/`frameIndexAt` are the
+     arithmetic, twelve tests in `tests/animation.test.ts` check it, and the sprite advances on
+     `elapsed` rather than a leftover timer, so a long frame lands on the right frame rather than
+     catching up through each. `[missile_frame]` needs nothing beyond this: `Projectile` already
+     flies a sprite along a path, and the frames it shows are now timed (the item's own "Absent"
+     was about the frame model, not about flight). Per-frame offsets are *not* applied by the
+     sprite: it reports `frameOffset` and the caller adds it, because this sprite is a `Sprite`
+     whose position a `GridMover` or a walk tween owns, and a container wrapper would have broken
+     the construction call every caller already uses (`new AnimatedSprite(texture)`).
 255. [High] Image modifiers beyond the four implemented (Ne correspond pas).
      `applyImageModifiers` handles FL/SCALE/GS/CS and `croppedTexture` handles CROP; ~BLIT, ~RC,
      ~CHAN, ~PAL, ~MASK, ~BLEND, ~O, ~R/~G/~B and ~ROTATE are missing. ~RC and ~BLIT are the two

@@ -17,6 +17,14 @@ the public API may still change between minor versions.
   whole side's read through the same two functions and differ only in the visibility set they are
   handed, and `board.FactionFog.sees(side)` is that set as a predicate: it reads the shroud as it is
   when called, not as it was when the predicate was made.
+- `Animation`/`AnimatedSprite` frame timing (item 254): a frame is now a texture or
+  `{ texture, duration, offsetX, offsetY }`, so a frame carries its own time and its own place, as
+  Wesnoth's `image=a.png:120,b.png:80` does, and `AnimationOptions.startTime` is signed the way
+  Wesnoth writes it: positive holds the first frame, negative starts partway in (`start_time=-450`
+  over frames of 100ms opens on the fifth, which is how a swing is lined up with its damage frame).
+  `Animation.frameAt`/`frameIndexAt` are the rule, the sprite advances on its own elapsed time
+  rather than a leftover timer, and a frame's offset is reported through `AnimatedSprite.frameOffset`
+  for the caller to add where it already positions the sprite.
 
 ### Fixed
 

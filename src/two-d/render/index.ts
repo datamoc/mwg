@@ -11,7 +11,7 @@ export {
 } from './ImageModifiers.ts';
 export type { ImageModifier, ParsedImagePath } from './ImageModifiers.ts';
 export { AnimatedSprite, Animation } from './AnimatedSprite.ts';
-export type { AnimationOptions } from './AnimatedSprite.ts';
+export type { AnimationFrame, AnimationFrameInput, AnimationOptions } from './AnimatedSprite.ts';
 export { SpriteSheet } from './SpriteSheet.ts';
 export { Camera, createCamera, snapZoom } from './Camera.ts';
 export type { CameraOptions } from './Camera.ts';

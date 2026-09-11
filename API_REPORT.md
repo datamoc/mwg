@@ -91,30 +91,47 @@ build instead.
         private animations;
         private current;
         private currentName;
-        private frameIndex;
-        private timer;
+        private elapsed;
         private finished;
+        private readonly offset;
 
         onFinish: ((name: string) => void) | null;
         paused: boolean;
-        add(name: string, frames: readonly Texture2D[], options?: AnimationOptions): this;
+        add(name: string, frames: readonly AnimationFrameInput[], options?: AnimationOptions): this;
         has(name: string): boolean;
         get playing(): string | null;
         get isFinished(): boolean;
 
+        get frameOffset(): {
+            readonly x: number;
+            readonly y: number;
+        };
+
+        get elapsedTime(): number;
+
         play(name: string, restart?: boolean): this;
         stop(): void;
         update(dt: number): void;
+        private show;
     }
 
 ### `Animation` (class)
 
     export declare class Animation {
-        readonly frames: readonly Texture2D[];
+        readonly frames: readonly AnimationFrame[];
+
         readonly frameDuration: number;
         readonly loop: boolean;
-        constructor(frames: readonly Texture2D[], { fps, loop }?: AnimationOptions);
-        get duration(): number;
+        readonly startTime: number;
+
+        readonly duration: number;
+
+        private readonly times;
+        constructor(frames: readonly AnimationFrameInput[], { fps, loop, startTime }?: AnimationOptions);
+
+        frameAt(seconds: number): AnimationFrame;
+
+        frameIndexAt(seconds: number): number;
     }
 
 ### `applyImageModifiers` (function)
@@ -5415,30 +5432,47 @@ build instead.
         private animations;
         private current;
         private currentName;
-        private frameIndex;
-        private timer;
+        private elapsed;
         private finished;
+        private readonly offset;
 
         onFinish: ((name: string) => void) | null;
         paused: boolean;
-        add(name: string, frames: readonly Texture2D[], options?: AnimationOptions): this;
+        add(name: string, frames: readonly AnimationFrameInput[], options?: AnimationOptions): this;
         has(name: string): boolean;
         get playing(): string | null;
         get isFinished(): boolean;
 
+        get frameOffset(): {
+            readonly x: number;
+            readonly y: number;
+        };
+
+        get elapsedTime(): number;
+
         play(name: string, restart?: boolean): this;
         stop(): void;
         update(dt: number): void;
+        private show;
     }
 
 ### `Animation` (class)
 
     export declare class Animation {
-        readonly frames: readonly Texture2D[];
+        readonly frames: readonly AnimationFrame[];
+
         readonly frameDuration: number;
         readonly loop: boolean;
-        constructor(frames: readonly Texture2D[], { fps, loop }?: AnimationOptions);
-        get duration(): number;
+        readonly startTime: number;
+
+        readonly duration: number;
+
+        private readonly times;
+        constructor(frames: readonly AnimationFrameInput[], { fps, loop, startTime }?: AnimationOptions);
+
+        frameAt(seconds: number): AnimationFrame;
+
+        frameIndexAt(seconds: number): number;
     }
 
 ### `applyImageModifiers` (function)
@@ -6793,30 +6827,47 @@ build instead.
         private animations;
         private current;
         private currentName;
-        private frameIndex;
-        private timer;
+        private elapsed;
         private finished;
+        private readonly offset;
 
         onFinish: ((name: string) => void) | null;
         paused: boolean;
-        add(name: string, frames: readonly Texture2D[], options?: AnimationOptions): this;
+        add(name: string, frames: readonly AnimationFrameInput[], options?: AnimationOptions): this;
         has(name: string): boolean;
         get playing(): string | null;
         get isFinished(): boolean;
 
+        get frameOffset(): {
+            readonly x: number;
+            readonly y: number;
+        };
+
+        get elapsedTime(): number;
+
         play(name: string, restart?: boolean): this;
         stop(): void;
         update(dt: number): void;
+        private show;
     }
 
 ### `Animation` (class)
 
     export declare class Animation {
-        readonly frames: readonly Texture2D[];
+        readonly frames: readonly AnimationFrame[];
+
         readonly frameDuration: number;
         readonly loop: boolean;
-        constructor(frames: readonly Texture2D[], { fps, loop }?: AnimationOptions);
-        get duration(): number;
+        readonly startTime: number;
+
+        readonly duration: number;
+
+        private readonly times;
+        constructor(frames: readonly AnimationFrameInput[], { fps, loop, startTime }?: AnimationOptions);
+
+        frameAt(seconds: number): AnimationFrame;
+
+        frameIndexAt(seconds: number): number;
     }
 
 ### `applyImageModifiers` (function)
