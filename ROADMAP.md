@@ -4431,10 +4431,10 @@ standing intentions.
 
 ### 1.0 exit checklist
 
-The definition of done for 1.0. Each line is a check to run, not a feature to build. The numbered
-list above is shipped except for the Wesnoth-port cluster (247 and up), which is open work for
-that port rather than a gate on 1.0: the framework's 1.0 is what the ports build against, and
-both of them being complete is the line below that says so.
+The definition of done for 1.0. Each line is a check to run, not a feature to build. Every numbered
+item above has shipped, the Wesnoth-port cluster (247 and up, 311-313 last, plus 314 found
+reconciling it) included: the framework's 1.0 is what the ports build against, and both of them
+being complete is the line below that says so rather than a numbered item of its own.
 
 - [x] `npm run check`, `npm test`, `npm run build`, and `npm run audit` are all green on
       the release commit. (2026-09-11: green on the 0.7.6 release commit `98c64df`, whose own CI
