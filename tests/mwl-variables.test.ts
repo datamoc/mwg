@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { compile } from '../src/mwl/compiler.ts';
+import { decodeSave, encodeSave } from '../src/mwl/persistence.ts';
 import { MwlRuntime, type MwlMessage } from '../src/mwl/runtime.ts';
 
 const BASE = `[game]
@@ -242,4 +243,8 @@ value=B
 		() => runWith(`[event]\nid=e\non=start\n[set_variable]\nname=a[x].b\nvalue=1\n[/set_variable]\n[/event]\n`),
 		/invalid variable path: a\[x\]\.b/,
 	);
+
+	//the array shape is what a save carries, not only what a live world holds
+	const restored = decodeSave(encodeSave(rt.world, { version: 1 }), { version: 1 });
+	assert.deepEqual(restored.variables.party, [{ name: 'A' }, { name: 'B' }]);
 });

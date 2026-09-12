@@ -1711,33 +1711,17 @@ function isIndexedStep(step: string | IndexedPathPart): step is IndexedPathPart 
  */
 function setVariableAtPath(variables: Record<string, MwlValue>, path: string, value: MwlValue): void {
 	const parts = validVariablePathParts(path);
-	if (parts.length === 1) {
-		const only = parts[0];
-		if (typeof only === 'string') variables[only] = value;
-		else (variables as unknown as MwlValue[])[only.index] = value;
-		return;
-	}
-	let current: Record<string, MwlValue> | MwlValue[] = variables;
+	const key = (step: string | IndexedPathPart): string | number => (typeof step === 'string' ? step : step.index);
+	let current = variables as Record<string, MwlValue> | MwlValue[];
 	for (let index = 0; index < parts.length - 1; index++) {
-		const step = parts[index];
-		const next = parts[index + 1];
-		if (typeof step === 'string') {
-			const child = (current as Record<string, MwlValue>)[step];
-			if (!child || typeof child !== 'object') {
-				(current as Record<string, MwlValue>)[step] = isIndexedStep(next) ? [] : {};
-			}
-			current = (current as Record<string, MwlValue>)[step] as Record<string, MwlValue> | MwlValue[];
-		} else {
-			const child = (current as MwlValue[])[step.index];
-			if (!child || typeof child !== 'object') {
-				(current as MwlValue[])[step.index] = isIndexedStep(next) ? [] : {};
-			}
-			current = (current as MwlValue[])[step.index] as Record<string, MwlValue> | MwlValue[];
+		const step = key(parts[index]);
+		const child = (current as Record<string | number, MwlValue>)[step];
+		if (!child || typeof child !== 'object') {
+			(current as Record<string | number, MwlValue>)[step] = isIndexedStep(parts[index + 1]) ? [] : {};
 		}
+		current = (current as Record<string | number, MwlValue>)[step] as Record<string, MwlValue> | MwlValue[];
 	}
-	const last = parts[parts.length - 1];
-	if (typeof last === 'string') (current as Record<string, MwlValue>)[last] = value;
-	else (current as MwlValue[])[last.index] = value;
+	(current as Record<string | number, MwlValue>)[key(parts[parts.length - 1])] = value;
 }
 
 /** The one read of a variable path, used by every reader that takes a name. */
