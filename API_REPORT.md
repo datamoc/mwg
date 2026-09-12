@@ -435,6 +435,10 @@ build instead.
 
     export declare function checkSize(data: string | Uint8Array, options?: SizeLimitOptions): void;
 
+### `clamp` (function)
+
+    export declare function clamp(value: number, min: number, max: number): number;
+
 ### `Collection` (class)
 
     export declare class Collection {
@@ -4522,6 +4526,10 @@ build instead.
 ### `checkSize` (function)
 
     export declare function checkSize(data: string | Uint8Array, options?: SizeLimitOptions): void;
+
+### `clamp` (function)
+
+    export declare function clamp(value: number, min: number, max: number): number;
 
 ### `Collection` (class)
 

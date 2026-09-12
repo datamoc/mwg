@@ -193,6 +193,7 @@ export function withTextureCanvas(
 	const height = texture.height;
 	if (width <= 0 || height <= 0 || !texture.source) return texture;
 
+	const usingRealCanvas = !probe.createCanvas;
 	const canvas =
 		probe.createCanvas?.(width, height) ??
 		(typeof document === 'undefined' ? null : (document.createElement('canvas') as unknown as RemapCanvas));
@@ -202,8 +203,24 @@ export function withTextureCanvas(
 	const context = canvas.getContext('2d');
 	if (!context) return texture;
 
+	//a real `CanvasRenderingContext2D.putImageData` throws on a plain `{data,width,height}` -
+	//it needs an actual `ImageData` - so every pixel-level modifier can write the plain object
+	//`RemapCanvasContext` declares and this is the one place that makes it real
+	const paintContext: RemapCanvasContext = usingRealCanvas
+		? {
+				drawImage: context.drawImage.bind(context),
+				getImageData: context.getImageData.bind(context),
+				putImageData: (imageData, dx, dy) =>
+					context.putImageData(
+						new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height),
+						dx,
+						dy,
+					),
+			}
+		: context;
+
 	context.drawImage(texture.source.resource, 0, 0);
-	paint(context, width, height);
+	paint(paintContext, width, height);
 	return Texture.from(canvas as unknown as HTMLCanvasElement);
 }
 

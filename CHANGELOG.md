@@ -5,6 +5,23 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
+## [Unreleased]
+
+### Added
+
+- `core.clamp`, replacing two byte-identical private `clamp` helpers in `rpg.Collision` and
+  `two-d.render.Camera`.
+
+### Fixed
+
+- `withTextureCanvas`'s pixel-level modifiers (`~BLIT`/`~MASK`/`~BLEND`/`~ROTATE` in
+  `applyTextureModifiers`, and `recolorTexture`) called a real
+  `CanvasRenderingContext2D.putImageData` with a plain `{data, width, height}` object, which a
+  real browser rejects (it needs an actual `ImageData`); a test-supplied `probe.createCanvas`
+  never hit the real canvas path, so the bug had no unit-test coverage. `withTextureCanvas` now
+  wraps the real context's `putImageData` to build a proper `ImageData` itself, so every
+  pixel-level modifier keeps writing the same plain object.
+
 ## [0.7.8] - 2026-09-12
 
 ### Added

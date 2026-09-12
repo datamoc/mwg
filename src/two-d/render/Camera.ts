@@ -2,6 +2,7 @@ import { Container } from 'pixi.js';
 import { Game } from '../Game.ts';
 import * as Random from '../../core/Random.ts';
 import { reducedMotion } from '../../core/Motion.ts';
+import { clamp } from '../../core/Math.ts';
 
 /**
  * A view onto a world larger than the screen.
@@ -412,10 +413,6 @@ export class Camera {
 		this.world.x = Math.round(this.screenX + this.viewWidth / 2);
 		this.world.y = Math.round(this.screenY + this.viewHeight / 2);
 	}
-}
-
-function clamp(value: number, min: number, max: number): number {
-	return value < min ? min : value > max ? max : value;
 }
 
 //the signed turn from `from` to `to`, in (-pi, pi], so easing always takes the shorter way

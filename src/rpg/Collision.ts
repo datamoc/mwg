@@ -28,6 +28,8 @@
  * ```
  */
 
+import { clamp } from '../core/Math.ts';
+
 export interface AABB {
 	x: number;
 	y: number;
@@ -131,8 +133,4 @@ function sweepAxis(
 	}
 
 	return target;
-}
-
-function clamp(value: number, min: number, max: number): number {
-	return value < min ? min : value > max ? max : value;
 }

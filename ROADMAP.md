@@ -4191,6 +4191,105 @@ only for the square grid they are easiest to reason about.
      leader. Two assertions on the existing leader tests and one filter test in
      `tests/mwl-side-identity.test.ts`.
 
+The port's own `ROADMAP.md` section 11A continues past P0-P2 (278-282 above) with P3-P12,
+recorded here in the same low-priority, append-only way as everything else in this list -
+ordered by the port's own payoff estimate, not argued into or out of a different order here.
+
+297. [Medium] Re-export extension pipes from a facade (the port's P3). `TilingSpritePipe`/
+     `NineSliceSpritePipe` and the extensions that register them have no facade name, forcing
+     a direct `pixi.js` import to reach them, even though the interop doc says backend access
+     is confined to one file. A `registerBuiltinPipes()` helper, or re-exporting the three
+     symbols from `two-d/pixi-interop`, would close the port's last direct `pixi.js` import.
+298. [Low] Fix contradictory interop doc comments (the port's P4). `Shape2D.d.ts` says
+     `Container2D` is a type alias a game cannot `new`, which contradicts `Types2D.d.ts`'s
+     value re-export of the class itself; `pixi-interop.d.ts`'s "no registration needed"
+     guarantee is actually Pixi's/mwg's `sideEffects` whitelist, not a universal one.
+     Doc-only, but the contradiction cost the port a session.
+299. [Medium] Pointer parity for `ListView` (the port's P5). `IconGrid` is pointer-driven
+     (`tapCell`); `ListView` is keyboard-only, so a clickable bag or menu list has no built-in
+     hit surface, and the port had to fill `ListItem.icon` with a full-row hit area as a
+     workaround. A `tapRow(index)` alongside the existing keyboard navigation would remove it.
+300. [Medium] Let a game hand `assets` its own path-to-URI map (the port's P6). `assets/paths`
+     only reads `window.__MWG_ASSETS__` or a dev server, so a Vite-bundled game that compiles
+     its own asset map cannot use `Assets`' loaders, batching or progress at all; this port
+     uses none of `Assets` for exactly that reason. A `setAssetMap`/`setBase` overload would
+     let such a game opt in instead of reimplementing loading itself.
+301. [Medium] Let `StatusVisuals` compose over the additive channel (the port's P7). Its own
+     doc says one status wins by declaration order and that a stray tint write "will fight
+     this"; the port needs identity tint plus several simultaneous additive colours plus a
+     flash, which is why the class was never adopted. Compose instead of picking one winner.
+302. [Low] A phase/sequence API for `ScreenEffects` (the port's P8). `fadeOut`/`fadeIn`/
+     `flash` cannot express hold-then-fade-then-fade-back, the genre's standard transition, so
+     the port hand-computes it.
+303. [Low] A screen-pixel shake helper (the port's P9). `Camera.shake` is world units, while
+     the reference's own convention (43 call sites) is screen pixels, forcing a conversion at
+     every site. `shakeScreen(intensity, duration)` would remove it.
+304. [Low] Document, or make configurable, what MWL row ids are scoped to (the port's P10).
+     `validateCatalog` keys on `tag:id` document-wide, so a domain-scoped row-naming
+     convention yields one `MWL_DUPLICATE_ID` per reuse (42 in this port's data) that cannot
+     be told apart from a genuine same-table duplicate. Either document the scope or add a
+     `rowIdScope` option.
+305. [Low] More `tools/mwl.mjs` hooks for game-owned generated modules and cross-table checks
+     (the port's P11), or say plainly that a game needing custom validation should embed the
+     library API directly rather than drive the CLI. This build needed three game-owned
+     generated modules plus cross-table checks the CLI has no hook for.
+306. [Low] Document a `file://` post-build recipe for bundler users, or add a
+     `tools/classic-html.mjs` (the port's P12). A Vite entry tag comes out `type="module"`,
+     which `file://` refuses, so every bundler-based game repeats this port's own
+     rewrite-plus-unbuilt-source-page guard by hand.
+307. [Low] Author non-monster asset references in MWL (the port's P2, re-verified against
+     `src/mwl/schema.ts` rather than taken on the note: still open). The inventory `item` node
+     is `{ id, name, slot, stackable, weight }` with no asset attribute, and `image` remains
+     only on `monster`/`unit_type`/`object`/`story`; the compiler's manifest scanner
+     (`isAssetAttribute` in `src/mwl/compiler.ts`) already recognises `image`/`file`/`icon`/
+     `profile`/`sound`/`*_sound`/`*_image` by name on *any* node, so the schema gate is the only
+     thing blocking it - authoring a terrain or UI asset on `item` fails with "unknown attribute
+     image on item" today. Adding `image` (and optionally `file`) to `item`, or a dedicated
+     game-agnostic `asset` node with an optional `slot`/`kind`, is the one requested change; no
+     port-specific names, values or art belong here, only the attribute contract and its
+     determinism tests - the same bar every item in this section already commits to (see the
+     section note above on renderer-free tests, an `@example`, save notes and an API report
+     entry, and on waiting for a released version before checking a box here).
+308. [Medium] Accept an explicit `{src, parser}` descriptor in `assets.load`/`texture` (a
+     second port's report). `load()` (`src/assets/loader.ts`) always hands `Assets.load(path)`
+     a bare path string, so a game whose compiled build inlines every asset as a `data:` URI
+     (this framework's own offline-build story, see the `file://` constraint) has no way to
+     tell Pixi which parser a `data:` URI needs and has to call `Assets.load({src, parser})`
+     itself, alongside its own texture cache, duplicating what `load`/`texture` already do for
+     a plain path. Auto-detecting a `data:` URI as `loadTextures`, or accepting the descriptor
+     shape directly, would remove that duplicate bookkeeping.
+309. [Low] A facade for `ColorMatrixFilter` (the same port's report). `ImageModifiers.ts`
+     already returns matrices (`blendMatrix`, `channelScaleMatrix`, `channelSwapMatrix`,
+     `colorShiftMatrix`), but attaching one to a sprite still means `new ColorMatrixFilter()`
+     from `pixi.js` directly, the interop boundary's last remaining hole for a game that
+     otherwise never imports Pixi by name. A bare re-export (`ColorMatrixFilter2D`, alongside
+     `Container2D`/`Texture2D` in `Types2D.ts`) or a `spriteColorMatrix(sprite, matrix)` helper
+     would close it.
+310. [Low] Let `applyImageModifiers` bake `applyTextureModifiers`'s pixel-level work (the same
+     port's report). `~BLEND`/`~ROTATE` are exact at the texture level
+     (`applyTextureModifiers`) but only matrix-approximated at the sprite level
+     (`applyImageModifiers`), so a caller wanting the exact result has to know about, and
+     drive, both functions itself. An option on `applyImageModifiers` to bake the texture-level
+     result instead of approximating it, or a documented two-step recipe, would remove the
+     silent gap between the two.
+311. [Low] Let `Projectile` carry a frame animation, not only a position tween (the same port's
+     report). `Projectile.update` moves a sprite's `x`/`y` in a straight line and nothing else;
+     a game whose missile art has flight frames (`[missile_frame]`, landed under 254) keeps its
+     own parallel list of in-flight animations to advance alongside each `Projectile`. Accepting
+     an optional `Animation` (or an `onUpdate` callback keyed to `progress`) would let one object
+     own both.
+312. [Low] A named-layer helper for `Node2D` trees (the same port's report). A game with a
+     dozen or so conventionally-ordered layers (terrain, units, effects, UI, ...) hand-wires
+     each as its own `Node2D`, added to its parent in the right order, every time. A
+     `createLayers(names)` returning attached, named containers would remove that boilerplate;
+     the ordering and naming stay the caller's own convention, not something this framework
+     opines on.
+313. [Low] Let `RichLabel`/`MarkupText` accept `tagStyles` the way a bare `Text2D` does (the
+     same port's report). A game building narration through `new Text2D({ tagStyles })` for
+     custom inline tags beyond `markup.ts`'s fixed set currently cannot reach that through
+     either UI widget, so it builds its own `Text2D` instead of using a framework widget for
+     what is otherwise exactly a `RichLabel`'s job.
+
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list
 until someone actually picks them up, because the list records shipped capabilities, not

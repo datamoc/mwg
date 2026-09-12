@@ -109,6 +109,9 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   `key=value` pairs); an empty cell omits that field entirely, the same as an optional
   property never set. Takes a raw string with no opinion on how it was loaded, the same
   boundary `i18n.parseFTL` already draws.
+- `clamp` - `value` restricted to `[min, max]`. Shared so `two-d.render.Camera`'s bounds
+  clamp and `rpg.Collision`'s tile-edge resolver stop being the same three-line function
+  written twice.
 - `Random` (namespace) - seeded RNG: `int`, `float`, `weighted`, `element`, `shuffle` and the
   rest; every "pick one" returns `null` when there is nothing to pick.
 - `Generator` - the seeded RNG class `Random` wraps directly, for a game that wants its own instance.
