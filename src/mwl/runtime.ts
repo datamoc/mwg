@@ -438,7 +438,7 @@ export class MwlRuntime {
 			if (child.tag !== 'choice' || !child.attributes.text) continue;
 			if (
 				child.attributes.variable !== undefined &&
-				!sameValue(this.world.variables[child.attributes.variable], child.attributes.equals)
+				!sameValue(this.variableAt(child.attributes.variable), child.attributes.equals)
 			)
 				continue;
 			const branches = child.children.filter((branch) => branch.tag === 'branch');
@@ -853,7 +853,7 @@ export class MwlRuntime {
 				if (limit < 1 || limit > 100_000)
 					throw new Error('MWL while max_iterations must be between 1 and 100000');
 				for (let iteration = 0; iteration < limit && this.nodeConditionMatches(node); iteration++)
-					for (const child of node.children) this.executeNode(child);
+					for (const child of this.commandChildren(node)) this.executeNode(child);
 				break;
 			}
 			case 'foreach': {
@@ -1034,27 +1034,7 @@ export class MwlRuntime {
 
 	private setVariableAt(path: string, value: MwlValue): void {
 		const previous = this.variableAt(path);
-		const parts = validVariablePathParts(path);
-		if (parts.length === 1) {
-			this.world.variables[path] = value;
-			this.onTrace?.({ type: 'variable', name: path, ...(previous === undefined ? {} : { previous }), value });
-			return;
-		}
-		let current: Record<string, MwlValue> = this.world.variables;
-		for (const part of parts.slice(0, -1)) {
-			if (typeof part === 'string') {
-				const child = current[part];
-				if (!child || typeof child !== 'object' || Array.isArray(child)) current[part] = {};
-				current = current[part] as Record<string, MwlValue>;
-			} else {
-				const child = current[part.index];
-				if (!child || typeof child !== 'object') current[part.index] = {};
-				current = current[part.index] as Record<string, MwlValue>;
-			}
-		}
-		const last = parts.at(-1)!;
-		if (typeof last === 'string') current[last] = value;
-		else current[last.index] = value;
+		setVariableAtPath(this.world.variables, path, value);
 		this.onTrace?.({ type: 'variable', name: path, ...(previous === undefined ? {} : { previous }), value });
 	}
 
@@ -1098,7 +1078,7 @@ export class MwlRuntime {
 
 	/** The unit snapshots `[store_unit]` wrote into a world variable, or a named content error. */
 	private storedUnits(variable: string): Array<Record<string, MwlValue>> {
-		const stored = this.world.variables[variable];
+		const stored = this.variableAt(variable);
 		if (!Array.isArray(stored))
 			throw new Error(`MWL variable ${variable} is not a stored unit list; store one first`);
 		return stored.filter(
@@ -1381,7 +1361,7 @@ export class MwlRuntime {
 			kill: (unit) => this.killUnit(unit),
 			gold: (side, delta) => this.addGold(side, delta),
 			setVariable: (name, value) => {
-				this.world.variables[name] = value;
+				setVariableAtPath(this.world.variables, name, value);
 			},
 			message: (speaker, text) => this.onMessage?.({ text, ...(speaker ? { speaker } : {}) }),
 			endTurn: () => this.endTurn(),
@@ -1430,7 +1410,7 @@ export function execute(world: MwlWorld, command: MwlCommand): void {
 	if (world.status !== 'playing' && command.name !== 'win' && command.name !== 'lose') return;
 	switch (command.name) {
 		case 'set_variable':
-			world.variables[command.target] = command.value;
+			setVariableAtPath(world.variables, command.target, command.value);
 			break;
 		case 'modify_gold':
 			world.gold[command.target] = (world.gold[command.target] ?? 0) + command.amount;
@@ -1718,6 +1698,46 @@ function validVariablePathParts(path: string): Array<string | IndexedPathPart> {
 	if (parts.some((part) => typeof part !== 'string' && part.index === undefined))
 		throw new Error(`invalid variable path: ${path}`);
 	return parts as Array<string | IndexedPathPart>;
+}
+
+function isIndexedStep(step: string | IndexedPathPart): step is IndexedPathPart {
+	return typeof step !== 'string';
+}
+
+/**
+ * The one write of a variable path, so `execute()`, the hook host and the runtime's own
+ * `set_variable` all place a value at the same node a read walks to. A step after an index
+ * grows an array, so `a[0]`/`a[1]` build a real list rather than an object with numbered keys.
+ */
+function setVariableAtPath(variables: Record<string, MwlValue>, path: string, value: MwlValue): void {
+	const parts = validVariablePathParts(path);
+	if (parts.length === 1) {
+		const only = parts[0];
+		if (typeof only === 'string') variables[only] = value;
+		else (variables as unknown as MwlValue[])[only.index] = value;
+		return;
+	}
+	let current: Record<string, MwlValue> | MwlValue[] = variables;
+	for (let index = 0; index < parts.length - 1; index++) {
+		const step = parts[index];
+		const next = parts[index + 1];
+		if (typeof step === 'string') {
+			const child = (current as Record<string, MwlValue>)[step];
+			if (!child || typeof child !== 'object') {
+				(current as Record<string, MwlValue>)[step] = isIndexedStep(next) ? [] : {};
+			}
+			current = (current as Record<string, MwlValue>)[step] as Record<string, MwlValue> | MwlValue[];
+		} else {
+			const child = (current as MwlValue[])[step.index];
+			if (!child || typeof child !== 'object') {
+				(current as MwlValue[])[step.index] = isIndexedStep(next) ? [] : {};
+			}
+			current = (current as MwlValue[])[step.index] as Record<string, MwlValue> | MwlValue[];
+		}
+	}
+	const last = parts[parts.length - 1];
+	if (typeof last === 'string') (current as Record<string, MwlValue>)[last] = value;
+	else (current as MwlValue[])[last.index] = value;
 }
 
 /** The one read of a variable path, used by every reader that takes a name. */

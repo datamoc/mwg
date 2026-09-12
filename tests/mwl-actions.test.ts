@@ -266,6 +266,23 @@ test('a unit carries its own name, role and leader flag, and a filter selects by
 	assert.deepEqual(ids('others'), ['grunt'], 'can_recruit=no reads a missing flag as a non-leader');
 });
 
+test('store_unit and unstore_unit accept a dotted variable path', () => {
+	const runtime = new MwlRuntime(
+		compile(
+			namedSource(
+				event(
+					'[store_unit]\nvariable=party.units\n[filter]\nunit=hero\n[/filter]\n[/store_unit]\n[kill]\nunit=hero\n[/kill]\n[unstore_unit]\nvariable=party.units\n[/unstore_unit]',
+				),
+			),
+		),
+		{ resolveMap: () => MAP },
+	);
+	runtime.run('go');
+
+	assert.equal(runtime.world.units.hero.alive, true, 'the dotted variable is read back where it was written');
+	assert.deepEqual(Object.keys(runtime.world.variables.party as Record<string, unknown>), ['units']);
+});
+
 test('store_unit keeps a unit s name, role and leader flag, and unstore_unit puts them back', () => {
 	const runtime = new MwlRuntime(
 		compile(

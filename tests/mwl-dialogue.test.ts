@@ -124,3 +124,45 @@ value=still
 	assert.equal(runtime.answerDialogue(messages.at(-1)!.dialogueId!, 1), true);
 	assert.equal(runtime.world.variables.path, 'still');
 });
+
+test('a choice gate reads a dotted variable path, like every other reader', () => {
+	const source = `[game]
+schema=0.1
+[event]
+on=start
+[set_variable]
+name=gate.open
+value=yes
+[/set_variable]
+[dialogue]
+[message]
+text=_ "Advance?"
+[/message]
+[choice]
+text=Secret
+event=go
+variable=gate.open
+equals=yes
+[/choice]
+[choice]
+text=Wait
+event=go
+[/choice]
+[/dialogue]
+[/event]
+[event]
+id=go
+[set_variable]
+name=path
+value=taken
+[/set_variable]
+[/event]
+[/game]`;
+	const messages: MwlMessage[] = [];
+	const runtime = new MwlRuntime(compile(source), { onMessage: (message) => messages.push(message) });
+	runtime.run('start');
+	assert.deepEqual(
+		messages.at(-1)?.choices?.map((choice) => choice.text),
+		['Secret', 'Wait'],
+	);
+});

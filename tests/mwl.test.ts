@@ -287,9 +287,11 @@ test('MWL runtime executes deterministic world commands', () => {
 	execute(world, { name: 'move', target: 'hero', x: 2, y: 2 });
 	execute(world, { name: 'modify_gold', target: 'side1', amount: 5 });
 	execute(world, { name: 'end_turn' });
+	execute(world, { name: 'set_variable', target: 'progress.stage', value: 'two' });
 	assert.deepEqual(world.units.hero, { hp: 10, x: 2, y: 2, alive: true });
 	assert.equal(world.gold.side1, 5);
 	assert.equal(world.turn, 2);
+	assert.deepEqual(world.variables.progress, { stage: 'two' });
 });
 
 test('MWL runtime loads units and runs compiled event commands', () => {

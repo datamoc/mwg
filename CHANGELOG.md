@@ -46,6 +46,14 @@ the public API may still change between minor versions.
   `unknown MWL command: condition` instead of running its body; a false condition hid it because
   the body never ran. `[if]`/`[else]` now run their command children only, the same rule
   `[while]` already followed. Two tests in `tests/mwl-conditions.test.ts`.
+- `[while]` had the same defect as `[if]`, so a loop body carrying a `[condition]` child threw.
+  It now runs its command children too. One test in `tests/mwl-variables.test.ts`.
+- The variable-path readers item 295 named are now complete, closing three that were still flat:
+  a dialogue `[choice]`'s `variable=` gate, `[store_unit]`/`[unstore_unit]`/`[recall]`'s stored
+  list, and the hook host's `setVariable`, plus the public `execute()`'s `set_variable`. An
+  indexed path now builds a real array (`a[0]`, `a[1]`), so a stored list and an indexed write
+  agree on their shape. One test each in `tests/mwl-dialogue.test.ts`, `tests/mwl-actions.test.ts`
+  and `tests/mwl.test.ts`, and the `a[0].b` test now asserts the array.
 
 ## [0.7.7] - 2026-09-11
 

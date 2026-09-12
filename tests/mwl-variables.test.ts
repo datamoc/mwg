@@ -106,6 +106,30 @@ value=$counter
 	assert.deepEqual(rt.world.variables.progress, { current: 3 });
 });
 
+test('while runs a body carrying its condition child', () => {
+	const { rt } = runWith(`[event]
+id=e
+on=start
+[set_variable]
+name=counter
+value=0
+[/set_variable]
+[while]
+max_iterations=10
+[condition]
+variable=counter
+less_than=3
+[/condition]
+[set_variable]
+name=counter
+value=counter + 1
+[/set_variable]
+[/while]
+[/event]
+`);
+	assert.equal(rt.world.variables.counter, 3);
+});
+
 test('foreach iterates arrays and switch selects the matching case', () => {
 	const { rt } = runWith(`[event]
 id=e
@@ -199,7 +223,7 @@ text=_ "at $progress.stage"
 	);
 });
 
-test('a[0].b reads and writes an array index; a non-numeric index is refused', () => {
+test('a[0].b reads and writes a real array index; a non-numeric index is refused', () => {
 	const { rt } = runWith(`[event]
 id=e
 on=start
@@ -213,9 +237,7 @@ value=B
 [/set_variable]
 [/event]
 `);
-	//a numeric segment builds an object key, the shape dotted writes already produce; the read
-	//above is what makes it a usable index, resolving `party[0].name` against the same node
-	assert.deepEqual(rt.world.variables.party, { '0': { name: 'A' }, '1': { name: 'B' } });
+	assert.deepEqual(rt.world.variables.party, [{ name: 'A' }, { name: 'B' }]);
 	assert.throws(
 		() => runWith(`[event]\nid=e\non=start\n[set_variable]\nname=a[x].b\nvalue=1\n[/set_variable]\n[/event]\n`),
 		/invalid variable path: a\[x\]\.b/,
