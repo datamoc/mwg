@@ -4,24 +4,24 @@
 	"version": "0.7.8",
 	"releaseDate": "2026-09-12",
 	"source": {
-		"files": 278,
-		"lines": 43159,
+		"files": 279,
+		"lines": 43637,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 79,
-				"lines": 14599
+				"lines": 14989
 			},
 			{
 				"name": "mwl",
 				"files": 21,
-				"lines": 5214
+				"lines": 5248
 			},
 			{
 				"name": "core",
-				"files": 42,
-				"lines": 5179
+				"files": 43,
+				"lines": 5195
 			},
 			{
 				"name": "roguelike",
@@ -46,7 +46,7 @@
 			{
 				"name": "rpg",
 				"files": 11,
-				"lines": 1609
+				"lines": 1607
 			},
 			{
 				"name": "ai",
@@ -81,18 +81,18 @@
 			{
 				"name": "assets",
 				"files": 6,
-				"lines": 532
+				"lines": 572
 			}
 		]
 	},
 	"tests": {
-		"files": 219,
-		"lines": 28627,
-		"cases": 2070
+		"files": 224,
+		"lines": 29191,
+		"cases": 2113
 	},
 	"tools": {
-		"files": 35,
-		"lines": 6346
+		"files": 36,
+		"lines": 6421
 	},
 	"examples": {
 		"count": 22,
@@ -122,18 +122,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 296,
-		"completed": 296,
+		"items": 314,
+		"completed": 314,
 		"open": 0,
 		"percent": 100
 	},
 	"api": {
-		"declarationFiles": 277
+		"declarationFiles": 278
 	},
 	"bundle": {
 		"globalRaw": 1011304,
 		"globalGzip": 300125,
-		"distRaw": 3211129
+		"distRaw": 3242523
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
