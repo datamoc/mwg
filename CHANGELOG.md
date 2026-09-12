@@ -41,6 +41,11 @@ the public API may still change between minor versions.
 
 ### Fixed
 
+- `board.addTacticalUnit` remembers each unit's own action budget, so `endTacticalTurn` refreshes
+  `actions` to it instead of a hardcoded two. A unit created with `actions: 3` was silently reset
+  to 2 every turn; the per-turn maximum is now `TacticalUnit.maxActions`, filled from the initial
+  `actions` when the caller does not set it. Six tests in `tests/tactics.test.ts`, which also
+  cover the overwatch reaction and attack paths that had none.
 - `board.backgammonMoves` follows the bearing-off rules. It offered a bear-off from any point
   whose roll reached past the off edge, so at the opening position a 6 came off from point 18
   while checkers still sat on 0, 11 and 16. A bear-off now needs every checker in the home

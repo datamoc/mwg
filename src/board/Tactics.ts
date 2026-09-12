@@ -45,7 +45,16 @@ export interface TacticalUnit {
 	y: number;
 	hp: number;
 	maxHp: number;
+
+	/** action points left this turn; spent by `moveTacticalUnit` and refreshed by `endTacticalTurn` */
 	actions: number;
+
+	/**
+	 * the per-turn budget `actions` is refreshed to. `addTacticalUnit` fills it from the initial
+	 * `actions` when the caller does not set it, so a unit keeps whatever budget it was created
+	 * with rather than being reset to a framework-wide number.
+	 */
+	maxActions?: number;
 	overwatch?: boolean;
 }
 export interface TacticalState {
@@ -124,7 +133,7 @@ export function canPlaceTacticalUnit(state: TacticalState, x: number, y: number)
  */
 export function addTacticalUnit(state: TacticalState, unit: TacticalUnit): void {
 	if (!canPlaceTacticalUnit(state, unit.x, unit.y)) throw new Error('tactical unit cannot be placed there');
-	state.units.push({ ...unit });
+	state.units.push({ ...unit, maxActions: unit.maxActions ?? unit.actions });
 	if (!state.turn) state.turn = unit.owner;
 }
 
@@ -299,7 +308,7 @@ export function endTacticalTurn(state: TacticalState): void {
 	state.turn = owners[next % owners.length];
 	for (const unit of state.units)
 		if (unit.owner === state.turn) {
-			unit.actions = 2;
+			unit.actions = unit.maxActions ?? unit.actions;
 			unit.overwatch = false;
 		}
 }
