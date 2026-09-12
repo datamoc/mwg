@@ -5,7 +5,7 @@
 	"releaseDate": "2026-09-11",
 	"source": {
 		"files": 278,
-		"lines": 43110,
+		"lines": 43106,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -31,7 +31,7 @@
 			{
 				"name": "board",
 				"files": 8,
-				"lines": 2714
+				"lines": 2710
 			},
 			{
 				"name": "actors",
@@ -131,9 +131,9 @@
 		"declarationFiles": 277
 	},
 	"bundle": {
-		"globalRaw": 1011079,
-		"globalGzip": 300015,
-		"distRaw": 3207716
+		"globalRaw": 1011025,
+		"globalGzip": 299982,
+		"distRaw": 3207458
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

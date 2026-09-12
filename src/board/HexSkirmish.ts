@@ -346,63 +346,59 @@ function moveCostOf(state: SkirmishState, x: number, y: number): number {
 	return terrainOf(state, x, y).moveCost;
 }
 
-//a binary min-heap, so the Dijkstra below pops the cheapest frontier cell in O(log n) rather
-//than re-sorting the whole frontier every step
-function minHeap<T>(compare: (a: T, b: T) => number): { push(value: T): void; pop(): T | undefined } {
-	const items: T[] = [];
-	const swap = (i: number, j: number): void => {
-		[items[i], items[j]] = [items[j], items[i]];
-	};
-	return {
-		push(value) {
-			items.push(value);
-			let index = items.length - 1;
-			while (index > 0) {
-				const parent = (index - 1) >> 1;
-				if (compare(items[parent], items[index]) <= 0) break;
-				swap(index, parent);
-				index = parent;
-			}
-		},
-		pop() {
-			if (items.length === 0) return undefined;
-			const top = items[0];
-			const last = items.pop()!;
-			if (items.length > 0) {
-				items[0] = last;
-				let index = 0;
-				for (;;) {
-					const left = index * 2 + 1;
-					const right = left + 1;
-					let smallest = index;
-					if (left < items.length && compare(items[left], items[smallest]) < 0) smallest = left;
-					if (right < items.length && compare(items[right], items[smallest]) < 0) smallest = right;
-					if (smallest === index) break;
-					swap(index, smallest);
-					index = smallest;
-				}
-			}
-			return top;
-		},
-	};
-}
-
 //the weighted walking cost to every free cell within `budget`, keyed `"x,y"` - one Dijkstra
 //from the unit rather than one per target, since terrain move cost varies per cell unlike
 //board.Tactics' uniform one-step cost. A blocked cell is never walked through, so it is relaxed
 //from nobody; `skirmishMoves` reaches a blocked target from an adjacent free cell. The moving
 //unit is not blocked (it is leaving its own cell), only the other units are.
+//The frontier is a binary min-heap, so the cheapest cell pops in O(log n) rather than the whole
+//frontier being re-sorted every step.
 function reachableCosts(
 	state: SkirmishState,
 	unit: SkirmishUnit,
 	budget: number,
 	blocked: ReadonlySet<string>,
 ): Map<string, number> {
+	type FrontierCell = { x: number; y: number; cost: number };
+	const frontier: FrontierCell[] = [];
+	const swap = (i: number, j: number): void => {
+		[frontier[i], frontier[j]] = [frontier[j], frontier[i]];
+	};
+	const push = (cell: FrontierCell): void => {
+		frontier.push(cell);
+		let index = frontier.length - 1;
+		while (index > 0) {
+			const parent = (index - 1) >> 1;
+			if (frontier[parent].cost <= frontier[index].cost) break;
+			swap(index, parent);
+			index = parent;
+		}
+	};
+	const pop = (): FrontierCell | undefined => {
+		if (frontier.length === 0) return undefined;
+		const top = frontier[0];
+		const last = frontier.pop()!;
+		if (frontier.length > 0) {
+			frontier[0] = last;
+			let index = 0;
+			for (;;) {
+				const left = index * 2 + 1;
+				const right = left + 1;
+				let smallest = index;
+				if (left < frontier.length && frontier[left].cost < frontier[smallest].cost) smallest = left;
+				if (right < frontier.length && frontier[right].cost < frontier[smallest].cost) smallest = right;
+				if (smallest === index) break;
+				swap(index, smallest);
+				index = smallest;
+			}
+		}
+		return top;
+	};
+
 	const costs = new Map<string, number>([[`${unit.x},${unit.y}`, 0]]);
-	const frontier = minHeap<{ x: number; y: number; cost: number }>((a, b) => a.cost - b.cost);
-	frontier.push({ x: unit.x, y: unit.y, cost: 0 });
+	push({ x: unit.x, y: unit.y, cost: 0 });
 	while (true) {
-		const current = frontier.pop();
+		const current = pop();
 		if (current === undefined) break;
 		const key = `${current.x},${current.y}`;
 		//a lazy heap can hold a stale, costlier copy of a cell already relaxed to a cheaper one;
@@ -418,7 +414,7 @@ function reachableCosts(
 			const nextKey = `${next.x},${next.y}`;
 			if (total < (costs.get(nextKey) ?? Infinity)) {
 				costs.set(nextKey, total);
-				frontier.push({ x: next.x, y: next.y, cost: total });
+				push({ x: next.x, y: next.y, cost: total });
 			}
 		}
 	}
