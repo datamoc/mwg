@@ -263,6 +263,94 @@ export function coneCells(origin: Step, target: Step, width: number): Step[] {
 	return cells;
 }
 
+export interface ConeSectorOptions {
+	/** the full angle of the sector, in degrees; 0 is a single ray along the aim */
+	degrees: number;
+
+	/** how far a ray reaches, in cells */
+	range: number;
+
+	/**
+	 * What ends a ray. The default `opaque` is what makes a wall stop the part of the cone
+	 * behind it, which is the difference between a breath weapon and a laser through walls.
+	 */
+	stop?: BallisticaStop;
+}
+
+/** how finely `coneSector` spaces its rays: fine enough that no cell is stepped over at range */
+const SECTOR_RAY_DEGREES = 0.5;
+
+/**
+ * Rounds an offset outwards from zero, unlike `Math.round`, whose half-up rule sends -2.5 to
+ * -2 and 2.5 to 3. Rays are cast in mirrored pairs about the aim, so rounding has to be
+ * mirrored too or the sector comes out a cell wider on one side than the other.
+ */
+function roundOffset(value: number): number {
+	return value < 0 ? -Math.round(-value) : Math.round(value);
+}
+
+/**
+ * Every cell inside a circular sector: an arc of `degrees` centred on the aim, rays cast
+ * across it every 0.5 degrees, each ray clamped to `range` and stopped by a wall. The union
+ * of those rays is the sector, so a wall in the arc shadows everything behind it while the
+ * rest of the cone still reaches.
+ *
+ * This is a different shape from `coneCells`, not a better one. A sector is aimed at an angle
+ * and keeps it: a breath weapon, a searchlight, a blast of gas. `coneCells` snaps the aim to
+ * one of the eight directions and widens a linear spray from it, which is what a wand fired
+ * down a corridor wants. `coneSector` needs the level (that is what stops its rays), so it is
+ * a plain function rather than one of `AreaShape`'s kinds, whose resolver must work without
+ * one; a game calls it wherever it would call `resolveAreaOnLevel`. The aim's own cell is not
+ * in the result, so a caster is never inside its own cone.
+ *
+ * @example
+ * ```ts
+ * import { coneSector, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ *
+ * const level = new Level(20, 20, [WALL, FLOOR], 1);
+ * // a 60-degree cone, 6 cells deep, aimed east from (4, 10)
+ * const cells = coneSector(level, { x: 4, y: 10 }, { x: 10, y: 10 }, { degrees: 60, range: 6 });
+ * ```
+ */
+export function coneSector(level: Level, from: Step, to: Step, options: ConeSectorOptions): Step[] {
+	if (!Number.isFinite(options.degrees) || options.degrees < 0) {
+		throw new Error('a cone sector needs a finite non-negative angle in degrees');
+	}
+	if (!Number.isFinite(options.range) || options.range < 0) {
+		throw new Error('a cone sector needs a finite non-negative range');
+	}
+
+	const dx = to.x - from.x;
+	const dy = to.y - from.y;
+	//no aim direction, no sector: the same answer the other cone shapes give for a self-aim
+	if (dx === 0 && dy === 0) return [{ ...from }];
+
+	const aim = Math.atan2(dy, dx);
+	const half = (options.degrees * Math.PI) / 360;
+	const rays = Math.max(1, Math.round(options.degrees / SECTOR_RAY_DEGREES));
+	const stop = options.stop ?? 'opaque';
+
+	const seen = new Set<number>();
+	const cells: Step[] = [];
+	for (let i = 0; i <= rays; i++) {
+		const angle = aim - half + (2 * half * i) / rays;
+		const end = {
+			x: from.x + roundOffset(Math.cos(angle) * options.range),
+			y: from.y + roundOffset(Math.sin(angle) * options.range),
+		};
+		for (const cell of ballistica(level, from, end, { stop }).cells) {
+			if (cell.x === from.x && cell.y === from.y) continue;
+			//a ray whose far end is off the map walks off it; only the on-map part is the sector
+			if (!level.inside(cell.x, cell.y)) continue;
+			const key = level.index(cell.x, cell.y);
+			if (seen.has(key)) continue;
+			seen.add(key);
+			cells.push({ x: cell.x, y: cell.y });
+		}
+	}
+	return cells;
+}
+
 /**
  * An arcing chain across `candidates`: starting from `origin`, each link is the nearest
  * not-yet-visited candidate within `range` of the previous one, up to `jumps` links. A

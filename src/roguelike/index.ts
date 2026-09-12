@@ -47,6 +47,8 @@ export {
 export type { AreaShape, TargetingOptions, BallisticaStop, BallisticaOptions, BallisticaResult } from './Targeting.ts';
 export { coneCells, chainTargets, knockbackPath, rangeMultiplier, areaFalloffMultiplier } from './Targeting.ts';
 export type { RangeBand } from './Targeting.ts';
+export { coneSector } from './Targeting.ts';
+export type { ConeSectorOptions } from './Targeting.ts';
 export { TargetingController } from './Targeting.ts';
 export type { TargetingControllerOptions, TargetResult } from './Targeting.ts';
 
