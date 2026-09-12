@@ -49,6 +49,10 @@ the public API may still change between minor versions.
   `applyTextureModifiers`'s exact pixel-level baking and `applyImageModifiers`'s sprite-level
   modifiers in the order a caller with a `~BLEND`/`~ROTATE` path needs, so the two no longer
   have to be driven by hand.
+- `two-d.render.Projectile` takes an optional `animation` (item 311): the projectile advances
+  the flight frames with its own elapsed time and reports the current one through
+  `frame`/`frameOffset`, so a missile with `[missile_frame]` art no longer needs a parallel
+  animation and clock kept in step by the game.
 
 ### Changed
 

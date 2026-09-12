@@ -4371,12 +4371,17 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      top. Four tests in `tests/image-modifiers.test.ts`; the pixel-baking result itself is not
      independently checkable in a headless test, the same limitation `spriteColorMatrix` (309)
      and `blendPixels`/`rotatePixels`'s own tests already work within.
-311. [Low] Let `Projectile` carry a frame animation, not only a position tween (the same port's
+311. ~~[Low] Let `Projectile` carry a frame animation, not only a position tween (the same port's
      report). `Projectile.update` moves a sprite's `x`/`y` in a straight line and nothing else;
      a game whose missile art has flight frames (`[missile_frame]`, landed under 254) keeps its
      own parallel list of in-flight animations to advance alongside each `Projectile`. Accepting
      an optional `Animation` (or an `onUpdate` callback keyed to `progress`) would let one object
-     own both.
+     own both.~~ Took the `Animation` branch: `ProjectileOptions.animation` is advanced by the
+     projectile's own elapsed time, and `frame`/`frameOffset` report the current frame and the
+     pixels it draws away from the sprite, which the caller applies where it already positions the
+     sprite - the same division `AnimatedSprite.frameOffset` and `LightningArc` already draw, and
+     the reason no `onUpdate` callback was needed on top: the frame lookup is `Animation.frameAt`,
+     not state the game has to drive. Two tests in `tests/projectile.test.ts`.~~
 312. [Low] A named-layer helper for `Node2D` trees (the same port's report). A game with a
      dozen or so conventionally-ordered layers (terrain, units, effects, UI, ...) hand-wires
      each as its own `Node2D`, added to its parent in the right order, every time. A

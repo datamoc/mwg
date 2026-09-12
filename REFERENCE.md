@@ -288,7 +288,10 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
 - `TileMap`/`EMPTY`/`tileFrame`/`tileFrameSheet`/`tileFrameIndex` - tile map rendering:
   square/hex/isometric/staggered projections, multi-sheet tiles, elevation columns.
 - `LayeredSprite` - layered character sprites (body/hair/equipment as separate layers).
-- `Projectile` - tweens a sprite in a straight line for a thrown/shot visual flourish.
+- `Projectile` - tweens a sprite in a straight line for a thrown/shot visual flourish; an
+  optional `animation` (item 311) advances flight frames with the tween's own elapsed time, read
+  back through `frame`/`frameOffset` so the caller can apply the frame's offset where it already
+  positions the sprite.
 - `LightningArc` - the position data for a jittered line between two points (a bolt, a tether):
   `points` tapers to zero offset at both endpoints, `retarget` moves either endpoint for a
   tether following two moving units, and an optional `flickerInterval` re-rolls the jitter on a

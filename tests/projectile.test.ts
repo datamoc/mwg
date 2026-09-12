@@ -2,6 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { Projectile } from '../src/two-d/render/Projectile.ts';
+import { Animation } from '../src/two-d/render/AnimatedSprite.ts';
+import type { Texture2D } from '../src/two-d/render/Types2D.ts';
 
 test('a projectile starts at "from" and reaches exactly "to"', () => {
 	const sprite = { x: 0, y: 0 };
@@ -67,4 +69,30 @@ test('a diagonal flight moves both axes together, arriving at the same time', ()
 	assert.equal(sprite.x, 30);
 	assert.equal(sprite.y, 40);
 	assert.equal(p.done, true);
+});
+
+test('a projectile advances an optional flight animation in step with its own flight', () => {
+	const sprite = { x: 0, y: 0 };
+	const p = new Projectile(sprite, { x: 0, y: 0 }, { x: 100, y: 0 }, {
+		duration: 1,
+		animation: new Animation(
+			[
+				{ texture: {} as Texture2D, duration: 0.5, offsetX: 1 },
+				{ texture: {} as Texture2D, duration: 0.5, offsetX: 2 },
+			],
+			{ fps: 2, loop: false },
+		),
+	});
+
+	assert.equal(p.frameOffset.x, 1, 'the first frame shows at launch');
+	assert.equal(p.frameOffset.y, 0);
+	p.update(0.6);
+	assert.equal(p.frameOffset.x, 2, 'the second frame takes over once its half second is up');
+});
+
+test('a projectile with no animation reports no frame offset', () => {
+	const p = new Projectile({ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 1, y: 0 }, { speed: 1 });
+
+	assert.equal(p.frame, undefined);
+	assert.deepEqual(p.frameOffset, { x: 0, y: 0 });
 });

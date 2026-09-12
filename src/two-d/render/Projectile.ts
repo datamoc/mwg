@@ -1,3 +1,5 @@
+import type { Animation, AnimationFrame } from './AnimatedSprite.ts';
+
 export interface ProjectilePoint {
 	x: number;
 	y: number;
@@ -9,6 +11,13 @@ export interface ProjectileOptions {
 
 	/** seconds to cross the whole flight; overrides `speed` when both are given */
 	duration?: number;
+
+	/**
+	 * Flight frames for the missile art. The projectile advances this with its own elapsed
+	 * time, so a caller reads `frame`/`frameOffset` here instead of keeping a second
+	 * animation and an elapsed clock in step with the tween.
+	 */
+	animation?: Animation;
 }
 
 /**
@@ -42,6 +51,7 @@ export class Projectile {
 	private toX: number;
 	private toY: number;
 	private duration: number;
+	private readonly animation?: Animation;
 	private elapsed = 0;
 	private arrived = false;
 
@@ -51,6 +61,7 @@ export class Projectile {
 		this.fromY = from.y;
 		this.toX = to.x;
 		this.toY = to.y;
+		this.animation = options.animation;
 
 		const distance = Math.hypot(to.x - from.x, to.y - from.y);
 		this.duration = options.duration ?? distance / (options.speed ?? 400);
@@ -68,6 +79,21 @@ export class Projectile {
 	/** 0 at launch, 1 on arrival */
 	get progress(): number {
 		return Math.min(1, this.elapsed / this.duration);
+	}
+
+	/** the frame the optional flight animation is on right now, or undefined without one */
+	get frame(): AnimationFrame | undefined {
+		return this.animation?.frameAt(this.elapsed);
+	}
+
+	/**
+	 * Pixels that frame is drawn away from the sprite's own position. This class only reports
+	 * it; the caller adds it where it already positions the sprite, the same rule
+	 * `AnimatedSprite.frameOffset` follows.
+	 */
+	get frameOffset(): ProjectilePoint {
+		const frame = this.frame;
+		return { x: frame?.offsetX ?? 0, y: frame?.offsetY ?? 0 };
 	}
 
 	/** @returns true the instant it arrives, so a caller can trigger impact exactly once */

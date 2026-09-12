@@ -1556,12 +1556,17 @@ build instead.
         private toX;
         private toY;
         private duration;
+        private readonly animation?;
         private elapsed;
         private arrived;
         constructor(sprite: ProjectilePoint, from: ProjectilePoint, to: ProjectilePoint, options?: ProjectileOptions);
         get done(): boolean;
 
         get progress(): number;
+
+        get frame(): AnimationFrame | undefined;
+
+        get frameOffset(): ProjectilePoint;
 
         update(dt: number): boolean;
     }
@@ -7750,12 +7755,17 @@ build instead.
         private toX;
         private toY;
         private duration;
+        private readonly animation?;
         private elapsed;
         private arrived;
         constructor(sprite: ProjectilePoint, from: ProjectilePoint, to: ProjectilePoint, options?: ProjectileOptions);
         get done(): boolean;
 
         get progress(): number;
+
+        get frame(): AnimationFrame | undefined;
+
+        get frameOffset(): ProjectilePoint;
 
         update(dt: number): boolean;
     }
@@ -9198,12 +9208,17 @@ build instead.
         private toX;
         private toY;
         private duration;
+        private readonly animation?;
         private elapsed;
         private arrived;
         constructor(sprite: ProjectilePoint, from: ProjectilePoint, to: ProjectilePoint, options?: ProjectileOptions);
         get done(): boolean;
 
         get progress(): number;
+
+        get frame(): AnimationFrame | undefined;
+
+        get frameOffset(): ProjectilePoint;
 
         update(dt: number): boolean;
     }
