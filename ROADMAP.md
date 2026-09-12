@@ -4414,6 +4414,19 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      through the same `coordinateMatches` - a second copy of that matcher was written first and
      deleted, since one thing had two implementations. One test in `tests/mwl.test.ts` covers an
      in-range list and an out-of-range span.~~
+315. ~~[Medium] Generate a CycloneDX SBOM for the framework and gate it (requested 2026-09-12).
+     `tools/sbom.mjs` builds `sbom.cdx.json` (CycloneDX 1.6) from `package.json` and
+     `package-lock.json` alone, with no network access and no added dependency, the same
+     self-contained shape `npm-audit` and `project-stats` already have: every locked package is a
+     component (`scope` is `excluded` for a dev-only package, `optional` for an optional one,
+     `required` otherwise) carrying its purl, its npm `integrity` re-encoded as a CycloneDX hex
+     hash, and its licence as an SPDX id when the field is a single word (`Apache-2.0 OR MIT`
+     stays a `name` instead), and the lockfile's own resolution becomes the dependency graph
+     (dev, optional and peer edges included, resolved to the nearest nested copy). Output is
+     deterministic - sorted components and edges, no timestamp and no serial number - so
+     `npm run sbom:check` compares the committed file the way `api:check` and `stats:check`
+     compare theirs, and CI runs it on every push. Six tests in `tests/sbom.test.ts`, one of them
+     that the committed file matches the lockfile.~~
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list

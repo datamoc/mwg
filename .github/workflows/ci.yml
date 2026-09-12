@@ -40,6 +40,9 @@ jobs:
       - run: npm run stats:check
       # the global bundle and the published dist stay inside their recorded size budget
       - run: npm run size:check
+      # the committed CycloneDX SBOM must match package-lock.json, so a dependency change
+      # cannot land without the supply-chain document moving with it
+      - run: npm run sbom:check
 
   # The check no typechecker can make: one layout-heavy example is built, opened from
   # file:// in a real Chrome, and screenshotted, so a canvas that paints nothing (or a page

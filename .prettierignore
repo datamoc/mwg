@@ -12,6 +12,7 @@ desktop
 tools/vendored
 tools/docs
 package-lock.json
+sbom.cdx.json
 *.md
 *.html
 *.yml

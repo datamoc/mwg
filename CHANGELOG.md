@@ -9,6 +9,10 @@ the public API may still change between minor versions.
 
 ### Added
 
+- `tools/sbom.mjs` with `npm run sbom`/`npm run sbom:check` (item 315): a CycloneDX 1.6 SBOM
+  (`sbom.cdx.json`) for the framework, built from `package.json` and `package-lock.json` alone
+  with no network access or added dependency, and checked in CI so a dependency change moves the
+  supply-chain document with it.
 - `core.clamp`, replacing two byte-identical private `clamp` helpers in `rpg.Collision` and
   `two-d.render.Camera`.
 - `two-d/pixi-interop`'s `registerBuiltinPipes()` (item 297), plus re-exporting
