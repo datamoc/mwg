@@ -9,16 +9,16 @@
           "type": "application",
           "group": "datamoc",
           "name": "tools/sbom.mjs",
-          "version": "0.7.8"
+          "version": "0.7.9"
         }
       ]
     },
     "component": {
       "type": "library",
-      "bom-ref": "pkg:npm/%40datamoc/mw_games@0.7.8",
+      "bom-ref": "pkg:npm/%40datamoc/mw_games@0.7.9",
       "name": "@datamoc/mw_games",
-      "version": "0.7.8",
-      "purl": "pkg:npm/%40datamoc/mw_games@0.7.8",
+      "version": "0.7.9",
+      "purl": "pkg:npm/%40datamoc/mw_games@0.7.9",
       "description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
       "licenses": [
         {
@@ -3822,7 +3822,7 @@
       ]
     },
     {
-      "ref": "pkg:npm/%40datamoc/mw_games@0.7.8",
+      "ref": "pkg:npm/%40datamoc/mw_games@0.7.9",
       "dependsOn": [
         "pkg:npm/%40babylonjs/core@9.25.0",
         "pkg:npm/%40babylonjs/loaders@9.25.0",

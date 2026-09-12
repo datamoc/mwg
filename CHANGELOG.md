@@ -7,6 +7,8 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.7.9] - 2026-09-12
+
 ### Added
 
 - `tools/sbom.mjs` with `npm run sbom`/`npm run sbom:check` (item 315): a CycloneDX 1.6 SBOM
