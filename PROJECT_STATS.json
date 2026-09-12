@@ -5,7 +5,7 @@
 	"releaseDate": "2026-09-11",
 	"source": {
 		"files": 278,
-		"lines": 43034,
+		"lines": 43061,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -14,14 +14,14 @@
 				"lines": 14599
 			},
 			{
+				"name": "mwl",
+				"files": 21,
+				"lines": 5194
+			},
+			{
 				"name": "core",
 				"files": 42,
 				"lines": 5179
-			},
-			{
-				"name": "mwl",
-				"files": 21,
-				"lines": 5167
 			},
 			{
 				"name": "roguelike",
@@ -87,8 +87,8 @@
 	},
 	"tests": {
 		"files": 219,
-		"lines": 28203,
-		"cases": 2048
+		"lines": 28295,
+		"cases": 2049
 	},
 	"tools": {
 		"files": 35,
@@ -131,9 +131,9 @@
 		"declarationFiles": 277
 	},
 	"bundle": {
-		"globalRaw": 1010698,
-		"globalGzip": 299742,
-		"distRaw": 3203131
+		"globalRaw": 1010637,
+		"globalGzip": 299768,
+		"distRaw": 3204934
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

@@ -258,6 +258,35 @@ text=_ "fired"
 	);
 	assert.equal(fired(testForm.messages), true);
 
+	const taken = runWith(
+		`[event]
+id=e
+on=start
+[if]
+[condition]
+variable=ready
+equals=yes
+[/condition]
+[message]
+text=_ "fired"
+[/message]
+[/if]
+[else]
+[message]
+text=_ "other"
+[/message]
+[/else]
+[/event]
+`,
+		{ ready: 'yes' },
+	);
+	assert.equal(fired(taken.messages), true);
+	assert.equal(
+		taken.messages.some((message) => message.text === 'other'),
+		false,
+		'the paired else must not run when the if was taken',
+	);
+
 	const fallback = runWith(
 		`[event]
 id=e
@@ -284,5 +313,68 @@ text=_ "other"
 	assert.equal(
 		fallback.messages.some((message) => message.text === 'other'),
 		true,
+	);
+});
+
+test('a second if/else pair is independent, and a free-standing else still runs', () => {
+	const second = runWith(
+		`[event]
+id=e
+on=start
+[if]
+[condition]
+variable=a
+equals=1
+[/condition]
+[message]
+text=_ "fired"
+[/message]
+[/if]
+[else]
+[message]
+text=_ "other"
+[/message]
+[/else]
+[if]
+[condition]
+variable=b
+equals=1
+[/condition]
+[message]
+text=_ "second"
+[/message]
+[/if]
+[else]
+[message]
+text=_ "other"
+[/message]
+[/else]
+[/event]
+`,
+		{ a: 1, b: 2 },
+	);
+	assert.equal(fired(second.messages), true, 'the first pair takes its then-branch');
+	assert.equal(
+		second.messages.some((message) => message.text === 'second'),
+		false,
+		'the second pair takes its own else, not the first',
+	);
+
+	const free = runWith(
+		`[event]
+id=e
+on=start
+[else]
+[message]
+text=_ "other"
+[/message]
+[/else]
+[/event]
+`,
+	);
+	assert.equal(
+		free.messages.some((message) => message.text === 'other'),
+		true,
+		'an else with no preceding if is not consumed',
 	);
 });

@@ -46,6 +46,11 @@ the public API may still change between minor versions.
   `unknown MWL command: condition` instead of running its body; a false condition hid it because
   the body never ran. `[if]`/`[else]` now run their command children only, the same rule
   `[while]` already followed. Two tests in `tests/mwl-conditions.test.ts`.
+- An `[else]` following an `[if]` is that branch's other half, so only one of the two runs. A
+  taken `[if]` used to run its own body and then fall through to the `[else]` as well, so both
+  branches executed; the `[else]` is now skipped when the `[if]` was taken, and run as the
+  fallback when it was not. Independent pairs still work, and a free-standing `[else]` with no
+  `[if]` before it still runs. Two tests in `tests/mwl-conditions.test.ts`.
 - `[while]` had the same defect as `[if]`, so a loop body carrying a `[condition]` child threw.
   It now runs its command children too. One test in `tests/mwl-variables.test.ts`.
 - The variable-path readers item 295 named are now complete, closing three that were still flat:

@@ -5547,6 +5547,10 @@ build instead.
         private claimEvent;
         private eventFiltersMatch;
         private executeEvent;
+
+        private runBlock;
+
+        private isConsumedElse;
         private executeTracedEvent;
 
         private showDialogue;

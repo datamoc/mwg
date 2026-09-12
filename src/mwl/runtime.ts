@@ -380,17 +380,39 @@ export class MwlRuntime {
 	}
 
 	private executeEvent(event: MwlCompiledNode): void {
-		for (const command of this.commandChildren(event)) {
-			if (command.tag === 'say') {
-				this.showSay(command);
+		this.runBlock(this.commandChildren(event));
+	}
+
+	/**
+	 * Runs a sequence of commands, with `say` and `dialogue` taking the message path rather
+	 * than `executeNode`. Shared by an event's top level, an `[if]`/`[else]` body and a
+	 * dialogue branch, so all three treat a nested pair the same way.
+	 */
+	private runBlock(children: readonly MwlCompiledNode[]): void {
+		for (let index = 0; index < children.length; index++) {
+			const child = children[index];
+			if (this.isConsumedElse(children, index)) continue;
+			if (child.tag === 'say') {
+				this.showSay(child);
 				continue;
 			}
-			if (command.tag === 'dialogue') {
-				this.showDialogue(command);
+			if (child.tag === 'dialogue') {
+				this.showDialogue(child);
 				continue;
 			}
-			this.executeNode(command);
+			this.executeNode(child);
 		}
+	}
+
+	/**
+	 * Whether an `[else]` at `index` is the branch its immediately preceding `[if]` already ran.
+	 * A taken `[if]` runs its own body and owns the `[else]`, so the loop skips that `[else]`;
+	 * a false `[if]` ran nothing, so the `[else]` is left for the loop to run as its fallback.
+	 * A free-standing `[else]` with no `[if]` before it is never consumed.
+	 */
+	private isConsumedElse(children: readonly MwlCompiledNode[], index: number): boolean {
+		const previous = children[index - 1];
+		return children[index]?.tag === 'else' && previous?.tag === 'if' && this.nodeConditionMatches(previous);
 	}
 
 	private executeTracedEvent(event: MwlCompiledNode, trigger: string): void {
@@ -491,7 +513,7 @@ export class MwlRuntime {
 			if (!this.claimEvent(event)) return true;
 			this.executeEvent(event);
 		} else {
-			for (const command of choice.branch ?? []) this.executeNode(command);
+			this.runBlock(choice.branch ?? []);
 		}
 		this.checkObjectives();
 		return true;
@@ -853,7 +875,7 @@ export class MwlRuntime {
 				if (limit < 1 || limit > 100_000)
 					throw new Error('MWL while max_iterations must be between 1 and 100000');
 				for (let iteration = 0; iteration < limit && this.nodeConditionMatches(node); iteration++)
-					for (const child of this.commandChildren(node)) this.executeNode(child);
+					this.runBlock(this.commandChildren(node));
 				break;
 			}
 			case 'foreach': {
@@ -873,7 +895,7 @@ export class MwlRuntime {
 				for (let index = 0; index < entries.length; index++) {
 					this.setVariableAt(item, entries[index][1]);
 					this.setVariableAt(indexName, index);
-					for (const child of node.children) this.executeNode(child);
+					this.runBlock(this.commandChildren(node));
 				}
 				break;
 			}
@@ -886,7 +908,7 @@ export class MwlRuntime {
 						sameValue(value, child.attributes.equals),
 				);
 				const fallback = node.children.find((child) => child.tag === 'default');
-				for (const child of (selected ?? fallback)?.children ?? []) this.executeNode(child);
+				this.runBlock((selected ?? fallback)?.children ?? []);
 				break;
 			}
 			case 'end_turn':
@@ -912,12 +934,17 @@ export class MwlRuntime {
 				});
 				break;
 			}
-			case 'if':
-				if (!this.nodeConditionMatches(node)) break;
-				for (const child of this.commandChildren(node)) this.executeNode(child);
+			case 'if': {
+				//an immediately following [else] is this branch's other half, not a separate
+				//command: the condition picks one body, and runBlock skips the [else] itself
+				const fallback = node.children.find((child) => child.tag === 'else');
+				const taken = this.nodeConditionMatches(node) ? node : fallback;
+				this.runBlock(taken ? this.commandChildren(taken) : []);
 				break;
+			}
 			case 'else':
-				for (const child of this.commandChildren(node)) this.executeNode(child);
+				//reachable at top level for a free-standing [else]; a paired one is run by its [if]
+				this.runBlock(this.commandChildren(node));
 				break;
 			case 'hook':
 				this.runHook(node);
