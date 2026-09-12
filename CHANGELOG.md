@@ -7,6 +7,18 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `[set_variable] mode=literal|number|expression` (item 316), on both spellings of the effect
+  (`[set_variable]` and `[command] name="set_variable"`): content declares what its own `value=`
+  means instead of `MwlRuntime` inferring it from the text. `literal` keeps the text exactly as
+  written, `number` parses it and throws on anything that is not one, `expression` evaluates it
+  through the same context `[if] test=` uses. A value with no `mode` is inferred as before, so
+  hand-authored content is unaffected.
+- `mwl.MwlAttributeType` (item 316): a schema attribute's type may be the closed list of values
+  it accepts, not only one of the shared value types. A value outside the list is a compile-time
+  `MWL_VALUE` diagnostic naming the alternatives.
+
 ## [0.7.9] - 2026-09-12
 
 ### Added

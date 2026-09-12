@@ -5642,6 +5642,8 @@ build instead.
 
         private interpolate;
         private setVariable;
+
+        private numericVariables;
         private variableAt;
         private setVariableAt;
         private spawnUnit;

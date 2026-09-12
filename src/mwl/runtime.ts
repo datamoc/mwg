@@ -11,7 +11,7 @@ import type {
 } from './hooks.ts';
 import { decodeSave, encodeSave, type MwlPersistenceOptions } from './persistence.ts';
 import { evaluateCondition } from './conditions.ts';
-import { evaluateExpression } from './expression.ts';
+import { evaluateExpression, type MwlExpressionContext } from './expression.ts';
 import { booleanAttribute, booleanValue, integerAttribute, numberAttribute, requiredAttribute } from './utils.ts';
 import { endLevelCarryover } from './carryover.ts';
 import type { MwlCarryover, MwlSideRef } from './carryover.ts';
@@ -868,6 +868,7 @@ export class MwlRuntime {
 				this.setVariable(
 					node.tag === 'command' ? required(node, 'target') : required(node, 'name'),
 					node.attributes.value ?? '',
+					node.attributes.mode,
 				);
 				break;
 			case 'while': {
@@ -1011,11 +1012,7 @@ export class MwlRuntime {
 	 * same interpolation WML authors expect in story and dialogue strings.
 	 */
 	private interpolate(text: string): string {
-		const numeric = Object.fromEntries(
-			Object.entries(this.world.variables).filter(
-				(entry): entry is [string, number] => typeof entry[1] === 'number',
-			),
-		);
+		const numeric = this.numericVariables();
 		const expanded = text.replace(/\$\(([^)]*)\)/g, (_whole, expression: string) => {
 			try {
 				return String(evaluateExpression(expression, numeric));
@@ -1029,7 +1026,28 @@ export class MwlRuntime {
 		});
 	}
 
-	private setVariable(name: string, raw: string): void {
+	private setVariable(name: string, raw: string, mode?: string): void {
+		// `mode` is content declaring what its own text means. A compiler target always
+		// knows, so it never has to rely on the shape-guessing below: a literal containing
+		// `+` or `(` stays text, and a literal that spells a numeric variable's name stays
+		// text rather than reading that variable.
+		if (mode === 'literal') {
+			this.setVariableAt(name, raw);
+			return;
+		}
+		if (mode === 'number') {
+			const value = Number(raw);
+			if (raw.trim() === '' || !Number.isFinite(value))
+				throw new Error(`MWL set_variable mode="number" needs a number, got "${raw}"`);
+			this.setVariableAt(name, value);
+			return;
+		}
+		if (mode === 'expression') {
+			this.setVariableAt(name, evaluateExpression(raw, this.numericVariables()));
+			return;
+		}
+		if (mode !== undefined) throw new Error(`unknown MWL set_variable mode "${mode}"`);
+
 		const numeric = Number(raw);
 		if (raw.trim() !== '' && Number.isFinite(numeric)) {
 			this.setVariableAt(name, numeric);
@@ -1043,16 +1061,21 @@ export class MwlRuntime {
 			this.setVariableAt(name, value === undefined ? '' : value);
 			return;
 		}
-		const context = Object.fromEntries(
-			Object.entries(this.world.variables).filter(
-				(entry): entry is [string, number] => typeof entry[1] === 'number',
-			),
-		);
+		const context = this.numericVariables();
 		if (/[+*/^()]|\s-\s/.test(raw) || Object.prototype.hasOwnProperty.call(context, raw.trim())) {
 			this.setVariableAt(name, evaluateExpression(raw, context));
 			return;
 		}
 		this.setVariableAt(name, raw);
+	}
+
+	/** The numeric half of the world variables: the context every MWL expression evaluates in. */
+	private numericVariables(): MwlExpressionContext {
+		return Object.fromEntries(
+			Object.entries(this.world.variables).filter(
+				(entry): entry is [string, number] => typeof entry[1] === 'number',
+			),
+		);
 	}
 
 	private variableAt(path: string): MwlValue | undefined {

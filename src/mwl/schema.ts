@@ -3,6 +3,14 @@ import { coerceCsvValue, type CsvColumnType } from '../core/Csv.ts';
 
 export type MwlValueType = 'string' | 'id' | 'number' | 'integer' | 'boolean' | 'ref' | 'coordinate';
 
+/**
+ * An attribute's declared type: one of the shared value types, or the exact set of values it
+ * accepts when the vocabulary is closed. `[set_variable] mode=` needs the second form, because
+ * a misspelled mode would otherwise fall back to the guess-the-value rule content is asking
+ * not to depend on.
+ */
+export type MwlAttributeType = MwlValueType | readonly string[];
+
 export interface MwlTableColumn {
 	readonly name: string;
 	readonly type: CsvColumnType;
@@ -37,7 +45,7 @@ export function parseTableColumns(value: string): MwlTableColumn[] {
 
 export interface MwlTagSchema {
 	/** fixed attributes, name -> value type */
-	readonly attributes?: Readonly<Record<string, MwlValueType>>;
+	readonly attributes?: Readonly<Record<string, MwlAttributeType>>;
 	/**
 	 * When set, any attribute name is accepted on this tag and every value is
 	 * checked as this type. Open data maps need this: the keys of a movement
@@ -387,6 +395,9 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			name: 'id',
 			target: 'string',
 			value: 'string',
+			// `[command] name="set_variable"` is the other spelling of the same effect,
+			// and takes the same explicit `mode`.
+			mode: ['literal', 'number', 'expression'],
 			amount: 'integer',
 			x: 'integer',
 			y: 'integer',
@@ -407,7 +418,9 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			next_scenario: 'id',
 		},
 	},
-	set_variable: { attributes: { name: 'id', target: 'id', value: 'string' } },
+	set_variable: {
+		attributes: { name: 'id', target: 'id', value: 'string', mode: ['literal', 'number', 'expression'] },
+	},
 	if: {
 		attributes: { test: 'string' },
 		children: [
@@ -718,7 +731,11 @@ export function validate(nodes: readonly MwlNode[], schemas = schema01): MwlDiag
 		for (const [name, type] of Object.entries(definition.attributes ?? {})) {
 			const value = node.attributes[name];
 			if (value !== undefined && !validType(value, type))
-				diagnostics.push({ code: 'MWL_VALUE', message: `${name} must be ${type}`, location: node.location });
+				diagnostics.push({
+					code: 'MWL_VALUE',
+					message: `${name} must be ${typeDescription(type)}`,
+					location: node.location,
+				});
 			if (value !== undefined && type === 'ref') {
 				const candidates = (ids.get(value) ?? []).filter((target) => {
 					const targetTag = definition.refTargets?.[name];
@@ -889,7 +906,17 @@ export function isMwlId(value: string): boolean {
 	return /^[A-Za-z_][\w.[\]-]*$/.test(value);
 }
 
-function validType(value: string, type: MwlValueType): boolean {
+/** `Array.isArray` does not narrow a `readonly` array out of a union, so name the check. */
+function isValueList(type: MwlAttributeType): type is readonly string[] {
+	return Array.isArray(type);
+}
+
+function typeDescription(type: MwlAttributeType): string {
+	return isValueList(type) ? `one of ${type.join(', ')}` : type;
+}
+
+function validType(value: string, type: MwlAttributeType): boolean {
+	if (isValueList(type)) return type.includes(value);
 	if (type === 'number') return Number.isFinite(Number(value));
 	if (type === 'integer') return /^-?\d+$/.test(value);
 	if (type === 'boolean') return value === 'true' || value === 'false' || value === 'yes' || value === 'no';

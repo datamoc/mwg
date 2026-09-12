@@ -4427,7 +4427,7 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      `npm run sbom:check` compares the committed file the way `api:check` and `stats:check`
      compare theirs, and CI runs it on every push. Six tests in `tests/sbom.test.ts`, one of them
      that the committed file matches the lockfile.~~
-316. [High] `[set_variable]` cannot say whether its `value` is a literal or an expression, and
+316. ~~[High] `[set_variable]` cannot say whether its `value` is a literal or an expression, and
      content cannot resolve that either (the port's report, the big one). `runtime.ts:1032` infers
      intent from the text: a `$name`-shaped value copies a variable, a finite number becomes a
      number, a value containing `+`, `*`, `/`, `^`, `(`, `)` or a spaced `-` (or naming a context
@@ -4441,7 +4441,19 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      heuristic for hand-authored content only. Evidence: 6,842 of 9,813 variable writes in the
      ported campaigns now bypass the framework command through a port hook, and `expression.ts`'s
      strict "a missing variable is an error, not zero" is defensible only if content can declare
-     intent, which today it cannot.
+     intent, which today it cannot.~~ `mode=literal|number|expression` on both spellings
+     (`[set_variable]` and `[command] name="set_variable"`). The three modes each mean one thing
+     and nothing else: `literal` is the text as written (so `value=42` stays the string `"42"`,
+     which is why `number` exists rather than a numeric carve-out inside `literal`), `number`
+     parses and throws `MWL set_variable mode="number" needs a number` on anything else, and
+     `expression` evaluates through the same `numericVariables()` context `[if] test=` uses,
+     where a missing variable is the error `expression.ts` already promised. No `mode` keeps the
+     shape-guessing heuristic unchanged, which is what every existing test and hand-authored
+     content relies on, and what a compiler target now never has to. A misspelled mode is a
+     compile-time `MWL_VALUE` rather than a silent fallback, which needed one new schema
+     primitive: an attribute type may now be the closed list of values it accepts
+     (`MwlAttributeType`), not only one of the shared value types. Seven tests in
+     `tests/mwl-variables.test.ts`.
 317. [Medium] An attribute value cannot contain a newline, and is trimmed (the same report).
      `grammar.ts`'s `parse()` splits the source on `\n` and matches
      `^([A-Za-z_][\w-]*)\s*=\s*(.*)$` per line, and `parseValue()` trims and only unquotes `"..."`.

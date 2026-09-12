@@ -1073,7 +1073,15 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 `MwlRuntime` exposes `fireEvent(id)` for named event execution. Event conditions compare
 numeric variables numerically, `set_variable` accepts the bounded MWL expression syntax,
 filters can match a unit id, `unit_at` can constrain a side, and both moveto events and unit
-filters take coordinates as comma-separated lists or inclusive ranges (`x=1,2,4-5`). Top-level
+filters take coordinates as comma-separated lists or inclusive ranges (`x=1,2,4-5`). A
+`set_variable` (either spelling, `[set_variable]` or `[command] name="set_variable"`) may
+declare what its own `value=` means with `mode=literal|number|expression`: `literal` keeps the
+text exactly as written, `number` parses it and refuses anything else, `expression` evaluates
+it and treats a missing variable as an error. Without a mode the value is inferred from its
+shape (`$name` copies a variable, a finite number is a number, operator characters or a
+numeric variable's name evaluate), which is what hand-authored content relies on and what a
+compiler target cannot, since a literal such as `Raise Walking Corpse (8 Gold)` would be read
+as an expression. Top-level
 `say` commands execute normally. Dialogue choices are
 delivered in `MwlMessage.choices` and answered with `answerDialogue`; pending choices are
 included in save data. Commands after a dialogue in the same event run immediately, before

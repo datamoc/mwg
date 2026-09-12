@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { compile } from '../src/mwl/compiler.ts';
+import { parse } from '../src/mwl/grammar.ts';
 import { decodeSave, encodeSave } from '../src/mwl/persistence.ts';
+import { validate } from '../src/mwl/schema.ts';
 import { MwlRuntime, type MwlMessage } from '../src/mwl/runtime.ts';
 
 const BASE = `[game]
@@ -65,6 +67,127 @@ value=$original
 		{ original: 'Brena' },
 	);
 	assert.equal(rt.world.variables.copy, 'Brena');
+});
+
+test('mode=literal keeps text the shape-guessing rule would evaluate', () => {
+	const { rt } = runWith(
+		`[event]
+id=e
+on=start
+[set_variable]
+name=raise
+mode=literal
+value=Raise Walking Corpse (8 Gold)
+[/set_variable]
+[/event]
+`,
+	);
+	assert.equal(rt.world.variables.raise, 'Raise Walking Corpse (8 Gold)');
+});
+
+test('mode=literal keeps a numeric variable name and a $reference as text', () => {
+	const { rt } = runWith(
+		`[event]
+id=e
+on=start
+[set_variable]
+name=label
+mode=literal
+value=turn_number
+[/set_variable]
+[set_variable]
+name=template
+mode=literal
+value=$original
+[/set_variable]
+[set_variable]
+name=digits
+mode=literal
+value=42
+[/set_variable]
+[/event]
+`,
+		{ turn_number: 7, original: 'Brena' },
+	);
+	assert.equal(rt.world.variables.label, 'turn_number');
+	assert.equal(rt.world.variables.template, '$original');
+	assert.equal(rt.world.variables.digits, '42', 'a numeric-looking literal stays the string it was written as');
+});
+
+test('mode=number parses a number and refuses anything else', () => {
+	const { rt } = runWith(`[event]
+id=e
+on=start
+[set_variable]
+name=gold_left
+mode=number
+value=12
+[/set_variable]
+[set_variable]
+name=debt
+mode=number
+value=-3
+[/set_variable]
+[/event]
+`);
+	assert.equal(rt.world.variables.gold_left, 12);
+	assert.equal(rt.world.variables.debt, -3);
+	assert.throws(
+		() =>
+			runWith(
+				`[event]\nid=e\non=start\n[set_variable]\nname=x\nmode=number\nvalue=twelve\n[/set_variable]\n[/event]\n`,
+			),
+		/MWL set_variable mode="number" needs a number/,
+	);
+});
+
+test('mode=expression evaluates, and a missing variable is an error rather than literal text', () => {
+	const { rt } = runWith(
+		`[event]
+id=e
+on=start
+[set_variable]
+name=total
+mode=expression
+value=counter * 2
+[/set_variable]
+[/event]
+`,
+		{ counter: 4 },
+	);
+	assert.equal(rt.world.variables.total, 8);
+	assert.throws(
+		() =>
+			runWith(
+				`[event]\nid=e\non=start\n[set_variable]\nname=x\nmode=expression\nvalue=counter * 2\n[/set_variable]\n[/event]\n`,
+			),
+		/missing MWL expression variable "counter"/,
+	);
+});
+
+test('the [command] spelling of set_variable takes the same mode', () => {
+	const { rt } = runWith(`[event]
+id=e
+on=start
+[command]
+name=set_variable
+target=raise
+mode=literal
+value=Raise Walking Corpse (8 Gold)
+[/command]
+[/event]
+`);
+	assert.equal(rt.world.variables.raise, 'Raise Walking Corpse (8 Gold)');
+});
+
+test('a mode outside the vocabulary is a compile-time diagnostic', () => {
+	const diagnostics = validate(
+		parse(
+			'[game]\nschema=0.1\n[event]\nid=e\non=start\n[set_variable]\nname=x\nmode=literl\nvalue=1\n[/set_variable]\n[/event]\n[/game]',
+		),
+	);
+	assert.equal(diagnostics[0].code, 'MWL_VALUE');
+	assert.match(diagnostics[0].message, /mode must be one of literal, number, expression/);
 });
 
 test('messages interpolate variables and expressions', () => {
