@@ -2257,14 +2257,18 @@ build instead.
     export declare class StatusVisuals {
         private target;
         private styles;
-
-        private priority;
         private active;
         private elapsed;
+        private flashColor;
+        private flashStrength;
+        private flashDuration;
+        private flashRemaining;
         constructor(target: TintTarget, options: StatusVisualsOptions);
 
         set(kind: string, active: boolean): void;
         has(kind: string): boolean;
+
+        flash(color: number, strength: number, duration: number): void;
 
         update(dt: number): void;
     }
@@ -8140,14 +8144,18 @@ build instead.
     export declare class StatusVisuals {
         private target;
         private styles;
-
-        private priority;
         private active;
         private elapsed;
+        private flashColor;
+        private flashStrength;
+        private flashDuration;
+        private flashRemaining;
         constructor(target: TintTarget, options: StatusVisualsOptions);
 
         set(kind: string, active: boolean): void;
         has(kind: string): boolean;
+
+        flash(color: number, strength: number, duration: number): void;
 
         update(dt: number): void;
     }
@@ -9299,14 +9307,18 @@ build instead.
     export declare class StatusVisuals {
         private target;
         private styles;
-
-        private priority;
         private active;
         private elapsed;
+        private flashColor;
+        private flashStrength;
+        private flashDuration;
+        private flashRemaining;
         constructor(target: TintTarget, options: StatusVisualsOptions);
 
         set(kind: string, active: boolean): void;
         has(kind: string): boolean;
+
+        flash(color: number, strength: number, duration: number): void;
 
         update(dt: number): void;
     }

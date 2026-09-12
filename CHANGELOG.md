@@ -19,6 +19,16 @@ the public API may still change between minor versions.
 - `assets.setAssetMap(map)` (item 300): hands `resolve`/`has`/`paths`/`isCompiled` a game's
   own path-to-URI map directly, taking priority over `window.__MWG_ASSETS__` while set, for a
   game whose own bundler compiles assets a different way than `tools/compile-resources`.
+- `two-d.render.StatusVisuals.flash(color, strength, duration)` (item 301): a one-shot,
+  linearly-decaying additive pulse layered on top of whatever statuses are active.
+
+### Changed
+
+- **Breaking:** `two-d.render.StatusVisuals` now composes every active status's colour
+  additively (each channel clipping at 1) instead of one status winning by declaration order,
+  and never writes the multiply `tint` any more, so a sprite's own identity tint survives
+  underneath (item 301). `TintTarget` is now just `{ colorAdd: number }`; `lerpTint`/
+  `resetColor` are no longer part of its contract.
 
 ### Fixed
 

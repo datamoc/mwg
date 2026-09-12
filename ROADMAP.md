@@ -4236,10 +4236,20 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      long as it is the same `{ path: uri }` shape; `setAssetMap(undefined)` reverts to
      `window.__MWG_ASSETS__` (or dev-server mode). Four tests in `tests/assets.test.ts`,
      including the priority order over `window.__MWG_ASSETS__` and the revert.
-301. [Medium] Let `StatusVisuals` compose over the additive channel (the port's P7). Its own
+301. ~~[Medium] Let `StatusVisuals` compose over the additive channel (the port's P7). Its own
      doc says one status wins by declaration order and that a stray tint write "will fight
      this"; the port needs identity tint plus several simultaneous additive colours plus a
-     flash, which is why the class was never adopted. Compose instead of picking one winner.
+     flash, which is why the class was never adopted. Compose instead of picking one winner.~~
+     Rebuilt on the additive channel: every active status's colour sums into
+     `TintTarget.colorAdd` (each channel clipping at 1 instead of wrapping), and the class
+     never writes `tint` at all any more, so a sprite's own identity tint survives underneath
+     untouched instead of being overwritten by whichever status `update()` last checked. A new
+     `flash(color, strength, duration)` layers a one-shot, linearly-decaying pulse on top,
+     covering the hit-flash/heal-glow case that used to need its own tint write fighting this
+     class's. A breaking change to `TintTarget` (now just `{ colorAdd: number }`, no
+     `lerpTint`/`resetColor`) and to `StatusVisualStyle`'s documented meaning, both fine
+     pre-1.0. Nine tests in `tests/status-visuals.test.ts`, including composition, clipping and
+     the flash decay.
 302. [Low] A phase/sequence API for `ScreenEffects` (the port's P8). `fadeOut`/`fadeIn`/
      `flash` cannot express hold-then-fade-then-fade-back, the genre's standard transition, so
      the port hand-computes it.

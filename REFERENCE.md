@@ -299,7 +299,11 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
 - `ScreenEffects` - a full-screen colour wash: `fadeOut`/`fadeIn`/`flash`/`setTint`, driven by
   `update(dt)` returning true on the frame an effect completes.
 - `ActorAnimator` - an idle/move/action animation state machine with one interruption rule.
-- `StatusVisuals` - tint/overlay presentation for status effects.
+- `StatusVisuals` - composes every active status effect's colour additively onto a sprite's
+  `colorAdd` (item 301), instead of one status winning by declaration order; each channel clips
+  at 1 rather than wrapping. Never touches the multiply `tint`, so a sprite's own identity
+  tint (a team colour) survives underneath. `flash(color, strength, duration)` layers a
+  one-shot, linearly-decaying pulse (a hit, a heal) on top of whatever is active.
 - `loadTiledMap`/`TiledMapData`/`TiledTilesetData`/`TilesetSheet`/`LoadedTiledMap` - loads
   Tiled JSON maps into a `TileMap`: orthogonal, isometric and staggered orientations, multiple
   tilesets (embedded or external `.tsx`). Lives here rather than in `rpg` because what it

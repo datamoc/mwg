@@ -1,36 +1,42 @@
+import { packColorAdd } from './ColorTransformBatcher.ts';
+
 export interface TintTarget {
-	lerpTint(color: number, strength: number): void;
-	resetColor(): void;
+	/** the packed additive colour, the same field `TintedSprite.colorAdd` is */
+	colorAdd: number;
 }
 
 export interface StatusVisualStyle {
-	/** colour to pull the sprite towards while this status is active */
+	/** colour this status contributes on top of every other active one */
 	color: number;
-	/** 0..1, how far towards `color` at full intensity; defaults to 0.5 */
+	/** 0..1, how strongly this status's colour contributes at full intensity; defaults to 0.5 */
 	strength?: number;
-	/** cycles per second the strength oscillates between 0 and `strength`; omit for a steady tint */
+	/** cycles per second the strength oscillates between 0 and `strength`; omit for a steady contribution */
 	pulseRate?: number;
 }
 
 export interface StatusVisualsOptions {
-	/** which status wins when more than one is active - key order is priority, first to last */
+	/** each active status's own contribution; no ordering meaning, since every active one composes */
 	styles: Record<string, StatusVisualStyle>;
 }
 
 /**
- * Turns a set of active status-effect names into one tint on a sprite, so a game's own
- * `actors.applyStatusEffect` handles - which know nothing about rendering - can drive what a
- * character looks like without either side importing the other. `styles`' key order is the
- * priority: with both `poisoned` and `burning` active, whichever is declared first wins, the
- * same "declaration order decides" rule `rpg.activePage` uses for map events.
+ * Turns a set of active status-effect names into one additive colour on a sprite, so a game's
+ * own `actors.applyStatusEffect` handles - which know nothing about rendering - can drive what
+ * a character looks like without either side importing the other.
  *
- * `target` is any object shaped like `TintedSprite`'s own `lerpTint`/`resetColor` - duck-typed
- * the way `Projectile` takes a plain `{x, y}` rather than a real Pixi `Sprite`, so this is
- * fully testable without Pixi and works on any sprite subclass that exposes the same two
- * methods. A `pulseRate` status flickers between its style's `strength` and zero rather than
- * holding steady. This owns none of the sprite's other colour state; a caller mixing in an
- * unrelated `tint` write (a damage flash, standing in shade) will fight this the same way two
- * direct writers to any shared field would.
+ * Every active status composes over the additive channel (`TintedSprite.colorAdd`) rather than
+ * one winning by declaration order: poisoned-and-burning sums both colours (each channel
+ * clamped to 1, so an oversaturated combination clips rather than wrapping), instead of only
+ * the first-declared style showing. This class never touches the multiply `tint`, so a
+ * sprite's own identity tint (a team colour, say) rides underneath untouched - the composition
+ * this class's own earlier version could not do, because writing both halves of `lerpTint` per
+ * update meant the last status checked always overwrote whatever tint a caller had set. A
+ * one-shot `flash` (a damage hit, a heal glow) layers its own decaying contribution on top of
+ * whatever statuses are active, rather than needing a caller to juggle a separate colour write.
+ *
+ * `target` is any object shaped like `TintedSprite`'s own `colorAdd` field - duck-typed the way
+ * `Projectile` takes a plain `{x, y}` rather than a real Pixi `Sprite`, so this is fully
+ * testable without Pixi and works on any sprite subclass that exposes the same field.
  *
  * @example
  * ```ts
@@ -38,6 +44,7 @@ export interface StatusVisualsOptions {
  *
  * declare const ratTexture: Texture2D;
  * const rat = new TintedSprite(ratTexture);
+ * rat.tint = 0x8080ff; // a team colour, untouched by anything below
  *
  * const visuals = new StatusVisuals(rat, {
  * 	styles: {
@@ -47,25 +54,32 @@ export interface StatusVisualsOptions {
  * });
  *
  * visuals.set('poisoned', true);
- * visuals.update(1 / 60); // tints rat towards green
+ * visuals.set('burning', true);
+ * visuals.update(1 / 60); // both colours composed into rat.colorAdd; rat.tint is untouched
  * console.log(visuals.has('poisoned')); // true
  *
+ * visuals.flash(0xffffff, 0.8, 0.2); // a bright hit-flash, decaying over 0.2s
+ * visuals.update(1 / 60);
+ *
  * visuals.set('poisoned', false);
- * visuals.update(1 / 60); // no status left active: resets rat's colour
+ * visuals.set('burning', false);
+ * visuals.update(1 / 60); // no status or flash left active: colorAdd back to 0
  * ```
  */
 export class StatusVisuals {
 	private target: TintTarget;
 	private styles: Record<string, StatusVisualStyle>;
-	/** `styles`' own key order, computed once rather than every `update()` - a per-frame call */
-	private priority: readonly string[];
 	private active = new Set<string>();
 	private elapsed = 0;
+
+	private flashColor = 0;
+	private flashStrength = 0;
+	private flashDuration = 0;
+	private flashRemaining = 0;
 
 	constructor(target: TintTarget, options: StatusVisualsOptions) {
 		this.target = target;
 		this.styles = options.styles;
-		this.priority = Object.keys(options.styles);
 	}
 
 	/** marks `kind` active or inactive; a `kind` with no matching style is tracked but never shown */
@@ -78,22 +92,47 @@ export class StatusVisuals {
 		return this.active.has(kind);
 	}
 
-	/** advances any pulsing style and repaints the sprite from the current active set */
+	/**
+	 * Layers a transient additive pulse on top of whatever statuses are active, linearly
+	 * decaying `strength` to zero over `duration` seconds - a damage hit or a heal glow that
+	 * needs no status of its own and no caller-managed timer.
+	 */
+	flash(color: number, strength: number, duration: number): void {
+		this.flashColor = color;
+		this.flashStrength = strength;
+		this.flashDuration = Math.max(duration, 1e-6);
+		this.flashRemaining = this.flashDuration;
+	}
+
+	/** advances any pulsing style and the flash decay, and repaints the sprite's additive channel */
 	update(dt: number): void {
 		this.elapsed += dt;
+		if (this.flashRemaining > 0) this.flashRemaining = Math.max(0, this.flashRemaining - dt);
 
-		const kind = this.priority.find((k) => this.active.has(k));
-		if (kind === undefined) {
-			this.target.resetColor();
-			return;
+		let r = 0;
+		let g = 0;
+		let b = 0;
+
+		for (const kind of this.active) {
+			const style = this.styles[kind];
+			if (!style) continue;
+			const peak = style.strength ?? 0.5;
+			const strength = style.pulseRate
+				? peak * (0.5 + 0.5 * Math.sin(this.elapsed * style.pulseRate * Math.PI * 2))
+				: peak;
+			r += (((style.color >> 16) & 0xff) / 255) * strength;
+			g += (((style.color >> 8) & 0xff) / 255) * strength;
+			b += ((style.color & 0xff) / 255) * strength;
 		}
 
-		const style = this.styles[kind];
-		const peak = style.strength ?? 0.5;
-		const strength = style.pulseRate
-			? peak * (0.5 + 0.5 * Math.sin(this.elapsed * style.pulseRate * Math.PI * 2))
-			: peak;
+		if (this.flashRemaining > 0) {
+			const flashT = this.flashRemaining / this.flashDuration;
+			const flashStrength = this.flashStrength * flashT;
+			r += (((this.flashColor >> 16) & 0xff) / 255) * flashStrength;
+			g += (((this.flashColor >> 8) & 0xff) / 255) * flashStrength;
+			b += ((this.flashColor & 0xff) / 255) * flashStrength;
+		}
 
-		this.target.lerpTint(style.color, strength);
+		this.target.colorAdd = packColorAdd(Math.min(1, r), Math.min(1, g), Math.min(1, b));
 	}
 }
