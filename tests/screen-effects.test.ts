@@ -137,7 +137,7 @@ test('sequence keeps the previous tint through a hold step with no explicit colo
 
 	effects.update(1); // fadeOut finishes, hold begins
 	effects.update(0.5); // midway through hold
-	assert.equal(effects.washAlpha, 1, 'hold keeps fadeOut\'s alpha, not its own from/to');
+	assert.equal(effects.washAlpha, 1, "hold keeps fadeOut's alpha, not its own from/to");
 });
 
 test('sequence with an instant (zero-duration) step cascades straight to the next one', () => {
@@ -162,7 +162,10 @@ test('an empty sequence is a no-op that reports idle', () => {
 
 test('sequence replaces anything already running or queued', () => {
 	const effects = new ScreenEffects({ width: 100, height: 100 });
-	effects.sequence([{ kind: 'fadeOut', duration: 5 }, { kind: 'hold', duration: 5 }]);
+	effects.sequence([
+		{ kind: 'fadeOut', duration: 5 },
+		{ kind: 'hold', duration: 5 },
+	]);
 	effects.update(0.1);
 
 	effects.sequence([{ kind: 'fadeIn', duration: 1 }]);

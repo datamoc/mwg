@@ -9,7 +9,11 @@ if (typeof (globalThis as { document?: unknown }).document === 'undefined') {
 		font: '',
 		letterSpacing: '0px',
 		textLetterSpacing: '0px',
-		measureText: (text: string) => ({ width: text.length * 6, actualBoundingBoxAscent: 8, actualBoundingBoxDescent: 2 }),
+		measureText: (text: string) => ({
+			width: text.length * 6,
+			actualBoundingBoxAscent: 8,
+			actualBoundingBoxDescent: 2,
+		}),
 	};
 	const canvas = { getContext: () => context, width: 0, height: 0, style: {} };
 	(globalThis as { document?: unknown }).document = { createElement: () => canvas };
@@ -24,7 +28,12 @@ function items() {
 
 test('tapRow selects and confirms in one step', () => {
 	const chosen: number[] = [];
-	const list = new ListView({ width: 160, height: 96, items: items(), onSelect: (_item, index) => chosen.push(index) });
+	const list = new ListView({
+		width: 160,
+		height: 96,
+		items: items(),
+		onSelect: (_item, index) => chosen.push(index),
+	});
 
 	list.tapRow(1);
 
@@ -34,7 +43,12 @@ test('tapRow selects and confirms in one step', () => {
 
 test('tapRow on a disabled row is a no-op', () => {
 	const chosen: number[] = [];
-	const list = new ListView({ width: 160, height: 96, items: items(), onSelect: (_item, index) => chosen.push(index) });
+	const list = new ListView({
+		width: 160,
+		height: 96,
+		items: items(),
+		onSelect: (_item, index) => chosen.push(index),
+	});
 
 	list.tapRow(2);
 

@@ -73,16 +73,21 @@ test('a diagonal flight moves both axes together, arriving at the same time', ()
 
 test('a projectile advances an optional flight animation in step with its own flight', () => {
 	const sprite = { x: 0, y: 0 };
-	const p = new Projectile(sprite, { x: 0, y: 0 }, { x: 100, y: 0 }, {
-		duration: 1,
-		animation: new Animation(
-			[
-				{ texture: {} as Texture2D, duration: 0.5, offsetX: 1 },
-				{ texture: {} as Texture2D, duration: 0.5, offsetX: 2 },
-			],
-			{ fps: 2, loop: false },
-		),
-	});
+	const p = new Projectile(
+		sprite,
+		{ x: 0, y: 0 },
+		{ x: 100, y: 0 },
+		{
+			duration: 1,
+			animation: new Animation(
+				[
+					{ texture: {} as Texture2D, duration: 0.5, offsetX: 1 },
+					{ texture: {} as Texture2D, duration: 0.5, offsetX: 2 },
+				],
+				{ fps: 2, loop: false },
+			),
+		},
+	);
 
 	assert.equal(p.frameOffset.x, 1, 'the first frame shows at launch');
 	assert.equal(p.frameOffset.y, 0);

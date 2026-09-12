@@ -3,11 +3,15 @@ import test from 'node:test';
 import { toClassicScript } from '../tools/classic-html.mjs';
 
 test('rewrites a Vite-shaped module entry tag to a classic deferred script', () => {
-	const html = '<!doctype html><html><body><script type="module" crossorigin src="/assets/game-abc123.js"></script></body></html>';
+	const html =
+		'<!doctype html><html><body><script type="module" crossorigin src="/assets/game-abc123.js"></script></body></html>';
 	const result = toClassicScript(html);
 	assert.ok(result);
 	assert.equal(result.src, '/assets/game-abc123.js');
-	assert.equal(result.html, '<!doctype html><html><body><script defer src="/assets/game-abc123.js"></script></body></html>');
+	assert.equal(
+		result.html,
+		'<!doctype html><html><body><script defer src="/assets/game-abc123.js"></script></body></html>',
+	);
 });
 
 test('is order-independent between type and src attributes', () => {
