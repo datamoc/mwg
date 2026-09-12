@@ -296,8 +296,11 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   `burst`/`start`/`stop` over a pool allocated once at `max`. Runs the whole simulation with
   no `texture` given, which is how it is tested without a renderer. `ParticleSpawnArea` gives
   births a local `rect` or `ellipse` extent instead of the emitter's single origin.
-- `ScreenEffects` - a full-screen colour wash: `fadeOut`/`fadeIn`/`flash`/`setTint`, driven by
-  `update(dt)` returning true on the frame an effect completes.
+- `ScreenEffects`/`ScreenEffectStep` - a full-screen colour wash: `fadeOut`/`fadeIn`/`flash`/
+  `setTint`, driven by `update(dt)` returning true on the frame an effect completes.
+  `sequence(steps)` (item 302) chains fade/hold/flash steps end to end as one call, for the
+  hold-then-fade-back transition the four individual methods cannot express alone; `update`
+  keeps returning false at every step boundary, true only once the whole sequence finishes.
 - `ActorAnimator` - an idle/move/action animation state machine with one interruption rule.
 - `StatusVisuals` - composes every active status effect's colour additively onto a sprite's
   `colorAdd` (item 301), instead of one status winning by declaration order; each channel clips

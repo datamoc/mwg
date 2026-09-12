@@ -107,6 +107,69 @@ test('a fade started mid-fade continues from where the wash actually is', () => 
 	assert.ok(effects.washAlpha <= midpoint + 1e-6);
 });
 
+test('sequence chains steps end to end, only reporting completion once the last one finishes', () => {
+	const effects = new ScreenEffects({ width: 100, height: 100 });
+	effects.sequence([
+		{ kind: 'fadeOut', duration: 1 },
+		{ kind: 'hold', duration: 1 },
+		{ kind: 'fadeIn', duration: 1 },
+	]);
+
+	assert.equal(effects.update(1), false, 'fadeOut finishing does not end the sequence');
+	assert.equal(effects.washAlpha, 1);
+	assert.equal(effects.isBusy, true, 'the hold step is running');
+
+	assert.equal(effects.update(1), false, 'hold finishing does not end the sequence either');
+	assert.equal(effects.washAlpha, 1, 'hold keeps the wash exactly as fadeOut left it');
+	assert.equal(effects.isBusy, true);
+
+	assert.equal(effects.update(1), true, 'true only once fadeIn, the last step, finishes');
+	assert.equal(effects.washAlpha, 0);
+	assert.equal(effects.isBusy, false);
+});
+
+test('sequence keeps the previous tint through a hold step with no explicit colour', () => {
+	const effects = new ScreenEffects({ width: 100, height: 100 });
+	effects.sequence([
+		{ kind: 'fadeOut', duration: 1, color: 0x00ff00 },
+		{ kind: 'hold', duration: 1 },
+	]);
+
+	effects.update(1); // fadeOut finishes, hold begins
+	effects.update(0.5); // midway through hold
+	assert.equal(effects.washAlpha, 1, 'hold keeps fadeOut\'s alpha, not its own from/to');
+});
+
+test('sequence with an instant (zero-duration) step cascades straight to the next one', () => {
+	const effects = new ScreenEffects({ width: 100, height: 100 });
+	effects.sequence([
+		{ kind: 'fadeOut', duration: 0 },
+		{ kind: 'fadeIn', duration: 1 },
+	]);
+
+	assert.equal(effects.washAlpha, 1, 'the instant fadeOut already applied');
+	assert.equal(effects.isBusy, true, 'fadeIn is now running');
+	assert.equal(effects.update(1), true);
+	assert.equal(effects.washAlpha, 0);
+});
+
+test('an empty sequence is a no-op that reports idle', () => {
+	const effects = new ScreenEffects({ width: 100, height: 100 });
+	effects.sequence([]);
+	assert.equal(effects.isBusy, false);
+	assert.equal(effects.update(1), false);
+});
+
+test('sequence replaces anything already running or queued', () => {
+	const effects = new ScreenEffects({ width: 100, height: 100 });
+	effects.sequence([{ kind: 'fadeOut', duration: 5 }, { kind: 'hold', duration: 5 }]);
+	effects.update(0.1);
+
+	effects.sequence([{ kind: 'fadeIn', duration: 1 }]);
+	assert.equal(effects.update(1), true, 'only the new sequence runs, not the replaced one');
+	assert.equal(effects.washAlpha, 0);
+});
+
 test('setViewport does not disturb a running effect', () => {
 	const effects = new ScreenEffects({ width: 100, height: 100 });
 	effects.fadeOut(1);

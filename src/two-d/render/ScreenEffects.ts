@@ -3,7 +3,7 @@ import { Easing } from '../../core/Tween.ts';
 import { reducedMotion } from '../../core/Motion.ts';
 
 /** what the overlay is currently doing; `'idle'` covers both fully clear and a held tint */
-export type ScreenEffectPhase = 'idle' | 'fadeOut' | 'fadeIn' | 'flash';
+export type ScreenEffectPhase = 'idle' | 'fadeOut' | 'fadeIn' | 'flash' | 'hold';
 
 export interface ScreenEffectsOptions {
 	width?: number;
@@ -11,6 +11,16 @@ export interface ScreenEffectsOptions {
 
 	/** the colour used when a call does not name one; defaults to black */
 	color?: number;
+}
+
+/** one step of a `sequence`; `hold` keeps the overlay exactly as the previous step left it */
+export interface ScreenEffectStep {
+	kind: 'fadeOut' | 'fadeIn' | 'flash' | 'hold';
+	duration: number;
+	/** omit on `hold` to keep whatever tint the previous step left */
+	color?: number;
+	/** `flash` only; see `flash`'s own doc comment */
+	peak?: number;
 }
 
 /**
@@ -41,6 +51,20 @@ export interface ScreenEffectsOptions {
  *
  * effects.setTint(0x336633, 0.3); // held green cast while poisoned
  * ```
+ *
+ * `sequence` chains steps end to end, driven by the same `update(dt)` - `isBusy` stays true
+ * and `update` keeps returning false across every step boundary, only returning true once the
+ * whole sequence finishes, so a caller still needs no `await` for the genre-standard
+ * hold-then-fade-back transition `fadeOut`/`fadeIn`/`flash` alone cannot express:
+ *
+ * ```ts
+ * effects.sequence([
+ * 	{ kind: 'fadeOut', duration: 0.3 },
+ * 	{ kind: 'hold', duration: 0.5 }, // the new area loads while the screen is covered
+ * 	{ kind: 'fadeIn', duration: 0.3 },
+ * ]);
+ * while (!effects.update(1 / 60)) continue; // drives every step, one frame at a time
+ * ```
  */
 export class ScreenEffects extends Container {
 	private readonly overlay = new Graphics();
@@ -56,6 +80,9 @@ export class ScreenEffects extends Container {
 	/** alpha the current phase starts from and drives towards */
 	private fromAlpha = 0;
 	private toAlpha = 0;
+
+	/** steps still to run once the current one finishes, for `sequence` */
+	private queue: ScreenEffectStep[] = [];
 
 	constructor(options: ScreenEffectsOptions = {}) {
 		super();
@@ -120,25 +147,74 @@ export class ScreenEffects extends Container {
 	}
 
 	/**
+	 * Runs `steps` end to end - fade, hold, flash, in any order and count - driven by the
+	 * same `update(dt)` as a single call: `isBusy` stays true and `update` keeps returning
+	 * false at every step boundary, only returning true once the last step finishes. See this
+	 * class's own doc comment for the hold-then-fade-back example this exists for. Replaces
+	 * anything currently running or queued, the same as any other call here.
+	 */
+	sequence(steps: readonly ScreenEffectStep[]): void {
+		this.queue = steps.slice(1);
+		if (steps.length === 0) {
+			this.phase = 'idle';
+			return;
+		}
+		this.beginStep(steps[0]);
+	}
+
+	/**
 	 * Holds a colour at a fixed opacity until changed - a poisoned green cast, an underwater
-	 * blue. Cancels any running fade or flash, since those drive the same one overlay.
+	 * blue. Cancels any running fade, flash or sequence, since those drive the same one overlay.
 	 */
 	setTint(color: number, alpha: number): void {
+		this.queue = [];
 		this.phase = 'idle';
 		this.elapsed = 0;
 		this.overlay.tint = color;
 		this.overlay.alpha = Math.max(0, Math.min(1, alpha));
 	}
 
-	/** clears the overlay outright, running effect and held tint alike */
+	/** clears the overlay outright, running effect, sequence and held tint alike */
 	clear(): void {
+		this.queue = [];
 		this.phase = 'idle';
 		this.elapsed = 0;
 		this.overlay.alpha = 0;
 		this.overlay.tint = this.defaultColor;
 	}
 
-	private begin(phase: ScreenEffectPhase, duration: number, from: number, to: number, color?: number): void {
+	/** @returns true if this step completed instantly (a non-positive duration) and the next one, if any, already started */
+	private beginStep(step: ScreenEffectStep): boolean {
+		switch (step.kind) {
+			case 'fadeOut':
+				return this.begin('fadeOut', step.duration, this.overlay.alpha, 1, step.color);
+			case 'fadeIn':
+				return this.begin('fadeIn', step.duration, this.overlay.alpha, 0, step.color);
+			case 'flash':
+				return this.begin('flash', step.duration, 0, step.peak ?? 1, step.color);
+			case 'hold':
+				//no explicit colour keeps whatever tint the previous step left, rather than
+				//begin()'s usual fall back to the default colour
+				return this.begin(
+					'hold',
+					step.duration,
+					this.overlay.alpha,
+					this.overlay.alpha,
+					step.color ?? this.overlay.tint,
+				);
+		}
+	}
+
+	/** starts the next queued step, or goes idle when the queue is empty; @returns true once idle */
+	private advance(): boolean {
+		const next = this.queue.shift();
+		if (next) return this.beginStep(next);
+		this.phase = 'idle';
+		return true;
+	}
+
+	/** @returns true if `phase` is idle once this call returns (an instant cut may cascade through several queued steps) */
+	private begin(phase: ScreenEffectPhase, duration: number, from: number, to: number, color?: number): boolean {
 		//reduced motion turns a fade or flash into the instant cut a non-positive duration is
 		if (reducedMotion()) duration = 0;
 
@@ -151,15 +227,15 @@ export class ScreenEffects extends Container {
 		//a non-positive duration is an instant cut, applied now rather than a frame later
 		if (!(duration > 0)) {
 			this.overlay.alpha = phase === 'flash' ? 0 : to;
-			this.phase = 'idle';
-			return;
+			return this.advance();
 		}
 
 		this.phase = phase;
 		this.overlay.alpha = phase === 'flash' ? 0 : from;
+		return false;
 	}
 
-	/** @returns true on the single frame the running effect completes */
+	/** @returns true on the single frame the running effect (or the whole `sequence`) completes */
 	update(dt: number): boolean {
 		if (this.phase === 'idle') return false;
 
@@ -167,8 +243,7 @@ export class ScreenEffects extends Container {
 		//trigger, so finish it at once rather than letting the running one play out
 		if (reducedMotion()) {
 			this.overlay.alpha = this.phase === 'flash' ? 0 : this.toAlpha;
-			this.phase = 'idle';
-			return true;
+			return this.advance();
 		}
 
 		this.elapsed += dt;
@@ -185,8 +260,7 @@ export class ScreenEffects extends Container {
 
 		if (t >= 1) {
 			this.overlay.alpha = this.phase === 'flash' ? 0 : this.toAlpha;
-			this.phase = 'idle';
-			return true;
+			return this.advance();
 		}
 		return false;
 	}

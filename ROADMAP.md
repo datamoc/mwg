@@ -4250,9 +4250,17 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      `lerpTint`/`resetColor`) and to `StatusVisualStyle`'s documented meaning, both fine
      pre-1.0. Nine tests in `tests/status-visuals.test.ts`, including composition, clipping and
      the flash decay.
-302. [Low] A phase/sequence API for `ScreenEffects` (the port's P8). `fadeOut`/`fadeIn`/
+302. ~~[Low] A phase/sequence API for `ScreenEffects` (the port's P8). `fadeOut`/`fadeIn`/
      `flash` cannot express hold-then-fade-then-fade-back, the genre's standard transition, so
-     the port hand-computes it.
+     the port hand-computes it.~~ Landed as `sequence(steps)`, a new `hold` phase alongside the
+     three existing ones (keeping whatever tint the previous step left when a step names no
+     colour of its own), and a queue the existing `update(dt)`/`isBusy` contract now drains
+     silently between steps - `update` keeps returning false at every boundary, true only once
+     the last step finishes, so a caller still needs no `await`. An instant (non-positive
+     duration) step cascades straight into the next one, the same as a single instant call
+     already did. Six new tests in `tests/screen-effects.test.ts`, including the hold-keeps-
+     tint case, an instant-step cascade, an empty sequence, and one sequence replacing another
+     mid-flight.
 303. [Low] A screen-pixel shake helper (the port's P9). `Camera.shake` is world units, while
      the reference's own convention (43 call sites) is screen pixels, forcing a conversion at
      every site. `shakeScreen(intensity, duration)` would remove it.

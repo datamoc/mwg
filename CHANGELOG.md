@@ -21,6 +21,10 @@ the public API may still change between minor versions.
   game whose own bundler compiles assets a different way than `tools/compile-resources`.
 - `two-d.render.StatusVisuals.flash(color, strength, duration)` (item 301): a one-shot,
   linearly-decaying additive pulse layered on top of whatever statuses are active.
+- `two-d.render.ScreenEffects.sequence(steps)` and a new `hold` phase (item 302): chains
+  fade/hold/flash steps end to end as one call, for the hold-then-fade-back transition
+  `fadeOut`/`fadeIn`/`flash` alone cannot express; `update` keeps returning false at every
+  step boundary, true only once the whole sequence finishes.
 
 ### Changed
 

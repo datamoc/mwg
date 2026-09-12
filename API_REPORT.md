@@ -1890,6 +1890,8 @@ build instead.
 
         private fromAlpha;
         private toAlpha;
+
+        private queue;
         constructor(options?: ScreenEffectsOptions);
 
         setViewport(width: number, height: number): void;
@@ -1905,9 +1907,16 @@ build instead.
 
         flash(duration: number, color?: number, peak?: number): void;
 
+        sequence(steps: readonly ScreenEffectStep[]): void;
+
         setTint(color: number, alpha: number): void;
 
         clear(): void;
+
+        private beginStep;
+
+        private advance;
+
         private begin;
 
         update(dt: number): boolean;
@@ -7846,6 +7855,8 @@ build instead.
 
         private fromAlpha;
         private toAlpha;
+
+        private queue;
         constructor(options?: ScreenEffectsOptions);
 
         setViewport(width: number, height: number): void;
@@ -7861,9 +7872,16 @@ build instead.
 
         flash(duration: number, color?: number, peak?: number): void;
 
+        sequence(steps: readonly ScreenEffectStep[]): void;
+
         setTint(color: number, alpha: number): void;
 
         clear(): void;
+
+        private beginStep;
+
+        private advance;
+
         private begin;
 
         update(dt: number): boolean;
@@ -9209,6 +9227,8 @@ build instead.
 
         private fromAlpha;
         private toAlpha;
+
+        private queue;
         constructor(options?: ScreenEffectsOptions);
 
         setViewport(width: number, height: number): void;
@@ -9224,9 +9244,16 @@ build instead.
 
         flash(duration: number, color?: number, peak?: number): void;
 
+        sequence(steps: readonly ScreenEffectStep[]): void;
+
         setTint(color: number, alpha: number): void;
 
         clear(): void;
+
+        private beginStep;
+
+        private advance;
+
         private begin;
 
         update(dt: number): boolean;
