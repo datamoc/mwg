@@ -14,6 +14,8 @@ the public API may still change between minor versions.
 - `two-d/pixi-interop`'s `registerBuiltinPipes()` (item 297), plus re-exporting
   `TilingSpritePipe`/`NineSliceSpritePipe` themselves, for a consumer bundler that tree-shook
   a built-in Pixi pipe away despite importing the full `pixi.js` package.
+- `ui.ListView.tapRow(index)` (item 299), the `IconGrid.tapCell`-shaped public method for the
+  select-and-confirm-in-one-step tap a row's own `pointerdown` handler already did.
 
 ### Fixed
 

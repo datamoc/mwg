@@ -4215,10 +4215,17 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      comment now says the no-registration guarantee is `pixi.js`'s own `sideEffects` list
      surviving the *consumer's* bundler configuration, not a universal property, and points at
      `registerBuiltinPipes` (297) for the case where it does not survive.
-299. [Medium] Pointer parity for `ListView` (the port's P5). `IconGrid` is pointer-driven
+299. ~~[Medium] Pointer parity for `ListView` (the port's P5). `IconGrid` is pointer-driven
      (`tapCell`); `ListView` is keyboard-only, so a clickable bag or menu list has no built-in
      hit surface, and the port had to fill `ListItem.icon` with a full-row hit area as a
-     workaround. A `tapRow(index)` alongside the existing keyboard navigation would remove it.
+     workaround. A `tapRow(index)` alongside the existing keyboard navigation would remove it.~~
+     Each row already carried a `pointerdown` handler that selected and confirmed in one step
+     (landed ahead of this item, undocumented as its own capability); what was missing was the
+     `tapCell`-shaped public method itself, for a game or test driving the list
+     programmatically rather than through a real pointer event. `tapRow(index)` now exists,
+     the row handler calls it, and it shares `tapCell`'s no-op rules: out of range or disabled
+     does nothing. Four tests in the new `tests/list-view.test.ts`, the first dedicated test
+     file this widget had.
 300. [Medium] Let a game hand `assets` its own path-to-URI map (the port's P6). `assets/paths`
      only reads `window.__MWG_ASSETS__` or a dev server, so a Vite-bundled game that compiles
      its own asset map cannot use `Assets`' loaders, batching or progress at all; this port

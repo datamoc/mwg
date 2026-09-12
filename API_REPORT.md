@@ -1082,6 +1082,8 @@ build instead.
         select(index: number): void;
         confirm(): boolean;
 
+        tapRow(index: number): void;
+
         handleAction(action: Action): boolean;
         private refresh;
     }
@@ -7445,6 +7447,8 @@ build instead.
         select(index: number): void;
         confirm(): boolean;
 
+        tapRow(index: number): void;
+
         handleAction(action: Action): boolean;
         private refresh;
     }
@@ -9991,6 +9995,8 @@ build instead.
         move(delta: number): boolean;
         select(index: number): void;
         confirm(): boolean;
+
+        tapRow(index: number): void;
 
         handleAction(action: Action): boolean;
         private refresh;

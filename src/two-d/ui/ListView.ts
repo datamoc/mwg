@@ -192,11 +192,7 @@ export class ListView extends Container {
 			//a tap selects and confirms in one step, the way a mouse/touch player expects
 			//from a menu row - IconGrid's cells already work this way, this closes the same
 			//gap on ListView, which was keyboard-only until now
-			row.on('pointerdown', () => {
-				if (item.disabled) return;
-				this.select(i);
-				this.confirm();
-			});
+			row.on('pointerdown', () => this.tapRow(i));
 
 			if (item.icon) {
 				item.icon.x = rtl ? this.viewWidth - t.spacing - this.rowHeight : t.spacing;
@@ -245,6 +241,21 @@ export class ListView extends Container {
 
 	confirm(): boolean {
 		return this.selection.confirm(this.onSelect);
+	}
+
+	/**
+	 * Selects and confirms row `index` in one step, the way a mouse or touch player expects
+	 * from a menu row rather than a select-then-confirm keyboard sequence - the same pointer
+	 * parity `IconGrid.tapCell` already gives its cells. A disabled row is a no-op, the same
+	 * as an out-of-range one. This is what a row's own `pointerdown` handler calls, so a game
+	 * driving the list programmatically (a test, a gamepad-to-pointer bridge) reaches the
+	 * exact behaviour a real tap would.
+	 */
+	tapRow(index: number): void {
+		const items = this.selection.items;
+		if (index < 0 || index >= items.length || items[index].disabled) return;
+		this.select(index);
+		this.confirm();
 	}
 
 	/** @returns true when the action was used */
