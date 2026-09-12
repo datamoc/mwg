@@ -1,17 +1,17 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.8.0",
+	"version": "0.8.1",
 	"releaseDate": "2026-09-12",
 	"source": {
 		"files": 279,
-		"lines": 44336,
+		"lines": 44337,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 79,
-				"lines": 15309
+				"lines": 15310
 			},
 			{
 				"name": "mwl",
@@ -131,9 +131,9 @@
 		"declarationFiles": 278
 	},
 	"bundle": {
-		"globalRaw": 1019613,
-		"globalGzip": 302668,
-		"distRaw": 3295268
+		"globalRaw": 1019581,
+		"globalGzip": 302666,
+		"distRaw": 3295254
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

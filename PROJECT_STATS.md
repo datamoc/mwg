@@ -1,10 +1,10 @@
 # Project statistics
 
-Generated for **mwg 0.8.0** on 2026-09-12.
+Generated for **mwg 0.8.1** on 2026-09-12.
 
 | Area | Statistics |
 | --- | ---: |
-| Source | 279 TypeScript files, 44,336 lines, 15 modules |
+| Source | 279 TypeScript files, 44,337 lines, 15 modules |
 | Tests | 228 files, 2,174 test cases, 30,208 lines |
 | Tools | 37 files, 6,646 lines |
 | Examples | 22 runnable examples |
@@ -18,7 +18,7 @@ Generated for **mwg 0.8.0** on 2026-09-12.
 
 | Module | Files | Lines |
 | --- | ---: | ---: |
-| two-d | 79 | 15,309 |
+| two-d | 79 | 15,310 |
 | mwl | 21 | 5,493 |
 | core | 43 | 5,195 |
 | roguelike | 22 | 3,519 |

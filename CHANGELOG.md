@@ -7,6 +7,8 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-09-12
+
 ### Added
 
 - `MwlValue` is exported from the `mwl` barrel, alongside `MwlWorld`: the recursive
