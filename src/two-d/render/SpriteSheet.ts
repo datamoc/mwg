@@ -9,6 +9,10 @@ import { rectOf, type TextureRegion, type Texture2D } from './Types2D.ts';
  * case and `name` labels the frames that matter. Frames are cut once and cached: asking
  * for the same index twice returns the same Texture, so sprites sharing a frame also share
  * a texture and stay in one batch.
+ *
+ * The rest are not grids at all: a hand-packed icon atlas, a strip of bar segments, a
+ * nine-patch's corners. Those declare their own rectangles with `rect`, and the sheet is
+ * built with no frame size, which leaves it with no grid and only the frames declared.
  */
 export class SpriteSheet {
 	readonly texture: Texture2D;
@@ -24,20 +28,21 @@ export class SpriteSheet {
 		this.texture = texture;
 		this.frameWidth = frameWidth;
 		this.frameHeight = frameHeight;
-		this.columns = Math.floor(texture.width / frameWidth);
-		this.rows = Math.floor(texture.height / frameHeight);
+		this.columns = frameWidth > 0 ? Math.floor(texture.width / frameWidth) : 0;
+		this.rows = frameHeight > 0 ? Math.floor(texture.height / frameHeight) : 0;
 	}
 
 	/**
-	 * Cuts a loaded texture into a grid, numbered left to right then top to bottom.
+	 * Cuts a loaded texture into a grid, numbered left to right then top to bottom, or, with
+	 * no frame size, leaves the sheet with no grid for `rect` to fill in.
 	 *
 	 * @param path the asset path the texture was loaded with
 	 */
-	static grid(path: string, frameWidth: number, frameHeight = frameWidth): SpriteSheet {
+	static grid(path: string, frameWidth = 0, frameHeight = frameWidth): SpriteSheet {
 		return new SpriteSheet(Resources.texture(path), frameWidth, frameHeight);
 	}
 
-	static fromTexture(texture: Texture2D, frameWidth: number, frameHeight = frameWidth): SpriteSheet {
+	static fromTexture(texture: Texture2D, frameWidth = 0, frameHeight = frameWidth): SpriteSheet {
 		return new SpriteSheet(texture, frameWidth, frameHeight);
 	}
 
@@ -85,6 +90,22 @@ export class SpriteSheet {
 
 		this.frames.set(index, texture);
 		return texture;
+	}
+
+	/**
+	 * Cuts an arbitrary rectangle out of the texture, for a sheet that is not a grid: one
+	 * hand-packed icon, two banner frames, the corners of a nine-patch.
+	 *
+	 * The rectangle is cached under `index` exactly like a grid frame, so `get`, `region`,
+	 * `name` and `pick` all treat it as a frame and asking for it twice returns the same
+	 * `Texture` rather than cutting a second one. Declaring a rect for an index the grid
+	 * also covers replaces that frame, which is what a tightened sub-rect of a cell is:
+	 * an item whose art is smaller than its 16 by 16 cell keeps its index and its name.
+	 */
+	rect(index: number, x: number, y: number, width: number, height: number): this {
+		if (width <= 0 || height <= 0) throw new Error('a sprite sheet rect needs a positive width and height');
+		this.frames.set(index, new Texture({ source: this.texture.source, frame: new Rectangle(x, y, width, height) }));
+		return this;
 	}
 
 	/** the texture and frame rectangle together, as plain MWG types rather than `pixi.js`'s
