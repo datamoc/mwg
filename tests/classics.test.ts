@@ -67,6 +67,74 @@ test('backgammon generates a bar entry and hits a blot', () => {
 	assert.equal(state.bar.black, 1);
 });
 
+//white checkers live on points 0-23 and bear off past 24, so a layout is just those points
+function bearOffState(points: Record<number, number>, side: 'white' | 'black' = 'white') {
+	const state = Board.startingBackgammon();
+	state.points = new Array(24).fill(0);
+	for (const [point, count] of Object.entries(points)) state.points[Number(point)] = count;
+	state.turn = side;
+	return state;
+}
+const bearOffFrom = (moves: Board.BackgammonMove[]): number[] =>
+	moves
+		.filter(
+			(move): move is Board.BackgammonMove & { from: number } =>
+				move.to === 'off' && typeof move.from === 'number',
+		)
+		.map((move) => move.from);
+
+test('bearing off needs every checker in the home board', () => {
+	//the opening position still has white checkers on 0, 11 and 16, so a 6 may not come off,
+	//even though the lone checker on 18 would reach the off edge with it
+	const opening = Board.startingBackgammon();
+	assert.deepEqual(bearOffFrom(Board.backgammonMoves(opening, [6])), []);
+	assert.ok(
+		Board.backgammonMoves(opening, [6]).some((move) => move.to === 22),
+		'in-board movement is still offered',
+	);
+
+	const home = bearOffState({ 18: 1, 20: 1 });
+	assert.deepEqual(
+		bearOffFrom(Board.backgammonMoves(home, [6])).sort((a, b) => a - b),
+		[18, 20],
+		'all home, so the 6 takes the 18 exactly and the nearest checker on the 20',
+	);
+});
+
+test('an exact roll bears off any home checker; an over-roll only the closest one', () => {
+	//20 is four pips out, 23 is one: with a 4 the 20 comes off exactly, and the 23 comes off
+	//on the over-roll because it is the checker nearest the edge
+	const exact = bearOffState({ 20: 1, 23: 1 });
+	assert.deepEqual(
+		bearOffFrom(Board.backgammonMoves(exact, [4])).sort((a, b) => a - b),
+		[20, 23],
+	);
+
+	//with a 6 the 22 may not come off: the 23 is nearer the edge, so the 6 must be played on it
+	const overRoll = bearOffState({ 22: 1, 23: 1 });
+	assert.deepEqual(bearOffFrom(Board.backgammonMoves(overRoll, [6])), [23]);
+
+	//and a checker further out than a die that cannot reach it is a normal in-board move
+	const blocked = bearOffState({ 19: 1, 22: 1 });
+	assert.deepEqual(bearOffFrom(Board.backgammonMoves(blocked, [4])), [22]);
+});
+
+test('a checker on the bar blocks bearing off, and black bears off the other way', () => {
+	const barred = bearOffState({ 20: 1 });
+	barred.bar.white = 1;
+	assert.deepEqual(bearOffFrom(Board.backgammonMoves(barred, [6])), []);
+
+	//black moves toward 0 and bears off past it, so point 0 is nearest the edge
+	const black = bearOffState({ 0: -1, 1: -1 }, 'black');
+	assert.deepEqual(bearOffFrom(Board.backgammonMoves(black, [6])), [0]);
+
+	const applied = Board.backgammonMoves(bearOffState({ 20: 1 }), [4])[0];
+	const state = bearOffState({ 20: 1 });
+	Board.applyBackgammonMove(state, applied);
+	assert.equal(state.off.white, 1);
+	assert.equal(state.points[20], 0);
+});
+
 test('cards deal without duplication and solitaire deals seven columns', () => {
 	const deck = Board.createDeck();
 	const hands = Board.deal(deck, 4, 5);

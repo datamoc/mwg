@@ -41,6 +41,12 @@ the public API may still change between minor versions.
 
 ### Fixed
 
+- `board.backgammonMoves` follows the bearing-off rules. It offered a bear-off from any point
+  whose roll reached past the off edge, so at the opening position a 6 came off from point 18
+  while checkers still sat on 0, 11 and 16. A bear-off now needs every checker in the home
+  board with none on the bar; an exact roll still takes any home checker, and an over-roll takes
+  only the checker nearest the off edge, since a checker must never skip past another. Three
+  tests in `tests/classics.test.ts`.
 - An `[if]` branch no longer tries to execute its own `[condition]` child. The schema allows a
   branch to carry one, but the executor ran every child, so an `[if]` whose condition held threw
   `unknown MWL command: condition` instead of running its body; a false condition hid it because

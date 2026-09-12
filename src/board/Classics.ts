@@ -408,6 +408,25 @@ export function rollBackgammonDice(): number[] {
  */
 export function backgammonMoves(state: BackgammonState, dice: readonly number[]): BackgammonMove[] {
 	const side = state.turn === 'white' ? 1 : -1;
+	//bearing off needs every checker in the home board (18-23 for white, 0-5 for black) and
+	//none on the bar; `pips` is the distance from a point to the off edge, so the checkers with
+	//the smallest pips are the ones closest to bearing off
+	const home: [number, number] = side === 1 ? [18, 23] : [0, 5];
+	const pips = (point: number): number => (side === 1 ? 24 - point : point + 1);
+	let allHome = true;
+	let closest = Infinity;
+	for (let point = 0; point < 24; point++) {
+		if (state.points[point] * side <= 0) continue;
+		if (point < home[0] || point > home[1]) allHome = false;
+		closest = Math.min(closest, pips(point));
+	}
+	//an exact roll bears off any checker; an over-roll only the checker nearest the off edge,
+	//since a checker must never skip past another one on its way off
+	const canBearOff = (from: number, die: number): boolean => {
+		if (!allHome) return false;
+		const needed = pips(from);
+		return die === needed || (die > needed && needed === closest);
+	};
 	const out: BackgammonMove[] = [];
 	for (const die of dice) {
 		if (state.bar[state.turn] > 0) {
@@ -418,8 +437,9 @@ export function backgammonMoves(state: BackgammonState, dice: readonly number[])
 		for (let from = 0; from < 24; from++)
 			if (state.points[from] * side > 0) {
 				const to = from + die * side;
-				if (to < 0 || to >= 24) out.push({ from, to: 'off', die });
-				else if (canBackgammonLand(state, to, side)) out.push({ from, to, die });
+				if (to < 0 || to >= 24) {
+					if (canBearOff(from, die)) out.push({ from, to: 'off', die });
+				} else if (canBackgammonLand(state, to, side)) out.push({ from, to, die });
 			}
 	}
 	return out;
