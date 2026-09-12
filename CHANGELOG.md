@@ -41,6 +41,9 @@ the public API may still change between minor versions.
 
 ### Fixed
 
+- Documented, in `tools/mwl.mjs` and README's MWL section, that a game needing more than
+  `mwl build`'s three standard files should write its own build script against the public MWL
+  library API rather than look for a CLI flag (item 305).
 - Corrected two contradictory doc comments (item 298): `Shape2D.ts` claimed `Container2D` was
   a type alias a game could not `new`, when it is a value re-export and always was; and
   `pixi-interop.ts`'s "no registration needed" guarantee is `pixi.js`'s own `sideEffects` list

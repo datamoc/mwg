@@ -25,6 +25,18 @@ import {
  * itself stays free of node builtins. `hooks` needs esbuild and says so
  * clearly when it is not installed; the framework does not depend on it, so a
  * project without hooks pays nothing for the feature.
+ *
+ * `build` is deliberately just the three files every MWL game consumes
+ * (game-data.ts, i18n.json, assets.json) plus, opted into with
+ * `--asset-root`, one asset-existence check (item 305). A game that needs
+ * more than that - its own extra generated module, or a cross-table check
+ * this CLI has no flag for (a recipe's ingredient existing in the item
+ * table, say) - is not a gap in this command's flags to fill one at a time;
+ * every one of `compileSources`, `emitArtifacts`, `validateCatalog` and
+ * `contentReport` this command itself calls is public
+ * (`@datamoc/mw_games/mwl`), so that game's own small Node script, written
+ * against the same library API this file uses, is the actual extension
+ * point - not a CLI kept open-ended for checks no two games would agree on.
  */
 
 const args = process.argv.slice(2);

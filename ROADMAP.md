@@ -4279,10 +4279,17 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      domain-scoped id reused across files no longer reports, while a real duplicate within one
      file still does. Three tests in `tests/mwl.test.ts`: the unchanged global default, `'file'`
      clearing the cross-file case, and `'file'` still catching a same-file duplicate.
-305. [Low] More `tools/mwl.mjs` hooks for game-owned generated modules and cross-table checks
+305. ~~[Low] More `tools/mwl.mjs` hooks for game-owned generated modules and cross-table checks
      (the port's P11), or say plainly that a game needing custom validation should embed the
      library API directly rather than drive the CLI. This build needed three game-owned
-     generated modules plus cross-table checks the CLI has no hook for.
+     generated modules plus cross-table checks the CLI has no hook for.~~ Took the "say
+     plainly" branch, deliberately, rather than growing the CLI's flags one check at a time for
+     needs no two games would agree on: `tools/mwl.mjs`'s own doc comment and README's MWL
+     section now both say that `compileSources`/`emitArtifacts`/`validateCatalog`/
+     `contentReport` - every function `build` itself calls - are public from
+     `@datamoc/mw_games/mwl`, so a game's own small Node build script against that same API is
+     the actual extension point for an extra generated module or a cross-table check this CLI
+     has no flag for.
 306. [Low] Document a `file://` post-build recipe for bundler users, or add a
      `tools/classic-html.mjs` (the port's P12). A Vite entry tag comes out `type="module"`,
      which `file://` refuses, so every bundler-based game repeats this port's own

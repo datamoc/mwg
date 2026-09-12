@@ -426,6 +426,13 @@ sound lists, Wesnoth sound ranges such as `human-hit-[1~5].ogg`, and image
 modifiers. Nested transform arguments are not mistaken for separate assets.
 Item slots, formulas, hooks, and business rules remain defined by the game.
 
+A game needing more than `mwl build`'s three standard files - its own extra generated module,
+or a cross-table check this CLI has no flag for - should not look for a flag to add: every
+function that command calls (`compileSources`, `emitArtifacts`, `validateCatalog`,
+`contentReport`) is public from `@datamoc/mw_games/mwl`, so that game's own small Node build
+script, written against the same library API `tools/mwl.mjs` itself uses, is the extension
+point (item 305).
+
 Campaign metadata can be authored with a `[campaign]` tag inside `[game]`. It requires an
 `id` and accepts `name`, `title`, `description`, and `start_scene`; scenario and extension
 children remain game-owned and are preserved by the compiler. The compiled metadata is
