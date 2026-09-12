@@ -87,8 +87,8 @@
 	},
 	"tests": {
 		"files": 219,
-		"lines": 28548,
-		"cases": 2064
+		"lines": 28600,
+		"cases": 2068
 	},
 	"tools": {
 		"files": 35,
