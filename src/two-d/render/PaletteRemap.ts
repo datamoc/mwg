@@ -9,16 +9,21 @@ export interface PaletteMapping {
 /**
  * How a pixel that is not an exact `from` colour is treated. `'exact'` (the default for
  * `remapPixels`/`recolorTexture`) leaves it untouched - the correct behaviour for a discrete
- * swap like `~RC`/`~PAL`, where `from` is a short, specific list rather than a covering of the
- * whole image; `'nearest'` repaints every opaque pixel with whichever `from` entry it is
- * closest to, which is what a `paletteRangeMapping` gradient over the *whole* palette a team's
- * reference art uses (Wesnoth's magenta `TC` convention, or any equivalent) wants instead. Using
- * `'nearest'` with a sparse `from` list (an `~RC` pair or two) would repaint the entire image
- * toward whichever pair happens to be closest, which is the bug this mode exists to prevent.
+ * swap like `~RC`/`~PAL`, and for a `paletteRangeMapping` over a reference palette, where the
+ * pixels that are not in the palette are the ones the artists deliberately left alone (shading,
+ * outlines, anti-aliased edges). `'nearest'` repaints every opaque pixel with whichever `from`
+ * entry it is closest to, which is what a palette that covers the whole image wants - a dense
+ * generated ramp where every pixel is meant to be recoloured. Using `'nearest'` with a sparse
+ * `from` list (an `~RC` pair or two, a three-colour reference palette) repaints the entire image
+ * toward whichever entry happens to be closest, which is the bug this mode exists to prevent.
  */
 export type PaletteRemapMode = 'exact' | 'nearest';
 
-/** The three-stop gradient a team colour (or any palette range) is built from. */
+/**
+ * The three-stop gradient a team colour (or any palette range) is built from. `mid` is the
+ * shade the reference's own anchor colour becomes, `min` the one at the dark end of the range
+ * and `max` the one at the bright end.
+ */
 export interface PaletteRange {
 	readonly min: number;
 	readonly mid: number;
@@ -29,27 +34,51 @@ function hexToRgb(hex: number): readonly [number, number, number] {
 	return [(hex >> 16) & 0xff, (hex >> 8) & 0xff, hex & 0xff];
 }
 
-function rgbToHex(r: number, g: number, b: number): number {
-	return (Math.round(r) << 16) | (Math.round(g) << 8) | Math.round(b);
-}
-
-function lerp(a: number, b: number, t: number): number {
-	return a + (b - a) * t;
-}
-
-function lerpColor(from: number, to: number, t: number): number {
-	const [r1, g1, b1] = hexToRgb(from);
-	const [r2, g2, b2] = hexToRgb(to);
-	return rgbToHex(lerp(r1, r2, t), lerp(g1, g2, t), lerp(b1, b2, t));
+/** a colour's brightness, as the integer average of its channels - the engine's own ruler */
+function brightnessOf(color: number): number {
+	const [r, g, b] = hexToRgb(color);
+	return Math.floor((r + g + b) / 3);
 }
 
 /**
- * Builds a `PaletteMapping` that replaces every colour of `reference` with the matching stop
- * of a three-colour gradient (`range.min` through `range.mid` to `range.max`), the shape a
- * team colour or any other `[color_range]`-style remap is defined by. `reference` is assumed
- * ordered from lightest to darkest; each entry's position in that order, not its own value,
- * decides where along `min -> mid -> max` it lands, so recolouring never depends on knowing
- * what the reference colours actually are.
+ * One channel of `ratio * a + (1 - ratio) * b`, truncated rather than rounded, because that is
+ * the arithmetic a palette range's shades are defined in: rounding instead of truncating puts
+ * every shade up to a whole step brighter, and the difference shows wherever art is painted
+ * from the shades. No clamp goes on top of it, and none is needed: a ratio never leaves 0..1
+ * and both ends are channels, so a value between them is already a channel.
+ */
+function blendedChannel(a: number, b: number, ratio: number): number {
+	return Math.trunc(ratio * a + (1 - ratio) * b);
+}
+
+/** `ratio` of the way from `b` to `a`, per channel, as a packed `0xRRGGBB` */
+function blend(a: number, b: number, ratio: number): number {
+	const [ar, ag, ab] = hexToRgb(a);
+	const [br, bg, bb] = hexToRgb(b);
+	return (blendedChannel(ar, br, ratio) << 16) | (blendedChannel(ag, bg, ratio) << 8) | blendedChannel(ab, bb, ratio);
+}
+
+/**
+ * Builds a `PaletteMapping` that recolours every entry of `reference` into a shade of the
+ * `min -> mid -> max` gradient, the shape a team colour or any other `[color_range]`-style
+ * remap is defined by. `reference` is the exact list of colours the art was painted with, so
+ * pixels outside it - anti-aliased edges, shading, outlines - are left alone by an `'exact'`
+ * remap, which is the mode this pairs with.
+ *
+ * The reference's *first* entry is its anchor, and it is the one colour whose shade is fixed by
+ * the range alone: it becomes `mid`. Every other entry is placed by its own brightness rather
+ * than by its position, so the *rest* of the list needs no order - a darker entry blends towards
+ * `min` and a brighter one towards `max`, each in proportion to how its average compares with
+ * the anchor's. That is what lets one mapping reproduce art as shaded as the reference it was
+ * painted from, and what the first entry has to be: the base shade the art was built around.
+ *
+ * Brightness and the blend are computed the way the engine they mirror does, a floored integer
+ * average and a truncated blend, which is what makes the shades equal the engine's byte for byte
+ * rather than merely close. The engine's own black-and-white special cases fall out of the two
+ * branches here rather than being spelled out: an anchor with an average of 0 has no ratio to
+ * divide by, so every entry takes the brighter branch and `mid` is the top of the scale instead
+ * of the middle of it, and a white anchor is at least as bright as everything, so every entry
+ * takes the darker one.
  *
  * @example
  * ```ts
@@ -57,18 +86,21 @@ function lerpColor(from: number, to: number, t: number): number {
  * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
  *
  * declare const texture: Texture2D;
- * declare const magentaReference: readonly number[]; // a game's own reference palette, lightest first
+ * declare const magentaReference: readonly number[]; // the exact colours the art was painted with
  *
- * const redTeam = paletteRangeMapping(magentaReference, { min: 0xffe0e0, mid: 0xc00000, max: 0x400000 });
- * const recolored = recolorTexture(texture, redTeam);
+ * const redTeam = paletteRangeMapping(magentaReference, { min: 0x000000, mid: 0xff0000, max: 0xffffff });
+ * const recolored = recolorTexture(texture, redTeam); // 'exact': only those pixels are repainted
  * ```
  */
 export function paletteRangeMapping(reference: readonly number[], range: PaletteRange): PaletteMapping {
-	const to = reference.map((_, index) => {
-		if (reference.length <= 1) return range.mid;
-		const t = index / (reference.length - 1);
-		return t <= 0.5 ? lerpColor(range.min, range.mid, t * 2) : lerpColor(range.mid, range.max, (t - 0.5) * 2);
+	const anchor = reference.length > 0 ? brightnessOf(reference[0]) : 255;
+
+	const to = reference.map((color) => {
+		const brightness = brightnessOf(color);
+		if (anchor !== 0 && brightness <= anchor) return blend(range.mid, range.min, brightness / anchor);
+		return blend(range.mid, range.max, (255 - brightness) / (255 - anchor));
 	});
+
 	return { from: reference, to };
 }
 
