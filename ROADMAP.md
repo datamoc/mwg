@@ -4269,11 +4269,16 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      `tests/camera.test.ts` check the rendered offset's screen-pixel bound holds across
      several zoom levels, and that zoom 1 (where screen pixels and world units coincide)
      matches a direct `shake` call of the same magnitude.
-304. [Low] Document, or make configurable, what MWL row ids are scoped to (the port's P10).
+304. ~~[Low] Document, or make configurable, what MWL row ids are scoped to (the port's P10).
      `validateCatalog` keys on `tag:id` document-wide, so a domain-scoped row-naming
      convention yields one `MWL_DUPLICATE_ID` per reuse (42 in this port's data) that cannot
      be told apart from a genuine same-table duplicate. Either document the scope or add a
-     `rowIdScope` option.
+     `rowIdScope` option.~~ Landed as `MwlValidationOptions.rowIdScope`: `'global'` (the
+     default, and the only behaviour before this item) checks the whole compiled catalog;
+     `'file'` folds each node's own source file into the `MWL_DUPLICATE_ID` key, so a
+     domain-scoped id reused across files no longer reports, while a real duplicate within one
+     file still does. Three tests in `tests/mwl.test.ts`: the unchanged global default, `'file'`
+     clearing the cross-file case, and `'file'` still catching a same-file duplicate.
 305. [Low] More `tools/mwl.mjs` hooks for game-owned generated modules and cross-table checks
      (the port's P11), or say plainly that a game needing custom validation should embed the
      library API directly rather than drive the CLI. This build needed three game-owned

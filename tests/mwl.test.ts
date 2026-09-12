@@ -450,6 +450,29 @@ test('MWL catalog validation catches duplicate ids, slots, effects, and hooks', 
 	assert.deepEqual(codes, ['MWL_UNKNOWN_SLOT', 'MWL_INCOMPLETE_EFFECT', 'MWL_DUPLICATE_ID', 'MWL_INVALID_HOOK']);
 });
 
+test('rowIdScope defaults to global: the same id reused across files is still a duplicate', () => {
+	const game = compileSources([
+		{ file: 'weapons.mwl', source: '[item]\nid=sword\nname=Sword\n[/item]' },
+		{ file: 'armor.mwl', source: '[item]\nid=sword\nname=Also Sword\n[/item]' },
+	]);
+	const codes = validateCatalog(game).map((diagnostic) => diagnostic.code);
+	assert.deepEqual(codes, ['MWL_DUPLICATE_ID']);
+});
+
+test("rowIdScope: 'file' allows the same id across files, catching a real duplicate within one", () => {
+	const acrossFiles = compileSources([
+		{ file: 'weapons.mwl', source: '[item]\nid=sword\nname=Sword\n[/item]' },
+		{ file: 'armor.mwl', source: '[item]\nid=sword\nname=Also Sword\n[/item]' },
+	]);
+	assert.deepEqual(validateCatalog(acrossFiles, { rowIdScope: 'file' }), []);
+
+	const withinOneFile = compileSources([
+		{ file: 'weapons.mwl', source: '[item]\nid=sword\nname=Sword\n[/item]\n[item]\nid=sword\nname=Other\n[/item]' },
+	]);
+	const codes = validateCatalog(withinOneFile, { rowIdScope: 'file' }).map((diagnostic) => diagnostic.code);
+	assert.deepEqual(codes, ['MWL_DUPLICATE_ID']);
+});
+
 test('MWL saves are versioned and migrated, while legacy snapshots remain readable', () => {
 	const world = {
 		turn: 1,

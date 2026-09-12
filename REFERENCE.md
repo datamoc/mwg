@@ -970,6 +970,13 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 - `contentReport` / `loadContent` / `mwl report` - counts tags, lists opaque names, reports
   resources, dependencies and unresolved references, and returns structured load diagnostics
   for parity checks and CI.
+- `validateCatalog`/`validateCatalogNodes`/`MwlValidationOptions` - semantic checks shared by
+  every game: `MWL_DUPLICATE_ID`, `MWL_UNKNOWN_SLOT`, `MWL_INCOMPLETE_EFFECT`,
+  `MWL_INVALID_HOOK`/`MWL_UNKNOWN_HOOK`. `MWL_DUPLICATE_ID`'s `tag:id` key is scoped by
+  `rowIdScope` (item 304): `'global'` (the default) checks the whole compiled catalog, every
+  source file combined; `'file'` folds each node's own source file into the key too, for a game
+  whose id convention is meaningful only within one file and reuses ids across files on purpose
+  - a real duplicate within one file still reports.
 - `[campaign]` - declares game-owned campaign metadata (`id`, optional `name`, `title`,
   `description`, and `start_scene`). Its children are intentionally open so a game can define
   scenario and progression tags without changing the core MWL schema; metadata is exposed by
