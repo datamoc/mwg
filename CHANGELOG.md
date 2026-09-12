@@ -18,6 +18,9 @@ the public API may still change between minor versions.
 - `mwl.MwlAttributeType` (item 316): a schema attribute's type may be the closed list of values
   it accepts, not only one of the shared value types. A value outside the list is a compile-time
   `MWL_VALUE` diagnostic naming the alternatives.
+- `key="""..."""` attribute values (item 317): the one form that may span lines, taken exactly
+  as written, so wrapped message, objective and option-label text no longer needs a converter to
+  collapse its whitespace. The `_` gettext marker applies to it as to any other value.
 
 ## [0.7.9] - 2026-09-12
 

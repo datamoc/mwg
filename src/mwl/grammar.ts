@@ -205,6 +205,13 @@ export function parse(source: string, file = '<mwl>'): MwlNode[] {
 		const attribute = /^([A-Za-z_][\w-]*)\s*=\s*(.*)$/.exec(line);
 		if (attribute && stack.length) {
 			const node = stack.at(-1)!;
+			const block = readBlockValue(attribute[2], location, lines, lineIndex);
+			if (block) {
+				node.attributes[attribute[1]] = block.text;
+				if (block.gettext) node.gettext.push(attribute[1]);
+				lineIndex += block.extraLines;
+				continue;
+			}
 			if (isGettext(attribute[2])) node.gettext.push(attribute[1]);
 			node.attributes[attribute[1]] = parseValue(attribute[2], location, raw);
 			continue;
@@ -221,6 +228,40 @@ export function parse(source: string, file = '<mwl>'): MwlNode[] {
 		throw new MwlSyntaxError({ code: 'MWL_TAG', message: `unclosed tag ${node.tag}`, location: node.location });
 	}
 	return roots;
+}
+
+/**
+ * Reads the `"""..."""` value form, the one that may span lines. Its text is exactly what sits
+ * between the delimiters, so wrapped message text survives a round trip; a `"""` block may
+ * carry the `_` gettext marker like any other value. Returns null for every other form, which
+ * `parseValue` handles on the one line it was given.
+ */
+function readBlockValue(
+	raw: string,
+	location: MwlLocation,
+	lines: readonly string[],
+	from: number,
+): { readonly text: string; readonly gettext: boolean; readonly extraLines: number } | null {
+	const gettext = /^_\s*"""/.test(raw);
+	const source = gettext ? raw.replace(/^_\s*/, '') : raw;
+	if (!source.startsWith('"""')) return null;
+	let text = source.slice(3);
+	let index = from;
+	let end = text.indexOf('"""');
+	while (end < 0) {
+		index++;
+		if (index >= lines.length)
+			throw new MwlSyntaxError({ code: 'MWL_STRING', message: 'unterminated """ value', location });
+		text += `\n${lines[index]}`;
+		end = text.indexOf('"""');
+	}
+	if (text.slice(end + 3).trim() !== '')
+		throw new MwlSyntaxError({
+			code: 'MWL_STRING',
+			message: 'unexpected text after a """ value',
+			location,
+		});
+	return { text: text.slice(0, end), gettext, extraLines: index - from };
 }
 
 /**

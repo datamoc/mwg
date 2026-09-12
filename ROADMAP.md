@@ -4454,14 +4454,26 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      primitive: an attribute type may now be the closed list of values it accepts
      (`MwlAttributeType`), not only one of the shared value types. Seven tests in
      `tests/mwl-variables.test.ts`.
-317. [Medium] An attribute value cannot contain a newline, and is trimmed (the same report).
+317. ~~[Medium] An attribute value cannot contain a newline, and is trimmed (the same report).
      `grammar.ts`'s `parse()` splits the source on `\n` and matches
      `^([A-Za-z_][\w-]*)\s*=\s*(.*)$` per line, and `parseValue()` trims and only unquotes `"..."`.
      A value therefore cannot span lines and cannot keep leading or trailing whitespace, while
      Wesnoth message, objective and option-label text routinely wraps. The port's workaround
      collapses whitespace (`oneLineValue`), which silently changes the content's value, the exact
      class of bug item 316 is about. Add a multi-line value form (`"""..."""`, or `\n` escapes
-     honoured inside quotes) or a child node for a long value.
+     honoured inside quotes) or a child node for a long value.~~ The `"""..."""` form, taken
+     verbatim. Of the three shapes the item named, this is the one that changes no existing
+     value's meaning: `\n` escapes inside the ordinary quotes would have silently rewritten every
+     quoted value that already contains a backslash, and a child node has no place to live in a
+     grammar where every line is a tag or an attribute. Verbatim also means no trimming rule to
+     learn: the text is exactly what sits between the delimiters, so a value that wants no
+     leading newline starts on the opening line, which is what a converter emits anyway. The
+     `_` gettext marker works on it like any other value, which matters because the wrapped text
+     this exists for is the translatable kind. `readBlockValue` consumes the block's lines and
+     advances the parser's line index, so a node after a block keeps its own source location.
+     Five tests in `tests/mwl.test.ts`. One honest limit, kept rather than special-cased: a line
+     starting with `#` is a comment everywhere, so a block cannot carry one at the start of a
+     line (mid-line is fine, and `preprocess` is where that rule lives).~~
 318. [Medium] `[set_variable]` has no computed-path spelling (the same report). `schema.ts:409`
      types it `set_variable: { attributes: { name: 'id', target: 'id', value: 'string' } }`, and
      `id` means Wesnoth's dynamic names (`zombies[$i].allow_recruit`, `this_item.name`, `$var`)

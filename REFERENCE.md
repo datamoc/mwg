@@ -1022,6 +1022,12 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   is just that id.
 - `readAttributes` / `readChildren` - shared typed readers for compiled nodes. They coerce
   scalars and lists and return source-located diagnostics instead of silently guessing.
+- A `key="""..."""` value (item 317) is the one attribute form that may span lines, and its text
+  is exactly what sits between the delimiters, so wrapped message, objective and option-label
+  text survives a conversion without the whitespace-collapsing workaround it otherwise needs. It
+  carries the `_` gettext marker like any other value; `text="""done"""` is the same form on one
+  line. (A line starting with `#` is still a comment wherever it appears, so a block cannot
+  carry one at the start of a line.)
 - MWL tables use `[table] columns=name:type|...` with typed `[row]` attributes. The compiler
   validates column shape and values, and `contentCatalog(game).tables` exposes typed rows.
   Supported column types match `core.parseCSV`: `string`, `number`, `boolean`, `list`, and

@@ -261,6 +261,37 @@ test('MWL keeps leading-underscore values such as aliasof=_bas intact', () => {
 	assert.deepEqual(nodes[0].gettext, []);
 });
 
+test('a """ value spans lines and keeps its text exactly as written', () => {
+	const nodes = parse('[message]\ntext="""Line one\n  Line two\n"""\n[/message]');
+	assert.equal(nodes[0].attributes.text, 'Line one\n  Line two\n');
+});
+
+test('a """ value may carry the gettext marker and reach the message catalog', () => {
+	const nodes = parse('[message]\ntext=_ """Hold the line,\nthen advance."""\n[/message]');
+	assert.equal(nodes[0].attributes.text, 'Hold the line,\nthen advance.');
+	assert.deepEqual(nodes[0].gettext, ['text']);
+	const compiled = compile('[game]\nschema=0.1\ntitle=_ """Hold the line,\nthen advance."""\n[/game]');
+	assert.deepEqual(compiled.messages, ['Hold the line,\nthen advance.']);
+});
+
+test('a single-line """ value needs no closing line of its own', () => {
+	const nodes = parse('[message]\ntext="""done"""\n[/message]');
+	assert.equal(nodes[0].attributes.text, 'done');
+});
+
+test('a node after a """ value keeps its own source location', () => {
+	const nodes = parse('[game]\ntitle="""one\ntwo"""\n[unit_type]\nid=hero\n[/unit_type]\n[/game]');
+	assert.equal(nodes[0].children[0].location.line, 4);
+});
+
+test('a """ value that is unterminated or followed by text is a syntax error', () => {
+	assert.throws(() => parse('[message]\ntext="""never closed\n[/message]'), /unterminated """ value/);
+	assert.throws(
+		() => parse('[message]\ntext="""closed""" and more\n[/message]'),
+		/unexpected text after a """ value/,
+	);
+});
+
 test('MWL collects, validates, and declares hook references', () => {
 	const game = compile(
 		'[game]\nschema=0.1\n[event]\nid=e\non=start\n[hook]\nname=command:haunted_ruin\nintensity=3\n[/hook]\n[/event]\n[objectives]\n[victory]\nside=1\ncondition=hook\nhook=predicate:relic_recovered\n[/victory]\n[/objectives]\n[/game]',
