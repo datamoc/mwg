@@ -1422,6 +1422,10 @@ build instead.
 
     export declare function parsePaletteLists(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
 
+### `parseRotateMode` (function)
+
+    export declare function parseRotateMode(argument: string | undefined): RotateMode;
+
 ### `ParticleEmitter` (class)
 
     export declare class ParticleEmitter extends Container {
@@ -1761,7 +1765,7 @@ build instead.
 
 ### `rotatePixels` (function)
 
-    export declare function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number): RotatedPixels;
+    export declare function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number, mode?: RotateMode): RotatedPixels;
 
 ### `Rpg` (namespace)
 
@@ -5363,7 +5367,8 @@ build instead.
     export interface MessageParams {
 
         count?: number;
-        [token: string]: string | number | undefined;
+
+        [token: string]: string | number | MessageParams | undefined;
     }
 
 ### `messageText` (function)
@@ -7745,6 +7750,10 @@ build instead.
 
     export declare function parsePaletteLists(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
 
+### `parseRotateMode` (function)
+
+    export declare function parseRotateMode(argument: string | undefined): RotateMode;
+
 ### `ParticleEmitter` (class)
 
     export declare class ParticleEmitter extends Container {
@@ -7909,7 +7918,7 @@ build instead.
 
 ### `rotatePixels` (function)
 
-    export declare function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number): RotatedPixels;
+    export declare function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number, mode?: RotateMode): RotatedPixels;
 
 ### `Scene2D` (class)
 
@@ -9218,6 +9227,10 @@ build instead.
 
     export declare function parsePaletteLists(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
 
+### `parseRotateMode` (function)
+
+    export declare function parseRotateMode(argument: string | undefined): RotateMode;
+
 ### `ParticleEmitter` (class)
 
     export declare class ParticleEmitter extends Container {
@@ -9319,7 +9332,7 @@ build instead.
 
 ### `rotatePixels` (function)
 
-    export declare function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number): RotatedPixels;
+    export declare function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number, mode?: RotateMode): RotatedPixels;
 
 ### `ScreenEffects` (class)
 

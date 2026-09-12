@@ -5,18 +5,18 @@
 	"releaseDate": "2026-09-12",
 	"source": {
 		"files": 279,
-		"lines": 44149,
+		"lines": 44336,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 79,
-				"lines": 15167
+				"lines": 15309
 			},
 			{
 				"name": "mwl",
 				"files": 21,
-				"lines": 5492
+				"lines": 5493
 			},
 			{
 				"name": "core",
@@ -41,7 +41,7 @@
 			{
 				"name": "i18n",
 				"files": 10,
-				"lines": 1835
+				"lines": 1879
 			},
 			{
 				"name": "rpg",
@@ -87,8 +87,8 @@
 	},
 	"tests": {
 		"files": 228,
-		"lines": 29998,
-		"cases": 2162
+		"lines": 30208,
+		"cases": 2174
 	},
 	"tools": {
 		"files": 37,
@@ -122,8 +122,8 @@
 		]
 	},
 	"roadmap": {
-		"items": 326,
-		"completed": 325,
+		"items": 330,
+		"completed": 329,
 		"open": 1,
 		"percent": 100
 	},
@@ -131,9 +131,9 @@
 		"declarationFiles": 278
 	},
 	"bundle": {
-		"globalRaw": 1018665,
-		"globalGzip": 302286,
-		"distRaw": 3281902
+		"globalRaw": 1019613,
+		"globalGzip": 302668,
+		"distRaw": 3295268
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

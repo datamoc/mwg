@@ -243,7 +243,14 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   core), `~BLEND` (`blendPixels`, an exact per-pixel lerp towards a colour, baked once - not the
   runtime `ColorMatrixFilter` approximation `blendMatrix` still offers on its own) and `~ROTATE`
   (`rotatePixels`, which rotates the source pixels and expands the surface, unlike a sprite's own
-  `rotation`). `spriteColorMatrix(sprite, matrix)` (item 309) attaches any of the matrix
+  `rotation`; `~ROTATE(degrees)` samples nearest-neighbour, exact at quarter turns, and
+  `~ROTATE(degrees,linear)` blends the four pixels around each sample point instead - what a
+  non-square angle onto a hex grid needs. `parseRotateMode` is the second argument's parser, and
+  both modes sample premultiplied so a transparent neighbour contributes coverage and never
+  colour. It is bake-time work: measured, `linear` costs 2.4 to 4.2 times `nearest` per image -
+  0.45 ms against 0.12 ms for a 64x64 tile at 60 degrees, 3.6 ms against 1.5 ms at 256x256 - for a
+  visibly smooth edge, once, while the texture is built).
+  `spriteColorMatrix(sprite, matrix)` (item 309) attaches any of the matrix
   builders above (or `blendMatrix`, or a game's own) to a sprite as a `ColorMatrixFilter`, the
   one remaining case that needed a direct `pixi.js` import just to construct that one class.
   `applyAllImageModifiers(sprite, parsed, probe?, scale?)` (item 310) is the two-step recipe
@@ -255,12 +262,16 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   `PaletteRange`/`PaletteRemapMode` - palette-remap recolouring (team colour by range, not
   multiply/add): `remapPixels` is the renderer-free core, `'exact'` by default (a pixel is
   repainted only on an exact match to a `from` colour, correct for a short specific list like
-  `~RC`/`~PAL`) or `'nearest'` (every opaque pixel repainted by closest match, correct for a
-  `paletteRangeMapping` gradient meant to cover the whole reference palette - the wrong mode for
-  a sparse list silently recolours the entire image). `paletteRangeMapping` builds a
-  `[color_range]`-shaped mapping (a reference palette's own light-to-dark order placed along a
-  `min -> mid -> max` gradient), and `recolorTexture` is the canvas-backed wrapper, built on the
-  shared `withTextureCanvas` helper `applyTextureModifiers` above also uses.
+  `~RC`/`~PAL` and for a `paletteRangeMapping` over a reference palette, where the pixels outside
+  it are the ones the art deliberately left alone) or `'nearest'` (every opaque pixel repainted by
+  closest match, which a palette covering the whole image wants - the wrong mode for a sparse
+  list, where it silently recolours the entire image). `paletteRangeMapping` builds a
+  `[color_range]`-shaped mapping: the reference palette's *first* colour is its anchor and becomes
+  `mid`, and every other entry is shaded by its own brightness, darker towards `min` and brighter
+  towards `max`, with the floored average and truncated blend a Wesnoth `[color_range]` team
+  colour is defined in, so a range's shades come out byte for byte as the engine's own. The
+  reference after its anchor needs no order. `recolorTexture` is the canvas-backed wrapper, built
+  on the shared `withTextureCanvas` helper `applyTextureModifiers` above also uses.
 - `AnimatedSprite`/`Animation` - frame-sequence sprite animation. A frame may carry its own
   duration (Wesnoth's `image=a.png:120,b.png:80`), and an animation may start partway into itself
   or after a delay (`startTime`, which is what `start_time=-450` on an attack means: begin four and
@@ -931,7 +942,9 @@ Message tables, plurals, interpolation, and direction - pure logic, no Pixi depe
 - `setBase`/`setActive`/`locale`/`direction` - the active and fallback language, and the
   direction `ui`'s `Theme.direction` reads from; `reset` clears both back to unset.
 - `t`/`tRaw`/`formatSpec`/`tokenizeMessage`/`diffPlaceholders`/`MessageParams` - resolves a key, selecting a plural form via `Intl.PluralRules` and
-  interpolating `{token}`s; falls back to the base language, then to the raw key. Placeholders
+  interpolating `{token}`s, including dotted paths that walk into nested params
+  (`{side.stored.hitpoints}` against `{ side: { stored: { hitpoints: 12 } } }`); falls back to the
+  base language, then to the raw key. Placeholders
   also take Python f-string-style specs (`{dmg:03d}`, `{hp:.1%}`, `{name:>12}`), `!s`/`!r`/`!a`
   conversions and `=` debugging, resolved through `formatSpec` (verified case by case against
   CPython; an ill-fitting spec stays untouched rather than throwing). `tokenizeMessage` is
@@ -957,8 +970,9 @@ Message tables, plurals, interpolation, and direction - pure logic, no Pixi depe
   `Catalog`/`t()` surface, with variables, exact and plural variants.
 - `parsePo`/`PoOptions` - parses a gettext `.po` file into the same `Catalog`/`t()` surface:
   `msgid`/`msgstr`, `msgctxt`, `msgid_plural` with `msgstr[N]` mapped onto the locale's CLDR
-  categories, the header entry dropped, untranslated entries left out for base fallback, and
-  a non-default gettext `domain` prefixing keys.
+  categories, the header entry dropped, untranslated entries left out for base fallback - which
+  includes a `#, fuzzy` one, the way gettext's own tools treat it - and a non-default gettext
+  `domain` prefixing keys.
 - `SemanticMessage`/`MessageChannel`/`MessageFormatter`/`createCatalogFormatter` - a typed
   `{ type, params }` communication intent rendered differently per channel (log/compact/
   accessibility/debug/audio) from the same underlying catalog: `createCatalogFormatter` looks up

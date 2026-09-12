@@ -7,6 +7,52 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `MwlValue` is exported from the `mwl` barrel, alongside `MwlWorld`: the recursive
+  `string | number | boolean | MwlValue[] | { [key: string]: MwlValue }` that `MwlWorld.variables`
+  and a hook's own attributes already used, now nameable by a game's own code instead of only
+  inferred.
+- `MessageParams` takes nested records, and a `{token}` may be a dotted path into them (item 329):
+  `t('hit', { side })` resolves `{side.stored.hitpoints}` by walking the params it was handed, so a
+  game whose scenario state is a tree passes the tree rather than flattening it into names first.
+  A path that names nothing - a step missing, an object where a value belongs, a path past a
+  scalar - leaves the placeholder as written, and an exact entry still wins over the walk, so a
+  literal dotted key resolves as it always did. The placeholder grammar (`tokenizeMessage`, shared
+  with the editor's `diffPlaceholders`) is what widened: a dotted token carries its `:spec` and
+  `!conv` like any other.
+- `~ROTATE(degrees, linear)` and `rotatePixels`'s `RotateMode` (item 330): a rotation at an angle
+  that is not a quarter turn can now interpolate instead of sampling nearest-neighbour, which is
+  what keeps a tile rotated onto a hex grid from coming out as a staircase. `~ROTATE(45)` and
+  `rotatePixels(..., 'nearest')` are the default and are unchanged, still exact at multiples of 90
+  degrees; `'linear'` blends the four pixels around each sample point, premultiplied by alpha, so a
+  transparent neighbour contributes coverage and never colour - a straight RGBA blend would fringe
+  every cut-out sprite with whatever RGB its transparent pixels happen to hold, which is the one
+  way this can look worse than the fast path rather than better. Both modes are bake-time work, and
+  measured: `linear` costs 2.4 to 4.2 times `nearest` per image (0.45 ms against 0.12 ms for a
+  64x64 tile at 60 degrees, 3.6 ms against 1.5 ms at 256x256), once, while the texture is built.
+  `parseRotateMode` is the argument's parser, exported beside the other path parsers so a game
+  rendering `~ROTATE` through its own canvas pipeline reads the same names.
+
+### Changed
+
+- `parsePo` treats a `#, fuzzy` entry as untranslated (the Wesnoth port's non-adoption review),
+  which is what gettext's own tools make of it: the key is left out and the base language wins,
+  rather than shipping a translation a translator has not signed off on. Flags were previously
+  dropped on the floor along with comments; every other flag still changes nothing.
+- `paletteRangeMapping` shades a reference palette by brightness rather than by position (item 327),
+  which is what a Wesnoth `[color_range]` team colour is defined by: the reference's first colour
+  is its anchor and becomes `mid`, every other entry blends towards `min` or `max` in proportion to
+  how its own channel average compares with the anchor's, and the arithmetic is the engine's own -
+  a floored average, a truncated blend, no rounding - so the shades come out byte for byte as
+  Wesnoth's `recolor_palette` gives them. A list no longer has to be sorted lightest-first for the
+  mapping to make sense, only to keep its anchor first, and the mode it pairs with is `'exact'`:
+  the mapping covers the reference exactly, so the pixels outside it (anti-aliased edges, outlines)
+  stay as the artists painted them, where the previous documentation pointed at `'nearest'` for it
+  and would have repainted the whole image. Verified against the port's own transliteration of the
+  engine over 699,996 sampled colours across five ranges, including the all-black and all-white
+  anchors, with no mismatch.
+
 ## [0.8.0] - 2026-09-12
 
 ### Added

@@ -4664,6 +4664,81 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      now take no frame size at all, which is what a rect-only sheet needs, leaving no grid, a `count`
      of 0, and every frame one that was declared. Five tests in
      `tests/sprite-sheet-rects.test.ts`.
+327. ~~[Medium] `paletteRangeMapping` is generic where a `[color_range]` team colour is not, so the
+     Wesnoth port cannot adopt it and keeps its own (`recolor_palette`) instead (the port's
+     adoption report). The builder places a reference palette's entries along `min -> mid -> max`
+     by their *position* in the array, which assumes the caller sorted them lightest-first and
+     ignores the colours themselves; Wesnoth's `recolor_palette` anchors on *value* - the first
+     reference colour's channel average is the reference point, every other entry blending towards
+     `min` or `max` by how its own average compares - which is what makes a range's shades match
+     the engine's byte for byte and the reference's own order irrelevant. The port therefore
+     hand-writes the mapping (`src/simulation/color-range.ts`, transliterated from
+     `color_range.cpp:29-62`, locked in `tests/color-range.test.ts`) and feeds MWG only the
+     `remapPixels` half, which is the shape the framework already got right. The arithmetic is the
+     part that cannot be approximated: an integer (floored) average, a truncating blend, and the
+     engine's own black-and-white anchor cases, or a recoloured sprite is subtly the wrong shade
+     everywhere, at every zoom level, in every ranged unit the port draws.~~
+     Replaced in place rather than added beside it, since the old behaviour was the thing nothing
+     could adopt: the first reference colour is now the anchor and becomes `mid`, every other entry
+     is shaded by its own floored average, and the blend truncates, so the shades are the engine's
+     own. Two branches rather than the engine's three: its extra `anchor !== 255` guard and its
+     `return mid` case cannot be reached once a black anchor is short-circuited, and the per-channel
+     clamp is unreachable too, since a ratio never leaves 0..1 between two channels - verified by
+     comparing against the port's own transliteration over 699,996 sampled colours across five
+     ranges, the degenerate anchors included, with no mismatch. The mode the mapping pairs with is
+     documented as `'exact'` now, which is what the port uses and what the reference palette is for;
+     the old text pointed at `'nearest'` for it, which would repaint an entire sprite. Six tests in
+     `tests/palette-remap.test.ts`, covering the anchor, the shading, order-independence after the
+     anchor, the floored average and the truncated blend against hand-computed values, both
+     degenerate anchors, and the `'exact'` pairing end to end. The port can now delete
+     `recolorPalette`/`paletteMapping` and keep only its own WML parsing.
+328. ~~[Low] A gettext `.po` catalogue reader for `mwg/i18n` (the Wesnoth port's non-adoption review,
+     recorded 2026-09-12, struck the same day as a recording error).~~ `parsePo` already did this, and
+     had since item 250: `msgid`/`msgstr`/`msgctxt`, `msgid_plural` with `msgstr[N]` mapped onto the
+     locale's CLDR categories, the header dropped, untranslated entries left out, domains. The
+     review's sentence behind the recording - "the port keeps its own parser" - is about the port's
+     own pipeline, not a missing reader, and writing it down as a gap without reading `src/i18n/`
+     first is the mistake this note exists to prevent repeating. What the comparison did turn up is
+     smaller and real, and is now fixed: a `#, fuzzy` entry is treated as untranslated, as gettext's
+     own tools have it, where it used to be shipped.
+329. ~~[Low] Markup interpolation reads a flat scalar table, so nested state has to be flattened by
+     hand first (the same review). `MessageParams` was `[token: string]: string | number | undefined`
+     - `{turns}` and `{name}`, nothing like `{side.stored.hitpoints}` - so a game whose scenario
+     state is a tree builds a flat record before calling `t`, one string step between the state and
+     the text, and one a typo fails at silently (an unresolved token renders as itself). Either
+     shape would lift it: a resolver (`params: (token: string) => string | number | undefined`) or
+     a dotted-path walk over an object, the second needing the framework to know how to walk a path
+     it does not own.~~ Landed as the dotted-path walk, the shape that needs no new argument in `t()`'s
+     signature: `MessageParams` takes nested records, `{side.stored.hitpoints}` walks them, an exact
+     entry still wins over the walk (a literal dotted key resolves as it always did), a path that
+     misses a step or lands on an object leaves the placeholder as written rather than rendering
+     `[object Object]`, and `:spec`/`!conv` work on a dotted token like any other. The grammar is
+     what widened - `tokenizeMessage`'s own placeholder pattern - so `diffPlaceholders` and the
+     editor agree with the runtime about what a token is. Four tests in `tests/i18n.test.ts`.
+330. ~~[Medium] `~ROTATE` has one sampling mode, and the angle a hex grid needs is not a quarter
+     turn (requested directly, 2026-09-12). `rotatePixels` took a single closest source pixel
+     (`Math.round` on the inverse-rotated coordinate), which is exact at multiples of 90 degrees and
+     a staircase everywhere else - and the angles that are not multiples of 90 are exactly the ones
+     a hex-grid game rotates terrain by, so the fast path was the only path for the case that needs
+     the other one. Nothing expressed the trade either way: no way to ask for a smooth edge, and no
+     mode name for a game to reason about.~~
+     `~ROTATE(degrees, linear)` and `rotatePixels(..., 'nearest' | 'linear')`, with `'nearest'` the
+     default so every existing path is byte-identical, and `parseRotateMode` exported beside the
+     other path parsers (`imageModifier`, `parseColorPairs`, `parsePaletteLists`) so a game
+     rendering `~ROTATE` through its own canvas pipeline resolves the same two words the same way.
+     `'linear'` blends the four pixels around each sample point, premultiplied by alpha and divided
+     back out at the end: a straight RGBA blend would pull the arbitrary RGB of a fully transparent
+     neighbour into the visible edge and fringe every cut-out sprite, which would have made the
+     quality mode worse than the fast one on exactly the art it is for - one test asserts a pixel
+     beside a transparent *green* one only ever comes out white. Taps clamp to the source, so a
+     sample up to half a pixel outside it still reads the border pixel, and a sample with no overlap
+     leaves the destination transparent, which keeps a rotated tile's corners empty. A quarter turn
+     takes the integer path in `'linear'` too, since every sample then lands on a pixel centre and
+     there is nothing to blend - asserted against `'nearest'` at 90, 180 and 270 degrees.
+     Both modes are bake-time work, which is what makes the choice a load-time one rather than a
+     frame-time one; measured, `linear` costs 2.4 to 4.2 times `nearest` per image (0.45 ms against
+     0.12 ms for a 64x64 tile at 60 degrees, 3.6 ms against 1.5 ms at 256x256, on this machine).
+     Five tests in `tests/image-modifiers.test.ts`, one of them the parser's own default.
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list
@@ -4678,13 +4753,37 @@ standing intentions.
 - **Item 41: board-game semantics beyond the generic piece.** `BoardGrid`/`BoardPiece`
   shipped the primitive shape. What "owned", "captured" and "promoted" should mean is
   tied to whichever board game item 30 eventually picks, so it un-parks together with 28/30.
+- **The Wesnoth port's non-adoption review (2026-09-12).** The counterpart to the reports that
+  became items 316-321 and 327: a walk of the surfaces MWG offers, naming the ones the port
+  deliberately keeps local and why. Nothing in it is a request, and the reasons live here so a
+  later session does not have to re-derive them from the port's own code.
+  - **`~CHAN`/`~ROTATE` and terrain graphics: MWG's documented scope, not a defect.** `~ROTATE`
+    here works on the source pixels (exact at 90-degree multiples), and `~CHAN` is a
+    channel-source swap rather than Wesnoth's per-channel expressions - the gap item 255 already
+    recorded as "parked if a port needs it". This port needs neither, and keeps its own.
+  - **`parsePo`, and markup over its own rich-text pipeline.** The port parses `.po` itself and
+    pre-substitutes dotted variables *before* rendering. The second half was real and shipped as item
+    329; the first was recorded as item 328 in error, since `parsePo` had existed since item 250 -
+    see that item's own note for what the mistaken recording cost. Nothing here waits on the
+    framework any more.
+  - **`assets.load`'s `optional`/`onMissing` does not fit this port's lookup.** Its own `texture()`
+    try/catch with an `EMPTY` fallback already covers a missing frame, and it resolves over a
+    data-URI map rather than the path aliases the loader walks.
+  - **Generic or no call-site yet: `AttackPreview`/`UnitSelector`/`Whiteboard`/`StoryScreen`/
+    `SpriteAttachment`/`LightningArc`/`Camera` rotation/`TerrainGraphicsLayer`/`Projectile`
+    animation/`TabbedList`/`Slider`/`CampaignSave`/`EventPresentation`/`SyncGuard`/`SideTurns`/
+    `MapFile`/`coneSector`.** The port keeps its Wesnoth-specific versions. `coneSector` is worth
+    naming twice: it answers the *Pixel Dungeon* port's P13 (item 322), so this port having no
+    call-site for it is the expected result of two ports asking for different things.
 
 ### 1.0 exit checklist
 
 The definition of done for 1.0. Each line is a check to run, not a feature to build. Every numbered
 item above has shipped, the Wesnoth-port cluster (247 and up, 311-313 last, plus 314 found
 reconciling it) included - all but item 320, which is the port's own side of a disagreement the
-framework only invited (319 shipped the framework half), so it is not a framework blocker: the
+framework only invited (319 shipped the framework half), and the [Low] items the ports' reviews
+surfaced (327, 329 and 330) are shipped rather than left open, so none of them is a framework
+blocker: the
 framework's 1.0 is what the ports build against, and both of them being complete is the line below
 that says so rather than a numbered item of its own.
 
