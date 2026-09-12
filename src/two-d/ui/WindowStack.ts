@@ -12,6 +12,21 @@ import { theme, themeChanged } from './theme.ts';
  * responding until the confirmation is answered, without either window knowing about the
  * other.
  *
+ * A scene with its own keyboard handling has to say which comes first, because registration
+ * order decides nothing here: `Input.onAction` offers an action to the most recently
+ * registered listener first, and the stack registers in its constructor, so a scene that
+ * builds its stack in `create()` and then registers a handler is asked *before* the windows
+ * are. Returning true for a key a window needed takes it away from that window. Chain through
+ * `handleAction` instead, and the windows keep the priority they are supposed to have:
+ *
+ * ```ts
+ * Input.onAction.add((action) => stack.handleAction(action) || myOwnHandling(action));
+ * ```
+ *
+ * A scene that does not chain must return false for every key it did not consume, and check
+ * `blocksWorld` itself before acting on one, since an open modal window is not otherwise
+ * visible from outside.
+ *
  * Below a modal window sits a dimming layer, which is both a visual cue and a hint that
  * the world underneath is not listening.
  */
@@ -110,8 +125,14 @@ export class WindowStack extends Container {
 			.fill({ color: t.color.overlay, alpha: t.overlayAlpha });
 	}
 
-	/** @returns true when a window consumed the action */
-	private handleAction(action: Action): boolean {
+	/**
+	 * Offers an action to the top window, which is the routing the stack does for itself:
+	 * exposed so a scene can put the windows ahead of its own handling rather than racing them
+	 * for it (see the class doc for the order that race is decided by).
+	 *
+	 * @returns true when the top window consumed the action
+	 */
+	handleAction(action: Action): boolean {
 		return this.top?.handleAction(action) ?? false;
 	}
 
