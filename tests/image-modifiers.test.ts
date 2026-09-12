@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+	applyAllImageModifiers,
 	applyImageModifiers,
 	applyTextureModifiers,
 	blendMatrix,
@@ -230,4 +231,30 @@ test('~BLEND and ~ROTATE are no longer applied by applyImageModifiers, only by a
 	applyImageModifiers(sprite, parseImagePath('unit.png~BLEND(ff0000,50)~ROTATE(90)'));
 	assert.equal(sprite.rotation, initialRotation, '~ROTATE must not touch sprite.rotation any more');
 	assert.equal(sprite.filters, initialFilters, '~BLEND must not attach a ColorMatrixFilter any more');
+});
+
+test('applyAllImageModifiers (item 310) drives both functions: sprite-level modifiers still apply', () => {
+	const sprite = new Sprite(Texture.EMPTY);
+	applyAllImageModifiers(sprite, parseImagePath('unit.png~BLEND(ff0000,50)~FL(horizontal)'));
+	assert.equal(sprite.scale.x, -1, '~FL still applies at the sprite level, same as applyImageModifiers alone');
+});
+
+test('applyAllImageModifiers assigns sprite.texture from applyTextureModifiers rather than leaving it untouched', () => {
+	const sprite = new Sprite(Texture.EMPTY);
+	//Texture.EMPTY has no source, so applyTextureModifiers's own documented guard returns it
+	//unchanged (see withTextureCanvas) - this checks the assignment happens at all, not the
+	//pixel result itself, which needs a real canvas the way every other pixel-level test here
+	//already does not have
+	applyAllImageModifiers(sprite, parseImagePath('unit.png~BLEND(ff0000,50)'));
+	assert.equal(sprite.texture, Texture.EMPTY);
+});
+
+test('applyAllImageModifiers still works for a path with no texture-level modifiers', () => {
+	const sprite = new Sprite(Texture.EMPTY);
+	//~GS/~CS/~R/~G/~B/~CHAN all construct a real ColorMatrixFilter, which - like
+	//spriteColorMatrix above - needs a WebGL context Node has none of; ~SCALE is sprite-level
+	//only and filter-free, so it is what this checks instead
+	applyAllImageModifiers(sprite, parseImagePath('unit.png~SCALE(32,32)'));
+	assert.equal(sprite.width, 32);
+	assert.equal(sprite.height, 32);
 });

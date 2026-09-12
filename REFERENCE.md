@@ -246,6 +246,11 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   `rotation`). `spriteColorMatrix(sprite, matrix)` (item 309) attaches any of the matrix
   builders above (or `blendMatrix`, or a game's own) to a sprite as a `ColorMatrixFilter`, the
   one remaining case that needed a direct `pixi.js` import just to construct that one class.
+  `applyAllImageModifiers(sprite, parsed, probe?, scale?)` (item 310) is the two-step recipe
+  `applyImageModifiers`'s own doc comment names, run for a caller in one call: it bakes
+  `applyTextureModifiers`'s exact pixel-level result into `sprite.texture` first, then applies
+  the sprite-property/filter modifiers on top, so a `~BLEND`/`~ROTATE` path never silently gets
+  `applyImageModifiers`'s no-op for them.
 - `remapPixels`/`paletteRangeMapping`/`recolorTexture`/`withTextureCanvas`/`PaletteMapping`/
   `PaletteRange`/`PaletteRemapMode` - palette-remap recolouring (team colour by range, not
   multiply/add): `remapPixels` is the renderer-free core, `'exact'` by default (a pixel is

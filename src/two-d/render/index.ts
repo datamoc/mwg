@@ -3,6 +3,7 @@ export type { HasColorAdd } from './ColorTransformBatcher.ts';
 
 export { TintedSprite, registerColorTransform } from './TintedSprite.ts';
 export {
+	applyAllImageModifiers,
 	applyImageModifiers,
 	applyTextureModifiers,
 	blendMatrix,

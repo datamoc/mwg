@@ -305,6 +305,36 @@ export function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, sca
 	}
 }
 
+/**
+ * The two-step recipe `applyImageModifiers`'s own doc comment names but leaves a caller to
+ * drive by hand (item 310): bakes `applyTextureModifiers`'s exact pixel-level result
+ * (`~RC`/`~PAL`/`~BLIT`/`~MASK`/`~BLEND`/`~ROTATE`) into `sprite.texture` first, then applies
+ * the sprite-property/filter modifiers (`~FL`/`~SCALE`/`~GS`/`~CS`/`~R`/`~G`/`~B`/`~O`/`~CHAN`)
+ * on top - the same split those two functions already have, run together so a caller with a
+ * `~BLEND`/`~ROTATE` path never gets `applyImageModifiers`'s silent no-op for them. `probe` is
+ * `applyTextureModifiers`'s own, needed only when the path uses `~BLIT`/`~MASK`/`~RC`/`~PAL`
+ * with a named colour.
+ *
+ * @example
+ * ```ts
+ * import { Sprite, Texture } from 'pixi.js';
+ * import { applyAllImageModifiers, parseImagePath } from '@datamoc/mw_games/two-d/render';
+ *
+ * const sprite = new Sprite(Texture.EMPTY);
+ * applyAllImageModifiers(sprite, parseImagePath('hero.png~BLEND(ff0000,50%)~FL(horizontal)'));
+ * // sprite.texture carries the exact per-pixel blend; sprite.scale.x is flipped
+ * ```
+ */
+export function applyAllImageModifiers(
+	sprite: Sprite,
+	parsed: ParsedImagePath,
+	probe: ImageTextureProbe = {},
+	scale = 1,
+): void {
+	sprite.texture = applyTextureModifiers(sprite.texture, parsed, probe);
+	applyImageModifiers(sprite, parsed, scale);
+}
+
 /** Make a cropped view without mutating the shared source texture. */
 /**
  * @example

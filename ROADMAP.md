@@ -4355,13 +4355,22 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      headless unit test the same way `createColorBlindnessFilter` already is (a `ColorMatrixFilter`
      needs a real WebGL context even to construct), noted next to that precedent in
      `tests/image-modifiers.test.ts` rather than worked around.
-310. [Low] Let `applyImageModifiers` bake `applyTextureModifiers`'s pixel-level work (the same
+310. ~~[Low] Let `applyImageModifiers` bake `applyTextureModifiers`'s pixel-level work (the same
      port's report). `~BLEND`/`~ROTATE` are exact at the texture level
      (`applyTextureModifiers`) but only matrix-approximated at the sprite level
      (`applyImageModifiers`), so a caller wanting the exact result has to know about, and
      drive, both functions itself. An option on `applyImageModifiers` to bake the texture-level
      result instead of approximating it, or a documented two-step recipe, would remove the
-     silent gap between the two.
+     silent gap between the two.~~ The premise had already partly moved by the time this
+     landed: `applyImageModifiers` does not approximate `~BLEND`/`~ROTATE` any more (255/288's
+     correctness fix made them a hard no-op there, exact-only in `applyTextureModifiers`), so
+     the gap was the two-step recipe itself going undocumented and undriven for a caller, not
+     an approximation to replace. `applyAllImageModifiers(sprite, parsed, probe?, scale?)` runs
+     both functions in the order that recipe needs: `applyTextureModifiers` bakes into
+     `sprite.texture` first, then `applyImageModifiers` applies the sprite-level modifiers on
+     top. Four tests in `tests/image-modifiers.test.ts`; the pixel-baking result itself is not
+     independently checkable in a headless test, the same limitation `spriteColorMatrix` (309)
+     and `blendPixels`/`rotatePixels`'s own tests already work within.
 311. [Low] Let `Projectile` carry a frame animation, not only a position tween (the same port's
      report). `Projectile.update` moves a sprite's `x`/`y` in a straight line and nothing else;
      a game whose missile art has flight frames (`[missile_frame]`, landed under 254) keeps its

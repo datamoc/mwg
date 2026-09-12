@@ -146,6 +146,10 @@ build instead.
         frameIndexAt(seconds: number): number;
     }
 
+### `applyAllImageModifiers` (function)
+
+    export declare function applyAllImageModifiers(sprite: Sprite, parsed: ParsedImagePath, probe?: ImageTextureProbe, scale?: number): void;
+
 ### `applyImageModifiers` (function)
 
     export declare function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, scale?: number): void;
@@ -6720,6 +6724,10 @@ build instead.
         frameIndexAt(seconds: number): number;
     }
 
+### `applyAllImageModifiers` (function)
+
+    export declare function applyAllImageModifiers(sprite: Sprite, parsed: ParsedImagePath, probe?: ImageTextureProbe, scale?: number): void;
+
 ### `applyImageModifiers` (function)
 
     export declare function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, scale?: number): void;
@@ -8800,6 +8808,10 @@ build instead.
 
         frameIndexAt(seconds: number): number;
     }
+
+### `applyAllImageModifiers` (function)
+
+    export declare function applyAllImageModifiers(sprite: Sprite, parsed: ParsedImagePath, probe?: ImageTextureProbe, scale?: number): void;
 
 ### `applyImageModifiers` (function)
 
