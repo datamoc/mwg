@@ -193,13 +193,20 @@ export function skirmishMoves(state: SkirmishState, unitId: string): SkirmishMov
 	const budget = unit.remainingMoves ?? unit.moves;
 	if (unit.owner !== state.turn || budget <= 0) return [];
 
+	//one reachability pass, not one Dijkstra per candidate cell: a cell held by another unit, or
+	//impassable terrain, is never a candidate. The mover is not blocked - it is leaving its own
+	//cell, so its own cell stays free in the pass.
+	const blocked = new Set(
+		state.units.filter((candidate) => candidate.id !== unit.id).map((candidate) => `${candidate.x},${candidate.y}`),
+	);
+	const costs = reachableCosts(state, unit, budget, blocked);
 	const out: SkirmishMove[] = [];
 	for (let y = 0; y < state.height; y++)
 		for (let x = 0; x < state.width; x++) {
-			if ((x === unit.x && y === unit.y) || moveCostOf(state, x, y) === Infinity || occupied(state, x, y))
+			if ((x === unit.x && y === unit.y) || moveCostOf(state, x, y) === Infinity || blocked.has(`${x},${y}`))
 				continue;
-			const cost = pathCost(state, unit, x, y, budget);
-			if (cost !== null) out.push({ unit: unitId, x, y, cost });
+			const cost = costs.get(`${x},${y}`);
+			if (cost !== undefined && cost <= budget) out.push({ unit: unitId, x, y, cost });
 		}
 	return out;
 }
@@ -339,39 +346,81 @@ function moveCostOf(state: SkirmishState, x: number, y: number): number {
 	return terrainOf(state, x, y).moveCost;
 }
 
-//the real weighted walking cost to (targetX, targetY), never exceeding `budget`, or null if it
-//cannot be reached within that budget - Dijkstra over a small grid rather than BFS, since
-//terrain move cost varies per cell unlike board.Tactics' uniform one-step cost
-function pathCost(
+//a binary min-heap, so the Dijkstra below pops the cheapest frontier cell in O(log n) rather
+//than re-sorting the whole frontier every step
+function minHeap<T>(compare: (a: T, b: T) => number): { push(value: T): void; pop(): T | undefined } {
+	const items: T[] = [];
+	const swap = (i: number, j: number): void => {
+		[items[i], items[j]] = [items[j], items[i]];
+	};
+	return {
+		push(value) {
+			items.push(value);
+			let index = items.length - 1;
+			while (index > 0) {
+				const parent = (index - 1) >> 1;
+				if (compare(items[parent], items[index]) <= 0) break;
+				swap(index, parent);
+				index = parent;
+			}
+		},
+		pop() {
+			if (items.length === 0) return undefined;
+			const top = items[0];
+			const last = items.pop()!;
+			if (items.length > 0) {
+				items[0] = last;
+				let index = 0;
+				for (;;) {
+					const left = index * 2 + 1;
+					const right = left + 1;
+					let smallest = index;
+					if (left < items.length && compare(items[left], items[smallest]) < 0) smallest = left;
+					if (right < items.length && compare(items[right], items[smallest]) < 0) smallest = right;
+					if (smallest === index) break;
+					swap(index, smallest);
+					index = smallest;
+				}
+			}
+			return top;
+		},
+	};
+}
+
+//the weighted walking cost to every free cell within `budget`, keyed `"x,y"` - one Dijkstra
+//from the unit rather than one per target, since terrain move cost varies per cell unlike
+//board.Tactics' uniform one-step cost. A blocked cell is never walked through, so it is relaxed
+//from nobody; `skirmishMoves` reaches a blocked target from an adjacent free cell. The moving
+//unit is not blocked (it is leaving its own cell), only the other units are.
+function reachableCosts(
 	state: SkirmishState,
 	unit: SkirmishUnit,
-	targetX: number,
-	targetY: number,
 	budget: number,
-): number | null {
-	const best = new Map<string, number>([[`${unit.x},${unit.y}`, 0]]);
-	const todo = [{ x: unit.x, y: unit.y, cost: 0 }];
-	while (todo.length > 0) {
-		todo.sort((a, b) => a.cost - b.cost);
-		const current = todo.shift()!;
+	blocked: ReadonlySet<string>,
+): Map<string, number> {
+	const costs = new Map<string, number>([[`${unit.x},${unit.y}`, 0]]);
+	const frontier = minHeap<{ x: number; y: number; cost: number }>((a, b) => a.cost - b.cost);
+	frontier.push({ x: unit.x, y: unit.y, cost: 0 });
+	while (true) {
+		const current = frontier.pop();
+		if (current === undefined) break;
 		const key = `${current.x},${current.y}`;
-		if (current.cost > (best.get(key) ?? Infinity)) continue;
-		if (current.x === targetX && current.y === targetY) return current.cost;
-
+		//a lazy heap can hold a stale, costlier copy of a cell already relaxed to a cheaper one;
+		//skipping it (rather than marking the cell settled) keeps a later, cheaper pop valid
+		if (current.cost > (costs.get(key) ?? Infinity)) continue;
 		for (const next of hexNeighbors(current.x, current.y)) {
 			if (!inside(state, next.x, next.y)) continue;
 			const stepCost = moveCostOf(state, next.x, next.y);
 			if (stepCost === Infinity) continue;
-			if (occupied(state, next.x, next.y) && !(next.x === targetX && next.y === targetY)) continue;
-
+			if (blocked.has(`${next.x},${next.y}`)) continue;
 			const total = current.cost + stepCost;
 			if (total > budget) continue;
 			const nextKey = `${next.x},${next.y}`;
-			if (total < (best.get(nextKey) ?? Infinity)) {
-				best.set(nextKey, total);
-				todo.push({ x: next.x, y: next.y, cost: total });
+			if (total < (costs.get(nextKey) ?? Infinity)) {
+				costs.set(nextKey, total);
+				frontier.push({ x: next.x, y: next.y, cost: total });
 			}
 		}
 	}
-	return null;
+	return costs;
 }

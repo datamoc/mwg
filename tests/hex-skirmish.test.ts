@@ -153,3 +153,30 @@ test('ending a turn with no units is a no-op', () => {
 	const state = startingSkirmish(3, 1, TERRAIN);
 	assert.doesNotThrow(() => endSkirmishTurn(state));
 });
+
+test('a cell held by another unit is never offered as a move', () => {
+	const state = startingSkirmish(3, 1, TERRAIN);
+	addSkirmishUnit(state, unit({ id: 'a', owner: 'blue', x: 0, y: 0, moves: 4 }));
+	addSkirmishUnit(state, unit({ id: 'b', owner: 'red', x: 1, y: 0, moves: 4 }));
+
+	const ontoEnemy = skirmishMoves(state, 'a').find((move) => move.x === 1 && move.y === 0);
+	assert.equal(ontoEnemy, undefined, 'combat is a separate action, so a move never lands on a unit');
+
+	const ontoFriend = skirmishMoves(state, 'b').find((move) => move.x === 1 && move.y === 0);
+	assert.equal(ontoFriend, undefined, 'nor on a friendly cell, nor the cell the mover already stands on');
+});
+
+test('[complexity] skirmishMoves stays fast on a map far larger than its movement budget', () => {
+	//one reachability pass, not one Dijkstra per candidate cell: the old per-cell Dijkstra
+	//re-sorted its frontier every step and went quadratic long before this size
+	const state = startingSkirmish(40, 40, TERRAIN);
+	addSkirmishUnit(state, unit({ id: 'a', owner: 'blue', x: 20, y: 20, moves: 8 }));
+
+	const started = Date.now();
+	let moves = 0;
+	for (let i = 0; i < 20; i++) moves = skirmishMoves(state, 'a').length;
+	const elapsed = Date.now() - started;
+
+	assert.ok(moves > 0);
+	assert.ok(elapsed < 2000, `20 skirmishMoves on a 40x40 map took ${elapsed}ms`);
+});

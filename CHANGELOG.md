@@ -60,6 +60,16 @@ the public API may still change between minor versions.
   agree on their shape. One test each in `tests/mwl-dialogue.test.ts`, `tests/mwl-actions.test.ts`
   and `tests/mwl.test.ts`, and the `a[0].b` test now asserts the array.
 
+### Changed
+
+- `board.skirmishMoves` computes every reachable cell from one Dijkstra pass over the map
+  instead of one per candidate cell. The old per-cell search also re-sorted its own frontier
+  every step and `shift()`ed it, so it went quadratic in path length; the pass now uses a
+  binary min-heap. Behaviour is unchanged, verified by a differential run of the old and new
+  implementations over 58 randomised terrain maps. A `[complexity]` test keeps 20 calls on a
+  40x40 map under a ceiling far below the old cost, and a test pins that a cell held by
+  another unit is never offered as a move.
+
 ## [0.7.7] - 2026-09-11
 
 ### Added
