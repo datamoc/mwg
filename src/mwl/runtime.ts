@@ -264,6 +264,10 @@ export function parseTerrain(text: string): {
 	return { width, height, codes, starts };
 }
 
+/** The two reference forms MWL text writes: `$(expression)` and `$name`. */
+const expressionReference = /\$\(([^)]*)\)/g;
+const variableReference = /\$([A-Za-z_][A-Za-z0-9_.]*)/g;
+
 /**
  * Runtime for compiled MWL content. It never parses source text during play.
  *
@@ -864,13 +868,22 @@ export class MwlRuntime {
 			case 'gold':
 				this.addGold(required(node, 'side'), integer(node, 'delta', integer(node, 'amount', 0)));
 				break;
-			case 'set_variable':
+			case 'set_variable': {
+				// `name`/`target` is a path written out, `path` is one content builds from
+				// variables. Only the second goes through expansion: a `$` in `name` is not
+				// a reference today, and reading it as one would change what content means.
+				const computed = node.attributes.path;
 				this.setVariable(
-					node.tag === 'command' ? required(node, 'target') : required(node, 'name'),
+					computed === undefined
+						? node.tag === 'command'
+							? required(node, 'target')
+							: required(node, 'name')
+						: this.expandPath(computed),
 					node.attributes.value ?? '',
 					node.attributes.mode,
 				);
 				break;
+			}
 			case 'while': {
 				const limit = integer(node, 'max_iterations', 1000);
 				if (limit < 1 || limit > 100_000)
@@ -1013,16 +1026,35 @@ export class MwlRuntime {
 	 */
 	private interpolate(text: string): string {
 		const numeric = this.numericVariables();
-		const expanded = text.replace(/\$\(([^)]*)\)/g, (_whole, expression: string) => {
+		const expanded = text.replace(expressionReference, (_whole, expression: string) => {
 			try {
 				return String(evaluateExpression(expression, numeric));
 			} catch {
 				return '';
 			}
 		});
-		return expanded.replace(/\$([A-Za-z_][A-Za-z0-9_.]*)/g, (_whole, name: string) => {
+		return expanded.replace(variableReference, (_whole, name: string) => {
 			const value = this.variableAt(name);
 			return value === undefined || typeof value === 'boolean' ? '' : String(value);
+		});
+	}
+
+	/**
+	 * Expands the references a computed variable path is built from, so content can write
+	 * `zombies[$index].allow_recruit` or `$target` (a variable holding a path) the way an author
+	 * expects. Unlike a message, a reference here may not resolve to nothing: an empty segment
+	 * would name a different variable than the one the content meant.
+	 */
+	private expandPath(path: string): string {
+		const expanded = path.replace(expressionReference, (_whole, expression: string) =>
+			String(evaluateExpression(expression, this.numericVariables())),
+		);
+		return expanded.replace(variableReference, (_whole, name: string) => {
+			const value = this.variableAt(name);
+			if (value === undefined) throw new Error(`MWL variable path reference "$${name}" names no variable`);
+			if (typeof value === 'boolean' || typeof value === 'object')
+				throw new Error(`MWL variable path reference "$${name}" is not a name or number`);
+			return String(value);
 		});
 	}
 

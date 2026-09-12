@@ -5641,6 +5641,8 @@ build instead.
         private showMessage;
 
         private interpolate;
+
+        private expandPath;
         private setVariable;
 
         private numericVariables;

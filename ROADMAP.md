@@ -4474,12 +4474,26 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      Five tests in `tests/mwl.test.ts`. One honest limit, kept rather than special-cased: a line
      starting with `#` is a comment everywhere, so a block cannot carry one at the start of a
      line (mid-line is fine, and `preprocess` is where that rule lives).~~
-318. [Medium] `[set_variable]` has no computed-path spelling (the same report). `schema.ts:409`
+318. ~~[Medium] `[set_variable]` has no computed-path spelling (the same report). `schema.ts:409`
      types it `set_variable: { attributes: { name: 'id', target: 'id', value: 'string' } }`, and
      `id` means Wesnoth's dynamic names (`zombies[$i].allow_recruit`, `this_item.name`, `$var`)
      have no MWL form, so they must become hooks. The runtime already resolves dotted paths and
      `[n]` indices internally (`variablePathParts`), so this is mostly surface area: add a `path`
-     attribute typed `string` and resolve it through that same walker.
+     attribute typed `string` and resolve it through that same walker.~~ `path=` on both
+     spellings, expanded through `interpolate`'s own two reference forms (`$name` and
+     `$(expression)`, which is why the two regexes are now named module constants rather than
+     written inline) and then handed to the existing walker. `name`/`target` stay unexpanded on
+     purpose: a `$` in a name is not a reference today, and reading it as one would change what
+     content already means, so `path` is the form that says "this is built from variables" and
+     `zombies[$index].allow_recruit` now has a spelling that is not a hook. A reference that
+     names nothing, or names a boolean or a structure, throws rather than substituting an empty
+     segment that would silently write a different variable than the content meant. What
+     expansion builds is still the walker's to accept, so `party[$list].name` with a list value
+     is refused as `invalid variable path` by the same check a literal name goes through. Three
+     tests in `tests/mwl-variables.test.ts`. Scope is `[set_variable]` alone: the readers that
+     take a variable name ([if] test=, [variable] name=, [foreach] variable=, switch variable=)
+     are unchanged, since the item asked for a write form and nothing in the report needed a
+     computed read.
 319. [Medium] A hook has no path accessor, so every hook that touches a nested variable
      re-implements resolution and gets it wrong (the same report). `hooks.ts`'s
      `HookWorld.variables` is `Readonly<Record<string, MwlValue>>` with no `variableAt()`, while

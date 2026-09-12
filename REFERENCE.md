@@ -1087,7 +1087,11 @@ it and treats a missing variable as an error. Without a mode the value is inferr
 shape (`$name` copies a variable, a finite number is a number, operator characters or a
 numeric variable's name evaluate), which is what hand-authored content relies on and what a
 compiler target cannot, since a literal such as `Raise Walking Corpse (8 Gold)` would be read
-as an expression. Top-level
+as an expression. `path=` is that same write with a target built from variables
+(`zombies[$index].allow_recruit`, or `$target` for a variable holding a path), expanded before
+the path is walked; a reference that names nothing throws rather than leaving an empty segment.
+`name=`/`target=` stay literal (a `$` there is not a reference today, so it is not read as one
+now), which keeps every existing write meaning exactly what it did. Top-level
 `say` commands execute normally. Dialogue choices are
 delivered in `MwlMessage.choices` and answered with `answerDialogue`; pending choices are
 included in save data. Commands after a dialogue in the same event run immediately, before

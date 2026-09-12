@@ -394,9 +394,10 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 		attributes: {
 			name: 'id',
 			target: 'string',
+			path: 'string',
 			value: 'string',
 			// `[command] name="set_variable"` is the other spelling of the same effect,
-			// and takes the same explicit `mode`.
+			// and takes the same explicit `mode` and computed `path`.
 			mode: ['literal', 'number', 'expression'],
 			amount: 'integer',
 			x: 'integer',
@@ -419,7 +420,16 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 		},
 	},
 	set_variable: {
-		attributes: { name: 'id', target: 'id', value: 'string', mode: ['literal', 'number', 'expression'] },
+		attributes: {
+			name: 'id',
+			target: 'id',
+			// A path content computes (`zombies[$index].allow_recruit`, `$target`), so it is a
+			// string rather than an `id`: an id does not hold `$`, and an expression inside the
+			// brackets is not a whole number either.
+			path: 'string',
+			value: 'string',
+			mode: ['literal', 'number', 'expression'],
+		},
 	},
 	if: {
 		attributes: { test: 'string' },

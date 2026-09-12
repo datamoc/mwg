@@ -190,6 +190,59 @@ test('a mode outside the vocabulary is a compile-time diagnostic', () => {
 	assert.match(diagnostics[0].message, /mode must be one of literal, number, expression/);
 });
 
+test('a computed path builds its target from variables', () => {
+	const { rt } = runWith(
+		`[event]
+id=e
+on=start
+[set_variable]
+path=zombies[$index].allow_recruit
+value=yes
+[/set_variable]
+[/event]
+`,
+		{ index: 0 },
+	);
+	assert.deepEqual(rt.world.variables.zombies, [{ allow_recruit: 'yes' }]);
+});
+
+test('a computed path resolves an expression index and a path held in a variable', () => {
+	const { rt } = runWith(
+		`[event]
+id=e
+on=start
+[set_variable]
+path=party[0].name
+value=A
+[/set_variable]
+[set_variable]
+path=party[$(slot + 1)].name
+value=Brena
+[/set_variable]
+[set_variable]
+path=$target
+value=deep
+[/set_variable]
+[/event]
+`,
+		{ slot: 0, target: 'progress.stage' },
+	);
+	assert.deepEqual(rt.world.variables.party, [{ name: 'A' }, { name: 'Brena' }]);
+	assert.deepEqual(rt.world.variables.progress, { stage: 'deep' });
+});
+
+test('a computed path refuses a reference that names nothing a path can use', () => {
+	const write = (path: string, variables?: Record<string, string | number | boolean>) =>
+		runWith(
+			`[event]\nid=e\non=start\n[set_variable]\npath=${path}\nvalue=1\n[/set_variable]\n[/event]\n`,
+			variables,
+		);
+	assert.throws(() => write('zombies[$missing].hp'), /MWL variable path reference "\$missing" names no variable/);
+	assert.throws(() => write('zombies[$flag].hp', { flag: true }), /"\$flag" is not a name or number/);
+	//what expansion builds is still the walker's to accept: a string index has to be a number
+	assert.throws(() => write('party[$list].name', { list: 'a,b' }), /invalid variable path: party\[a,b\]\.name/);
+});
+
 test('messages interpolate variables and expressions', () => {
 	const { messages } = runWith(
 		`[event]

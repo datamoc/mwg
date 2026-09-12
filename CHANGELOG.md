@@ -9,6 +9,9 @@ the public API may still change between minor versions.
 
 ### Added
 
+- `[set_variable] path=` (item 318), on both spellings: the computed target a converter needs for
+  a dynamic name, expanded from `$name`/`$(expression)` references before the same path walker a
+  literal `name=` uses resolves it. `name=`/`target=` keep their literal meaning.
 - `[set_variable] mode=literal|number|expression` (item 316), on both spellings of the effect
   (`[set_variable]` and `[command] name="set_variable"`): content declares what its own `value=`
   means instead of `MwlRuntime` inferring it from the text. `literal` keeps the text exactly as
