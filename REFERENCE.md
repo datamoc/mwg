@@ -1002,7 +1002,7 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   `compileSources`, `compileAndEmitSources`, `emitArtifacts`, `coerceTableValue`,
   `parseTableColumns`, `contentCatalog`, `createWorld`, `decodeSave`, `effectToModifier`,
   `emitHooksDeclaration`, `emitModule`, `encodeSave`, `evaluateExpression`, `execute`,
-  `extractCatalog`, `hookTypes`, `inventoryItem`, `isGettext`, `itemDefinition`,
+  `extractCatalog`, `hookTypes`, `inventoryItem`, `isGettext`, `isMwlId`, `itemDefinition`,
   `parseExpression`, `parseHookReference`, `parseMapFile`, `parseTerrain`, `parseValue`, `preprocess`,
   `schema01`, `validateCatalogNodes`, `validateHookReferences`, `loadContent`, and `validateWorld`.
 - `parseMapFile`/`MwlMapFile` (item 284) - reads a Wesnoth-shaped `.map`: the `key=value` header

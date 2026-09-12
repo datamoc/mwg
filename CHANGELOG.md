@@ -41,6 +41,11 @@ the public API may still change between minor versions.
 
 ### Fixed
 
+- One rule for the `id` value type, shared by the schema and `mwl.readers`. The schema accepts a
+  bracketed path like `a[0].b` as an `id` (a variable name legitimately carries index brackets),
+  but `readAttributes`' `id` and `id-list` kept a stricter copy of the pattern, so an adapter
+  reading a variable-name attribute raised `MWL_FIELD_TYPE` for a name the compiler had already
+  accepted. Both now call the exported `isMwlId`. One test in `tests/mwl.test.ts`.
 - `actors.sell` is transactional again. It ignored the result of `Inventory.add`, so selling into
   a shop stock with no room paid the seller and lost the item: two potions sold into a
   capacity-1 stock produced 10 gold from nothing and left the potions nowhere. It now rolls the

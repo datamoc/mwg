@@ -861,12 +861,31 @@ export function coerceTableValue(
 	});
 }
 
+/**
+ * The rule behind the `id` value type: an identifier, allowed (unlike `ref`) to carry the
+ * `[...]` index brackets a WML variable path uses, since `[set_variable] name=` and every
+ * reader that takes that name type it as `id`. Exported so `readers.coerce` shares one
+ * definition with the schema: a name the compiler accepts is a name an adapter's reader
+ * accepts, rather than the two drifting into disagreeing about what an `id` is.
+ *
+ * @example
+ * ```ts
+ * import { isMwlId } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(isMwlId('party[0].name')); // true - a variable path is an `id`
+ * console.log(isMwlId('0bad')); // false - it does not start like an identifier
+ * ```
+ */
+export function isMwlId(value: string): boolean {
+	return /^[A-Za-z_][\w.[\]-]*$/.test(value);
+}
+
 function validType(value: string, type: MwlValueType): boolean {
 	if (type === 'number') return Number.isFinite(Number(value));
 	if (type === 'integer') return /^-?\d+$/.test(value);
 	if (type === 'boolean') return value === 'true' || value === 'false' || value === 'yes' || value === 'no';
 	if (type === 'ref') return /^[A-Za-z_][\w.-]*$/.test(value);
 	if (type === 'coordinate') return /^-?\d+(?:\s*,\s*-?\d+|\s*-\s*-?\d+)*$/.test(value);
-	if (type === 'id') return /^[A-Za-z_][\w.[\]-]*$/.test(value);
+	if (type === 'id') return isMwlId(value);
 	return true;
 }

@@ -1,5 +1,6 @@
 import type { MwlCompiledNode } from './compiler.ts';
 import type { MwlDiagnostic } from './grammar.ts';
+import { isMwlId } from './schema.ts';
 
 export type MwlReaderType = 'string' | 'id' | 'number' | 'integer' | 'boolean' | 'id-list' | 'number-list';
 
@@ -82,7 +83,7 @@ export function readChildren<T>(
 
 function coerce(raw: string, type: MwlReaderType): unknown {
 	if (type === 'string') return raw;
-	if (type === 'id') return /^[A-Za-z_][\w.-]*$/.test(raw) ? raw : undefined;
+	if (type === 'id') return isMwlId(raw) ? raw : undefined;
 	if (type === 'number') return Number.isFinite(Number(raw)) ? Number(raw) : undefined;
 	if (type === 'integer') return /^-?\d+$/.test(raw) ? Number(raw) : undefined;
 	if (type === 'boolean')
@@ -91,7 +92,7 @@ function coerce(raw: string, type: MwlReaderType): unknown {
 		.split(',')
 		.map((part) => part.trim())
 		.filter(Boolean);
-	if (type === 'id-list') return parts.every((part) => /^[A-Za-z_][\w.-]*$/.test(part)) ? parts : undefined;
+	if (type === 'id-list') return parts.every((part) => isMwlId(part)) ? parts : undefined;
 	return parts.every((part) => Number.isFinite(Number(part))) ? parts.map(Number) : undefined;
 }
 

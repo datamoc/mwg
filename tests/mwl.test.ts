@@ -641,6 +641,21 @@ test('MWL readers coerce fields, collect children, and preserve diagnostics', ()
 	assert.deepEqual(children.value, []);
 });
 
+test('the id reader accepts the same names the schema does, index brackets included', () => {
+	const node = compile('[unit]\nid=hero\n[/unit]').roots[0];
+	//the schema types a variable name as `id` and now accepts `a[0].b` there, so the reader
+	//an adapter coerces that name with has to accept it too rather than call it invalid
+	const read = readAttributes<{ name: string; list: string[] }>(
+		{ ...node, attributes: { name: 'party[0].name', list: 'a,party[1]' } },
+		{ name: { type: 'id' }, list: { type: 'id-list' } },
+	);
+	assert.deepEqual(read.value, { name: 'party[0].name', list: ['a', 'party[1]'] });
+	assert.deepEqual(read.diagnostics, []);
+
+	const bad = readAttributes<{ name: string }>({ ...node, attributes: { name: '0bad' } }, { name: { type: 'id' } });
+	assert.equal(bad.diagnostics[0]?.code, 'MWL_FIELD_TYPE', 'a non-identifier is still refused');
+});
+
 test('MWL conditions evaluate bounded comparisons and explicit helpers', () => {
 	assert.equal(
 		evaluateCondition('level < other.level and not petrified', { level: 2, 'other.level': 3, petrified: false }),

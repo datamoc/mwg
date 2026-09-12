@@ -5511,6 +5511,10 @@ build instead.
 
     export declare function isGettext(raw: string): boolean;
 
+### `isMwlId` (function)
+
+    export declare function isMwlId(value: string): boolean;
+
 ### `itemDefinition` (function)
 
     export declare function itemDefinition(item: MwlItemDefinition, context?: MwlExpressionContext): MwlActorItem;
