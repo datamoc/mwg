@@ -1,4 +1,5 @@
 import { ColorMatrixFilter, Rectangle, Sprite, Texture } from 'pixi.js';
+import { clamp } from '../../core/Math.ts';
 import { recolorTexture, withTextureCanvas } from './PaletteRemap.ts';
 import type { PaletteMapping, RecolorProbe, RemapCanvas } from './PaletteRemap.ts';
 import type { Texture2D } from './Types2D.ts';
@@ -818,8 +819,8 @@ function sampleLinear(
 		for (let dx = 0; dx <= 1; dx += 1) {
 			const weight = (dx === 0 ? 1 - fx : fx) * (dy === 0 ? 1 - fy : fy);
 			if (weight === 0) continue;
-			const px = Math.min(width - 1, Math.max(0, x0 + dx));
-			const py = Math.min(height - 1, Math.max(0, y0 + dy));
+			const px = clamp(x0 + dx, 0, width - 1);
+			const py = clamp(y0 + dy, 0, height - 1);
 			const inIndex = (py * width + px) * 4;
 			const sourceAlpha = pixels[inIndex + 3];
 			alpha += sourceAlpha * weight;
