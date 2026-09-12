@@ -16,6 +16,16 @@ the public API may still change between minor versions.
   the runtime ignored. On the AI side, `ScoreSubject` and `HeuristicCandidate` carry
   `type`/`role`/`can_recruit`/`name`, and the new `subjectsWhere`/`ScoreSubjectFilter` select a world
   on any of them, so a mind can find "the enemy leader" without re-deriving it from ids.
+- Leader identity on the unit (item 296). An autospawned `[side] leader=` unit carries `leader: true`
+  beside its `can_recruit`, `[store_unit]`/unstore and a save keep it, and `unitMatchesFilter` reads
+  it, so `[filter] leader=yes` finds the side's own leader without recomputing
+  `sides[id].leader === id`.
+- One variable-path resolver for every reader (item 295). `$name` resolution, `[condition]`/
+  `[filter_condition]` variable reads, message interpolation and the bare `$name` copy all resolve
+  through the same path walker `set_variable` writes with, so a dotted name like `a.b` reads what
+  `[set_variable] name=a.b` wrote. Array indices are in scope (`a[0].b` reads the node `a.0.b` or
+  `a[0].b` wrote), an index that is not a whole number is refused by name rather than becoming a
+  literal key, and the `id` schema type accepts brackets so such a name compiles.
 - `TerrainGraphicsLayer` (item 257): the renderer half of `[terrain_graphics]`, drawing
   `resolveTerrainGraphics`'s placements as one `Sprite2D` per placement, in `layer` order (a stable
   sort, so the rule pass's own row-major walk survives within a layer) at the pixel position a

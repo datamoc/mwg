@@ -55,10 +55,38 @@ test('a named side marks its keep, and its leader carries the same id', () => {
 	const leader = Object.values(runtime.world.units)[0];
 	assert.equal(leader.side, 'rebels', 'not a number derived from the id');
 	assert.equal(leader.type, 'Spearman');
+	assert.equal(leader.leader, true, 'the unit the side named, without recomputing sides.leader === id');
 
 	assert.deepEqual(Object.keys(runtime.world.sides), ['rebels']);
 	assert.equal(runtime.world.gold['rebels'], undefined, 'gold is keyed by the id, declared in the side');
 	assert.equal(runtime.world.sides['rebels'].gold, 100);
+});
+
+test('a leader=yes filter selects the side leader through the unit flag', () => {
+	const runtime = new MwlRuntime(
+		compile(
+			NAMED.replace(
+				'[/game]',
+				`[event]
+id=mark
+on=mark
+[store_unit]
+variable=only
+[filter]
+leader=yes
+[/filter]
+[/store_unit]
+[/event]
+[/game]`,
+			),
+		),
+	);
+	runtime.fireEvent('mark');
+
+	assert.deepEqual(
+		(runtime.world.variables.only as Array<{ id: string }>).map((unit) => unit.id),
+		[Object.keys(runtime.world.units)[0]],
+	);
 });
 
 test('a kill filter matches a named side', () => {

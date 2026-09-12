@@ -4160,6 +4160,36 @@ only for the square grid they are easiest to reason about.
      `type`/`role`/`can_recruit`/`name`, and `ai.subjectsWhere`/`ScoreSubjectFilter` select a world
      on any of them, so `{ side: 'red', can_recruit: true }` finds the enemy leader without
      re-deriving it from ids. Three new tests, plus two extended assertions.
+295. ~~[Medium] One variable-path resolver for every reader (Ne correspond pas). `variableAt`/
+     `setVariableAt` (238) walk dotted paths, but the readers that take a *name* do not:
+     `filterConditionMatches` reads `this.world.variables[name]` and `variableMatches`'
+     `$name` resolution reads the same flat record, so `[variable] name=a.b` never sees what
+     `[set_variable] name=a.b` wrote, and a `[variable]`-style path left in a `$name`
+     position compares as a literal. Route all of them through one path resolver, `interpolate`
+     included, and decide the same pass whether `a[0].b` index segments are in scope: adding
+     them is what lets a port delete its flat-key workaround for names like
+     `zombies[0].allow_recruit` rather than keep spelling an array index as a whole key. Found
+     while reconciling 238 with 294.~~ Landed: one `variableAtPath` walks a path, and every
+     reader that takes a name goes through it - `conditionMatches`, `filterConditionMatches`,
+     `interpolate`, the bare `$name` copy, and `variableMatches`' `$name` side via a resolver
+     instead of a flat variable record. Index segments are in scope and read arrays as well as
+     object keys, so `a[0].b` resolves the node `a.0.b` or `a[0].b` wrote; a write whose index
+     is not a whole number is refused by name (`invalid variable path`) rather than creating a
+     literal `a[x]` key nothing reads, and the `id` schema type now accepts brackets so the
+     name itself compiles. Three tests in `tests/mwl-variables.test.ts`, through real content.
+296. ~~[Low] Leader identity as a unit field. `MwlWorld.sides[*].leader` names the type a side's
+     leader is (252) and an autospawned `[side] leader=` unit is `can_recruit` (294), but
+     nothing on `MwlWorld.units` says a unit *is* that side's leader, so a consumer recomputes
+     `sides[side].leader === id`. A boolean on the unit, set for an autospawned side leader and
+     carried through `[store_unit]` and a save, removes that duplication and makes
+     "attack the leader" a filter like "attack the recruiter" already is. Small and generic.~~
+     Landed: an autospawned side leader carries `leader: true` beside its `can_recruit`,
+     `unitSnapshot` and `restoreUnit` keep it through `[store_unit]` and a save, and
+     `unitMatchesFilter` reads it, so `[filter] leader=yes` selects the side's own leader
+     without ever recomputing `sides[id].leader === id`. `leader` is added to the `[filter]`
+     schema; `[modify_unit]` does not set it, because the side declaration is what makes a
+     leader. Two assertions on the existing leader tests and one filter test in
+     `tests/mwl-side-identity.test.ts`.
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list

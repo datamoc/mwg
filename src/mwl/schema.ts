@@ -351,6 +351,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			level: 'integer',
 			alignment: 'id',
 			can_recruit: 'boolean',
+			leader: 'boolean',
 		},
 	},
 	filter_condition: { children: ['variable', 'have_unit', 'predicate'] },
@@ -866,6 +867,6 @@ function validType(value: string, type: MwlValueType): boolean {
 	if (type === 'boolean') return value === 'true' || value === 'false' || value === 'yes' || value === 'no';
 	if (type === 'ref') return /^[A-Za-z_][\w.-]*$/.test(value);
 	if (type === 'coordinate') return /^-?\d+(?:\s*,\s*-?\d+|\s*-\s*-?\d+)*$/.test(value);
-	if (type === 'id') return /^[A-Za-z_][\w.-]*$/.test(value);
+	if (type === 'id') return /^[A-Za-z_][\w.[\]-]*$/.test(value);
 	return true;
 }

@@ -133,3 +133,91 @@ value=$position
 `);
 	assert.deepEqual(rt.world.variables.selected, { position: 1 });
 });
+
+test('a filter_condition reads the same dotted path set_variable wrote', () => {
+	const { messages } = runWith(`[event]
+id=write
+on=start
+[set_variable]
+name=zombies.0.allow_recruit
+value=yes
+[/set_variable]
+[/event]
+[event]
+id=read
+on=start
+[filter_condition]
+[variable]
+name=zombies.0.allow_recruit
+equals=yes
+[/variable]
+[/filter_condition]
+[message]
+text=_ "fired"
+[/message]
+[/event]
+`);
+	assert.deepEqual(
+		messages.map((message) => message.text),
+		['fired'],
+	);
+});
+
+test('a dotted path resolves in a filter_condition and a message, not only a top-level key', () => {
+	const { rt, messages } = runWith(
+		`[event]
+id=e
+on=start
+[set_variable]
+name=progress.stage
+value=two
+[/set_variable]
+[set_variable]
+name=mirror.stage
+value=two
+[/set_variable]
+[/event]
+[event]
+id=read
+on=start
+[filter_condition]
+[variable]
+name=progress.stage
+equals=$mirror.stage
+[/variable]
+[/filter_condition]
+[message]
+text=_ "at $progress.stage"
+[/message]
+[/event]
+`,
+	);
+	assert.deepEqual(rt.world.variables.progress, { stage: 'two' });
+	assert.ok(
+		messages.some((message) => message.text === 'at two'),
+		'a dotted path resolves in the interpolation too',
+	);
+});
+
+test('a[0].b reads and writes an array index; a non-numeric index is refused', () => {
+	const { rt } = runWith(`[event]
+id=e
+on=start
+[set_variable]
+name=party[0].name
+value=A
+[/set_variable]
+[set_variable]
+name=party[1].name
+value=B
+[/set_variable]
+[/event]
+`);
+	//a numeric segment builds an object key, the shape dotted writes already produce; the read
+	//above is what makes it a usable index, resolving `party[0].name` against the same node
+	assert.deepEqual(rt.world.variables.party, { '0': { name: 'A' }, '1': { name: 'B' } });
+	assert.throws(
+		() => runWith(`[event]\nid=e\non=start\n[set_variable]\nname=a[x].b\nvalue=1\n[/set_variable]\n[/event]\n`),
+		/invalid variable path: a\[x\]\.b/,
+	);
+});

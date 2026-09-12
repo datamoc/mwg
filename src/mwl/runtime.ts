@@ -55,6 +55,11 @@ export interface MwlWorld {
 			role?: string;
 			/** whether the unit can recruit, i.e. is a leader: `[unit] can_recruit=`, or a side's own leader */
 			can_recruit?: boolean;
+			/**
+			 * whether this unit is the one the `[side]` named as its leader. What `can_recruit` means
+			 * to a game, `leader` answers outright, so a consumer does not recompute `sides[id].leader === id`.
+			 */
+			leader?: boolean;
 		}
 	>;
 	readonly sides: Record<
@@ -701,6 +706,7 @@ export class MwlRuntime {
 					side: sideId,
 					moves: stats?.movement ?? 0,
 					can_recruit: true,
+					leader: true,
 				};
 			}
 		}
@@ -968,9 +974,10 @@ export class MwlRuntime {
 	 * same interpolation WML authors expect in story and dialogue strings.
 	 */
 	private interpolate(text: string): string {
-		const variables = this.world.variables;
 		const numeric = Object.fromEntries(
-			Object.entries(variables).filter((entry): entry is [string, number] => typeof entry[1] === 'number'),
+			Object.entries(this.world.variables).filter(
+				(entry): entry is [string, number] => typeof entry[1] === 'number',
+			),
 		);
 		const expanded = text.replace(/\$\(([^)]*)\)/g, (_whole, expression: string) => {
 			try {
@@ -980,7 +987,7 @@ export class MwlRuntime {
 			}
 		});
 		return expanded.replace(/\$([A-Za-z_][A-Za-z0-9_.]*)/g, (_whole, name: string) => {
-			const value = variables[name];
+			const value = this.variableAt(name);
 			return value === undefined || typeof value === 'boolean' ? '' : String(value);
 		});
 	}
@@ -995,7 +1002,7 @@ export class MwlRuntime {
 		// so content can alias changing values without arithmetic.
 		const reference = /^\$([A-Za-z_][A-Za-z0-9_.]*)$/.exec(raw.trim());
 		if (reference) {
-			const value = this.world.variables[reference[1]];
+			const value = this.variableAt(reference[1]);
 			this.setVariableAt(name, value === undefined ? '' : value);
 			return;
 		}
@@ -1012,17 +1019,12 @@ export class MwlRuntime {
 	}
 
 	private variableAt(path: string): MwlValue | undefined {
-		let value: MwlValue | undefined = this.world.variables;
-		for (const part of path.split('.')) {
-			if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
-			value = value[part];
-		}
-		return value;
+		return variableAtPath(this.world.variables, path);
 	}
 
 	private setVariableAt(path: string, value: MwlValue): void {
 		const previous = this.variableAt(path);
-		const parts = path.split('.');
+		const parts = validVariablePathParts(path);
 		if (parts.length === 1) {
 			this.world.variables[path] = value;
 			this.onTrace?.({ type: 'variable', name: path, ...(previous === undefined ? {} : { previous }), value });
@@ -1030,11 +1032,19 @@ export class MwlRuntime {
 		}
 		let current: Record<string, MwlValue> = this.world.variables;
 		for (const part of parts.slice(0, -1)) {
-			const child = current[part];
-			if (!child || typeof child !== 'object' || Array.isArray(child)) current[part] = {};
-			current = current[part] as { [key: string]: MwlValue };
+			if (typeof part === 'string') {
+				const child = current[part];
+				if (!child || typeof child !== 'object' || Array.isArray(child)) current[part] = {};
+				current = current[part] as Record<string, MwlValue>;
+			} else {
+				const child = current[part.index];
+				if (!child || typeof child !== 'object') current[part.index] = {};
+				current = current[part.index] as Record<string, MwlValue>;
+			}
 		}
-		current[parts.at(-1)!] = value;
+		const last = parts.at(-1)!;
+		if (typeof last === 'string') current[last] = value;
+		else current[last.index] = value;
 		this.onTrace?.({ type: 'variable', name: path, ...(previous === undefined ? {} : { previous }), value });
 	}
 
@@ -1103,6 +1113,7 @@ export class MwlRuntime {
 		if (typeof entry.name === 'string') unit.name = entry.name;
 		if (typeof entry.role === 'string') unit.role = entry.role;
 		if (typeof entry.can_recruit === 'boolean') unit.can_recruit = entry.can_recruit;
+		if (typeof entry.leader === 'boolean') unit.leader = entry.leader;
 		this.world.units[id] = unit;
 	}
 
@@ -1187,9 +1198,9 @@ export class MwlRuntime {
 					return Boolean(predicate(this.worldView(), context));
 				}
 				return variableMatches(
-					this.world.variables[condition.attributes.variable],
+					this.variableAt(condition.attributes.variable),
 					condition.attributes,
-					primitiveVariables(this.world.variables),
+					resolveVariable(this.world.variables),
 				);
 			});
 	}
@@ -1213,11 +1224,7 @@ export class MwlRuntime {
 			if (child.tag === 'variable') {
 				const name = child.attributes.name;
 				if (name === undefined) return false;
-				return variableMatches(
-					this.world.variables[name],
-					child.attributes,
-					primitiveVariables(this.world.variables),
-				);
+				return variableMatches(this.variableAt(name), child.attributes, resolveVariable(this.world.variables));
 			}
 			if (child.tag === 'predicate') {
 				const name = child.attributes.name;
@@ -1517,6 +1524,7 @@ function unitSnapshot(unit: MwlWorld['units'][string]): Record<string, MwlValue>
 	if (unit.name !== undefined) snapshot.name = unit.name;
 	if (unit.role !== undefined) snapshot.role = unit.role;
 	if (unit.can_recruit !== undefined) snapshot.can_recruit = unit.can_recruit;
+	if (unit.leader !== undefined) snapshot.leader = unit.leader;
 	return snapshot;
 }
 
@@ -1558,12 +1566,17 @@ function optionalInteger(node: MwlCompiledNode, attribute: string): number | und
 function variableMatches(
 	value: MwlValue | undefined,
 	attributes: Readonly<Record<string, string>>,
-	variables: Readonly<Record<string, string | number | boolean>> = {},
+	resolve: (reference: string) => MwlValue | undefined,
 ): boolean {
-	const resolve = (expected: string): string | number | boolean | undefined =>
-		expected.startsWith('$') ? variables[expected.slice(1)] : expected;
-	if (attributes.equals !== undefined) return sameValue(value, resolve(attributes.equals));
-	if (attributes.not_equals !== undefined) return !sameValue(value, resolve(attributes.not_equals));
+	const expected = (text: string): string | number | boolean | undefined => {
+		if (!text.startsWith('$')) return text;
+		const resolved = resolve(text.slice(1));
+		return typeof resolved === 'string' || typeof resolved === 'number' || typeof resolved === 'boolean'
+			? resolved
+			: undefined;
+	};
+	if (attributes.equals !== undefined) return sameValue(value, expected(attributes.equals));
+	if (attributes.not_equals !== undefined) return !sameValue(value, expected(attributes.not_equals));
 	if (attributes.in !== undefined) {
 		const options = attributes.in.split(',').map((entry) => entry.trim());
 		return options.some((option) => sameValue(value, option));
@@ -1595,8 +1608,8 @@ function variableMatches(
 /**
  * One alive unit against `filter`/`have_unit` attributes: side, type (with
  * comma-list `not_type` exclusion), the unit's own name and role, whether it
- * can recruit, world key (`unit`, or `id` on `have_unit`), and coordinates all
- * have to match when present.
+ * can recruit, whether it is its side's leader, world key (`unit`, or `id`
+ * on `have_unit`), and coordinates all have to match when present.
  */
 function unitMatchesFilter(
 	unit: {
@@ -1608,6 +1621,7 @@ function unitMatchesFilter(
 		name?: string;
 		role?: string;
 		can_recruit?: boolean;
+		leader?: boolean;
 	},
 	id: string,
 	attributes: Readonly<Record<string, string>>,
@@ -1617,6 +1631,7 @@ function unitMatchesFilter(
 		.map((entry) => entry.trim())
 		.filter(Boolean);
 	const wantedCanRecruit = booleanValue(attributes.can_recruit);
+	const wantedLeader = booleanValue(attributes.leader);
 	const key = attributes.unit ?? attributes.id;
 	return (
 		(key === undefined || id === key) &&
@@ -1626,6 +1641,7 @@ function unitMatchesFilter(
 		(attributes.name === undefined || unit.name === attributes.name) &&
 		(attributes.role === undefined || unit.role === attributes.role) &&
 		(wantedCanRecruit === undefined || (unit.can_recruit ?? false) === wantedCanRecruit) &&
+		(wantedLeader === undefined || (unit.leader ?? false) === wantedLeader) &&
 		(attributes.x === undefined || unit.x === Number(attributes.x)) &&
 		(attributes.y === undefined || unit.y === Number(attributes.y))
 	);
@@ -1658,6 +1674,60 @@ function primitiveVariables(variables: Readonly<Record<string, MwlValue>>): Reco
 				typeof entry[1] === 'string' || typeof entry[1] === 'number' || typeof entry[1] === 'boolean',
 		),
 	);
+}
+
+/**
+ * One step of a variable path: a named key, or a numeric index into an array
+ * (`a[0].b`). `index` is undefined when the brackets hold something that is
+ * not a whole number, so a caller that writes can refuse it rather than create
+ * a literal `a[x]` key the matching read would never find.
+ */
+type VariablePathPart = string | { readonly index: number | undefined };
+type IndexedPathPart = { readonly index: number };
+
+/** `a.b[0].c` -> `['a', 'b', { index: 0 }, 'c']`. */
+function variablePathParts(path: string): VariablePathPart[] {
+	return path
+		.split('.')
+		.flatMap<VariablePathPart>((segment) => {
+			const name = /^([^[\]]*)((?:\[[^\]]*\])*)$/.exec(segment);
+			if (!name) return [segment];
+			const parts: VariablePathPart[] = name[1] === '' ? [] : [name[1]];
+			for (const bracket of name[2].matchAll(/\[([^\]]*)\]/g)) {
+				const index = Number(bracket[1]);
+				parts.push({ index: /^\d+$/.test(bracket[1].trim()) ? index : undefined });
+			}
+			return parts;
+		})
+		.filter((part) => typeof part !== 'string' || part !== '');
+}
+
+/** The path parts of a write, with any bracketed index that is not a whole number refused by name. */
+function validVariablePathParts(path: string): Array<string | IndexedPathPart> {
+	const parts = variablePathParts(path);
+	if (parts.some((part) => typeof part !== 'string' && part.index === undefined))
+		throw new Error(`invalid variable path: ${path}`);
+	return parts as Array<string | IndexedPathPart>;
+}
+
+/** The one read of a variable path, used by every reader that takes a name. */
+function variableAtPath(variables: Readonly<Record<string, MwlValue>>, path: string): MwlValue | undefined {
+	let value: MwlValue | undefined = variables;
+	for (const part of variablePathParts(path)) {
+		if (typeof part === 'string') {
+			if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+			value = value[part];
+		} else {
+			if (!Array.isArray(value) || part.index === undefined) return undefined;
+			value = value[part.index];
+		}
+	}
+	return value;
+}
+
+/** Resolves a `$name` reference (a path, not only a top-level key) from a variable tree. */
+function resolveVariable(variables: Readonly<Record<string, MwlValue>>): (reference: string) => MwlValue | undefined {
+	return (reference) => variableAtPath(variables, reference);
 }
 
 function coordinateMatches(specification: string, coordinate: number): boolean {

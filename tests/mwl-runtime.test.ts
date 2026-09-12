@@ -129,6 +129,7 @@ test('MWL runtime loads the map, sides, and leaders', () => {
 		side: '1',
 		moves: 3,
 		can_recruit: true,
+		leader: true,
 	});
 	const archer = units.find((unit) => unit.type === 'Archer');
 	assert.deepEqual(archer, {
@@ -140,6 +141,7 @@ test('MWL runtime loads the map, sides, and leaders', () => {
 		side: '2',
 		moves: 3,
 		can_recruit: true,
+		leader: true,
 	});
 });
 
@@ -225,6 +227,7 @@ test('MWL runtime loads the EXAMPLES skirmish and spawns its leader on the keep'
 		side: '1',
 		moves: 5,
 		can_recruit: true,
+		leader: true,
 	});
 	assert.equal(runtime.world.status, 'playing');
 });
