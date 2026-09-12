@@ -98,7 +98,15 @@ export function direction(): Direction {
 export interface MessageParams {
 	/** picks the plural form, when the message has more than one */
 	count?: number;
-	[token: string]: string | number | undefined;
+
+	/**
+	 * A placeholder's value: a string or a number for `{token}`, or a record a dotted
+	 * `{token.path}` walks into. Passing state as the tree it already is beats flattening it
+	 * into names first - `t('hit', { side })` with a message of `{side.stored.hitpoints}` -
+	 * and a path that names nothing (a step missing, or an object where a value belongs)
+	 * leaves the placeholder as written rather than rendering an object.
+	 */
+	[token: string]: string | number | MessageParams | undefined;
 }
 
 /**
@@ -306,8 +314,27 @@ function interpolate(text: string, params: MessageParams): string {
 		.join('');
 }
 
+/**
+ * The value a placeholder's token names: the entry itself, or - for a dotted token - a walk into
+ * the nested records `params` may hold, one path segment per step. An exact entry wins over a walk,
+ * so a game that passes a literal dotted key still resolves it. Anything that does not land on a
+ * string or a number resolves to undefined, which leaves the placeholder text in place rather than
+ * rendering `[object Object]` into a player's face.
+ */
+function lookupParam(params: MessageParams, token: string): string | number | undefined {
+	const exact = params[token];
+	if (typeof exact === 'string' || typeof exact === 'number') return exact;
+
+	let value: string | number | MessageParams | undefined = params;
+	for (const segment of token.split('.')) {
+		if (typeof value !== 'object') return undefined;
+		value = value[segment];
+	}
+	return typeof value === 'string' || typeof value === 'number' ? value : undefined;
+}
+
 function resolvePlaceholder(part: Placeholder, params: MessageParams): string {
-	const value = params[part.token];
+	const value = lookupParam(params, part.token);
 	if (value === undefined) return part.raw;
 	try {
 		const converted = part.conv === undefined ? value : convertValue(value, part.conv);

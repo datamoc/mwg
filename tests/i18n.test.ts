@@ -61,6 +61,47 @@ test('{token} placeholders interpolate from params, leaving unmatched tokens unt
 	reset();
 });
 
+test('a dotted token walks into nested params, so state can be passed as the tree it is', () => {
+	setBase({
+		locale: 'en',
+		direction: 'ltr',
+		messages: { hit: '{side.name} takes {side.stored.hitpoints} from {source.unit.name}.' },
+	});
+	const params = {
+		side: { name: 'Northerners', stored: { hitpoints: 12 } },
+		source: { unit: { name: 'a wolf rider' } },
+	};
+	assert.equal(t('hit', params), 'Northerners takes 12 from a wolf rider.');
+	reset();
+});
+
+test('a dotted token that names nothing leaves the placeholder rather than an object', () => {
+	setBase({
+		locale: 'en',
+		direction: 'ltr',
+		messages: { report: '{side.stored.held}, {side.missing.value}, {side.name.length}, {side}.' },
+	});
+	//a step that is not there, a value where a path continues, a path past a scalar, and the
+	//record itself: all four stay as written, none of them renders '[object Object]'
+	assert.equal(
+		t('report', { side: { name: 'Rebels', stored: { held: 'a banner' } } }),
+		'a banner, {side.missing.value}, {side.name.length}, {side}.',
+	);
+	reset();
+});
+
+test('an exact entry wins over the walk, so a literal dotted key still resolves', () => {
+	setBase({ locale: 'en', direction: 'ltr', messages: { label: '{side.held}' } });
+	assert.equal(t('label', { 'side.held': 'the keep', side: { held: 'the bridge' } }), 'the keep');
+	reset();
+});
+
+test('a dotted token carries a conversion and a format spec like any other', () => {
+	setBase({ locale: 'en', direction: 'ltr', messages: { dmg: '{side.stored.hitpoints:03d}' } });
+	assert.equal(t('dmg', { side: { stored: { hitpoints: 7 } } }), '007');
+	reset();
+});
+
 test('plural forms are selected through Intl.PluralRules, falling back to "other"', () => {
 	setBase({
 		locale: 'en',

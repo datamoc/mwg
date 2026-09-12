@@ -47,14 +47,15 @@ export interface Placeholder {
 
 export type MessagePart = string | Placeholder;
 
-const PLACEHOLDER_PATTERN = /\{(?!sound:)(\w+)(=)?(?:!([sra]))?(?::([^{}]*))?\}/g;
+const PLACEHOLDER_PATTERN = /\{(?!sound:)(\w+(?:\.\w+)*)(=)?(?:!([sra]))?(?::([^{}]*))?\}/g;
 
 /**
  * Splits a message into literal text and `{token}`, `{token:spec}`, `{token!conv}` and
  * `{token=}` placeholders - the single definition of that grammar, shared by `t()`'s own
  * interpolation and by `diffPlaceholders` below, so the editor's consistency check can
- * never disagree with the runtime about what counts as a placeholder. `{sound:path}` is an
- * inline sound marker, not a translatable placeholder, and is left for `parseSoundMarkers`.
+ * never disagree with the runtime about what counts as a placeholder. A token may be a dotted
+ * path (`{side.stored.hitpoints}`), which `t()` walks into the params it was handed. `{sound:path}`
+ * is an inline sound marker, not a translatable placeholder, and is left for `parseSoundMarkers`.
  */
 export function tokenizeMessage(text: string): MessagePart[] {
 	const parts: MessagePart[] = [];
