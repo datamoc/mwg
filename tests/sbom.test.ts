@@ -70,16 +70,26 @@ test('buildSbom resolves a dependency to the nearest nested copy, not the top-le
 	]);
 });
 
-test('serialize is deterministic, with no timestamp or serial number', () => {
-	const lockfile: Lockfile = {
-		packages: { '': { dependencies: { 'prod-pkg': '^1.0.0' } }, 'node_modules/prod-pkg': { version: '1.0.0' } },
-	};
-	const bom = buildSbom({ name: 'demo', version: '1.0.0' }, lockfile);
+test('serialize is deterministic, with a serial number derived from the content and no timestamp', () => {
+	const packages = { '': { dependencies: { 'prod-pkg': '^1.0.0' } }, 'node_modules/prod-pkg': { version: '1.0.0' } };
+	const bom = buildSbom({ name: 'demo', version: '1.0.0' }, { packages });
 
-	assert.equal(serialize(bom), serialize(buildSbom({ name: 'demo', version: '1.0.0' }, lockfile)));
-	const raw = bom as unknown as Record<string, unknown>;
-	assert.equal(raw.serialNumber, undefined);
-	assert.equal((raw.metadata as Record<string, unknown>).timestamp, undefined);
+	assert.equal(serialize(bom), serialize(buildSbom({ name: 'demo', version: '1.0.0' }, { packages })));
+	// a version-5 UUID: the version nibble and the RFC 4122 variant bits, in CycloneDX's urn form
+	assert.match(bom.serialNumber, /^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+
+	const moved = buildSbom(
+		{ name: 'demo', version: '1.0.0' },
+		{
+			packages: { '': { dependencies: { 'prod-pkg': '^1.0.0' } }, 'node_modules/prod-pkg': { version: '1.0.1' } },
+		},
+	);
+	assert.notEqual(moved.serialNumber, bom.serialNumber, 'a changed dependency is a different BOM');
+	assert.equal(
+		(bom.metadata as unknown as Record<string, unknown>).timestamp,
+		undefined,
+		'deliberate: see buildSbom',
+	);
 });
 
 test('the committed sbom.cdx.json matches the current package.json and package-lock.json', () => {

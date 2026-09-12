@@ -49,4 +49,4 @@ by double-clicking. Run from the repo root.
 | `project-stats` | Writes `PROJECT_STATS.json`/`PROJECT_STATS.md` and the website statistics page; `--check` compares. A CI gate | `npm run stats:write`, `npm run stats:check` |
 | `ci-status` | Waits for every workflow run of `HEAD` and fails if any of them did | `npm run ci:status` |
 | `npm-audit` | Dependency audit that fails for high or critical advisories | `npm run audit` |
-| `sbom` | Builds the committed CycloneDX 1.6 SBOM (`sbom.cdx.json`) from `package.json` and `package-lock.json` alone, with no network or added dependency; `--check` compares instead. A CI gate | `npm run sbom`, `npm run sbom:check` |
+| `sbom` | Builds the committed CycloneDX 1.6 SBOM (`sbom.cdx.json`) from `package.json` and `package-lock.json` alone, with no network or added dependency. Its `serialNumber` is a version-5 UUID over the document's own content and it carries no timestamp, so the file stays reproducible; `--check` compares instead. A CI gate | `npm run sbom`, `npm run sbom:check` |

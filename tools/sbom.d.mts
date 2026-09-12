@@ -22,6 +22,7 @@ export interface CycloneDxComponent {
 export interface CycloneDxBom {
 	bomFormat: 'CycloneDX';
 	specVersion: string;
+	serialNumber: string;
 	version: number;
 	metadata: {
 		tools: { components: CycloneDxComponent[] };
