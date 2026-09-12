@@ -37,16 +37,33 @@ test('PO escapes are unescaped, and an unknown escape keeps its character', () =
 	assert.deepEqual(parsePo('en', unknown).messages, { x: '100% sure' });
 });
 
-test('comments, references and flags are ignored', () => {
-	const po = [
+test('comments and references are ignored, and at most one flag is not', () => {
+	const clean = [
 		'# translator comment',
 		'#. extracted comment',
 		'#: src/file.ts:12',
-		'#, fuzzy',
+		'#, c-format',
 		'msgid "key"',
 		'msgstr "value"',
 	].join('\n');
-	assert.deepEqual(parsePo('en', po).messages, { key: 'value' });
+	assert.deepEqual(parsePo('en', clean).messages, { key: 'value' });
+});
+
+test("a fuzzy entry is untranslated, which is what gettext's own tools make of it", () => {
+	const po = ['#, fuzzy', 'msgid "key"', 'msgstr "value"'].join('\n');
+	assert.deepEqual(parsePo('en', po).messages, {}, 'so the base language wins rather than a guess');
+
+	//fuzzy among other flags still marks the entry; a flag that merely contains the letters does not
+	const mixed = [
+		'#, fuzzy, c-format',
+		'msgid "guessed"',
+		'msgstr "peut-être"',
+		'',
+		'#, not-fuzzy-at-all',
+		'msgid "reviewed"',
+		'msgstr "sûr"',
+	].join('\n');
+	assert.deepEqual(parsePo('fr', mixed).messages, { reviewed: 'sûr' });
 });
 
 test('msgctxt keys a message the way gettext does, with an EOT separator', () => {

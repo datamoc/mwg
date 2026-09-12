@@ -16,7 +16,10 @@ export interface PoOptions {
 /**
  * Parses the useful, dependency-free subset of a gettext `.po` file into an `i18n`
  * `Catalog`: `msgid`/`msgstr`, `msgctxt`, `msgid_plural` with `msgstr[N]`, and the header
- * entry, which is read and dropped. Comments and flags are ignored.
+ * entry, which is read and dropped. Comments are ignored, and so are flags other than one:
+ * a `#, fuzzy` entry is treated as *untranslated*, which is what gettext's own tools mean by
+ * it, so the base language wins for that key rather than a translation a translator has not
+ * signed off on.
  *
  * Gettext's plural forms are positions (`msgstr[0]`, `msgstr[1]`), while a `Catalog` keys
  * them by CLDR category (what `Intl.PluralRules.select` returns). The two agree on order for
@@ -65,6 +68,8 @@ export function parsePo(locale: string, source: string, options: PoOptions = {})
 
 	const lines = source.replace(/\r\n?/g, '\n').split('\n');
 	let entry: Entry | null = null;
+	/** the flags of the entry being read, from its `#,` lines - `fuzzy` is the one that matters */
+	let flags = '';
 
 	const finish = (): void => {
 		if (!entry) return;
@@ -73,15 +78,22 @@ export function parsePo(locale: string, source: string, options: PoOptions = {})
 				throw new Error('PO entry has a translation but no msgid');
 			}
 			entry = null;
+			flags = '';
 			return;
 		}
 		store(entry);
 		entry = null;
+		flags = '';
 	};
 
 	const store = (current: Entry): void => {
 		const id = current.id as string;
 		if (id === '') return; // the header entry: metadata, not a message
+
+		//gettext's own answer to a `#, fuzzy` entry is that it is not a translation yet - the
+		//header being edited, or a guess a tool wants reviewed - so it is left out and the base
+		//language wins, exactly as for an empty msgstr
+		if (/(^|,)\s*fuzzy\s*(,|$)/.test(flags)) return;
 
 		if (current.plural !== undefined && current.plurals.size === 0) {
 			throw new Error(`PO message "${id}" has a plural but no msgstr[N] forms`);
@@ -118,7 +130,11 @@ export function parsePo(locale: string, source: string, options: PoOptions = {})
 			finish();
 			continue;
 		}
-		if (trimmed.startsWith('#')) continue; // translator comments, references, flags
+		if (trimmed.startsWith('#,')) {
+			flags += `${flags === '' ? '' : ','}${trimmed.slice(2).trim()}`;
+			continue;
+		}
+		if (trimmed.startsWith('#')) continue; // translator comments, references
 
 		const match = line.match(/^(msgctxt|msgid_plural|msgid|msgstr(?:\[(\d+)\])?)\s+(.*)$/);
 		if (!match) throw new Error(`Invalid PO line ${i + 1}: ${line}`);
