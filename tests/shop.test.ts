@@ -81,3 +81,15 @@ test('sell refuses and touches nothing when the price is unknown', () => {
 	assert.equal(sell(wallet, stock, bag, 'mystery', 1, options), false);
 	assert.equal(bag.find('mystery')?.quantity, 1);
 });
+
+test('sell rolls the bag back if the stock has no room, without paying the seller', () => {
+	const { wallet, bag, options } = fixture();
+	const fullStock = new Inventory({ capacity: 1 });
+	fullStock.add({ id: 'rock', quantity: 1, stackable: true, weight: 1 }); // fills the only capacity
+	bag.add({ id: 'potion', quantity: 3, stackable: true, weight: 1 });
+
+	assert.equal(sell(wallet, fullStock, bag, 'potion', 1, options), false);
+	assert.equal(bag.find('potion')?.quantity, 3, 'the item stays in the bag');
+	assert.equal(wallet.get('gold'), 100, 'never paid for an item the shop could not take');
+	assert.equal(fullStock.find('potion'), undefined);
+});

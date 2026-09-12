@@ -41,6 +41,11 @@ the public API may still change between minor versions.
 
 ### Fixed
 
+- `actors.sell` is transactional again. It ignored the result of `Inventory.add`, so selling into
+  a shop stock with no room paid the seller and lost the item: two potions sold into a
+  capacity-1 stock produced 10 gold from nothing and left the potions nowhere. It now rolls the
+  bag back and refuses, exactly as `buy` already did for a full bag. One test in
+  `tests/shop.test.ts`.
 - `board.goScore` counts territory again. Its `group` helper returned nothing for an empty
   square, so the area-scoring loop never saw an enclosed empty region and only stones were
   scored: four stones ringing a 3x3 board reported 4 instead of 9. `group` now groups connected

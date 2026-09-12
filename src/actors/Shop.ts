@@ -80,7 +80,10 @@ export function sell(
 	if (!item || item.quantity < quantity) return false;
 
 	bag.remove(id, quantity);
-	stock.add({ ...item, quantity });
+	if (!stock.add({ ...item, quantity })) {
+		bag.add({ ...item, quantity }); //the shop's stock had no room - put the item back
+		return false;
+	}
 	wallet.setBase(options.currency, wallet.base(options.currency) + price.sell * quantity);
 	return true;
 }

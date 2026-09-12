@@ -5,7 +5,7 @@
 	"releaseDate": "2026-09-11",
 	"source": {
 		"files": 278,
-		"lines": 43136,
+		"lines": 43139,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -36,7 +36,7 @@
 			{
 				"name": "actors",
 				"files": 24,
-				"lines": 2453
+				"lines": 2456
 			},
 			{
 				"name": "i18n",
@@ -87,8 +87,8 @@
 	},
 	"tests": {
 		"files": 219,
-		"lines": 28600,
-		"cases": 2068
+		"lines": 28612,
+		"cases": 2069
 	},
 	"tools": {
 		"files": 35,
@@ -131,9 +131,9 @@
 		"declarationFiles": 277
 	},
 	"bundle": {
-		"globalRaw": 1011275,
-		"globalGzip": 300107,
-		"distRaw": 3209446
+		"globalRaw": 1011307,
+		"globalGzip": 300108,
+		"distRaw": 3209604
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
