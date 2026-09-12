@@ -52,6 +52,11 @@ the public API may still change between minor versions.
 - `two-d.render.createLayers(parent, names)` (item 312): builds one labeled `Node2D` per name,
   attached to `parent` in the order given and returned keyed by name, for the conventionally
   ordered layer stack (terrain, units, effects, UI, ...) a game otherwise hand-wires.
+- `ui.RichLabel`/`ui.MarkupText` take `tagStyles` (item 313), the same custom-inline-tag option a
+  bare `Text2D` takes. `markup.parseMarkup` gained `MarkupOptions.tags` and a `MarkupSpan.tag`
+  field so the parser stays renderer-neutral: `MarkupText` applies each tag's Pixi style to its
+  run and measures under it, while `RichLabel` keeps a registered tag as a real element for
+  `HTMLText` and still escapes an unregistered one.
 - `two-d.render.Projectile` takes an optional `animation` (item 311): the projectile advances
   the flight frames with its own elapsed time and reports the current one through
   `frame`/`frameOffset`, so a missile with `[missile_frame]` art no longer needs a parallel

@@ -1202,6 +1202,10 @@ build instead.
 
         private rebuild;
         private measurePiece;
+
+        private tagStyle;
+
+        private resolvedFont;
         private textFor;
         private spriteFor;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -1730,6 +1734,7 @@ build instead.
 
     export declare class RichLabel extends HTMLText {
         private readonly opts;
+        private readonly tags;
         private readonly themeListener;
         private revealSpans;
         private reveal;
@@ -7546,6 +7551,10 @@ build instead.
 
         private rebuild;
         private measurePiece;
+
+        private tagStyle;
+
+        private resolvedFont;
         private textFor;
         private spriteFor;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -7846,6 +7855,7 @@ build instead.
 
     export declare class RichLabel extends HTMLText {
         private readonly opts;
+        private readonly tags;
         private readonly themeListener;
         private revealSpans;
         private reveal;
@@ -10145,6 +10155,10 @@ build instead.
 
         private rebuild;
         private measurePiece;
+
+        private tagStyle;
+
+        private resolvedFont;
         private textFor;
         private spriteFor;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -10274,6 +10288,7 @@ build instead.
 
     export declare class RichLabel extends HTMLText {
         private readonly opts;
+        private readonly tags;
         private readonly themeListener;
         private revealSpans;
         private reveal;

@@ -16,6 +16,9 @@ export interface MarkupSpan extends MarkdownSpan {
 	size?: number;
 	/** an image rather than text: `<img>path</img>`; the `text` of such a span is empty */
 	image?: string;
+
+	/** the custom tag this run came from, when it came from one; the renderer decides its style */
+	tag?: string;
 }
 
 export interface MarkupOptions {
@@ -24,6 +27,13 @@ export interface MarkupOptions {
 	 * what Wesnoth does with an unset variable - dropping it would silently eat a player's name.
 	 */
 	readonly variables?: Readonly<Record<string, string>>;
+
+	/**
+	 * Extra tag names to treat as styling containers, beyond the built-in `b`/`i`/`span`/`br`/`img`.
+	 * A run inside one carries its name in `MarkupSpan.tag`, so a renderer can look its style up
+	 * (Pixi's `tagStyles`, for example) while the parser stays renderer-neutral.
+	 */
+	readonly tags?: ReadonlySet<string>;
 }
 
 /** the tags this parser knows; anything else is literal text, not a tag */
@@ -34,6 +44,8 @@ interface Style {
 	italic: boolean;
 	color?: string;
 	size?: number;
+	/** the innermost custom tag this run sits in, if any */
+	tag?: string;
 }
 
 interface Tag {
@@ -79,6 +91,7 @@ interface Tag {
  */
 export function parseMarkup(source: string, options: MarkupOptions = {}): MarkupSpan[] {
 	const variables = options.variables ?? {};
+	const customTags = options.tags;
 	const spans: MarkupSpan[] = [];
 	const stack: { tag: string; style: Style }[] = [];
 	let style: Style = { bold: false, italic: false };
@@ -89,6 +102,7 @@ export function parseMarkup(source: string, options: MarkupOptions = {}): Markup
 		const span: MarkupSpan = { text, bold: style.bold, italic: style.italic };
 		if (style.color !== undefined) span.color = style.color;
 		if (style.size !== undefined) span.size = style.size;
+		if (style.tag !== undefined) span.tag = style.tag;
 		spans.push(span);
 		text = '';
 	};
@@ -117,7 +131,7 @@ export function parseMarkup(source: string, options: MarkupOptions = {}): Markup
 
 		if (char === '<') {
 			const tag = readTag(source, index);
-			if (tag && KNOWN_TAGS.has(tag.name)) {
+			if (tag && (KNOWN_TAGS.has(tag.name) || customTags?.has(tag.name))) {
 				if (tag.name === 'img') {
 					const image = readImage(source, tag);
 					if (image) {
@@ -185,6 +199,8 @@ export function markupToHtml(spans: readonly MarkupSpan[]): string {
 				span.size !== undefined ? `font-size:${span.size}px` : undefined,
 			].filter((declaration): declaration is string => declaration !== undefined);
 			if (style.length > 0) text = `<span style="${style.join(';')}">${text}</span>`;
+			//a custom tag is preserved so an HTML-speaking renderer's own tag styles can match it
+			if (span.tag !== undefined) text = `<${span.tag}>${text}</${span.tag}>`;
 			return text;
 		})
 		.join('');
@@ -227,7 +243,7 @@ export interface MarkupLine {
  * measure with a plain character count. `piece.image` is set instead of `piece.text` for an image
  * span, so a measurer can give it the icon's own width rather than treating it as zero-width text.
  */
-export type MarkupMeasure = (piece: Pick<MarkupSpan, 'text' | 'bold' | 'italic' | 'size' | 'image'>) => number;
+export type MarkupMeasure = (piece: Pick<MarkupSpan, 'text' | 'bold' | 'italic' | 'size' | 'image' | 'tag'>) => number;
 
 /**
  * Wraps already-parsed spans into lines, word by word, each word measured under its own span's
@@ -268,7 +284,14 @@ export function layoutMarkupLines(
 		parts.forEach((part, index) => {
 			if (index > 0) pieces.push({ text: '', bold: span.bold, italic: span.italic, hardBreak: true });
 			for (const word of part.match(/\S+|\s+/g) ?? []) {
-				pieces.push({ text: word, bold: span.bold, italic: span.italic, color: span.color, size: span.size });
+				pieces.push({
+					text: word,
+					bold: span.bold,
+					italic: span.italic,
+					color: span.color,
+					size: span.size,
+					tag: span.tag,
+				});
 			}
 		});
 	}
@@ -319,7 +342,8 @@ function mergeMarkupSpans(pieces: readonly MarkupSpan[]): MarkupSpan[] {
 			last.bold === piece.bold &&
 			last.italic === piece.italic &&
 			last.color === piece.color &&
-			last.size === piece.size
+			last.size === piece.size &&
+			last.tag === piece.tag
 		) {
 			last.text += piece.text;
 		} else {
@@ -424,6 +448,8 @@ export function escapeHtml(text: string): string {
 function opened(style: Style, name: string, body: string): Style {
 	if (name === 'b') return { ...style, bold: true };
 	if (name === 'i') return { ...style, italic: true };
+	//a custom tag is an opaque styling container: it carries its own name, nothing else
+	if (name !== 'span') return { ...style, tag: name };
 
 	const color = attribute(body, 'color');
 	const size = Number(attribute(body, 'size') ?? '');

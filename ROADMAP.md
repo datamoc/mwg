@@ -4392,11 +4392,19 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      an explicit argument rather than the item's bare `createLayers(names)`, because "attached" is
      the point and a returned-but-unattached list would leave the caller adding them in order
      anyway. Two tests in `tests/create-layers.test.ts`.~~
-313. [Low] Let `RichLabel`/`MarkupText` accept `tagStyles` the way a bare `Text2D` does (the
+313. ~~[Low] Let `RichLabel`/`MarkupText` accept `tagStyles` the way a bare `Text2D` does (the
      same port's report). A game building narration through `new Text2D({ tagStyles })` for
      custom inline tags beyond `markup.ts`'s fixed set currently cannot reach that through
      either UI widget, so it builds its own `Text2D` instead of using a framework widget for
-     what is otherwise exactly a `RichLabel`'s job.
+     what is otherwise exactly a `RichLabel`'s job.~~ Landed, with the parser doing the half that
+     makes it more than a pass-through: `MarkupOptions.tags` names the custom tags and a run
+     inside one carries `MarkupSpan.tag`, so `MarkupText` both draws the tag's Pixi style and
+     measures the run under it (a custom tag that changes the font wraps where its glyphs land,
+     not where the base font would). `RichLabel` needed nothing in `markdown.ts`: `HTMLText`
+     parses tags itself, so a registered tag is un-escaped back into a real element and an
+     unregistered one still escapes to literal text. Four parser tests in `tests/markup.test.ts`
+     and four widget tests in the new `tests/text-widgets.test.ts`, which construct both widgets
+     headlessly (Pixi needs a renderer to draw text, not to build it).~~
 314. ~~[Low] Unit-filter coordinates accept the ranges and lists a moveto event already does
      (found reconciling 294). `unitMatchesFilter` compared `Number(attributes.x)`, so a
      `[filter] x=10-99` or `x=1,2,4-5` (which a real Wesnoth scenario writes) matched nothing,

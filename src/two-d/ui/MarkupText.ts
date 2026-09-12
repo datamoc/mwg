@@ -1,4 +1,4 @@
-import { Container, Texture } from 'pixi.js';
+import { Container, Texture, type TextStyleOptions } from 'pixi.js';
 import { Sprite2D, Text2D } from '../render/Shape2D.ts';
 import type { Texture2D } from '../render/Types2D.ts';
 import { texture } from '../../assets/loader.ts';
@@ -28,6 +28,11 @@ export interface MarkupTextOptions {
 	resolveImage?: (path: string) => Texture2D;
 	/** what a `$name` in the text becomes, the same contract `parseMarkup` takes */
 	variables?: Readonly<Record<string, string>>;
+	/**
+	 * Pixi `Text` tag styles for custom inline tags, the same option a bare `Text2D` takes:
+	 * supplying `<quest>`, say, makes `<quest>...</quest>` a styled run rather than literal text.
+	 */
+	tagStyles?: Readonly<Record<string, TextStyleOptions>>;
 }
 
 /**
@@ -79,7 +84,11 @@ export class MarkupText extends Container {
 		const context = canvasContext();
 		const measure: MarkupMeasure = (piece) => this.measurePiece(piece, t, lineHeight, resolveImage, context);
 
-		const spans = parseMarkup(this.opts.text ?? '', { variables: this.opts.variables });
+		const tagStyles = this.opts.tagStyles;
+		const spans = parseMarkup(this.opts.text ?? '', {
+			variables: this.opts.variables,
+			tags: tagStyles === undefined ? undefined : new Set(Object.keys(tagStyles)),
+		});
 		const lines = layoutMarkupLines(spans, measure, wrapWidth);
 		const runs = positionMarkupLines(lines, {
 			measure,
@@ -101,29 +110,56 @@ export class MarkupText extends Container {
 	}
 
 	private measurePiece(
-		piece: Pick<MarkupSpan, 'text' | 'bold' | 'italic' | 'size' | 'image'>,
+		piece: Pick<MarkupSpan, 'text' | 'bold' | 'italic' | 'size' | 'image' | 'tag'>,
 		t: Theme,
 		lineHeight: number,
 		resolveImage: (path: string) => Texture2D,
 		context: CanvasRenderingContext2D | null,
 	): number {
 		if (piece.image !== undefined) return imageDisplaySize(resolveImage(piece.image), lineHeight).width;
-		if (!context) return piece.text.length * (piece.size ?? t.font.size);
-		context.font = fontString(piece, t.font.family, t.font.size);
+		const font = this.resolvedFont(piece, t);
+		if (!context) return piece.text.length * font.size;
+		context.font = `${font.italic ? 'italic ' : ''}${font.bold ? 'bold ' : ''}${font.size}px ${font.family}`;
 		return context.measureText(piece.text).width;
 	}
 
+	/** the Pixi tag style for a run's custom tag, or undefined for a built-in styled run */
+	private tagStyle(tag: string | undefined): TextStyleOptions | undefined {
+		return tag === undefined || this.opts.tagStyles === undefined ? undefined : this.opts.tagStyles[tag];
+	}
+
+	/**
+	 * The font a run is measured and drawn with: a custom tag's own family/size/weight/style when it
+	 * sets them, the run's built-in style otherwise. Both `measurePiece` and `textFor` read this, so
+	 * a tag's larger font wraps where its wider glyphs land rather than where the base font would.
+	 */
+	private resolvedFont(
+		piece: Pick<MarkupSpan, 'bold' | 'italic' | 'size' | 'tag'>,
+		t: Theme,
+	): { family: string; size: number; bold: boolean; italic: boolean } {
+		const tag = this.tagStyle(piece.tag);
+		return {
+			family: typeof tag?.fontFamily === 'string' ? tag.fontFamily : t.font.family,
+			size: typeof tag?.fontSize === 'number' ? tag.fontSize : (piece.size ?? t.font.size),
+			bold: tag?.fontWeight !== undefined ? fontWeightIsBold(tag.fontWeight) : piece.bold,
+			italic: tag?.fontStyle !== undefined ? fontStyleIsItalic(tag.fontStyle) : piece.italic,
+		};
+	}
+
 	private textFor(span: MarkupSpan, t: Theme, lineHeight: number): Text2D {
+		const font = this.resolvedFont(span, t);
+		const tag = this.tagStyle(span.tag);
 		return new Text2D({
 			text: span.text,
 			resolution: this.opts.resolution,
 			style: {
-				fontFamily: t.font.family,
-				fontSize: span.size ?? t.font.size,
-				fontWeight: span.bold ? 'bold' : 'normal',
-				fontStyle: span.italic ? 'italic' : 'normal',
+				fontFamily: font.family,
+				fontSize: font.size,
+				fontWeight: font.bold ? 'bold' : 'normal',
+				fontStyle: font.italic ? 'italic' : 'normal',
 				fill: span.color ?? t.color.text,
 				lineHeight,
+				...tag,
 			},
 		});
 	}
@@ -152,10 +188,17 @@ function canvasContext(): CanvasRenderingContext2D | null {
 	return measureContext;
 }
 
-function fontString(piece: Pick<MarkupSpan, 'bold' | 'italic' | 'size'>, family: string, fallbackSize: number): string {
-	const style = piece.italic ? 'italic ' : '';
-	const weight = piece.bold ? 'bold ' : '';
-	return `${style}${weight}${piece.size ?? fallbackSize}px ${family}`;
+/** whether a Pixi font weight reads as bold, for measuring a run under its tag's style */
+function fontWeightIsBold(weight: TextStyleOptions['fontWeight']): boolean {
+	if (weight === 'bold' || weight === 'bolder') return true;
+	if (weight === 'normal' || weight === 'lighter') return false;
+	const numeric = Number(weight);
+	return Number.isFinite(numeric) && numeric >= 600;
+}
+
+/** whether a Pixi font style reads as italic, for measuring a run under its tag's style */
+function fontStyleIsItalic(style: TextStyleOptions['fontStyle']): boolean {
+	return style === 'italic' || style === 'oblique';
 }
 
 /** an image run's drawn size: the line's own height, with the texture's aspect ratio kept */

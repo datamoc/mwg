@@ -1,4 +1,4 @@
-import { HTMLText, HTMLTextStyle } from 'pixi.js';
+import { HTMLText, HTMLTextStyle, type HTMLTextStyleOptions } from 'pixi.js';
 import { theme, themeChanged, type Theme } from './theme.ts';
 import { normalizeTextOptions, themedAlign, type ThemedTextOptions } from './themedText.ts';
 import { parseMarkdown, sliceSpans, stripMarkdown, type MarkdownSpan } from './markdown.ts';
@@ -7,6 +7,11 @@ import { startReveal, advanceReveal, completeReveal, type RevealState } from './
 export interface RichLabelOptions extends ThemedTextOptions {
 	/** Text texture resolution; omit to use the renderer default. */
 	resolution?: number;
+	/**
+	 * Pixi `HTMLText` tag styles for custom inline tags, the same option a bare `Text2D` takes:
+	 * supplying `<quest>`, say, makes `<quest>...</quest>` a styled run rather than escaped text.
+	 */
+	tagStyles?: Record<string, HTMLTextStyleOptions>;
 }
 
 /**
@@ -31,6 +36,7 @@ export interface RichLabelOptions extends ThemedTextOptions {
  */
 export class RichLabel extends HTMLText {
 	private readonly opts: RichLabelOptions;
+	private readonly tags: readonly string[];
 	private readonly themeListener = (t: Theme) => this.restyle(t);
 	private revealSpans: MarkdownSpan[] | null = null;
 	private reveal: RevealState | null = null;
@@ -38,9 +44,10 @@ export class RichLabel extends HTMLText {
 	constructor(options: RichLabelOptions | string = {}) {
 		const opts = normalizeTextOptions(options);
 		const t = theme();
+		const tags = opts.tagStyles === undefined ? [] : Object.keys(opts.tagStyles);
 
 		super({
-			text: toHtml(opts.text ?? ''),
+			text: toHtml(opts.text ?? '', tags),
 			resolution: opts.resolution,
 			style: new HTMLTextStyle({
 				fontFamily: t.font.family,
@@ -52,10 +59,12 @@ export class RichLabel extends HTMLText {
 				wordWrap: opts.wrapWidth !== undefined,
 				wordWrapWidth: opts.wrapWidth ?? 0,
 				breakWords: true,
+				tagStyles: opts.tagStyles,
 			}),
 		});
 
 		this.opts = opts;
+		this.tags = tags;
 		themeChanged.add(this.themeListener);
 	}
 
@@ -64,7 +73,7 @@ export class RichLabel extends HTMLText {
 		//an instant set cancels any reveal in progress - the two never interleave
 		this.revealSpans = null;
 		this.reveal = null;
-		const html = toHtml(value);
+		const html = toHtml(value, this.tags);
 		if (this.text !== html) this.text = html;
 	}
 
@@ -99,7 +108,7 @@ export class RichLabel extends HTMLText {
 	private renderRevealed(): void {
 		if (!this.reveal || !this.revealSpans) return;
 		//through the field rather than setText, which cancels a reveal in progress
-		const html = toHtmlSpans(sliceSpans(this.revealSpans, this.reveal.revealed));
+		const html = toHtmlSpans(sliceSpans(this.revealSpans, this.reveal.revealed), this.tags);
 		if (this.text !== html) this.text = html;
 	}
 
@@ -125,14 +134,14 @@ export class RichLabel extends HTMLText {
 }
 
 /** styled spans to an HTML fragment; literal text is escaped so `a < b` never parses */
-function toHtml(source: string): string {
-	return toHtmlSpans(parseMarkdown(source));
+function toHtml(source: string, tags: readonly string[]): string {
+	return toHtmlSpans(parseMarkdown(source), tags);
 }
 
-function toHtmlSpans(spans: readonly MarkdownSpan[]): string {
+function toHtmlSpans(spans: readonly MarkdownSpan[], tags: readonly string[]): string {
 	return spans
 		.map((span) => {
-			let text = escapeHtml(span.text);
+			let text = escapeHtml(span.text, tags);
 			if (span.italic) text = `<i>${text}</i>`;
 			if (span.bold) text = `<b>${text}</b>`;
 			return text;
@@ -140,6 +149,14 @@ function toHtmlSpans(spans: readonly MarkdownSpan[]): string {
 		.join('');
 }
 
-function escapeHtml(text: string): string {
-	return text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+/**
+ * Escapes literal text, then un-escapes the registered custom tags again, so `a < b` never parses
+ * but `<quest>...</quest>` survives as a real element for `HTMLText`'s own `tagStyles` to match.
+ */
+function escapeHtml(text: string, tags: readonly string[]): string {
+	let html = text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+	for (const tag of tags) {
+		html = html.replaceAll(`&lt;${tag}&gt;`, `<${tag}>`).replaceAll(`&lt;/${tag}&gt;`, `</${tag}>`);
+	}
+	return html;
 }

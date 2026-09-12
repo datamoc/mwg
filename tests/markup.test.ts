@@ -294,3 +294,36 @@ test('an RTL sample flows right to left, first logical span rightmost', () => {
 	assert.ok(runs[0].x > runs[1].x, 'the first logical span is the rightmost one');
 	assert.ok(runs[1].x < runs[0].x, 'the bold span flows to the left of the plain one');
 });
+
+test('a custom tag named in `tags` becomes a styling run carrying its own name', () => {
+	const spans = parseMarkup('Take <quest>the amulet</quest> now', { tags: new Set(['quest']) });
+
+	assert.deepEqual(spans, [
+		{ text: 'Take ', bold: false, italic: false },
+		{ text: 'the amulet', bold: false, italic: false, tag: 'quest' },
+		{ text: ' now', bold: false, italic: false },
+	]);
+});
+
+test('a custom tag nests with emphasis, and a tag nothing names stays literal', () => {
+	const nested = parseMarkup('<quest>A<b>B</b>C</quest>', { tags: new Set(['quest']) });
+	assert.deepEqual(nested, [
+		{ text: 'A', bold: false, italic: false, tag: 'quest' },
+		{ text: 'B', bold: true, italic: false, tag: 'quest' },
+		{ text: 'C', bold: false, italic: false, tag: 'quest' },
+	]);
+
+	assert.equal(stripMarkup('<quest>hi</quest>'), '<quest>hi</quest>');
+});
+
+test('markupToHtml keeps a custom tag as a real element for an HTML-speaking renderer', () => {
+	const html = markupToHtml(parseMarkup('<quest>Find</quest>', { tags: new Set(['quest']) }));
+
+	assert.equal(html, '<quest>Find</quest>');
+});
+
+test('adjacent words under the same custom tag still merge into one run', () => {
+	const spans = parseMarkup('<quest>one two</quest>', { tags: new Set(['quest']) });
+
+	assert.deepEqual(spans, [{ text: 'one two', bold: false, italic: false, tag: 'quest' }]);
+});

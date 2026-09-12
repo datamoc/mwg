@@ -371,7 +371,10 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   size and image a renderer may use, kept as written because resolving them is the renderer's
   business. Unknown tags, malformed tags and unset variables stay literal rather than disappearing,
   and `markupToHtml` is the escaped HTML fragment for a renderer that speaks HTML text - it now
-  also renders colour and size, as an inline style. `markupAccessibilityText` is the proper
+  also renders colour and size, as an inline style. `MarkupOptions.tags` (item 313) names extra
+  tags to treat as styling containers; a run inside one carries its name in `MarkupSpan.tag`, so a
+  renderer can resolve its style (Pixi's `tagStyles`) while the parser stays renderer-neutral, and
+  `markupToHtml` re-emits that tag as a real element for `HTMLText`. `markupAccessibilityText` is the proper
   accessibility projection (an image becomes a caller-described string, not its raw path, which
   `stripMarkup` keeps for round-tripping instead). `layoutMarkupLines` wraps already-parsed spans
   word by word against a caller-supplied `MarkupMeasure`, each word measured under its own
@@ -385,14 +388,18 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   `RichLabel`'s HTML text: one `Text2D` per styled run and one `Sprite2D` per `<img>` span,
   resolved through the asset resolver, so an image is drawn rather than a caller positioning it
   itself at a `layoutMarkupLines` offset. It reads `direction` from the theme and takes
-  `maxWidth`/`lineHeight`/`align`/`resolveImage`/`variables`/`resolution` options.
+  `maxWidth`/`lineHeight`/`align`/`resolveImage`/`variables`/`resolution` options, plus
+  `tagStyles` (item 313): a Pixi `TextStyleOptions` record keyed by custom tag, applied to each
+  run and used when measuring it, so `<quest>...</quest>` is styled and wraps under its own font.
 - `RichLabel`/`parseMarkdown`/`stripMarkdown`/`sliceSpans` - basic inline markdown (`**bold**`,
   `*italic*`, combined `***both***`, backslash escapes) through Pixi `HTMLText`, which is
   what makes mixed styles inside one string possible at all. `parseMarkdown` is pure
   span-splitting (unmatched markers stay literal); `stripMarkdown` recovers plain text;
   `sliceSpans` takes the first N visible characters with styles kept, for progressive
   reveal without leaking half-shown markers. Costs more than a `Label`, so this is for
-  descriptions and help bodies, not per-frame numbers.
+  descriptions and help bodies, not per-frame numbers. `tagStyles` (item 313) takes Pixi
+  `HTMLTextStyleOptions` keyed by custom tag; a registered tag survives escaping as a real element
+  for `HTMLText` to style, while an unregistered one is still escaped as literal text.
 - `startReveal`/`advanceReveal`/`completeReveal`/`revealComplete` - the shared
   progressive-display primitive: one character count behind `MessageBox` pages (which
   already revealed this way), `Label` lines, and `RichLabel` markdown. `Label` and
