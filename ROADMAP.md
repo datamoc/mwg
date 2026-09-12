@@ -4195,16 +4195,26 @@ The port's own `ROADMAP.md` section 11A continues past P0-P2 (278-282 above) wit
 recorded here in the same low-priority, append-only way as everything else in this list -
 ordered by the port's own payoff estimate, not argued into or out of a different order here.
 
-297. [Medium] Re-export extension pipes from a facade (the port's P3). `TilingSpritePipe`/
+297. ~~[Medium] Re-export extension pipes from a facade (the port's P3). `TilingSpritePipe`/
      `NineSliceSpritePipe` and the extensions that register them have no facade name, forcing
      a direct `pixi.js` import to reach them, even though the interop doc says backend access
      is confined to one file. A `registerBuiltinPipes()` helper, or re-exporting the three
-     symbols from `two-d/pixi-interop`, would close the port's last direct `pixi.js` import.
-298. [Low] Fix contradictory interop doc comments (the port's P4). `Shape2D.d.ts` says
+     symbols from `two-d/pixi-interop`, would close the port's last direct `pixi.js` import.~~
+     Landed as both: `two-d/pixi-interop.ts` now re-exports `TilingSpritePipe`/
+     `NineSliceSpritePipe` themselves, and `registerBuiltinPipes()` (`extensions.add` on each,
+     idempotent the same way `registerColorTransform` already is) for the one case a bare
+     re-export cannot cover - a consumer bundler that tree-shook the pipe away despite the full
+     `pixi.js` package being imported. Two tests in `tests/pixi-interop.test.ts`.
+298. ~~[Low] Fix contradictory interop doc comments (the port's P4). `Shape2D.d.ts` says
      `Container2D` is a type alias a game cannot `new`, which contradicts `Types2D.d.ts`'s
      value re-export of the class itself; `pixi-interop.d.ts`'s "no registration needed"
      guarantee is actually Pixi's/mwg's `sideEffects` whitelist, not a universal one.
-     Doc-only, but the contradiction cost the port a session.
+     Doc-only, but the contradiction cost the port a session.~~ Landed: `Shape2D.ts`'s doc
+     comment now says `Container2D` is itself constructible (it is a value re-export, not a
+     type alias) and names `Node2D` as the preferred spelling instead; `pixi-interop.ts`'s doc
+     comment now says the no-registration guarantee is `pixi.js`'s own `sideEffects` list
+     surviving the *consumer's* bundler configuration, not a universal property, and points at
+     `registerBuiltinPipes` (297) for the case where it does not survive.
 299. [Medium] Pointer parity for `ListView` (the port's P5). `IconGrid` is pointer-driven
      (`tapCell`); `ListView` is keyboard-only, so a clickable bag or menu list has no built-in
      hit surface, and the port had to fill `ListItem.icon` with a full-row hit area as a

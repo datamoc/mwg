@@ -3,8 +3,10 @@ import { Container, Graphics, Text, TilingSprite, FillGradient, Sprite } from 'p
 /**
  * A plain grouping container under an MWG-owned name, for the common "just group some
  * children" need `Scene2D.stage` itself covers for the whole scene - a sub-layer inside it
- * (a HUD strip, a creature layer, a popup stack) still needs its own constructible class,
- * and `Container2D` (`Types2D.ts`) is a type alias, not something a game can `new`.
+ * (a HUD strip, a creature layer, a popup stack) still needs its own constructible class.
+ * `Container2D` (`Types2D.ts`) is itself a value re-export of the same underlying class, so
+ * `new Container2D()` also works; `Node2D` exists as the name this module and its own doc
+ * comments actually use, so a game reads one name rather than two for the same thing.
  *
  * A bare re-export under this name, deliberately: Pixi's own `Container` already does
  * everything this needs, so the point is not to add behaviour but to give a game a name it

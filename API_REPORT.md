@@ -8648,9 +8648,17 @@ build instead.
 
     export { Graphics } from 'pixi.js'
 
+### `NineSliceSpritePipe` (re-export)
+
+    export { NineSliceSpritePipe } from 'pixi.js'
+
 ### `Rectangle` (re-export)
 
     export { Rectangle } from 'pixi.js'
+
+### `registerBuiltinPipes` (function)
+
+    export declare function registerBuiltinPipes(): void;
 
 ### `Sprite` (re-export)
 
@@ -8667,6 +8675,10 @@ build instead.
 ### `TilingSprite` (re-export)
 
     export { TilingSprite } from 'pixi.js'
+
+### `TilingSpritePipe` (re-export)
+
+    export { TilingSpritePipe } from 'pixi.js'
 
 ## `./two-d/render`
 

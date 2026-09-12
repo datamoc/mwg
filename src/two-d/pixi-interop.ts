@@ -10,15 +10,55 @@
  * the game's own source. `FillGradient`/`TilingSprite` join the original four here for the
  * same reason `render.Gradient`/`TiledSprite` name them at the facade level (item 293).
  *
- * On the pipe-registration question item 293 also raised: `TilingSprite` and `NineSliceSprite`
- * (`ui.NinePatch`'s own backing class) both need their renderer pipe registered before use,
- * the same way `TintedSprite`'s colour-transform pipe does. Nothing here has to register one by
- * hand - this project imports the full `pixi.js` package everywhere (never a slimmed custom
- * bundle), and that package registers every built-in pipe, `TilingSpritePipe`/
- * `NineSliceSpritePipe` included, as a side effect of the import itself. The footgun item 293
- * named is real for a build using a trimmed Pixi bundle (the port's own `SPD_ARCHITECTURE`
- * notes flagged it in that context); it does not apply to `mwg`'s own source, which is why
- * there is no registration call to make here.
+ * On the pipe-registration question item 293 also raised (and item 297 named the two symbols
+ * that still had no facade name): `TilingSprite` and `NineSliceSprite` (`ui.NinePatch`'s own
+ * backing class) both need their renderer pipe registered before use, the same way
+ * `TintedSprite`'s colour-transform pipe does. This project's own build never has to call
+ * `registerBuiltinPipes` itself, because it imports the full `pixi.js` package everywhere
+ * (never a slimmed custom bundle) and that package registers every built-in pipe,
+ * `TilingSpritePipe`/`NineSliceSpritePipe` included, as a side effect of the import itself -
+ * but that guarantee is `pixi.js`'s own `package.json` `sideEffects` list surviving whatever
+ * bundler and tree-shaking configuration the *consumer* uses, not a universal one, and the
+ * port whose build tree-shook a pipe away is exactly the case this function is for.
+ *
+ * @example
+ * ```ts
+ * import { registerBuiltinPipes, TilingSprite } from '@datamoc/mw_games/two-d/pixi-interop';
+ *
+ * // only needed if a game's own bundler configuration tree-shook TilingSpritePipe/
+ * // NineSliceSpritePipe away; call before the renderer is created
+ * registerBuiltinPipes();
+ * const backdrop = new TilingSprite({ texture: undefined as never, width: 100, height: 100 });
+ * ```
  */
-export { Container, Sprite, Texture, Graphics, Rectangle, Text, FillGradient, TilingSprite } from 'pixi.js';
+export {
+	Container,
+	Sprite,
+	Texture,
+	Graphics,
+	Rectangle,
+	Text,
+	FillGradient,
+	TilingSprite,
+	TilingSpritePipe,
+	NineSliceSpritePipe,
+} from 'pixi.js';
 export type { SpriteOptions } from 'pixi.js';
+
+import { extensions, TilingSpritePipe, NineSliceSpritePipe } from 'pixi.js';
+
+let registered = false;
+
+/**
+ * Registers `TilingSpritePipe`/`NineSliceSpritePipe` with Pixi, for a build whose bundler
+ * tree-shook them away despite importing the full `pixi.js` package - see this module's own
+ * doc comment for why that can happen even without a deliberately slimmed bundle. Idempotent;
+ * a normal build never needs to call it.
+ */
+export function registerBuiltinPipes(): void {
+	if (registered) return;
+	registered = true;
+
+	extensions.add(TilingSpritePipe);
+	extensions.add(NineSliceSpritePipe);
+}

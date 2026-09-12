@@ -11,9 +11,16 @@ the public API may still change between minor versions.
 
 - `core.clamp`, replacing two byte-identical private `clamp` helpers in `rpg.Collision` and
   `two-d.render.Camera`.
+- `two-d/pixi-interop`'s `registerBuiltinPipes()` (item 297), plus re-exporting
+  `TilingSpritePipe`/`NineSliceSpritePipe` themselves, for a consumer bundler that tree-shook
+  a built-in Pixi pipe away despite importing the full `pixi.js` package.
 
 ### Fixed
 
+- Corrected two contradictory doc comments (item 298): `Shape2D.ts` claimed `Container2D` was
+  a type alias a game could not `new`, when it is a value re-export and always was; and
+  `pixi-interop.ts`'s "no registration needed" guarantee is `pixi.js`'s own `sideEffects` list
+  surviving the consumer's own bundler, not a universal property.
 - `withTextureCanvas`'s pixel-level modifiers (`~BLIT`/`~MASK`/`~BLEND`/`~ROTATE` in
   `applyTextureModifiers`, and `recolorTexture`) called a real
   `CanvasRenderingContext2D.putImageData` with a plain `{data, width, height}` object, which a
