@@ -301,6 +301,20 @@ export class Camera {
 		this.shakeRemaining = this.shakeDuration = duration;
 	}
 
+	/**
+	 * `shake`, taking `intensity` in screen pixels rather than world units.
+	 *
+	 * `shake`'s own magnitude is world units because the offset it produces feeds
+	 * `clampedCentre` alongside every other world-space camera field; a caller thinking in
+	 * screen pixels (a convention several game engines use for this exact call) otherwise
+	 * has to divide by `zoom` at every call site itself. This does that division once, so
+	 * the shake still reads as `intensity` pixels on screen at whatever zoom is current when
+	 * it starts, matching what a caller asked for rather than what world-space asked for.
+	 */
+	shakeScreen(intensity: number, duration = 0.4): void {
+		this.shake(intensity / this._zoom, duration);
+	}
+
 	update(dt: number): void {
 		if (this.followTarget && this.followIntensity > 0) {
 			//half the view's world-unit size, not this.view itself: that getter also clamps to

@@ -270,6 +270,9 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   angle that keeps a label drawn into the world upright. Free rotation (item 286): `rotateTo` turns
   to any angle immediately and `animateRotationTo` eases towards one, shorter way around the turn,
   sharing the same angle and the same `toScreen`/`toWorld`/`view` math the stepped API uses.
+  `shakeScreen(intensity, duration)` (item 303) is `shake` taking screen pixels instead of world
+  units, dividing by the current `zoom` once so a caller thinking in screen pixels (a convention
+  several engines use for this call) does not have to at every call site.
 - `Viewport`/`splitScreenHalves` - a camera scoped to one screen region, for split-screen.
 - `createColorBlindnessFilter`/`COLOR_BLINDNESS_MATRICES` - accessibility colour filters.
 - `Minimap`/`newlyRevealed`/`minimapCellCenter`/`MinimapMarker` - bakes an explored-cell set

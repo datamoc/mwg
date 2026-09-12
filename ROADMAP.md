@@ -4261,9 +4261,14 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      already did. Six new tests in `tests/screen-effects.test.ts`, including the hold-keeps-
      tint case, an instant-step cascade, an empty sequence, and one sequence replacing another
      mid-flight.
-303. [Low] A screen-pixel shake helper (the port's P9). `Camera.shake` is world units, while
+303. ~~[Low] A screen-pixel shake helper (the port's P9). `Camera.shake` is world units, while
      the reference's own convention (43 call sites) is screen pixels, forcing a conversion at
-     every site. `shakeScreen(intensity, duration)` would remove it.
+     every site. `shakeScreen(intensity, duration)` would remove it.~~ Landed exactly as named:
+     `shakeScreen(intensity, duration)` divides by the current `zoom` once and calls `shake`,
+     so the shake still reads as `intensity` screen pixels regardless of zoom. Two tests in
+     `tests/camera.test.ts` check the rendered offset's screen-pixel bound holds across
+     several zoom levels, and that zoom 1 (where screen pixels and world units coincide)
+     matches a direct `shake` call of the same magnitude.
 304. [Low] Document, or make configurable, what MWL row ids are scoped to (the port's P10).
      `validateCatalog` keys on `tag:id` document-wide, so a domain-scoped row-naming
      convention yields one `MWL_DUPLICATE_ID` per reuse (42 in this port's data) that cannot

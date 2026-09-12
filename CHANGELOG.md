@@ -25,6 +25,8 @@ the public API may still change between minor versions.
   fade/hold/flash steps end to end as one call, for the hold-then-fade-back transition
   `fadeOut`/`fadeIn`/`flash` alone cannot express; `update` keeps returning false at every
   step boundary, true only once the whole sequence finishes.
+- `two-d.render.Camera.shakeScreen(intensity, duration)` (item 303): `shake` taking screen
+  pixels instead of world units.
 
 ### Changed
 

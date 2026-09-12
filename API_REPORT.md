@@ -381,6 +381,8 @@ build instead.
         stopFollowing(): void;
 
         shake(magnitude: number, duration?: number): void;
+
+        shakeScreen(intensity: number, duration?: number): void;
         update(dt: number): void;
 
         toScreen(x: number, y: number): {
@@ -6897,6 +6899,8 @@ build instead.
         stopFollowing(): void;
 
         shake(magnitude: number, duration?: number): void;
+
+        shakeScreen(intensity: number, duration?: number): void;
         update(dt: number): void;
 
         toScreen(x: number, y: number): {
@@ -8894,6 +8898,8 @@ build instead.
         stopFollowing(): void;
 
         shake(magnitude: number, duration?: number): void;
+
+        shakeScreen(intensity: number, duration?: number): void;
         update(dt: number): void;
 
         toScreen(x: number, y: number): {

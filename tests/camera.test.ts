@@ -88,6 +88,48 @@ test('a camera without pixelPerfectTileSize keeps a fractional zoom exactly', ()
 	assert.equal(camera.zoom, 2.3);
 });
 
+// ------------------------------------------------------------------- shake
+
+test('shakeScreen keeps its screen-pixel bound on the rendered offset regardless of zoom', () => {
+	//world.x/world.y are the rendered container offset in screen pixels (apply() multiplies
+	//the world-space shake by zoom), so shakeScreen(intensity)'s effect on them should be
+	//bounded by intensity screen pixels no matter what zoom converted it from
+	for (const zoom of [1, 2, 4]) {
+		const camera = new Camera({ zoom });
+		camera.setViewport(20, 20);
+		camera.snapTo(50, 50);
+		const baseline = camera.world.x;
+
+		camera.shakeScreen(12, 1);
+		camera.update(0); // no damping yet: full magnitude in play
+
+		const deviation = Math.abs(camera.world.x - baseline);
+		assert.ok(deviation <= 12 + 1, `zoom ${zoom}: expected at most ~12 screen px of shake, got ${deviation}`);
+	}
+});
+
+test('shakeScreen at zoom 1 has the same bound as shake with the same magnitude', () => {
+	const a = new Camera({ zoom: 1 });
+	a.setViewport(20, 20);
+	a.snapTo(50, 50);
+	const baselineA = a.world.x;
+
+	const b = new Camera({ zoom: 1 });
+	b.setViewport(20, 20);
+	b.snapTo(50, 50);
+	const baselineB = b.world.x;
+
+	a.shakeScreen(15, 1);
+	b.shake(15, 1);
+	a.update(0);
+	b.update(0);
+
+	//at zoom 1, screen pixels and world units coincide, so both calls should land within
+	//the same 15-unit bound even though the draw itself is random
+	assert.ok(Math.abs(a.world.x - baselineA) <= 15 + 1);
+	assert.ok(Math.abs(b.world.x - baselineB) <= 15 + 1);
+});
+
 // ------------------------------------------------------------------- screen-region offset (split screen)
 
 test('setViewport defaults its screen offset to 0, unchanged from a full-screen camera', () => {
