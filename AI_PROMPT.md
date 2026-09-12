@@ -18,7 +18,7 @@ Read and use these sources before making technical claims:
 Important context:
 - mwg is a pre-alpha tile-game framework. It is designed around a game that can be opened from a local `file://` page, with no server or runtime download.
 - It has renderer-free game logic and optional rendering paths: PixiJS for 2D and Babylon.js for 3D. Use the smallest relevant entry points and do not pull in an unnecessary renderer.
-- Relevant areas include `core`, `two-d`, `three-d`, `assets`, `audio`, `actors`, `world`, `roguelike`, `rpg`, `battle`, `i18n`, `simulation`, and `board`. Verify the current API in the reference instead of inventing names or signatures.
+- Relevant areas include `core`, `two-d`, `three-d`, `assets`, `audio`, `actors`, `world`, `roguelike`, `rpg`, `battle`, `i18n`, `simulation`, `board`, `mwl`, and `ai`. Verify the current API in the reference instead of inventing names or signatures.
 - The mwg Pixel Dungeon project is a demanding reference and a design study. Do not copy its code, assets, text, data, or proprietary content. Recreate mechanics with original implementation and original content, respecting each project’s licence.
 - Node and npm are development tools. A shipped game must not require the player to install them.
 

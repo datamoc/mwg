@@ -92,7 +92,7 @@
 	},
 	"tools": {
 		"files": 35,
-		"lines": 6345
+		"lines": 6346
 	},
 	"examples": {
 		"count": 22,
@@ -132,7 +132,7 @@
 	},
 	"bundle": {
 		"globalRaw": 1009608,
-		"globalGzip": 298756,
+		"globalGzip": 299365,
 		"distRaw": 3198445
 	},
 	"quality": {

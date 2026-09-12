@@ -284,9 +284,6 @@ the public API may still change between minor versions.
 - A stack keys on `key` alone, as Java's `stacks.get(key)` does. The old rule wanted the same key
   *and* the same origin, which this framework had invented. A caller that reused one key for two
   different targets now sees their lines stacked together, and has to give each target its own key.
-
-### Changed
-
 - One side identity in `MwlWorld` (item 277): `unit.side`, `MwlMessage.side`, `MwlMap.starts` keys
   and every `side`/`side_filter` attribute now hold the string `id` `[side]` declares, so a named
   side (`id=rebels`) works throughout. `MwlSideRef` is just that id. The `[side] id` and the other

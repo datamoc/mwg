@@ -22,7 +22,7 @@ renders: the scene lifecycle, `SceneStack`, input, saves, RNG, signals, achievem
 
 | renderer-free | Pixi | Babylon |
 | --- | --- | --- |
-| `core`, `i18n`, `actors`, `world`, `battle`, `simulation`, `roguelike`, `board`, `audio`, `rpg`, `ai`, `mwl`, `assets/paths` | `two-d` (and `two-d/render`, `two-d/ui`, `two-d/stage`), `assets` | `3d` |
+| `core`, `i18n`, `actors`, `world`, `battle`, `simulation`, `roguelike`, `board`, `audio`, `rpg`, `ai`, `mwl`, `assets/paths` | `two-d` (and `two-d/render`, `two-d/ui`, `two-d/stage`), `assets` | `three-d` (the `3d` subpath) |
 
 `roguelike` adds only `rot-js`, and `pixi.js`, `@babylonjs/core`/`@babylonjs/loaders` and
 `@capacitor/core` are optional peer dependencies rather than installed ones, so a project names

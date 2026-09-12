@@ -174,7 +174,7 @@ function measureBundle() {
 	for (const path of walk(join(root, 'dist'))) {
 		if (!path.endsWith('.map')) distRaw += statSync(path).size;
 	}
-	return { globalRaw: global.length, globalGzip: gzipSync(global, { level: 9 }).length, distRaw };
+	return { globalRaw: global.length, globalGzip: gzipSync(global).length, distRaw };
 }
 
 function* walk(directory) {

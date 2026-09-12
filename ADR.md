@@ -29,11 +29,10 @@ paths without naming a renderer).
 constructible sprite" half - a game can construct plain sprites, shapes, text, and containers
 without naming Pixi. What remains is the dependency-shape question, not the type surface:
 `pixi-interop.ts` is a literal `export { Container, Sprite, Texture, Graphics, Rectangle, Text }
-from 'pixi.js'`, so using the escape hatch still means `pixi.js` is present at the value level,
-and `package.json`'s `dependencies` still lists `pixi.js` directly. ROADMAP item 175 decided that
-question and shipped in 0.7.6: `pixi.js` is now an optional peer dependency (the `@babylonjs/core`
-treatment) rather than a direct one, so a game that never touches the escape hatch does not install
-it. "A game consumes `mwg`, not PixiJS... directly" holds for every
+from 'pixi.js'`, so using the escape hatch still means `pixi.js` is present at the value level.
+ROADMAP item 175 decided the dependency-shape question and shipped in 0.7.6: `pixi.js` is now an
+optional peer dependency (the `@babylonjs/core` treatment) rather than a direct one, so only a game
+that touches the escape hatch installs it. "A game consumes `mwg`, not PixiJS... directly" holds for every
 *type* position across the public API (enforced by the scans above); the value-level exception is
 now exactly one documented file, not every ordinary sprite.
 
@@ -103,7 +102,7 @@ proves this composition works end to end, not just that the types happen to alig
 
 **Decision**: No rule, value, or vocabulary specific to a reference game enters `mwg`.
 
-**Status**: Accepted, and already this project's standing convention (CLAUDE.md's "no code or
+**Status**: Accepted, and already this project's standing convention (AGENTS.md's "no code or
 media from the reference games" section, predating this document).
 
 **Where**: every primitive added across items 164-166 - `EntityRegistry`, `SimulationRuntime`,

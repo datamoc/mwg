@@ -13,7 +13,7 @@ by double-clicking. Run from the repo root.
 | `extract-rgssad` | Decrypts an RPG Maker XP/VX archive to plain files (vendored decoder, developer-side only) | `npm run extract:rgssad -- <archive.rgssad> <outDir>` |
 | `multiplayer-server` | Reference lockstep server for `core.LockstepClient` | `npm run multiplayer:server` |
 | `mwl` | Compiles MWL content (`[game]`/`[scenario]`/`[side]`/`[unit]`/`[event]`/`[campaign]`) into a game-data module, an i18n catalog and an asset manifest | `npm run mwl -- build <contentDir> -o <outDir>` |
-| `extract-html` | Splits the resources embedded in an HTML file (scripts, CSS, images) back out into files | `npm run extract:html -- <page.html> <outDir>` |
+| `extract-html` | Splits the resources embedded in an HTML file (scripts, CSS, images) back out into files | `npm run extract:html -- <page.html> -o <outDir>` |
 
 ## Shipping (`file://`)
 

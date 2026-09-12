@@ -42,9 +42,10 @@ required because the output must open via `file://` with no server.
 
 ## Architecture
 
-`src/` is organized into modules, each with its own `index.ts` barrel re-exported from the
-root `src/index.ts` (which is also what the standalone `mw_games.global.js` build exposes as
-`window.mw_games`):
+`src/` is organized into modules, each with its own `index.ts` barrel, re-exported from the root
+`src/index.ts` (which is also what the standalone `mw_games.global.js` build exposes as
+`window.mw_games`). `three-d` is the one exception, kept off the root barrel so a 2D game never pays
+for it, and `ui` and `stage` live under `two-d` rather than at the root:
 
 - **`core`** - `Scene` (lifecycle only: `create`/`update`/`resize`/`onSuspend`/`onResume`/
   `destroy`, owning no display node), `SceneStack`, `Signal` (typed event emitter), `Random`,
@@ -66,9 +67,9 @@ root `src/index.ts` (which is also what the standalone `mw_games.global.js` buil
   compiled build, `resolve` looks paths up in the global `window.__MWG_ASSETS__` map that
   `tools/compile-resources.mjs`-generated scripts populate. Game code calls `load(paths)`
   once per scene and everything after that is synchronous, asset code never awaits mid-scene.
-- **`ui`** - `Window`, `WindowStack` (keyboard focus goes to the top window only),
+- **`two-d/ui`** - `Window`, `WindowStack` (keyboard focus goes to the top window only),
   `ListView`, `MessageBox`, `Label`, `NinePatch`, `theme`.
-- **`stage`** - `DialogueStage` and a small `script` command interpreter for backdrop +
+- **`two-d/stage`** - `DialogueStage` and a small `script` command interpreter for backdrop +
   character conversation scenes (speaker lit, others dimmed, branching choices as data).
 - **`roguelike`** - `FieldOfView`, `Pathfinder` (incl. `autoExplore`), `Scheduler`
   (energy-cost turn order), `generate` (dungeon generation), `Level`. Built on `rot-js` for
@@ -118,9 +119,9 @@ root `src/index.ts` (which is also what the standalone `mw_games.global.js` buil
   `registerColorTransform` itself. Importing `TintedSprite` (directly, or via `TileMap`/
   `DialogueStage`/`AnimatedSprite`, all built on it) already registers the colour-transform pipe
   at module scope, so a game using it needs nothing extra; `GameOptions.extensions` is only for
-  registering a game's own Pixi extension. Pixi lives entirely under `two-d` (plus `rpg`,
-  which drives a `MessageBox`, and `assets/loader.ts`); `assets/paths.ts` resolves paths with
-  no renderer so `two-d` and `three-d` can share the compiled-asset map.
+  registering a game's own Pixi extension. Pixi lives entirely under `two-d` (plus
+  `assets/loader.ts`, which loads through Pixi); `assets/paths.ts` resolves paths with no renderer
+  so `two-d` and `three-d` can share the compiled-asset map.
 
 ### The `file://` constraint
 
@@ -154,7 +155,8 @@ screenshot.
 
 # Working notes for this repository
 
-Not committed, excluded through `.git/info/exclude`, which is itself local to the clone.
+`CLAUDE.md` beside this file is the local, `.git/info/exclude`-ignored copy a Claude-style agent
+reads; this `AGENTS.md` is committed and is the one that ships.
 
 ## Use whatever plugins and tools are actually relevant
 

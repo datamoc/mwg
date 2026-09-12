@@ -12,12 +12,12 @@ of their own; improvements to `mwg`'s own files are shared back.
 playable in the browser with no download, plus the generated API reference.
 
 **[AI project prompt](https://datamoc.github.io/mwg/ai-prompt/)**: a copy-ready prompt for
-planning or porting a demanding game with mwg, with links to the [mwg reference](REFERENCE.md)
+planning or porting a demanding game with mwg, with links to the [mwg reference](https://github.com/datamoc/mwg/blob/main/REFERENCE.md)
 and the [mwg Pixel Dungeon study](https://datamoc.github.io/mwg-pixel-dungeon/).
 
 > **Status: pre-alpha (v0.7.7).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
-> [ROADMAP.md](ROADMAP.md) for the full, numbered history.
+> [ROADMAP.md](https://github.com/datamoc/mwg/blob/main/ROADMAP.md) for the full, numbered history.
 >
 > 0.4.0 was the reshaping release: the renderer moved out of `mwg/core`, `render`/`ui`/`stage`
 > became `mwg/two-d`, and a set of names that meant several things each were made to mean one.
@@ -29,8 +29,8 @@ and the [mwg Pixel Dungeon study](https://datamoc.github.io/mwg-pixel-dungeon/).
 > a name beginning with A, 2.0 one beginning with B, and so on. None of the names are chosen
 > yet, and nothing depends on them until they are.
 >
-> **API stability:** everything documented in [REFERENCE.md](REFERENCE.md) and
-> [API_REPORT.md](API_REPORT.md) is meant to be stable from 1.0 on. Anything that is not carries
+> **API stability:** everything documented in [REFERENCE.md](https://github.com/datamoc/mwg/blob/main/REFERENCE.md) and
+> [API_REPORT.md](https://github.com/datamoc/mwg/blob/main/API_REPORT.md) is meant to be stable from 1.0 on. Anything that is not carries
 > an `@experimental` tag in its own doc comment, and is called out as experimental in the release
 > notes that introduce it, so it can still change or disappear without a major version. A rename
 > or a removal is deprecated first: the old name keeps working, its doc comment carries
@@ -143,7 +143,7 @@ them rather than pretending otherwise:
 The practical effect: resources are **compiled at build time**, so at runtime every lookup
 is synchronous. Game code never awaits an asset. The developer-side scripts behind this
 and the other workflows (translation editing, benchmarks, packaging) are listed in
-[tools.md](tools.md).
+[tools.md](https://github.com/datamoc/mwg/blob/main/tools.md).
 
 ## Capability spec
 
@@ -387,7 +387,7 @@ with `advanceToInput`.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full, numbered build order and implementation notes.
+See [ROADMAP.md](https://github.com/datamoc/mwg/blob/main/ROADMAP.md) for the full, numbered build order and implementation notes.
 The optional 3D group is now implemented without changing the existing 2D entry point.
 
 ## MWL

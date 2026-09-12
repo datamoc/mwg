@@ -55,7 +55,7 @@ size:check` compares the built global bundle and `dist` against the committed
 - `core` is renderer-free and imports no other `mwg` module. It owns scene lifecycle,
   input, signals, saves, random streams and related game logic.
 - `two-d` contains PixiJS rendering, UI and dialogue presentation.
-- `3d` contains the optional Babylon.js path.
+- `three-d` contains the optional Babylon.js path, published at the `3d` subpath.
 - `i18n`, `actors`, `world`, `battle`, `simulation`, `roguelike`, `board`, `audio`, `rpg`,
   `ai`, `mwl` and `assets/paths` are renderer-free.
 - Pixi batcher and high-shader internals belong only in

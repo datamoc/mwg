@@ -1,6 +1,6 @@
 /**
  * One entry per built example. Shared between index.html (a card grid, no iframes - a phone
- * cannot afford twenty-one live WebGL contexts on one page) and view.html (exactly one
+ * cannot afford twenty-two live WebGL contexts on one page) and view.html (exactly one
  * iframe at a time). No build step: plain data, opened straight from disk like the rest of
  * this site.
  *
@@ -127,6 +127,14 @@ window.MWG_EXAMPLES = [
 		description:
 			'A timing challenge layered over a room scene. It demonstrates scene stacking, suspension, and returning a result to the scene underneath.',
 		controls: '<kbd>Enter</kbd> stop the needle &nbsp;&middot;&nbsp; <kbd>Esc</kbd> leave the minigame',
+	},
+
+	{
+		id: 'multi-turn-beam',
+		level: 2,
+		title: 'Multi-turn beam',
+		description:
+			'<code>mwg/roguelike.MultiTurnBeam</code>: a deterministic beam advances one cell per turn, resolves the moving targets it reaches, and stops at an opaque blocker.',
 	},
 
 	// ------------------------------------------------------- Level 3: Complete reference games
