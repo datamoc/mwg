@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Texture } from 'pixi.js';
 import * as Random from '../src/core/Random.ts';
+import { setReducedMotion } from '../src/core/Motion.ts';
 import { ParticleEmitter } from '../src/two-d/render/Particles.ts';
 
 test('a new emitter is idle with nothing alive', () => {
@@ -290,4 +291,103 @@ test('the same seed reproduces the same spawn-area births', () => {
 		}
 	};
 	assert.deepEqual(run(), run());
+});
+
+test('a curve replaces the endpoint pair, so alpha and scale can do more than ramp', () => {
+	const smoke = (t: number): number => (t > 0.8 ? 2 - 2 * t : t * 0.5);
+	const emitter = new ParticleEmitter({ max: 1, life: 1, speed: 0, scale: (t) => 1 - t, alpha: smoke });
+	emitter.burst(1);
+	const particle = emitter.particles[0];
+
+	assert.equal(particle.scale, 1);
+	assert.equal(particle.alpha, 0);
+
+	emitter.update(0.5);
+	assert.ok(Math.abs(particle.scale - 0.5) < 1e-9);
+	assert.ok(Math.abs(particle.alpha - 0.25) < 1e-9, 'the steep half of the curve');
+
+	emitter.update(0.4); //age 0.9, past the elbow
+	assert.ok(Math.abs(particle.scale - 0.1) < 1e-9);
+	assert.ok(Math.abs(particle.alpha - 0.2) < 1e-9, 'the tail, where the endpoint pair had nothing left to say');
+});
+
+test('a tint range mixes channel by channel instead of through the packed value', () => {
+	Random.push(7);
+	try {
+		const emitter = new ParticleEmitter({ max: 64, life: 100, speed: 0, tint: [0xff0000, 0x00ff00] });
+		emitter.burst(64);
+
+		const seen = new Set<number>();
+		for (const particle of emitter.particles) {
+			const red = (particle.tint >> 16) & 0xff;
+			const green = (particle.tint >> 8) & 0xff;
+			const blue = particle.tint & 0xff;
+			assert.equal(blue, 0, 'neither end has any blue, so no particle may');
+			assert.equal(red + green, 255, 'and the mix stays on the line between them');
+			seen.add(particle.tint);
+		}
+		assert.ok(seen.size > 20, `each particle drew its own colour (got ${seen.size} distinct)`);
+	} finally {
+		Random.pop();
+	}
+});
+
+test('a plain tint is one colour for the whole emitter, and draws nothing', () => {
+	const run = (tint?: number) => {
+		Random.push(11);
+		try {
+			const emitter = new ParticleEmitter({ max: 16, life: 100, speed: [10, 90], spin: [-1, 1], tint });
+			emitter.burst(16);
+			return emitter.particles.map((p) => ({ x: p.x, y: p.y, life: p.life, tint: p.tint }));
+		} finally {
+			Random.pop();
+		}
+	};
+
+	const plain = run();
+	const tinted = run(0x123456);
+	const shape = (particles: Array<{ x: number; y: number; life: number }>) =>
+		particles.map((particle) => ({ x: particle.x, y: particle.y, life: particle.life }));
+
+	assert.deepEqual(shape(plain), shape(tinted), 'a seeded spray is unchanged by a plain tint');
+	for (const particle of plain) assert.equal(particle.tint, 0xffffff, 'white without one');
+	for (const particle of tinted) assert.equal(particle.tint, 0x123456);
+});
+
+test('a flicker wobbles the scale between its curve and the curve less the flicker', () => {
+	Random.push(13);
+	try {
+		const emitter = new ParticleEmitter({ max: 32, life: 100, speed: 0, scale: () => 1, flicker: 1, rate: 0 });
+		emitter.burst(32);
+
+		let flickered = 0;
+		for (let frame = 0; frame < 5; frame++) {
+			emitter.update(0.1);
+			for (const particle of emitter.particles) {
+				assert.ok(particle.scale >= 0 && particle.scale <= 1, `scale ${particle.scale} stays in [0, 1]`);
+				if (particle.scale < 1) flickered++;
+			}
+		}
+		assert.equal(flickered, 32 * 5, 'every particle flickers on every frame');
+	} finally {
+		Random.pop();
+	}
+});
+
+test('reduced motion drops the flicker along with the travel', () => {
+	Random.push(17);
+	try {
+		setReducedMotion(true);
+		const emitter = new ParticleEmitter({ max: 4, life: 100, speed: 50, scale: (t) => 1 - t, flicker: 1 });
+		emitter.burst(4);
+		emitter.update(0.5);
+
+		for (const particle of emitter.particles) {
+			assert.ok(Math.abs(particle.scale - 0.995) < 1e-12, 'the curve still plays');
+			assert.equal(particle.vx, 0, 'and the travel is still dropped');
+		}
+	} finally {
+		setReducedMotion(null);
+		Random.pop();
+	}
 });

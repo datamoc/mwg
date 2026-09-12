@@ -25,9 +25,12 @@ export interface Particle {
 	rotation: number;
 	spin: number;
 
-	/** current interpolated values, recomputed every step from the emitter's ranges */
+	/** current interpolated values, recomputed every step from the emitter's range or curve */
 	scale: number;
 	alpha: number;
+
+	/** this particle's own tint, picked once at birth from the emitter's range */
+	tint: number;
 
 	/**
 	 * Index into the emitter's `frames` for this particle's own age, or 0 without a frame
@@ -43,6 +46,13 @@ export interface Particle {
 
 /** a `[min, max]` range picked per particle; a bare number means that value exactly */
 export type ParticleRange = number | readonly [number, number];
+
+/**
+ * A value driven by a particle's own age, `t` running 0 at birth to 1 at death. What a pair
+ * of endpoints cannot say: a smoke puff whose alpha falls fast and then lingers, a spark that
+ * shrinks by halves, anything that curves.
+ */
+export type ParticleCurve = (t: number) => number;
 
 /**
  * Where in the emitter's local space a particle is born. Without one every particle starts at
@@ -93,11 +103,19 @@ export interface ParticleEmitterOptions {
 	/** constant acceleration, world units per second squared - the default falls nowhere */
 	gravity?: { x: number; y: number };
 
-	/** scale at birth and at death, interpolated across a particle's life */
-	scale?: readonly [number, number];
+	/** scale at birth and at death, interpolated across a particle's life, or a curve of it */
+	scale?: readonly [number, number] | ParticleCurve;
 
-	/** alpha at birth and at death */
-	alpha?: readonly [number, number];
+	/** alpha at birth and at death, or a curve of the particle's age - see `scale` */
+	alpha?: readonly [number, number] | ParticleCurve;
+
+	/**
+	 * A per-frame wobble on the scale, between 0 and 1: each frame every particle's scale is
+	 * multiplied by a seeded draw in `[1 - flicker, 1]`, so a flame's size jumps instead of
+	 * sliding. 1 lets it drop to nothing, which with a `scale` curve of `(t) => 1 - t` is a
+	 * torch spark. Dropped under reduced motion, like the travel and the spin.
+	 */
+	flicker?: number;
 
 	/** rotation change in radians per second */
 	spin?: ParticleRange;
@@ -105,12 +123,38 @@ export interface ParticleEmitterOptions {
 	/** where in local space particles are born; without one they all start at the origin */
 	spawn?: ParticleSpawnArea;
 
-	/** multiplied into every particle sprite; ignored without a `texture` */
-	tint?: number;
+	/**
+	 * Multiplied into every particle sprite, either one colour for the whole emitter or a
+	 * `[from, to]` pair each particle draws its own colour from, channel by channel - water
+	 * with a depth to it rather than one flat tint. Ignored without a `texture`.
+	 */
+	tint?: ParticleRange;
 }
 
 function pick(range: ParticleRange): number {
 	return typeof range === 'number' ? range : Random.float(range[0], range[1]);
+}
+
+/**
+ * A colour from a range, mixed channel by channel: interpolating the packed value instead
+ * would carry from one channel into the next and walk through colours that are not between
+ * the two. One seeded draw drives all three channels, so a particle's colour is a point on
+ * the line between them rather than three unrelated picks.
+ */
+function pickTint(range: ParticleRange): number {
+	if (typeof range === 'number') return range;
+	const t = Random.float();
+	const channel = (shift: number): number => {
+		const from = (range[0] >> shift) & 0xff;
+		const to = (range[1] >> shift) & 0xff;
+		return Math.round(from + (to - from) * t) << shift;
+	};
+	return channel(16) | channel(8) | channel(0);
+}
+
+/** a pair of endpoints as a curve, so the update path only ever calls a function */
+function curveOf(range: readonly [number, number] | ParticleCurve): ParticleCurve {
+	return typeof range === 'function' ? range : (t) => range[0] + (range[1] - range[0]) * t;
 }
 
 /**
@@ -160,9 +204,11 @@ export class ParticleEmitter extends Container {
 	private readonly angleRange: ParticleRange;
 	private readonly gravityX: number;
 	private readonly gravityY: number;
-	private readonly scaleRange: readonly [number, number];
-	private readonly alphaRange: readonly [number, number];
+	private readonly scaleOf: ParticleCurve;
+	private readonly alphaOf: ParticleCurve;
+	private readonly flicker: number;
 	private readonly spin: ParticleRange;
+	private readonly tintRange: ParticleRange;
 
 	/** the frame sequence to walk, if one was given - `texture` is ignored in its favour */
 	private readonly frames?: readonly Texture2D[];
@@ -188,9 +234,11 @@ export class ParticleEmitter extends Container {
 		this.angleRange = options.angle ?? [0, Math.PI * 2];
 		this.gravityX = options.gravity?.x ?? 0;
 		this.gravityY = options.gravity?.y ?? 0;
-		this.scaleRange = options.scale ?? [1, 1];
-		this.alphaRange = options.alpha ?? [1, 0];
+		this.scaleOf = curveOf(options.scale ?? [1, 1]);
+		this.alphaOf = curveOf(options.alpha ?? [1, 0]);
+		this.flicker = Math.min(1, Math.max(0, options.flicker ?? 0));
 		this.spin = options.spin ?? 0;
+		this.tintRange = options.tint ?? 0xffffff;
 		this.frames = options.frames;
 		this.spawnArea = options.spawn ?? null;
 
@@ -206,6 +254,7 @@ export class ParticleEmitter extends Container {
 				spin: 0,
 				scale: 1,
 				alpha: 1,
+				tint: 0xffffff,
 				frame: 0,
 				active: false,
 			});
@@ -215,7 +264,8 @@ export class ParticleEmitter extends Container {
 				const sprite = new Sprite(base);
 				sprite.anchor.set(0.5);
 				sprite.visible = false;
-				if (options.tint !== undefined) sprite.tint = options.tint;
+				//one colour for the emitter is set once here; a range is per particle, in `draw`
+				if (typeof options.tint === 'number') sprite.tint = options.tint;
 				this.sprites.push(sprite);
 				this.addChild(sprite);
 			}
@@ -291,8 +341,9 @@ export class ParticleEmitter extends Container {
 		particle.life = Math.max(1e-6, pick(this.life));
 		particle.rotation = 0;
 		particle.spin = pick(this.spin) * motion;
-		particle.scale = this.scaleRange[0];
-		particle.alpha = this.alphaRange[0];
+		particle.scale = this.scaleOf(0);
+		particle.alpha = this.alphaOf(0);
+		particle.tint = pickTint(this.tintRange);
 		particle.frame = 0;
 		particle.active = true;
 		return true;
@@ -359,8 +410,11 @@ export class ParticleEmitter extends Container {
 			particle.rotation += particle.spin * dt;
 
 			const t = particle.age / particle.life;
-			particle.scale = this.scaleRange[0] + (this.scaleRange[1] - this.scaleRange[0]) * t;
-			particle.alpha = this.alphaRange[0] + (this.alphaRange[1] - this.alphaRange[0]) * t;
+			particle.scale = this.scaleOf(t);
+			particle.alpha = this.alphaOf(t);
+			//a flicker is motion that goes nowhere, so reduced motion drops it along with the
+			//travel and the spin; the curve underneath still plays
+			if (this.flicker > 0 && !frozen) particle.scale *= 1 - this.flicker * Random.float();
 			//a frame sequence plays across the particle's own life, so `t` picks the frame the
 			//same way it interpolates scale and alpha; the last frame holds until it dies rather
 			//than falling off the end of the array
@@ -376,6 +430,10 @@ export class ParticleEmitter extends Container {
 	private draw(): void {
 		if (this.sprites.length === 0) return;
 
+		//asked once per frame rather than per particle: a plain tint was set at construction,
+		//while a range belongs to the particle and has to be assigned as it is drawn
+		const tintPerParticle = typeof this.tintRange !== 'number';
+
 		for (let i = 0; i < this.pool.length; i++) {
 			const particle = this.pool[i];
 			const sprite = this.sprites[i];
@@ -389,6 +447,7 @@ export class ParticleEmitter extends Container {
 			sprite.rotation = particle.rotation;
 			sprite.alpha = particle.alpha;
 			sprite.scale.set(particle.scale);
+			if (tintPerParticle) sprite.tint = particle.tint;
 			//a frame sequence swaps the sprite's texture; a single-texture emitter leaves it
 			if (this.frames) sprite.texture = this.frames[particle.frame] ?? sprite.texture;
 		}
