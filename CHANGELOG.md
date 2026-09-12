@@ -7,6 +7,8 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-09-12
+
 ### Added
 
 - `MwlHookDeclaration` and `validateHookAttributes` (item 321), plus `validAttributeValue`/
