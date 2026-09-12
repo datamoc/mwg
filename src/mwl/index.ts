@@ -64,6 +64,7 @@ export type {
 	MwlMessage,
 	MwlRuntimeOptions,
 	MwlTraceEvent,
+	MwlValue,
 	MwlWorld,
 } from './runtime.ts';
 export { carryoverIntoScenario, endLevelCarryover, MWL_DEFAULT_CARRYOVER_PERCENTAGE } from './carryover.ts';
