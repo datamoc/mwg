@@ -4427,6 +4427,53 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      `npm run sbom:check` compares the committed file the way `api:check` and `stats:check`
      compare theirs, and CI runs it on every push. Six tests in `tests/sbom.test.ts`, one of them
      that the committed file matches the lockfile.~~
+316. [High] `[set_variable]` cannot say whether its `value` is a literal or an expression, and
+     content cannot resolve that either (the port's report, the big one). `runtime.ts:1032` infers
+     intent from the text: a `$name`-shaped value copies a variable, a finite number becomes a
+     number, a value containing `+`, `*`, `/`, `^`, `(`, `)` or a spaced `-` (or naming a context
+     key) is evaluated, and anything else is a literal. Two failures follow that no author can
+     avoid: a literal containing those operator characters is evaluated, so the port's
+     `Raise Walking Corpse (8 Gold)` throws `invalid MWL expression near "Walking Corpse (8 Gold)"`,
+     and a literal that happens to equal a numeric variable's name is silently replaced by that
+     variable's value (`value=turn_number` reads the variable, not the text). MWL is a compiler
+     target, so the compiler always knows which one it means: add an explicit discriminator,
+     `literal="..."` / `expression="..."` (or `mode=literal|number|expression`), keeping the bare
+     heuristic for hand-authored content only. Evidence: 6,842 of 9,813 variable writes in the
+     ported campaigns now bypass the framework command through a port hook, and `expression.ts`'s
+     strict "a missing variable is an error, not zero" is defensible only if content can declare
+     intent, which today it cannot.
+317. [Medium] An attribute value cannot contain a newline, and is trimmed (the same report).
+     `grammar.ts`'s `parse()` splits the source on `\n` and matches
+     `^([A-Za-z_][\w-]*)\s*=\s*(.*)$` per line, and `parseValue()` trims and only unquotes `"..."`.
+     A value therefore cannot span lines and cannot keep leading or trailing whitespace, while
+     Wesnoth message, objective and option-label text routinely wraps. The port's workaround
+     collapses whitespace (`oneLineValue`), which silently changes the content's value, the exact
+     class of bug item 316 is about. Add a multi-line value form (`"""..."""`, or `\n` escapes
+     honoured inside quotes) or a child node for a long value.
+318. [Medium] `[set_variable]` has no computed-path spelling (the same report). `schema.ts:409`
+     types it `set_variable: { attributes: { name: 'id', target: 'id', value: 'string' } }`, and
+     `id` means Wesnoth's dynamic names (`zombies[$i].allow_recruit`, `this_item.name`, `$var`)
+     have no MWL form, so they must become hooks. The runtime already resolves dotted paths and
+     `[n]` indices internally (`variablePathParts`), so this is mostly surface area: add a `path`
+     attribute typed `string` and resolve it through that same walker.
+319. [Medium] A hook has no path accessor, so every hook that touches a nested variable
+     re-implements resolution and gets it wrong (the same report). `hooks.ts`'s
+     `HookWorld.variables` is `Readonly<Record<string, MwlValue>>` with no `variableAt()`, while
+     `Emit.setVariable` writes nested paths correctly (`setVariableAtPath`); a hook that needs to
+     write has no matching reader, so it casts away `Readonly` and walks paths itself. The port
+     did exactly that and wrote flat dotted keys (`variables['stored_naga.hitpoints']`) that
+     `variableAtPath` cannot find, so a scenario's `[variable] name=stored_naga.hitpoints` and the
+     hook disagree. Export `variableAtPath`/`setVariableAtPath` (or add
+     `HookWorld.variableAt(path)`) and document that a hook should write through `emit.setVariable`.
+320. [Low] Port-side, not a framework ask, but it shares item 319's root:
+     `command:set_variable_dynamic` should write nested paths through `emit.setVariable` and read
+     through the shared resolver instead of flat dotted keys. Its own row because the disagreement
+     is a port bug that MWG only invites, not one it owns.
+321. [Low] Hook attributes are an unvalidated `Record<string, string>`. Hook names are checked at
+     compile time (`collectHookReferences`/`validateHookReferences`), but a hook's own attributes
+     are not: `command:set_variable_dynamic` now carries 18 modes, and a typo only throws at
+     runtime, mid-scenario. Letting hooks declare attribute schemas would extend `schema.ts`'s
+     compile-time validation to the hook boundary.
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list
