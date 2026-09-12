@@ -8,7 +8,16 @@ export interface MwlTableColumn {
 	readonly type: CsvColumnType;
 }
 
-/** Parse the compact `name:type|name:type` declaration used by MWL tables. */
+/**
+ * Parse the compact `name:type|name:type` declaration used by MWL tables.
+ *
+ * @example
+ * ```ts
+ * import { parseTableColumns } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(parseTableColumns('id:string|cost:number'));
+ * ```
+ */
 export function parseTableColumns(value: string): MwlTableColumn[] {
 	const columns: MwlTableColumn[] = [];
 	for (const part of value.split('|')) {
@@ -46,6 +55,17 @@ export interface MwlTagSchema {
 	readonly acyclicRefs?: readonly string[];
 }
 
+/**
+ * The `0.1` MWL tag schema: every tag with its attributes, children and `ref` targets. Pass a
+ * different record to `compile`/`validate` to extend or replace the vocabulary.
+ *
+ * @example
+ * ```ts
+ * import { schema01 } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(Object.keys(schema01).includes('game')); // true
+ * ```
+ */
 export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	game: {
 		attributes: {
@@ -305,7 +325,9 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	},
 	condition: {
 		attributes: {
-			variable: 'id',
+			condition: 'id',
+			hook: 'string',
+			variable: 'string',
 			equals: 'string',
 			not_equals: 'string',
 			in: 'string',
@@ -490,6 +512,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			'win',
 			'lose',
 			'hook',
+			'dialogue',
 		],
 	},
 	default: {
@@ -509,6 +532,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			'win',
 			'lose',
 			'hook',
+			'dialogue',
 		],
 	},
 	message: {
@@ -640,6 +664,16 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	save: { attributes: { version: 'integer', fields: 'string', migration: 'string' } },
 };
 
+/**
+ * Validates a parsed node tree against a schema, returning diagnostics rather than throwing.
+ *
+ * @example
+ * ```ts
+ * import { parse, validate } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(validate(parse('[game]\nschema=0.1\n[/game]'))); // []
+ * ```
+ */
 export function validate(nodes: readonly MwlNode[], schemas = schema01): MwlDiagnostic[] {
 	const diagnostics: MwlDiagnostic[] = [];
 	const ids = new Map<string, MwlNode[]>();
@@ -801,6 +835,16 @@ function validateTables(nodes: readonly MwlNode[], diagnostics: MwlDiagnostic[])
 	nodes.forEach(visit);
 }
 
+/**
+ * Coerces one table cell from text using the column's type, accepting `yes`/`no` for booleans.
+ *
+ * @example
+ * ```ts
+ * import { coerceTableValue } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(coerceTableValue('3', 'number', 'cost')); // 3
+ * ```
+ */
 export function coerceTableValue(
 	raw: string,
 	type: CsvColumnType,

@@ -1,6 +1,6 @@
 import { Sprite } from 'pixi.js';
 import type { SpriteOptions } from 'pixi.js';
-import { TINTED_SPRITE_PIPE, packColorAdd, packTintAdd, registerColorTransform } from './ColorTransformBatcher.ts';
+import { packColorAdd, packTintAdd, registerColorTransform, useColorTransformPipe } from './ColorTransformBatcher.ts';
 import type { Texture2D } from './Types2D.ts';
 
 export { registerColorTransform } from './ColorTransformBatcher.ts';
@@ -53,7 +53,7 @@ export class TintedSprite extends Sprite {
 
 		//Sprite's constructor points this at Pixi's own pipe; redirect it to ours, which
 		//is what puts this sprite in the colour-transform batch
-		(this as unknown as { renderPipeId: string }).renderPipeId = TINTED_SPRITE_PIPE;
+		useColorTransformPipe(this);
 	}
 
 	/** the packed additive colour; use `setColorAdd` or `lerpTint` rather than setting it raw */

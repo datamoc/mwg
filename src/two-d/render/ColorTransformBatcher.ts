@@ -408,7 +408,17 @@ interface TintedRenderable {
 	_roundPixels: number;
 }
 
-export const TINTED_SPRITE_PIPE = 'mwg-tinted-sprite';
+const TINTED_SPRITE_PIPE = 'mwg-tinted-sprite';
+
+/**
+ * Points a sprite at this batcher's pipe. Pixi chooses a sprite's batcher from its
+ * `renderPipeId` field, a Pixi internal, so this write lives here rather than in
+ * `TintedSprite` - every batchable and render-pipe detail stays in this one file, which is
+ * what the confinement rule promises.
+ */
+export function useColorTransformPipe(sprite: object): void {
+	(sprite as { renderPipeId?: string }).renderPipeId = TINTED_SPRITE_PIPE;
+}
 
 /**
  * Routes a `TintedSprite` through `ColorTransformBatcher`.

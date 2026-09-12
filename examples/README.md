@@ -64,6 +64,9 @@ npm run example:minigame:build    # lockpicking, then open its dist/index.html
 
 npm run example:multi-turn-beam          # one-cell-per-turn beam with blockers and moving targets
 npm run example:multi-turn-beam:build
+
+npm run example:string-editor          # catalogue editing UI: English left, French right, live preview
+npm run example:string-editor:build
 ```
 
 ## Level 3 - Complete reference games
@@ -131,12 +134,14 @@ npm run cap:open:android
 | `battle` | 2 | `mwg/battle`: a creature battle - species, a type-effectiveness matrix, speed-ordered turns, and a level-up with an evolution check on winning. The damage formula is this example's own invention, not something `mwg` prescribes |
 | `minigame` | 2 | `mwg/core` scene stacking: a lockpicking timing challenge pauses the room underneath and returns a score through `onResume` |
 | `multi-turn-beam` | 2 | `mwg/roguelike.MultiTurnBeam`: a deterministic beam advances one cell per turn, resolves moving targets when reached, and stops at an opaque blocker |
+| `string-editor` | 2 | the string editor as a page: a reference English string beside an editable French translation, with an inline sound marker and a live `{HP_loose}` variable, a `RichLabel` preview re-rendering as you type, placeholder-drift flagging against the reference, and a Play button revealing the line while firing its `{sound:path}` cue. The same split screen `tools/i18n-edit` shows in a terminal |
 | `dungeon` | 3 | an SPD-shaped mockup: generated floors, three-state fog of war, bump-to-attack, monsters with their own wander/hunt/flee AI (each judges the hero by its own sight, not the hero's), a secret door hiding a small vault and a hidden trap that springs underfoot (`mwg/roguelike`'s `Secrets`), a flask of oil thrown at the nearest visible monster in range (`mwg/roguelike`'s targeting helpers picking the target, `mwg/render`'s `Projectile` flying the sprite there), stairs down, plus `mwg/actors` wired in: a `StatBlock` (attack/defense/max HP derived from strength/armor/vitality), items on the floor, and a dense icon-grid inventory screen (`Tab`, `mwg/ui`'s `IconGrid`) where equipping a weapon or armor applies its modifiers. Autosaves on every descend and offers to continue on reload, via `mwg/core`'s `SaveSystem` for permadeath: the save is deleted the moment the hero dies, so there is nothing to continue. Arrow keys or the numpad to move, `.` to descend, `F` to search for secrets, `T` to throw |
 | `chess` | 3 | `mwg/board`: chess against a small deterministic alpha-beta computer player, with legal moves, check, checkmate, stalemate, castling, en passant, and promotion. Click a square or move a held/repeating arrow-key cursor and press Enter |
 | `tower-defense` | 3 | `mwg/core.Spawner` driving timed overlapping waves, with a simple 2D path, tower targeting, damage, rewards, and lives |
 | `colour-transform` | tech | per-sprite multiply **and** add, the thing Pixi's tint cannot do, with 4000 individually tinted sprites |
 | `three-d` | tech | optional Babylon.js WebGL scene, orbit camera, thin-instanced square and hex terrain with elevation, a continuous heightmap hill, plus mesh and billboard characters |
 | `headless` | tech | `mwg/simulation`'s `runScenario`/`advanceToInput`, with no rendering, map, or sprite at all - the one example that would work identically with no page around it |
+| `mwl-content` | tech | authored MWL content (`[game]`/`[map]`/`[event]`/`[item]`/`[unit]`/`[ai]`) compiled at build time by `tools/mwl.mjs` into a game-data module, an i18n catalog and an asset manifest, then read by a small game page |
 
 ## About the assets
 

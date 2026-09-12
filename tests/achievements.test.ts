@@ -83,7 +83,13 @@ test('subProgress reports each criterion of a multi-criteria achievement', () =>
 
 test('progress refuses a multi-criteria achievement, since one count/target pair cannot describe it', () => {
 	const achievements = new Achievements();
-	achievements.define({ id: 'diverse-army', criteria: [{ counter: 'a', target: 1 }, { counter: 'b', target: 1 }] });
+	achievements.define({
+		id: 'diverse-army',
+		criteria: [
+			{ counter: 'a', target: 1 },
+			{ counter: 'b', target: 1 },
+		],
+	});
 	assert.throws(() => achievements.progress('diverse-army'), /several criteria/);
 });
 

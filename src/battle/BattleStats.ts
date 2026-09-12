@@ -23,13 +23,7 @@
  */
 
 export type BattleStatCategory =
-	| 'recruits'
-	| 'recalls'
-	| 'advances'
-	| 'kills'
-	| 'deaths'
-	| 'damageDealt'
-	| 'damageTaken';
+	'recruits' | 'recalls' | 'advances' | 'kills' | 'deaths' | 'damageDealt' | 'damageTaken';
 
 export class BattleStats {
 	private counts = new Map<BattleStatCategory, Map<string, number>>();

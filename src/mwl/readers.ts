@@ -15,7 +15,18 @@ export interface MwlReadResult<T> {
 	readonly diagnostics: readonly MwlDiagnostic[];
 }
 
-/** Read a compiled node with one shared coercion and diagnostic policy. */
+/**
+ * Read a compiled node with one shared coercion and diagnostic policy.
+ *
+ * @example
+ * ```ts
+ * import { compile, readAttributes } from '@datamoc/mw_games/mwl';
+ *
+ * const game = compile('[game]\nschema=0.1\n[/game]');
+ * const { value } = readAttributes(game.roots[0]!, { schema: { type: 'string' } });
+ * console.log(value.schema); // '0.1'
+ * ```
+ */
 export function readAttributes<T extends Record<string, unknown>>(
 	node: MwlCompiledNode,
 	fields: Readonly<Record<keyof T & string, MwlFieldSpec>>,
@@ -41,7 +52,18 @@ export function readAttributes<T extends Record<string, unknown>>(
 	return { value: value as T, diagnostics };
 }
 
-/** Collect children without making every game adapter repeat this filter. */
+/**
+ * Collect children without making every game adapter repeat this filter.
+ *
+ * @example
+ * ```ts
+ * import { compile, readAttributes, readChildren } from '@datamoc/mw_games/mwl';
+ *
+ * const game = compile('[game]\nschema=0.1\n[side]\nid=1\n[/side]\n[/game]');
+ * const sides = readChildren(game.roots[0]!, 'side', (child) => readAttributes(child, { id: { type: 'id' } }));
+ * console.log(sides.value.length); // 1
+ * ```
+ */
 export function readChildren<T>(
 	node: MwlCompiledNode,
 	tag: string,

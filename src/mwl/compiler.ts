@@ -34,6 +34,17 @@ export interface MwlEmitOptions {
 	readonly onEmit?: (artifact: MwlArtifact) => void;
 }
 
+/**
+ * Preprocesses, parses and validates MWL source into a compiled game.
+ *
+ * @example
+ * ```ts
+ * import { compile } from '@datamoc/mw_games/mwl';
+ *
+ * const game = compile('[game]\nschema=0.1\n[/game]');
+ * console.log(game.schema); // '0.1'
+ * ```
+ */
 export function compile(source: string, options: MwlCompileOptions = {}): MwlCompiledGame {
 	const expanded = preprocess(source, options);
 	return compileNodes(parse(expanded, options.file), options);
@@ -44,7 +55,17 @@ export interface MwlSourceFile {
 	readonly source: string;
 }
 
-/** Compiles a deterministic set of content files as one catalog. */
+/**
+ * Compiles a deterministic set of content files as one catalog.
+ *
+ * @example
+ * ```ts
+ * import { compileSources } from '@datamoc/mw_games/mwl';
+ *
+ * const game = compileSources([{ file: 'a.mwl', source: '[game]\nschema=0.1\n[/game]' }]);
+ * console.log(game.roots.length); // 1
+ * ```
+ */
 export function compileSources(files: readonly MwlSourceFile[], options: MwlCompileOptions = {}): MwlCompiledGame {
 	const nodes: MwlNode[] = [];
 	for (const file of [...files].sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0))) {
@@ -58,6 +79,14 @@ export function compileSources(files: readonly MwlSourceFile[], options: MwlComp
  * Compile an already-parsed MWL node tree. A game that builds its nodes from
  * another format (the Wesnoth port converts its own parsed nodes this way) can
  * validate and compile through the same schema without going back to text.
+ *
+ * @example
+ * ```ts
+ * import { compileNodes, parse } from '@datamoc/mw_games/mwl';
+ *
+ * const game = compileNodes(parse('[game]\nschema=0.1\n[/game]'));
+ * console.log(game.schema); // '0.1'
+ * ```
  */
 export function compileNodes(nodes: readonly MwlNode[], options: MwlCompileOptions = {}): MwlCompiledGame {
 	const diagnostics = validate(nodes, options.schemas);
@@ -163,6 +192,14 @@ export interface MwlCatalog {
  * Extract a translation catalog compatible with `mwg/i18n` from a compiled
  * game. MWL keeps the source text as the message id, so the base-language
  * catalog maps each id to itself and translators fill in the other locales.
+ *
+ * @example
+ * ```ts
+ * import { compile, extractCatalog } from '@datamoc/mw_games/mwl';
+ *
+ * const game = compile('[game]\nschema=0.1\n[/game]');
+ * console.log(extractCatalog(game, { locale: 'fr' }).locale); // 'fr'
+ * ```
  */
 export function extractCatalog(game: MwlCompiledGame, options: MwlCatalogOptions = {}): MwlCatalog {
 	const messages: Record<string, string> = {};
@@ -170,11 +207,31 @@ export function extractCatalog(game: MwlCompiledGame, options: MwlCatalogOptions
 	return { locale: options.locale ?? 'en', direction: options.direction ?? 'ltr', messages };
 }
 
+/**
+ * Emits the compiled game as an ES module that assigns it to `variable`.
+ *
+ * @example
+ * ```ts
+ * import { compile, emitModule } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(emitModule(compile('[game]\nschema=0.1\n[/game]')).startsWith('export const gameData')); // true
+ * ```
+ */
 export function emitModule(game: MwlCompiledGame, variable = 'gameData'): string {
 	return `export const ${variable} = ${JSON.stringify(game, null, '\t')} as const;\n`;
 }
 
-/** Emits the standard MWL outputs plus game-owned artifacts in stable name order. */
+/**
+ * Emits the standard MWL outputs plus game-owned artifacts in stable name order.
+ *
+ * @example
+ * ```ts
+ * import { compile, emitArtifacts } from '@datamoc/mw_games/mwl';
+ *
+ * const artifacts = emitArtifacts(compile('[game]\nschema=0.1\n[/game]'));
+ * console.log(artifacts.map((artifact) => artifact.name)); // ['game-data.ts', 'i18n.json', 'assets.json']
+ * ```
+ */
 export function emitArtifacts(game: MwlCompiledGame, options: MwlEmitOptions = {}): readonly MwlArtifact[] {
 	const artifacts: MwlArtifact[] = [
 		{ name: 'game-data.ts', content: emitModule(game, options.variable ?? 'gameData') },
@@ -188,7 +245,17 @@ export function emitArtifacts(game: MwlCompiledGame, options: MwlEmitOptions = {
 	return artifacts;
 }
 
-/** Compiles the same source set twice and fails if any generated artifact differs. */
+/**
+ * Compiles the same source set twice and fails if any generated artifact differs.
+ *
+ * @example
+ * ```ts
+ * import { compileAndEmitSources } from '@datamoc/mw_games/mwl';
+ *
+ * const artifacts = compileAndEmitSources([{ file: 'a.mwl', source: '[game]\nschema=0.1\n[/game]' }]);
+ * console.log(artifacts.length); // 3
+ * ```
+ */
 export function compileAndEmitSources(
 	files: readonly MwlSourceFile[],
 	options: MwlCompileOptions = {},

@@ -49,7 +49,11 @@ test('a cell off the grid (undefined flags) matches only hasNone conditions', ()
 
 test('resolveTerrainGraphics prefers the most specific matching rule over a less specific one', () => {
 	const flags = gridFlags([['land,corner']]);
-	const generic: TerrainRule = { id: 'generic', conditions: [{ dx: 0, dy: 0, hasAll: ['land'] }], images: [{ image: 'generic.png' }] };
+	const generic: TerrainRule = {
+		id: 'generic',
+		conditions: [{ dx: 0, dy: 0, hasAll: ['land'] }],
+		images: [{ image: 'generic.png' }],
+	};
 	const specific: TerrainRule = {
 		id: 'specific',
 		conditions: [
@@ -82,14 +86,28 @@ test('resolveTerrainGraphics places every image a matched rule declares, each at
 
 test('resolveTerrainGraphics skips a cell with no matching rule', () => {
 	const flags = gridFlags([['water']]);
-	const rule: TerrainRule = { id: 'coast', conditions: [{ dx: 0, dy: 0, hasAll: ['land'] }], images: [{ image: 'coast.png' }] };
+	const rule: TerrainRule = {
+		id: 'coast',
+		conditions: [{ dx: 0, dy: 0, hasAll: ['land'] }],
+		images: [{ image: 'coast.png' }],
+	};
 	assert.deepEqual(resolveTerrainGraphics(1, 1, [rule], flags), []);
 });
 
 test('probability weights the pick among rules tied on specificity, verified over many trials', () => {
 	const flags = gridFlags([['grass']]);
-	const a: TerrainRule = { id: 'a', conditions: [{ dx: 0, dy: 0, hasAll: ['grass'] }], images: [{ image: 'a.png' }], probability: 9 };
-	const b: TerrainRule = { id: 'b', conditions: [{ dx: 0, dy: 0, hasAll: ['grass'] }], images: [{ image: 'b.png' }], probability: 1 };
+	const a: TerrainRule = {
+		id: 'a',
+		conditions: [{ dx: 0, dy: 0, hasAll: ['grass'] }],
+		images: [{ image: 'a.png' }],
+		probability: 9,
+	};
+	const b: TerrainRule = {
+		id: 'b',
+		conditions: [{ dx: 0, dy: 0, hasAll: ['grass'] }],
+		images: [{ image: 'b.png' }],
+		probability: 1,
+	};
 
 	const counts = { a: 0, b: 0 };
 	const random = new Generator(1234);
@@ -103,10 +121,21 @@ test('probability weights the pick among rules tied on specificity, verified ove
 
 test('the same seed reproduces the same probability-weighted pick', () => {
 	const flags = gridFlags([['grass']]);
-	const a: TerrainRule = { id: 'a', conditions: [{ dx: 0, dy: 0, hasAll: ['grass'] }], images: [{ image: 'a.png' }], probability: 1 };
-	const b: TerrainRule = { id: 'b', conditions: [{ dx: 0, dy: 0, hasAll: ['grass'] }], images: [{ image: 'b.png' }], probability: 1 };
+	const a: TerrainRule = {
+		id: 'a',
+		conditions: [{ dx: 0, dy: 0, hasAll: ['grass'] }],
+		images: [{ image: 'a.png' }],
+		probability: 1,
+	};
+	const b: TerrainRule = {
+		id: 'b',
+		conditions: [{ dx: 0, dy: 0, hasAll: ['grass'] }],
+		images: [{ image: 'b.png' }],
+		probability: 1,
+	};
 
-	const runOnce = () => resolveTerrainGraphics(1, 1, [a, b], flags, { random: new Generator(42) }).map((p) => p.ruleId);
+	const runOnce = () =>
+		resolveTerrainGraphics(1, 1, [a, b], flags, { random: new Generator(42) }).map((p) => p.ruleId);
 	assert.deepEqual(runOnce(), runOnce());
 });
 
@@ -138,7 +167,11 @@ test('a rule with rotations matches a condition written for only one of the rota
 		rotations: 4,
 	};
 	// cell (1,2) has water to its... let's target a cell whose north neighbour is water: (1,1)
-	assert.equal(matchTerrainRule(rule, 1, 1, flags, squareRotate, 0), false, 'east of (1,1) is land, rotation 0 does not match');
+	assert.equal(
+		matchTerrainRule(rule, 1, 1, flags, squareRotate, 0),
+		false,
+		'east of (1,1) is land, rotation 0 does not match',
+	);
 	const matchedSomeRotation = [0, 1, 2, 3].some((r) => matchTerrainRule(rule, 1, 1, flags, squareRotate, r));
 	assert.equal(matchedSomeRotation, true, 'one of the 4 rotations finds the water to the south');
 });

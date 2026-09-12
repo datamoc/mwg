@@ -12,6 +12,8 @@ by double-clicking. Run from the repo root.
 | `make-example-assets` | Generates `examples/assets` (tileset, sounds). Borrowed art stays out for licence reasons, so this draws everything | `npm run assets` |
 | `extract-rgssad` | Decrypts an RPG Maker XP/VX archive to plain files (vendored decoder, developer-side only) | `npm run extract:rgssad -- <archive.rgssad> <outDir>` |
 | `multiplayer-server` | Reference lockstep server for `core.LockstepClient` | `npm run multiplayer:server` |
+| `mwl` | Compiles MWL content (`[game]`/`[scenario]`/`[side]`/`[unit]`/`[event]`/`[campaign]`) into a game-data module, an i18n catalog and an asset manifest | `npm run mwl -- build <contentDir> -o <outDir>` |
+| `extract-html` | Splits the resources embedded in an HTML file (scripts, CSS, images) back out into files | `npm run extract:html -- <page.html> <outDir>` |
 
 ## Shipping (`file://`)
 
@@ -42,3 +44,7 @@ by double-clicking. Run from the repo root.
 | `roadmap-progress` | Reports ROADMAP.md completion: numbered items in batches of 25, plus the 1.0 exit checklist on its own row (checks to run, not capabilities, so they stay out of the numbered totals), optionally in a browser | `npm run roadmap:progress` |
 | `build-webpage-examples` / `build-webpage-docs` | Generate the live examples and Documentation page under `webpage/` (`REFERENCE.md` guide + TypeDoc under `documentation/api/`) | `npm run webpage:examples`, `npm run webpage:docs` |
 | `make-example-diagrams` / `make-architecture-diagrams` | Rebuild the generated diagrams under `webpage/assets` (never hand-drawn) | `npm run webpage:diagrams` |
+| `api-report` | Regenerates `API_REPORT.md` from the built declarations; `--check` compares instead. A CI gate | `npm run api:report`, `npm run api:check` |
+| `project-stats` | Writes `PROJECT_STATS.json`/`PROJECT_STATS.md` and the website statistics page; `--check` compares. A CI gate | `npm run stats:write`, `npm run stats:check` |
+| `ci-status` | Waits for every workflow run of `HEAD` and fails if any of them did | `npm run ci:status` |
+| `npm-audit` | Dependency audit that fails for high or critical advisories | `npm run audit` |

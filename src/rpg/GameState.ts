@@ -1,7 +1,7 @@
 /**
  * Global switches and variables - the two pieces of state an RPG's events read and write
- * most, kept as plain maps rather than anything fancier so `mwg/core`'s eventual save
- * system (see the roadmap) can serialise them like any other plain data.
+ * most, kept as plain maps rather than anything fancier so `mwg/core`'s `SaveSystem` can
+ * serialise them like any other plain data.
  *
  * @example
  * ```ts

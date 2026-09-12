@@ -103,7 +103,9 @@ export class Achievements {
 			const criteria = criteriaOf(definition);
 			if (!criteria.some((criterion) => criterion.counter === counter)) continue;
 			const wasMet = criteria.every((criterion) =>
-				criterion.counter === counter ? before >= criterion.target : this.count(criterion.counter) >= criterion.target,
+				criterion.counter === counter
+					? before >= criterion.target
+					: this.count(criterion.counter) >= criterion.target,
 			);
 			if (wasMet) continue;
 			const nowMet = criteria.every((criterion) => this.count(criterion.counter) >= criterion.target);

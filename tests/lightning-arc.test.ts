@@ -65,7 +65,11 @@ test('with no flickerInterval, the jittered shape holds steady across updates', 
 test('flickerInterval re-rolls the jittered shape periodically', () => {
 	let call = 0;
 	const random = () => (call++ % 2 === 0 ? 0 : 1); // alternates each reroll
-	const arc = new LightningArc({ x: 0, y: 0 }, { x: 50, y: 0 }, { segments: 1, jitter: 10, flickerInterval: 0.1, random });
+	const arc = new LightningArc(
+		{ x: 0, y: 0 },
+		{ x: 50, y: 0 },
+		{ segments: 1, jitter: 10, flickerInterval: 0.1, random },
+	);
 	const first = arc.points.map((p) => ({ ...p }));
 	arc.update(0.05); // not yet a full interval
 	assert.deepEqual(arc.points, first);

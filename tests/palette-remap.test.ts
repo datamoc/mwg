@@ -4,9 +4,18 @@ import { paletteRangeMapping, remapPixels } from '../src/two-d/render/PaletteRem
 
 test("remapPixels defaults to 'exact': only a pixel matching a from-colour exactly is repainted", () => {
 	const pixels = new Uint8ClampedArray([
-		255, 0, 255, 255, // exact magenta
-		250, 5, 250, 255, // near magenta, but not exact
-		0, 0, 0, 255, // exact black
+		255,
+		0,
+		255,
+		255, // exact magenta
+		250,
+		5,
+		250,
+		255, // near magenta, but not exact
+		0,
+		0,
+		0,
+		255, // exact black
 	]);
 	const out = remapPixels(pixels, { from: [0xff00ff, 0x000000], to: [0xff0000, 0x0000ff] });
 	assert.deepEqual([...out.slice(0, 4)], [255, 0, 0, 255], 'exact magenta repainted red');
@@ -16,9 +25,18 @@ test("remapPixels defaults to 'exact': only a pixel matching a from-colour exact
 
 test("remapPixels in 'nearest' mode repaints every opaque pixel with its closest from-colour's to-colour", () => {
 	const pixels = new Uint8ClampedArray([
-		255, 0, 255, 255, // exact magenta
-		250, 5, 250, 255, // near magenta
-		0, 0, 0, 255, // black
+		255,
+		0,
+		255,
+		255, // exact magenta
+		250,
+		5,
+		250,
+		255, // near magenta
+		0,
+		0,
+		0,
+		255, // black
 	]);
 	const out = remapPixels(pixels, { from: [0xff00ff, 0x000000], to: [0xff0000, 0x0000ff] }, 'nearest');
 	assert.deepEqual([...out.slice(0, 4)], [255, 0, 0, 255]);

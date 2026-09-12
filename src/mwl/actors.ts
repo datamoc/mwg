@@ -10,7 +10,18 @@ export interface MwlActorItem extends ItemDefinition {
 	readonly modifiers?: Modifier[];
 }
 
-/** Converts MWL's data shape into the actor layer without importing game rules. */
+/**
+ * Converts MWL's data shape into the actor layer without importing game rules.
+ *
+ * @example
+ * ```ts
+ * import { itemDefinition, type MwlItemDefinition } from '@datamoc/mw_games/mwl';
+ *
+ * declare const item: MwlItemDefinition;
+ * const actorItem = itemDefinition(item, { level: 2 });
+ * console.log(actorItem.id);
+ * ```
+ */
 export function itemDefinition(item: MwlItemDefinition, context: MwlExpressionContext = {}): MwlActorItem {
 	return {
 		id: item.id,
@@ -21,11 +32,33 @@ export function itemDefinition(item: MwlItemDefinition, context: MwlExpressionCo
 	};
 }
 
+/**
+ * Wraps a converted item as an inventory stack of `quantity`.
+ *
+ * @example
+ * ```ts
+ * import { inventoryItem, itemDefinition, type MwlItemDefinition } from '@datamoc/mw_games/mwl';
+ *
+ * declare const item: MwlItemDefinition;
+ * const stack = inventoryItem(itemDefinition(item), 3);
+ * console.log(stack.quantity); // 3
+ * ```
+ */
 export function inventoryItem(item: MwlActorItem, quantity = 1): InventoryItem {
 	return { id: item.id, quantity, stackable: item.stackable, weight: item.weight };
 }
 
-/** Resolve a declarative MWL effect list using the same rule as StatBlock. */
+/**
+ * Resolve a declarative MWL effect list using the same rule as StatBlock.
+ *
+ * @example
+ * ```ts
+ * import { composeEffects, type MwlEffectDefinition } from '@datamoc/mw_games/mwl';
+ *
+ * declare const effects: readonly MwlEffectDefinition[];
+ * console.log(composeEffects(10, effects, { level: 2 }));
+ * ```
+ */
 export function composeEffects(
 	base: number,
 	effects: readonly MwlEffectDefinition[],
@@ -37,6 +70,17 @@ export function composeEffects(
 	);
 }
 
+/**
+ * Converts one MWL effect into a `StatBlock` modifier, resolving its value expression.
+ *
+ * @example
+ * ```ts
+ * import { effectToModifier, type MwlEffectDefinition } from '@datamoc/mw_games/mwl';
+ *
+ * declare const effect: MwlEffectDefinition;
+ * console.log(effectToModifier(effect, { level: 2 }));
+ * ```
+ */
 export function effectToModifier(effect: MwlEffectDefinition, context: MwlExpressionContext = {}): Modifier {
 	const operation = effect.operation;
 	if (

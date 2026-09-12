@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import { dirname, resolve as resolvePath } from 'node:path';
+import { dirname, basename, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -42,8 +42,14 @@ function reachableFrom(entry: string): string[] {
 }
 
 function importsPixi(file: string): boolean {
-	//a type-only import is erased at runtime and costs nothing, so it does not count
-	return /^\s*import\s+(?!type\s)[^;]*from\s*['"]pixi\.js['"]/m.test(readFileSync(file, 'utf8'));
+	const source = readFileSync(file, 'utf8');
+	//a type-only import is erased at runtime and costs nothing, so it does not count. A
+	//re-export (`export ... from 'pixi.js'`) and a bare side-effect import both pull Pixi in at
+	//runtime, and `@pixi/*` scoped packages are the same renderer under another name, so all
+	//three count the same as a value import
+	const fromPixi = /^\s*(?:import|export)\s+(?!type\s)[^;]*from\s*['"](?:pixi\.js|@pixi\/[^'"]*)['"]/m;
+	const barePixi = /^\s*import\s*['"](?:pixi\.js|@pixi\/[^'"]*)['"]/m;
+	return fromPixi.test(source) || barePixi.test(source);
 }
 
 function importsBabylon(file: string): boolean {
@@ -110,6 +116,8 @@ const RENDERER_FREE = [
 	'board',
 	'audio',
 	'rpg',
+	'ai',
+	'mwl',
 	'three-d',
 ];
 
@@ -248,4 +256,32 @@ test('two-d/render and two-d/ui do not leak raw Pixi types into public signature
 	}
 
 	assert.deepEqual(offenders, [], 'name Container2D/Texture2D/Rect/TextureRegion, or route through pixi-interop.ts');
+});
+
+/** every `.ts` file under `src/`, recursively */
+function walkSrc(dir: string): string[] {
+	const out: string[] = [];
+	for (const entry of readdirSync(dir, { withFileTypes: true })) {
+		const full = resolvePath(dir, entry.name);
+		if (entry.isDirectory()) out.push(...walkSrc(full));
+		else if (entry.name.endsWith('.ts')) out.push(full);
+	}
+	return out;
+}
+
+/**
+ * The confinement rule the architecture doc states but nothing enforced: batcher and
+ * high-shader internals live in `ColorTransformBatcher.ts` alone, so a second file reaching
+ * for them means something has gone wrong. `TintedSprite.ts` used to cross it - it imported
+ * `TINTED_SPRITE_PIPE` and wrote Pixi's internal `renderPipeId` itself - and this is what
+ * stops that coming back. `renderPipeId`, the pipe name and extending Pixi's `Batcher` are
+ * the markers; only the batcher file may mention any of them.
+ */
+test('only ColorTransformBatcher.ts knows Pixi batcher internals', () => {
+	const markers = /\brenderPipeId\b|\bTINTED_SPRITE_PIPE\b|\bextends\s+Batcher\b/;
+	const offenders = walkSrc(SRC)
+		.filter((file) => basename(file) !== 'ColorTransformBatcher.ts')
+		.filter((file) => markers.test(readFileSync(file, 'utf8')))
+		.map((file) => file.slice(SRC.length + 1).replace(/\\/g, '/'));
+	assert.deepEqual(offenders, [], 'batcher/high-shader internals belong in ColorTransformBatcher.ts alone');
 });

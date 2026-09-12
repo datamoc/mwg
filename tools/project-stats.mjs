@@ -64,7 +64,7 @@ function collectStats() {
 		.sort();
 	const roadmap = measureRoadmap(readFileSync(join(root, 'ROADMAP.md'), 'utf8'));
 	const bundle = measureBundle();
-	const declarationFiles = existsSync(join(root, 'dist')) ? countFiles(join(root, 'dist'), '.d.ts') : null;
+	const declarationFiles = existsSync(join(root, 'dist')) ? countFilesOnDisk(join(root, 'dist'), '.d.ts') : null;
 
 	return {
 		project: 'mwg',
@@ -104,8 +104,18 @@ function countLines(source) {
 	return source.split(/\r?\n/).length - (source.endsWith('\n') || source.endsWith('\r') ? 1 : 0);
 }
 
-function countFiles(directory, extension) {
-	return trackedFiles(directory, [extension]).length;
+/** count files actually on disk, for a gitignored output directory like `dist` */
+function countFilesOnDisk(directory, extension) {
+	let count = 0;
+	const walk = (dir) => {
+		for (const entry of readdirSync(dir, { withFileTypes: true })) {
+			const full = join(dir, entry.name);
+			if (entry.isDirectory()) walk(full);
+			else if (entry.name.endsWith(extension)) count++;
+		}
+	};
+	walk(directory);
+	return count;
 }
 
 function countTestCases(directory) {

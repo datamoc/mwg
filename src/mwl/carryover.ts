@@ -4,6 +4,13 @@ import type { MwlWorld } from './runtime.ts';
  * Wesnoth's default: the share of a side's gold that survives into the next scenario, unless
  * `[endlevel] carryover_percentage` says otherwise. Its engine carries the winner's gold at 80%,
  * which is the number this mirrors rather than one invented here.
+ *
+ * @example
+ * ```ts
+ * import { MWL_DEFAULT_CARRYOVER_PERCENTAGE } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(MWL_DEFAULT_CARRYOVER_PERCENTAGE); // 80
+ * ```
  */
 export const MWL_DEFAULT_CARRYOVER_PERCENTAGE = 80;
 

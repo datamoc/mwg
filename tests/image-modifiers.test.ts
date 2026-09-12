@@ -105,7 +105,11 @@ test('parseColorPairs resolves a named colour through the given resolver', () =>
 
 test('parseColorPairs drops a pair whose colour is neither hex nor resolvable', () => {
 	const mapping = parseColorPairs(['magenta>red', 'ff00ff>ff0000']);
-	assert.deepEqual(mapping, { from: [0xff00ff], to: [0xff0000] }, 'the unresolvable magenta>red pair is dropped, not aborting the rest');
+	assert.deepEqual(
+		mapping,
+		{ from: [0xff00ff], to: [0xff0000] },
+		'the unresolvable magenta>red pair is dropped, not aborting the rest',
+	);
 });
 
 test('parsePaletteLists reconstructs two comma-separated colour lists split by parseImagePath', () => {
@@ -113,7 +117,11 @@ test('parsePaletteLists reconstructs two comma-separated colour lists split by p
 	//separate args before parsePaletteLists ever sees it - this is what it has to undo
 	const parsed = parseImagePath('unit.png~PAL(ff0000,00ff00>0000ff,ffff00)');
 	const pal = imageModifier(parsed, 'PAL')!;
-	assert.deepEqual(pal.args, ['ff0000', '00ff00>0000ff', 'ffff00'], 'confirms the naive split really does split mid-list');
+	assert.deepEqual(
+		pal.args,
+		['ff0000', '00ff00>0000ff', 'ffff00'],
+		'confirms the naive split really does split mid-list',
+	);
 
 	const mapping = parsePaletteLists(pal.args);
 	assert.deepEqual(mapping, { from: [0xff0000, 0x00ff00], to: [0x0000ff, 0xffff00] });

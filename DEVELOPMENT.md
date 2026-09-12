@@ -57,9 +57,9 @@ size:check` compares the built global bundle and `dist` against the committed
 - `two-d` contains PixiJS rendering, UI and dialogue presentation.
 - `3d` contains the optional Babylon.js path.
 - `i18n`, `actors`, `world`, `battle`, `simulation`, `roguelike`, `board`, `audio`, `rpg`,
-  and `assets/paths` are renderer-free.
+  `ai`, `mwl` and `assets/paths` are renderer-free.
 - Pixi batcher and high-shader internals belong only in
-  `src/two-d/render/ColorTransformBatcher.ts`.
+  `src/two-d/render/ColorTransformBatcher.ts` (checked by `tests/renderer-isolation.test.ts`).
 - Each source module has an `index.ts` barrel. The root `src/index.ts` defines the root
   package surface and the standalone `window.mw_games` build.
 

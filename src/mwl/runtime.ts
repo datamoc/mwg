@@ -191,6 +191,17 @@ export type MwlCommand =
 			readonly nextScenario?: string | null;
 	  };
 
+/**
+ * A fresh, empty world: no sides, units, maps or variables, at turn 1 and `playing`.
+ *
+ * @example
+ * ```ts
+ * import { createWorld } from '@datamoc/mw_games/mwl';
+ *
+ * const world = createWorld();
+ * console.log(world.turn, world.status); // 1 'playing'
+ * ```
+ */
 export function createWorld(): MwlWorld {
 	return {
 		variables: {},
@@ -211,6 +222,14 @@ export function createWorld(): MwlWorld {
  * Parse map text: one row per line, comma-separated codes. A token may be
  * `<side> <code>` to mark that side's keep/start, which is how a leader knows
  * where to appear.
+ *
+ * @example
+ * ```ts
+ * import { parseTerrain } from '@datamoc/mw_games/mwl';
+ *
+ * const map = parseTerrain('Gg,Gg\nGg,1 Kh');
+ * console.log(map.width, map.starts['1']); // 2 [{ x: 1, y: 1 }]
+ * ```
  */
 export function parseTerrain(text: string): {
 	width: number;
@@ -248,6 +267,16 @@ export function parseTerrain(text: string): {
  * real data (pathfinding costs, combat formulas) stay in the engine adapter;
  * this runtime's `move` is a bounds and occupancy check, and `attack` applies
  * the amount the content asks for.
+ *
+ * @example
+ * ```ts
+ * import { compile, MwlRuntime } from '@datamoc/mw_games/mwl';
+ *
+ * const runtime = new MwlRuntime(compile('[game]\nschema=0.1\n[/game]'), {
+ *   resolveMap: () => 'Gg,Gg\nGg,Gg',
+ * });
+ * console.log(runtime.world.turn); // 1
+ * ```
  */
 export class MwlRuntime {
 	readonly game: MwlCompiledGame;
@@ -1142,13 +1171,23 @@ export class MwlRuntime {
 	private conditionMatches(node: MwlCompiledNode): boolean {
 		return node.children
 			.filter((child) => child.tag === 'condition')
-			.every((condition) =>
-				variableMatches(
+			.every((condition) => {
+				if (condition.attributes.condition === 'hook') {
+					const hookName = condition.attributes.hook;
+					const predicateName = hookName?.startsWith('predicate:')
+						? hookName.slice('predicate:'.length)
+						: undefined;
+					const predicate = predicateName ? this.hooks?.predicate?.[predicateName] : undefined;
+					if (!predicate) throw new Error(`MWL predicate ${predicateName ?? '<missing>'} is not implemented`);
+					const { condition: _condition, hook: _hook, ...context } = condition.attributes;
+					return Boolean(predicate(this.worldView(), context));
+				}
+				return variableMatches(
 					this.world.variables[condition.attributes.variable],
 					condition.attributes,
 					primitiveVariables(this.world.variables),
-				),
-			);
+				);
+			});
 	}
 
 	private nodeConditionMatches(node: MwlCompiledNode): boolean {
@@ -1354,6 +1393,18 @@ export class MwlRuntime {
 	}
 }
 
+/**
+ * Applies one already-validated `MwlCommand` to a world, without a runtime around it.
+ *
+ * @example
+ * ```ts
+ * import { createWorld, execute } from '@datamoc/mw_games/mwl';
+ *
+ * const world = createWorld();
+ * execute(world, { name: 'set_variable', target: 'gold', value: 50 });
+ * console.log(world.variables.gold); // 50
+ * ```
+ */
 export function execute(world: MwlWorld, command: MwlCommand): void {
 	if (world.status !== 'playing' && command.name !== 'win' && command.name !== 'lose') return;
 	switch (command.name) {

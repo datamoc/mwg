@@ -4,6 +4,8 @@ import { readFileSync, readdirSync, statSync, mkdtempSync, writeFileSync, rmSync
 import { join, resolve as resolvePath } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
+import { publicPathMap } from './helpers/publicPaths.ts';
+
 import * as core from '../src/core/index.ts';
 import * as assets from '../src/assets/index.ts';
 import * as audio from '../src/audio/index.ts';
@@ -19,7 +21,10 @@ import * as ui from '../src/two-d/ui/index.ts';
 import * as stage from '../src/two-d/stage/index.ts';
 import * as world from '../src/world/index.ts';
 import * as i18n from '../src/i18n/index.ts';
+import * as mwl from '../src/mwl/index.ts';
+import * as mwlFengari from '../src/mwl/fengari.ts';
 import * as ai from '../src/ai/index.ts';
+import * as aiLua from '../src/ai/lua.ts';
 
 /**
  * Every exported class, function and namespace should carry a working `@example` - not
@@ -62,7 +67,10 @@ const MODULES: Record<string, Record<string, unknown>> = {
 	stage,
 	world,
 	i18n,
+	mwl,
+	'mwl/fengari': mwlFengari,
 	ai,
+	'ai/lua': aiLua,
 };
 
 const ROOT = resolvePath(new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
@@ -111,22 +119,6 @@ function collectExamples(): ExampleFence[] {
 		}
 	}
 	return fences;
-}
-
-/** the public subpath -> src barrel mapping, derived from package.json so it cannot drift */
-function publicPathMap(): Record<string, string> {
-	const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
-	const map: Record<string, string> = {};
-
-	for (const [subpath, target] of Object.entries<unknown>(pkg.exports)) {
-		if (subpath.startsWith('./tools')) continue;
-		const distPath = typeof target === 'string' ? target : (target as { import: string }).import;
-		const srcPath = distPath.replace(/^\.\/dist\//, 'src/').replace(/\.js$/, '.ts');
-		const specifier = subpath === '.' ? pkg.name : `${pkg.name}${subpath.slice(1)}`;
-		//an absolute path rather than baseUrl + relative: TypeScript 7 removed `baseUrl` outright
-		map[specifier] = join(ROOT, srcPath);
-	}
-	return map;
 }
 
 const examples = collectExamples();

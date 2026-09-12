@@ -5,7 +5,6 @@ import { Matrix, Texture, TextureSource } from 'pixi.js';
 import {
 	ColorTransformBatcher,
 	NO_COLOR_ADD,
-	TINTED_SPRITE_PIPE,
 	packColorAdd,
 	packTintAdd,
 	registerColorTransform,
@@ -269,8 +268,9 @@ function sprite(): TintedSprite {
 }
 
 test('TintedSprite routes itself through the colour-transform pipe', () => {
-	//without this redirect the sprite joins Pixi's own batch and the add term is dropped
-	assert.equal((sprite() as unknown as { renderPipeId: string }).renderPipeId, TINTED_SPRITE_PIPE);
+	//without this redirect the sprite joins Pixi's own batch and the add term is dropped. The
+	//pipe name is a batcher internal (no longer exported), so the test names its value
+	assert.equal((sprite() as unknown as { renderPipeId: string }).renderPipeId, 'mwg-tinted-sprite');
 });
 
 test('a fresh TintedSprite adds nothing', () => {

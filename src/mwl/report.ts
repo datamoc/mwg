@@ -24,7 +24,17 @@ export interface MwlContentLoadReport {
 	readonly diagnostics: readonly MwlContentDiagnostic[];
 }
 
-/** Compile content and return a stable, machine-readable load report instead of throwing. */
+/**
+ * Compile content and return a stable, machine-readable load report instead of throwing.
+ *
+ * @example
+ * ```ts
+ * import { loadContent } from '@datamoc/mw_games/mwl';
+ *
+ * const report = loadContent([{ file: 'a.mwl', source: '[game]\nschema=0.1\n[/game]' }]);
+ * console.log(report.game?.schema); // '0.1'
+ * ```
+ */
 export function loadContent(files: readonly MwlSourceFile[], options: MwlCompileOptions = {}): MwlContentLoadReport {
 	try {
 		const game = compileSources(files, options);
@@ -55,7 +65,16 @@ export function loadContent(files: readonly MwlSourceFile[], options: MwlCompile
 	}
 }
 
-/** Summarise a compiled catalog for parity checks and CI output. */
+/**
+ * Summarise a compiled catalog for parity checks and CI output.
+ *
+ * @example
+ * ```ts
+ * import { compile, contentReport } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(contentReport(compile('[game]\nschema=0.1\n[/game]')).tags);
+ * ```
+ */
 export function contentReport(game: MwlCompiledGame): MwlContentReport {
 	const nodes = flattenNodes(game.roots);
 	const tags: Record<string, number> = {};

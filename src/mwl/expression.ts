@@ -15,6 +15,16 @@ export type MwlExpression =
 
 export type MwlExpressionContext = Readonly<Record<string, number>>;
 
+/**
+ * Parses the small arithmetic grammar MWL effects use into an expression tree.
+ *
+ * @example
+ * ```ts
+ * import { parseExpression } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(parseExpression('level * 2 + 1'));
+ * ```
+ */
 export function parseExpression(source: string): MwlExpression {
 	const parser = new Parser(source);
 	const result = parser.expression();
@@ -23,6 +33,17 @@ export function parseExpression(source: string): MwlExpression {
 	return result;
 }
 
+/**
+ * Evaluates an expression against a numeric context. A string is parsed first, so callers can
+ * pass content text straight through; a missing or non-numeric variable is an error, not zero.
+ *
+ * @example
+ * ```ts
+ * import { evaluateExpression } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(evaluateExpression('level * 2', { level: 3 })); // 6
+ * ```
+ */
 export function evaluateExpression(expression: MwlExpression | string, context: MwlExpressionContext): number {
 	const node = typeof expression === 'string' ? parseExpression(expression) : expression;
 	if (node.kind === 'number') return node.value;

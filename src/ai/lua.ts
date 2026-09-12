@@ -25,6 +25,15 @@ export interface LuaAIOptions extends FengariScriptHostOptions {
  * table or `{ action = action_table, state = state_table, events = {...} }`.
  * The host is supplied so games can choose their own VM policy and tests can
  * inject a fake without loading Fengari.
+ *
+ * @example
+ * ```ts
+ * import { LuaAI } from '@datamoc/mw_games/ai/lua';
+ *
+ * const ai = new LuaAI({ seed: 7 });
+ * ai.register({ id: 'guard', source: 'return { type = "wait" }' });
+ * console.log(ai.decide('guard', { perception: null }).action?.type); // 'wait'
+ * ```
  */
 export class LuaAI {
 	private readonly host: ScriptHost;
@@ -233,6 +242,18 @@ function clone<T>(value: T): T {
 	return JSON.parse(JSON.stringify(value)) as T;
 }
 
+/**
+ * Convenience wrapper that builds a default `LuaAI`.
+ *
+ * @example
+ * ```ts
+ * import { createLuaAI } from '@datamoc/mw_games/ai/lua';
+ *
+ * const ai = createLuaAI({ seed: 7 });
+ * ai.register({ id: 'guard', source: 'return { type = "wait" }' });
+ * console.log(ai.decide('guard', { perception: null }).action?.type); // 'wait'
+ * ```
+ */
 export function createLuaAI(options: LuaAIOptions = {}): LuaAI {
 	return new LuaAI(options);
 }

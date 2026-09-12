@@ -30,10 +30,10 @@ constructible sprite" half - a game can construct plain sprites, shapes, text, a
 without naming Pixi. What remains is the dependency-shape question, not the type surface:
 `pixi-interop.ts` is a literal `export { Container, Sprite, Texture, Graphics, Rectangle, Text }
 from 'pixi.js'`, so using the escape hatch still means `pixi.js` is present at the value level,
-and `package.json`'s `dependencies` still lists `pixi.js` directly. ROADMAP item 175 decides that
-question: it stays a direct dependency for the 0.x line and moves to an optional peer dependency
-(the `@babylonjs/core` treatment) as part of the 1.0 release, with the verification steps carried
-in ROADMAP's 1.0 exit checklist. "A game consumes `mwg`, not PixiJS... directly" holds for every
+and `package.json`'s `dependencies` still lists `pixi.js` directly. ROADMAP item 175 decided that
+question and shipped in 0.7.6: `pixi.js` is now an optional peer dependency (the `@babylonjs/core`
+treatment) rather than a direct one, so a game that never touches the escape hatch does not install
+it. "A game consumes `mwg`, not PixiJS... directly" holds for every
 *type* position across the public API (enforced by the scans above); the value-level exception is
 now exactly one documented file, not every ordinary sprite.
 

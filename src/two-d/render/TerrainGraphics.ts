@@ -62,7 +62,12 @@ export interface TerrainPlacement {
 export type TerrainFlagsAt = (x: number, y: number) => ReadonlySet<string> | undefined;
 
 /** Rotates one condition/image offset by `rotationIndex` of `rotations` total steps around the cell. */
-export type TerrainRotate = (dx: number, dy: number, rotationIndex: number, rotations: number) => { dx: number; dy: number };
+export type TerrainRotate = (
+	dx: number,
+	dy: number,
+	rotationIndex: number,
+	rotations: number,
+) => { dx: number; dy: number };
 
 /**
  * `TerrainRotate` for a square or isometric grid: exact 90-degree steps only (`rotations` must
@@ -75,7 +80,12 @@ export type TerrainRotate = (dx: number, dy: number, rotationIndex: number, rota
  * console.log(squareRotate(1, 0, 1, 4)); // { dx: 0, dy: 1 } - one 90-degree step
  * ```
  */
-export function squareRotate(dx: number, dy: number, rotationIndex: number, rotations: number): { dx: number; dy: number } {
+export function squareRotate(
+	dx: number,
+	dy: number,
+	rotationIndex: number,
+	rotations: number,
+): { dx: number; dy: number } {
 	const steps = (rotationIndex * 4) / rotations;
 	let x = dx;
 	let y = dy;
@@ -95,7 +105,12 @@ export function squareRotate(dx: number, dy: number, rotationIndex: number, rota
  * console.log(hexRotate(1, 0, 1, 6)); // one 60-degree step of the axial offset (1, 0)
  * ```
  */
-export function hexRotate(dx: number, dy: number, rotationIndex: number, rotations: number): { dx: number; dy: number } {
+export function hexRotate(
+	dx: number,
+	dy: number,
+	rotationIndex: number,
+	rotations: number,
+): { dx: number; dy: number } {
 	const steps = (rotationIndex * 6) / rotations;
 	let q = dx;
 	let r = dy;
@@ -211,7 +226,12 @@ export function resolveTerrainGraphics(
 			const chosen =
 				candidates.length === 1
 					? candidates[0]
-					: candidates[weightedIndex(candidates.map((c) => c.rule.probability ?? 1), random)];
+					: candidates[
+							weightedIndex(
+								candidates.map((c) => c.rule.probability ?? 1),
+								random,
+							)
+						];
 
 			const rotations = chosen.rule.rotations ?? 0;
 			for (const image of chosen.rule.images) {

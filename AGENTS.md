@@ -93,6 +93,20 @@ root `src/index.ts` (which is also what the standalone `mw_games.global.js` buil
 - **`audio`** - `Sound` (pooled, round-robin), `Music` (crossfade via `update(dt)`). Both
   take an injectable `create()` in place of `new Audio()`, since nothing outside a browser
   can construct one, tests always supply a fake.
+- **`simulation`** - `SimulationRuntime`/`SimulationContext`: a transactional, renderer-free
+  simulation loop where a command produces its complete result before presentation plays, with
+  seeded randomness and a `Campaign` runner for chained levels.
+- **`board`** - turn-based board support: grid movement, `FactionFog` shared vision, `Tactics`
+  and `HexSkirmish` engagement, the `AlphaBetaGame` chess engine, and `Classics` (checkers, Go,
+  backgammon, cards, solitaire, dice).
+- **`mwl`** - reads and compiles Wesnoth-shaped WML content (`[game]`, `[scenario]`, `[side]`,
+  `[unit]`, `[event]`, `[campaign]`, ...) into plain data plus a `MwlRuntime` that sequences
+  events, objectives, dialogue, saves and the `[endlevel]` carry-over. It is a converter's
+  target, never a copy of a reference game's content.
+- **`ai`** - renderer-free decision runners: `JavaScriptAI` behaviours, `alphaBetaSearch`, the
+  score views, the `HeuristicAI` candidate pipeline, and an optional `ai/lua` provider.
+- **`three-d`** - the optional Babylon.js path, kept off the root barrel so a 2D game never
+  pays for it.
 - **`core`** also has `SaveSystem` - named, versioned save slots over `localStorage` (with
   an in-memory fallback), scoped to plain JSON-serialisable state rather than arbitrary
   object graphs; a game's own classes flatten themselves the way `rpg.GameState` does.
@@ -101,9 +115,10 @@ root `src/index.ts` (which is also what the standalone `mw_games.global.js` buil
   never prompts.
 - **`core` imports no other module, and no renderer.** `Game` takes a
   `GameOptions.extensions` array of Pixi-extension registration functions instead of calling
-  `registerColorTransform` itself. A game using `TintedSprite` (directly, or via `TileMap`/
-  `DialogueStage`/`AnimatedSprite`, all built on it) passes
-  `{ extensions: [registerColorTransform] }`. Pixi lives entirely under `two-d` (plus `rpg`,
+  `registerColorTransform` itself. Importing `TintedSprite` (directly, or via `TileMap`/
+  `DialogueStage`/`AnimatedSprite`, all built on it) already registers the colour-transform pipe
+  at module scope, so a game using it needs nothing extra; `GameOptions.extensions` is only for
+  registering a game's own Pixi extension. Pixi lives entirely under `two-d` (plus `rpg`,
   which drives a `MessageBox`, and `assets/loader.ts`); `assets/paths.ts` resolves paths with
   no renderer so `two-d` and `three-d` can share the compiled-asset map.
 

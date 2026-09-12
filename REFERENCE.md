@@ -22,7 +22,7 @@ renders: the scene lifecycle, `SceneStack`, input, saves, RNG, signals, achievem
 
 | renderer-free | Pixi | Babylon |
 | --- | --- | --- |
-| `core`, `i18n`, `actors`, `world`, `battle`, `simulation`, `roguelike`, `board`, `audio`, `rpg`, `assets/paths` | `two-d` (and `two-d/render`, `two-d/ui`, `two-d/stage`), `assets` | `3d` |
+| `core`, `i18n`, `actors`, `world`, `battle`, `simulation`, `roguelike`, `board`, `audio`, `rpg`, `ai`, `mwl`, `assets/paths` | `two-d` (and `two-d/render`, `two-d/ui`, `two-d/stage`), `assets` | `3d` |
 
 `roguelike` adds only `rot-js`, and `pixi.js`, `@babylonjs/core`/`@babylonjs/loaders` and
 `@capacitor/core` are optional peer dependencies rather than installed ones, so a project names
@@ -52,7 +52,7 @@ Three rules the whole API follows, so a name means one thing everywhere:
 
 ## Contents
 
-[core](#core) · [two-d](#two-d) · [render](#render) · [ui](#ui) · [stage](#stage) ·
+[core](#core) · [two-d](#two-d) · [render](#two-drender) · [ui](#two-dui) · [stage](#two-dstage) ·
 [assets](#assets) · [audio](#audio) · [battle](#battle) · [board](#board) ·
 [actors](#actors) · [roguelike](#roguelike) · [rpg](#rpg) · [simulation](#simulation) ·
 [three-d](#three-d-optional) · [world](#world) · [i18n](#i18n) · [mwl](#mwl) · [ai](#ai)
@@ -1099,8 +1099,8 @@ actions, serialisable state, diagnostics and budgets.
   a JavaScript behaviour when it observes cancellation or exceeds its configured budget.
 - `exportState`/`importState` - versioned, JSON-shaped agent state. Function closures, VM
   state and arbitrary object graphs never become save data.
-- `LuaAI` from `@datamoc/mw_games/ai/lua` - optional Lua 5.3 provider with the same action
-  and state envelope. A Lua function receives `(perception, state)` and returns an action
+- `LuaAI`/`createLuaAI` from `@datamoc/mw_games/ai/lua` - optional Lua 5.3 provider with the same
+  action and state envelope. A Lua function receives `(perception, state)` and returns an action
   table or `{ action, state, events }`. It uses the existing optional Fengari host, which
   removes filesystem, process, module-loading, clock and debug access, supplies seeded random,
   and enforces an instruction budget.

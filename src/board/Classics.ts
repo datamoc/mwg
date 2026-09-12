@@ -234,7 +234,7 @@ export function playGo(state: GoState, x: number, y: number): void {
 	//tracked directly rather than diffed against the old board afterwards, since the played
 	//stone's own cell also differs and diffing can't tell the two apart
 	let soleCaptured: number | null = null;
-	for (const neighbour of goNeighbours(state, index)) {
+	for (const neighbour of neighbours(state.size, index)) {
 		if (board[neighbour] !== enemy || liberties(board, state.size, neighbour) !== 0) continue;
 		const removed = group(board, state.size, neighbour);
 		if (removed.length === 1) soleCaptured = removed[0];
@@ -300,7 +300,7 @@ export function goScore(state: GoState): { black: number; white: number } {
 			const area = group(state.board, state.size, i);
 			const borders = new Set<GoStone>();
 			for (const cell of area)
-				for (const neighbour of goNeighbours(state, cell))
+				for (const neighbour of neighbours(state.size, cell))
 					if (state.board[neighbour]) borders.add(state.board[neighbour]!);
 			for (const cell of area) seen.add(cell);
 			if (borders.size === 1) score[[...borders][0]] += area.length;
@@ -313,17 +313,16 @@ function goIndex(state: GoState, x: number, y: number): number {
 	if (x < 0 || y < 0 || x >= state.size || y >= state.size) throw new Error('Go cell is outside the board');
 	return y * state.size + x;
 }
-function goNeighbours(state: GoState, index: number): number[] {
-	const x = index % state.size;
-	const y = Math.floor(index / state.size);
-	return [
-		[x - 1, y],
-		[x + 1, y],
-		[x, y - 1],
-		[x, y + 1],
-	]
-		.filter(([nx, ny]) => nx >= 0 && ny >= 0 && nx < state.size && ny < state.size)
-		.map(([nx, ny]) => ny * state.size + nx);
+/** the in-bounds orthogonal neighbours of a square-grid index, as indices */
+function neighbours(size: number, index: number): number[] {
+	const x = index % size;
+	const y = Math.floor(index / size);
+	const out: number[] = [];
+	if (x > 0) out.push(index - 1);
+	if (x < size - 1) out.push(index + 1);
+	if (y > 0) out.push(index - size);
+	if (y < size - 1) out.push(index + size);
+	return out;
 }
 function group(board: Array<GoStone | null>, size: number, start: number): number[] {
 	const stone = board[start];
@@ -336,15 +335,7 @@ function group(board: Array<GoStone | null>, size: number, start: number): numbe
 		if (seen.has(index) || board[index] !== stone) continue;
 		seen.add(index);
 		found.push(index);
-		const x = index % size;
-		const y = Math.floor(index / size);
-		for (const [nx, ny] of [
-			[x - 1, y],
-			[x + 1, y],
-			[x, y - 1],
-			[x, y + 1],
-		])
-			if (nx >= 0 && ny >= 0 && nx < size && ny < size) todo.push(ny * size + nx);
+		for (const next of neighbours(size, index)) todo.push(next);
 	}
 	return found;
 }
@@ -352,16 +343,7 @@ function liberties(board: Array<GoStone | null>, size: number, start: number): n
 	const cells = group(board, size, start);
 	const empty = new Set<number>();
 	for (const index of cells) {
-		const x = index % size;
-		const y = Math.floor(index / size);
-		for (const [nx, ny] of [
-			[x - 1, y],
-			[x + 1, y],
-			[x, y - 1],
-			[x, y + 1],
-		])
-			if (nx >= 0 && ny >= 0 && nx < size && ny < size && board[ny * size + nx] === null)
-				empty.add(ny * size + nx);
+		for (const next of neighbours(size, index)) if (board[next] === null) empty.add(next);
 	}
 	return empty.size;
 }

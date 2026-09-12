@@ -11,12 +11,34 @@ export interface MwlPersistenceOptions {
 	readonly migrations?: Readonly<Record<number, MwlMigration>>;
 }
 
+/**
+ * Serialises a world to a versioned JSON snapshot.
+ *
+ * @example
+ * ```ts
+ * import { createWorld, encodeSave } from '@datamoc/mw_games/mwl';
+ *
+ * const snapshot = encodeSave(createWorld(), { version: 1 });
+ * console.log(typeof snapshot); // 'string'
+ * ```
+ */
 export function encodeSave(world: MwlWorld, options: MwlPersistenceOptions): string {
 	if (!Number.isInteger(options.version) || options.version < 1)
 		throw new Error('MWL save version must be a positive integer');
 	return JSON.stringify({ format: 'mwl-save', version: options.version, world } satisfies MwlSaveEnvelope);
 }
 
+/**
+ * Restores a world from a snapshot, applying migrations up to `options.version`.
+ *
+ * @example
+ * ```ts
+ * import { createWorld, decodeSave, encodeSave } from '@datamoc/mw_games/mwl';
+ *
+ * const snapshot = encodeSave(createWorld(), { version: 1 });
+ * console.log(decodeSave(snapshot, { version: 1 }).turn); // 1
+ * ```
+ */
 export function decodeSave(snapshot: string, options: MwlPersistenceOptions): MwlWorld {
 	const value: unknown = JSON.parse(snapshot);
 	const envelope = isEnvelope(value) ? value : { format: 'mwl-save' as const, version: 1, world: value as MwlWorld };
@@ -31,6 +53,16 @@ export function decodeSave(snapshot: string, options: MwlPersistenceOptions): Mw
 	return world;
 }
 
+/**
+ * Checks a decoded value really is a world, and throws by name when it is not.
+ *
+ * @example
+ * ```ts
+ * import { createWorld, validateWorld } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(validateWorld(createWorld()).turn); // 1
+ * ```
+ */
 export function validateWorld(value: unknown): MwlWorld {
 	if (!value || typeof value !== 'object') throw new Error('invalid MWL saved world');
 	const world = value as Partial<MwlWorld>;

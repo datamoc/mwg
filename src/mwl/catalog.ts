@@ -84,7 +84,16 @@ function diagnostic(code: string, message: string, location: MwlLocation | undef
 	return { code, message, location: location ?? { file: '<mwl>', line: 1, column: 1 } };
 }
 
-/** Convenience for adapters that keep parsed nodes rather than compiled games. */
+/**
+ * Convenience for adapters that keep parsed nodes rather than compiled games.
+ *
+ * @example
+ * ```ts
+ * import { parse, validateCatalogNodes } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(validateCatalogNodes(parse('[game]\nschema=0.1\n[/game]'))); // []
+ * ```
+ */
 export function validateCatalogNodes(nodes: readonly MwlNode[], options: MwlValidationOptions = {}): MwlDiagnostic[] {
 	const fake = { schema: '0.1', roots: nodes as readonly MwlCompiledNode[], assets: [], messages: [] };
 	return validateCatalog(fake, options);

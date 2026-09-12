@@ -137,10 +137,26 @@ export function blendMatrix(color: number, ratio: number): ColorMatrixFilter['ma
 	const g = ((color >> 8) & 0xff) / 255;
 	const b = (color & 0xff) / 255;
 	return [
-		keep, 0, 0, 0, r * ratio,
-		0, keep, 0, 0, g * ratio,
-		0, 0, keep, 0, b * ratio,
-		0, 0, 0, 1, 0,
+		keep,
+		0,
+		0,
+		0,
+		r * ratio,
+		0,
+		keep,
+		0,
+		0,
+		g * ratio,
+		0,
+		0,
+		keep,
+		0,
+		b * ratio,
+		0,
+		0,
+		0,
+		1,
+		0,
 	] as unknown as ColorMatrixFilter['matrix'];
 }
 
@@ -308,7 +324,10 @@ function resolveColor(value: string, resolve?: (name: string) => number | undefi
  * console.log(mapping); // { from: [0xff00ff], to: [0xff0000] }
  * ```
  */
-export function parseColorPairs(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping {
+export function parseColorPairs(
+	args: readonly string[],
+	resolve?: (name: string) => number | undefined,
+): PaletteMapping {
 	const from: number[] = [];
 	const to: number[] = [];
 	for (const arg of args) {

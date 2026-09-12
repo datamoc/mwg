@@ -4,24 +4,24 @@
 	"version": "0.7.7",
 	"releaseDate": "2026-09-11",
 	"source": {
-		"files": 276,
-		"lines": 41946,
+		"files": 278,
+		"lines": 42945,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 77,
-				"lines": 14193
+				"files": 79,
+				"lines": 14599
 			},
 			{
 				"name": "core",
 				"files": 42,
-				"lines": 5177
+				"lines": 5179
 			},
 			{
 				"name": "mwl",
 				"files": 21,
-				"lines": 4543
+				"lines": 5078
 			},
 			{
 				"name": "roguelike",
@@ -31,7 +31,7 @@
 			{
 				"name": "board",
 				"files": 8,
-				"lines": 2683
+				"lines": 2665
 			},
 			{
 				"name": "actors",
@@ -51,12 +51,12 @@
 			{
 				"name": "ai",
 				"files": 5,
-				"lines": 1249
+				"lines": 1329
 			},
 			{
 				"name": "battle",
 				"files": 15,
-				"lines": 1162
+				"lines": 1156
 			},
 			{
 				"name": "audio",
@@ -86,13 +86,13 @@
 		]
 	},
 	"tests": {
-		"files": 217,
-		"lines": 27427,
-		"cases": 2019
+		"files": 219,
+		"lines": 27881,
+		"cases": 2038
 	},
 	"tools": {
 		"files": 35,
-		"lines": 6335
+		"lines": 6345
 	},
 	"examples": {
 		"count": 22,
@@ -122,20 +122,20 @@
 		]
 	},
 	"roadmap": {
-		"items": 293,
-		"completed": 293,
+		"items": 294,
+		"completed": 294,
 		"open": 0,
 		"percent": 100
 	},
 	"api": {
-		"declarationFiles": 0
+		"declarationFiles": 277
 	},
 	"bundle": {
-		"globalRaw": 1005474,
-		"globalGzip": 297621,
-		"distRaw": 3143005
+		"globalRaw": 1009559,
+		"globalGzip": 298743,
+		"distRaw": 3198048
 	},
 	"quality": {
-		"testToSourceRatio": 0.7
+		"testToSourceRatio": 0.6
 	}
 }

@@ -11,7 +11,18 @@ export interface FengariScriptHostOptions {
 
 const DEFAULT_INSTRUCTION_LIMIT = 100_000;
 
-/** Optional Lua 5.3 host. Fengari is loaded only by this subpath, never by `mwg/mwl`. */
+/**
+ * Optional Lua 5.3 host. Fengari is loaded only by this subpath, never by `mwg/mwl`.
+ *
+ * @example
+ * ```ts
+ * import { createFengariScriptHost } from '@datamoc/mw_games/mwl/fengari';
+ *
+ * const host = createFengariScriptHost();
+ * console.log(host.evaluate('1 + 2')); // 3
+ * host.dispose();
+ * ```
+ */
 export function createFengariScriptHost(options: FengariScriptHostOptions = {}): ScriptHost {
 	const state = lauxlib.luaL_newstate();
 	lualib.luaL_openlibs(state);

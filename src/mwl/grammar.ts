@@ -25,6 +25,20 @@ export interface MwlDiagnostic {
 	readonly lineText?: string;
 }
 
+/**
+ * The error a malformed MWL document throws, carrying the diagnostic that describes it.
+ *
+ * @example
+ * ```ts
+ * import { parse, MwlSyntaxError } from '@datamoc/mw_games/mwl';
+ *
+ * try {
+ *   parse('[game', 'broken.mwl');
+ * } catch (error) {
+ *   if (error instanceof MwlSyntaxError) console.log(error.diagnostic.code);
+ * }
+ * ```
+ */
 export class MwlSyntaxError extends Error {
 	readonly diagnostic: MwlDiagnostic;
 
@@ -51,6 +65,16 @@ interface Macro {
 
 const directiveNames = new Set(['define', 'enddef', 'arg', 'ifdef', 'ifndef', 'else', 'endif', 'include']);
 
+/**
+ * Expands MWL macros, `#ifdef` blocks and `#include`s into flat source text.
+ *
+ * @example
+ * ```ts
+ * import { preprocess } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(preprocess('[game]\nschema=0.1\n[/game]'));
+ * ```
+ */
 export function preprocess(source: string, options: MwlPreprocessOptions = {}): string {
 	const macros = new Map<string, Macro>();
 	const defines = new Set(options.defines ?? []);
@@ -199,6 +223,16 @@ export function parse(source: string, file = '<mwl>'): MwlNode[] {
 	return roots;
 }
 
+/**
+ * Unquotes one raw attribute value and strips the `_ "..."` gettext marker.
+ *
+ * @example
+ * ```ts
+ * import { parseValue } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(parseValue('_ "Hold the line"', { file: 'a.mwl', line: 1, column: 1 })); // 'Hold the line'
+ * ```
+ */
 export function parseValue(raw: string, location: MwlLocation, lineText = raw): string {
 	// The gettext marker is `_` followed by a quoted string. Requiring the
 	// quote is deliberate: values such as `aliasof=_bas` start with an
@@ -214,7 +248,17 @@ export function parseValue(raw: string, location: MwlLocation, lineText = raw): 
 	return value;
 }
 
-/** True when a raw attribute value carries the gettext marker `_ "..."`. */
+/**
+ * True when a raw attribute value carries the gettext marker `_ "..."`.
+ *
+ * @example
+ * ```ts
+ * import { isGettext } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(isGettext('_ "Hello"')); // true
+ * console.log(isGettext('Hello')); // false
+ * ```
+ */
 export function isGettext(raw: string): boolean {
 	return /^_\s*"/.test(raw.trim());
 }

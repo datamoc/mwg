@@ -1,8 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
+
+import { publicPathMap } from './helpers/publicPaths.ts';
 
 /**
  * A genuinely external consumer, not the in-repo examples: those import `mwg` by relative
@@ -14,23 +16,6 @@ import { execFileSync } from 'node:child_process';
  * installing or importing PixiJS directly."
  */
 const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
-
-/** the public subpath -> src barrel mapping, derived from package.json so it cannot drift -
- * the same derivation `api-examples.test.ts` uses, duplicated rather than imported since
- * these are two independent test files and neither should depend on the other's internals */
-function publicPathMap(): Record<string, string> {
-	const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
-	const map: Record<string, string> = {};
-
-	for (const [subpath, target] of Object.entries<unknown>(pkg.exports)) {
-		if (subpath.startsWith('./tools')) continue;
-		const distPath = typeof target === 'string' ? target : (target as { import: string }).import;
-		const srcPath = distPath.replace(/^\.\/dist\//, 'src/').replace(/\.js$/, '.ts');
-		const specifier = subpath === '.' ? pkg.name : `${pkg.name}${subpath.slice(1)}`;
-		map[specifier] = join(ROOT, srcPath);
-	}
-	return map;
-}
 
 const CONSUMER_GAME = `
 import { Game, Scene2D } from '@datamoc/mw_games/two-d';

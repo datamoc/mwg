@@ -14,7 +14,18 @@ export interface ScriptHost {
 	dispose(): void;
 }
 
-/** Default host for MWL formulas. It never executes statements or calls code. */
+/**
+ * Default host for MWL formulas. It never executes statements or calls code.
+ *
+ * @example
+ * ```ts
+ * import { createExpressionScriptHost } from '@datamoc/mw_games/mwl';
+ *
+ * const host = createExpressionScriptHost();
+ * console.log(host.evaluate('level * 2', { level: 3 })); // 6
+ * host.dispose();
+ * ```
+ */
 export function createExpressionScriptHost(): ScriptHost {
 	return {
 		evaluate(source, context = {}) {

@@ -141,6 +141,17 @@ export interface MwlContentCatalog {
 	readonly tables: readonly MwlTableDefinition[];
 }
 
+/**
+ * The reusable content a game can read: campaigns, items, monsters, statuses, loot, turn clocks,
+ * AI profiles, moves, type matchups, evolutions and tables, all as plain data.
+ *
+ * @example
+ * ```ts
+ * import { compile, contentCatalog } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(contentCatalog(compile('[game]\nschema=0.1\n[/game]')).campaigns); // []
+ * ```
+ */
 export function contentCatalog(game: MwlCompiledGame): MwlContentCatalog {
 	const nodes = flattenNodes(game.roots);
 	return {

@@ -123,7 +123,10 @@ test('a cone front damages every cell it reaches, and onCell sees each one', () 
 		{ x: 2, y: 5 },
 	]);
 	assert.equal(second.damage, 3, 'only the y=4 cell carried a target');
-	assert.deepEqual(hit, [{ x: 1, y: 4 }, { x: 2, y: 4 }]);
+	assert.deepEqual(hit, [
+		{ x: 1, y: 4 },
+		{ x: 2, y: 4 },
+	]);
 	assert.deepEqual(cells, [
 		{ x: 1, y: 4 },
 		{ x: 2, y: 3 },
@@ -214,10 +217,7 @@ test('a saved beam reports its shape and refuses to resume as another', () => {
 	const saved = beam.toJSON();
 	assert.equal(saved.shape, 'cone');
 
-	assert.throws(
-		() => MultiTurnBeam.fromJSON({ level: square(), damage: 1, shape: 'line' }, saved),
-		/shape "cone"/,
-	);
+	assert.throws(() => MultiTurnBeam.fromJSON({ level: square(), damage: 1, shape: 'line' }, saved), /shape "cone"/);
 });
 
 test('a saved cone resumes at the exact front, without re-asking the resolver', () => {

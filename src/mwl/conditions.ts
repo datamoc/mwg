@@ -6,7 +6,16 @@ export interface MwlConditionOptions {
 	readonly helpers?: Readonly<Record<string, MwlConditionHelper>>;
 }
 
-/** Evaluate the side-effect-free condition subset allowed in MWL content. */
+/**
+ * Evaluate the side-effect-free condition subset allowed in MWL content.
+ *
+ * @example
+ * ```ts
+ * import { evaluateCondition } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(evaluateCondition('gold >= 20', { gold: 30 })); // true
+ * ```
+ */
 export function evaluateCondition(
 	source: string,
 	context: MwlConditionContext,
