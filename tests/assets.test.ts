@@ -83,3 +83,33 @@ test('setBase prefixes a dev path and normalizes a missing trailing slash', () =
 		assets.setBase('');
 	}
 });
+
+test('setAssetMap hands resolve/has/paths a game-supplied map, with no window needed', () => {
+	try {
+		assets.setAssetMap({ 'tiles.png': 'data:image/png;base64,BBBB' });
+		assert.equal(assets.isCompiled(), true);
+		assert.equal(assets.resolve('tiles.png'), 'data:image/png;base64,BBBB');
+		assert.deepEqual(assets.paths(), ['tiles.png']);
+		assert.equal(assets.has('missing.png'), false);
+	} finally {
+		assets.setAssetMap(undefined);
+	}
+});
+
+test('setAssetMap takes priority over window.__MWG_ASSETS__', () => {
+	withCompiledAssets({ 'tiles.png': 'data:image/png;base64,FROM_WINDOW' }, () => {
+		try {
+			assets.setAssetMap({ 'tiles.png': 'data:image/png;base64,FROM_MAP' });
+			assert.equal(assets.resolve('tiles.png'), 'data:image/png;base64,FROM_MAP');
+		} finally {
+			assets.setAssetMap(undefined);
+		}
+	});
+});
+
+test('setAssetMap(undefined) reverts to window.__MWG_ASSETS__ / dev-server mode', () => {
+	assets.setAssetMap({ 'tiles.png': 'data:image/png;base64,CCCC' });
+	assets.setAssetMap(undefined);
+	assert.equal(assets.isCompiled(), false);
+	assert.equal(assets.resolve('tiles.png'), 'tiles.png');
+});

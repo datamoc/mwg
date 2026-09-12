@@ -3686,6 +3686,10 @@ build instead.
 
     export declare function resolve(path: string): string;
 
+### `setAssetMap` (function)
+
+    export declare function setAssetMap(map: Record<string, string> | undefined): void;
+
 ### `setBase` (function)
 
     export declare function setBase(path: string): void;
@@ -3740,6 +3744,10 @@ build instead.
 ### `resolve` (function)
 
     export declare function resolve(path: string): string;
+
+### `setAssetMap` (function)
+
+    export declare function setAssetMap(map: Record<string, string> | undefined): void;
 
 ### `setBase` (function)
 

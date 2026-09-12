@@ -11,7 +11,7 @@
  * nothing for Pixi.
  */
 
-export { setBase, isCompiled, paths, has, resolve } from './paths.ts';
+export { setBase, setAssetMap, isCompiled, paths, has, resolve } from './paths.ts';
 export type { AssetProgress } from './paths.ts';
 
 export { load, texture, get, isLoaded, release } from './loader.ts';

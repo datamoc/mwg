@@ -16,6 +16,9 @@ the public API may still change between minor versions.
   a built-in Pixi pipe away despite importing the full `pixi.js` package.
 - `ui.ListView.tapRow(index)` (item 299), the `IconGrid.tapCell`-shaped public method for the
   select-and-confirm-in-one-step tap a row's own `pointerdown` handler already did.
+- `assets.setAssetMap(map)` (item 300): hands `resolve`/`has`/`paths`/`isCompiled` a game's
+  own path-to-URI map directly, taking priority over `window.__MWG_ASSETS__` while set, for a
+  game whose own bundler compiles assets a different way than `tools/compile-resources`.
 
 ### Fixed
 

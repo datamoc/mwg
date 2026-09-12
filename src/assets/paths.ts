@@ -40,7 +40,37 @@ export function setBase(path: string): void {
 	base = path.endsWith('/') || path === '' ? path : path + '/';
 }
 
+/** a path-to-URI map handed in directly, taking priority over `window.__MWG_ASSETS__` */
+let assetMap: Record<string, string> | undefined;
+
+/**
+ * Hands `resolve`/`has`/`paths` a game's own path-to-URI map, in place of
+ * `tools/compile-resources`'s `window.__MWG_ASSETS__` convention.
+ *
+ * A game bundled by its own tool (Vite, say) that compiles its assets into `data:` URIs a
+ * different way still wants `resolve`'s single lookup and `isCompiled`'s dev/build branch,
+ * without also adopting `window.__MWG_ASSETS__` as the wire format. Passing the map here
+ * makes this file agnostic to *how* the map was built, only to its shape - `{ path: uri }`,
+ * the same shape `window.__MWG_ASSETS__` already is. `undefined` reverts to reading
+ * `window.__MWG_ASSETS__` (or dev-server mode, if that is unset too).
+ *
+ * @example
+ * ```ts
+ * import { setAssetMap, isCompiled, resolve } from '@datamoc/mw_games/assets/paths';
+ *
+ * setAssetMap({ 'tiles.png': 'data:image/png;base64,...' });
+ * console.log(isCompiled()); // true
+ * console.log(resolve('tiles.png')); // the data: URI handed in above
+ *
+ * setAssetMap(undefined); // back to window.__MWG_ASSETS__ / dev-server mode
+ * ```
+ */
+export function setAssetMap(map: Record<string, string> | undefined): void {
+	assetMap = map;
+}
+
 function compiled(): Record<string, string> | undefined {
+	if (assetMap) return assetMap;
 	return typeof window === 'undefined' ? undefined : window.__MWG_ASSETS__;
 }
 

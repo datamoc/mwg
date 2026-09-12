@@ -474,8 +474,11 @@ through something else imports `@datamoc/mw_games/assets/paths` or
 `@datamoc/mw_games/assets/binary` and pays nothing for Pixi, which is how `3d` and `audio`
 reach the compiled asset map without it.
 
-- `setBase`/`isCompiled`/`paths`/`has`/`resolve` - dev-vs-compiled path resolution, renderer-free
-  (also its own entry point, `@datamoc/mw_games/assets/paths`).
+- `setBase`/`setAssetMap`/`isCompiled`/`paths`/`has`/`resolve` - dev-vs-compiled path
+  resolution, renderer-free (also its own entry point, `@datamoc/mw_games/assets/paths`).
+  `setAssetMap` hands these a game's own path-to-URI map directly (item 300), for a game
+  bundled by its own tool rather than `tools/compile-resources`, and takes priority over
+  `window.__MWG_ASSETS__` while set; `undefined` reverts to it.
 - `load`/`texture`/`get`/`isLoaded`/`release` - load assets by path, read them back
   synchronously, and free GPU memory once a zone is no longer needed. `load(paths,
   { resolution })` rasterizes a vector source (SVG) at a multiple of its intrinsic size, so a

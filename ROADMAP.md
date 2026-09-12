@@ -4226,11 +4226,16 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      the row handler calls it, and it shares `tapCell`'s no-op rules: out of range or disabled
      does nothing. Four tests in the new `tests/list-view.test.ts`, the first dedicated test
      file this widget had.
-300. [Medium] Let a game hand `assets` its own path-to-URI map (the port's P6). `assets/paths`
+300. ~~[Medium] Let a game hand `assets` its own path-to-URI map (the port's P6). `assets/paths`
      only reads `window.__MWG_ASSETS__` or a dev server, so a Vite-bundled game that compiles
      its own asset map cannot use `Assets`' loaders, batching or progress at all; this port
      uses none of `Assets` for exactly that reason. A `setAssetMap`/`setBase` overload would
-     let such a game opt in instead of reimplementing loading itself.
+     let such a game opt in instead of reimplementing loading itself.~~ Landed as
+     `setAssetMap(map)` in `assets/paths.ts`: `resolve`/`has`/`paths`/`isCompiled` read it in
+     place of `window.__MWG_ASSETS__` while it is set, agnostic to how the map was built as
+     long as it is the same `{ path: uri }` shape; `setAssetMap(undefined)` reverts to
+     `window.__MWG_ASSETS__` (or dev-server mode). Four tests in `tests/assets.test.ts`,
+     including the priority order over `window.__MWG_ASSETS__` and the revert.
 301. [Medium] Let `StatusVisuals` compose over the additive channel (the port's P7). Its own
      doc says one status wins by declaration order and that a stray tint write "will fight
      this"; the port needs identity tint plus several simultaneous additive colours plus a
