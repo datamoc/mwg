@@ -181,3 +181,108 @@ text=_ "fired"
 `);
 	assert.equal(fired(missing.messages), false);
 });
+
+test('an if branch runs its body when its condition holds, and skips it when it does not', () => {
+	const yes = runWith(
+		`[event]
+id=e
+on=start
+[if]
+[condition]
+variable=flag
+equals=yes
+[/condition]
+[message]
+text=_ "fired"
+[/message]
+[/if]
+[/event]
+`,
+		{ flag: 'yes' },
+	);
+	assert.equal(fired(yes.messages), true);
+
+	const no = runWith(
+		`[event]
+id=e
+on=start
+[if]
+[condition]
+variable=flag
+equals=yes
+[/condition]
+[message]
+text=_ "fired"
+[/message]
+[/if]
+[/event]
+`,
+		{ flag: 'no' },
+	);
+	assert.equal(fired(no.messages), false);
+});
+
+test('if and else select between branches from a condition and a test expression', () => {
+	const conditionForm = runWith(
+		`[event]
+id=e
+on=start
+[if]
+[condition]
+variable=ready
+equals=yes
+[/condition]
+[message]
+text=_ "fired"
+[/message]
+[/if]
+[/event]
+`,
+		{ ready: 'yes' },
+	);
+	assert.equal(fired(conditionForm.messages), true);
+
+	const testForm = runWith(
+		`[event]
+id=e
+on=start
+[if]
+test=score >= 3
+[message]
+text=_ "fired"
+[/message]
+[/if]
+[/event]
+`,
+		{ score: 4 },
+	);
+	assert.equal(fired(testForm.messages), true);
+
+	const fallback = runWith(
+		`[event]
+id=e
+on=start
+[if]
+[condition]
+variable=ready
+equals=yes
+[/condition]
+[message]
+text=_ "fired"
+[/message]
+[/if]
+[else]
+[message]
+text=_ "other"
+[/message]
+[/else]
+[/event]
+`,
+		{ ready: 'no' },
+	);
+	assert.equal(fired(fallback.messages), false);
+	assert.equal(
+		fallback.messages.some((message) => message.text === 'other'),
+		true,
+	);
+});

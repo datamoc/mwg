@@ -380,9 +380,7 @@ export class MwlRuntime {
 	}
 
 	private executeEvent(event: MwlCompiledNode): void {
-		for (const command of event.children.filter(
-			(child) => child.tag !== 'condition' && child.tag !== 'filter' && child.tag !== 'filter_condition',
-		)) {
+		for (const command of this.commandChildren(event)) {
 			if (command.tag === 'say') {
 				this.showSay(command);
 				continue;
@@ -916,10 +914,10 @@ export class MwlRuntime {
 			}
 			case 'if':
 				if (!this.nodeConditionMatches(node)) break;
-				for (const child of node.children) this.executeNode(child);
+				for (const child of this.commandChildren(node)) this.executeNode(child);
 				break;
 			case 'else':
-				for (const child of node.children) this.executeNode(child);
+				for (const child of this.commandChildren(node)) this.executeNode(child);
 				break;
 			case 'hook':
 				this.runHook(node);
@@ -927,6 +925,18 @@ export class MwlRuntime {
 			default:
 				throw new Error(`unknown MWL command: ${name}`);
 		}
+	}
+
+	/**
+	 * A node's children that are commands to run, dropping the condition children the schema
+	 * allows a branch to carry. A `[condition]` is read by the branch itself, never executed:
+	 * `[if]`/`[while]` evaluate one through `nodeConditionMatches`, where running it as a command
+	 * would be an unknown tag.
+	 */
+	private commandChildren(node: MwlCompiledNode): MwlCompiledNode[] {
+		return node.children.filter(
+			(child) => child.tag !== 'condition' && child.tag !== 'filter' && child.tag !== 'filter_condition',
+		);
 	}
 
 	private runHook(node: MwlCompiledNode): void {

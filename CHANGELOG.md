@@ -39,6 +39,14 @@ the public API may still change between minor versions.
   `<img>` span resolved through the asset resolver, so an image is drawn rather than left to the
   caller to position. An RTL sample is now covered by `tests/markup.test.ts`.
 
+### Fixed
+
+- An `[if]` branch no longer tries to execute its own `[condition]` child. The schema allows a
+  branch to carry one, but the executor ran every child, so an `[if]` whose condition held threw
+  `unknown MWL command: condition` instead of running its body; a false condition hid it because
+  the body never ran. `[if]`/`[else]` now run their command children only, the same rule
+  `[while]` already followed. Two tests in `tests/mwl-conditions.test.ts`.
+
 ## [0.7.7] - 2026-09-11
 
 ### Added

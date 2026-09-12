@@ -5570,6 +5570,8 @@ build instead.
         private loadLeaders;
         private unitAt;
         private executeNode;
+
+        private commandChildren;
         private runHook;
         private applyMove;
 
