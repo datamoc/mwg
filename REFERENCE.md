@@ -243,7 +243,9 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   core), `~BLEND` (`blendPixels`, an exact per-pixel lerp towards a colour, baked once - not the
   runtime `ColorMatrixFilter` approximation `blendMatrix` still offers on its own) and `~ROTATE`
   (`rotatePixels`, which rotates the source pixels and expands the surface, unlike a sprite's own
-  `rotation`).
+  `rotation`). `spriteColorMatrix(sprite, matrix)` (item 309) attaches any of the matrix
+  builders above (or `blendMatrix`, or a game's own) to a sprite as a `ColorMatrixFilter`, the
+  one remaining case that needed a direct `pixi.js` import just to construct that one class.
 - `remapPixels`/`paletteRangeMapping`/`recolorTexture`/`withTextureCanvas`/`PaletteMapping`/
   `PaletteRange`/`PaletteRemapMode` - palette-remap recolouring (team colour by range, not
   multiply/add): `remapPixels` is the renderer-free core, `'exact'` by default (a pixel is

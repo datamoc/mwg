@@ -30,6 +30,10 @@ the public API may still change between minor versions.
 - `mwl.MwlValidationOptions.rowIdScope` (item 304): `'file'` scopes `MWL_DUPLICATE_ID`'s
   `tag:id` key per source file instead of the whole compiled catalog, for a game whose id
   convention reuses ids across files on purpose.
+- `two-d.render.spriteColorMatrix(sprite, matrix)` (item 309): attaches any of
+  `blendMatrix`/`channelScaleMatrix`/`channelSwapMatrix`/`colorShiftMatrix` (or a game's own
+  matrix) to a sprite as a `ColorMatrixFilter`, without needing a direct `pixi.js` import just
+  to construct that one class.
 - `assets.load` now supplies Pixi's `Assets.add` a `format` hint (the original path's own
   extension) whenever the resolved `src` is a compiled build's `data:` URI (item 308), since
   the URI itself carries no extension for Pixi's resolver to pick a parser from. No new

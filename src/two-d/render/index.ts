@@ -17,6 +17,7 @@ export {
 	parseImagePath,
 	parsePaletteLists,
 	rotatePixels,
+	spriteColorMatrix,
 } from './ImageModifiers.ts';
 export type {
 	ChannelSource,

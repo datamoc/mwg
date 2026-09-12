@@ -51,6 +51,11 @@ test('R/G/B builds a per-channel multiplicative matrix, untouched channels left 
 	assert.equal(matrix[18], 1); // A untouched
 });
 
+//spriteColorMatrix itself needs a real WebGL context even to construct a ColorMatrixFilter
+//(like createColorBlindnessFilter - see tests/color-blindness.test.ts), and it has no matrix
+//data of its own to verify the way the builder functions above do: it only ever forwards an
+//already-tested matrix, so there is nothing left here for a headless unit test to check.
+
 test('BLEND builds a matrix that lerps every pixel towards a colour', () => {
 	const matrix = blendMatrix(0xff0000, 0.5);
 	assert.equal(matrix[0], 0.5); // keep half the original red

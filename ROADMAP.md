@@ -4340,13 +4340,21 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      new argument to pass. Two tests in `tests/assets.test.ts` (via a stubbed `Assets.add`/
      `Assets.load`, since Node has no image decoder to exercise a real texture load): a
      compiled `data:` asset gets `format: 'png'`, a plain dev-server path gets none.
-309. [Low] A facade for `ColorMatrixFilter` (the same port's report). `ImageModifiers.ts`
+309. ~~[Low] A facade for `ColorMatrixFilter` (the same port's report). `ImageModifiers.ts`
      already returns matrices (`blendMatrix`, `channelScaleMatrix`, `channelSwapMatrix`,
      `colorShiftMatrix`), but attaching one to a sprite still means `new ColorMatrixFilter()`
      from `pixi.js` directly, the interop boundary's last remaining hole for a game that
      otherwise never imports Pixi by name. A bare re-export (`ColorMatrixFilter2D`, alongside
      `Container2D`/`Texture2D` in `Types2D.ts`) or a `spriteColorMatrix(sprite, matrix)` helper
-     would close it.
+     would close it.~~ Took the helper branch: `spriteColorMatrix(sprite, matrix)` constructs
+     the filter, sets its matrix and replaces `sprite.filters` in one call, so any of the
+     existing matrix builders (or a game's own) attaches without ever naming `pixi.js`. A bare
+     `ColorMatrixFilter2D` re-export was left out, deliberately - the helper is what every one
+     of this file's own matrix functions was already missing a caller for, and a second, wider
+     facade for the class itself would be surface nothing here asked for. Untestable in a
+     headless unit test the same way `createColorBlindnessFilter` already is (a `ColorMatrixFilter`
+     needs a real WebGL context even to construct), noted next to that precedent in
+     `tests/image-modifiers.test.ts` rather than worked around.
 310. [Low] Let `applyImageModifiers` bake `applyTextureModifiers`'s pixel-level work (the same
      port's report). `~BLEND`/`~ROTATE` are exact at the texture level
      (`applyTextureModifiers`) but only matrix-approximated at the sprite level

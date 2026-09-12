@@ -2172,6 +2172,10 @@ build instead.
         update(dt: number): boolean;
     }
 
+### `spriteColorMatrix` (function)
+
+    export declare function spriteColorMatrix(sprite: Sprite, matrix: ColorMatrixFilter['matrix']): void;
+
 ### `SpriteSheet` (class)
 
     export declare class SpriteSheet {
@@ -8087,6 +8091,10 @@ build instead.
         update(dt: number): boolean;
     }
 
+### `spriteColorMatrix` (function)
+
+    export declare function spriteColorMatrix(sprite: Sprite, matrix: ColorMatrixFilter['matrix']): void;
+
 ### `SpriteSheet` (class)
 
     export declare class SpriteSheet {
@@ -9300,6 +9308,10 @@ build instead.
 
         update(dt: number): boolean;
     }
+
+### `spriteColorMatrix` (function)
+
+    export declare function spriteColorMatrix(sprite: Sprite, matrix: ColorMatrixFilter['matrix']): void;
 
 ### `SpriteSheet` (class)
 

@@ -196,6 +196,30 @@ export function channelSwapMatrix(sources: readonly ChannelSource[]): ColorMatri
 	return rows.flatMap((source) => row(source)) as unknown as ColorMatrixFilter['matrix'];
 }
 
+/**
+ * Attaches `matrix` to `sprite` as a `ColorMatrixFilter`, so a caller using
+ * `colorShiftMatrix`/`channelScaleMatrix`/`blendMatrix`/`channelSwapMatrix` never has to name
+ * `pixi.js` itself just to construct the one filter class those matrices are shaped for
+ * (item 309) - the same reasoning `two-d/pixi-interop.ts` gives for the rest of the interop
+ * boundary. Replaces `sprite.filters` outright, the same trade-off `applyImageModifiers`'s
+ * `~GS` already accepts (see its own fix, item 288): a caller layering its own filter keeps
+ * that filter's job, not this one's.
+ *
+ * @example
+ * ```ts
+ * import { Sprite } from 'pixi.js';
+ * import { blendMatrix, spriteColorMatrix } from '@datamoc/mw_games/two-d/render';
+ *
+ * const sprite = new Sprite();
+ * spriteColorMatrix(sprite, blendMatrix(0xff0000, 0.5)); // half-blended red, no pixi.js import needed for the filter itself
+ * ```
+ */
+export function spriteColorMatrix(sprite: Sprite, matrix: ColorMatrixFilter['matrix']): void {
+	const filter = new ColorMatrixFilter();
+	filter.matrix = matrix;
+	sprite.filters = [filter];
+}
+
 function parsePercentOrRatio(value: string | undefined): number | undefined {
 	if (value === undefined) return undefined;
 	const trimmed = value.trim();
