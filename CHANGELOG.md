@@ -45,6 +45,10 @@ the public API may still change between minor versions.
   rewrites a bundler build's `<script type="module">` entry tag to a classic deferred one, so
   the page opens via `file://`. `tools/emit-page.mjs` now uses it too, instead of its own copy
   of the same rewrite.
+- `two-d.render.applyAllImageModifiers(sprite, parsed, probe?, scale?)` (item 310): runs
+  `applyTextureModifiers`'s exact pixel-level baking and `applyImageModifiers`'s sprite-level
+  modifiers in the order a caller with a `~BLEND`/`~ROTATE` path needs, so the two no longer
+  have to be driven by hand.
 
 ### Changed
 
@@ -70,6 +74,9 @@ the public API may still change between minor versions.
   never hit the real canvas path, so the bug had no unit-test coverage. `withTextureCanvas` now
   wraps the real context's `putImageData` to build a proper `ImageData` itself, so every
   pixel-level modifier keeps writing the same plain object.
+- `[filter]`/`[have_unit]` `x`/`y` now accept the comma-separated lists and inclusive ranges
+  (`x=1,2,4-5`) a moveto event's own `x`/`y` already did (item 314); the schema types them
+  `coordinate` and `unitMatchesFilter` reads them through the one `coordinateMatches`.
 
 ## [0.7.8] - 2026-09-12
 

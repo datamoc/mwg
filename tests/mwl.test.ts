@@ -327,6 +327,17 @@ test('MWL event runtime supports numeric conditions, expressions, fire-by-id, id
 	assert.equal(runtime.world.variables.arrived, 'yes');
 });
 
+test('MWL unit filters accept coordinate ranges and lists, the same shape a moveto event uses', () => {
+	const source =
+		'[game]\n[unit]\nid=hero\nx=4\ny=3\n[/unit]\n' +
+		'[event]\nid=in-range\non=turn\n[filter]\nx=1,2,4-5\ny=3\n[/filter]\n[set_variable]\nname=found\nvalue=yes\n[/set_variable]\n[/event]\n' +
+		'[event]\nid=out-of-range\non=turn\n[filter]\nx=6-9\n[/filter]\n[set_variable]\nname=missed\nvalue=yes\n[/set_variable]\n[/event]\n[/game]';
+	const runtime = new MwlRuntime(compile(source));
+	runtime.run('turn');
+	assert.equal(runtime.world.variables.found, 'yes');
+	assert.equal(runtime.world.variables.missed, undefined);
+});
+
 test('MWL unit filters and unit_at objectives can constrain by unit id and side', () => {
 	const source =
 		'[game]\n[unit]\nid=hero\nside=2\nx=1\ny=1\n[/unit]\n' +

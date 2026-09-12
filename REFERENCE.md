@@ -1058,8 +1058,9 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 
 `MwlRuntime` exposes `fireEvent(id)` for named event execution. Event conditions compare
 numeric variables numerically, `set_variable` accepts the bounded MWL expression syntax,
-filters can match a unit id, `unit_at` can constrain a side, and moveto coordinates accept
-lists and inclusive ranges. Top-level `say` commands execute normally. Dialogue choices are
+filters can match a unit id, `unit_at` can constrain a side, and both moveto events and unit
+filters take coordinates as comma-separated lists or inclusive ranges (`x=1,2,4-5`). Top-level
+`say` commands execute normally. Dialogue choices are
 delivered in `MwlMessage.choices` and answered with `answerDialogue`; pending choices are
 included in save data. Commands after a dialogue in the same event run immediately, before
 the answer, so deferred follow-up commands belong in the selected choice event.

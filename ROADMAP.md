@@ -4388,6 +4388,15 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      custom inline tags beyond `markup.ts`'s fixed set currently cannot reach that through
      either UI widget, so it builds its own `Text2D` instead of using a framework widget for
      what is otherwise exactly a `RichLabel`'s job.
+314. ~~[Low] Unit-filter coordinates accept the ranges and lists a moveto event already does
+     (found reconciling 294). `unitMatchesFilter` compared `Number(attributes.x)`, so a
+     `[filter] x=10-99` or `x=1,2,4-5` (which a real Wesnoth scenario writes) matched nothing,
+     while the identical shape on an event's own `x`/`y` already went through
+     `coordinateMatches`. The filter schema's `x`/`y` (and `have_unit`'s) now carry the
+     `coordinate` type that already existed for `[event]`, and `unitMatchesFilter` reads them
+     through the same `coordinateMatches` - a second copy of that matcher was written first and
+     deleted, since one thing had two implementations. One test in `tests/mwl.test.ts` covers an
+     in-range list and an out-of-range span.~~
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list

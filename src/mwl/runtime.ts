@@ -1659,8 +1659,8 @@ function unitMatchesFilter(
 		(attributes.role === undefined || unit.role === attributes.role) &&
 		(wantedCanRecruit === undefined || (unit.can_recruit ?? false) === wantedCanRecruit) &&
 		(wantedLeader === undefined || (unit.leader ?? false) === wantedLeader) &&
-		(attributes.x === undefined || unit.x === Number(attributes.x)) &&
-		(attributes.y === undefined || unit.y === Number(attributes.y))
+		(attributes.x === undefined || coordinateMatches(attributes.x, unit.x)) &&
+		(attributes.y === undefined || coordinateMatches(attributes.y, unit.y))
 	);
 }
 
@@ -1771,6 +1771,12 @@ function resolveVariable(variables: Readonly<Record<string, MwlValue>>): (refere
 	return (reference) => variableAtPath(variables, reference);
 }
 
+/**
+ * Whether a coordinate satisfies a filter value: a whole number, an `A-B` range, or a
+ * comma-separated list of either (`x=10-99,13-99`). Wesnoth spells both a moveto event's
+ * position and a unit filter's `x`/`y` this way, so a plain `Number()` comparison would
+ * drop every event or filter a real scenario gates on a coordinate range.
+ */
 function coordinateMatches(specification: string, coordinate: number): boolean {
 	return specification.split(',').some((part) => {
 		const value = part.trim();
