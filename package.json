@@ -43,6 +43,8 @@
 		"tools/extract-html.d.mts",
 		"tools/compress-dist.mjs",
 		"tools/compress-dist.d.mts",
+		"tools/classic-html.mjs",
+		"tools/classic-html.d.mts",
 		"tools/mwl.mjs",
 		"LICENSE",
 		"CHANGELOG.md",

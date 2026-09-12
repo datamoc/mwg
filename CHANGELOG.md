@@ -30,6 +30,10 @@ the public API may still change between minor versions.
 - `mwl.MwlValidationOptions.rowIdScope` (item 304): `'file'` scopes `MWL_DUPLICATE_ID`'s
   `tag:id` key per source file instead of the whole compiled catalog, for a game whose id
   convention reuses ids across files on purpose.
+- `tools/classic-html.mjs`'s `toClassicScript(html)` (item 306), shipped in the npm package:
+  rewrites a bundler build's `<script type="module">` entry tag to a classic deferred one, so
+  the page opens via `file://`. `tools/emit-page.mjs` now uses it too, instead of its own copy
+  of the same rewrite.
 
 ### Changed
 

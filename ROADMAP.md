@@ -4290,10 +4290,18 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      `@datamoc/mw_games/mwl`, so a game's own small Node build script against that same API is
      the actual extension point for an extra generated module or a cross-table check this CLI
      has no flag for.
-306. [Low] Document a `file://` post-build recipe for bundler users, or add a
+306. ~~[Low] Document a `file://` post-build recipe for bundler users, or add a
      `tools/classic-html.mjs` (the port's P12). A Vite entry tag comes out `type="module"`,
      which `file://` refuses, so every bundler-based game repeats this port's own
-     rewrite-plus-unbuilt-source-page guard by hand.
+     rewrite-plus-unbuilt-source-page guard by hand.~~ Landed as `tools/classic-html.mjs`,
+     shipped in `package.json`'s `files` (unlike `emit-page.mjs`, which stays repo-internal):
+     `toClassicScript(html)` rewrites the `<script type="module" ...>` entry tag to a classic
+     deferred one, or returns `null` - the guard against running it on an unbuilt dev template
+     rather than a real build - when it finds no such tag. `emit-page.mjs` itself now calls
+     this instead of carrying its own copy of the same regex, so this repo's own examples and
+     an external bundler-based game share one implementation. Four tests in
+     `tests/classic-html.test.ts`; README's "Running from file://" section documents the
+     function for consumers.
 307. [Low] Author non-monster asset references in MWL (the port's P2, re-verified against
      `src/mwl/schema.ts` rather than taken on the note: still open). The inventory `item` node
      is `{ id, name, slot, stackable, weight }` with no asset attribute, and `image` remains

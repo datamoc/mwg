@@ -2,6 +2,7 @@ import { readFile, writeFile, rm, readdir } from 'node:fs/promises';
 import { join, resolve as resolvePath } from 'node:path';
 import { compileResources } from './compile-resources.mjs';
 import { compressDist } from './compress-dist.mjs';
+import { toClassicScript } from './classic-html.mjs';
 
 /**
  * Turns a vite build into a folder that opens by double-clicking.
@@ -49,16 +50,17 @@ const entry = (await readdir(join(dist, 'assets').replace(/assets$/, ''))).find(
 	(name) => name.endsWith('.js') && name !== 'assets',
 );
 
-const scriptTag = /[ \t]*<script[^>]*src="([^"]+\.js)"[^>]*><\/script>/;
-const match = scriptTag.exec(html);
-
-if (!match) {
-	throw new Error('no script tag found in the vite output - did the build succeed?');
+const classic = toClassicScript(html);
+if (!classic) {
+	throw new Error('no <script type="module"> entry tag found in the vite output - did the build succeed?');
 }
 
 const assetTags = groups.map((g) => `\t<script defer src="./assets/${g.name}.js"></script>`).join('\n');
 //defer preserves document order, so the asset scripts still run before the game does
-const page = html.replace(scriptTag, `${assetTags}\n\t<script defer src="${match[1]}"></script>`);
+const page = classic.html.replace(
+	`<script defer src="${classic.src}"></script>`,
+	`${assetTags}\n\t<script defer src="${classic.src}"></script>`,
+);
 
 await writeFile(join(dist, 'index.html'), page, 'utf8');
 

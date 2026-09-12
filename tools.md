@@ -21,6 +21,7 @@ by double-clicking. Run from the repo root.
 | --- | --- | --- |
 | `compile-resources` | Turns an asset folder into `data:` URI scripts under `window.__MWG_ASSETS__`, grouped by top-level folder | called by the example builds |
 | `emit-page` | Rewrites an example's vite build (classic script tag, inlined assets) so it opens from `file://` with no server | called by each `example:*:build` script |
+| `classic-html` | Rewrites a bundler build's `<script type="module">` entry tag to a classic deferred script, the shipped, reusable half of what `emit-page` does for this repo's own examples (item 306) | `node -e "..."` calling `toClassicScript` from a game's own build script, or `node tools/classic-html.mjs dist/index.html` directly |
 | `compress-dist` | Writes `.gz`/`.br` siblings for large build outputs | used by the packaging flow |
 
 ## Verification and benchmarks

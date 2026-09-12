@@ -145,6 +145,16 @@ is synchronous. Game code never awaits an asset. The developer-side scripts behi
 and the other workflows (translation editing, benchmarks, packaging) are listed in
 [tools.md](https://github.com/datamoc/mwg/blob/main/tools.md).
 
+A game built with its own bundler (Vite, say, rather than this repo's own `vite.lib.config.ts`
+IIFE) hits the same ES-module block on its own entry tag - a bundler's default output is
+`<script type="module" crossorigin src="...">`, which `file://` refuses the same way. Rather
+than every such game reinventing that one rewrite (item 306),
+`tools/classic-html.mjs`'s `toClassicScript(html)` does it: given the built page's HTML, it
+returns the same HTML with that tag rewritten to `<script defer src="...">`, or `null` when it
+finds no such tag - the guard against running it against an unbuilt dev template by mistake.
+The bundle itself still has to already be a classic script (an IIFE or UMD build, not further
+ES module output); this only rewrites the tag pointing at it.
+
 ## Capability spec
 
 The definition of done for 1.0, drawn from what each of the nine references actually
