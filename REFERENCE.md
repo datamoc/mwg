@@ -268,7 +268,11 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   reported through `AnimatedSprite.frameOffset` for the caller to add where it positions the sprite,
   because that position is the caller's (`GridMover`, a walk tween) and a sprite that overwrote it
   every frame would undo it every frame.
-- `SpriteSheet` - a grid-sliced sprite sheet.
+- `SpriteSheet` - a grid-sliced sprite sheet, or, built with no frame size, one whose frames are
+  its own `rect(index, x, y, width, height)` declarations: a hand-packed icon atlas, a strip of bar
+  segments, an item whose art is smaller than its cell. A rect is cached under its index like any
+  grid frame, so `get`/`region`/`name`/`pick` treat the two the same and no site hand-builds a
+  `Texture`.
 - `Camera`/`createCamera`/`snapZoom` - world-to-screen camera; `snapZoom` keeps tile edges
   pixel-aligned at a fractional zoom. Fixed-angle view rotation (item 285): `grid` picks four
   quarter turns (square, the default) or six 60-degree steps (hex), `setRotationStep`/`rotate`
@@ -308,7 +312,12 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
 - `ParticleEmitter`/`Particle` - a pooled, seeded particle emitter (sparks, dust, rain):
   `burst`/`start`/`stop` over a pool allocated once at `max`. Runs the whole simulation with
   no `texture` given, which is how it is tested without a renderer. `ParticleSpawnArea` gives
-  births a local `rect` or `ellipse` extent instead of the emitter's single origin.
+  births a local `rect` or `ellipse` extent instead of the emitter's single origin. `scale` and
+  `alpha` take a `ParticleCurve` (`t` over the particle's life) as well as the birth-to-death
+  pair, `tint` takes a `[from, to]` range each particle draws its own colour from channel by
+  channel, and `flicker` wobbles the scale every frame with a seeded draw (dropped under reduced
+  motion). All three draws happen only when used, so an existing emitter's seeded spray is
+  unchanged.
 - `ScreenEffects`/`ScreenEffectStep` - a full-screen colour wash: `fadeOut`/`fadeIn`/`flash`/
   `setTint`, driven by `update(dt)` returning true on the frame an effect completes.
   `sequence(steps)` (item 302) chains fade/hold/flash steps end to end as one call, for the
@@ -411,8 +420,18 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
 - `NinePatch` - a resizable nine-slice panel.
 - `Window` - a themed panel container. `close()` frees the window and its contents and is
   idempotent; `closed` is the guard for the caller's reference afterwards (input and `place` on a
-  closed window are no-ops), and `WindowStack.push` refuses one with a named error.
-- `WindowStack` - keyboard focus goes to the top window only; dims what's underneath.
+  closed window are no-ops), and `WindowStack.push` refuses one with a named error. A window's own
+  area is not clickable, so a click travels to whatever is under it; `blocker: true` adds the
+  full-viewport layer that swallows clicks and dismisses the window for a click outside it
+  (`handleOutsideClick` is that decision).
+- `WindowStack` - keyboard focus goes to the top window only; dims what's underneath; `blocker` on
+  a window is what stops clicks reaching the map behind it. `handleAction(action)` is public so a
+  scene with its own key handling can ask the windows first: `Input.onAction` offers an action to
+  the most recently registered listener first, so a scene that registers after building its stack
+  is asked before the windows are and can swallow a key they need.
+- `MessageBox.blocker` - whether a click under the box reaches the map behind it; on by default,
+  and since the box is not closable that can only ever swallow clicks rather than dismiss it.
+  `blocker: false` is for a box the player is meant to click past.
 - `ListView` - a scrollable, keyboard- and pointer-navigable row list (click, wheel-scroll).
 - `IconGrid` - a multi-column icon-grid inventory view; tap-then-tap "drag and drop",
   frame-driven long-press for a quickslot.
@@ -762,6 +781,10 @@ the dungeon-crawl half of the capability spec.
   and drawing.
 - `coneCells`/`chainTargets`/`knockbackPath` - a widening cone spray, a greedy nearest-hop
   chain, and a shove's path until the first impassable cell.
+- `coneSector`/`ConeSectorOptions` - a circular sector aimed at an angle: rays cast every 0.5
+  degrees across an arc of `degrees`, each clamped to `range` and stopped by the first wall, so a
+  wall shadows what is behind it while the rest of the cone reaches. Unlike `coneCells`, the aim
+  is not snapped to one of the eight directions.
 - `resolveAreaOnLevel`/`hexConeCells` - topology-aware area resolution and widening hex cones,
   complementing the square-grid targeting helpers.
 - `rangeMultiplier`/`areaFalloffMultiplier`/`RangeBand` - a range-band damage multiplier

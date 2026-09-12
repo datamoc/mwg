@@ -1433,9 +1433,11 @@ build instead.
         private readonly angleRange;
         private readonly gravityX;
         private readonly gravityY;
-        private readonly scaleRange;
-        private readonly alphaRange;
+        private readonly scaleOf;
+        private readonly alphaOf;
+        private readonly flicker;
         private readonly spin;
+        private readonly tintRange;
 
         private readonly frames?;
 
@@ -2206,8 +2208,8 @@ build instead.
         private names;
         private constructor();
 
-        static grid(path: string, frameWidth: number, frameHeight?: number): SpriteSheet;
-        static fromTexture(texture: Texture2D, frameWidth: number, frameHeight?: number): SpriteSheet;
+        static grid(path: string, frameWidth?: number, frameHeight?: number): SpriteSheet;
+        static fromTexture(texture: Texture2D, frameWidth?: number, frameHeight?: number): SpriteSheet;
         get count(): number;
 
         name(name: string, index: number): this;
@@ -2215,6 +2217,8 @@ build instead.
         nameAll(names: Readonly<Record<string, number>>): this;
         indexOf(name: string): number;
         get(frame: number | string): Texture2D;
+
+        rect(index: number, x: number, y: number, width: number, height: number): this;
 
         region(frame: number | string): TextureRegion;
 
@@ -2821,6 +2825,8 @@ build instead.
         private innerHeight;
         private currentWidth;
         private currentHeight;
+
+        private blocker;
         private readonly themeListener;
         private isClosed;
         constructor(options: WindowOptions);
@@ -2845,6 +2851,11 @@ build instead.
         close(): void;
 
         place(viewportWidth: number, viewportHeight: number): void;
+
+        private fitBlocker;
+        private readonly onBlockerDown;
+
+        handleOutsideClick(x: number, y: number): boolean;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
@@ -2871,7 +2882,7 @@ build instead.
         private updateOverlay;
         private drawOverlay;
 
-        private handleAction;
+        handleAction(action: Action): boolean;
 
         get blocksWorld(): boolean;
         update(dt: number): void;
@@ -5874,6 +5885,10 @@ build instead.
 
     export declare function coneCells(origin: Step, target: Step, width: number): Step[];
 
+### `coneSector` (function)
+
+    export declare function coneSector(level: Level, from: Step, to: Step, options: ConeSectorOptions): Step[];
+
 ### `decideMonsterAI` (function)
 
     export declare function decideMonsterAI(level: Level, pathfinder: Pathfinder, self: Step, hpFraction: number, target: Step, options?: MonsterAIOptions): AIDecision;
@@ -7741,9 +7756,11 @@ build instead.
         private readonly angleRange;
         private readonly gravityX;
         private readonly gravityY;
-        private readonly scaleRange;
-        private readonly alphaRange;
+        private readonly scaleOf;
+        private readonly alphaOf;
+        private readonly flicker;
         private readonly spin;
+        private readonly tintRange;
 
         private readonly frames?;
 
@@ -8159,8 +8176,8 @@ build instead.
         private names;
         private constructor();
 
-        static grid(path: string, frameWidth: number, frameHeight?: number): SpriteSheet;
-        static fromTexture(texture: Texture2D, frameWidth: number, frameHeight?: number): SpriteSheet;
+        static grid(path: string, frameWidth?: number, frameHeight?: number): SpriteSheet;
+        static fromTexture(texture: Texture2D, frameWidth?: number, frameHeight?: number): SpriteSheet;
         get count(): number;
 
         name(name: string, index: number): this;
@@ -8168,6 +8185,8 @@ build instead.
         nameAll(names: Readonly<Record<string, number>>): this;
         indexOf(name: string): number;
         get(frame: number | string): Texture2D;
+
+        rect(index: number, x: number, y: number, width: number, height: number): this;
 
         region(frame: number | string): TextureRegion;
 
@@ -8675,6 +8694,8 @@ build instead.
         private innerHeight;
         private currentWidth;
         private currentHeight;
+
+        private blocker;
         private readonly themeListener;
         private isClosed;
         constructor(options: WindowOptions);
@@ -8699,6 +8720,11 @@ build instead.
         close(): void;
 
         place(viewportWidth: number, viewportHeight: number): void;
+
+        private fitBlocker;
+        private readonly onBlockerDown;
+
+        handleOutsideClick(x: number, y: number): boolean;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
@@ -8725,7 +8751,7 @@ build instead.
         private updateOverlay;
         private drawOverlay;
 
-        private handleAction;
+        handleAction(action: Action): boolean;
 
         get blocksWorld(): boolean;
         update(dt: number): void;
@@ -9203,9 +9229,11 @@ build instead.
         private readonly angleRange;
         private readonly gravityX;
         private readonly gravityY;
-        private readonly scaleRange;
-        private readonly alphaRange;
+        private readonly scaleOf;
+        private readonly alphaOf;
+        private readonly flicker;
         private readonly spin;
+        private readonly tintRange;
 
         private readonly frames?;
 
@@ -9390,8 +9418,8 @@ build instead.
         private names;
         private constructor();
 
-        static grid(path: string, frameWidth: number, frameHeight?: number): SpriteSheet;
-        static fromTexture(texture: Texture2D, frameWidth: number, frameHeight?: number): SpriteSheet;
+        static grid(path: string, frameWidth?: number, frameHeight?: number): SpriteSheet;
+        static fromTexture(texture: Texture2D, frameWidth?: number, frameHeight?: number): SpriteSheet;
         get count(): number;
 
         name(name: string, index: number): this;
@@ -9399,6 +9427,8 @@ build instead.
         nameAll(names: Readonly<Record<string, number>>): this;
         indexOf(name: string): number;
         get(frame: number | string): Texture2D;
+
+        rect(index: number, x: number, y: number, width: number, height: number): this;
 
         region(frame: number | string): TextureRegion;
 
@@ -10731,6 +10761,8 @@ build instead.
         private innerHeight;
         private currentWidth;
         private currentHeight;
+
+        private blocker;
         private readonly themeListener;
         private isClosed;
         constructor(options: WindowOptions);
@@ -10755,6 +10787,11 @@ build instead.
         close(): void;
 
         place(viewportWidth: number, viewportHeight: number): void;
+
+        private fitBlocker;
+        private readonly onBlockerDown;
+
+        handleOutsideClick(x: number, y: number): boolean;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
@@ -10781,7 +10818,7 @@ build instead.
         private updateOverlay;
         private drawOverlay;
 
-        private handleAction;
+        handleAction(action: Action): boolean;
 
         get blocksWorld(): boolean;
         update(dt: number): void;

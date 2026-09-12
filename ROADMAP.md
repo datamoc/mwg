@@ -4423,10 +4423,12 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      hash, and its licence as an SPDX id when the field is a single word (`Apache-2.0 OR MIT`
      stays a `name` instead), and the lockfile's own resolution becomes the dependency graph
      (dev, optional and peer edges included, resolved to the nearest nested copy). Output is
-     deterministic - sorted components and edges, no timestamp and no serial number - so
-     `npm run sbom:check` compares the committed file the way `api:check` and `stats:check`
-     compare theirs, and CI runs it on every push. Six tests in `tests/sbom.test.ts`, one of them
-     that the committed file matches the lockfile.~~
+     deterministic - sorted components and edges, a `serialNumber` that is a version-5 UUID over
+     the document's own content (so two BOMs sharing one are the same BOM), and no timestamp, since
+     a generation time stamped into a committed, drift-checked file dates every later read to one
+     stale moment - so `npm run sbom:check` compares the committed file the way `api:check` and
+     `stats:check` compare theirs, and CI runs it on every push. Six tests in `tests/sbom.test.ts`,
+     one of them that the committed file matches the lockfile.~~
 316. ~~[High] `[set_variable]` cannot say whether its `value` is a literal or an expression, and
      content cannot resolve that either (the port's report, the big one). `runtime.ts:1032` infers
      intent from the text: a `$name`-shaped value copies a variable, a finite number becomes a
@@ -4534,7 +4536,7 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      the tag schema keeps that job. A hook declared by id alone claims nothing about its
      attributes, so nothing is checked for it, and a typo'd hook name is still `MWL_UNKNOWN_HOOK`.
      Two tests in `tests/mwl.test.ts`.
-322. [Low] An angular cone area, not only a snapped spray (the Pixel Dungeon port's P13, recorded
+322. ~~[Low] An angular cone area, not only a snapped spray (the Pixel Dungeon port's P13, recorded
      as a design decision for the framework rather than patched upstream). The port needed Java's
      `mechanics/ConeAOE` exactly: a circular *sector* with rays cast every 0.5 degrees across an
      arc of a given angle, each struck cell unioned with the line from the source (so a wall stops
@@ -4547,8 +4549,19 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      directly; the port's Regrowth wand, Fireblast wand and DM-300's gas check were three live
      consumers, with seven more unported in SPD. 2026-09-12 update: the port no longer waits on it
      (`src/mechanics/cone.ts` is the translation), so this is now (a) for other games and (b) a
-     future consolidation, where the framework takes the shape and the port deletes its copy.
-323. [Low] Per-particle colour, jitter and curves in `ParticleEmitter` (the same port's P14). The
+     future consolidation, where the framework takes the shape and the port deletes its copy.~~
+     `roguelike.coneSector(level, from, to, { degrees, range, stop })`, the API shape the item
+     proposed and the `stop` mode `ballistica` already had. Each ray is a `ballistica` trace rather
+     than a second traversal, so "a wall stops the part of the cone behind it" is the existing
+     behaviour and the union of the traces is the sector. The caster's own cell is dropped, matching
+     `coneCells` and `hexConeCells`, and so are off-map cells, since a ray aimed past the edge walks
+     off the map. Ray offsets round away from zero instead of through `Math.round`, whose half-up
+     rule sends -2.5 to -2 and 2.5 to 3: mirrored rays have to round in mirror too, or a sector aimed
+     along an axis comes out a cell wider on one side. It stays a function rather than an `AreaShape`
+     kind, because a sector needs the level and `resolveArea` exists to resolve without one. Six
+     tests in `tests/targeting-shapes.test.ts`, one of them the symmetry that rounding rule exists
+     for.
+323. ~~[Low] Per-particle colour, jitter and curves in `ParticleEmitter` (the same port's P14). The
      emitter interpolates `scale` and `alpha` linearly between two endpoints and takes one `tint`
      for the whole emitter, recomputing each particle from its own age. Java's decoration particles
      need three things that cannot be expressed that way, which is why the port's
@@ -4559,8 +4572,20 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      `SmokeParticle.update()` needs a *piecewise* alpha (`am = p > 0.8 ? 2 - 2p : p * 0.5`). Any one
      of the three would let a watabou-style effect migrate: a per-particle colour range, an optional
      per-frame jitter on scale/alpha, or an alpha/scale *curve* (a function of `age/life`) in place
-     of the endpoint pair. The curves and the layer's reasons are quoted in that file's own header.
-324. [Low] A blocker layer for `Window` (the same port's P15). Java's `Window` adds a full-screen
+     of the endpoint pair. The curves and the layer's reasons are quoted in that file's own header.~~
+     All three shapes, since each had a named consumer in the port and the point was for the pool to
+     be deletable: `tint` takes a `[from, to]` range picked per particle, `scale`/`alpha` take a
+     `ParticleCurve` of the particle's own age as well as the endpoint pair, and `flicker` (0 to 1)
+     multiplies the scale by a seeded draw every frame, which is the re-rolled size. The colour mix
+     goes channel by channel, where interpolating the packed value carries from one channel into the
+     next (`0xff0000` to `0x00ff00` would pass through blue), and one seeded draw drives all three
+     channels so a particle's colour is a point on the line between the two ends. Every added draw
+     happens only when its option is used - a plain number tint draws nothing at all - so an emitter
+     that uses none of them keeps the exact seeded sequence it had, the discipline `spawnOffset` had
+     already documented for itself. Reduced motion drops the flicker along with the travel and the
+     spin, since a size that jumps every frame is motion that goes nowhere. Five tests in
+     `tests/particles.test.ts`, one of them that a seeded spray is unchanged by a plain tint.
+324. ~~[Low] A blocker layer for `Window` (the same port's P15). Java's `Window` adds a full-screen
      `PointerArea` *under its chrome*, whose click runs `onBackPressed()` unless the click landed on
      the chrome itself, and because it is a child of the window a window's own buttons also win over
      it. That one layer is what makes a click outside a window dismiss it, and what stops a window
@@ -4574,8 +4599,23 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      `blocker: true` option (or `WindowStack` an `autoBlocker`) so a game can plain-use the widget
      as documented. Related and smaller: nothing documents that a `Window` with no interactive
      children is not itself clickable, which is easy to read as "windows swallow clicks in their own
-     area"; they do not, they just sit above the thing that does.
-325. [Low] Say who owns the keyboard when a scene and a `WindowStack` both listen (the same port's
+     area"; they do not, they just sit above the thing that does.~~
+     `Window({ blocker: true })`, the option the item put first, so a game plain-uses the widget
+     instead of subclassing the stack. The layer is a child of the window added before everything
+     else, which is what makes "a window's own buttons also win over it" fall out of Pixi's child
+     order rather than out of a subclass, and it is a bare `Container` with `eventMode: 'static'` and
+     a `Rectangle` hit area covering the whole viewport in the window's own coordinates: it draws
+     nothing because it holds nothing. The hit area covers the window as well, so nothing is clicked
+     through anywhere, and the decision is `handleOutsideClick(x, y)` instead: a click outside
+     dismisses a closable window, a click on the frame or an empty part of the body is swallowed
+     without dismissing. That is the pointer half of the shape `handleAction` already had, and it is
+     headless-testable the same way. The item's documentation half is now in `Window`'s class doc: a
+     window's own area is not clickable. `MessageBox` takes the layer by default, since a box with a
+     page to read is exactly the window that must not let a click past it, and being unclosable that
+     can only ever swallow; `examples/interface` sets it on its bag window, which is where the
+     browser check ran (click outside dismisses, click on the frame does not, click on a row still
+     selects). Seven tests in `tests/window-blocker.test.ts`.
+325. ~~[Low] Say who owns the keyboard when a scene and a `WindowStack` both listen (the same port's
      P16). The stack's own source is explicit that it is *ahead* of anything registered earlier
      ("stack mode, so this is offered actions before anything registered earlier: a window that is
      open should always win over the map underneath"), and `Input.d.ts` documents that "a listener
@@ -4590,8 +4630,18 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      already has (`handleAction` is private) so a scene can ask whether the top window wants an
      action and chain deliberately instead of depending on registration order. The port's `main.ts`
      now follows the undocumented recipe with a comment explaining why, and its
-     `BlockingWindowStack` is where the *pointer* half of the same problem lives (P15).
-326. [Low] Cut arbitrary rectangles, not only regular grids, in `SpriteSheet` (the same port's P17).
+     `BlockingWindowStack` is where the *pointer* half of the same problem lives (P15).~~
+     Both halves, because they answer different readers. `handleAction` is public, and that is the
+     fix that removes the dependence on registration order entirely: a scene chains
+     `stack.handleAction(action) || myOwnHandling(action)` and the windows keep the priority they are
+     supposed to have whatever order the two were registered in. The class doc says the same for a
+     scene that would rather not chain, names the trap outright (the stack registers in its own
+     constructor, `Input.onAction` offers newest-first, so a scene that registers after building its
+     stack is offered every key before the open window is), and carries the return-false-and-check-
+     `blocksWorld` recipe the port had to invent on its own. Three tests in
+     `tests/window-stack-routing.test.ts`, one of which pins the trap itself so that the doc cannot
+     quietly stop being true.
+326. ~~[Low] Cut arbitrary rectangles, not only regular grids, in `SpriteSheet` (the same port's P17).
      `SpriteSheet` is the right shape and the port uses it for every real grid (hero 12x15, items
      16x16, tile and mob sheets via `fromTexture`), but it can only be built as a grid: there is no
      `region(texture, x, y, w, h)`, and `Types2D` offers `Texture2D`/`Rectangle2D`/`rectOf` without a
@@ -4605,7 +4655,15 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      `SpriteSheet.rect(frame, x, y, w, h)` (or a free `region(texture, x, y, w, h)`) would remove
      that boilerplate and bring the same benefit `SpriteSheet` already advertises for grids: frames
      are cut once and cached, so asking for the same index twice returns the same `Texture`, where
-     the hand-written path builds a fresh `Texture` every time a window is opened.
+     the hand-written path builds a fresh `Texture` every time a window is opened.~~
+     `SpriteSheet.rect(index, x, y, width, height)`: the first of the two shapes the item offered,
+     on the sheet rather than free, because the cache, the names and `region` are all already there
+     and a rect inherits every one of them, so a game keeps addressing frames by index. Declaring a
+     rect over a grid index replaces that frame, which is exactly the `assignItemRect` case: the item
+     keeps its index and its name and only its art is smaller than its cell. `grid`/`fromTexture`
+     now take no frame size at all, which is what a rect-only sheet needs, leaving no grid, a `count`
+     of 0, and every frame one that was declared. Five tests in
+     `tests/sprite-sheet-rects.test.ts`.
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list
@@ -4625,8 +4683,10 @@ standing intentions.
 
 The definition of done for 1.0. Each line is a check to run, not a feature to build. Every numbered
 item above has shipped, the Wesnoth-port cluster (247 and up, 311-313 last, plus 314 found
-reconciling it) included: the framework's 1.0 is what the ports build against, and both of them
-being complete is the line below that says so rather than a numbered item of its own.
+reconciling it) included - all but item 320, which is the port's own side of a disagreement the
+framework only invited (319 shipped the framework half), so it is not a framework blocker: the
+framework's 1.0 is what the ports build against, and both of them being complete is the line below
+that says so rather than a numbered item of its own.
 
 - [x] `npm run check`, `npm test`, `npm run build`, and `npm run audit` are all green on
       the release commit. (2026-09-11: green on the 0.7.6 release commit `98c64df`, whose own CI

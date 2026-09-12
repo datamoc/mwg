@@ -35,6 +35,62 @@ the public API may still change between minor versions.
 - `key="""..."""` attribute values (item 317): the one form that may span lines, taken exactly
   as written, so wrapped message, objective and option-label text no longer needs a converter to
   collapse its whitespace. The `_` gettext marker applies to it as to any other value.
+- `roguelike.coneSector` (item 322): a circular sector aimed at an angle. Rays are cast every 0.5
+  degrees across an arc of `degrees`, each clamped to `range` and stopped by the first wall, so a
+  wall shadows the part of the cone behind it while the rest still reaches. `coneCells` snaps the
+  aim to one of the eight directions and sprays linearly from there; a sector keeps the angle it
+  was aimed at, which is what a breath weapon, a searchlight or a gas cloud wants. It needs the
+  level - that is what stops its rays - so it is a function rather than one of `AreaShape`'s kinds,
+  whose resolver works without one. Ray offsets round away from zero, so a sector aimed along an
+  axis is exactly symmetric rather than a cell wider on one side. Six tests in
+  `tests/targeting-shapes.test.ts`.
+- `ParticleEmitter` colour ranges, curves and flicker (item 323): `tint` takes a `[from, to]` pair
+  each particle draws its own colour from (mixed channel by channel, where interpolating the packed
+  value would carry from one channel into the next), `scale`/`alpha` take a `ParticleCurve` of the
+  particle's own age instead of only the birth-to-death pair, and `flicker` multiplies the scale by
+  a seeded draw every frame, which is a torch's wobble rather than its fade. Each of those draws
+  happens only when its option is used, so an existing seeded spray is unchanged, and reduced
+  motion drops the flicker along with the travel. Five tests in `tests/particles.test.ts`.
+- `Window({ blocker: true })` (item 324): a full-viewport child under the window's chrome that
+  swallows clicks, so a window over a map or a toolbar stops passing them to what is underneath,
+  and dismisses the window when the click lands outside it. A window's own widgets are hit first,
+  and a click on the frame or an empty part of the body is swallowed without dismissing, so the
+  body is never a close button by accident. `handleOutsideClick(x, y)` is that decision on its own,
+  headless-testable the way `handleAction` is. Off by default: it changes what the whole screen
+  answers to. Seven tests in `tests/window-blocker.test.ts`.
+- `WindowStack.handleAction(action)` is public (item 325): a scene with its own keyboard handling
+  can now ask the windows before acting, instead of discovering that registration order decided it.
+  `Input.onAction` offers an action to the most recently registered listener first, and the stack
+  registers in its constructor, so a scene that builds its stack in `create()` and registers a
+  handler after it is offered every key before the open window is, and returning true for one takes
+  it away from the window. The class doc spells the race out and gives the one-line chain
+  (`stack.handleAction(action) || myOwnHandling(action)`), and the same doc now says what a scene
+  that does not chain has to do instead. `Window`'s own doc gains the other half: its frame and
+  empty body are not clickable, which `blocker` is the option that changes. Three tests in
+  `tests/window-stack-routing.test.ts`.
+- `SpriteSheet.rect(index, x, y, width, height)` (item 326): arbitrary rectangles for the sheets
+  that are not grids - a hand-packed icon atlas, a strip of bar segments, a nine-patch's corners,
+  an item whose art is smaller than its cell. A rect is cached under its index exactly like a grid
+  frame, so `get`/`region`/`name`/`pick` treat it as one and asking twice returns the same
+  `Texture`, where the hand-written path built a fresh one per site (about twenty of them in the
+  port, plus its own helper). Declaring a rect over a grid index replaces that frame, which is what
+  a tightened sub-rect is. `grid`/`fromTexture` now take no frame size at all, leaving a sheet with
+  no grid and only the rects declared on it. Five tests in `tests/sprite-sheet-rects.test.ts`.
+
+### Changed
+
+- `MessageBox` swallows clicks by default (item 324), through the same `blocker` layer: a box with
+  a page still to read, or a choice to answer, is not something a click on the world should be able
+  to act past. It is not closable, so this can only ever swallow a click, never dismiss the box,
+  and `blocker: false` is the opt-out for a box the player is meant to click past (the same case
+  `dims: false` is for). `examples/interface` uses both new halves: its bag window takes
+  `blocker: true`, and its map handler now asks `windows.handleAction` rather than relying on
+  having registered before the stack did.
+- `sbom.cdx.json` carries a `serialNumber` (item 315): a version-5 UUID over the document's own
+  content, so it stays stable for a given lockfile and changes when the dependency set does, which
+  keeps the drift check and gives the serial the meaning CycloneDX asks of it. `metadata.timestamp`
+  stays absent on purpose: a generation time stamped into a committed file is one stale moment
+  every later read is dated to, and `CHANGELOG.md` already dates each version.
 
 ## [0.7.9] - 2026-09-12
 

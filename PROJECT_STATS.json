@@ -5,18 +5,18 @@
 	"releaseDate": "2026-09-12",
 	"source": {
 		"files": 279,
-		"lines": 43637,
+		"lines": 44149,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 79,
-				"lines": 14989
+				"lines": 15167
 			},
 			{
 				"name": "mwl",
 				"files": 21,
-				"lines": 5248
+				"lines": 5492
 			},
 			{
 				"name": "core",
@@ -26,7 +26,7 @@
 			{
 				"name": "roguelike",
 				"files": 22,
-				"lines": 3429
+				"lines": 3519
 			},
 			{
 				"name": "board",
@@ -86,13 +86,13 @@
 		]
 	},
 	"tests": {
-		"files": 225,
-		"lines": 29282,
-		"cases": 2119
+		"files": 228,
+		"lines": 29998,
+		"cases": 2162
 	},
 	"tools": {
 		"files": 37,
-		"lines": 6616
+		"lines": 6646
 	},
 	"examples": {
 		"count": 22,
@@ -123,17 +123,17 @@
 	},
 	"roadmap": {
 		"items": 326,
-		"completed": 315,
-		"open": 11,
-		"percent": 97
+		"completed": 325,
+		"open": 1,
+		"percent": 100
 	},
 	"api": {
 		"declarationFiles": 278
 	},
 	"bundle": {
-		"globalRaw": 1014453,
-		"globalGzip": 301046,
-		"distRaw": 3245672
+		"globalRaw": 1018757,
+		"globalGzip": 302294,
+		"distRaw": 3281994
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
