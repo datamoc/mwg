@@ -4382,12 +4382,16 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      sprite - the same division `AnimatedSprite.frameOffset` and `LightningArc` already draw, and
      the reason no `onUpdate` callback was needed on top: the frame lookup is `Animation.frameAt`,
      not state the game has to drive. Two tests in `tests/projectile.test.ts`.~~
-312. [Low] A named-layer helper for `Node2D` trees (the same port's report). A game with a
+312. ~~[Low] A named-layer helper for `Node2D` trees (the same port's report). A game with a
      dozen or so conventionally-ordered layers (terrain, units, effects, UI, ...) hand-wires
      each as its own `Node2D`, added to its parent in the right order, every time. A
      `createLayers(names)` returning attached, named containers would remove that boilerplate;
      the ordering and naming stay the caller's own convention, not something this framework
-     opines on.
+     opines on.~~ Landed as `createLayers(parent, names)`: one `Node2D` per name, labeled with it
+     and attached to `parent` in the order given, returned as a name-keyed record. The parent is
+     an explicit argument rather than the item's bare `createLayers(names)`, because "attached" is
+     the point and a returned-but-unattached list would leave the caller adding them in order
+     anyway. Two tests in `tests/create-layers.test.ts`.~~
 313. [Low] Let `RichLabel`/`MarkupText` accept `tagStyles` the way a bare `Text2D` does (the
      same port's report). A game building narration through `new Text2D({ tagStyles })` for
      custom inline tags beyond `markup.ts`'s fixed set currently cannot reach that through

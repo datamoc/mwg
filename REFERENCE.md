@@ -352,6 +352,10 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   behaviour, only a name a game can import without naming `pixi.js` itself. Prefer
   `ui.Label`/`BitmapLabel` over `Text2D` for anything styled through `ui.theme()`, and
   `render.TintedSprite` over `Sprite2D` the moment a colour transform is needed.
+- `createLayers(parent, names)` (item 312) - builds one labeled `Node2D` per name, attached to
+  `parent` in the order given and returned keyed by name, so a game's conventionally-ordered
+  layer stack (terrain, units, effects, UI, ...) is one call rather than a dozen hand-wired
+  containers.
 
 ### `two-d/ui`
 

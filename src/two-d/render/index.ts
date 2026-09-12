@@ -91,7 +91,7 @@ export type {
 
 export { Container2D, Rectangle2D, Texture2D, rectOf } from './Types2D.ts';
 export type { Rect, TextureRegion } from './Types2D.ts';
-export { Node2D, Shape2D, Text2D, Sprite2D, TiledSprite, Gradient } from './Shape2D.ts';
+export { Node2D, Shape2D, Text2D, Sprite2D, TiledSprite, Gradient, createLayers } from './Shape2D.ts';
 
 export { paletteRangeMapping, recolorTexture, remapPixels, withTextureCanvas } from './PaletteRemap.ts';
 export type {

@@ -49,6 +49,9 @@ the public API may still change between minor versions.
   `applyTextureModifiers`'s exact pixel-level baking and `applyImageModifiers`'s sprite-level
   modifiers in the order a caller with a `~BLEND`/`~ROTATE` path needs, so the two no longer
   have to be driven by hand.
+- `two-d.render.createLayers(parent, names)` (item 312): builds one labeled `Node2D` per name,
+  attached to `parent` in the order given and returned keyed by name, for the conventionally
+  ordered layer stack (terrain, units, effects, UI, ...) a game otherwise hand-wires.
 - `two-d.render.Projectile` takes an optional `animation` (item 311): the projectile advances
   the flight frames with its own elapsed time and reports the current one through
   `frame`/`frameOffset`, so a missile with `[missile_frame]` art no longer needs a parallel

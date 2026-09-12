@@ -25,6 +25,34 @@ import { Container, Graphics, Text, TilingSprite, FillGradient, Sprite } from 'p
 export class Node2D extends Container {}
 
 /**
+ * Creates one labeled `Node2D` per name, attached to `parent` in the order given, and returns
+ * them keyed by name. A game with a dozen conventionally-ordered layers (terrain, units, effects,
+ * UI, ...) otherwise hand-wires each one and adds them in the right order everywhere; this is that
+ * boilerplate once. The names and their order stay the caller's own convention - nothing here
+ * decides what a layer is called or which should draw on top.
+ *
+ * @example
+ * ```ts
+ * import { Node2D, createLayers, Sprite2D } from '@datamoc/mw_games/two-d/render';
+ *
+ * const stage = new Node2D();
+ * const layers = createLayers(stage, ['terrain', 'units', 'effects', 'ui']);
+ * layers.units.addChild(new Sprite2D());
+ * console.log(layers.effects.label); // 'effects'
+ * ```
+ */
+export function createLayers(parent: Container, names: readonly string[]): Record<string, Node2D> {
+	const layers: Record<string, Node2D> = {};
+	for (const name of names) {
+		const layer = new Node2D();
+		layer.label = name;
+		parent.addChild(layer);
+		layers[name] = layer;
+	}
+	return layers;
+}
+
+/**
  * Vector drawing - rectangles, circles, polygons, lines - under an MWG-owned name.
  *
  * Pixi's own `Graphics` API (`.rect(...).fill(...)`, `.circle(...).stroke(...)`, `moveTo`/

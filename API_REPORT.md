@@ -515,6 +515,10 @@ build instead.
 
     export declare function createColorBlindnessFilter(type: ColorBlindnessType): ColorMatrixFilter;
 
+### `createLayers` (function)
+
+    export declare function createLayers(parent: Container, names: readonly string[]): Record<string, Node2D>;
+
 ### `croppedTexture` (function)
 
     export declare function croppedTexture(texture: Texture, parsed: ParsedImagePath): Texture;
@@ -7012,6 +7016,10 @@ build instead.
 
     export declare function createColorBlindnessFilter(type: ColorBlindnessType): ColorMatrixFilter;
 
+### `createLayers` (function)
+
+    export declare function createLayers(parent: Container, names: readonly string[]): Record<string, Node2D>;
+
 ### `croppedTexture` (function)
 
     export declare function croppedTexture(texture: Texture, parsed: ParsedImagePath): Texture;
@@ -8993,6 +9001,10 @@ build instead.
 ### `createColorBlindnessFilter` (function)
 
     export declare function createColorBlindnessFilter(type: ColorBlindnessType): ColorMatrixFilter;
+
+### `createLayers` (function)
+
+    export declare function createLayers(parent: Container, names: readonly string[]): Record<string, Node2D>;
 
 ### `croppedTexture` (function)
 
