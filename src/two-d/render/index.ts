@@ -17,6 +17,7 @@ export {
 	parseColorPairs,
 	parseImagePath,
 	parsePaletteLists,
+	parseRotateMode,
 	rotatePixels,
 	spriteColorMatrix,
 } from './ImageModifiers.ts';
@@ -25,6 +26,7 @@ export type {
 	ImageModifier,
 	ImageTextureProbe,
 	ParsedImagePath,
+	RotateMode,
 	RotatedPixels,
 } from './ImageModifiers.ts';
 export { AnimatedSprite, Animation } from './AnimatedSprite.ts';

@@ -60,6 +60,26 @@ export function imageModifier(path: ParsedImagePath, name: string): ImageModifie
 }
 
 /**
+ * The sampling `~ROTATE(degrees, mode)` asks for, from its second argument: `linear` (or
+ * `smooth`, since either word is what an author reaches for) interpolates, anything else -
+ * including nothing at all - takes the fast nearest-neighbour path. Exported beside the other
+ * path parsers for the same reason they are: a game that renders `~ROTATE` through its own
+ * canvas pipeline still wants the same two names to mean the same two things.
+ *
+ * @example
+ * ```ts
+ * import { parseImagePath, imageModifier, parseRotateMode } from '@datamoc/mw_games/two-d/render';
+ *
+ * const rotate = imageModifier(parseImagePath('tile.png~ROTATE(60,linear)'), 'ROTATE');
+ * parseRotateMode(rotate?.args[1]); // 'linear'
+ * parseRotateMode(undefined); // 'nearest'
+ * ```
+ */
+export function parseRotateMode(argument: string | undefined): RotateMode {
+	return argument !== undefined && /^(linear|smooth)$/i.test(argument) ? 'linear' : 'nearest';
+}
+
+/**
  * Build the Pixi 5x4 colour-matrix for a Wesnoth `CS(r,g,b)` shift.
  *
  * @example
@@ -453,7 +473,10 @@ export interface ImageTextureProbe extends RecolorProbe {
  * own colour), `~BLEND` (an exact per-pixel lerp towards a colour, via `blendPixels`) and
  * `~ROTATE` (rotates the source pixels themselves and expands the surface, via `rotatePixels` -
  * this is why `~ROTATE` lives here rather than as a sprite transform: it has to be right for
- * terrain and anything else that must keep tiling after the rotation). `~BLIT`/`~MASK` need
+ * terrain and anything else that must keep tiling after the rotation). `~ROTATE(degrees)` samples
+ * nearest-neighbour, which is exact at multiples of a quarter turn; `~ROTATE(degrees,linear)`
+ * interpolates instead, for the angles that are not, at four reads a pixel, and both are bake-time
+ * work rather than per-frame - see `rotatePixels`. `~BLIT`/`~MASK` need
  * `probe.resolveTexture` to find the sibling image; without it they are skipped rather than
  * treated as an error, since a caller that only wants `~RC`/`~PAL` has no sibling image to
  * resolve. `resolveTexture` receives the argument exactly as written, nested modifiers included
@@ -548,7 +571,7 @@ export function applyTextureModifiers(
 				if (source && sourceContext) {
 					sourceContext.drawImage(result.source.resource, 0, 0);
 					const pixels = sourceContext.getImageData(0, 0, width, height);
-					const rotated = rotatePixels(pixels.data, width, height, degrees);
+					const rotated = rotatePixels(pixels.data, width, height, degrees, parseRotateMode(rotate.args[1]));
 					const destination = createCanvas(rotated.width, rotated.height, probe);
 					const destinationContext = destination?.getContext('2d');
 					if (destination && destinationContext) {
@@ -662,14 +685,32 @@ export interface RotatedPixels {
 }
 
 /**
+ * How `rotatePixels` samples the source at an angle that is not a multiple of a quarter turn.
+ *
+ * `'nearest'` takes the closest single source pixel: the fast path, and the right one for pixel
+ * art that is meant to stay crisp. `'linear'` blends the four pixels around the sample point, so
+ * an edge comes out as an edge instead of a staircase - what a tile rotated by 30 or 60 degrees
+ * onto a hex grid needs, and what art with soft or anti-aliased edges wants anyway. Either mode
+ * samples premultiplied, so a transparent neighbour contributes coverage and never colour: a
+ * straight RGBA blend would pull the (arbitrary) colour of transparent pixels into the edge and
+ * fringe every cut-out sprite.
+ */
+export type RotateMode = 'nearest' | 'linear';
+
+/**
  * The renderer-free core of `~ROTATE`: rotates the source pixels themselves by `degrees`
  * (clockwise) around their centre and expands the surface to fit the rotated bounds, rather
  * than turning a sprite's own transform - `applyImageModifiers`'s `sprite.rotation` leaves the
  * art unrotated and does not grow the surface, which is wrong for terrain and anything else
- * that has to keep tiling after the rotation. A destination pixel outside the source once
- * rotated back is fully transparent. Sampling is nearest-neighbour, so an exact multiple of 90
- * degrees round-trips pixel-for-pixel; other angles show the aliasing any nearest-neighbour
- * rotation does.
+ * that has to keep tiling after the rotation. A destination pixel with no source under it is
+ * fully transparent, and a sample point up to half a pixel outside the source still reads it,
+ * so the edge of the rotated art ends where the art does.
+ *
+ * `'nearest'` is the default and stays exact at multiples of 90 degrees, which round-trip
+ * pixel-for-pixel; `'linear'` costs four reads and a premultiplied blend per destination pixel
+ * and is what keeps a non-square angle readable. Both modes are bake-time work - the rotation
+ * happens once, when the texture is built - so the choice is a load-time one, not a frame-time
+ * one, and a game can afford `'linear'` wherever the art is not meant to look pixel-blocky.
  *
  * @example
  * ```ts
@@ -678,9 +719,16 @@ export interface RotatedPixels {
  * const pixels = new Uint8ClampedArray([255, 0, 0, 255, 0, 255, 0, 255]); // 2x1: red, green
  * const rotated = rotatePixels(pixels, 2, 1, 90);
  * console.log(rotated.width, rotated.height); // 1, 2 - the surface expanded to fit
+ * const smooth = rotatePixels(pixels, 2, 1, 60, 'linear'); // the same, with an interpolated edge
  * ```
  */
-export function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number): RotatedPixels {
+export function rotatePixels(
+	pixels: Uint8ClampedArray,
+	width: number,
+	height: number,
+	degrees: number,
+	mode: RotateMode = 'nearest',
+): RotatedPixels {
 	const radians = (degrees * Math.PI) / 180;
 	const cos = Math.cos(radians);
 	const sin = Math.sin(radians);
@@ -707,23 +755,83 @@ export function rotatePixels(pixels: Uint8ClampedArray, width: number, height: n
 	const ocx = outWidth / 2 - 0.5;
 	const ocy = outHeight / 2 - 0.5;
 
+	//a quarter turn lands every sample of every destination pixel on a source pixel's centre, so
+	//'linear' has nothing to blend there and takes the integer path with it
+	const interpolate = mode === 'linear' && degrees % 90 !== 0;
+
 	for (let oy = 0; oy < outHeight; oy += 1) {
 		for (let ox = 0; ox < outWidth; ox += 1) {
 			const dx = ox - ocx;
 			const dy = oy - ocy;
 			//inverse rotation: where in the source does this destination pixel come from
-			const sx = Math.round(dx * cos + dy * sin + cx);
-			const sy = Math.round(-dx * sin + dy * cos + cy);
-			if (sx < 0 || sx >= width || sy < 0 || sy >= height) continue;
-
+			const sx = dx * cos + dy * sin + cx;
+			const sy = -dx * sin + dy * cos + cy;
 			const outIndex = (oy * outWidth + ox) * 4;
-			const inIndex = (sy * width + sx) * 4;
-			out[outIndex] = pixels[inIndex];
-			out[outIndex + 1] = pixels[inIndex + 1];
-			out[outIndex + 2] = pixels[inIndex + 2];
-			out[outIndex + 3] = pixels[inIndex + 3];
+
+			if (!interpolate) {
+				const px = Math.round(sx);
+				const py = Math.round(sy);
+				if (px < 0 || px >= width || py < 0 || py >= height) continue;
+				const inIndex = (py * width + px) * 4;
+				out[outIndex] = pixels[inIndex];
+				out[outIndex + 1] = pixels[inIndex + 1];
+				out[outIndex + 2] = pixels[inIndex + 2];
+				out[outIndex + 3] = pixels[inIndex + 3];
+				continue;
+			}
+
+			sampleLinear(pixels, width, height, sx, sy, out, outIndex);
 		}
 	}
 
 	return { data: out, width: outWidth, height: outHeight };
+}
+
+/**
+ * One destination pixel of a `'linear'` rotation: the four source pixels around `sx, sy`,
+ * weighted by distance, premultiplied by alpha and divided back out at the end. Taps are clamped
+ * to the source, so the border pixel extends outwards by the half pixel a sample can sit beyond
+ * it; a sample with no overlap with the source at all leaves the destination transparent, which
+ * is what keeps the rotated surface's corners empty rather than smeared.
+ */
+function sampleLinear(
+	pixels: Uint8ClampedArray,
+	width: number,
+	height: number,
+	sx: number,
+	sy: number,
+	out: Uint8ClampedArray,
+	outIndex: number,
+): void {
+	if (sx < -0.5 || sy < -0.5 || sx > width - 0.5 || sy > height - 0.5) return;
+
+	const x0 = Math.floor(sx);
+	const y0 = Math.floor(sy);
+	const fx = sx - x0;
+	const fy = sy - y0;
+
+	let alpha = 0;
+	let red = 0;
+	let green = 0;
+	let blue = 0;
+	for (let dy = 0; dy <= 1; dy += 1) {
+		for (let dx = 0; dx <= 1; dx += 1) {
+			const weight = (dx === 0 ? 1 - fx : fx) * (dy === 0 ? 1 - fy : fy);
+			if (weight === 0) continue;
+			const px = Math.min(width - 1, Math.max(0, x0 + dx));
+			const py = Math.min(height - 1, Math.max(0, y0 + dy));
+			const inIndex = (py * width + px) * 4;
+			const sourceAlpha = pixels[inIndex + 3];
+			alpha += sourceAlpha * weight;
+			red += pixels[inIndex] * sourceAlpha * weight;
+			green += pixels[inIndex + 1] * sourceAlpha * weight;
+			blue += pixels[inIndex + 2] * sourceAlpha * weight;
+		}
+	}
+	if (alpha <= 0) return;
+
+	out[outIndex] = red / alpha;
+	out[outIndex + 1] = green / alpha;
+	out[outIndex + 2] = blue / alpha;
+	out[outIndex + 3] = alpha;
 }

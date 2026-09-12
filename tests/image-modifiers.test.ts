@@ -13,6 +13,7 @@ import {
 	maskPixels,
 	parseColorPairs,
 	parseImagePath,
+	parseRotateMode,
 	parsePaletteLists,
 	rotatePixels,
 } from '../src/two-d/render/ImageModifiers.ts';
@@ -213,6 +214,15 @@ test('rotatePixels by 180 degrees reverses pixel order, dimensions unchanged', (
 	assert.deepEqual([...rotated.data.slice(4, 8)], [255, 0, 0, 255]);
 });
 
+test("~ROTATE's second argument names the sampling, and anything else means the fast one", () => {
+	assert.equal(parseRotateMode(undefined), 'nearest', 'no second argument, the default');
+	assert.equal(parseRotateMode('linear'), 'linear');
+	assert.equal(parseRotateMode('smooth'), 'linear', 'the same request, spelled the way an author reaches for it');
+	assert.equal(parseRotateMode('LINEAR'), 'linear');
+	assert.equal(parseRotateMode('fast'), 'nearest', 'an unknown word falls back rather than throwing');
+	assert.equal(parseRotateMode(''), 'nearest');
+});
+
 test('rotatePixels leaves a destination pixel transparent when nothing in the source rotates onto it', () => {
 	//a 2x2 opaque source rotated 45 degrees expands its bounding box to a diamond shape; the
 	//expanded square canvas's corners have nothing to sample from and must come out fully
@@ -222,6 +232,106 @@ test('rotatePixels leaves a destination pixel transparent when nothing in the so
 	let sawTransparent = false;
 	for (let i = 3; i < rotated.data.length; i += 4) if (rotated.data[i] === 0) sawTransparent = true;
 	assert.equal(sawTransparent, true);
+});
+
+test("rotatePixels in 'linear' mode is still exact at a quarter turn, where nothing needs blending", () => {
+	const pixels = new Uint8ClampedArray([
+		255,
+		0,
+		0,
+		255, // red
+		0,
+		255,
+		0,
+		255, // green
+		0,
+		0,
+		255,
+		255, // blue
+		255,
+		255,
+		0,
+		255, // yellow
+	]); // 4x1
+	for (const degrees of [90, 180, 270]) {
+		assert.deepEqual(
+			[...rotatePixels(pixels, 4, 1, degrees, 'linear').data],
+			[...rotatePixels(pixels, 4, 1, degrees, 'nearest').data],
+			`${degrees} degrees lands every sample on a source pixel centre`,
+		);
+	}
+});
+
+/** an `size`-square image, opaque, black down the left half and white down the right */
+function blackAndWhiteSquare(size: number): Uint8ClampedArray {
+	const pixels = new Uint8ClampedArray(size * size * 4);
+	for (let y = 0; y < size; y += 1) {
+		for (let x = 0; x < size; x += 1) {
+			const index = (y * size + x) * 4;
+			const value = x >= size / 2 ? 255 : 0;
+			pixels[index] = value;
+			pixels[index + 1] = value;
+			pixels[index + 2] = value;
+			pixels[index + 3] = 255;
+		}
+	}
+	return pixels;
+}
+
+/** how many visible pixels hold a colour that is neither of the two source values */
+function midtones(data: Uint8ClampedArray): number {
+	let count = 0;
+	for (let index = 3; index < data.length; index += 4) {
+		if (data[index] > 0 && data[index - 3] > 8 && data[index - 3] < 247) count += 1;
+	}
+	return count;
+}
+
+test("rotatePixels in 'linear' mode blends between source pixels where 'nearest' only picks one", () => {
+	const pixels = blackAndWhiteSquare(8); // a hard edge, rotated across it
+	const sharp = rotatePixels(pixels, 8, 8, 45, 'nearest').data;
+	const smooth = rotatePixels(pixels, 8, 8, 45, 'linear').data;
+
+	//nearest can only ever produce one of the two source colours (or nothing); linear has to
+	//produce shades in between, which is the whole difference between the two modes
+	assert.equal(midtones(sharp), 0);
+	assert.ok(midtones(smooth) > 0, `expected interpolated edge pixels, got ${midtones(smooth)}`);
+});
+
+test("rotatePixels in 'linear' mode does not pull a transparent pixel's colour into the edge", () => {
+	//the classic interpolation bug: a cut-out sprite is mostly fully transparent pixels, whose RGB
+	//is whatever was left behind them, and a straight RGBA blend drags that colour into the visible
+	//edge as a fringe. Opaque white beside transparent *green* may only ever come out white - and
+	//mostly transparent, which is why an edge pixel is also asserted to exist.
+	const pixels = new Uint8ClampedArray(4 * 2 * 4);
+	for (let y = 0; y < 2; y += 1) {
+		for (let x = 0; x < 4; x += 1) {
+			const index = (y * 4 + x) * 4;
+			if (x < 2) {
+				pixels[index] = 255;
+				pixels[index + 1] = 255;
+				pixels[index + 2] = 255;
+				pixels[index + 3] = 255;
+			} else {
+				pixels[index + 1] = 255; //green, and invisible
+			}
+		}
+	}
+	const rotated = rotatePixels(pixels, 4, 2, 30, 'linear');
+
+	let edgePixels = 0;
+	for (let index = 0; index < rotated.data.length; index += 4) {
+		const [r, g, b, a] = [
+			rotated.data[index],
+			rotated.data[index + 1],
+			rotated.data[index + 2],
+			rotated.data[index + 3],
+		];
+		if (a === 0) continue;
+		if (a < 255) edgePixels += 1;
+		assert.ok(g <= r + 1 && g <= b + 1, `pixel ${index / 4} picked up green: rgba(${r},${g},${b},${a})`);
+	}
+	assert.ok(edgePixels > 0, 'the rotation has to actually sample across the transparent edge to prove anything');
 });
 
 test('~BLEND and ~ROTATE are no longer applied by applyImageModifiers, only by applyTextureModifiers', () => {
