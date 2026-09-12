@@ -5457,6 +5457,10 @@ build instead.
 
 ## `./mwl`
 
+### `attributeTypeDescription` (function)
+
+    export declare function attributeTypeDescription(type: MwlAttributeType): string;
+
 ### `campaignChain` (function)
 
     export declare function campaignChain<State extends StateValue, Result extends StateValue = StateValue>(definition: MwlCampaignDefinition, options: {
@@ -5751,6 +5755,10 @@ build instead.
 
     export declare function validateCatalogNodes(nodes: readonly MwlNode[], options?: MwlValidationOptions): MwlDiagnostic[];
 
+### `validateHookAttributes` (function)
+
+    export declare function validateHookAttributes(node: MwlCompiledNode, declaration: MwlHookDeclaration): MwlDiagnostic[];
+
 ### `validateHookReferences` (function)
 
     export declare function validateHookReferences(references: readonly HookReference[], available: Iterable<string>): MwlDiagnostic[];
@@ -5758,6 +5766,10 @@ build instead.
 ### `validateWorld` (function)
 
     export declare function validateWorld(value: unknown): MwlWorld;
+
+### `validAttributeValue` (function)
+
+    export declare function validAttributeValue(value: string, type: MwlAttributeType): boolean;
 
 ## `./mwl/fengari`
 

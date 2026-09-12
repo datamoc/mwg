@@ -740,10 +740,10 @@ export function validate(nodes: readonly MwlNode[], schemas = schema01): MwlDiag
 		}
 		for (const [name, type] of Object.entries(definition.attributes ?? {})) {
 			const value = node.attributes[name];
-			if (value !== undefined && !validType(value, type))
+			if (value !== undefined && !validAttributeValue(value, type))
 				diagnostics.push({
 					code: 'MWL_VALUE',
-					message: `${name} must be ${typeDescription(type)}`,
+					message: `${name} must be ${attributeTypeDescription(type)}`,
 					location: node.location,
 				});
 			if (value !== undefined && type === 'ref') {
@@ -769,7 +769,7 @@ export function validate(nodes: readonly MwlNode[], schemas = schema01): MwlDiag
 		}
 		if (definition.openAttributes) {
 			for (const [name, value] of Object.entries(node.attributes)) {
-				if (!validType(value, definition.openAttributes))
+				if (!validAttributeValue(value, definition.openAttributes))
 					diagnostics.push({
 						code: 'MWL_VALUE',
 						message: `${name} must be ${definition.openAttributes}`,
@@ -916,16 +916,19 @@ export function isMwlId(value: string): boolean {
 	return /^[A-Za-z_][\w.[\]-]*$/.test(value);
 }
 
-/** `Array.isArray` does not narrow a `readonly` array out of a union, so name the check. */
-function isValueList(type: MwlAttributeType): type is readonly string[] {
-	return Array.isArray(type);
-}
-
-function typeDescription(type: MwlAttributeType): string {
-	return isValueList(type) ? `one of ${type.join(', ')}` : type;
-}
-
-function validType(value: string, type: MwlAttributeType): boolean {
+/**
+ * Whether a value satisfies a declared attribute type. Exported because the check is not only
+ * the tag schema's: a hook declares its own attributes (item 321), and a game's `[hook]`
+ * invocations are checked against that declaration by the same rule.
+ *
+ * @example
+ * ```ts
+ * import { validAttributeValue } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(validAttributeValue('yes', 'boolean')); // true
+ * ```
+ */
+export function validAttributeValue(value: string, type: MwlAttributeType): boolean {
 	if (isValueList(type)) return type.includes(value);
 	if (type === 'number') return Number.isFinite(Number(value));
 	if (type === 'integer') return /^-?\d+$/.test(value);
@@ -934,4 +937,24 @@ function validType(value: string, type: MwlAttributeType): boolean {
 	if (type === 'coordinate') return /^-?\d+(?:\s*,\s*-?\d+|\s*-\s*-?\d+)*$/.test(value);
 	if (type === 'id') return isMwlId(value);
 	return true;
+}
+
+/**
+ * How a diagnostic describes a declared attribute type, naming the alternatives when the type
+ * is a closed list rather than one of the shared value types.
+ *
+ * @example
+ * ```ts
+ * import { attributeTypeDescription } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(attributeTypeDescription(['literal', 'number'])); // 'one of literal, number'
+ * ```
+ */
+export function attributeTypeDescription(type: MwlAttributeType): string {
+	return isValueList(type) ? `one of ${type.join(', ')}` : type;
+}
+
+/** `Array.isArray` does not narrow a `readonly` array out of a union, so name the check. */
+function isValueList(type: MwlAttributeType): type is readonly string[] {
+	return Array.isArray(type);
 }

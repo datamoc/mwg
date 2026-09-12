@@ -503,6 +503,46 @@ test('MWL catalog validation catches duplicate ids, slots, effects, and hooks', 
 	assert.deepEqual(codes, ['MWL_UNKNOWN_SLOT', 'MWL_INCOMPLETE_EFFECT', 'MWL_DUPLICATE_ID', 'MWL_INVALID_HOOK']);
 });
 
+test('a declared hook validates the attributes its own [hook] calls carry', () => {
+	const game = compile(
+		'[hook]\nname=command:set_variable_dynamic\nmode=literal\nvalue=ok\n[/hook]\n[hook]\nname=command:set_variable_dynamic\nmode=literl\nvalue=ok\n[/hook]',
+	);
+	assert.deepEqual(
+		validateCatalog(game, {
+			hooks: [
+				{
+					id: 'command:set_variable_dynamic',
+					attributes: { mode: ['literal', 'number', 'expression'], value: 'string' },
+				},
+			],
+		}).map((diagnostic) => diagnostic.message),
+		['mode must be one of literal, number, expression on hook command:set_variable_dynamic'],
+	);
+	assert.deepEqual(
+		validateCatalog(game, {
+			hooks: [{ id: 'command:set_variable_dynamic', openAttributes: 'string' }],
+		}),
+		[],
+		'an open hook accepts any attribute name, the way an open tag does',
+	);
+});
+
+test('an undeclared hook attribute and an undeclared hook name are both reported', () => {
+	const game = compile('[hook]\nname=command:mark\nmark=ok\n[/hook]');
+	assert.deepEqual(
+		validateCatalog(game, { hooks: [{ id: 'command:mark', attributes: { value: 'string' } }] }).map(
+			(diagnostic) => diagnostic.code,
+		),
+		['MWL_UNKNOWN_ATTRIBUTE'],
+	);
+	//a bare id declares the hook exists without claiming anything about its attributes
+	assert.deepEqual(validateCatalog(game, { hooks: ['command:mark'] }), []);
+	assert.deepEqual(
+		validateCatalog(game, { hooks: ['command:other'] }).map((diagnostic) => diagnostic.code),
+		['MWL_UNKNOWN_HOOK'],
+	);
+});
+
 test('rowIdScope defaults to global: the same id reused across files is still a duplicate', () => {
 	const game = compileSources([
 		{ file: 'weapons.mwl', source: '[item]\nid=sword\nname=Sword\n[/item]' },

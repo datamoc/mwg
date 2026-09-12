@@ -1,5 +1,6 @@
 import type { MwlCompiledGame, MwlCompiledNode } from './compiler.ts';
 import type { MwlDiagnostic, MwlLocation } from './grammar.ts';
+import { attributeTypeDescription, validAttributeValue, type MwlAttributeType, type MwlValueType } from './schema.ts';
 import type { MwlValue } from './runtime.ts';
 
 /**
@@ -142,6 +143,64 @@ export function collectHookReferences(game: MwlCompiledGame): HookReference[] {
 	};
 	game.roots.forEach(visit);
 	return [...found.values()].sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name));
+}
+
+/**
+ * What a hook says about the attributes its own `[hook]` calls carry. A hook's *name* is checked
+ * at compile time already; without this its attributes are not, so a typo in one of a
+ * command hook's 18 modes is only discovered at the moment the scenario runs it.
+ *
+ * The declaration is the hook's, not the tag's: MWG checks `[hook]` invocations, where every
+ * attribute but `name` belongs to the hook. A `hook=` attribute on a condition-bearing tag
+ * (`[victory] hook=predicate:holds value=3`) keeps that tag's own schema and this does not
+ * apply, since `value` there is the condition's to define.
+ */
+export interface MwlHookDeclaration {
+	/** the `type:name` id, the same string `MwlHookRegistry` keys an implementation by */
+	readonly id: string;
+	/** fixed attributes, name -> value type; an attribute not named here is unknown */
+	readonly attributes?: Readonly<Record<string, MwlAttributeType>>;
+	/** when set, any attribute name is accepted and every value is checked as this type */
+	readonly openAttributes?: MwlValueType;
+}
+
+/**
+ * Check one `[hook]` call's own attributes against its declaration. Returns nothing for a hook
+ * the game declares without attributes: an undeclared shape is not this function's to invent.
+ *
+ * @example
+ * ```ts
+ * import { validateHookAttributes } from '@datamoc/mw_games/mwl';
+ *
+ * const node = { tag: 'hook', attributes: { name: 'command:mark', value: 'ok' }, children: [], location: undefined };
+ * console.log(validateHookAttributes(node, { id: 'command:mark', attributes: { value: 'string' } })); // []
+ * ```
+ */
+export function validateHookAttributes(node: MwlCompiledNode, declaration: MwlHookDeclaration): MwlDiagnostic[] {
+	// A hook declared by id alone claims nothing about its attributes, so there is nothing to
+	// check against: what a hook with no vocabulary would accept is its own business.
+	if (declaration.attributes === undefined && declaration.openAttributes === undefined) return [];
+	const location = node.location ?? { file: '<hook>', line: 0, column: 0 };
+	const diagnostics: MwlDiagnostic[] = [];
+	for (const [name, value] of Object.entries(node.attributes)) {
+		if (name === 'name') continue;
+		const type = declaration.attributes?.[name] ?? declaration.openAttributes;
+		if (type === undefined) {
+			diagnostics.push({
+				code: 'MWL_UNKNOWN_ATTRIBUTE',
+				message: `unknown attribute ${name} on hook ${declaration.id}`,
+				location,
+			});
+			continue;
+		}
+		if (!validAttributeValue(value, type))
+			diagnostics.push({
+				code: 'MWL_VALUE',
+				message: `${name} must be ${attributeTypeDescription(type)} on hook ${declaration.id}`,
+				location,
+			});
+	}
+	return diagnostics;
 }
 
 /**

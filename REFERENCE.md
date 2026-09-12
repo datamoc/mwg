@@ -1064,6 +1064,14 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   is split off and kept, and the comma-separated rows go through the same `parseTerrain` an inline
   `[map] terrain=` uses, overlays (`Gg^Vh`) and `<side> <code>` starts included. Header keys are
   not interpreted here, the same way `[terrain_graphics]` rules stay content's business.
+- `MwlHookDeclaration`/`validateHookAttributes` (item 321) - a hook may declare the attributes its
+  own `[hook]` calls carry (`attributes`, typed the way a tag schema types its own, or
+  `openAttributes`), and `validateCatalog`'s `hooks` option takes it in place of a bare
+  `type:name` id, so a typo in one of a command hook's eighteen modes is a compile-time
+  `MWL_VALUE` rather than a throw mid-scenario. The declaration is the hook's, not the tag's:
+  only `[hook]` calls are checked, where every attribute but `name` belongs to the hook. The
+  rule itself is `validAttributeValue`/`attributeTypeDescription`, exported because the tag
+  schema and a hook declaration check values the same way rather than two ways that drift.
 - `HookWorld`/`Emit` (item 319) - the hook boundary's two halves. `world.variableAt(path)`
   resolves a nested variable through the same walker `[variable] name=` reads through, and
   `emit.setVariable(path, value)` is its write, so a hook asks for `stored_naga.hitpoints` and

@@ -9,6 +9,12 @@ the public API may still change between minor versions.
 
 ### Added
 
+- `MwlHookDeclaration` and `validateHookAttributes` (item 321), plus `validAttributeValue`/
+  `attributeTypeDescription`: a hook declares the attributes its own `[hook]` calls carry, and
+  `validateCatalog`'s `hooks` option takes that declaration where a bare `type:name` id used to
+  be the only accepted shape. A typo in a hook attribute is now a compile-time `MWL_VALUE` or
+  `MWL_UNKNOWN_ATTRIBUTE` instead of a throw mid-scenario. The tag schema's own value check now
+  calls the same two exported functions, so the two cannot disagree.
 - `HookWorld.variableAt(path)` (item 319): the read that matches `Emit.setVariable`'s write, both
   resolving a nested variable through the same walker `[variable] name=` uses, so a hook no
   longer has to cast away `Readonly` and walk paths itself (which produced flat dotted keys no

@@ -4519,11 +4519,21 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      `command:set_variable_dynamic` should write nested paths through `emit.setVariable` and read
      through the shared resolver instead of flat dotted keys. Its own row because the disagreement
      is a port bug that MWG only invites, not one it owns.
-321. [Low] Hook attributes are an unvalidated `Record<string, string>`. Hook names are checked at
+321. ~~[Low] Hook attributes are an unvalidated `Record<string, string>`. Hook names are checked at
      compile time (`collectHookReferences`/`validateHookReferences`), but a hook's own attributes
      are not: `command:set_variable_dynamic` now carries 18 modes, and a typo only throws at
      runtime, mid-scenario. Letting hooks declare attribute schemas would extend `schema.ts`'s
-     compile-time validation to the hook boundary.
+     compile-time validation to the hook boundary.~~ `MwlHookDeclaration`, taken by
+     `validateCatalog`'s `hooks` option where a bare `type:name` string used to be the only shape,
+     so a game declares a hook once for name checking and, when it wants, for its attribute
+     vocabulary too. The value rule is shared rather than copied: `validAttributeValue` and
+     `attributeTypeDescription` moved out of `schema.ts`'s private helpers, and the tag validator
+     now calls them, which is what keeps a hook's `mode=` and a tag's `mode=` from drifting apart.
+     Scoped to `[hook]` calls, the tag where every attribute but `name` belongs to the hook: on a
+     condition-bearing tag (`[victory] hook=predicate:holds value=3`) `value` is the tag's own, so
+     the tag schema keeps that job. A hook declared by id alone claims nothing about its
+     attributes, so nothing is checked for it, and a typo'd hook name is still `MWL_UNKNOWN_HOOK`.
+     Two tests in `tests/mwl.test.ts`.
 322. [Low] An angular cone area, not only a snapped spray (the Pixel Dungeon port's P13, recorded
      as a design decision for the framework rather than patched upstream). The port needed Java's
      `mechanics/ConeAOE` exactly: a circular *sector* with rays cast every 0.5 degrees across an
