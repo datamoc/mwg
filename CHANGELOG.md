@@ -9,6 +9,11 @@ the public API may still change between minor versions.
 
 ### Added
 
+- `HookWorld.variableAt(path)` (item 319): the read that matches `Emit.setVariable`'s write, both
+  resolving a nested variable through the same walker `[variable] name=` uses, so a hook no
+  longer has to cast away `Readonly` and walk paths itself (which produced flat dotted keys no
+  reader finds). `Emit.setVariable` is documented as the write half. Any game implementing its
+  own `HookWorld` must now provide the method; only the runtime constructs one today.
 - `[set_variable] path=` (item 318), on both spellings: the computed target a converter needs for
   a dynamic name, expanded from `$name`/`$(expression)` references before the same path walker a
   literal `name=` uses resolves it. `name=`/`target=` keep their literal meaning.

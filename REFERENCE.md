@@ -1064,6 +1064,11 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   is split off and kept, and the comma-separated rows go through the same `parseTerrain` an inline
   `[map] terrain=` uses, overlays (`Gg^Vh`) and `<side> <code>` starts included. Header keys are
   not interpreted here, the same way `[terrain_graphics]` rules stay content's business.
+- `HookWorld`/`Emit` (item 319) - the hook boundary's two halves. `world.variableAt(path)`
+  resolves a nested variable through the same walker `[variable] name=` reads through, and
+  `emit.setVariable(path, value)` is its write, so a hook asks for `stored_naga.hitpoints` and
+  means the same variable content does; writing `world.variables` directly gets a flat dotted
+  key no reader finds.
 - `MwlTraceEvent`/`MwlRuntimeOptions.onTrace` - opt-in lifecycle tracing for event claims,
   completions, variable writes and runtime errors. `MwlHookRegistry.predicate` lets an adapter
   register named, typed filter predicates without putting game-specific semantics in MWG.

@@ -1425,6 +1425,7 @@ export class MwlRuntime {
 	private worldView(): HookWorld {
 		return {
 			variables: this.world.variables,
+			variableAt: (path) => this.variableAt(path),
 			units: this.world.units,
 			sides: this.world.sides,
 			turn: this.world.turn,

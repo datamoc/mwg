@@ -464,6 +464,43 @@ text=_ "Once"
 	assert.deepEqual(messages, [{ text: 'Again' }, { text: 'Once' }, { text: 'Again' }]);
 });
 
+test('a hook reads and writes nested variables by the path content uses', () => {
+	const messages: MwlMessage[] = [];
+	let read: unknown;
+	const source = `[game]
+[event]
+on=hooked
+[set_variable]
+name=stored_naga.hitpoints
+value=7
+[/set_variable]
+[hook]
+name=command:store
+[/hook]
+[message]
+text=_ "hp=$stored_naga.hitpoints"
+[/message]
+[/event]
+[/game]`;
+	const runtime = new MwlRuntime(compile(source), {
+		onMessage: (message) => messages.push(message),
+		hooks: {
+			command: {
+				'command:store': (world, emit) => {
+					read = world.variableAt('stored_naga.hitpoints');
+					emit.setVariable('stored_naga.hitpoints', 12);
+					emit.setVariable('party[0].name', 'Brena');
+				},
+			},
+		},
+	});
+	runtime.run('hooked');
+	assert.equal(read, 7, 'a hook reads the nested value content wrote, not a flat dotted key');
+	assert.deepEqual(runtime.world.variables.stored_naga, { hitpoints: 12 });
+	assert.deepEqual(runtime.world.variables.party, [{ name: 'Brena' }]);
+	assert.deepEqual(messages, [{ text: 'hp=12' }]);
+});
+
 test('runtime executes the remaining event command forms', () => {
 	const messages: MwlMessage[] = [];
 	let mark = '';

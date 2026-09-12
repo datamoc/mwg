@@ -25,6 +25,13 @@ export const hookTypes: readonly HookType[] = ['predicate', 'modifier', 'generat
 /** What a hook may read: a snapshot of the world, never engine internals. */
 export interface HookWorld {
 	readonly variables: Readonly<Record<string, MwlValue>>;
+	/**
+	 * One variable by path, resolved by the same walker `[variable] name=` reads
+	 * through, so a hook asks for `stored_naga.hitpoints` and gets what a
+	 * scenario asking for `stored_naga.hitpoints` gets. Read here, write through
+	 * `emit.setVariable`: both take a path, and neither is a flat dotted key.
+	 */
+	variableAt(path: string): MwlValue | undefined;
 	readonly units: Readonly<
 		Record<
 			string,
@@ -50,6 +57,8 @@ export interface Emit {
 	spawn(type: string, side: string, x: number, y: number): void;
 	kill(unit: string): void;
 	gold(side: string, delta: number): void;
+	/** Writes one variable by path (`party[0].name`, `stored_naga.hitpoints`), the write
+	 * `HookWorld.variableAt` reads back. Do not write `world.variables` directly. */
 	setVariable(name: string, value: MwlValue): void;
 	message(speaker: string, text: string): void;
 	endTurn(): void;

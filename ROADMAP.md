@@ -4494,7 +4494,7 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      take a variable name ([if] test=, [variable] name=, [foreach] variable=, switch variable=)
      are unchanged, since the item asked for a write form and nothing in the report needed a
      computed read.
-319. [Medium] A hook has no path accessor, so every hook that touches a nested variable
+319. ~~[Medium] A hook has no path accessor, so every hook that touches a nested variable
      re-implements resolution and gets it wrong (the same report). `hooks.ts`'s
      `HookWorld.variables` is `Readonly<Record<string, MwlValue>>` with no `variableAt()`, while
      `Emit.setVariable` writes nested paths correctly (`setVariableAtPath`); a hook that needs to
@@ -4502,7 +4502,19 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      did exactly that and wrote flat dotted keys (`variables['stored_naga.hitpoints']`) that
      `variableAtPath` cannot find, so a scenario's `[variable] name=stored_naga.hitpoints` and the
      hook disagree. Export `variableAtPath`/`setVariableAtPath` (or add
-     `HookWorld.variableAt(path)`) and document that a hook should write through `emit.setVariable`.
+     `HookWorld.variableAt(path)`) and document that a hook should write through `emit.setVariable`.~~
+     `HookWorld.variableAt(path)`, the second of the two shapes the item offered and the one a
+     hook author sees: the reader sits on the interface they already receive, beside the
+     `variables` record that invited the mistake, rather than in a pair of functions they would
+     have to know to import. It resolves through the runtime's one `variableAtPath` walker, so a
+     hook and a `[variable] name=` cannot disagree about what a path means. `worldView()` is the
+     single construction site, so nothing else needed to move. The write half needed no code, only
+     the missing sentence: `Emit.setVariable` is documented as taking the same paths and as the
+     only place a hook should write, since writing `world.variables` is what produces the flat
+     dotted key. One test in `tests/mwl-runtime.test.ts` covers both halves at once: the hook
+     reads what content wrote at `stored_naga.hitpoints`, writes it back through `emit.setVariable`
+     along with a `party[0].name` index, and the event's own `$stored_naga.hitpoints` interpolation
+     sees the new value.
 320. [Low] Port-side, not a framework ask, but it shares item 319's root:
      `command:set_variable_dynamic` should write nested paths through `emit.setVariable` and read
      through the shared resolver instead of flat dotted keys. Its own row because the disagreement
