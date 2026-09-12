@@ -497,6 +497,11 @@ reach the compiled asset map without it.
   loads those paths separately so one missing file never aborts the required batch, calling
   `onMissing` for each; `texture`/`get` take a `fallback` returned instead of a throw for a
   path that never loaded, so a caller stops needing its own try/catch around a missing asset.
+  `load` also supplies Pixi's `Assets.add` a `format` hint - the original path's own extension
+  - whenever the resolved `src` is a compiled build's `data:` URI (item 308): a `data:` URI
+  carries no extension of its own for Pixi's resolver to pick a parser from, which otherwise
+  left a game no way to load a compiled asset without building its own `{src, parser}`
+  descriptor by hand.
 - `loadBinary`/`getBinary`/`isBinaryLoaded`/`releaseBinary` - the renderer-free counterpart
   to `load`/`texture`/.../`release`, caching raw `ArrayBuffer`s instead of Pixi textures
   (also its own entry point, `@datamoc/mw_games/assets/binary`); `3d/models`' `Vox.parseVox`

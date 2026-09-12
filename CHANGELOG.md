@@ -30,6 +30,10 @@ the public API may still change between minor versions.
 - `mwl.MwlValidationOptions.rowIdScope` (item 304): `'file'` scopes `MWL_DUPLICATE_ID`'s
   `tag:id` key per source file instead of the whole compiled catalog, for a game whose id
   convention reuses ids across files on purpose.
+- `assets.load` now supplies Pixi's `Assets.add` a `format` hint (the original path's own
+  extension) whenever the resolved `src` is a compiled build's `data:` URI (item 308), since
+  the URI itself carries no extension for Pixi's resolver to pick a parser from. No new
+  argument: a game still calls `load(['tiles.png'])` exactly as before.
 - `[item]` accepts `image`/`icon` (item 307), carried through
   `MwlItemDefinition.image`/`.icon`; both were already recognised as asset attributes by the
   manifest scanner, so this closes the schema gate that was blocking them.

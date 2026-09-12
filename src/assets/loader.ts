@@ -51,6 +51,8 @@ interface AssetDescriptor {
 	alias: string;
 	src: string;
 	data?: { resolution: number };
+	/** the file format Pixi picks a parser from; set only when `src` has none of its own to read (a `data:` URI) */
+	format?: string;
 }
 
 /**
@@ -72,8 +74,16 @@ export async function load(paths: string[], options: AssetProgress | LoadAssetsO
 	const optionalPending = pending.filter((path) => optionalPaths.has(path));
 
 	const add = (path: string): void => {
-		const descriptor: AssetDescriptor = { alias: path, src: resolve(path) };
+		const src = resolve(path);
+		const descriptor: AssetDescriptor = { alias: path, src };
 		if (resolution !== undefined) descriptor.data = { resolution };
+		//a compiled build's `src` is a `data:` URI, which carries no extension for Pixi's
+		//resolver to pick a parser from - `path` still does, so it is supplied explicitly
+		//instead of a game having to pass its own {src, parser} descriptor to Assets directly
+		if (src.startsWith('data:')) {
+			const extension = /\.([a-z0-9]+)$/i.exec(path)?.[1];
+			if (extension) descriptor.format = extension;
+		}
 		Assets.add(descriptor);
 	};
 

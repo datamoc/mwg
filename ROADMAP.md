@@ -4323,14 +4323,23 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      same way it never read `name` either - a stat helper has no use for either. One new test
      in `tests/mwl.test.ts` compiles an item with both attributes and checks the manifest and
      the catalog both carry them.
-308. [Medium] Accept an explicit `{src, parser}` descriptor in `assets.load`/`texture` (a
+308. ~~[Medium] Accept an explicit `{src, parser}` descriptor in `assets.load`/`texture` (a
      second port's report). `load()` (`src/assets/loader.ts`) always hands `Assets.load(path)`
      a bare path string, so a game whose compiled build inlines every asset as a `data:` URI
      (this framework's own offline-build story, see the `file://` constraint) has no way to
      tell Pixi which parser a `data:` URI needs and has to call `Assets.load({src, parser})`
      itself, alongside its own texture cache, duplicating what `load`/`texture` already do for
      a plain path. Auto-detecting a `data:` URI as `loadTextures`, or accepting the descriptor
-     shape directly, would remove that duplicate bookkeeping.
+     shape directly, would remove that duplicate bookkeeping.~~ Took neither literal
+     suggestion: rather than hard-coding `loadTextures` (wrong for a compiled JSON or audio
+     asset) or asking a caller for a `{src, parser}` descriptor it should not have to build,
+     `load`'s own `add()` now sets `Assets.add`'s `format` field - Pixi's own "pick a parser
+     from this file extension" hint - from the *original path's* extension whenever the
+     resolved `src` is a `data:` URI, since the URI itself has none. A game still calls
+     `load(['tiles.png'])` exactly as before; the format hint is internal bookkeeping, not a
+     new argument to pass. Two tests in `tests/assets.test.ts` (via a stubbed `Assets.add`/
+     `Assets.load`, since Node has no image decoder to exercise a real texture load): a
+     compiled `data:` asset gets `format: 'png'`, a plain dev-server path gets none.
 309. [Low] A facade for `ColorMatrixFilter` (the same port's report). `ImageModifiers.ts`
      already returns matrices (`blendMatrix`, `channelScaleMatrix`, `channelSwapMatrix`,
      `colorShiftMatrix`), but attaching one to a sprite still means `new ColorMatrixFilter()`

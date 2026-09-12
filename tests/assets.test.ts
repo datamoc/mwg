@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { Assets } from 'pixi.js';
 
 import * as assets from '../src/assets/index.ts';
 
@@ -105,6 +106,51 @@ test('setAssetMap takes priority over window.__MWG_ASSETS__', () => {
 			assets.setAssetMap(undefined);
 		}
 	});
+});
+
+test('load() supplies a format hint for a compiled data: URI asset, since the URI itself has none (item 308)', async () => {
+	const added: { alias: string; src: string; format?: string }[] = [];
+	const originalAdd = Assets.add.bind(Assets);
+	const originalLoad = Assets.load.bind(Assets);
+	//real Assets.load would try to decode the (deliberately truncated) data: URI as a texture,
+	//which Node has no image decoder for - the descriptor Assets.add receives is what this
+	//test is actually about, so loading itself is stubbed out rather than exercised
+	(Assets as unknown as { add: typeof Assets.add }).add = ((descriptor: (typeof added)[number]) => {
+		added.push(descriptor);
+	}) as typeof Assets.add;
+	(Assets as unknown as { load: typeof Assets.load }).load = (async () => undefined) as unknown as typeof Assets.load;
+	try {
+		await withCompiledAssets({ 'format-hint/tiles.png': 'data:image/png;base64,AAAA' }, () =>
+			assets.load(['format-hint/tiles.png']),
+		);
+	} finally {
+		Assets.add = originalAdd;
+		Assets.load = originalLoad;
+	}
+
+	assert.equal(added.length, 1);
+	assert.equal(added[0].src, 'data:image/png;base64,AAAA');
+	assert.equal(added[0].format, 'png', 'the format Pixi cannot read from an extension-less data: URI');
+});
+
+test('load() does not set a format hint for a plain dev-server path, which already has its own extension', async () => {
+	const added: { alias: string; src: string; format?: string }[] = [];
+	const originalAdd = Assets.add.bind(Assets);
+	const originalLoad = Assets.load.bind(Assets);
+	(Assets as unknown as { add: typeof Assets.add }).add = ((descriptor: (typeof added)[number]) => {
+		added.push(descriptor);
+	}) as typeof Assets.add;
+	(Assets as unknown as { load: typeof Assets.load }).load = (async () => undefined) as unknown as typeof Assets.load;
+	try {
+		await assets.load(['format-hint/dev-tiles.png']);
+	} finally {
+		Assets.add = originalAdd;
+		Assets.load = originalLoad;
+	}
+
+	assert.equal(added.length, 1);
+	assert.equal(added[0].src, 'format-hint/dev-tiles.png');
+	assert.equal(added[0].format, undefined);
 });
 
 test('setAssetMap(undefined) reverts to window.__MWG_ASSETS__ / dev-server mode', () => {
