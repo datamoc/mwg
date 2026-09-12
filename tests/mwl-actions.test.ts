@@ -160,6 +160,16 @@ test('a scenario-level role names the units it matches, and stamps the role on t
 	assert.equal(runtime.world.units.hero.role, 'courier', 'the matched unit learns the role it was given');
 });
 
+test('a role assigned from an event matches by the attributes it names, not the role being set', () => {
+	//`role`/`name` on the tag assign the role; reading them back as a filter would require every
+	//unit to already carry the role it is about to be given, and match nobody
+	const runtime = runtimeFor(event('[role]\nrole=courier\ntype=Swordsman\n[/role]'));
+	runtime.run('go');
+
+	assert.deepEqual(runtime.world.roles, { courier: ['hero'] });
+	assert.equal(runtime.world.units.hero.role, 'courier', 'the event-level role stamps the unit too');
+});
+
 test('a scenario-level object and story beat are kept as data', () => {
 	const runtime = runtimeFor(
 		[

@@ -816,7 +816,11 @@ export class MwlRuntime {
 			case 'role': {
 				const name = node.attributes.role ?? node.attributes.name;
 				if (!name) throw new Error('[role] requires role');
-				(this.world.roles ??= {})[name] = this.matchingUnits(node).map(([id]) => id);
+				//`role`/`name` here name the role being assigned, not a unit to match, so the filter
+				//must not read either back as one - the same exclusion the scenario-level role uses
+				const matched = this.matchingUnits(node, ['role', 'name']);
+				for (const [, unit] of matched) unit.role = name;
+				(this.world.roles ??= {})[name] = matched.map(([id]) => id);
 				break;
 			}
 			case 'attack':
