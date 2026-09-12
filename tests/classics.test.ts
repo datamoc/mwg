@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Board from '../src/board/index.ts';
+import { withSeed } from '../src/core/Random.ts';
 import { CombatHooks } from '../src/roguelike/index.ts';
 
 test('generic board grid moves and captures pieces', () => {
@@ -263,4 +264,53 @@ test('CombatHooks reports prevented damage and fires named lifecycle events', ()
 	});
 	hooks.emit('onKill', { attacker: 'a', defender: 'b', amount: 0, prevented: false });
 	assert.equal(killed, 'b');
+});
+
+test('goScore counts enclosed empties as territory, and a shared region as neither side', () => {
+	const ringed = Board.startingGo(3);
+	for (const cell of [1, 3, 5, 7]) ringed.board[cell] = 'black';
+	//the four edge stones wall the centre and each corner off, and every enclosed empty
+	//touches black alone, so it is black's: 4 stones plus 5 territory
+	assert.deepEqual(Board.goScore(ringed), { black: 9, white: 0 });
+
+	const shared = Board.startingGo(3);
+	shared.board[1] = 'black';
+	shared.board[7] = 'white';
+	//the whole board is one empty region touching both colours, so it belongs to neither
+	assert.deepEqual(Board.goScore(shared), { black: 1, white: 1 });
+});
+
+test('doubles roll four backgammon dice and everything else two', () => {
+	for (let trial = 0; trial < 200; trial += 1) {
+		const dice = Board.rollBackgammonDice();
+		assert.ok(dice.length === 2 || dice.length === 4, `unexpected dice count ${dice.length}`);
+		if (dice.length === 4) assert.equal(new Set(dice).size, 1, 'four dice means four of a kind');
+		else assert.notEqual(dice[0], dice[1]);
+	}
+});
+
+test('a foundation move from a tableau column turns the card it exposes', () => {
+	const state = Board.dealSolitaire(1);
+	state.tableau[0].down = [{ suit: 'diamonds', rank: 5 }];
+	state.tableau[0].up = [{ suit: 'clubs', rank: 1 }];
+
+	Board.moveSolitaireToFoundation(state, 0);
+	assert.equal(
+		state.foundations.some((pile) => pile[0]?.suit === 'clubs' && pile[0]?.rank === 1),
+		true,
+	);
+	assert.deepEqual(state.tableau[0].up, [{ suit: 'diamonds', rank: 5 }], 'the covered card turns face up');
+	assert.equal(state.tableau[0].down.length, 0);
+});
+
+test('DiceCup.clearKept releases every held die', () => {
+	const cup = withSeed(11, () => new Board.DiceCup(5, 6));
+	for (let index = 0; index < 5; index += 1) cup.keep(index);
+	const held = [...cup.values];
+	cup.reRoll();
+	assert.deepEqual(cup.values, held, 'every die is kept, so a reroll changes nothing');
+
+	cup.clearKept();
+	withSeed(22, () => cup.reRoll());
+	assert.notDeepEqual(cup.values, held, 'with nothing kept, every die rolls again');
 });

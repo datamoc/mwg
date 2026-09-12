@@ -5,7 +5,7 @@
 	"releaseDate": "2026-09-11",
 	"source": {
 		"files": 278,
-		"lines": 43135,
+		"lines": 43136,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -31,7 +31,7 @@
 			{
 				"name": "board",
 				"files": 8,
-				"lines": 2739
+				"lines": 2740
 			},
 			{
 				"name": "actors",
@@ -87,8 +87,8 @@
 	},
 	"tests": {
 		"files": 219,
-		"lines": 28498,
-		"cases": 2060
+		"lines": 28548,
+		"cases": 2064
 	},
 	"tools": {
 		"files": 35,
@@ -131,9 +131,9 @@
 		"declarationFiles": 277
 	},
 	"bundle": {
-		"globalRaw": 1011294,
-		"globalGzip": 300109,
-		"distRaw": 3209308
+		"globalRaw": 1011275,
+		"globalGzip": 300107,
+		"distRaw": 3209446
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

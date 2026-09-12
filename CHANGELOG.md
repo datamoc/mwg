@@ -41,6 +41,12 @@ the public API may still change between minor versions.
 
 ### Fixed
 
+- `board.goScore` counts territory again. Its `group` helper returned nothing for an empty
+  square, so the area-scoring loop never saw an enclosed empty region and only stones were
+  scored: four stones ringing a 3x3 board reported 4 instead of 9. `group` now groups connected
+  cells by value with `null` included, which leaves `liberties`/`playGo` unchanged because they
+  only ever pass a stone. One test, plus new coverage for `rollBackgammonDice`, a foundation
+  move from a tableau column, and `DiceCup.clearKept`, in `tests/classics.test.ts`.
 - `board.addTacticalUnit` remembers each unit's own action budget, so `endTacticalTurn` refreshes
   `actions` to it instead of a hardcoded two. A unit created with `actions: 3` was silently reset
   to 2 every turn; the per-turn maximum is now `TacticalUnit.maxActions`, filled from the initial

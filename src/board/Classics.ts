@@ -324,15 +324,16 @@ function neighbours(size: number, index: number): number[] {
 	if (y < size - 1) out.push(index + size);
 	return out;
 }
+//cells connected to `start` that share its value - a group of one colour's stones, or, when
+//`start` is itself empty, the empty region around it, which is what `goScore` counts as territory
 function group(board: Array<GoStone | null>, size: number, start: number): number[] {
-	const stone = board[start];
-	if (!stone) return [];
+	const value = board[start];
 	const found: number[] = [];
 	const todo = [start];
 	const seen = new Set<number>();
 	while (todo.length) {
 		const index = todo.pop()!;
-		if (seen.has(index) || board[index] !== stone) continue;
+		if (seen.has(index) || board[index] !== value) continue;
 		seen.add(index);
 		found.push(index);
 		for (const next of neighbours(size, index)) todo.push(next);
