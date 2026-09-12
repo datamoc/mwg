@@ -5,7 +5,7 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
-## [Unreleased]
+## [0.7.8] - 2026-09-12
 
 ### Added
 
