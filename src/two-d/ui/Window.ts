@@ -1,4 +1,4 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { Signal } from '../../core/Signal.ts';
 import type { Action } from '../../core/Input.ts';
 import { NinePatch } from './NinePatch.ts';
@@ -28,6 +28,16 @@ export interface WindowOptions {
 
 	/** where the stack puts it; 'bottom' is the usual place for a dialogue box */
 	anchor?: 'center' | 'bottom' | 'top';
+
+	/**
+	 * Whether a click anywhere is swallowed rather than reaching what is underneath, and closes
+	 * the window when it lands outside it. A window left to itself is not clickable - only the
+	 * widgets inside it are - so a click on a map under an open inventory still reaches the map;
+	 * this is the layer that stops it, and the tap-outside-to-dismiss a phone user expects.
+	 *
+	 * Off by default, since it is a change to what the whole screen answers to.
+	 */
+	blocker?: boolean;
 }
 
 /**
@@ -39,11 +49,16 @@ export interface WindowOptions {
  * Contents go in `content`, whose origin is already inset past the frame and padding, so a
  * child placed at 0,0 sits correctly whatever the theme's border is.
  *
+ * The window's own area is not clickable: the frame, the title and any part of the body with
+ * no widget in it let a click travel to whatever is underneath, so a window over a map is not
+ * by itself a wall. `blocker` is the option that makes one, and it is what a window that has
+ * to be answered should set.
+ *
  * @example
  * ```ts
  * import { Window, Label } from '@datamoc/mw_games/two-d/ui';
  *
- * const confirm = new Window({ width: 200, height: 100, title: 'Leave?', anchor: 'center' });
+ * const confirm = new Window({ width: 200, height: 100, title: 'Leave?', anchor: 'center', blocker: true });
  * confirm.content.addChild(new Label({ text: 'Progress since your last save will be lost.' }));
  * confirm.onClose.add(() => console.log('window closed'));
  *
@@ -69,6 +84,9 @@ export class Window extends Container {
 	private currentWidth = 0;
 	private currentHeight = 0;
 
+	/** the full-viewport click layer, first child so every widget of the window sits above it */
+	private blocker: Container | null = null;
+
 	private readonly themeListener = () => this.restyle();
 	private isClosed = false;
 
@@ -80,6 +98,15 @@ export class Window extends Container {
 		this.closable = options.closable ?? true;
 		this.dims = options.dims ?? this.modal;
 		this.anchor = options.anchor ?? 'center';
+
+		if (options.blocker === true) {
+			//a plain container draws nothing and is not hit-tested at all without a hitArea,
+			//which is exactly the shape wanted: a click catcher with no appearance
+			this.blocker = new Container();
+			this.blocker.eventMode = 'static';
+			this.blocker.on('pointerdown', this.onBlockerDown);
+			this.addChild(this.blocker);
+		}
 
 		if (t.panel) {
 			this.background = new NinePatch(t.panel, { border: t.panelBorder });
@@ -220,6 +247,45 @@ export class Window extends Container {
 		} else {
 			this.y = Math.round((viewportHeight - bounds.height) / 2);
 		}
+
+		this.fitBlocker(viewportWidth, viewportHeight);
+	}
+
+	/**
+	 * The blocker's hit area is the whole viewport, expressed in the window's own coordinates,
+	 * which is where the blocker's local space starts. It covers the window itself as well as
+	 * the space around it, so nothing at all is clicked through while it is there; whether the
+	 * click also closes the window is `handleOutsideClick`'s question, not the shape's.
+	 */
+	private fitBlocker(width: number, height: number): void {
+		if (!this.blocker) return;
+		this.blocker.hitArea = new Rectangle(-this.x, -this.y, width, height);
+	}
+
+	private readonly onBlockerDown = (event: FederatedPointerEvent): void => {
+		//a blocker means the click stops here: what is under the window never hears about it
+		event.stopPropagation();
+		const at = event.getLocalPosition(this);
+		this.handleOutsideClick(at.x, at.y);
+	};
+
+	/**
+	 * Offered a click that landed on the blocker, at `x, y` in this window's own coordinates
+	 * (its top-left corner is 0, 0). A click outside the window closes it when it is closable -
+	 * the pointer's answer to `handleAction('cancel')` - and a click on the window itself is
+	 * swallowed without closing, so its frame and empty body are never a dismiss button.
+	 *
+	 * The blocker calls this for every click it takes, which is all a game usually needs; it is
+	 * public because it is also the whole decision, and a headless test can ask it directly.
+	 *
+	 * @returns true when the click closed the window
+	 */
+	handleOutsideClick(x: number, y: number): boolean {
+		if (this.isClosed) return false;
+		const onWindow = x >= 0 && y >= 0 && x < this.currentWidth && y < this.currentHeight;
+		if (onWindow || !this.closable) return false;
+		this.close();
+		return true;
 	}
 
 	override destroy(options?: Parameters<Container['destroy']>[0]): void {

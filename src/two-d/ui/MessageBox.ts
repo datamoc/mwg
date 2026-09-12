@@ -45,6 +45,14 @@ export interface MessageBoxOptions {
 	/** dim the world behind; false when the scene behind is the point, as in a dialogue */
 	dims?: boolean;
 
+	/**
+	 * Whether a click under the box is swallowed rather than reaching the map or the toolbar
+	 * behind it. On by default: a box with a page still to read, or a choice to answer, is not
+	 * something a stray click on the world should be able to act past. Turn it off only for a
+	 * box the player is meant to click past, which is the same case `dims: false` is for.
+	 */
+	blocker?: boolean;
+
 	/** where the stack puts the box */
 	anchor?: 'center' | 'bottom' | 'top';
 
@@ -80,7 +88,9 @@ export interface MessageBoxOptions {
  * driven by a character count rather than by animating the label.
  *
  * This is the one window that is not closable by `cancel`: a conversation ends when it
- * ends, or a cutscene would be left half-run.
+ * ends, or a cutscene would be left half-run. It swallows clicks for the same reason, and
+ * because it is not closable that can only ever swallow them: a click under the box does not
+ * move the player or open something, it does nothing at all.
  *
  * @example
  * ```ts
@@ -139,6 +149,7 @@ export class MessageBox extends Window {
 			modal: true,
 			closable: false,
 			dims: options.dims,
+			blocker: options.blocker ?? true,
 			anchor: options.anchor ?? 'bottom',
 		});
 

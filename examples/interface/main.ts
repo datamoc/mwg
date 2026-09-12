@@ -117,9 +117,11 @@ class InterfaceScene extends Scene2D {
 
 		this.updateStatus();
 
-		//the map layer listens too, but the stack is in stack mode, so an open window is
-		//always offered the action first and can swallow it
+		//the map layer listens too, and `onAction` offers an action to the most recently
+		//registered listener first - this one, since the stack registered in its constructor.
+		//So the stack is asked explicitly rather than relied on to have gone first
 		Input.onAction.add((action) => {
+			if (this.windows.handleAction(action)) return true;
 			if (this.windows.blocksWorld) return false;
 
 			if (action === 'menu') {
@@ -415,7 +417,9 @@ class InterfaceScene extends Scene2D {
 	}
 
 	private openInventory(): void {
-		const window = new Window({ width: 260, height: 200, title: 'Bag' });
+		//the backdrop is a tiled map, so without a blocker a click outside the bag would reach
+		//it; with one the click is swallowed and closes the bag, the way a phone dismisses a sheet
+		const window = new Window({ width: 260, height: 200, title: 'Bag', blocker: true });
 
 		const icon = (frame: number): Node2D => {
 			const sprite = new TintedSprite(this.sheet.get(frame));
