@@ -4474,6 +4474,78 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      are not: `command:set_variable_dynamic` now carries 18 modes, and a typo only throws at
      runtime, mid-scenario. Letting hooks declare attribute schemas would extend `schema.ts`'s
      compile-time validation to the hook boundary.
+322. [Low] An angular cone area, not only a snapped spray (the Pixel Dungeon port's P13, recorded
+     as a design decision for the framework rather than patched upstream). The port needed Java's
+     `mechanics/ConeAOE` exactly: a circular *sector* with rays cast every 0.5 degrees across an
+     arc of a given angle, each struck cell unioned with the line from the source (so a wall stops
+     the part of the cone behind it), and the ray length clamped to a maximum range. `roguelike`'s
+     `coneCells(origin, target, width)` is a different shape: the aim snaps to the nearest of the
+     eight directions, its length is the Chebyshev distance aimed, and step `i` spans
+     `round(i / length * width)` cells per side, a linear spray with no angle, no range clamp and no
+     wall awareness. A generic `coneSector(level, from, to, { degrees, range, stop })`, built on the
+     existing `ballistica` (which already takes a `stop` mode), would let a game express the sector
+     directly; the port's Regrowth wand, Fireblast wand and DM-300's gas check were three live
+     consumers, with seven more unported in SPD. 2026-09-12 update: the port no longer waits on it
+     (`src/mechanics/cone.ts` is the translation), so this is now (a) for other games and (b) a
+     future consolidation, where the framework takes the shape and the port deletes its copy.
+323. [Low] Per-particle colour, jitter and curves in `ParticleEmitter` (the same port's P14). The
+     emitter interpolates `scale` and `alpha` linearly between two endpoints and takes one `tint`
+     for the whole emitter, recomputing each particle from its own age. Java's decoration particles
+     need three things that cannot be expressed that way, which is why the port's
+     `ui/wallDecorations.ts` still runs its own pool: `Sink`'s `WaterParticle` rolls a random
+     *colour* per particle (`color(ColorMath.random(0xb6ccc2, 0x3b6653))`), `Torch`'s
+     `SparkParticle.update()` re-rolls its *size* every frame
+     (`size(Random.Float(size * left / lifespan))`, a flicker rather than an interpolation), and
+     `SmokeParticle.update()` needs a *piecewise* alpha (`am = p > 0.8 ? 2 - 2p : p * 0.5`). Any one
+     of the three would let a watabou-style effect migrate: a per-particle colour range, an optional
+     per-frame jitter on scale/alpha, or an alpha/scale *curve* (a function of `age/life`) in place
+     of the endpoint pair. The curves and the layer's reasons are quoted in that file's own header.
+324. [Low] A blocker layer for `Window` (the same port's P15). Java's `Window` adds a full-screen
+     `PointerArea` *under its chrome*, whose click runs `onBackPressed()` unless the click landed on
+     the chrome itself, and because it is a child of the window a window's own buttons also win over
+     it. That one layer is what makes a click outside a window dismiss it, and what stops a window
+     open over a map or a toolbar from letting clicks through to whatever is underneath. MWG's
+     `WindowStack` has neither half: its overlay only draws, and Pixi does not hit-test a plain
+     `Container` at all without a `hitArea` (`EventBoundary.hitTestFn` returns false when a
+     container has neither `hitArea` nor `containsPoint`), so the port carries
+     `src/ui/blockingWindowStack.ts`, a `WindowStack` subclass that inserts a hit-area'd,
+     non-drawing blocker beneath each window it pushes and keeps it sized through `setViewport`.
+     Every game that wants Java-style modal windows needs this same 30 lines; `Window` could take a
+     `blocker: true` option (or `WindowStack` an `autoBlocker`) so a game can plain-use the widget
+     as documented. Related and smaller: nothing documents that a `Window` with no interactive
+     children is not itself clickable, which is easy to read as "windows swallow clicks in their own
+     area"; they do not, they just sit above the thing that does.
+325. [Low] Say who owns the keyboard when a scene and a `WindowStack` both listen (the same port's
+     P16). The stack's own source is explicit that it is *ahead* of anything registered earlier
+     ("stack mode, so this is offered actions before anything registered earlier: a window that is
+     open should always win over the map underneath"), and `Input.d.ts` documents that "a listener
+     returning true stops it reaching anything else". Together those say the opposite of what a game
+     naturally writes: a scene that builds its stack in `create()` and registers its own
+     `Input.onAction` handler *after* that is offered every action **first**, and the moment it
+     returns `true` for anything (which the Signal's contract invites) the windows stop receiving
+     keys entirely, so arrow keys never reach a list inside a window. The port hit this head-on
+     giving Escape a second meaning, and the only correct recipe today is "return `false` for every
+     key you did not consume *and* check `blocksWorld` yourself first", which nothing documents.
+     Either fix is small: document the recipe on `WindowStack`, or expose the routing the stack
+     already has (`handleAction` is private) so a scene can ask whether the top window wants an
+     action and chain deliberately instead of depending on registration order. The port's `main.ts`
+     now follows the undocumented recipe with a comment explaining why, and its
+     `BlockingWindowStack` is where the *pointer* half of the same problem lives (P15).
+326. [Low] Cut arbitrary rectangles, not only regular grids, in `SpriteSheet` (the same port's P17).
+     `SpriteSheet` is the right shape and the port uses it for every real grid (hero 12x15, items
+     16x16, tile and mob sheets via `fromTexture`), but it can only be built as a grid: there is no
+     `region(texture, x, y, w, h)`, and `Types2D` offers `Texture2D`/`Rectangle2D`/`rectOf` without a
+     way to cut a piece out. Irregular sheets are the norm in a port like this: `icons.png`'s
+     hand-packed regions, `status_pane.png`'s bar strips, `ui_chrome.png`'s nine-patch corners,
+     `banners.png`'s two frames, and `items.png`'s per-item *tightened* sub-rects (Java's
+     `assignItemRect` makes each item smaller than its 16px cell, which is why that sheet cannot be
+     used as a plain grid for those), so the port hand-writes
+     `new Texture({ source, frame: new Rectangle(x, y, w, h) })` at about 20 sites, plus its own
+     helper for the one case it does centrally (`main.ts:835`). A
+     `SpriteSheet.rect(frame, x, y, w, h)` (or a free `region(texture, x, y, w, h)`) would remove
+     that boilerplate and bring the same benefit `SpriteSheet` already advertises for grids: frames
+     are cut once and cached, so asking for the same index twice returns the same `Texture`, where
+     the hand-written path builds a fresh `Texture` every time a window is opened.
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list
