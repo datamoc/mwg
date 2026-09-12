@@ -4302,7 +4302,7 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      an external bundler-based game share one implementation. Four tests in
      `tests/classic-html.test.ts`; README's "Running from file://" section documents the
      function for consumers.
-307. [Low] Author non-monster asset references in MWL (the port's P2, re-verified against
+307. ~~[Low] Author non-monster asset references in MWL (the port's P2, re-verified against
      `src/mwl/schema.ts` rather than taken on the note: still open). The inventory `item` node
      is `{ id, name, slot, stackable, weight }` with no asset attribute, and `image` remains
      only on `monster`/`unit_type`/`object`/`story`; the compiler's manifest scanner
@@ -4314,7 +4314,15 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      port-specific names, values or art belong here, only the attribute contract and its
      determinism tests - the same bar every item in this section already commits to (see the
      section note above on renderer-free tests, an `@example`, save notes and an API report
-     entry, and on waiting for a released version before checking a box here).
+     entry, and on waiting for a released version before checking a box here).~~ Took the
+     schema-attribute branch rather than a new node: `[item]` gains `image`/`icon`, both
+     already asset attributes by name to the manifest scanner, so this closes the one gate that
+     was actually blocking them rather than adding new asset-collection behaviour. Both are
+     presentation-only and carried through `contentCatalog(game).items` as `MwlItemDefinition.
+     image`/`.icon`; `itemDefinition` (the `actors` conversion) still does not read them, the
+     same way it never read `name` either - a stat helper has no use for either. One new test
+     in `tests/mwl.test.ts` compiles an item with both attributes and checks the manifest and
+     the catalog both carry them.
 308. [Medium] Accept an explicit `{src, parser}` descriptor in `assets.load`/`texture` (a
      second port's report). `load()` (`src/assets/loader.ts`) always hands `Assets.load(path)`
      a bare path string, so a game whose compiled build inlines every asset as a `data:` URI

@@ -440,6 +440,17 @@ test('MWL actor adapters translate every supported modifier operation', () => {
 	assert.deepEqual(inventoryItem(item, 3), { id: 'potion', quantity: 3, stackable: true, weight: 1 });
 });
 
+test('an item authors image/icon (item 307), collected into the asset manifest like any other asset attribute', () => {
+	const game = compile(
+		'[game]\nschema=0.1\n[item]\nid=potion\nname=Potion\nimage=items/potion.png\nicon=items/potion-icon.png\n[/item]\n[/game]',
+	);
+	assert.deepEqual(new Set(game.assets), new Set(['items/potion.png', 'items/potion-icon.png']));
+
+	const [item] = contentCatalog(game).items;
+	assert.equal(item.image, 'items/potion.png');
+	assert.equal(item.icon, 'items/potion-icon.png');
+});
+
 test('MWL catalog validation catches duplicate ids, slots, effects, and hooks', () => {
 	const game = compile(
 		'[item]\nid=ring\nname=Ring\nslot=finger\n[effect]\nadd=1\n[/effect]\n[/item]\n[item]\nid=ring\nname=Other\n[/item]\n[hook]\nname=bad-hook\n[/hook]',

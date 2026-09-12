@@ -53,6 +53,10 @@ export interface MwlItemDefinition {
 	readonly slot?: string;
 	readonly stackable?: boolean;
 	readonly weight?: number;
+	/** an icon or sprite for this item (item 307); presentation only, not read by `itemDefinition` */
+	readonly image?: string;
+	/** a smaller/alternate icon variant, the same asset-attribute convention `image` is */
+	readonly icon?: string;
 	readonly effects: readonly MwlEffectDefinition[];
 }
 export interface MwlMonsterDefinition {
@@ -180,6 +184,8 @@ export function contentCatalog(game: MwlCompiledGame): MwlContentCatalog {
 				slot: node.attributes.slot,
 				stackable: bool(node, 'stackable'),
 				weight: num(node, 'weight'),
+				image: node.attributes.image,
+				icon: node.attributes.icon,
 				effects: node.children.filter((child) => child.tag === 'effect').map(effect),
 			})),
 		monsters: nodes

@@ -435,6 +435,10 @@ saves. Asset attributes such as `image`, `image_icon`, `profile`, `icon`, `file`
 sound lists, Wesnoth sound ranges such as `human-hit-[1~5].ogg`, and image
 modifiers. Nested transform arguments are not mistaken for separate assets.
 Item slots, formulas, hooks, and business rules remain defined by the game.
+`[item]` itself carries `image`/`icon` (item 307), so an inventory item can author its own
+sprite or icon the same way `[monster]`/`[unit_type]`/`[object]`/`[story]` already could; the
+manifest scanner recognised these names on any node before the schema let `[item]` use them,
+so this only closes that one gate rather than adding new asset-collection behaviour.
 
 A game needing more than `mwl build`'s three standard files - its own extra generated module,
 or a cross-table check this CLI has no flag for - should not look for a flag to add: every

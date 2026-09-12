@@ -597,7 +597,15 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 	},
 	story: { attributes: { text: 'string', value: 'string', title: 'string', image: 'string', music: 'string' } },
 	item: {
-		attributes: { id: 'id', name: 'string', slot: 'id', stackable: 'boolean', weight: 'number' },
+		attributes: {
+			id: 'id',
+			name: 'string',
+			slot: 'id',
+			stackable: 'boolean',
+			weight: 'number',
+			image: 'string',
+			icon: 'string',
+		},
 		children: ['effect'],
 	},
 	inventory: { attributes: { unit: 'string', side: 'string', items: 'string' } },
