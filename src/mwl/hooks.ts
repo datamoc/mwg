@@ -9,7 +9,10 @@ import type { MwlValue } from './runtime.ts';
  * `type:name`, resolved by the tooling, and bundled ahead of time; the runtime
  * never evaluates JavaScript from content.
  */
-export type HookType = 'predicate' | 'modifier' | 'generator' | 'command' | 'ai' | 'migration';
+export type BuiltinHookType = 'predicate' | 'modifier' | 'generator' | 'command' | 'ai' | 'migration';
+/** A built-in hook kind, or a domain kind declared by the game adapter. */
+export type HookType = BuiltinHookType | (string & {});
+const hookNamePattern = /^[A-Za-z_][\w-]*$/;
 
 /**
  * The hook kinds MWL content may reference, in the order the documentation lists them.
@@ -49,6 +52,21 @@ export interface HookWorld {
 	>;
 	readonly sides: Readonly<Record<string, { readonly gold: number; readonly income: number }>>;
 	readonly turn: number;
+	/**
+	 * A deterministic draw from the runtime's own seeded stream (`core.Generator`), so a
+	 * `generator`/`ai`/domain hook that needs randomness never reaches for `Math.random()` and
+	 * breaks save/replay determinism. Every draw advances the same stream the runtime persists.
+	 */
+	readonly random: HookRandom;
+}
+
+/** The minimal draw surface a hook needs; never the `Generator` instance itself, which also
+ * exposes state mutation a hook has no business performing. */
+export interface HookRandom {
+	/** a float in [0, 1), with 32 bits of resolution */
+	float(): number;
+	/** an integer in [0, bound), without modulo bias */
+	int(bound: number): number;
 }
 
 /** What a hook may ask the engine to do. This is the whole command surface. */
@@ -74,6 +92,31 @@ export type GeneratorHook = (world: HookWorld, context: HookContext) => unknown;
 export type CommandHook = (world: HookWorld, emit: Emit, context: HookContext) => void;
 export type AiHook = (world: HookWorld, emit: Emit, context: HookContext) => void;
 export type MigrationHook = (saved: unknown, context: HookContext) => unknown;
+/**
+ * A game-owned hook. MWG transports and types the boundary, but does not know the domain
+ * context, input, output, or rules behind it.
+ */
+export type MwlDomainHook<Context = unknown, Input = unknown, Output = unknown> = (
+	context: Context,
+	input: Input,
+) => Output;
+
+/** A typed declaration for a domain hook namespace supplied by the game adapter. */
+export interface MwlDomainHookDeclaration<Context = unknown, Input = unknown, Output = unknown> {
+	readonly id: `${string}:${string}`;
+	readonly run: MwlDomainHook<Context, Input, Output>;
+}
+
+/** The game-owned registry shape. The keys remain the MWL `type:name` references. */
+export type MwlDomainHookRegistry<Context = unknown, Input = unknown, Output = unknown> = Readonly<
+	Record<string, MwlDomainHook<Context, Input, Output>>
+>;
+
+/** A game-owned hook state adapter. Its value must be JSON-serialisable. */
+export interface MwlSaveableHookState {
+	readonly save: () => unknown;
+	readonly restore: (state: unknown) => void;
+}
 
 export interface HookTypeMap {
 	predicate: PredicateHook;
@@ -106,12 +149,9 @@ export function parseHookReference(value: string): { type: HookType; name: strin
 	if (separator <= 0) return null;
 	const type = value.slice(0, separator) as HookType;
 	const name = value.slice(separator + 1).trim();
-	if (!hookTypes.includes(type) || !name) return null;
+	if (!hookNamePattern.test(type) || !hookNamePattern.test(name)) return null;
 	return { type, name };
 }
-
-/** Attributes whose value is a hook reference. */
-const hookAttributes = new Set(['hook', 'migration']);
 
 /**
  * Every hook a compiled game references, deduplicated by `type:name` and
@@ -125,11 +165,15 @@ const hookAttributes = new Set(['hook', 'migration']);
  * console.log(collectHookReferences(game).map((reference) => `${reference.type}:${reference.name}`));
  * ```
  */
-export function collectHookReferences(game: MwlCompiledGame): HookReference[] {
+export function collectHookReferences(
+	game: MwlCompiledGame,
+	hookAttributeNames: readonly string[] = ['hook', 'migration'],
+): HookReference[] {
 	const found = new Map<string, HookReference>();
+	const attributes = new Set(hookAttributeNames);
 	const visit = (node: MwlCompiledNode): void => {
 		for (const [key, value] of Object.entries(node.attributes)) {
-			if (hookAttributes.has(key)) add(value, node.location);
+			if (attributes.has(key)) add(value, node.location);
 			// A `[hook]` call carries its reference in `name`.
 			if (node.tag === 'hook' && key === 'name') add(value, node.location);
 		}
@@ -254,7 +298,9 @@ export function emitHooksDeclaration(references: readonly HookReference[]): stri
 	lines.push('');
 	lines.push('export interface MwlHooks {');
 	for (const reference of references) {
-		const hookType = `${reference.type[0].toUpperCase()}${reference.type.slice(1)}Hook`;
+		const hookType = hookTypes.includes(reference.type as BuiltinHookType)
+			? `${reference.type[0].toUpperCase()}${reference.type.slice(1)}Hook`
+			: 'MwlDomainHook';
 		lines.push(`\t'${reference.type}:${reference.name}': ${hookType};`);
 	}
 	lines.push('}');

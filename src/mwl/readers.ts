@@ -16,6 +16,20 @@ export interface MwlReadResult<T> {
 	readonly diagnostics: readonly MwlDiagnostic[];
 }
 
+export type MwlTableKeyPart = string | number | boolean | null;
+
+export type MwlTableKey<Row extends Record<string, unknown>> =
+	keyof Row | readonly (keyof Row)[] | ((row: Row) => MwlTableKeyPart | readonly MwlTableKeyPart[]);
+
+export interface MwlTableMapOptions<Row extends Record<string, unknown>, Value = Row> {
+	/** one column, several columns for a composite key, or a complete key projection */
+	readonly key: MwlTableKey<Row>;
+	/** defaults to the complete row */
+	readonly value?: (row: Row) => Value;
+	/** duplicate keys fail by default; `last` is useful for deliberate override tables */
+	readonly duplicate?: 'error' | 'last';
+}
+
 /**
  * Read a compiled node with one shared coercion and diagnostic policy.
  *
@@ -79,6 +93,84 @@ export function readChildren<T>(
 		diagnostics.push(...result.diagnostics);
 	}
 	return { value: values, diagnostics };
+}
+
+/**
+ * Projects rows into a typed map. An array of column names is a native composite key and is
+ * encoded without collisions between strings, numbers, booleans, and null.
+ *
+ * @example
+ * ```ts
+ * import { readTableMap, tableKey } from '@datamoc/mw_games/mwl';
+ * const effects = [{ item: 'potion', effect: 'heal', amount: 5 }];
+ * const byEffect = readTableMap(effects, { key: ['item', 'effect'], value: (row) => row.amount });
+ * console.log(byEffect.get(tableKey('potion', 'heal'))); // 5
+ * ```
+ */
+export function readTableMap<Row extends Record<string, unknown>, Value = Row>(
+	rows: readonly Row[],
+	options: MwlTableMapOptions<Row, Value>,
+): Map<string, Value> {
+	const result = new Map<string, Value>();
+	for (const row of rows) {
+		const key = tableKey(...resolveKey(row, options.key));
+		if (result.has(key) && options.duplicate !== 'last') throw new Error(`duplicate table key: ${key}`);
+		result.set(key, options.value ? options.value(row) : (row as unknown as Value));
+	}
+	return result;
+}
+
+/**
+ * Builds an inverse index, retaining every row that shares a projected key.
+ *
+ * @example
+ * ```ts
+ * import { readTableIndex, tableKey } from '@datamoc/mw_games/mwl';
+ * const rows = [{ item: 'potion', effect: 'heal' }, { item: 'herb', effect: 'heal' }];
+ * const byEffect = readTableIndex(rows, { key: 'effect' });
+ * console.log(byEffect.get(tableKey('heal'))?.length); // 2
+ * ```
+ */
+export function readTableIndex<Row extends Record<string, unknown>>(
+	rows: readonly Row[],
+	options: Pick<MwlTableMapOptions<Row>, 'key'>,
+): Map<string, Row[]> {
+	const result = new Map<string, Row[]>();
+	for (const row of rows) {
+		const key = tableKey(...resolveKey(row, options.key));
+		const bucket = result.get(key);
+		if (bucket) bucket.push(row);
+		else result.set(key, [row]);
+	}
+	return result;
+}
+
+/** Returns the stable, collision-free representation used by table maps and indexes. */
+export function tableKey(...parts: MwlTableKeyPart[]): string {
+	return JSON.stringify(parts);
+}
+
+function resolveKey<Row extends Record<string, unknown>>(row: Row, key: MwlTableKey<Row>): MwlTableKeyPart[] {
+	if (typeof key === 'function') {
+		const value = key(row);
+		return isTableKeyParts(value) ? [...value] : [value];
+	}
+	if (isKeyColumns(key)) return key.map((column) => tablePart(row[column], String(column)));
+	return [tablePart(row[key], String(key))];
+}
+
+function isTableKeyParts(value: MwlTableKeyPart | readonly MwlTableKeyPart[]): value is readonly MwlTableKeyPart[] {
+	return Array.isArray(value);
+}
+
+function isKeyColumns<Row extends Record<string, unknown>>(key: MwlTableKey<Row>): key is readonly (keyof Row)[] {
+	return Array.isArray(key);
+}
+
+function tablePart(value: unknown, column: string): MwlTableKeyPart {
+	if (value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+		return value;
+	throw new TypeError(`table key column "${column}" must be a string, number, boolean, or null`);
 }
 
 function coerce(raw: string, type: MwlReaderType): unknown {

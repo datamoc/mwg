@@ -21,6 +21,28 @@ test('the same seed produces the same stream', () => {
 	}
 });
 
+// A saved game or a reference port's dungeon seed depends on exactly these numbers, forever,
+// not merely on today's generator agreeing with itself: a future rewrite of the xoshiro128**
+// bit-twiddling that still passes every other test here could still silently change what an
+// existing seed produces. These hardcoded values are the guard against that.
+test('a fixed seed produces exactly this sequence, across any future generator change', () => {
+	const raw = new Generator(42);
+	assert.deepEqual(
+		Array.from({ length: 5 }, () => raw.nextUint32()),
+		[660444221, 3652823732, 77672526, 910233633, 2297337756],
+	);
+	const bounded = new Generator(1);
+	assert.deepEqual(
+		Array.from({ length: 5 }, () => bounded.int(100)),
+		[48, 13, 91, 82, 6],
+	);
+	const unit = new Generator(2026);
+	assert.deepEqual(
+		Array.from({ length: 3 }, () => unit.float()),
+		[0.3464848401490599, 0.6372561908792704, 0.4495006985962391],
+	);
+});
+
 test('adjacent seeds diverge immediately', () => {
 	//seeds are run through splitmix32 before use precisely so that seed 1 and seed 2 do
 	//not produce visibly related dungeons

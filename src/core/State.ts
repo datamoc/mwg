@@ -30,6 +30,114 @@ export interface StateRestoreDiagnostic {
 	readonly status: 'migrated' | 'unchanged' | 'reset' | 'removed';
 }
 
+export interface CanonicalStateSnapshot<State extends StateValue = StateValue> {
+	readonly version: number;
+	readonly state: State;
+	readonly extensions: Readonly<Record<string, StateValue>>;
+	readonly extensionVersions?: Readonly<Record<string, number>>;
+}
+
+/**
+ * A single JSON-safe source of truth for a game's logical state. The root value belongs to the
+ * game, while framework or game subsystems register independent versioned extensions beside it.
+ * Reads and writes clone values, so a renderer cannot mutate authoritative state accidentally.
+ *
+ * @example
+ * ```ts
+ * import { CanonicalState } from '@datamoc/mw_games/core';
+ *
+ * const state = new CanonicalState({ turn: 1, gold: 10 });
+ * state.update((current) => ({ ...current, gold: current.gold - 3 }));
+ * const save = state.snapshot();
+ * state.restore(save);
+ * ```
+ */
+export class CanonicalState<State extends StateValue> {
+	private _state: State;
+	private readonly version: number;
+	private readonly migrations: Readonly<Record<number, (state: StateValue) => State>>;
+	readonly extensions: StateRegistry;
+
+	constructor(
+		initial: State,
+		options: {
+			readonly version?: number;
+			readonly migrations?: Readonly<Record<number, (state: StateValue) => State>>;
+			readonly extensions?: StateRegistry;
+		} = {},
+	) {
+		this._state = structuredClone(initial);
+		this.version = options.version ?? 1;
+		this.migrations = options.migrations ?? {};
+		this.extensions = options.extensions ?? new StateRegistry();
+	}
+
+	get state(): State {
+		return structuredClone(this._state);
+	}
+
+	set(next: State): void {
+		this._state = structuredClone(next);
+	}
+
+	update(transform: (current: State) => State): State {
+		const next = transform(this.state);
+		this.set(next);
+		return this.state;
+	}
+
+	snapshot(): CanonicalStateSnapshot<State> {
+		const extensions = this.extensions.snapshot();
+		return {
+			version: this.version,
+			state: this.state,
+			extensions: extensions.extensions,
+			extensionVersions: extensions.versions,
+		};
+	}
+
+	restore(
+		snapshot: CanonicalStateSnapshot<State>,
+		options: Parameters<StateRegistry['restore']>[1] = {},
+	): readonly StateRestoreDiagnostic[] {
+		if (!Number.isSafeInteger(snapshot.version) || snapshot.version < 1)
+			throw new Error('canonical state snapshot version must be a positive integer');
+		if (snapshot.version > this.version)
+			throw new Error(`canonical state snapshot version ${snapshot.version} is newer than ${this.version}`);
+		const before = this.snapshot();
+		try {
+			let state: StateValue = structuredClone(snapshot.state);
+			for (let version = snapshot.version; version < this.version; version++) {
+				const migration = this.migrations[version + 1];
+				if (!migration) throw new Error(`missing canonical state migration to version ${version + 1}`);
+				state = migration(state);
+			}
+			this._state = structuredClone(state as State);
+			return this.extensions.restore(
+				{ extensions: snapshot.extensions, versions: snapshot.extensionVersions },
+				options,
+			);
+		} catch (error) {
+			this._state = structuredClone(before.state);
+			this.extensions.restore(
+				{ extensions: before.extensions, versions: before.extensionVersions },
+				{ missing: 'keep' },
+			);
+			throw error;
+		}
+	}
+
+	transaction<T>(work: (state: CanonicalState<State>) => T): T {
+		const before = this.snapshot();
+		try {
+			return work(this);
+		} catch (error) {
+			this.restore(before);
+			throw error;
+		}
+	}
+}
+
 /**
  * Coordinates game-owned save state without knowing its schema.
  *

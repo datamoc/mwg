@@ -22,7 +22,7 @@ import { pathToFileURL } from 'node:url';
  * actor's turn, repeat its last input, whatever the game decides).
  */
 export function createLockstepServer(options = {}) {
-	const { port = 0, tickTimeoutMs = 200 } = options;
+	const { port = 0, tickTimeoutMs = 200, seed, initialState, validateInput } = options;
 	const wss = new WebSocketServer({ port });
 
 	const rooms = new Map();
@@ -48,13 +48,22 @@ export function createLockstepServer(options = {}) {
 
 	function advance(entry) {
 		const inputs = {};
+		const checksums = {};
 		for (const [id, client] of entry.clients) {
 			inputs[id] = client.hasSubmitted ? client.pendingInput : null;
+			if (client.hasSubmitted && Number.isSafeInteger(client.pendingChecksum))
+				checksums[id] = client.pendingChecksum;
 			client.pendingInput = null;
+			client.pendingChecksum = null;
 			client.hasSubmitted = false;
 		}
 		entry.submittedCount = 0;
-		const message = JSON.stringify({ type: 'tick', tick: entry.tick, inputs });
+		const message = JSON.stringify({
+			type: 'tick',
+			tick: entry.tick,
+			inputs,
+			...(Object.keys(checksums).length === 0 ? {} : { checksums }),
+		});
 		for (const client of entry.clients.values()) client.socket.send(message);
 		entry.tick += 1;
 		scheduleTimeout(entry);
@@ -71,7 +80,14 @@ export function createLockstepServer(options = {}) {
 		const entry = room(roomName);
 		entry.clients.set(id, { socket, pendingInput: null, hasSubmitted: false });
 
-		socket.send(JSON.stringify({ type: 'welcome', id }));
+		socket.send(
+			JSON.stringify({
+				type: 'welcome',
+				id,
+				...(seed === undefined ? {} : { seed }),
+				...(initialState === undefined ? {} : { initialState }),
+			}),
+		);
 		if (!entry.timer) scheduleTimeout(entry);
 
 		socket.on('message', (raw) => {
@@ -84,7 +100,18 @@ export function createLockstepServer(options = {}) {
 			if (message?.type !== 'input') return;
 			const client = entry.clients.get(id);
 			if (!client) return;
+			const validation = validateInput?.(message.payload);
+			if (validation === false || typeof validation === 'string') {
+				socket.send(
+					JSON.stringify({
+						type: 'rejected',
+						reason: validation === false ? 'input rejected by server validation' : validation,
+					}),
+				);
+				return;
+			}
 			client.pendingInput = message.payload ?? null;
+			client.pendingChecksum = message.checksum;
 			if (!client.hasSubmitted) {
 				client.hasSubmitted = true;
 				entry.submittedCount += 1;

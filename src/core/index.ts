@@ -18,14 +18,20 @@ export { Generator, MersenneTwister, RandomStreams } from './Random.ts';
 export type { MersenneTwisterState } from './Random.ts';
 export { SaveSystem } from './Save.ts';
 export type { SaveMeta, SaveData, SaveStorage, SaveSystemOptions } from './Save.ts';
-export { StateRegistry } from './State.ts';
-export type { StateValue, StateExtension, StateSnapshot, StateRestoreDiagnostic } from './State.ts';
+export { CanonicalState, StateRegistry } from './State.ts';
+export type {
+	CanonicalStateSnapshot,
+	StateValue,
+	StateExtension,
+	StateSnapshot,
+	StateRestoreDiagnostic,
+} from './State.ts';
 export { scramble, unscramble } from './Scramble.ts';
 export { SaveSyncClient } from './SaveSync.ts';
 export type { SaveSyncOptions, SaveSyncResponse } from './SaveSync.ts';
 
 export { LockstepClient } from './Multiplayer.ts';
-export type { WebSocketLike, LockstepClientOptions, TickEvent } from './Multiplayer.ts';
+export type { WebSocketLike, LockstepClientOptions, LockstepWelcome, TickEvent } from './Multiplayer.ts';
 export { RunHistory } from './RunHistory.ts';
 export type { RunHistoryEntry, RunHistoryOptions } from './RunHistory.ts';
 

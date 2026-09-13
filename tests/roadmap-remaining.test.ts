@@ -4,7 +4,7 @@ import { FieldOfView } from '../src/roguelike/FieldOfView.ts';
 import { FLOOR, Level, WALL } from '../src/roguelike/Level.ts';
 import { Scheduler } from '../src/roguelike/Scheduler.ts';
 import { ballistica } from '../src/roguelike/Targeting.ts';
-import { StateRegistry } from '../src/core/State.ts';
+import { CanonicalState, StateRegistry } from '../src/core/State.ts';
 import { ActionJournal } from '../src/core/ActionJournal.ts';
 import { compile } from '../src/mwl/compiler.ts';
 import { MwlRuntime, type MwlTraceEvent } from '../src/mwl/runtime.ts';
@@ -115,6 +115,58 @@ test('StateRegistry migrates extensions independently and reports removed extens
 	missing.register({ id: 'old-data', capture: () => null, restore: () => undefined, remove: () => (removed = true) });
 	assert.equal(missing.restore({ extensions: {} }, { missing: 'remove' }).at(-1)?.status, 'removed');
 	assert.equal(removed, true);
+});
+
+test('CanonicalState keeps root and extensions in one transactional snapshot', () => {
+	let inventory = { gold: 10 };
+	const extensions = new StateRegistry();
+	extensions.register({
+		id: 'inventory',
+		capture: () => inventory,
+		restore: (saved) => {
+			inventory = saved;
+		},
+	});
+	const state = new CanonicalState({ turn: 1 }, { extensions });
+	state.update((current) => ({ turn: current.turn + 1 }));
+	state.transaction((current) => {
+		current.set({ turn: 3 });
+		inventory.gold = 2;
+	});
+	const snapshot = state.snapshot();
+	assert.deepEqual(snapshot.state, { turn: 3 });
+	assert.deepEqual(snapshot.extensions.inventory, { gold: 2 });
+	assert.throws(
+		() =>
+			state.transaction((current) => {
+				current.set({ turn: 99 });
+				inventory.gold = 0;
+				throw new Error('abort');
+			}),
+		/abort/,
+	);
+	assert.deepEqual(state.state, { turn: 3 });
+	assert.deepEqual(inventory, { gold: 2 });
+	const exposed = state.state as { turn: number };
+	exposed.turn = 100;
+	assert.equal(state.state.turn, 3);
+});
+
+test('CanonicalState migrates its root version before restoring extensions', () => {
+	const old = {
+		version: 1,
+		state: { score: 3 },
+		extensions: {},
+	};
+	const state = new CanonicalState<{ score: number; bonus?: number }>(
+		{ score: 0 },
+		{ version: 2, migrations: { 2: (value) => ({ ...(value as { score: number }), bonus: 4 }) } },
+	);
+	state.restore(old);
+	assert.deepEqual(state.state, { score: 3, bonus: 4 });
+	assert.throws(() => state.restore({ ...old, version: 3 }), /newer than 2/);
+	const incomplete = new CanonicalState({ score: 0 }, { version: 2 });
+	assert.throws(() => incomplete.restore(old), /missing canonical state migration/);
 });
 
 test('ActionJournal preserves ordered action batches and supports checkpoints', () => {

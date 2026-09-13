@@ -1,10 +1,15 @@
 import { assertNoForbiddenKeys } from '../core/Sanitize.ts';
+import type { ActionJournalEntry } from '../core/ActionJournal.ts';
 import type { MwlWorld } from './runtime.ts';
 
 export interface MwlSaveEnvelope {
 	readonly format: 'mwl-save';
 	readonly version: number;
 	readonly world: MwlWorld;
+	/** Explicitly declared game-owned hook state, keyed by hook id. */
+	readonly hookState?: Readonly<Record<string, unknown>>;
+	/** Public runtime operations and trace batches, when saved by `MwlRuntime`. */
+	readonly journal?: readonly ActionJournalEntry<unknown, unknown>[];
 }
 export type MwlMigration = (world: MwlWorld) => MwlWorld;
 export interface MwlPersistenceOptions {
@@ -23,10 +28,22 @@ export interface MwlPersistenceOptions {
  * console.log(typeof snapshot); // 'string'
  * ```
  */
-export function encodeSave(world: MwlWorld, options: MwlPersistenceOptions): string {
+export function encodeSave(
+	world: MwlWorld,
+	options: MwlPersistenceOptions,
+	hookState?: Readonly<Record<string, unknown>>,
+	journal?: readonly ActionJournalEntry<unknown, unknown>[],
+): string {
 	if (!Number.isInteger(options.version) || options.version < 1)
 		throw new Error('MWL save version must be a positive integer');
-	return JSON.stringify({ format: 'mwl-save', version: options.version, world } satisfies MwlSaveEnvelope);
+	const envelope: MwlSaveEnvelope = {
+		format: 'mwl-save',
+		version: options.version,
+		world,
+		...(hookState === undefined ? {} : { hookState: cloneJsonObject(hookState) }),
+		...(journal === undefined ? {} : { journal: cloneJsonArray(journal) }),
+	};
+	return JSON.stringify(envelope);
 }
 
 /**
@@ -41,6 +58,21 @@ export function encodeSave(world: MwlWorld, options: MwlPersistenceOptions): str
  * ```
  */
 export function decodeSave(snapshot: string, options: MwlPersistenceOptions): MwlWorld {
+	return decodeSaveEnvelope(snapshot, options).world;
+}
+
+/**
+ * Restores the complete save envelope, including declared game-owned hook state.
+ *
+ * @example
+ * ```ts
+ * import { createWorld, decodeSaveEnvelope, encodeSave } from '@datamoc/mw_games/mwl';
+ *
+ * const save = encodeSave(createWorld(), { version: 1 }, { 'item-effect:demo': { charges: 1 } });
+ * console.log(decodeSaveEnvelope(save, { version: 1 }).hookState?.['item-effect:demo']);
+ * ```
+ */
+export function decodeSaveEnvelope(snapshot: string, options: MwlPersistenceOptions): MwlSaveEnvelope {
 	const value: unknown = JSON.parse(snapshot);
 	const envelope = isEnvelope(value) ? value : { format: 'mwl-save' as const, version: 1, world: value as MwlWorld };
 	if (envelope.version > options.version)
@@ -51,7 +83,13 @@ export function decodeSave(snapshot: string, options: MwlPersistenceOptions): Mw
 		if (!migration) throw new Error(`missing MWL save migration to version ${version + 1}`);
 		world = validateWorld(migration(world));
 	}
-	return world;
+	return {
+		format: 'mwl-save',
+		version: options.version,
+		world,
+		...(envelope.hookState === undefined ? {} : { hookState: cloneJsonObject(envelope.hookState) }),
+		...(envelope.journal === undefined ? {} : { journal: cloneJsonArray(envelope.journal) }),
+	};
 }
 
 /**
@@ -92,4 +130,30 @@ function isEnvelope(value: unknown): value is MwlSaveEnvelope {
 		typeof (value as { version?: unknown }).version === 'number' &&
 		'world' in value
 	);
+}
+
+function cloneJsonObject(value: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('invalid MWL hook state');
+	assertNoForbiddenKeys(value);
+	let encoded: string;
+	try {
+		encoded = JSON.stringify(value);
+	} catch {
+		throw new Error('MWL hook state must be JSON-serialisable');
+	}
+	const decoded: unknown = JSON.parse(encoded);
+	if (!decoded || typeof decoded !== 'object' || Array.isArray(decoded)) throw new Error('invalid MWL hook state');
+	return decoded as Readonly<Record<string, unknown>>;
+}
+
+function cloneJsonArray(value: readonly unknown[]): readonly ActionJournalEntry<unknown, unknown>[] {
+	try {
+		const encoded = JSON.stringify(value);
+		const decoded: unknown = JSON.parse(encoded);
+		if (!Array.isArray(decoded)) throw new Error();
+		assertNoForbiddenKeys(decoded);
+		return decoded as readonly ActionJournalEntry<unknown, unknown>[];
+	} catch {
+		throw new Error('MWL journal must be JSON-serialisable');
+	}
 }

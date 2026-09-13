@@ -6,6 +6,7 @@ import {
 	runScenario,
 	runHeadlessScenario,
 	SimulationRuntime,
+	validateSimulationReplay,
 	type SimulationRule,
 	type SimulationRuntimeRule,
 	type SimulationSnapshot,
@@ -266,6 +267,11 @@ test('dispatch threads random/scheduler context and charges the returned cost', 
 	assert.equal(runtime.state.rat.hp, rat.hp - outcome.events[0]);
 	//the scheduler's current entry (hero, since it was added first) was charged the cost
 	assert.notEqual(scheduler.timeOf(hero), before);
+	assert.deepEqual(
+		runtime.journal.all.map((entry) => entry.action),
+		['attack'],
+	);
+	assert.deepEqual(runtime.journal.all[0]?.events, outcome.events);
 });
 
 test('snapshot/restore reproduces the same subsequent dispatch outcomes', () => {
@@ -279,6 +285,10 @@ test('snapshot/restore reproduces the same subsequent dispatch outcomes', () => 
 	});
 	runtime.dispatch('attack');
 	const snapshot = runtime.snapshot();
+	assert.deepEqual(
+		snapshot.journal?.map((entry) => entry.action),
+		['attack'],
+	);
 
 	const byId = new Map([
 		[first.hero.id, { ...runtime.state.hero }],
@@ -295,6 +305,72 @@ test('snapshot/restore reproduces the same subsequent dispatch outcomes', () => 
 
 	assert.deepEqual(continuedRestored.events, continuedOriginal.events);
 	assert.deepEqual(restored.state, runtime.state);
+	assert.deepEqual(restored.journal.all, runtime.journal.all);
+});
+
+test('SimulationRuntime optionally undoes and redoes complete committed checkpoints', () => {
+	const first = makeFight();
+	const runtime = new SimulationRuntime<FightState, 'attack', number, Fighter>({
+		state: { hero: first.hero, rat: first.rat },
+		scheduler: first.scheduler,
+		random: new Generator(12),
+		rule: fightRule,
+		actorId: (fighter) => fighter.id,
+		history: { actorOf: (id) => (id === first.hero.id ? first.hero : first.rat), limit: 4 },
+	});
+	runtime.dispatch('attack');
+	const afterFirst = runtime.snapshot();
+	runtime.dispatch('attack');
+	assert.equal(runtime.canUndo, true);
+	assert.deepEqual(runtime.undo()?.state, afterFirst.state);
+	assert.equal(runtime.journal.size, 1);
+	assert.equal(runtime.canRedo, true);
+	assert.deepEqual(runtime.redo()?.state, runtime.state);
+	assert.equal(runtime.journal.size, 2);
+});
+
+test('validateSimulationReplay detects event and final-state divergence', () => {
+	const makeRuntime = () => {
+		const hero: Fighter = { id: 'hero', hp: 10 };
+		const scheduler = new Scheduler<Fighter>();
+		scheduler.add(hero);
+		return new SimulationRuntime<{ score: number }, number, { type: string; value: number }, Fighter>({
+			state: { score: 0 },
+			scheduler,
+			random: new Generator(9),
+			rule: (state, command) => ({
+				state: { score: state.score + command },
+				events: [{ type: 'score', value: command }],
+				status: 'ready',
+			}),
+			actorId: (fighter) => fighter.id,
+		});
+	};
+	const initial = makeRuntime().snapshot();
+	const recorded = makeRuntime();
+	recorded.dispatch(2);
+	recorded.dispatch(3);
+	const entries = recorded.journal.toJSON();
+	const options = {
+		rule: (state: { score: number }, command: number) => ({
+			state: { score: state.score + command },
+			events: [{ type: 'score', value: command }],
+			status: 'ready' as const,
+		}),
+		actorOf: () => ({ id: 'hero', hp: 10 }) as Fighter,
+		actorId: (fighter: Fighter) => fighter.id,
+		expectedFinalState: { score: 5 },
+	};
+	assert.equal(validateSimulationReplay(initial, entries, options).valid, true);
+	assert.equal(
+		validateSimulationReplay(initial, [{ ...entries[0], events: [{ type: 'score', value: 99 }] }], options).mismatch
+			?.reason,
+		'events',
+	);
+	assert.equal(
+		validateSimulationReplay(initial, entries, { ...options, expectedFinalState: { score: 6 } }).mismatch?.reason,
+		'final-state',
+	);
 });
 
 test('a SimulationSnapshot round-trips through SaveSystem storage, not just in memory', () => {

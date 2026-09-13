@@ -1,4 +1,6 @@
 import type { MwlCompiledGame, MwlCompiledNode } from './compiler.ts';
+import { ActionJournal, type ActionJournalEntry } from '../core/ActionJournal.ts';
+import { Generator } from '../core/Random.ts';
 import type {
 	AiHook,
 	CommandHook,
@@ -8,8 +10,9 @@ import type {
 	MigrationHook,
 	ModifierHook,
 	PredicateHook,
+	MwlSaveableHookState,
 } from './hooks.ts';
-import { decodeSave, encodeSave, type MwlPersistenceOptions } from './persistence.ts';
+import { decodeSaveEnvelope, encodeSave, type MwlPersistenceOptions } from './persistence.ts';
 import { evaluateCondition } from './conditions.ts';
 import { evaluateExpression, type MwlExpressionContext } from './expression.ts';
 import { booleanAttribute, booleanValue, integerAttribute, numberAttribute, requiredAttribute } from './utils.ts';
@@ -119,6 +122,12 @@ export interface MwlWorld {
 	objects?: Array<{ x: number; y: number; id?: string; name?: string; image?: string; side?: string }>;
 	/** scenario `[story]` entries, as data; rendering them is the story-screen work (item 264) */
 	story?: Array<{ text: string; title?: string; image?: string; music?: string }>;
+	/**
+	 * State of the hook-facing random stream (`core.Generator`), present once any hook has drawn
+	 * from `HookWorld.random`. Carried in `world` rather than as a separate save concern so a
+	 * restored runtime resumes exactly the same stream instead of reseeding it.
+	 */
+	random?: readonly [number, number, number, number];
 }
 
 /** One `[message]`: the text plus whatever a game needs to show it. */
@@ -149,6 +158,8 @@ export interface MwlHookRegistry {
 	readonly command?: Readonly<Record<string, CommandHook>>;
 	readonly ai?: Readonly<Record<string, AiHook>>;
 	readonly migration?: Readonly<Record<string, MigrationHook>>;
+	/** Explicitly opted-in game-owned state included in MWL saves. */
+	readonly saveable?: Readonly<Record<string, MwlSaveableHookState>>;
 }
 
 export type MwlTraceEvent =
@@ -161,6 +172,13 @@ export type MwlTraceEvent =
 	| { readonly type: 'variable'; readonly name: string; readonly previous?: MwlValue; readonly value: MwlValue }
 	| { readonly type: 'error'; readonly message: string; readonly event?: string };
 
+/** One public MWL runtime operation, retained for deterministic replay and diagnostics. */
+export type MwlRuntimeAction =
+	| { readonly type: 'run'; readonly trigger: string }
+	| { readonly type: 'fire_event'; readonly id: string }
+	| { readonly type: 'fire_moveto'; readonly unit: string }
+	| { readonly type: 'answer_dialogue'; readonly dialogueId: string; readonly choiceIndex: number };
+
 export interface MwlRuntimeOptions {
 	readonly world?: MwlWorld;
 	/** called for every `[message]` command, with its speaker and portrait */
@@ -172,6 +190,13 @@ export interface MwlRuntimeOptions {
 	readonly onTrace?: (event: MwlTraceEvent) => void;
 	/** schema version and migrations used by save/restore; defaults to version 1 */
 	readonly persistence?: MwlPersistenceOptions;
+	/**
+	 * Seeds the stream `HookWorld.random` draws from. Defaults to resuming `world.random`'s saved
+	 * state when the given (or restored) world already carries one, otherwise a fresh ambient
+	 * generator. Inject your own for a reproducible run independent of what `world` carries, for
+	 * example a network match seeded from `LockstepWelcome.seed`.
+	 */
+	readonly random?: Generator;
 }
 
 export type MwlCommand =
@@ -290,15 +315,18 @@ const variableReference = /\$([A-Za-z_][A-Za-z0-9_.]*)/g;
 export class MwlRuntime {
 	readonly game: MwlCompiledGame;
 	readonly world: MwlWorld;
+	readonly journal = new ActionJournal<MwlRuntimeAction, MwlTraceEvent>();
 	private readonly onMessage?: (message: MwlMessage) => void;
 	private readonly resolveMap?: (file: string) => string;
 	private readonly hooks?: MwlHookRegistry;
 	private readonly onTrace?: (event: MwlTraceEvent) => void;
 	private readonly persistence: MwlPersistenceOptions;
+	private readonly random: Generator;
 	private readonly unitTypes = new Map<string, { hitpoints: number; movement: number }>();
 	private schedule: string[] = [];
 	private pendingDialogue: { id: string; choices: MwlDialogueChoice[] } | null = null;
 	private dialogueCounter = 0;
+	private traceBatch: MwlTraceEvent[] | null = null;
 
 	constructor(game: MwlCompiledGame, options: MwlRuntimeOptions = {}) {
 		this.game = game;
@@ -308,6 +336,8 @@ export class MwlRuntime {
 		this.hooks = options.hooks;
 		this.onTrace = options.onTrace;
 		this.persistence = options.persistence ?? { version: 1 };
+		this.random = options.random ?? new Generator();
+		if (!options.random && this.world.random) this.random.setState(this.world.random);
 		this.loadUnitTypes();
 		this.loadSchedule();
 		this.loadInitialContent();
@@ -318,6 +348,10 @@ export class MwlRuntime {
 	}
 
 	run(trigger: string): void {
+		this.recordAction({ type: 'run', trigger }, () => this.runInternal(trigger));
+	}
+
+	private runInternal(trigger: string): void {
 		for (const event of this.nodes('event')) {
 			if ((event.attributes.on ?? event.attributes.trigger) !== trigger) continue;
 			if (!this.eventFiltersMatch(event)) continue;
@@ -329,6 +363,10 @@ export class MwlRuntime {
 
 	/** Fire one named event through the same filter, claim, and execution path as a trigger. */
 	fireEvent(id: string): boolean {
+		return this.recordAction({ type: 'fire_event', id }, () => this.fireEventInternal(id));
+	}
+
+	private fireEventInternal(id: string): boolean {
 		const event = this.nodes('event').find((candidate) => candidate.attributes.id === id);
 		if (!event || !this.eventFiltersMatch(event) || !this.claimEvent(event)) return false;
 		this.executeTracedEvent(event, 'fireEvent');
@@ -347,6 +385,10 @@ export class MwlRuntime {
 	 * default; pass `once=false` on the event to let it fire every time.
 	 */
 	fireMoveto(id: string): void {
+		this.recordAction({ type: 'fire_moveto', unit: id }, () => this.fireMovetoInternal(id));
+	}
+
+	private fireMovetoInternal(id: string): void {
 		const unit = this.world.units[id];
 		if (!unit || !unit.alive) return;
 		for (const event of this.nodes('event')) {
@@ -423,12 +465,12 @@ export class MwlRuntime {
 		const id =
 			event.attributes.id ??
 			`${event.attributes.on ?? event.attributes.trigger ?? 'event'}@${event.location?.line ?? 0}`;
-		this.onTrace?.({ type: 'event', phase: 'claimed', id, trigger });
+		this.trace({ type: 'event', phase: 'claimed', id, trigger });
 		try {
 			this.executeEvent(event);
-			this.onTrace?.({ type: 'event', phase: 'completed', id, trigger });
+			this.trace({ type: 'event', phase: 'completed', id, trigger });
 		} catch (error) {
-			this.onTrace?.({ type: 'error', message: String(error), event: id });
+			this.trace({ type: 'error', message: String(error), event: id });
 			throw error;
 		}
 	}
@@ -505,6 +547,12 @@ export class MwlRuntime {
 	 * choice; throws when the referenced event does not exist (content error).
 	 */
 	answerDialogue(dialogueId: string, choiceIndex: number): boolean {
+		return this.recordAction({ type: 'answer_dialogue', dialogueId, choiceIndex }, () =>
+			this.answerDialogueInternal(dialogueId, choiceIndex),
+		);
+	}
+
+	private answerDialogueInternal(dialogueId: string, choiceIndex: number): boolean {
 		const pending = this.pendingDialogue;
 		if (!pending || pending.id !== dialogueId) return false;
 		const choice = pending.choices[choiceIndex];
@@ -534,7 +582,11 @@ export class MwlRuntime {
 	}
 
 	save(): string {
-		return encodeSave(this.world, this.persistence);
+		const state = this.hooks?.saveable;
+		const hookState = state
+			? Object.fromEntries(Object.entries(state).map(([id, hook]) => [id, hook.save()]))
+			: undefined;
+		return encodeSave(this.world, this.persistence, hookState, this.journal.toJSON());
 	}
 
 	snapshot(): string {
@@ -542,7 +594,8 @@ export class MwlRuntime {
 	}
 
 	restore(snapshot: string): void {
-		const restored = decodeSave(snapshot, this.persistence);
+		const envelope = decodeSaveEnvelope(snapshot, this.persistence);
+		const restored = envelope.world;
 		Object.assign(this.world.variables, restored.variables);
 		Object.assign(this.world.units, restored.units);
 		Object.assign(this.world.sides, restored.sides ?? {});
@@ -554,6 +607,11 @@ export class MwlRuntime {
 		this.world.map = restored.map ?? null;
 		this.world.timeOfDay = restored.timeOfDay ?? this.schedule[0] ?? '';
 		this.world.scheduleIndex = restored.scheduleIndex ?? 0;
+		// A save predating this field, or one from a game that never drew hook randomness, has
+		// nothing to resume: reseed fresh rather than let a hook's first post-restore draw depend
+		// on wherever this runtime's own generator happened to be before the load.
+		this.world.random = restored.random;
+		this.random.setState(restored.random ?? new Generator().getState());
 		// One-shot events stay spent across a load.
 		this.world.firedEvents = [...(restored.firedEvents ?? [])];
 		// Scenario data a command may have changed, restored wholesale rather than merged: a load
@@ -569,6 +627,27 @@ export class MwlRuntime {
 			: null;
 		const dialogueNumber = restored.pendingDialogue?.id.match(/^dialogue-(\d+)$/);
 		if (dialogueNumber) this.dialogueCounter = Math.max(this.dialogueCounter, Number(dialogueNumber[1]));
+		for (const [id, state] of Object.entries(envelope.hookState ?? {})) this.hooks?.saveable?.[id]?.restore(state);
+		this.journal.replace(
+			(envelope.journal ?? []) as readonly ActionJournalEntry<MwlRuntimeAction, MwlTraceEvent>[],
+		);
+	}
+
+	private recordAction<T>(action: MwlRuntimeAction, body: () => T): T {
+		const outer = this.traceBatch === null;
+		if (outer) this.traceBatch = [];
+		try {
+			const result = body();
+			if (outer) this.journal.append(action, this.traceBatch ?? []);
+			return result;
+		} finally {
+			if (outer) this.traceBatch = null;
+		}
+	}
+
+	private trace(event: MwlTraceEvent): void {
+		this.traceBatch?.push(event);
+		this.onTrace?.(event);
 	}
 
 	private loadUnitTypes(): void {
@@ -748,40 +827,48 @@ export class MwlRuntime {
 	 * done for the one function that was actually a single undifferentiated dispatch. State
 	 * (`this.world` and the rest) still lives on the instance; only the dispatch itself moved.
 	 */
-	private static readonly commandHandlers: Readonly<Record<string, (self: MwlRuntime, node: MwlCompiledNode) => void>> =
-		{
-			message: (self, node) => self.showMessage(node.attributes),
-			spawn: (self, node) => self.cmdSpawn(node),
-			move: (self, node) => self.cmdMove(node),
-			kill: (self, node) => self.cmdKill(node),
-			fire_event: (self, node) => self.cmdFireEvent(node),
-			store_unit: (self, node) => self.cmdStoreUnit(node),
-			unstore_unit: (self, node) => self.cmdUnstoreUnit(node),
-			recall: (self, node) => self.cmdRecall(node),
-			modify_unit: (self, node) => self.cmdModifyUnit(node),
-			heal_unit: (self, node) => self.cmdHealUnit(node),
-			set_terrain: (self, node) => self.setTerrain(integer(node, 'x', 0), integer(node, 'y', 0), required(node, 'terrain')),
-			capture_village: (self, node) => self.cmdCaptureVillage(node),
-			clear_shroud: (self, node) => self.cmdClearShroud(node),
-			role: (self, node) => self.cmdRole(node),
-			attack: (self, node) =>
-				self.attack(node.attributes.defender ?? node.attributes.target ?? required(node, 'target'), integer(node, 'amount', 0)),
-			modify_gold: (self, node) =>
-				self.addGold(node.attributes.side ?? required(node, 'target'), integer(node, 'delta', integer(node, 'amount', 0))),
-			gold: (self, node) => self.addGold(required(node, 'side'), integer(node, 'delta', integer(node, 'amount', 0))),
-			set_variable: (self, node) => self.cmdSetVariable(node),
-			while: (self, node) => self.cmdWhile(node),
-			foreach: (self, node) => self.cmdForeach(node),
-			switch: (self, node) => self.cmdSwitch(node),
-			end_turn: (self) => self.endTurn(),
-			win: (self, node) => self.cmdWin(node),
-			lose: (self, node) => self.cmdLose(node),
-			endlevel: (self, node) => self.cmdEndlevel(node),
-			if: (self, node) => self.cmdIf(node),
-			//reachable at top level for a free-standing [else]; a paired one is run by its [if]
-			else: (self, node) => self.runBlock(self.commandChildren(node)),
-			hook: (self, node) => self.runHook(node),
-		};
+	private static readonly commandHandlers: Readonly<
+		Record<string, (self: MwlRuntime, node: MwlCompiledNode) => void>
+	> = {
+		message: (self, node) => self.showMessage(node.attributes),
+		spawn: (self, node) => self.cmdSpawn(node),
+		move: (self, node) => self.cmdMove(node),
+		kill: (self, node) => self.cmdKill(node),
+		fire_event: (self, node) => self.cmdFireEvent(node),
+		store_unit: (self, node) => self.cmdStoreUnit(node),
+		unstore_unit: (self, node) => self.cmdUnstoreUnit(node),
+		recall: (self, node) => self.cmdRecall(node),
+		modify_unit: (self, node) => self.cmdModifyUnit(node),
+		heal_unit: (self, node) => self.cmdHealUnit(node),
+		set_terrain: (self, node) =>
+			self.setTerrain(integer(node, 'x', 0), integer(node, 'y', 0), required(node, 'terrain')),
+		capture_village: (self, node) => self.cmdCaptureVillage(node),
+		clear_shroud: (self, node) => self.cmdClearShroud(node),
+		role: (self, node) => self.cmdRole(node),
+		attack: (self, node) =>
+			self.attack(
+				node.attributes.defender ?? node.attributes.target ?? required(node, 'target'),
+				integer(node, 'amount', 0),
+			),
+		modify_gold: (self, node) =>
+			self.addGold(
+				node.attributes.side ?? required(node, 'target'),
+				integer(node, 'delta', integer(node, 'amount', 0)),
+			),
+		gold: (self, node) => self.addGold(required(node, 'side'), integer(node, 'delta', integer(node, 'amount', 0))),
+		set_variable: (self, node) => self.cmdSetVariable(node),
+		while: (self, node) => self.cmdWhile(node),
+		foreach: (self, node) => self.cmdForeach(node),
+		switch: (self, node) => self.cmdSwitch(node),
+		end_turn: (self) => self.endTurn(),
+		win: (self, node) => self.cmdWin(node),
+		lose: (self, node) => self.cmdLose(node),
+		endlevel: (self, node) => self.cmdEndlevel(node),
+		if: (self, node) => self.cmdIf(node),
+		//reachable at top level for a free-standing [else]; a paired one is run by its [if]
+		else: (self, node) => self.runBlock(self.commandChildren(node)),
+		hook: (self, node) => self.runHook(node),
+	};
 
 	private executeNode(node: MwlCompiledNode): void {
 		const name = node.tag === 'command' ? node.attributes.name : node.tag;
@@ -937,7 +1024,9 @@ export class MwlRuntime {
 		const value = this.variableAt(required(node, 'variable'));
 		const selected = node.children.find(
 			(child) =>
-				child.tag === 'case' && child.attributes.equals !== undefined && sameValue(value, child.attributes.equals),
+				child.tag === 'case' &&
+				child.attributes.equals !== undefined &&
+				sameValue(value, child.attributes.equals),
 		);
 		const fallback = node.children.find((child) => child.tag === 'default');
 		this.runBlock((selected ?? fallback)?.children ?? []);
@@ -1122,7 +1211,7 @@ export class MwlRuntime {
 	private setVariableAt(path: string, value: MwlValue): void {
 		const previous = this.variableAt(path);
 		setVariableAtPath(this.world.variables, path, value);
-		this.onTrace?.({ type: 'variable', name: path, ...(previous === undefined ? {} : { previous }), value });
+		this.trace({ type: 'variable', name: path, ...(previous === undefined ? {} : { previous }), value });
 	}
 
 	private spawnUnit(type: string, side: string | undefined, x: number, y: number, id?: string, hp?: number): void {
@@ -1434,7 +1523,19 @@ export class MwlRuntime {
 			units: this.world.units,
 			sides: this.world.sides,
 			turn: this.world.turn,
+			random: {
+				float: () => this.drawRandom((random) => random.float()),
+				int: (bound) => this.drawRandom((random) => random.int(bound)),
+			},
 		};
+	}
+
+	/** Draws from the hook-facing stream and immediately persists its new position onto
+	 * `world`, so a snapshot taken at any point after a draw resumes the same stream. */
+	private drawRandom<T>(draw: (random: Generator) => T): T {
+		const value = draw(this.random);
+		this.world.random = this.random.getState();
+		return value;
 	}
 
 	private emit(): Emit {

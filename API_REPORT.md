@@ -57,6 +57,8 @@ build instead.
 
         truncate(sequence: number): void;
         toJSON(): ActionJournalEntry<Action, Event>[];
+
+        replace(entries: readonly ActionJournalEntry<Action, Event>[]): void;
         static fromJSON<Action, Event>(entries: readonly ActionJournalEntry<Action, Event>[]): ActionJournal<Action, Event>;
     }
 
@@ -400,6 +402,26 @@ build instead.
         };
         private clampedCentre;
         private apply;
+    }
+
+### `CanonicalState` (class)
+
+    export declare class CanonicalState<State extends StateValue> {
+        private _state;
+        private readonly version;
+        private readonly migrations;
+        readonly extensions: StateRegistry;
+        constructor(initial: State, options?: {
+            readonly version?: number;
+            readonly migrations?: Readonly<Record<number, (state: StateValue) => State>>;
+            readonly extensions?: StateRegistry;
+        });
+        get state(): State;
+        set(next: State): void;
+        update(transform: (current: State) => State): State;
+        snapshot(): CanonicalStateSnapshot<State>;
+        restore(snapshot: CanonicalStateSnapshot<State>, options?: Parameters<StateRegistry['restore']>[1]): readonly StateRestoreDiagnostic[];
+        transaction<T>(work: (state: CanonicalState<State>) => T): T;
     }
 
 ### `channelScaleMatrix` (function)
@@ -1150,14 +1172,20 @@ build instead.
 ### `LockstepClient` (class)
 
     export declare class LockstepClient {
-        readonly onWelcome: Signal<{
-            id: string;
-        }>;
+        readonly onWelcome: Signal<LockstepWelcome>;
         readonly onTick: Signal<TickEvent>;
+        readonly onReject: Signal<{
+            reason: string;
+        }>;
+        readonly onDesync: Signal<{
+            tick: number;
+            checksums: Record<string, number>;
+        }>;
         readonly onClose: Signal<void>;
         private socket;
         private readonly url;
         private readonly createSocket;
+        private readonly validateInput?;
         private _id;
         constructor(options: LockstepClientOptions);
 
@@ -1165,7 +1193,7 @@ build instead.
         get connected(): boolean;
         connect(): void;
 
-        submitInput(payload: unknown): void;
+        submitInput(payload: unknown, checksum?: number): void;
         close(): void;
         private handleMessage;
     }
@@ -2780,7 +2808,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.9.0-alpha";
+    export declare const version = "0.9.0";
 
 ### `VerticalLabel` (class)
 
@@ -4538,6 +4566,8 @@ build instead.
 
         truncate(sequence: number): void;
         toJSON(): ActionJournalEntry<Action, Event>[];
+
+        replace(entries: readonly ActionJournalEntry<Action, Event>[]): void;
         static fromJSON<Action, Event>(entries: readonly ActionJournalEntry<Action, Event>[]): ActionJournal<Action, Event>;
     }
 
@@ -4579,6 +4609,26 @@ build instead.
             height: number;
             volume: number[];
         }): Blob;
+    }
+
+### `CanonicalState` (class)
+
+    export declare class CanonicalState<State extends StateValue> {
+        private _state;
+        private readonly version;
+        private readonly migrations;
+        readonly extensions: StateRegistry;
+        constructor(initial: State, options?: {
+            readonly version?: number;
+            readonly migrations?: Readonly<Record<number, (state: StateValue) => State>>;
+            readonly extensions?: StateRegistry;
+        });
+        get state(): State;
+        set(next: State): void;
+        update(transform: (current: State) => State): State;
+        snapshot(): CanonicalStateSnapshot<State>;
+        restore(snapshot: CanonicalStateSnapshot<State>, options?: Parameters<StateRegistry['restore']>[1]): readonly StateRestoreDiagnostic[];
+        transaction<T>(work: (state: CanonicalState<State>) => T): T;
     }
 
 ### `checkNoControlCharacters` (function)
@@ -4732,14 +4782,20 @@ build instead.
 ### `LockstepClient` (class)
 
     export declare class LockstepClient {
-        readonly onWelcome: Signal<{
-            id: string;
-        }>;
+        readonly onWelcome: Signal<LockstepWelcome>;
         readonly onTick: Signal<TickEvent>;
+        readonly onReject: Signal<{
+            reason: string;
+        }>;
+        readonly onDesync: Signal<{
+            tick: number;
+            checksums: Record<string, number>;
+        }>;
         readonly onClose: Signal<void>;
         private socket;
         private readonly url;
         private readonly createSocket;
+        private readonly validateInput?;
         private _id;
         constructor(options: LockstepClientOptions);
 
@@ -4747,7 +4803,7 @@ build instead.
         get connected(): boolean;
         connect(): void;
 
-        submitInput(payload: unknown): void;
+        submitInput(payload: unknown, checksum?: number): void;
         close(): void;
         private handleMessage;
     }
@@ -5492,7 +5548,7 @@ build instead.
 
 ### `collectHookReferences` (function)
 
-    export declare function collectHookReferences(game: MwlCompiledGame): HookReference[];
+    export declare function collectHookReferences(game: MwlCompiledGame, hookAttributeNames?: readonly string[]): HookReference[];
 
 ### `compile` (function)
 
@@ -5534,6 +5590,10 @@ build instead.
 
     export declare function decodeSave(snapshot: string, options: MwlPersistenceOptions): MwlWorld;
 
+### `decodeSaveEnvelope` (function)
+
+    export declare function decodeSaveEnvelope(snapshot: string, options: MwlPersistenceOptions): MwlSaveEnvelope;
+
 ### `effectToModifier` (function)
 
     export declare function effectToModifier(effect: MwlEffectDefinition, context?: MwlExpressionContext): Modifier;
@@ -5552,7 +5612,7 @@ build instead.
 
 ### `encodeSave` (function)
 
-    export declare function encodeSave(world: MwlWorld, options: MwlPersistenceOptions): string;
+    export declare function encodeSave(world: MwlWorld, options: MwlPersistenceOptions, hookState?: Readonly<Record<string, unknown>>, journal?: readonly ActionJournalEntry<unknown, unknown>[]): string;
 
 ### `endLevelCarryover` (function)
 
@@ -5602,26 +5662,40 @@ build instead.
 
     export declare const MWL_DEFAULT_CARRYOVER_PERCENTAGE = 80;
 
+### `MWL_SCHEMA_01` (const)
+
+    export declare const MWL_SCHEMA_01 = "0.1";
+
+### `MWL_SCHEMA_10` (const)
+
+    export declare const MWL_SCHEMA_10 = "1.0";
+
 ### `MwlRuntime` (class)
 
     export declare class MwlRuntime {
         readonly game: MwlCompiledGame;
         readonly world: MwlWorld;
+        readonly journal: ActionJournal<MwlRuntimeAction, MwlTraceEvent>;
         private readonly onMessage?;
         private readonly resolveMap?;
         private readonly hooks?;
         private readonly onTrace?;
         private readonly persistence;
+        private readonly random;
         private readonly unitTypes;
         private schedule;
         private pendingDialogue;
         private dialogueCounter;
+        private traceBatch;
         constructor(game: MwlCompiledGame, options?: MwlRuntimeOptions);
         run(trigger: string): void;
+        private runInternal;
 
         fireEvent(id: string): boolean;
+        private fireEventInternal;
 
         fireMoveto(id: string): void;
+        private fireMovetoInternal;
 
         private claimEvent;
         private eventFiltersMatch;
@@ -5636,11 +5710,14 @@ build instead.
         private showSay;
 
         answerDialogue(dialogueId: string, choiceIndex: number): boolean;
+        private answerDialogueInternal;
 
         evaluate(): MwlWorld['status'];
         save(): string;
         snapshot(): string;
         restore(snapshot: string): void;
+        private recordAction;
+        private trace;
         private loadUnitTypes;
         private loadSchedule;
         private loadInitialContent;
@@ -5719,6 +5796,8 @@ build instead.
 
         private markSideResult;
         private worldView;
+
+        private drawRandom;
         private emit;
         private attack;
         private nodes;
@@ -5773,13 +5852,29 @@ build instead.
 
     export declare function readChildren<T>(node: MwlCompiledNode, tag: string, read: (child: MwlCompiledNode) => MwlReadResult<T>): MwlReadResult<readonly T[]>;
 
+### `readTableIndex` (function)
+
+    export declare function readTableIndex<Row extends Record<string, unknown>>(rows: readonly Row[], options: Pick<MwlTableMapOptions<Row>, 'key'>): Map<string, Row[]>;
+
+### `readTableMap` (function)
+
+    export declare function readTableMap<Row extends Record<string, unknown>, Value = Row>(rows: readonly Row[], options: MwlTableMapOptions<Row, Value>): Map<string, Value>;
+
 ### `schema01` (const)
 
     export declare const schema01: Readonly<Record<string, MwlTagSchema>>;
 
+### `schema10` (const)
+
+    export declare const schema10: Readonly<Record<string, MwlTagSchema>>;
+
 ### `sideVisionGroups` (function)
 
     export declare function sideVisionGroups(world: MwlWorld): readonly (readonly string[])[];
+
+### `tableKey` (function)
+
+    export declare function tableKey(...parts: MwlTableKeyPart[]): string;
 
 ### `validate` (function)
 
@@ -6693,20 +6788,32 @@ build instead.
 
     export declare class SimulationRuntime<State, Command, Event, A extends Actor> {
         private _state;
-        readonly scheduler: Scheduler<A>;
+        private _scheduler;
         readonly random: Generator;
+        readonly journal: ActionJournal<Command, Event>;
         private readonly rule;
         private readonly actorId;
+        private readonly history;
+        private readonly actorOf;
         constructor(options: {
             state: State;
             scheduler: Scheduler<A>;
             random: Generator;
             rule: SimulationRuntimeRule<State, Command, Event, A>;
             actorId: (actor: A) => string;
+            journal?: ActionJournal<Command, Event>;
+            history?: SimulationRuntimeHistoryOptions<A>;
         });
+        get scheduler(): Scheduler<A>;
         get state(): State;
 
         dispatch(command: Command): SimulationOutcome<State, Event>;
+        get canUndo(): boolean;
+        get canRedo(): boolean;
+
+        undo(): SimulationSnapshot<State> | null;
+
+        redo(): SimulationSnapshot<State> | null;
         snapshot(version?: number): SimulationSnapshot<State>;
 
         static restore<State, Command, Event, A extends Actor>(snapshot: SimulationSnapshot<State>, options: {
@@ -6714,7 +6821,14 @@ build instead.
             actorOf: (id: string) => A;
             actorId: (actor: A) => string;
         }): SimulationRuntime<State, Command, Event, A>;
+        private historySnapshot;
+        private restoreCheckpoint;
     }
+
+### `validateSimulationReplay` (function)
+
+    export declare function validateSimulationReplay<State, Command, Event, A extends Actor>(initial: SimulationSnapshot<State>, entries: readonly ActionJournalEntry<Command, Event>[], options: {
+        rule: SimulationRuntimeRule<State, Command, Event, A>;
 
 ## `./two-d`
 

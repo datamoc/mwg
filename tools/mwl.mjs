@@ -19,7 +19,8 @@ import {
 } from '../dist/mwl/index.js';
 
 /**
- * Command line for MWL: validate, compile, extract-i18n, assets, hooks, build.
+ * Command line for MWL: validate, compile, format, migrate, extract-i18n, assets, report,
+ * diagnostics, ci, hooks, build.
  *
  * Reading files happens here, not in the published module, so the library
  * itself stays free of node builtins. `hooks` needs esbuild and says so
@@ -40,7 +41,19 @@ import {
  */
 
 const args = process.argv.slice(2);
-const commands = ['validate', 'compile', 'extract-i18n', 'assets', 'report', 'hooks', 'build'];
+const commands = [
+	'validate',
+	'compile',
+	'format',
+	'migrate',
+	'extract-i18n',
+	'assets',
+	'report',
+	'diagnostics',
+	'ci',
+	'hooks',
+	'build',
+];
 const [command, input] = args;
 const outputFlag = args.indexOf('-o');
 const output = outputFlag === -1 ? undefined : args[outputFlag + 1];
@@ -48,17 +61,44 @@ const manifestFlag = args.indexOf('--manifest');
 const manifestPath = manifestFlag === -1 ? undefined : args[manifestFlag + 1];
 const assetRootFlag = args.indexOf('--asset-root');
 const assetRoot = assetRootFlag === -1 ? undefined : args[assetRootFlag + 1];
+const targetFlag = args.indexOf('--to');
+const target = targetFlag === -1 ? undefined : args[targetFlag + 1];
 
 if (!command || !input || !commands.includes(command)) {
 	console.error(
-		'Usage: mwl <validate|compile|extract-i18n|assets|report|hooks|build> input.mwl [-o output] [--manifest hooks.json] [--asset-root directory]',
+		'Usage: mwl <validate|compile|format|migrate|extract-i18n|assets|report|diagnostics|ci|hooks|build> input.mwl [-o output] [--to 1.0] [--manifest hooks.json] [--asset-root directory]',
 	);
 	process.exitCode = 2;
 } else {
 	const files = fs.statSync(input).isDirectory()
 		? collectSources(input)
 		: [{ file: sourceLabel(input), source: fs.readFileSync(input, 'utf8') }];
-	if (command === 'validate') {
+	if (command === 'format' || command === 'migrate') {
+		if (command === 'migrate' && target !== '1.0') {
+			console.error('mwl migrate currently supports only --to 1.0');
+			process.exitCode = 2;
+		} else {
+			const nodes = files.flatMap((file) => parse(preprocess(file.source, { file: file.file }), file.file));
+			const text = `${JSON.stringify(
+				nodes.map((node) => formatNode(node, command === 'migrate' ? target : undefined)),
+				null,
+				'\t',
+			)}\n`;
+			if (output) {
+				fs.mkdirSync(path.dirname(path.resolve(output)), { recursive: true });
+				fs.writeFileSync(output, text);
+			} else process.stdout.write(text);
+		}
+	} else if (command === 'diagnostics' || command === 'ci') {
+		const diagnostics = diagnose(files);
+		const report = command === 'ci' ? { valid: diagnostics.length === 0, diagnostics } : diagnostics;
+		const text = `${JSON.stringify(report, null, '\t')}\n`;
+		if (output) {
+			fs.mkdirSync(path.dirname(path.resolve(output)), { recursive: true });
+			fs.writeFileSync(output, text);
+		} else process.stdout.write(text);
+		if (diagnostics.length) process.exitCode = 1;
+	} else if (command === 'validate') {
 		const diagnostics = files.flatMap((file) =>
 			validate(parse(preprocess(file.source, { file: file.file }), file.file)),
 		);
@@ -121,6 +161,47 @@ function collectSources(directory) {
 function sourceLabel(file) {
 	const relative = path.relative(process.cwd(), path.resolve(file));
 	return (relative || path.basename(path.resolve(file))).split(path.sep).join('/');
+}
+
+/** Parse and validate every input without throwing, for machine-readable CI diagnostics. */
+function diagnose(files) {
+	const diagnostics = [];
+	for (const file of files) {
+		try {
+			diagnostics.push(...validate(parse(preprocess(file.source, { file: file.file }), file.file)));
+		} catch (error) {
+			if (error?.diagnostic) diagnostics.push(error.diagnostic);
+			else
+				diagnostics.push({
+					code: 'MWL_CLI',
+					message: error instanceof Error ? error.message : String(error),
+					location: { file: file.file, line: 1, column: 1 },
+				});
+		}
+	}
+	return diagnostics.sort(
+		(a, b) =>
+			a.location.file.localeCompare(b.location.file) ||
+			a.location.line - b.location.line ||
+			a.location.column - b.location.column ||
+			a.code.localeCompare(b.code),
+	);
+}
+
+/** Emit a stable, source-independent MWL document after preprocessing. */
+function formatNode(node, target) {
+	const attributes = Object.fromEntries(
+		Object.entries(node.attributes).map(([name, value]) => [
+			name,
+			node.gettext?.includes(name) ? { $gettext: value } : value,
+		]),
+	);
+	if (target === '1.0' && node.tag === 'game') attributes.schema = '1.0';
+	return {
+		tag: node.tag,
+		...attributes,
+		...(node.children.length ? { children: node.children.map((child) => formatNode(child, target)) } : {}),
+	};
 }
 
 /** One deterministic build step for the three files every MWL game consumes. */

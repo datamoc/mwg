@@ -6,8 +6,11 @@ export {
 	attributeTypeDescription,
 	coerceTableValue,
 	isMwlId,
+	MWL_SCHEMA_01,
+	MWL_SCHEMA_10,
 	parseTableColumns,
 	schema01,
+	schema10,
 	validAttributeValue,
 	validate,
 } from './schema.ts';
@@ -45,10 +48,16 @@ export type {
 	Emit,
 	GeneratorHook,
 	HookContext,
+	HookRandom,
 	HookReference,
 	HookType,
 	HookTypeMap,
 	HookWorld,
+	BuiltinHookType,
+	MwlDomainHook,
+	MwlDomainHookDeclaration,
+	MwlDomainHookRegistry,
+	MwlSaveableHookState,
 	MwlHookDeclaration,
 	MigrationHook,
 	ModifierHook,
@@ -63,6 +72,7 @@ export type {
 	MwlMapStart,
 	MwlMessage,
 	MwlRuntimeOptions,
+	MwlRuntimeAction,
 	MwlTraceEvent,
 	MwlValue,
 	MwlWorld,
@@ -91,12 +101,19 @@ export { composeEffects, effectToModifier, inventoryItem, itemDefinition } from 
 export type { MwlActorItem, MwlEquipment } from './actors.ts';
 export { validateCatalog, validateCatalogNodes } from './catalog.ts';
 export type { MwlValidationOptions } from './catalog.ts';
-export { decodeSave, encodeSave, validateWorld } from './persistence.ts';
+export { decodeSave, decodeSaveEnvelope, encodeSave, validateWorld } from './persistence.ts';
 export type { MwlMigration, MwlPersistenceOptions, MwlSaveEnvelope } from './persistence.ts';
 export { contentReport, loadContent } from './report.ts';
 export type { MwlContentDiagnostic, MwlContentLoadReport, MwlContentReport } from './report.ts';
-export { readAttributes, readChildren } from './readers.ts';
-export type { MwlFieldSpec, MwlReadResult, MwlReaderType } from './readers.ts';
+export { readAttributes, readChildren, readTableIndex, readTableMap, tableKey } from './readers.ts';
+export type {
+	MwlFieldSpec,
+	MwlReadResult,
+	MwlReaderType,
+	MwlTableKey,
+	MwlTableKeyPart,
+	MwlTableMapOptions,
+} from './readers.ts';
 export { createExpressionScriptHost } from './scripts.ts';
 export type { ScriptContext, ScriptEmit, ScriptHost, ScriptValue } from './scripts.ts';
 export { evaluateCondition } from './conditions.ts';

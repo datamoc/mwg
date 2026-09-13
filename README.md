@@ -418,6 +418,10 @@ time with:
 
 ```sh
 npm run mwl -- validate game.mwl
+npm run mwl -- diagnostics game.mwl
+npm run mwl -- ci game.mwl
+npm run mwl -- format game.mwl -o generated/game.mwl
+npm run mwl -- migrate game.mwl --to 1.0 -o generated/game-1.0.mwl
 npm run mwl -- build game.mwl -o generated/
 npm run mwl -- compile game.mwl -o generated/game-data.ts
 npm run mwl -- extract-i18n game.mwl -o generated/i18n.json

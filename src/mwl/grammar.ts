@@ -11,6 +11,10 @@ export interface MwlNode {
 	readonly attributes: Readonly<Record<string, string>>;
 	readonly children: readonly MwlNode[];
 	readonly location: MwlLocation;
+	/** Exact source location of each authored attribute key, when parsed from text. */
+	readonly attributeLocations?: Readonly<Record<string, MwlLocation>>;
+	/** Exact source location where each authored attribute value starts, when parsed from text. */
+	readonly valueLocations?: Readonly<Record<string, MwlLocation>>;
 	/**
 	 * Names of the attributes that carried the gettext marker `_("...")`.
 	 * Present (possibly empty) on nodes parsed from text, so the compiler can
@@ -57,6 +61,8 @@ export interface MwlPreprocessOptions {
 	readonly file?: string;
 	readonly defines?: readonly string[];
 	readonly includes?: Readonly<Record<string, string>>;
+	/** Unknown macro invocations fail by default; `ignore` preserves legacy passthrough. */
+	readonly macroPolicy?: 'error' | 'ignore';
 }
 
 interface Macro {
@@ -157,19 +163,50 @@ export function preprocess(source: string, options: MwlPreprocessOptions = {}): 
 }
 
 function expandMacros(source: string, macros: ReadonlyMap<string, Macro>, options: MwlPreprocessOptions): string {
-	return source.replace(/\{([^{}]*)\}/g, (whole, inner: string) => {
+	let out = '';
+	let index = 0;
+	while (index < source.length) {
+		const stop = skipStringOrComment(source, index);
+		if (stop !== index) {
+			out += source.slice(index, stop);
+			index = stop;
+			continue;
+		}
+		const character = source[index];
+		if (character !== '{') {
+			out += character;
+			index++;
+			continue;
+		}
+		const close = source.indexOf('}', index + 1);
+		if (close < 0) {
+			out += character;
+			index++;
+			continue;
+		}
+		const whole = source.slice(index, close + 1);
+		const inner = source.slice(index + 1, close);
 		const parts = splitWords(inner);
 		const definition = macros.get(parts[0]);
-		if (!definition) return whole;
-		let body = definition.body;
-		for (let i = 0; i < definition.parameters.length; i++) {
-			const parameter = definition.parameters[i];
-			const keyword = parts.find((part) => part.startsWith(`${parameter}=`));
-			const value = keyword ? keyword.slice(parameter.length + 1) : (parts[i + 1] ?? '');
-			body = body.replaceAll(`{${parameter}}`, value);
-		}
-		return expandMacros(body, macros, options);
-	});
+		if (definition) {
+			let body = definition.body;
+			for (let parameterIndex = 0; parameterIndex < definition.parameters.length; parameterIndex++) {
+				const parameter = definition.parameters[parameterIndex];
+				const keyword = parts.find((part) => part.startsWith(`${parameter}=`));
+				const value = keyword ? keyword.slice(parameter.length + 1) : (parts[parameterIndex + 1] ?? '');
+				body = body.replaceAll(`{${parameter}}`, value);
+			}
+			out += expandMacros(body, macros, options);
+		} else if (options.macroPolicy !== 'ignore' && isMacroInvocation(parts[0])) {
+			throw syntaxAt('MWL_MACRO', `unknown macro "${parts[0]}"`, source, options.file, index);
+		} else out += whole;
+		index = close + 1;
+	}
+	return out;
+}
+
+function isMacroInvocation(name: string | undefined): name is string {
+	return name !== undefined && namePattern.test(name);
 }
 
 /**
@@ -184,21 +221,13 @@ function rewriteGettextMarkers(source: string): string {
 	let out = '';
 	let index = 0;
 	while (index < source.length) {
+		const stop = skipStringOrComment(source, index);
+		if (stop !== index) {
+			out += source.slice(index, stop);
+			index = stop;
+			continue;
+		}
 		const character = source[index];
-		const comment = source[index + 1];
-		if (character === '/' && (comment === '/' || comment === '*')) {
-			const end = comment === '/' ? source.indexOf('\n', index) : source.indexOf('*/', index + 2);
-			const stop = end < 0 ? source.length : comment === '/' ? end : end + 2;
-			out += source.slice(index, stop);
-			index = stop;
-			continue;
-		}
-		if (character === '"' || character === "'") {
-			const stop = copyJson5String(source, index);
-			out += source.slice(index, stop);
-			index = stop;
-			continue;
-		}
 		if (character === '_') {
 			const match = marker.exec(source.slice(index));
 			if (match) {
@@ -232,7 +261,25 @@ function copyJson5String(source: string, from: number): number {
 }
 
 /**
- * Parses MWL source (a top-level array of `{ tag, ...attrs, children }` objects)
+ * If `index` starts a JSON5 string or a `//`/`` /* `` comment, returns the index just past it;
+ * otherwise returns `index` unchanged. Every hand-rolled scan over raw MWL text (macro
+ * expansion, the gettext rewrite, tag-site collection) shares this, so none of them mistakes a
+ * `{`, `}`, `tag`, or macro name that only appears inside a string or a comment for the real thing.
+ */
+function skipStringOrComment(source: string, index: number): number {
+	const character = source[index];
+	if (character === '"' || character === "'") return copyJson5String(source, index);
+	const next = source[index + 1];
+	if (character === '/' && (next === '/' || next === '*')) {
+		const end = next === '/' ? source.indexOf('\n', index) : source.indexOf('*/', index + 2);
+		return end < 0 ? source.length : next === '/' ? end : end + 2;
+	}
+	return index;
+}
+
+/**
+ * Parses MWL source (a top-level array of `{ tag, ...attrs, children }` objects, or the
+ * equivalent named-node sugar such as `{ unit_type: { id: 'hero' } }`)
  * into nodes. Numbers and booleans become their string form on the node, so the
  * schema, compiler, and runtime see exactly the strings they always have; the
  * JSON5 literal only decides what an author types and what a JSON5-aware tool
@@ -264,7 +311,58 @@ export function parse(source: string, file = '<mwl>'): MwlNode[] {
 		cursor: { index: 0 },
 		parent: undefined,
 	};
-	return value.map((entry) => toNode(entry, context));
+	return normalizeNamedDocument(value).map((entry) => toNode(entry, context));
+}
+
+function normalizeNamedDocument(value: readonly unknown[]): unknown[] {
+	const nodes: unknown[] = [];
+	for (const entry of value) {
+		const normalized = normalizeNamedNode(entry);
+		if (Array.isArray(normalized)) nodes.push(...normalized);
+		else nodes.push(normalized);
+	}
+	return nodes;
+}
+
+/** Converts schema-neutral `{ tag: { ... } }` sugar into the canonical node envelope. */
+function normalizeNamedNode(value: unknown): unknown {
+	if (Array.isArray(value)) return value.flatMap((entry) => normalizeNamedNode(entry) as unknown);
+	if (typeof value !== 'object' || value === null) return value;
+	const record = value as Record<string, unknown>;
+	if (typeof record.tag !== 'string') {
+		const keys = Object.keys(record);
+		if (keys.length !== 1 || !namePattern.test(keys[0])) return value;
+		const tag = keys[0];
+		const body = record[tag];
+		if (Array.isArray(body)) return body.map((entry) => namedNode(tag, entry));
+		return namedNode(tag, body);
+	}
+
+	const normalized: Record<string, unknown> = { ...record };
+	const children: unknown[] = [];
+	if (Array.isArray(record.children))
+		children.push(...record.children.flatMap((child) => normalizeNamedNode(child) as unknown));
+	for (const [key, child] of Object.entries(record)) {
+		if (key === 'tag' || key === 'children' || !namePattern.test(key) || !isNamedChild(child)) continue;
+		const entries = Array.isArray(child) ? child : [child];
+		children.push(...entries.map((entry) => namedNode(key, entry)));
+		delete normalized[key];
+	}
+	if (children.length) normalized.children = children;
+	return normalized;
+}
+
+function namedNode(tag: string, body: unknown): unknown {
+	if (typeof body !== 'object' || body === null || Array.isArray(body)) return { tag, value: body };
+	return normalizeNamedNode({ tag, ...(body as Record<string, unknown>) });
+}
+
+function isNamedChild(value: unknown): boolean {
+	return (
+		(typeof value === 'object' && value !== null && !Array.isArray(value) && !('$gettext' in value)) ||
+		(Array.isArray(value) &&
+			value.every((entry) => typeof entry === 'object' && entry !== null && !Array.isArray(entry)))
+	);
 }
 
 interface NodeContext {
@@ -289,7 +387,8 @@ function toNode(entry: unknown, context: NodeContext): MwlNode {
 			location: context.parent ?? { file: context.file, line: 1, column: 1 },
 		});
 	const tag = record.tag;
-	const location = locate(context, tag);
+	const site = locate(context, tag);
+	const location = site.location;
 	const rawChildren = record.children ?? [];
 	if (!Array.isArray(rawChildren))
 		throw new MwlSyntaxError({
@@ -298,19 +397,31 @@ function toNode(entry: unknown, context: NodeContext): MwlNode {
 			location,
 		});
 	const attributes: Record<string, string> = {};
+	const attributeLocations: Record<string, MwlLocation> = {};
+	const valueLocations: Record<string, MwlLocation> = {};
 	const gettext: string[] = [];
 	for (const [name, raw] of Object.entries(record)) {
 		if (name === 'tag' || name === 'children') continue;
 		attributes[name] = toAttribute(tag, name, raw, location, gettext);
+		const property = site.properties?.get(name);
+		if (property) {
+			attributeLocations[name] = property.location;
+			valueLocations[name] = property.valueLocation;
+		}
 	}
 	const childContext: NodeContext = { ...context, parent: location };
-	return {
+	const node: MwlNode = {
 		tag,
 		attributes,
 		children: rawChildren.map((child) => toNode(child, childContext)),
 		location,
 		gettext,
 	};
+	Object.defineProperties(node, {
+		attributeLocations: { value: attributeLocations, enumerable: false },
+		valueLocations: { value: valueLocations, enumerable: false },
+	});
+	return node;
 }
 
 function toAttribute(tag: string, name: string, raw: unknown, location: MwlLocation, gettext: string[]): string {
@@ -341,35 +452,89 @@ function toAttribute(tag: string, name: string, raw: unknown, location: MwlLocat
 interface TagSite {
 	readonly tag: string;
 	readonly location: MwlLocation;
+	readonly properties?: ReadonlyMap<string, PropertySite>;
+}
+
+interface PropertySite {
+	readonly location: MwlLocation;
+	readonly valueLocation: MwlLocation;
 }
 
 const namePattern = /^[A-Za-z_][\w-]*$/;
 
-/**
- * Every `tag: 'name'` occurrence in source order. Pre-order node traversal visits
- * tags in that same order (a parent literal opens before its children), so `locate`
- * can zip the two sequences and recover a useful line and column per node without
- * a schema-aware parser. A `tag: '...'` string inside prose can shift a location,
- * never a value, which is why this stays best-effort rather than load-bearing.
- */
+/** Every authored `tag` object and its direct JSON5 properties, in source order. */
 function collectTagSites(source: string, file: string): TagSite[] {
 	const sites: TagSite[] = [];
-	const pattern = /\btag\s*:\s*(['"])([A-Za-z_][\w-]*)\1/g;
-	let match: RegExpExecArray | null;
-	while ((match = pattern.exec(source)) !== null) {
-		sites.push({ tag: match[2], location: offsetToLocation(source, file, match.index) });
+	const stack: { start: number; properties: Map<string, PropertySite> }[] = [];
+	for (let index = 0; index < source.length;) {
+		const stop = skipStringOrComment(source, index);
+		if (stop !== index) {
+			index = stop;
+			continue;
+		}
+		const character = source[index];
+		if (character === '{') {
+			const object = { start: index, properties: new Map<string, PropertySite>() };
+			stack.push(object);
+			index++;
+			continue;
+		}
+		if (character === '}') {
+			stack.pop();
+			index++;
+			continue;
+		}
+		const key = /[A-Za-z_$][\w$-]*/y;
+		key.lastIndex = index;
+		const match = key.exec(source);
+		if (!match) {
+			index++;
+			continue;
+		}
+		let colon = match.index + match[0].length;
+		while (/\s/.test(source[colon] ?? '')) colon++;
+		if (source[colon] !== ':') {
+			index = match.index + match[0].length;
+			continue;
+		}
+		let valueStart = colon + 1;
+		while (/\s/.test(source[valueStart] ?? '')) valueStart++;
+		const current = stack.at(-1);
+		if (current) {
+			current.properties.set(match[0], {
+				location: offsetToLocation(source, file, match.index),
+				valueLocation: offsetToLocation(source, file, valueStart),
+			});
+			if (match[0] === 'tag' && (source[valueStart] === '"' || source[valueStart] === "'")) {
+				const stop = copyJson5String(source, valueStart);
+				const literal = source.slice(valueStart, stop);
+				let tag: unknown;
+				try {
+					tag = JSON5.parse(literal);
+				} catch {
+					tag = undefined;
+				}
+				if (typeof tag === 'string')
+					sites.push({
+						tag,
+						location: offsetToLocation(source, file, match.index),
+						properties: current.properties,
+					});
+			}
+		}
+		index = match.index + match[0].length;
 	}
 	return sites;
 }
 
-function locate(context: NodeContext, tag: string): MwlLocation {
+function locate(context: NodeContext, tag: string): TagSite {
 	for (let index = context.cursor.index; index < context.sites.length; index++) {
 		if (context.sites[index].tag === tag) {
 			context.cursor.index = index + 1;
-			return context.sites[index].location;
+			return context.sites[index];
 		}
 	}
-	return context.parent ?? { file: context.file, line: 1, column: 1 };
+	return { tag, location: context.parent ?? { file: context.file, line: 1, column: 1 } };
 }
 
 function offsetToLocation(source: string, file: string, offset: number): MwlLocation {
@@ -474,5 +639,21 @@ function syntax(
 		message,
 		location: { file: file ?? '<mwl>', line: index + 1, column: 1 },
 		lineText,
+	});
+}
+
+function syntaxAt(
+	code: string,
+	message: string,
+	source: string,
+	file: string | undefined,
+	offset: number,
+): MwlSyntaxError {
+	const location = offsetToLocation(source, file ?? '<mwl>', offset);
+	return new MwlSyntaxError({
+		code,
+		message,
+		location,
+		lineText: source.split(/\r?\n/)[location.line - 1],
 	});
 }

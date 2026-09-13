@@ -47,6 +47,7 @@ const simulation = (hp: number) => ({
 		state: { hp },
 		scheduler: { now: 0, sequence: 0, entries: [] },
 		random: [1, 2, 3, 4],
+		journal: [],
 	}),
 });
 

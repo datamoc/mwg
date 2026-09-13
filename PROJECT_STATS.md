@@ -1,17 +1,17 @@
 # Project statistics
 
-Generated for **mwg 0.9.0-alpha** on 2026-09-13.
+Generated for **mwg 0.9.0** on 2026-09-13.
 
 | Area | Statistics |
 | --- | ---: |
-| Source | 279 TypeScript files, 44,529 lines, 15 modules |
-| Tests | 229 files, 2,179 test cases, 29,438 lines |
-| Tools | 37 files, 6,646 lines |
+| Source | 279 TypeScript files, 45,535 lines, 15 modules |
+| Tests | 229 files, 2,197 test cases, 29,838 lines |
+| Tools | 37 files, 6,754 lines |
 | Examples | 22 runnable examples |
-| Roadmap | 336/338 items complete, 2 open |
+| Roadmap | 347/347 items complete, 0 open |
 | API | 278 declaration files |
-| Bundle | 1029.3 kB raw, 306.1 kB gzip |
-| Published dist | 3261.9 kB excluding source maps |
+| Bundle | 1041.0 kB raw, 309.2 kB gzip |
+| Published dist | 3317.8 kB excluding source maps |
 | Test-to-source ratio | 0.7x by line count |
 
 ## Source modules
@@ -19,8 +19,8 @@ Generated for **mwg 0.9.0-alpha** on 2026-09-13.
 | Module | Files | Lines |
 | --- | ---: | ---: |
 | two-d | 79 | 15,318 |
-| mwl | 21 | 5,641 |
-| core | 43 | 5,231 |
+| mwl | 21 | 6,303 |
+| core | 43 | 5,395 |
 | roguelike | 22 | 3,519 |
 | board | 8 | 2,740 |
 | actors | 24 | 2,456 |
@@ -29,8 +29,8 @@ Generated for **mwg 0.9.0-alpha** on 2026-09-13.
 | ai | 5 | 1,329 |
 | battle | 15 | 1,156 |
 | audio | 9 | 987 |
+| simulation | 8 | 879 |
 | three-d | 9 | 756 |
-| simulation | 8 | 699 |
 | world | 7 | 603 |
 | assets | 6 | 572 |
 

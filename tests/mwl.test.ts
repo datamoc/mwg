@@ -16,7 +16,7 @@ import {
 	validateHookReferences,
 } from '../src/mwl/hooks.ts';
 import { createWorld, execute, MwlRuntime } from '../src/mwl/runtime.ts';
-import { validate } from '../src/mwl/schema.ts';
+import { MWL_SCHEMA_10, schema01, schema10, validate } from '../src/mwl/schema.ts';
 import { contentCatalog } from '../src/mwl/content.ts';
 import { composeEffects, effectToModifier, inventoryItem, itemDefinition } from '../src/mwl/actors.ts';
 import { evaluateExpression } from '../src/mwl/expression.ts';
@@ -25,7 +25,7 @@ import { decodeSave, encodeSave } from '../src/mwl/persistence.ts';
 import { createFengariScriptHost } from '../src/mwl/fengari.ts';
 import { createExpressionScriptHost } from '../src/mwl/scripts.ts';
 import { contentReport, loadContent } from '../src/mwl/report.ts';
-import { readAttributes, readChildren } from '../src/mwl/readers.ts';
+import { readAttributes, readChildren, readTableIndex, readTableMap, tableKey } from '../src/mwl/readers.ts';
 import { evaluateCondition } from '../src/mwl/conditions.ts';
 import { EntityRegistry } from '../src/core/Entity.ts';
 
@@ -56,6 +56,42 @@ test('MWL parses nested tags with source locations and validates types', () => {
 	assert.deepEqual(validate(nodes), []);
 });
 
+test('MWL records exact attribute and value locations', () => {
+	const nodes = parse(
+		`[
+	  { tag: 'game',
+	    title: 'Campaign',
+	    children: [{ tag: 'event', id: 'start' }],
+	  },
+]`,
+		'locations.mwl',
+	);
+	assert.deepEqual(nodes[0].attributeLocations?.title, { file: 'locations.mwl', line: 3, column: 6 });
+	assert.deepEqual(nodes[0].valueLocations?.title, { file: 'locations.mwl', line: 3, column: 13 });
+	assert.deepEqual(nodes[0].children[0].attributeLocations?.id, { file: 'locations.mwl', line: 4, column: 33 });
+	assert.deepEqual(nodes[0].children[0].valueLocations?.id, { file: 'locations.mwl', line: 4, column: 37 });
+});
+
+test('MWL accepts schema-neutral named node sugar and repeated children', () => {
+	const nodes = parse(`[{ game: {
+		schema: 0.1,
+		unit_type: [
+			{ id: 'hero', name: _('Hero') },
+			{ id: 'scout', name: 'Scout' },
+		],
+	} }]`);
+	assert.equal(nodes[0].tag, 'game');
+	assert.deepEqual(
+		nodes[0].children.map((node) => [node.tag, node.attributes.id]),
+		[
+			['unit_type', 'hero'],
+			['unit_type', 'scout'],
+		],
+	);
+	assert.equal(nodes[0].children[0].attributes.name, 'Hero');
+	assert.deepEqual(validate(nodes), []);
+});
+
 test('MWL accepts campaign metadata and preserves game-owned campaign children', () => {
 	const game = compile(`[{ tag: 'game', children: [
 		{ tag: 'campaign', id: 'prologue', title: 'The Beginning', description: 'A first journey',
@@ -80,6 +116,7 @@ test('MWL validation reports unknown tags and attributes', () => {
 	const nodes = parse("[{ tag: 'game', wat: 1, children: [{ tag: 'nope' }] }]");
 	const diagnostics = validate(nodes);
 	assert.equal(diagnostics[0].code, 'MWL_UNKNOWN_ATTRIBUTE');
+	assert.deepEqual(diagnostics[0].location, { file: '<mwl>', line: 1, column: 17 });
 	assert.equal(diagnostics[1].code, 'MWL_CHILD');
 });
 
@@ -323,6 +360,22 @@ test('MWL collects, validates, and declares hook references', () => {
 	assert.deepEqual(parseHookReference('modifier:backstab'), { type: 'modifier', name: 'backstab' });
 });
 
+test('MWL accepts game-declared domain hook namespaces without knowing their domain types', () => {
+	assert.deepEqual(parseHookReference('item-effect:potion-strength'), {
+		type: 'item-effect',
+		name: 'potion-strength',
+	});
+	const declaration = emitHooksDeclaration([{ type: 'item-effect', name: 'potion-strength' }]);
+	assert.match(declaration, /'item-effect:potion-strength': MwlDomainHook;/);
+	const game = compile("[{ tag: 'hook', name: 'item-effect:potion-strength' }]");
+	assert.deepEqual(
+		validateCatalog(game, {
+			hooks: ['item-effect:potion-strength'],
+		}),
+		[],
+	);
+});
+
 test('MWL runtime executes deterministic world commands', () => {
 	const world = createWorld();
 	execute(world, { name: 'spawn', target: 'hero', x: 1, y: 2, hp: 10 });
@@ -542,6 +595,53 @@ test('MWL catalog validation catches duplicate ids, slots, effects, and hooks', 
 	assert.deepEqual(codes, ['MWL_UNKNOWN_SLOT', 'MWL_INCOMPLETE_EFFECT', 'MWL_DUPLICATE_ID', 'MWL_INVALID_HOOK']);
 });
 
+test('MWL catalog validation rejects coordinates outside supplied map bounds', () => {
+	const game = compile("[{ tag: 'filter', x: 3, y: '1-2' }]");
+	const diagnostics = validateCatalog(game, { mapBounds: { width: 3, height: 4 } });
+	assert.deepEqual(
+		diagnostics.map((diagnostic) => diagnostic.code),
+		['MWL_COORDINATE'],
+	);
+	assert.deepEqual(diagnostics[0].location, { file: '<mwl>', line: 1, column: 22 });
+});
+
+test('MWL catalog validation rejects cycles in resolved aliases', () => {
+	const game = compile(
+		`[{ tag: 'game', children: [
+			{ tag: 'terrain_type', id: 'a', aliasof: 'b' },
+			{ tag: 'terrain_type', id: 'b', aliasof: 'a' },
+		] }]`,
+	);
+	const diagnostics = validateCatalog(game);
+	assert.deepEqual(
+		diagnostics.map((diagnostic) => diagnostic.code),
+		['MWL_ALIAS_CYCLE'],
+	);
+	assert.equal(diagnostics[0].location.file, '<mwl>');
+});
+
+test('MWL publishes schema 1.0 as a lossless compatible vocabulary', () => {
+	assert.equal(MWL_SCHEMA_10, '1.0');
+	assert.notEqual(schema10.game, schema01.game);
+	const migrated = compile("[{ tag: 'game', schema: '1.0' }]");
+	assert.equal(migrated.schema, '1.0');
+	const invalid = validate(parse("[{ tag: 'game', schema: '1.0' }]"), schema10);
+	assert.deepEqual(
+		invalid.map((diagnostic) => diagnostic.code),
+		[],
+	);
+	assert.deepEqual(
+		validate(parse("[{ tag: 'table', id: 'loot', columns: 'id:string' }]"), schema10).map(
+			(diagnostic) => diagnostic.code,
+		),
+		['MWL_CARDINALITY'],
+	);
+	assert.deepEqual(
+		validate(parse("[{ tag: 'unit', id: 'hero' }]"), schema10).map((diagnostic) => diagnostic.code),
+		['MWL_REQUIRED_ATTRIBUTE', 'MWL_REQUIRED_ATTRIBUTE'],
+	);
+});
+
 test('a declared hook validates the attributes its own [hook] calls carry', () => {
 	const game = compile(
 		"[{ tag: 'hook', name: 'command:set_variable_dynamic', mode: 'literal', value: 'ok' }," +
@@ -629,6 +729,32 @@ test('MWL saves are versioned and migrated, while legacy snapshots remain readab
 	});
 	assert.equal(restored.turn, 2);
 	assert.equal(decodeSave(JSON.stringify(world), { version: 1 }).turn, 1);
+});
+
+test('MWL saves and restores explicitly declared game-owned hook state', () => {
+	let charges = 3;
+	const runtime = new MwlRuntime(compile("[{ tag: 'game', schema: 0.1 }]"), {
+		hooks: {
+			saveable: {
+				'item-effect:potion-strength': {
+					save: () => ({ charges }),
+					restore: (state) => {
+						charges = (state as { charges: number }).charges;
+					},
+				},
+			},
+		},
+	});
+	runtime.run('start');
+	const snapshot = runtime.save();
+	charges = 0;
+	runtime.restore(snapshot);
+	assert.equal(charges, 3);
+	assert.match(snapshot, /"hookState"/);
+	assert.deepEqual(
+		runtime.journal.all.map((entry) => entry.action),
+		[{ type: 'run', trigger: 'start' }],
+	);
 });
 
 test('MWL unit_type accepts a spaced display id from a converted source', () => {
@@ -816,6 +942,56 @@ test('the id reader accepts the same names the schema does, index brackets inclu
 
 	const bad = readAttributes<{ name: string }>({ ...node, attributes: { name: '0bad' } }, { name: { type: 'id' } });
 	assert.equal(bad.diagnostics[0]?.code, 'MWL_FIELD_TYPE', 'a non-identifier is still refused');
+});
+
+test('unknown MWL macros fail strictly with their source location', () => {
+	assert.throws(
+		() => preprocess("[{ tag: 'game' }, {MISSING}]", { file: 'unknown.mwl' }),
+		(error: unknown) => {
+			assert.ok(error instanceof Error);
+			assert.match(error.message, /unknown\.mwl:1:19: unknown macro "MISSING"/);
+			return true;
+		},
+	);
+	assert.equal(
+		preprocess("[{ tag: 'game' }, {MISSING}]", { file: 'legacy.mwl', macroPolicy: 'ignore' }),
+		"[{ tag: 'game' }, {MISSING}]",
+	);
+	assert.equal(
+		preprocess("[{ tag: 'game', title: '{MISSING}' }] // {NOPE}"),
+		"[{ tag: 'game', title: '{MISSING}' }] // {NOPE}",
+	);
+});
+
+test('table readers project typed maps and preserve composite key types', () => {
+	const rows = [
+		{ item: 'potion', effect: 'heal', amount: 5 },
+		{ item: 'potion', effect: 'speed', amount: 2 },
+		{ item: 'scroll', effect: 'heal', amount: 8 },
+	] as const;
+	const map = readTableMap(rows, { key: ['item', 'effect'], value: (row) => row.amount });
+	assert.equal(map.get(tableKey('potion', 'heal')), 5);
+	assert.equal(map.get(tableKey('scroll', 'heal')), 8);
+	assert.equal(map.get(tableKey('potion', 'missing')), undefined);
+	const index = readTableIndex(rows, { key: 'effect' });
+	assert.deepEqual(
+		index.get(tableKey('heal'))?.map((row) => row.item),
+		['potion', 'scroll'],
+	);
+	assert.deepEqual(
+		index.get(tableKey('speed'))?.map((row) => row.item),
+		['potion'],
+	);
+});
+
+test('table maps reject duplicate keys unless last-write wins is explicit', () => {
+	const rows = [
+		{ id: 'same', value: 1 },
+		{ id: 'same', value: 2 },
+	];
+	assert.throws(() => readTableMap(rows, { key: 'id' }), /duplicate table key/);
+	const last = readTableMap(rows, { key: 'id', value: (row) => row.value, duplicate: 'last' });
+	assert.equal(last.get(tableKey('same')), 2);
 });
 
 test('MWL conditions evaluate bounded comparisons and explicit helpers', () => {

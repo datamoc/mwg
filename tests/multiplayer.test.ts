@@ -76,6 +76,42 @@ test('submitInput sends an input message while connected', () => {
 	assert.deepEqual(JSON.parse(socket.sent[0]), { type: 'input', payload: 'jump' });
 });
 
+test('submitInput validates locally and can carry a state checksum', () => {
+	const socket = new FakeSocket();
+	const rejected: string[] = [];
+	const client = new LockstepClient({
+		url: 'ws://x',
+		create: () => socket,
+		validateInput: (payload) => (payload === 'jump' ? true : 'unknown command'),
+	});
+	client.onReject.add(({ reason }) => {
+		rejected.push(reason);
+	});
+	client.connect();
+	client.submitInput('left', 123);
+	client.submitInput('jump', 456);
+	assert.deepEqual(rejected, ['unknown command']);
+	assert.deepEqual(JSON.parse(socket.sent[0]), { type: 'input', payload: 'jump', checksum: 456 });
+});
+
+test('welcome and ticks carry deterministic session metadata and report checksum divergence', () => {
+	const socket = new FakeSocket();
+	const client = new LockstepClient({ url: 'ws://x', create: () => socket });
+	let welcome: unknown;
+	let desync: unknown;
+	client.onWelcome.add((event) => {
+		welcome = event;
+	});
+	client.onDesync.add((event) => {
+		desync = event;
+	});
+	client.connect();
+	socket.receive({ type: 'welcome', id: 'p1', seed: 7, initialState: { turn: 0 } });
+	socket.receive({ type: 'tick', tick: 2, inputs: { p1: 'left', p2: 'right' }, checksums: { p1: 10, p2: 11 } });
+	assert.deepEqual(welcome, { id: 'p1', seed: 7, initialState: { turn: 0 } });
+	assert.deepEqual(desync, { tick: 2, checksums: { p1: 10, p2: 11 } });
+});
+
 test('submitInput is a no-op before the socket is open', () => {
 	const socket = new FakeSocket();
 	socket.readyState = 0; //CONNECTING

@@ -1059,6 +1059,12 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   is just that id.
 - `readAttributes` / `readChildren` - shared typed readers for compiled nodes. They coerce
   scalars and lists and return source-located diagnostics instead of silently guessing.
+- `MwlNode.attributeLocations` / `valueLocations` - parsed JSON5 nodes retain the exact key and
+  value start for each attribute, and schema diagnostics use those locations when available.
+- `MwlValidationOptions.mapBounds` - an adapter can supply map dimensions so `validateCatalog`
+  rejects out-of-bounds integer, list, and range coordinates without embedding a map system in MWG.
+- `readTableMap` / `readTableIndex` / `tableKey` - project typed table rows into a `Map`, use
+  collision-free native composite keys, and build inverse indexes that retain every matching row.
 - A `key="""..."""` value (item 317) is the one attribute form that may span lines, and its text
   is exactly what sits between the delimiters, so wrapped message, objective and option-label
   text survives a conversion without the whitespace-collapsing workaround it otherwise needs. It
@@ -1075,6 +1081,10 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   arithmetic, literals, `where` bindings, and explicitly supplied pure helpers. There are no loops, assignments,
   dynamic code loading, or implicit game rules.
 - `mwl validate` - checks syntax and content structure without generating runtime files.
+- `mwl diagnostics` / `mwl ci` - emit stable JSON diagnostics, with `ci` additionally exposing
+  a boolean `valid` result and returning a failing process status when errors exist.
+- `mwl format` / `mwl migrate --to 1.0` - expand and emit a deterministic canonical MWL document;
+  migration requires an explicit target and currently normalizes the MWL 1.0 syntax surface.
 - `mwl compile`/`mwl extract-i18n`/`mwl hooks` - lower-level commands for a generated module,
   translation extraction, or hook manifest when a build pipeline needs separate outputs.
 - `parse`/`compile`/`validate`/`extractI18n` - the programmatic compiler surface exported from
@@ -1091,7 +1101,7 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   would (a side victory outranking another side's defeat when both fire at once). `[win]`/`[lose]`
   record the side they name too.
 - Public MWL exports - `MwlRuntime`, `MwlSyntaxError`, `collectHookReferences`, `compileNodes`,
-  `compileSources`, `compileAndEmitSources`, `emitArtifacts`, `coerceTableValue`,
+  `compileSources`, `compileAndEmitSources`, `emitArtifacts`, `coerceTableValue`, `decodeSaveEnvelope`,
   `parseTableColumns`, `contentCatalog`, `createWorld`, `decodeSave`, `effectToModifier`,
   `emitHooksDeclaration`, `emitModule`, `encodeSave`, `evaluateExpression`, `execute`,
   `extractCatalog`, `hookTypes`, `inventoryItem`, `isGettext`, `isMwlId`, `itemDefinition`,
@@ -1109,14 +1119,40 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   only `[hook]` calls are checked, where every attribute but `name` belongs to the hook. The
   rule itself is `validAttributeValue`/`attributeTypeDescription`, exported because the tag
   schema and a hook declaration check values the same way rather than two ways that drift.
+- `MwlDomainHook`/`MwlDomainHookRegistry` - game-declared hook namespaces such as
+  `item-effect:potion-strength` use a typed context/input/output boundary. MWG validates and
+  emits the reference shape, while the game owns the domain types, rules, and implementation.
 - `HookWorld`/`Emit` (item 319) - the hook boundary's two halves. `world.variableAt(path)`
   resolves a nested variable through the same walker `[variable] name=` reads through, and
   `emit.setVariable(path, value)` is its write, so a hook asks for `stored_naga.hitpoints` and
   means the same variable content does; writing `world.variables` directly gets a flat dotted
   key no reader finds.
+- `HookWorld.random`/`MwlRuntimeOptions.random` - a hook draws from the runtime's own seeded
+  `core.Generator` instead of `Math.random()`, so a `generator`/`ai`/domain hook stays reproducible;
+  the draw position is carried on `MwlWorld.random` and resumes exactly across save/restore.
 - `MwlTraceEvent`/`MwlRuntimeOptions.onTrace` - opt-in lifecycle tracing for event claims,
   completions, variable writes and runtime errors. `MwlHookRegistry.predicate` lets an adapter
   register named, typed filter predicates without putting game-specific semantics in MWG.
+- `MwlSaveableHookState` / `MwlHookRegistry.saveable` - a game may explicitly expose JSON-safe
+  hook state; `MwlRuntime.save()` includes it and `restore()` hands it back to the same adapter.
+- `MwlRuntime.journal` / `MwlRuntimeAction` - public runtime triggers and their trace batches are
+  recorded in order and persisted with the save, providing a replay and diagnostics input without
+  making MWG interpret game-specific commands.
+- `validateCatalog` also reports `MWL_ALIAS_CYCLE` for cycles among resolved `aliasof` references;
+  aliases outside the catalog remain available for game-defined sentinel values.
+- `validateSimulationReplay` - replays a `SimulationRuntime` journal from a checkpoint, compares
+  each deterministic event batch, and optionally verifies the final state with a stable checksum.
+- `SimulationRuntime` accepts an optional `history: { actorOf, limit? }`; `canUndo`, `canRedo`,
+  `undo()` and `redo()` restore complete state, scheduler, RNG and journal checkpoints.
+- `CanonicalState` / `CanonicalStateSnapshot` - a defensive, JSON-safe root state combined with
+  `StateRegistry` extensions; snapshots, version migrations, transactions and restores cover all
+  pieces atomically.
+- `LockstepClient` supports optional command validation, receives a session seed and initial
+  state, and can submit per-tick state checksums; `onDesync` reports differing peer checksums.
+  `createLockstepServer` accepts matching `seed`, `initialState` and `validateInput` options.
+- `MWL_SCHEMA_01` / `MWL_SCHEMA_10` and `schema01` / `schema10` identify the supported MWL
+  vocabularies; `mwl migrate --to 1.0` updates the document version without changing its data.
+  Schema 1.0 additionally enforces declared required attributes and child cardinalities.
 - `ScriptHost` and `createExpressionScriptHost` - the game-owned boundary for executable content.
   The expression host is the statement-free default. The main `mwl` entry point
   exports its types without loading a scripting VM. Projects that opt in to the optional

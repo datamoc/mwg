@@ -17,12 +17,24 @@ export interface LockstepClientOptions {
 	url: string;
 	/** defaults to the global `WebSocket`; inject a fake in tests, or `ws`'s own client in Node */
 	create?: (url: string) => WebSocketLike;
+	/** Optional client-side command contract. Returning a string rejects with that reason. */
+	validateInput?: (payload: unknown) => boolean | string;
+}
+
+export interface LockstepWelcome {
+	id: string;
+	/** The room seed, when the server configured one. */
+	seed?: number;
+	/** The JSON-safe state from which every peer must start, when configured. */
+	initialState?: unknown;
 }
 
 export interface TickEvent {
 	tick: number;
 	/** this room's every client id mapped to its input for `tick`, or `null` if it missed the deadline */
 	inputs: Record<string, unknown>;
+	/** state checksums reported by peers after applying this tick, when supplied */
+	checksums?: Record<string, number>;
 }
 
 /**
@@ -57,19 +69,23 @@ export interface TickEvent {
  * ```
  */
 export class LockstepClient {
-	readonly onWelcome = new Signal<{ id: string }>();
+	readonly onWelcome = new Signal<LockstepWelcome>();
 	readonly onTick = new Signal<TickEvent>();
+	readonly onReject = new Signal<{ reason: string }>();
+	readonly onDesync = new Signal<{ tick: number; checksums: Record<string, number> }>();
 	readonly onClose = new Signal<void>();
 
 	private socket: WebSocketLike | null = null;
 	private readonly url: string;
 	private readonly createSocket: (url: string) => WebSocketLike;
+	private readonly validateInput?: (payload: unknown) => boolean | string;
 	private _id: string | null = null;
 
 	constructor(options: LockstepClientOptions) {
 		if (!options.url) throw new Error('lockstep client url is required');
 		this.url = options.url;
 		this.createSocket = options.create ?? ((url) => new WebSocket(url) as unknown as WebSocketLike);
+		this.validateInput = options.validateInput;
 	}
 
 	/** this client's own id, assigned by the server's `welcome` message; `null` before it arrives */
@@ -94,9 +110,16 @@ export class LockstepClient {
 	}
 
 	/** submits this client's input for the current tick; a no-op before the connection is open */
-	submitInput(payload: unknown): void {
+	submitInput(payload: unknown, checksum?: number): void {
 		if (!this.connected) return;
-		this.socket?.send(JSON.stringify({ type: 'input', payload }));
+		const validation = this.validateInput?.(payload);
+		if (validation === false || typeof validation === 'string') {
+			this.onReject.dispatch({
+				reason: validation === false ? 'input rejected by client validation' : validation,
+			});
+			return;
+		}
+		this.socket?.send(JSON.stringify({ type: 'input', payload, ...(checksum === undefined ? {} : { checksum }) }));
 	}
 
 	close(): void {
@@ -107,14 +130,34 @@ export class LockstepClient {
 		const message = JSON.parse(raw) as {
 			type: string;
 			id?: string;
+			seed?: number;
+			initialState?: unknown;
 			tick?: number;
 			inputs?: Record<string, unknown>;
+			checksums?: Record<string, number>;
+			reason?: string;
 		};
 		if (message.type === 'welcome' && message.id !== undefined) {
 			this._id = message.id;
-			this.onWelcome.dispatch({ id: message.id });
+			this.onWelcome.dispatch({
+				id: message.id,
+				...(message.seed === undefined ? {} : { seed: message.seed }),
+				...(message.initialState === undefined ? {} : { initialState: message.initialState }),
+			});
 		} else if (message.type === 'tick' && message.tick !== undefined && message.inputs !== undefined) {
-			this.onTick.dispatch({ tick: message.tick, inputs: message.inputs });
+			const event = {
+				tick: message.tick,
+				inputs: message.inputs,
+				...(message.checksums === undefined ? {} : { checksums: message.checksums }),
+			};
+			this.onTick.dispatch(event);
+			if (message.checksums) {
+				const checksums = Object.values(message.checksums);
+				if (checksums.some((checksum) => checksum !== checksums[0]))
+					this.onDesync.dispatch({ tick: message.tick, checksums: message.checksums });
+			}
+		} else if (message.type === 'rejected') {
+			this.onReject.dispatch({ reason: message.reason ?? 'input rejected by server' });
 		}
 	}
 }

@@ -28,7 +28,12 @@ where those live.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Everything numbered has shipped.** The Wesnoth-port cluster (247-273) and the follow-ups it
+**Everything numbered through 346 has shipped; item 347 is closed as external project work
+outside this repository.** Item 338 shipped schema-neutral named-node sugar; items 339-340 were
+regrouped into 341-342 and 346; 341-342 shipped canonical state, campaign persistence,
+deterministic replay/undo, a hardened lockstep protocol, strict MWL diagnostics, the published
+1.0 schema, and a seeded RNG threaded through hooks; 343-345 were verified against already-shipped
+APIs. The Wesnoth-port cluster (247-273) and the follow-ups it
 pulled in (274-276 score-driven AI, 277-282 the side-identity cleanup and the Pixel Dungeon port's
 proposals, 283-294) all landed in 2026-09; the last open pieces were item 258's canvas backend,
 drawn image sprites and RTL sample. Earlier clusters - the data-extraction set 205-213, the former
@@ -4517,10 +4522,11 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      reads what content wrote at `stored_naga.hitpoints`, writes it back through `emit.setVariable`
      along with a `party[0].name` index, and the event's own `$stored_naga.hitpoints` interpolation
      sees the new value.
-320. [Low] Port-side, not a framework ask, but it shares item 319's root:
+320. ~~[Low] Port-side, not a framework ask, but it shares item 319's root:
      `command:set_variable_dynamic` should write nested paths through `emit.setVariable` and read
      through the shared resolver instead of flat dotted keys. Its own row because the disagreement
-     is a port bug that MWG only invites, not one it owns.
+     is a port bug that MWG only invites, not one it owns.~~ Reclassified under **Parked decisions**:
+     this remains a port task, not an open MWG roadmap item.
 321. ~~[Low] Hook attributes are an unvalidated `Record<string, string>`. Hook names are checked at
      compile time (`collectHookReferences`/`validateHookReferences`), but a hook's own attributes
      are not: `command:set_variable_dynamic` now carries 18 modes, and a typo only throws at
@@ -4829,16 +4835,124 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      a second instance of the one-giant-function problem this item actually fixed, and splitting
      them into separate files without a demonstrated problem would be reorganisation for its own
       sake, the same standard that kept this item parked as long as it only cited size.
-338. [Low] MWL's JSON5 authoring keeps the generic `tag`/`children` node envelope, which
+338. ~~[Low] MWL's JSON5 authoring keeps the generic `tag`/`children` node envelope, which
      converts mechanically with no schema knowledge. A named-field sugar layer on top
      (`{ unit_type: { id: ... } }` with single vs. repeated children resolved by the
      schema) would read better but needs that knowledge, so it waits until authors ask
-     for it rather than arriving with the cutover.
+     for it rather than arriving with the cutover.~~ Implemented as schema-neutral named-node
+     sugar: `{ unit_type: { id: 'hero' } }` and repeated object children lower to canonical
+     `tag`/`children` nodes; cardinalities remain the schema validator's responsibility.
+339. ~~[Low] Add reusable table readers for data-driven games: a configurable key-value
+     projection reader, native composite keys such as `(item, effect)`, and, where the
+     shape justifies it, typed readers that produce `Map` instances or reverse indexes
+     directly. For MWL in particular, add text/data-only macros for factoring repeated
+     item lists, item variants, tiered values, and common blocks such as `stackable`,
+     `slot`, and `image`; macros must not access game state or run arbitrary logic. Also
+     add typed, game-declared TypeScript hooks for domain behaviour: the compiler should
+     verify that a hook exists and that its parameters are valid, then generate a typed
+     registry while keeping arbitrary JavaScript out of MWL files. A hook receives a
+     game-owned context and instance, for example `ItemEffectContext`, `ItemInstance`,
+     and `ItemEffectResult`. MWG provides only the generic hook infrastructure and
+     validation: item contexts, inventory rules, and SPD effects remain in the GPL game
+     repository. This extends the existing `#include`, `#define`, `#ifdef`, and
+     scenario-oriented hook foundation toward domain hooks declared by each game, without
+     teaching MWG about SPD's content.~~ Regrouped into items 342 and 346, which retain the
+     table-reader, macro, and typed-hook work as separate implementation concerns.
+340. ~~[Critical/high] The next work is split into items 341-347 below. The order is deliberate:
+     canonical state and saves; action log, replay, and RNG; strict MWL validation; shared
+     pathfinding, assets, and UI; story and combat screens; Pixel Dungeon migration; then
+     MWL 1.0 and publication.~~ Replaced by the concrete work items 341-347 below, so this
+     planning umbrella is closed without implying that its implementation work shipped.
+341. ~~[Critical] Canonical state, campaign persistence, and deterministic turn history:
+     define one game-state model shared by `MwlRuntime`, rules, saves, and presentation;
+     save world state, variables, triggered events, surviving units, gold, campaign
+     progression, and declared hook state; add a generic action journal for movement,
+     combat, recruitment, and end-of-turn actions; and provide undo/redo, replays,
+     reproducible diagnostics, and the foundations for network synchronization.
+     References: MWG items 249 and 272, and MWL-034.~~ Covered by `core.CanonicalState` (a
+     shared JSON-safe root plus versioned extensions, snapshots, transactions, and atomic
+     restore), the generic simulation journal/snapshot/replay/undo-redo surface, explicit
+     saveable hook state, the MWL runtime's own action journal, and a lockstep protocol that
+     carries session seed/initial-state metadata, validates game-supplied commands, and
+     propagates per-tick checksums for desync detection. Game adapters still decide how MWL,
+     rules, saves, and rendering consume the canonical-state contract; MWG provides the shape,
+     not the wiring.
+342. ~~[Critical] Deterministic execution and strict MWL contracts: provide a documented,
+     stable RNG with seed snapshots and compatibility tests; make unknown macros and
+     undefined symbols errors by default with file, line, and column diagnostics plus an
+     explicit tolerance policy; preserve exact JSON5 locations; publish an MWL 1.0 schema;
+     validate semantic references, duplicates, impossible values, and alias cycles; and
+     complete typed hooks with input/output types, context schemas, localized errors,
+     declared saveable state, and no nondeterministic effects.
+     References: MWG item 266, MWL-015, MWL-016, and item 339.~~ `core.Generator`'s stream now
+     has a hardcoded-output compatibility test guarding it against a silent algorithm change,
+     alongside its existing seed-snapshot coverage. Unknown macros and hook references are
+     errors by default (file/line/column, with an explicit `macroPolicy: 'ignore'` escape);
+     exact JSON5 attribute/value locations, the published MWL 1.0 schema (required attributes,
+     child cardinalities, lossless migration from 0.1), alias-cycle detection, map-bound
+     coordinate validation, and machine-readable CLI diagnostics all shipped. Typed hooks carry
+     input/output types and a context type through `MwlDomainHook<Context, Input, Output>`, the
+     same compile-time contract every built-in hook type already used, plus declared saveable
+     state (`MwlSaveableHookState`); `HookWorld.random` now gives every hook a deterministic
+     draw from the runtime's own seeded stream instead of `Math.random()`, closing the one
+     concrete gap "no nondeterministic effects" left open. Localized hook errors compose from
+     existing parts (a hook's own MWL-declared attributes plus the game's `i18n` message tables)
+     rather than needing a new primitive; domain-specific impossible-value checks remain
+     game-owned, the same boundary item 339 already drew.
+343. ~~[High] MWL execution and presentation: define event, state-change, animation,
+     dialogue, sound, camera, and end-of-turn ordering; add native per-side victory and
+     defeat objectives; and extend the command contract with loops, conditions, variables,
+     transactions, deferred events, cancellable commands, and synchronized commands.
+     References: MWG items 282 and 283.~~ Covered by `EventPresentation`, `MwlWorld.sideStatus`,
+     the existing MWL loop/transaction/deferred-command surface, and their tests.
+344. ~~[High] Shared MWG core primitives: extract weighted flood/pathfinding for movement,
+     vision, range, AI, and influence zones; add common grid utilities; move asset loading,
+     caching, deduplication, release, errors, loading state, and manifest preloading into
+     MWG; complete generic image modifiers; support hexagonal/isometric maps and layered
+     tiles; add declarative animation timelines; and improve minimap and camera primitives.
+     References: MWG items 255, 284, 285, and 286.~~ Covered by `weightedFlood`, `LoadQueue`,
+     the render projections and animation primitives, and the minimap/camera APIs, with the
+     corresponding unit and benchmark coverage.
+345. ~~[High] Generic UI surface: add missing widgets (`Slider`, `Checkbox`, `Dropdown`,
+     `TextInput`, `Table`, `TreeView`, `ScrollBox`, tabs, pagination, and list selectors),
+     declarative layout and skins, story and campaign screens, shared combat UI, and
+     complete keyboard, focus, semantic-label, dialogue, contrast, touch-target, and
+     screen-reader accessibility. References: MWG items 261, 263, 264, 265, and 281.~~ Covered
+     by the shipped UI widgets, `Layout`/`Skins`, `StoryScreen`, combat UI, and a11y tests.
+346. ~~[High] MWL data, content tooling, and persistence declarations: add configurable
+     key-value table projections, native composite keys, and typed readers that can produce
+     `Map` instances or reverse indexes; finalize text/data-only macros for repeated item
+     lists, variants, tiered values, and common blocks; finalize generic
+     inventory and item tags, normalize composable `[effect]` data with explicit ordering,
+     add a declarative `[save]` contract for persistent and temporary fields and migrations,
+     complete i18n extraction and validation, and publish a stable CLI for validation,
+     compilation, assets, hooks, formatting, migration, diagnostics, CI, and reports.
+     Table projections, composite keys, reverse indexes, core macro syntax, inventory/effect
+     data, `[save]` persistence, complete i18n extraction/validation, JSON diagnostics/CI modes,
+     and format/migrate CLI modes are all shipped.~~ References: MWL-033 and the Pixel Dungeon
+     M6 migration.
+347. ~~[High] Migration, determinism, performance, and publication: complete Pixel Dungeon
+     migration M5-M10; remove the Wesnoth port's private WML-shaped intermediates; add
+     fixed-seed, snapshot, migration, replay, and divergence tests; budget parsing,
+     compilation, loading, runtime creation, rendering, pathfinding, AI, memory, and
+     bundle size in CI; then finish MWL 1.0 documentation, schema publication, examples,
+     integrated MWG publication, and the move from the local dependency to npm. Reference:
+     `4MWG/MIGRATION.md`.~~ Closed as external project work: the Pixel Dungeon and Wesnoth
+     migrations, their project-local CI budgets, and their publication cannot be implemented
+     in this repository.
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list
 until someone actually picks them up, because the list records shipped capabilities, not
 standing intentions.
+
+- **Item 320: port-owned nested variable writing.** The framework already exposes the shared
+  resolver and `emit.setVariable`; fixing `command:set_variable_dynamic` belongs in the
+  Wesnoth port, so it is not an MWG deliverable.
+
+- **Item 347: external migration and release work.** Pixel Dungeon and Wesnoth migration,
+  project-local CI budgets, and publication belong to those projects, so they are not MWG
+  deliverables.
 
 - **Items 28/30: the next reference pick.** Every genre the capability spec committed to
   is covered by the shipped `mwg/board` work (hex tactics, action points, cover,
@@ -4874,7 +4988,10 @@ standing intentions.
 ### 1.0 exit checklist
 
 The definition of done for 1.0. Each line is a check to run, not a feature to build. Every numbered
-item above has shipped, the Wesnoth-port cluster (247 and up, 311-313 last, plus 314 found
+item above through 346 has shipped; item 347 is closed as external project work, not an MWG
+deliverable. Items 339-340 were planning entries regrouped into 341-342 and 346, and items 338,
+341-345 and 346 were implemented or verified against existing APIs. The
+Wesnoth-port cluster (247 and up, 311-313 last, plus 314 found
 reconciling it) included - all but item 320, which is the port's own side of a disagreement the
 framework only invited (319 shipped the framework half), and the [Low] items the ports' reviews
 surfaced (327, 329 and 330) are shipped rather than left open, so none of them is a framework

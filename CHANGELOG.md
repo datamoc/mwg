@@ -7,6 +7,69 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-09-13
+
+### Added
+
+- `core.CanonicalState` - a defensive, JSON-safe root state combined with `StateRegistry`
+  extensions, with snapshots, version migrations, transactions, and atomic restore covering
+  both pieces together (item 341).
+- `simulation.validateSimulationReplay`, and an optional `history` option on `SimulationRuntime`:
+  replay a recorded journal from a checkpoint and compare deterministic event batches, and
+  restore complete state/scheduler/RNG/journal undo-redo checkpoints (item 341).
+- `LockstepClient`/`createLockstepServer` carry a session seed and initial state, validate
+  game-supplied commands, and exchange per-tick state checksums, with new `onReject`/`onDesync`
+  signals reporting rejected input and diverging peers (item 341).
+- MWL JSON5 authoring accepts schema-neutral named-node sugar (`{ unit_type: { id: 'hero' } }`
+  and repeated object children) alongside the generic `tag`/`children` envelope, lowered before
+  validation runs (item 338).
+- `MwlDomainHook`/`MwlDomainHookRegistry`/`MwlDomainHookDeclaration` - game-declared hook
+  namespaces (`item-effect:potion-strength`) get a typed context/input/output boundary that MWG
+  validates and emits without knowing the domain's own types or rules (item 342).
+- `HookWorld.random` - every MWL hook, built-in or domain, draws from the runtime's own seeded
+  `core.Generator` instead of `Math.random()`, via the new `MwlRuntimeOptions.random`; the draw
+  position is carried on `MwlWorld.random` and resumes exactly across save/restore (item 342).
+  Any game hand-building its own `HookWorld` (only `MwlRuntime` constructs one today) must now
+  provide this field too, the same rule item 319's `variableAt` addition already established.
+- `MwlSaveableHookState`/`MwlHookRegistry.saveable` - a game may explicitly expose JSON-safe hook
+  state; `MwlRuntime.save()`/`restore()` round-trip it through the same save envelope (item 341).
+- `MwlRuntime.journal`/`MwlRuntimeAction` - public runtime operations (running a trigger, firing
+  an event or a moveto watch, answering a dialogue choice) are recorded in order and persisted
+  with the save (item 341).
+- The MWL parser and compiler retain exact JSON5 attribute and value source locations
+  (`MwlNode.attributeLocations`/`valueLocations`), used by schema, catalog, and macro
+  diagnostics instead of falling back to the owning node's own location (item 342).
+- Unknown MWL macros and hook references are errors by default, with file/line/column
+  diagnostics; `MwlPreprocessOptions.macroPolicy: 'ignore'` restores the old silent-passthrough
+  behaviour for legacy content (item 342).
+- `schema10`/`MWL_SCHEMA_10` - the published MWL 1.0 vocabulary: required attributes and child
+  cardinalities on top of the unchanged 0.1 tag/value contract; `mwl migrate --to 1.0` performs
+  a lossless upgrade (item 342).
+- `validateCatalog` reports `MWL_ALIAS_CYCLE` for cycles in resolved `aliasof` chains, and the new
+  `MwlValidationOptions.mapBounds` rejects authored coordinates outside declared map dimensions
+  (item 342).
+- `readTableMap`/`readTableIndex`/`tableKey` - typed table-row projections with collision-free
+  native composite keys, and inverse indexes that retain every matching row (items 339, 346).
+- `mwl diagnostics`/`mwl ci` CLI modes emit stable, machine-readable JSON diagnostics; `mwl
+  format`/`mwl migrate --to 1.0` emit a deterministic canonical document (items 342, 346).
+- `tests/random.test.ts` gained a hardcoded-output compatibility test for `core.Generator`'s
+  stream, guarding fixed seeds against a future silent algorithm change (item 342).
+
+### Changed
+
+- `mwl/grammar.ts`'s macro expansion, gettext rewrite, and tag-site collection now share one
+  `skipStringOrComment` scan instead of three near-identical hand-rolled copies of it.
+- `LockstepClient.submitInput` accepts an optional per-tick checksum and an optional client-side
+  `validateInput`; rejected input reports through the new `onReject` signal instead of silently
+  going nowhere.
+
+### Fixed
+
+- `src/mwl/catalog.ts` carried a literal NUL byte, rather than an escaped `\0`, inside one
+  composite map key, which made the file register as binary to `git diff` and `grep`. Replaced
+  with the same `\0` escape already used for the identical purpose elsewhere in the file; no
+  behaviour change.
+
 ## [0.9.0-alpha] - 2026-09-13
 
 ### Changed

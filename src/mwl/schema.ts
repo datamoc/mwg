@@ -3,6 +3,18 @@ import { coerceCsvValue, type CsvColumnType } from '../core/Csv.ts';
 
 export type MwlValueType = 'string' | 'id' | 'number' | 'integer' | 'boolean' | 'ref' | 'coordinate';
 
+/** Published MWL schema identifiers understood by the compiler and migration tooling.
+ *
+ * @example
+ * ```ts
+ * import { MWL_SCHEMA_01, MWL_SCHEMA_10 } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(MWL_SCHEMA_01, MWL_SCHEMA_10); // '0.1', '1.0'
+ * ```
+ */
+export const MWL_SCHEMA_01 = '0.1';
+export const MWL_SCHEMA_10 = '1.0';
+
 /**
  * An attribute's declared type: one of the shared value types, or the exact set of values it
  * accepts when the vocabulary is closed. `[set_variable] mode=` needs the second form, because
@@ -46,6 +58,8 @@ export function parseTableColumns(value: string): MwlTableColumn[] {
 export interface MwlTagSchema {
 	/** fixed attributes, name -> value type */
 	readonly attributes?: Readonly<Record<string, MwlAttributeType>>;
+	/** attributes required on every occurrence of this tag */
+	readonly required?: readonly string[];
 	/**
 	 * When set, any attribute name is accepted on this tag and every value is
 	 * checked as this type. Open data maps need this: the keys of a movement
@@ -55,6 +69,8 @@ export interface MwlTagSchema {
 	readonly openAttributes?: MwlValueType;
 	/** allowed child tags; when omitted, any child is accepted */
 	readonly children?: readonly string[];
+	/** minimum and maximum number of children by tag */
+	readonly cardinality?: Readonly<Record<string, { readonly min?: number; readonly max?: number }>>;
 	/** when true, children are accepted even though `children` is set */
 	readonly openChildren?: boolean;
 	/** target tag for declared `ref` attributes, or `*` for any id-bearing node */
@@ -698,6 +714,28 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 };
 
 /**
+ * The published MWL 1.0 vocabulary. Version 1.0 preserves the 0.1 tag and value contract while
+ * making the core structural requirements explicit. Migration is lossless for valid 0.1 data;
+ * game-owned extensions are still supplied through `schemas`.
+ *
+ * @example
+ * ```ts
+ * import { MWL_SCHEMA_10, schema10 } from '@datamoc/mw_games/mwl';
+ *
+ * console.log(MWL_SCHEMA_10, Object.hasOwn(schema10, 'game')); // '1.0', true
+ * ```
+ */
+export const schema10: Readonly<Record<string, MwlTagSchema>> = {
+	...schema01,
+	game: { ...schema01.game, required: ['schema'] },
+	table: { ...schema01.table, required: ['id', 'columns'], cardinality: { row: { min: 1 } } },
+	terrain_type: { ...schema01.terrain_type, required: ['id'] },
+	movetype: { ...schema01.movetype, required: ['id'] },
+	unit_type: { ...schema01.unit_type, required: ['id'] },
+	unit: { ...schema01.unit, required: ['id', 'type', 'side'] },
+};
+
+/**
  * Validates a parsed node tree against a schema, returning diagnostics rather than throwing.
  *
  * @example
@@ -735,6 +773,14 @@ export function validate(nodes: readonly MwlNode[], schemas = schema01): MwlDiag
 				diagnostics.push({
 					code: 'MWL_UNKNOWN_ATTRIBUTE',
 					message: `unknown attribute ${name} on ${node.tag}`,
+					location: node.attributeLocations?.[name] ?? node.location,
+				});
+		}
+		for (const name of definition.required ?? []) {
+			if (node.attributes[name] === undefined)
+				diagnostics.push({
+					code: 'MWL_REQUIRED_ATTRIBUTE',
+					message: `${name} is required on ${node.tag}`,
 					location: node.location,
 				});
 		}
@@ -744,7 +790,7 @@ export function validate(nodes: readonly MwlNode[], schemas = schema01): MwlDiag
 				diagnostics.push({
 					code: 'MWL_VALUE',
 					message: `${name} must be ${attributeTypeDescription(type)}`,
-					location: node.location,
+					location: node.valueLocations?.[name] ?? node.attributeLocations?.[name] ?? node.location,
 				});
 			if (value !== undefined && type === 'ref') {
 				const candidates = (ids.get(value) ?? []).filter((target) => {
@@ -773,7 +819,7 @@ export function validate(nodes: readonly MwlNode[], schemas = schema01): MwlDiag
 					diagnostics.push({
 						code: 'MWL_VALUE',
 						message: `${name} must be ${definition.openAttributes}`,
-						location: node.location,
+						location: node.valueLocations?.[name] ?? node.attributeLocations?.[name] ?? node.location,
 					});
 			}
 		}
@@ -785,6 +831,21 @@ export function validate(nodes: readonly MwlNode[], schemas = schema01): MwlDiag
 					location: child.location,
 				});
 			visit(child, definition.openChildren === true);
+		}
+		for (const [tag, bounds] of Object.entries(definition.cardinality ?? {})) {
+			const count = node.children.filter((child) => child.tag === tag).length;
+			if (bounds.min !== undefined && count < bounds.min)
+				diagnostics.push({
+					code: 'MWL_CARDINALITY',
+					message: `${node.tag} needs at least ${bounds.min} ${tag} child${bounds.min === 1 ? '' : 'ren'}`,
+					location: node.location,
+				});
+			if (bounds.max !== undefined && count > bounds.max)
+				diagnostics.push({
+					code: 'MWL_CARDINALITY',
+					message: `${node.tag} allows at most ${bounds.max} ${tag} child${bounds.max === 1 ? '' : 'ren'}`,
+					location: node.location,
+				});
 		}
 	};
 	nodes.forEach((node) => visit(node));

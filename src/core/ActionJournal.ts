@@ -57,6 +57,13 @@ export class ActionJournal<Action, Event> {
 		return this.all as ActionJournalEntry<Action, Event>[];
 	}
 
+	/** Replaces the log from a validated snapshot, preserving contiguous sequence numbers. */
+	replace(entries: readonly ActionJournalEntry<Action, Event>[]): void {
+		const restored = ActionJournal.fromJSON(entries);
+		this.entries = restored.entries;
+		this.nextSequence = restored.nextSequence;
+	}
+
 	static fromJSON<Action, Event>(
 		entries: readonly ActionJournalEntry<Action, Event>[],
 	): ActionJournal<Action, Event> {

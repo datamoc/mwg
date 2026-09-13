@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { compile } from '../src/mwl/compiler.ts';
+import { Generator } from '../src/core/Random.ts';
 import { MwlRuntime, parseTerrain, type MwlMessage } from '../src/mwl/runtime.ts';
 
 const ARENA_MAP = ['1 Kh,Gg,Gg', 'Gg,Gg,Gg', 'Gg,Gg,2 Kh'].join('\n');
@@ -369,6 +370,42 @@ test('a hook reads and writes nested variables by the path content uses', () => 
 	assert.deepEqual(runtime.world.variables.stored_naga, { hitpoints: 12 });
 	assert.deepEqual(runtime.world.variables.party, [{ name: 'Brena' }]);
 	assert.deepEqual(messages, [{ text: 'hp=12' }]);
+});
+
+test('a hook draws from the runtime own seeded stream instead of Math.random', () => {
+	const source = `[{ tag: 'game', children: [
+		{ tag: 'event', on: 'roll', children: [
+			{ tag: 'hook', name: 'command:roll' },
+		] },
+	] }]`;
+	const build = (random: Generator) =>
+		new MwlRuntime(compile(source), {
+			random,
+			hooks: { command: { 'command:roll': (world, emit) => emit.setVariable('roll', world.random.int(100)) } },
+		});
+
+	const a = build(new Generator(7));
+	a.run('roll');
+	a.run('roll');
+	const b = build(new Generator(7));
+	b.run('roll');
+	b.run('roll');
+	assert.deepEqual(a.world.variables.roll, b.world.variables.roll, 'the same seed draws the same sequence');
+	assert.ok(Array.isArray(a.world.random) && a.world.random.length === 4, 'the draw position is saved on world');
+
+	const save = a.save();
+	const resumed = build(new Generator(1234)); // a different seed the save must override
+	resumed.restore(save);
+	resumed.run('roll');
+	const c = build(new Generator(7));
+	c.run('roll');
+	c.run('roll');
+	c.run('roll');
+	assert.equal(
+		resumed.world.variables.roll,
+		c.world.variables.roll,
+		'restoring a save resumes the same stream rather than restarting or reseeding it',
+	);
 });
 
 test('runtime executes the remaining event command forms', () => {

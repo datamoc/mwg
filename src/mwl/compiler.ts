@@ -1,5 +1,5 @@
 import { parse, preprocess, type MwlLocation, type MwlNode, type MwlPreprocessOptions } from './grammar.ts';
-import { validate, type MwlTagSchema } from './schema.ts';
+import { schema10, validate, type MwlTagSchema } from './schema.ts';
 
 export interface MwlCompiledNode {
 	readonly tag: string;
@@ -7,6 +7,9 @@ export interface MwlCompiledNode {
 	readonly children: readonly MwlCompiledNode[];
 	/** source location, kept so the runtime and tools can report where a node came from */
 	readonly location?: MwlLocation;
+	/** exact locations retained for diagnostics on text-authored attributes */
+	readonly attributeLocations?: Readonly<Record<string, MwlLocation>>;
+	readonly valueLocations?: Readonly<Record<string, MwlLocation>>;
 	/** attribute names that carried the gettext marker, when the node came from text */
 	readonly gettext?: readonly string[];
 }
@@ -89,7 +92,8 @@ export function compileSources(files: readonly MwlSourceFile[], options: MwlComp
  * ```
  */
 export function compileNodes(nodes: readonly MwlNode[], options: MwlCompileOptions = {}): MwlCompiledGame {
-	const diagnostics = validate(nodes, options.schemas);
+	const declaredSchema = nodes.find((node) => node.tag === 'game')?.attributes.schema;
+	const diagnostics = validate(nodes, options.schemas ?? (declaredSchema === '1.0' ? schema10 : undefined));
 	if (diagnostics.length) {
 		const first = diagnostics[0];
 		throw new Error(`${first.location.file}:${first.location.line}:${first.location.column}: ${first.message}`);
@@ -119,7 +123,12 @@ export function compileNodes(nodes: readonly MwlNode[], options: MwlCompileOptio
 			children: node.children.map(convert),
 			location: node.location,
 		};
-		return node.gettext ? { ...compiled, gettext: [...node.gettext] } : compiled;
+		Object.defineProperties(compiled, {
+			attributeLocations: { value: node.attributeLocations, enumerable: false },
+			valueLocations: { value: node.valueLocations, enumerable: false },
+		});
+		if (node.gettext) Object.assign(compiled, { gettext: [...node.gettext] });
+		return compiled;
 	};
 	return {
 		schema: nodes.find((node) => node.tag === 'game')?.attributes.schema ?? '0.1',
