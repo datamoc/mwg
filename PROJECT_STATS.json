@@ -1,27 +1,27 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.8.1",
-	"releaseDate": "2026-09-12",
+	"version": "0.8.2",
+	"releaseDate": "2026-09-13",
 	"source": {
 		"files": 279,
-		"lines": 44337,
+		"lines": 44391,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 79,
-				"lines": 15310
+				"lines": 15318
 			},
 			{
 				"name": "mwl",
 				"files": 21,
-				"lines": 5493
+				"lines": 5503
 			},
 			{
 				"name": "core",
 				"files": 43,
-				"lines": 5195
+				"lines": 5231
 			},
 			{
 				"name": "roguelike",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 228,
-		"lines": 30208,
-		"cases": 2174
+		"files": 229,
+		"lines": 30272,
+		"cases": 2179
 	},
 	"tools": {
 		"files": 37,
@@ -122,8 +122,8 @@
 		]
 	},
 	"roadmap": {
-		"items": 330,
-		"completed": 329,
+		"items": 337,
+		"completed": 336,
 		"open": 1,
 		"percent": 100
 	},
@@ -131,9 +131,9 @@
 		"declarationFiles": 278
 	},
 	"bundle": {
-		"globalRaw": 1019581,
-		"globalGzip": 302666,
-		"distRaw": 3295254
+		"globalRaw": 1020382,
+		"globalGzip": 303015,
+		"distRaw": 3300743
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

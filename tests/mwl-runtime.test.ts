@@ -198,6 +198,21 @@ test('MWL runtime saves and restores the world', () => {
 	assert.equal(runtime.world.timeOfDay, 'dawn');
 });
 
+test('MWL runtime rejects a restored snapshot carrying a __proto__ key instead of merging it', () => {
+	const runtime = arena();
+	const saved = JSON.parse(runtime.save()) as { world: { variables: Record<string, unknown> } };
+	// A computed key (not a literal `__proto__:` property) so this object gets a real own
+	// property named "__proto__", the same shape `JSON.parse` produces from untrusted text -
+	// writing `{ __proto__: ... }` directly would just set this object's own prototype instead.
+	const poisoned = JSON.stringify({
+		...saved,
+		world: { ...saved.world, variables: { ...saved.world.variables, ['__proto__']: { polluted: true } } },
+	});
+	const prototypeBefore = Object.getPrototypeOf(runtime.world.variables);
+	assert.throws(() => runtime.restore(poisoned));
+	assert.equal(Object.getPrototypeOf(runtime.world.variables), prototypeBefore);
+});
+
 test('MWL runtime loads the EXAMPLES skirmish and spawns its leader on the keep', () => {
 	const source = readFileSync(new URL('./fixtures/mwl/skirmish.mwl', import.meta.url), 'utf8');
 	const runtime = new MwlRuntime(compile(source, { file: 'skirmish.mwl' }), {

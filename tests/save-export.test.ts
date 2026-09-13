@@ -79,6 +79,19 @@ test('exportSlot with a scrambleKey produces a payload importSlot needs the same
 	assert.equal(b.load('slot1')?.state.gold, 7);
 });
 
+test('load returns null for a corrupted slot instead of throwing', () => {
+	const storage = memoryStorage();
+	const saves = new SaveSystem<{ gold: number }>({ namespace: 'load-corrupt', version: 1, storage });
+	saves.save('slot1', { gold: 5 });
+	storage.write('mwg-save:load-corrupt:slot1', '{not valid json');
+	assert.equal(saves.load('slot1'), null);
+});
+
+test('importSlot throws a labelled error for a payload that is not valid JSON', () => {
+	const saves = new SaveSystem<{ gold: number }>({ namespace: 'import-corrupt', version: 1 });
+	assert.throws(() => saves.importSlot('slot1', '{not valid json'), /not valid save data/);
+});
+
 test('importSlot runs an older-versioned export through the same migrations load would', () => {
 	const storage = memoryStorage();
 	const v1 = new SaveSystem<{ gold: number }>({ namespace: 'export-migrate', version: 1, storage });

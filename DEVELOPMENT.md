@@ -46,14 +46,24 @@ it. Rendering and layout bugs are not visible to the typechecker, which is what 
 smokes and the every-example build are for. `npm run coverage` reuses the same suite with
 Node's built-in `--experimental-test-coverage`, so coverage costs no dependency; use it in the
 simplify pass to find untested branches and exports nothing imports any more, and
-`npm run coverage:check` is the CI floor a little below the current numbers. `npm run
-size:check` compares the built global bundle and `dist` against the committed
-`tools/bundle-size.json` budget, so an unexplained growth fails rather than ships.
+`npm run coverage:check` is the CI floor a little below the current numbers. Both commands
+exclude `Game.ts`, `ColorTransformBatcher.ts`, `Minimap.ts`, `three-d/Vox.ts`,
+`DialogueStage.ts`, `EventDialogue.ts`, and all of `two-d/ui/**`: their correctness is Pixi
+rendering and layout, which a coverage percentage cannot see either way, so they are verified
+by the visual smokes and by looking at a built example instead, and excluded here rather than
+counted as untested against a bar they were never meant to clear. `npm run size:check` compares
+the built global bundle and `dist` against the committed `tools/bundle-size.json` budget, so an
+unexplained growth fails rather than ships.
 
 ## Architecture boundaries
 
 - `core` is renderer-free and imports no other `mwg` module. It owns scene lifecycle,
-  input, signals, saves, random streams and related game logic.
+  input, signals, saves, random streams and related game logic, deliberately alongside a
+  handful of optional network-facing clients (`HttpTransport`, `TelemetryClient`, `NewsClient`,
+  `FeedbackClient`, `SaveSyncClient`, `LockstepClient`): they belong here rather than a
+  separate module because none of them may depend on a renderer either, and `core` is exactly
+  "what needs no renderer", not "what every game must use". A game imports only the names it
+  calls; nothing about placement here forces using all of them.
 - `two-d` contains PixiJS rendering, UI and dialogue presentation.
 - `three-d` contains the optional Babylon.js path, published at the `3d` subpath.
 - `i18n`, `actors`, `world`, `battle`, `simulation`, `roguelike`, `board`, `audio`, `rpg`,

@@ -2780,7 +2780,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.8.1";
+    export declare const version = "0.8.2";
 
 ### `VerticalLabel` (class)
 
@@ -5652,7 +5652,29 @@ build instead.
         private loadInitialUnits;
         private loadLeaders;
         private unitAt;
+
+        private static readonly commandHandlers;
         private executeNode;
+        private cmdSpawn;
+        private cmdMove;
+        private cmdKill;
+        private cmdFireEvent;
+        private cmdStoreUnit;
+        private cmdUnstoreUnit;
+        private cmdRecall;
+        private cmdModifyUnit;
+        private cmdHealUnit;
+        private cmdCaptureVillage;
+        private cmdClearShroud;
+        private cmdRole;
+        private cmdSetVariable;
+        private cmdWhile;
+        private cmdForeach;
+        private cmdSwitch;
+        private cmdWin;
+        private cmdLose;
+        private cmdEndlevel;
+        private cmdIf;
 
         private commandChildren;
         private runHook;

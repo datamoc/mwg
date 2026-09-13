@@ -4,13 +4,15 @@ import { Container, Texture, Rectangle } from 'pixi.js';
  * The scene-graph container type a 2D game names in its own code - `Scene2D.stage` and any
  * other public container field are typed this way rather than as `pixi.js`'s own `Container`,
  * so naming the type does not require importing the renderer directly. It is the same object
- * at runtime; only the public name a game writes down changes.
+ * at runtime; only the public name a game writes down changes. Renderer facade class, usable
+ * in both type and value positions.
  */
-/** Renderer facade class, usable in both type and value positions. */
 export { Container as Container2D };
 
-/** The texture type a 2D game names in its own code, for the same reason as `Container2D`. */
-/** Renderer facade class, usable in both type and value positions. */
+/**
+ * The texture type a 2D game names in its own code, for the same reason as `Container2D`.
+ * Renderer facade class, usable in both type and value positions.
+ */
 export { Texture as Texture2D };
 
 /** Explicit value-position escape hatch for rectangle construction through the facade. */

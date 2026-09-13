@@ -156,7 +156,11 @@ screenshot.
 # Working notes for this repository
 
 `CLAUDE.md` beside this file is the local, `.git/info/exclude`-ignored copy a Claude-style agent
-reads; this `AGENTS.md` is committed and is the one that ships.
+reads; this `AGENTS.md` is committed and is the one that ships. A one-off analysis or review
+document (a deep-dive report, a review's own findings, a record of a session rather than
+documentation someone would look for by name) belongs in `notes/` at the repo root, excluded
+the same way as `CLAUDE.md` itself, not left loose at the top level beside the real, permanent
+docs (`README.md`, `REFERENCE.md`, `ADR.md`, `ROADMAP.md`, `DEVELOPMENT.md`, `CHANGELOG.md`).
 
 ## Use whatever plugins and tools are actually relevant
 

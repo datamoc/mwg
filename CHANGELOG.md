@@ -7,6 +7,47 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-09-13
+
+### Added
+
+- `tests/builtin-pipes.test.ts`: regression coverage confirming `TiledSprite`/`NinePatch`
+  resolve to Pixi's own registered `tilingSprite`/`nineSliceSprite` pipes, a guarantee previously
+  verified only by a downstream consumer's own uncommitted script (item 336).
+
+### Changed
+
+- `mwl/runtime.ts`'s `executeNode` (a 226-line `switch` over 28 command tags, its own case
+  bodies inline) is now a `commandHandlers` dispatch table plus one small, independently-named
+  private method per command. No public API or behaviour change: `API_REPORT.md`'s diff is
+  purely additive private-method stubs, and all 166 `mwl-*.test.ts` tests pass unmodified
+  (item 337).
+- `DEVELOPMENT.md` documents why `coverage`/`coverage:check` exclude `Game.ts`,
+  `ColorTransformBatcher.ts`, `Minimap.ts`, `three-d/Vox.ts`, `DialogueStage.ts`,
+  `EventDialogue.ts` and `two-d/ui/**` (Pixi rendering/layout, verified by the visual smokes
+  instead of a coverage percentage), and why `core` holds optional network-facing clients
+  alongside always-needed primitives (item 333, item 334).
+- `GameOptions.extensions`'s doc comment now names `TiledSprite`/`NinePatch` alongside
+  `TintedSprite` as self-registering their Pixi render pipe automatically, closing a
+  documentation gap that likely explains why a cautious consumer wasn't confident enough to rely
+  on it (item 336).
+
+### Fixed
+
+- `mwl`'s `validateWorld` rejects a `__proto__`/`constructor`/`prototype` key anywhere in a
+  decoded save (item 335): `MwlRuntime.restore` merges a decoded save into its own world with
+  `Object.assign`, which honours such a key as a prototype substitution rather than an ordinary
+  value. `core/Sanitize.ts` gains `assertNoForbiddenKeys`, the same rejection `validateSchema`
+  already applied to fixed-shape data, generalised to `mwl`'s dynamic, arbitrarily-nested world
+  shape.
+- `SaveSystem.load` returns `null` for a corrupted or malformed slot instead of throwing an
+  uncaught `SyntaxError`, the same outcome a missing slot already produced; `importSlot` throws a
+  labelled `SaveSystem.importSlot: payload is not valid save data` error instead of a bare parse
+  error (item 331).
+- `Container2D`/`Texture2D` in `two-d/render/Types2D.ts` each carried two adjacent JSDoc blocks,
+  so only the generic, less useful one reached generated documentation; merged into one comment
+  each (item 332).
+
 ## [0.8.1] - 2026-09-12
 
 ### Added

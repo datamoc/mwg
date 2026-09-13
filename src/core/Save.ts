@@ -107,18 +107,28 @@ export class SaveSystem<T> {
 		this.storage.write(this.key(slot), JSON.stringify(data));
 	}
 
-	/** reads a slot, migrating it up to the current version if it was saved at an older one */
+	/**
+	 * Reads a slot, migrating it up to the current version if it was saved at an older one.
+	 * Returns `null` for a corrupted or malformed slot the same way it already does for a
+	 * missing one - a slot this `SaveSystem` wrote itself is trusted, but a truncated write
+	 * (an interrupted browser storage flush, a quota eviction, a hand-edited value) is still
+	 * possible, and a save-select screen should see "no usable save here", not an uncaught
+	 * `SyntaxError`.
+	 */
 	load(slot: string): SaveData<T> | null {
 		const raw = this.storage.read(this.key(slot));
 		if (!raw) return null;
 
-		const data = JSON.parse(raw) as SaveData<T>;
-		let state: unknown = data.state;
-		for (let v = data.meta.version; v < this.version; v++) {
-			state = (this.migrations[v] ?? ((s: unknown) => s))(state);
+		try {
+			const data = JSON.parse(raw) as SaveData<T>;
+			let state: unknown = data.state;
+			for (let v = data.meta.version; v < this.version; v++) {
+				state = (this.migrations[v] ?? ((s: unknown) => s))(state);
+			}
+			return { meta: { ...data.meta, version: this.version }, state: state as T };
+		} catch {
+			return null;
 		}
-
-		return { meta: { ...data.meta, version: this.version }, state: state as T };
 	}
 
 	/**
@@ -178,7 +188,13 @@ export class SaveSystem<T> {
 	importSlot(slot: string, payload: string, scrambleKey?: string): void {
 		checkSize(payload);
 		const raw = scrambleKey ? unscramble(payload, scrambleKey) : payload;
-		const data = JSON.parse(sanitizeInboundText(raw)) as SaveData<unknown>;
+		const sanitized = sanitizeInboundText(raw);
+		let data: SaveData<unknown>;
+		try {
+			data = JSON.parse(sanitized) as SaveData<unknown>;
+		} catch {
+			throw new Error('SaveSystem.importSlot: payload is not valid save data (not parseable JSON)');
+		}
 		let state = data.state;
 		for (let v = data.meta.version; v < this.version; v++) {
 			state = (this.migrations[v] ?? ((s: unknown) => s))(state);

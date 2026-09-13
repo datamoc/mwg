@@ -82,6 +82,26 @@ export type Schema =
 
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
+/**
+ * Recursively rejects `__proto__`/`constructor`/`prototype` as an own key anywhere in `value`,
+ * for data too dynamic for `validateSchema`'s fixed field list (a free-form variable bag, a
+ * dictionary keyed by content-chosen ids, both common in a save format). Reuses the same
+ * `FORBIDDEN_KEYS` set `validateSchema` enforces for fixed-shape objects; use this one instead
+ * when the shape itself isn't known ahead of time.
+ */
+export function assertNoForbiddenKeys(value: unknown, path = '$'): void {
+	if (Array.isArray(value)) {
+		value.forEach((item, index) => assertNoForbiddenKeys(item, `${path}[${index}]`));
+		return;
+	}
+	if (value !== null && typeof value === 'object') {
+		for (const key of Object.keys(value)) {
+			if (FORBIDDEN_KEYS.has(key)) throw new Error(`${path} contains a forbidden key "${key}"`);
+			assertNoForbiddenKeys((value as Record<string, unknown>)[key], `${path}.${key}`);
+		}
+	}
+}
+
 /** throws with a path-qualified message at the first field that does not match `schema` */
 export function validateSchema(value: unknown, schema: Schema, path = '$'): void {
 	if (value === undefined) {

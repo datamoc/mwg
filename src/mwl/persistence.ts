@@ -1,3 +1,4 @@
+import { assertNoForbiddenKeys } from '../core/Sanitize.ts';
 import type { MwlWorld } from './runtime.ts';
 
 export interface MwlSaveEnvelope {
@@ -54,7 +55,10 @@ export function decodeSave(snapshot: string, options: MwlPersistenceOptions): Mw
 }
 
 /**
- * Checks a decoded value really is a world, and throws by name when it is not.
+ * Checks a decoded value really is a world, and throws by name when it is not. Also rejects a
+ * `__proto__`/`constructor`/`prototype` key anywhere in the value (`assertNoForbiddenKeys`):
+ * `MwlRuntime.restore` merges this result into its own world with `Object.assign`, which would
+ * otherwise let such a key substitute the target's prototype instead of merely setting a value.
  *
  * @example
  * ```ts
@@ -65,6 +69,7 @@ export function decodeSave(snapshot: string, options: MwlPersistenceOptions): Mw
  */
 export function validateWorld(value: unknown): MwlWorld {
 	if (!value || typeof value !== 'object') throw new Error('invalid MWL saved world');
+	assertNoForbiddenKeys(value);
 	const world = value as Partial<MwlWorld>;
 	if (
 		!Number.isInteger(world.turn) ||

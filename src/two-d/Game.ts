@@ -91,10 +91,16 @@ export interface GameOptions {
 	 * `TintedSprite` (and everything built on it - `AnimatedSprite`, `TileMap`,
 	 * `DialogueStage`) registers its own colour-transform pipe automatically, at module
 	 * scope, the moment a game imports it; a game never has to pass anything here for that.
-	 * This stays as an escape hatch for a game defining its own Pixi extension - a custom
-	 * render pipe, its own batcher - which still has to be registered before `app.init()`
-	 * builds the renderer, the same constraint `registerColorTransform` works around by
-	 * self-registering on import instead of needing a caller to remember it.
+	 * `TiledSprite` and `NinePatch` carry the same guarantee through a different mechanism:
+	 * Pixi's own `TilingSprite`/`NineSliceSprite` modules each side-effect-import their own
+	 * `init` module, which registers their render pipe unconditionally the moment the class
+	 * is imported - true of Pixi's package itself, not something `mwg` implements or could
+	 * accidentally omit, and confirmed directly against Pixi's own source rather than assumed
+	 * (`tests/builtin-pipes.test.ts` checks it stays true). This stays as an escape hatch for
+	 * a game defining its own Pixi extension - a custom render pipe, its own batcher - which
+	 * still has to be registered before `app.init()` builds the renderer, the same constraint
+	 * `registerColorTransform` works around by self-registering on import instead of needing a
+	 * caller to remember it.
 	 */
 	extensions?: readonly (() => void)[];
 }

@@ -4739,6 +4739,96 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      frame-time one; measured, `linear` costs 2.4 to 4.2 times `nearest` per image (0.45 ms against
      0.12 ms for a 64x64 tile at 60 degrees, 3.6 ms against 1.5 ms at 256x256, on this machine).
      Five tests in `tests/image-modifiers.test.ts`, one of them the parser's own default.
+331. ~~[Low] `SaveSystem.load`/`importSlot` let a malformed or corrupted slot throw an uncaught
+     `SyntaxError` instead of failing gracefully (the Deep Code and Architecture Review,
+     2026-09-13). A missing slot already returns `null`; a slot present but not valid JSON (an
+     interrupted storage write, a quota eviction, a hand-edited value) did not get the same
+     treatment, and an untrusted `importSlot` payload that failed to parse threw the same bare
+     error as any other failure, with nothing to distinguish it.~~ `load` now wraps its
+     parse-and-migrate path in a `try`/`catch` and returns `null` on any failure, the same
+     outcome a missing slot already gets; `importSlot` throws a labelled
+     `SaveSystem.importSlot: payload is not valid save data` error instead of a bare
+     `SyntaxError`. Two tests in `tests/save-export.test.ts`.
+332. ~~[Low] `Types2D.ts`'s `Container2D` and `Texture2D` each carried two adjacent JSDoc blocks
+     immediately before the same `export` statement (the Deep Code and Architecture Review,
+     2026-09-13); doc tooling attaches only the block nearest the declaration, so the specific,
+     informative comment was silently dropped from generated docs in favour of a generic one
+     repeated on every facade export.~~ Merged into one comment each; `Rectangle2D` already had
+     them in the order that works and was untouched.
+333. ~~[Low] The `coverage`/`coverage:check` exclusion list (`Game.ts`,
+     `ColorTransformBatcher.ts`, `Minimap.ts`, `three-d/Vox.ts`, `DialogueStage.ts`,
+     `EventDialogue.ts`, all of `two-d/ui/**`) had no written rationale anywhere (the Deep Code
+     and Architecture Review, 2026-09-13): real coverage gaps, not visible from the headline
+     percentage, with nothing on record explaining why they were excluded rather than
+     untested.~~ `DEVELOPMENT.md` now states why: their correctness is Pixi rendering and
+     layout, which a coverage percentage cannot see either way, verified instead by the visual
+     smokes and by looking at a built example.
+334. ~~[Improvement] `core`'s barrel mixes foundational, always-needed primitives with six
+     optional network-facing clients (`HttpTransport`, `TelemetryClient`, `NewsClient`,
+     `FeedbackClient`, `SaveSyncClient`, `LockstepClient`) with no written signal for which is
+     which (the Deep Code and Architecture Review, 2026-09-13).~~ Documented rather than split:
+     `DEVELOPMENT.md`'s architecture-boundaries section now states `core` is "what needs no
+     renderer", not "what every game must use", and a game imports only the names it calls. No
+     source change - nothing demonstrated a problem an actual split would solve, and splitting a
+     working barrel on size alone is exactly the retrofit this project's own review process
+     otherwise argues against.
+335. ~~[High] `mwl.persistence`'s `validateWorld` checked a decoded save's shape but not its keys
+     (the Deep Code and Architecture Review, 2026-09-13): `MwlRuntime.restore` merges the result
+     into its own world with `Object.assign`, which honours an inherited `__proto__` setter for
+     any own key literally named `__proto__` a source object carries - the shape `JSON.parse`
+     produces from a snapshot containing one, not merely sets a value. A crafted snapshot could
+     substitute the prototype of `this.world.variables`/`units`/`sides`/`maps`/`gold`, which later
+     unguarded bracket lookups would then silently resolve through. `core/Sanitize.ts` already
+     rejected `__proto__`/`constructor`/`prototype` keys for `validateSchema`'s fixed-shape data;
+     `mwl`'s dynamic, arbitrarily-nested world shape (a free-form variable bag, dictionaries keyed
+     by content-chosen ids) didn't fit that schema-based check and had no equivalent of its
+     own.~~ Added `assertNoForbiddenKeys` to `core/Sanitize.ts`, the same rejection recursing
+     through an unknown shape instead of a fixed one; `validateWorld` calls it before returning.
+     One test in `tests/mwl-runtime.test.ts`, built with a computed property key (`['__proto__']:
+     ...`) rather than a literal one, since a literal `{ __proto__: ... }` object initializer sets
+     the *test's own* prototype instead of reproducing the own-property shape `JSON.parse`
+     actually produces from untrusted text.
+336. ~~[Medium] The Pixi-boundary review flagged mwg-pixel-dungeon's raw-Pixi call sites as an
+     open question - stale port, or a real gap in `Sprite2D`/`Shape2D`/`Text2D`/`TiledSprite`
+     (the Deep Code and Architecture Review, 2026-09-13). Investigated directly against the
+     port's actual imports and Pixi's own source rather than left open: of every symbol the port
+     imports from `pixi.js` across `main.ts`, `scenes/` and `ui/`, all but three (`extensions`,
+     `NineSliceSpritePipe`, `TilingSpritePipe`, confined to one file) already have a direct `mwg`
+     facade equivalent - the gap is non-adoption, not a missing wrapper. Those three exist only
+     as the port's own defensive, already-empirically-verified-unnecessary insurance against a
+     documented historical failure (duplicate `pixi.js` instances under `file:`-linked local
+     development splitting Pixi's extension registry, encountered once, costly to diagnose).
+     Checking `node_modules/pixi.js` directly confirmed `TilingSprite`/`NineSliceSprite` each
+     side-effect-import their own Pixi-internal `init` module that registers their render pipe
+     unconditionally - Pixi's own guarantee, not `mwg`'s, and not something a new `mwg`
+     registration function could add to or protect against the duplicate-instance case either.~~
+     No new API: adding one would be exactly the speculative complexity this project's own
+     principles argue against, for a guarantee that already holds and that nothing could
+     meaningfully strengthen from inside `mwg`. What was real and fixed instead:
+     `GameOptions.extensions`'s doc comment now names `TiledSprite`/`NinePatch` alongside
+     `TintedSprite` as self-registering (it previously didn't, which is the likely reason the
+     port wasn't confident enough to rely on it), and `tests/builtin-pipes.test.ts` gives `mwg`
+     its own regression coverage of a promise previously verified only by a downstream
+     consumer's uncommitted script.
+337. ~~[Medium] `mwl/runtime.ts`'s `executeNode` was a single 226-line `switch` over 28 MWL
+     command tags, each case's whole body inline (the Deep Code and Architecture Review,
+     2026-09-13, previously recorded here as deliberately deferred: "not currently
+     unmaintainable... stays here until real friction, not size alone, asks for one"). Revisited
+     once "useful major changes in API or architecture" was asked for directly: this one function
+     was the file's actual god-class symptom, not its size in the aggregate - 55 small, already
+     reasonably-scoped private methods is not itself a problem, one 226-line undifferentiated
+     dispatch is.~~ Extracted into a `private static readonly commandHandlers` table (tag name ->
+     handler) plus one small, independently-named private method per command (`cmdSpawn`,
+     `cmdMove`, `cmdKill`, and so on through all 28), so a command's own logic is a search away
+     instead of one branch inside a function that dwarfed everything else in the class.
+     `executeNode` itself is now a four-line lookup. No public API changed (verified:
+     `API_REPORT.md`'s diff is purely additive private-method stubs) and no behaviour changed
+     (verified: all 166 `mwl-*.test.ts` tests pass unmodified, plus the full 2160+ suite). The
+     rest of the class (dialogue, variables, unit lifecycle, conditions/objectives, save/restore)
+     is left as-is: each of those groups is already reasonably-sized, single-purpose methods, not
+     a second instance of the one-giant-function problem this item actually fixed, and splitting
+     them into separate files without a demonstrated problem would be reorganisation for its own
+     sake, the same standard that kept this item parked as long as it only cited size.
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list

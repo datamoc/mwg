@@ -740,232 +740,237 @@ export class MwlRuntime {
 		return Object.values(this.world.units).find((unit) => unit.alive && unit.x === x && unit.y === y);
 	}
 
+	/**
+	 * One entry per MWL command tag, keyed exactly as `executeNode` used to switch on. Each
+	 * handler is a small, independently-named method below rather than a case body, so a
+	 * command's own logic is a search away instead of one branch inside a 200-line function -
+	 * the decomposition this project's own review flagged `mwl/runtime.ts`'s size for for,
+	 * done for the one function that was actually a single undifferentiated dispatch. State
+	 * (`this.world` and the rest) still lives on the instance; only the dispatch itself moved.
+	 */
+	private static readonly commandHandlers: Readonly<Record<string, (self: MwlRuntime, node: MwlCompiledNode) => void>> =
+		{
+			message: (self, node) => self.showMessage(node.attributes),
+			spawn: (self, node) => self.cmdSpawn(node),
+			move: (self, node) => self.cmdMove(node),
+			kill: (self, node) => self.cmdKill(node),
+			fire_event: (self, node) => self.cmdFireEvent(node),
+			store_unit: (self, node) => self.cmdStoreUnit(node),
+			unstore_unit: (self, node) => self.cmdUnstoreUnit(node),
+			recall: (self, node) => self.cmdRecall(node),
+			modify_unit: (self, node) => self.cmdModifyUnit(node),
+			heal_unit: (self, node) => self.cmdHealUnit(node),
+			set_terrain: (self, node) => self.setTerrain(integer(node, 'x', 0), integer(node, 'y', 0), required(node, 'terrain')),
+			capture_village: (self, node) => self.cmdCaptureVillage(node),
+			clear_shroud: (self, node) => self.cmdClearShroud(node),
+			role: (self, node) => self.cmdRole(node),
+			attack: (self, node) =>
+				self.attack(node.attributes.defender ?? node.attributes.target ?? required(node, 'target'), integer(node, 'amount', 0)),
+			modify_gold: (self, node) =>
+				self.addGold(node.attributes.side ?? required(node, 'target'), integer(node, 'delta', integer(node, 'amount', 0))),
+			gold: (self, node) => self.addGold(required(node, 'side'), integer(node, 'delta', integer(node, 'amount', 0))),
+			set_variable: (self, node) => self.cmdSetVariable(node),
+			while: (self, node) => self.cmdWhile(node),
+			foreach: (self, node) => self.cmdForeach(node),
+			switch: (self, node) => self.cmdSwitch(node),
+			end_turn: (self) => self.endTurn(),
+			win: (self, node) => self.cmdWin(node),
+			lose: (self, node) => self.cmdLose(node),
+			endlevel: (self, node) => self.cmdEndlevel(node),
+			if: (self, node) => self.cmdIf(node),
+			//reachable at top level for a free-standing [else]; a paired one is run by its [if]
+			else: (self, node) => self.runBlock(self.commandChildren(node)),
+			hook: (self, node) => self.runHook(node),
+		};
+
 	private executeNode(node: MwlCompiledNode): void {
 		const name = node.tag === 'command' ? node.attributes.name : node.tag;
 		if (!name) throw new Error('MWL command is missing name');
-		switch (name) {
-			case 'message': {
-				this.showMessage(node.attributes);
-				break;
-			}
-			case 'spawn':
-				this.spawnUnit(
-					node.attributes.type ?? '',
-					node.attributes.side,
-					integer(node, 'x', 0),
-					integer(node, 'y', 0),
-					node.attributes.id ?? node.attributes.target,
-					node.attributes.hp === undefined ? undefined : integer(node, 'hp', 1),
-				);
-				break;
-			case 'move':
-				this.applyMove(
-					node.attributes.unit ?? required(node, 'target'),
-					integer(node, 'x', 0),
-					integer(node, 'y', 0),
-				);
-				break;
-			case 'kill': {
-				//a named unit that is not there is a content error; a filter that matches nobody is not,
-				//which is what WML's own `[kill]` does. An empty filter matches every unit, there as
-				//here, which is worth knowing before writing one.
-				const named = node.attributes.unit ?? node.attributes.target;
-				if (named === undefined) killMatching(this.world, node.attributes);
-				else this.killUnit(named);
-				break;
-			}
-			case 'fire_event': {
-				const id = node.attributes.id ?? node.attributes.name;
-				if (!id) throw new Error('[fire_event] requires id');
-				this.fireEvent(id);
-				break;
-			}
-			case 'store_unit': {
-				const variable = node.attributes.variable ?? node.attributes.name ?? required(node, 'variable');
-				this.setVariableAt(
-					variable,
-					this.matchingUnits(node, ['variable', 'name']).map(([id, unit]) => ({ id, ...unitSnapshot(unit) })),
-				);
-				break;
-			}
-			case 'unstore_unit': {
-				const variable = required(node, 'variable');
-				for (const entry of this.storedUnits(variable)) this.restoreUnit(entry, {});
-				break;
-			}
-			case 'recall': {
-				const stored = this.storedUnits(required(node, 'variable'));
-				const wanted = node.attributes.id ?? node.attributes.unit;
-				const entry = wanted === undefined ? stored[0] : stored.find((candidate) => candidate.id === wanted);
-				if (!entry)
-					throw new Error(`[recall] found no stored unit${wanted === undefined ? '' : ` named ${wanted}`}`);
-				const placement: { x?: number; y?: number; side?: string } = {};
-				if (node.attributes.x !== undefined) placement.x = integer(node, 'x', 0);
-				if (node.attributes.y !== undefined) placement.y = integer(node, 'y', 0);
-				if (node.attributes.side !== undefined) placement.side = node.attributes.side;
-				this.restoreUnit(entry, placement);
-				break;
-			}
-			case 'modify_unit': {
-				//WML separates which units (`[filter]`) from what changes (`[set]`); a bare
-				//`[modify_unit] hp=5` with no `[set]` changes every unit it matches
-				const changes = node.children.find((child) => child.tag === 'set')?.attributes ?? node.attributes;
-				for (const [, unit] of this.matchingUnits(node)) applyUnitChanges(unit, changes);
-				break;
-			}
-			case 'heal_unit': {
-				const amount = optionalInteger(node, 'amount');
-				const absolute = optionalInteger(node, 'hp');
-				if (amount === undefined && absolute === undefined)
-					throw new Error('[heal_unit] requires amount or hp');
-				for (const [, unit] of this.matchingUnits(node)) unit.hp = absolute ?? unit.hp + (amount ?? 0);
-				break;
-			}
-			case 'set_terrain':
-				this.setTerrain(integer(node, 'x', 0), integer(node, 'y', 0), required(node, 'terrain'));
-				break;
-			case 'capture_village': {
-				const x = integer(node, 'x', 0);
-				const y = integer(node, 'y', 0);
-				const entry: NonNullable<MwlWorld['villages']>[string] = { x, y, side: required(node, 'side') };
-				if (node.attributes.name !== undefined) entry.name = node.attributes.name;
-				(this.world.villages ??= {})[`${x},${y}`] = entry;
-				break;
-			}
-			case 'clear_shroud': {
-				const side = required(node, 'side');
-				const x = integer(node, 'x', 0);
-				const y = integer(node, 'y', 0);
-				const radius = integer(node, 'radius', 1);
-				const cleared = new Set(this.world.clearedShroud?.[side] ?? []);
-				for (let dy = -radius; dy <= radius; dy++)
-					for (let dx = -radius; dx <= radius; dx++) cleared.add(`${x + dx},${y + dy}`);
-				(this.world.clearedShroud ??= {})[side] = [...cleared];
-				break;
-			}
-			case 'role': {
-				const name = node.attributes.role ?? node.attributes.name;
-				if (!name) throw new Error('[role] requires role');
-				//`role`/`name` here name the role being assigned, not a unit to match, so the filter
-				//must not read either back as one - the same exclusion the scenario-level role uses
-				const matched = this.matchingUnits(node, ['role', 'name']);
-				for (const [, unit] of matched) unit.role = name;
-				(this.world.roles ??= {})[name] = matched.map(([id]) => id);
-				break;
-			}
-			case 'attack':
-				this.attack(
-					node.attributes.defender ?? node.attributes.target ?? required(node, 'target'),
-					integer(node, 'amount', 0),
-				);
-				break;
-			case 'modify_gold':
-				this.addGold(
-					node.attributes.side ?? required(node, 'target'),
-					integer(node, 'delta', integer(node, 'amount', 0)),
-				);
-				break;
-			case 'gold':
-				this.addGold(required(node, 'side'), integer(node, 'delta', integer(node, 'amount', 0)));
-				break;
-			case 'set_variable': {
-				// `name`/`target` is a path written out, `path` is one content builds from
-				// variables. Only the second goes through expansion: a `$` in `name` is not
-				// a reference today, and reading it as one would change what content means.
-				const computed = node.attributes.path;
-				this.setVariable(
-					computed === undefined
-						? node.tag === 'command'
-							? required(node, 'target')
-							: required(node, 'name')
-						: this.expandPath(computed),
-					node.attributes.value ?? '',
-					node.attributes.mode,
-				);
-				break;
-			}
-			case 'while': {
-				const limit = integer(node, 'max_iterations', 1000);
-				if (limit < 1 || limit > 100_000)
-					throw new Error('MWL while max_iterations must be between 1 and 100000');
-				for (let iteration = 0; iteration < limit && this.nodeConditionMatches(node); iteration++)
-					this.runBlock(this.commandChildren(node));
-				break;
-			}
-			case 'foreach': {
-				const source = this.variableAt(required(node, 'variable'));
-				const entries = Array.isArray(source)
-					? source.map((value, index) => [String(index), value] as const)
-					: typeof source === 'string'
-						? source
-								.split(',')
-								.map((value, index) => [String(index), value.trim()] as const)
-								.filter(([, value]) => value !== '')
-						: source && typeof source === 'object'
-							? Object.entries(source)
-							: [];
-				const item = node.attributes.item ?? 'item';
-				const indexName = node.attributes.index ?? 'index';
-				for (let index = 0; index < entries.length; index++) {
-					this.setVariableAt(item, entries[index][1]);
-					this.setVariableAt(indexName, index);
-					this.runBlock(this.commandChildren(node));
-				}
-				break;
-			}
-			case 'switch': {
-				const value = this.variableAt(required(node, 'variable'));
-				const selected = node.children.find(
-					(child) =>
-						child.tag === 'case' &&
-						child.attributes.equals !== undefined &&
-						sameValue(value, child.attributes.equals),
-				);
-				const fallback = node.children.find((child) => child.tag === 'default');
-				this.runBlock((selected ?? fallback)?.children ?? []);
-				break;
-			}
-			case 'end_turn':
-				this.endTurn();
-				break;
-			case 'win':
-				this.markSideResult(node.attributes.side, 'won');
-				this.world.status = 'won';
-				break;
-			case 'lose':
-				this.markSideResult(node.attributes.side, 'lost');
-				this.world.status = 'lost';
-				break;
-			case 'endlevel': {
-				const result = node.attributes.result === 'defeat' ? ('defeat' as const) : ('victory' as const);
-				this.world.status = result === 'defeat' ? 'lost' : 'won';
-				this.world.carryover = endLevelCarryover(this.world, endLevelSide(this.world, node.attributes.side), {
-					result,
-					bonus: integerAttribute(node, 'bonus'),
-					carryoverPercentage: numberAttribute(node, 'carryover_percentage'),
-					carryoverAdd: booleanAttribute(node, 'carryover_add'),
-					nextScenario: node.attributes.next_scenario ?? null,
-				});
-				break;
-			}
-			case 'if': {
-				//an immediately following [else] is this branch's other half, not a separate
-				//command: the condition picks one body, and runBlock skips the [else] itself
-				const fallback = node.children.find((child) => child.tag === 'else');
-				const taken = this.nodeConditionMatches(node) ? node : fallback;
-				this.runBlock(taken ? this.commandChildren(taken) : []);
-				break;
-			}
-			case 'else':
-				//reachable at top level for a free-standing [else]; a paired one is run by its [if]
-				this.runBlock(this.commandChildren(node));
-				break;
-			case 'hook':
-				this.runHook(node);
-				break;
-			default:
-				throw new Error(`unknown MWL command: ${name}`);
+		const handler = MwlRuntime.commandHandlers[name];
+		if (!handler) throw new Error(`unknown MWL command: ${name}`);
+		handler(this, node);
+	}
+
+	private cmdSpawn(node: MwlCompiledNode): void {
+		this.spawnUnit(
+			node.attributes.type ?? '',
+			node.attributes.side,
+			integer(node, 'x', 0),
+			integer(node, 'y', 0),
+			node.attributes.id ?? node.attributes.target,
+			node.attributes.hp === undefined ? undefined : integer(node, 'hp', 1),
+		);
+	}
+
+	private cmdMove(node: MwlCompiledNode): void {
+		this.applyMove(node.attributes.unit ?? required(node, 'target'), integer(node, 'x', 0), integer(node, 'y', 0));
+	}
+
+	private cmdKill(node: MwlCompiledNode): void {
+		//a named unit that is not there is a content error; a filter that matches nobody is not,
+		//which is what WML's own `[kill]` does. An empty filter matches every unit, there as
+		//here, which is worth knowing before writing one.
+		const named = node.attributes.unit ?? node.attributes.target;
+		if (named === undefined) killMatching(this.world, node.attributes);
+		else this.killUnit(named);
+	}
+
+	private cmdFireEvent(node: MwlCompiledNode): void {
+		const id = node.attributes.id ?? node.attributes.name;
+		if (!id) throw new Error('[fire_event] requires id');
+		this.fireEvent(id);
+	}
+
+	private cmdStoreUnit(node: MwlCompiledNode): void {
+		const variable = node.attributes.variable ?? node.attributes.name ?? required(node, 'variable');
+		this.setVariableAt(
+			variable,
+			this.matchingUnits(node, ['variable', 'name']).map(([id, unit]) => ({ id, ...unitSnapshot(unit) })),
+		);
+	}
+
+	private cmdUnstoreUnit(node: MwlCompiledNode): void {
+		const variable = required(node, 'variable');
+		for (const entry of this.storedUnits(variable)) this.restoreUnit(entry, {});
+	}
+
+	private cmdRecall(node: MwlCompiledNode): void {
+		const stored = this.storedUnits(required(node, 'variable'));
+		const wanted = node.attributes.id ?? node.attributes.unit;
+		const entry = wanted === undefined ? stored[0] : stored.find((candidate) => candidate.id === wanted);
+		if (!entry) throw new Error(`[recall] found no stored unit${wanted === undefined ? '' : ` named ${wanted}`}`);
+		const placement: { x?: number; y?: number; side?: string } = {};
+		if (node.attributes.x !== undefined) placement.x = integer(node, 'x', 0);
+		if (node.attributes.y !== undefined) placement.y = integer(node, 'y', 0);
+		if (node.attributes.side !== undefined) placement.side = node.attributes.side;
+		this.restoreUnit(entry, placement);
+	}
+
+	private cmdModifyUnit(node: MwlCompiledNode): void {
+		//WML separates which units (`[filter]`) from what changes (`[set]`); a bare
+		//`[modify_unit] hp=5` with no `[set]` changes every unit it matches
+		const changes = node.children.find((child) => child.tag === 'set')?.attributes ?? node.attributes;
+		for (const [, unit] of this.matchingUnits(node)) applyUnitChanges(unit, changes);
+	}
+
+	private cmdHealUnit(node: MwlCompiledNode): void {
+		const amount = optionalInteger(node, 'amount');
+		const absolute = optionalInteger(node, 'hp');
+		if (amount === undefined && absolute === undefined) throw new Error('[heal_unit] requires amount or hp');
+		for (const [, unit] of this.matchingUnits(node)) unit.hp = absolute ?? unit.hp + (amount ?? 0);
+	}
+
+	private cmdCaptureVillage(node: MwlCompiledNode): void {
+		const x = integer(node, 'x', 0);
+		const y = integer(node, 'y', 0);
+		const entry: NonNullable<MwlWorld['villages']>[string] = { x, y, side: required(node, 'side') };
+		if (node.attributes.name !== undefined) entry.name = node.attributes.name;
+		(this.world.villages ??= {})[`${x},${y}`] = entry;
+	}
+
+	private cmdClearShroud(node: MwlCompiledNode): void {
+		const side = required(node, 'side');
+		const x = integer(node, 'x', 0);
+		const y = integer(node, 'y', 0);
+		const radius = integer(node, 'radius', 1);
+		const cleared = new Set(this.world.clearedShroud?.[side] ?? []);
+		for (let dy = -radius; dy <= radius; dy++)
+			for (let dx = -radius; dx <= radius; dx++) cleared.add(`${x + dx},${y + dy}`);
+		(this.world.clearedShroud ??= {})[side] = [...cleared];
+	}
+
+	private cmdRole(node: MwlCompiledNode): void {
+		const name = node.attributes.role ?? node.attributes.name;
+		if (!name) throw new Error('[role] requires role');
+		//`role`/`name` here name the role being assigned, not a unit to match, so the filter
+		//must not read either back as one - the same exclusion the scenario-level role uses
+		const matched = this.matchingUnits(node, ['role', 'name']);
+		for (const [, unit] of matched) unit.role = name;
+		(this.world.roles ??= {})[name] = matched.map(([id]) => id);
+	}
+
+	private cmdSetVariable(node: MwlCompiledNode): void {
+		// `name`/`target` is a path written out, `path` is one content builds from
+		// variables. Only the second goes through expansion: a `$` in `name` is not
+		// a reference today, and reading it as one would change what content means.
+		const computed = node.attributes.path;
+		this.setVariable(
+			computed === undefined
+				? node.tag === 'command'
+					? required(node, 'target')
+					: required(node, 'name')
+				: this.expandPath(computed),
+			node.attributes.value ?? '',
+			node.attributes.mode,
+		);
+	}
+
+	private cmdWhile(node: MwlCompiledNode): void {
+		const limit = integer(node, 'max_iterations', 1000);
+		if (limit < 1 || limit > 100_000) throw new Error('MWL while max_iterations must be between 1 and 100000');
+		for (let iteration = 0; iteration < limit && this.nodeConditionMatches(node); iteration++)
+			this.runBlock(this.commandChildren(node));
+	}
+
+	private cmdForeach(node: MwlCompiledNode): void {
+		const source = this.variableAt(required(node, 'variable'));
+		const entries = Array.isArray(source)
+			? source.map((value, index) => [String(index), value] as const)
+			: typeof source === 'string'
+				? source
+						.split(',')
+						.map((value, index) => [String(index), value.trim()] as const)
+						.filter(([, value]) => value !== '')
+				: source && typeof source === 'object'
+					? Object.entries(source)
+					: [];
+		const item = node.attributes.item ?? 'item';
+		const indexName = node.attributes.index ?? 'index';
+		for (let index = 0; index < entries.length; index++) {
+			this.setVariableAt(item, entries[index][1]);
+			this.setVariableAt(indexName, index);
+			this.runBlock(this.commandChildren(node));
 		}
+	}
+
+	private cmdSwitch(node: MwlCompiledNode): void {
+		const value = this.variableAt(required(node, 'variable'));
+		const selected = node.children.find(
+			(child) =>
+				child.tag === 'case' && child.attributes.equals !== undefined && sameValue(value, child.attributes.equals),
+		);
+		const fallback = node.children.find((child) => child.tag === 'default');
+		this.runBlock((selected ?? fallback)?.children ?? []);
+	}
+
+	private cmdWin(node: MwlCompiledNode): void {
+		this.markSideResult(node.attributes.side, 'won');
+		this.world.status = 'won';
+	}
+
+	private cmdLose(node: MwlCompiledNode): void {
+		this.markSideResult(node.attributes.side, 'lost');
+		this.world.status = 'lost';
+	}
+
+	private cmdEndlevel(node: MwlCompiledNode): void {
+		const result = node.attributes.result === 'defeat' ? ('defeat' as const) : ('victory' as const);
+		this.world.status = result === 'defeat' ? 'lost' : 'won';
+		this.world.carryover = endLevelCarryover(this.world, endLevelSide(this.world, node.attributes.side), {
+			result,
+			bonus: integerAttribute(node, 'bonus'),
+			carryoverPercentage: numberAttribute(node, 'carryover_percentage'),
+			carryoverAdd: booleanAttribute(node, 'carryover_add'),
+			nextScenario: node.attributes.next_scenario ?? null,
+		});
+	}
+
+	private cmdIf(node: MwlCompiledNode): void {
+		//an immediately following [else] is this branch's other half, not a separate
+		//command: the condition picks one body, and runBlock skips the [else] itself
+		const fallback = node.children.find((child) => child.tag === 'else');
+		const taken = this.nodeConditionMatches(node) ? node : fallback;
+		this.runBlock(taken ? this.commandChildren(taken) : []);
 	}
 
 	/**
