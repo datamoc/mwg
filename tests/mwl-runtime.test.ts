@@ -6,97 +6,38 @@ import { MwlRuntime, parseTerrain, type MwlMessage } from '../src/mwl/runtime.ts
 
 const ARENA_MAP = ['1 Kh,Gg,Gg', 'Gg,Gg,Gg', 'Gg,Gg,2 Kh'].join('\n');
 
-const ARENA = `[game]
-schema=0.1
-[unit_type]
-id=Swordsman
-hitpoints=10
-movement=3
-[/unit_type]
-[unit_type]
-id=Archer
-hitpoints=6
-movement=3
-[/unit_type]
-[side]
-id=1
-controller=human
-gold=20
-leader=Swordsman
-[/side]
-[side]
-id=2
-controller=ai
-gold=20
-leader=Archer
-[/side]
-[map]
-id=arena
-file=arena.map
-[/map]
-[schedule]
-id=default
-[time]
-id=dawn
-lawful_bonus=0
-[/time]
-[time]
-id=night
-lawful_bonus=-25
-[/time]
-[/schedule]
-[event]
-id=start
-on=start
-[message]
-text=_ "Begin"
-[/message]
-[/event]
-[event]
-id=advance
-on=advance
-[move]
-unit=Swordsman 1 (0,0)
-x=1
-y=0
-[/move]
-[/event]
-[event]
-id=strike
-on=strike
-[attack]
-defender=Archer 2 (2,2)
-amount=6
-[/attack]
-[/event]
-[event]
-id=doomed
-on=doomed
-[attack]
-defender=Swordsman 1 (0,0)
-amount=10
-[/attack]
-[/event]
-[event]
-id=wait
-on=wait
-[end_turn]
-[/end_turn]
-[/event]
-[objectives]
-[victory]
-side=1
-condition=units_dead
-side_filter=2
-[/victory]
-[defeat]
-side=1
-condition=units_dead
-side_filter=1
-[/defeat]
-[/objectives]
-[/game]
-`;
+const ARENA = `[{
+	tag: 'game', schema: 0.1, children: [
+		{ tag: 'unit_type', id: 'Swordsman', hitpoints: 10, movement: 3 },
+		{ tag: 'unit_type', id: 'Archer', hitpoints: 6, movement: 3 },
+		{ tag: 'side', id: 1, controller: 'human', gold: 20, leader: 'Swordsman' },
+		{ tag: 'side', id: 2, controller: 'ai', gold: 20, leader: 'Archer' },
+		{ tag: 'map', id: 'arena', file: 'arena.map' },
+		{ tag: 'schedule', id: 'default', children: [
+			{ tag: 'time', id: 'dawn', lawful_bonus: 0 },
+			{ tag: 'time', id: 'night', lawful_bonus: -25 },
+		] },
+		{ tag: 'event', id: 'start', on: 'start', children: [
+			{ tag: 'message', text: _("Begin") },
+		] },
+		{ tag: 'event', id: 'advance', on: 'advance', children: [
+			{ tag: 'move', unit: 'Swordsman 1 (0,0)', x: 1, y: 0 },
+		] },
+		{ tag: 'event', id: 'strike', on: 'strike', children: [
+			{ tag: 'attack', defender: 'Archer 2 (2,2)', amount: 6 },
+		] },
+		{ tag: 'event', id: 'doomed', on: 'doomed', children: [
+			{ tag: 'attack', defender: 'Swordsman 1 (0,0)', amount: 10 },
+		] },
+		{ tag: 'event', id: 'wait', on: 'wait', children: [
+			{ tag: 'end_turn' },
+		] },
+		{ tag: 'objectives', children: [
+			{ tag: 'victory', side: 1, condition: 'units_dead', side_filter: 2 },
+			{ tag: 'defeat', side: 1, condition: 'units_dead', side_filter: 1 },
+		] },
+	],
+}]`;
 
 const arena = () => new MwlRuntime(compile(ARENA), { resolveMap: () => ARENA_MAP });
 
@@ -249,7 +190,10 @@ test('MWL runtime loads the EXAMPLES skirmish and spawns its leader on the keep'
 
 test('MWL runtime passes objective attributes to predicate hooks', () => {
 	const game = compile(
-		'[game]\nschema=0.1\n[unit]\nid=hero\nhp=1\nside=1\n[/unit]\n[objectives]\n[victory]\nside=1\ncondition=hook\nhook=predicate:holds\nvalue=3\n[/victory]\n[/objectives]\n[/game]',
+		"[{ tag: 'game', schema: 0.1, children: [" +
+			"{ tag: 'unit', id: 'hero', hp: 1, side: 1 }," +
+			"{ tag: 'objectives', children: [{ tag: 'victory', side: 1, condition: 'hook', hook: 'predicate:holds', value: 3 }] }," +
+			'] }]',
 	);
 	const seen: Record<string, string>[] = [];
 	const runtime = new MwlRuntime(game, {
@@ -269,73 +213,27 @@ test('MWL runtime passes objective attributes to predicate hooks', () => {
 
 const MOVETO_MAP = ['1 Kh,Gg,2 Kh'].join('\n');
 
-const MOVETO = `[game]
-schema=0.1
-[unit_type]
-id=Scout
-hitpoints=10
-movement=3
-[/unit_type]
-[unit_type]
-id=Grunt
-hitpoints=8
-movement=3
-[/unit_type]
-[side]
-id=1
-controller=human
-leader=Scout
-[/side]
-[side]
-id=2
-controller=ai
-leader=Grunt
-[/side]
-[map]
-id=moveto
-file=moveto.map
-[/map]
-[event]
-id=ford
-on=moveto
-unit=Scout 1 (0,0)
-x=1
-y=0
-[message]
-speaker=_ "Elvish Scout"
-portrait=portraits/elves/scout.webp
-text=_ "The ford is guarded."
-[/message]
-[/event]
-[event]
-id=advance
-on=advance
-[move]
-unit=Scout 1 (0,0)
-x=1
-y=0
-[/move]
-[/event]
-[event]
-id=back
-on=back
-[move]
-unit=Scout 1 (0,0)
-x=0
-y=0
-[/move]
-[/event]
-[event]
-id=arriving
-on=moveto
-side=2
-[message]
-side=2
-text=_ "A grunt arrives."
-[/message]
-[/event]
-[/game]
-`;
+const MOVETO = `[{
+	tag: 'game', schema: 0.1, children: [
+		{ tag: 'unit_type', id: 'Scout', hitpoints: 10, movement: 3 },
+		{ tag: 'unit_type', id: 'Grunt', hitpoints: 8, movement: 3 },
+		{ tag: 'side', id: 1, controller: 'human', leader: 'Scout' },
+		{ tag: 'side', id: 2, controller: 'ai', leader: 'Grunt' },
+		{ tag: 'map', id: 'moveto', file: 'moveto.map' },
+		{ tag: 'event', id: 'ford', on: 'moveto', unit: 'Scout 1 (0,0)', x: 1, y: 0, children: [
+			{ tag: 'message', speaker: _("Elvish Scout"), portrait: 'portraits/elves/scout.webp', text: _("The ford is guarded.") },
+		] },
+		{ tag: 'event', id: 'advance', on: 'advance', children: [
+			{ tag: 'move', unit: 'Scout 1 (0,0)', x: 1, y: 0 },
+		] },
+		{ tag: 'event', id: 'back', on: 'back', children: [
+			{ tag: 'move', unit: 'Scout 1 (0,0)', x: 0, y: 0 },
+		] },
+		{ tag: 'event', id: 'arriving', on: 'moveto', side: 2, children: [
+			{ tag: 'message', side: 2, text: _("A grunt arrives.") },
+		] },
+	],
+}]`;
 
 function moving(): { runtime: MwlRuntime; messages: MwlMessage[] } {
 	const messages: MwlMessage[] = [];
@@ -400,27 +298,16 @@ test('a spent moveto event stays spent across a save and restore', () => {
 test('runtime applies command defaults and skips a false conditional', () => {
 	const messages: MwlMessage[] = [];
 	const runtime = new MwlRuntime(
-		compile(`[game]
-[event]
-on=defaults
-[message]
-value=_ "Fallback"
-[/message]
-[spawn]
-x=2
-y=3
-[/spawn]
-[if]
-[condition]
-variable=missing
-equals=yes
-[/condition]
-[message]
-text=_ "Skipped"
-[/message]
-[/if]
-[/event]
-[/game]`),
+		compile(`[{ tag: 'game', children: [
+			{ tag: 'event', on: 'defaults', children: [
+				{ tag: 'message', value: _("Fallback") },
+				{ tag: 'spawn', x: 2, y: 3 },
+				{ tag: 'if', children: [
+					{ tag: 'condition', variable: 'missing', equals: 'yes' },
+					{ tag: 'message', text: _("Skipped") },
+				] },
+			] },
+		] }]`),
 		{ onMessage: (message) => messages.push(message) },
 	);
 	runtime.run('defaults');
@@ -431,43 +318,19 @@ text=_ "Skipped"
 test('moveto supports repeatable events and ignores invalid arrivals', () => {
 	const messages: MwlMessage[] = [];
 	const runtime = new MwlRuntime(
-		compile(`[game]
-[map]
-id=plain
-terrain=Gg
-[start]
-side=1
-x=0
-y=0
-[/start]
-[start]
-[/start]
-[/map]
-[unit]
-id=runner
-x=0
-y=0
-side=1
-[/unit]
-[event]
-on=moveto
-once=false
-x=0
-y=0
-[message]
-text=_ "Again"
-[/message]
-[/event]
-[event]
-on=moveto
-once=true
-x=0
-y=0
-[message]
-text=_ "Once"
-[/message]
-[/event]
-[/game]`),
+		compile(`[{ tag: 'game', children: [
+			{ tag: 'map', id: 'plain', terrain: 'Gg', children: [
+				{ tag: 'start', side: 1, x: 0, y: 0 },
+				{ tag: 'start' },
+			] },
+			{ tag: 'unit', id: 'runner', x: 0, y: 0, side: 1 },
+			{ tag: 'event', on: 'moveto', once: false, x: 0, y: 0, children: [
+				{ tag: 'message', text: _("Again") },
+			] },
+			{ tag: 'event', on: 'moveto', once: true, x: 0, y: 0, children: [
+				{ tag: 'message', text: _("Once") },
+			] },
+		] }]`),
 		{ onMessage: (message) => messages.push(message) },
 	);
 	runtime.fireMoveto('missing');
@@ -482,21 +345,13 @@ text=_ "Once"
 test('a hook reads and writes nested variables by the path content uses', () => {
 	const messages: MwlMessage[] = [];
 	let read: unknown;
-	const source = `[game]
-[event]
-on=hooked
-[set_variable]
-name=stored_naga.hitpoints
-value=7
-[/set_variable]
-[hook]
-name=command:store
-[/hook]
-[message]
-text=_ "hp=$stored_naga.hitpoints"
-[/message]
-[/event]
-[/game]`;
+	const source = `[{ tag: 'game', children: [
+		{ tag: 'event', on: 'hooked', children: [
+			{ tag: 'set_variable', name: 'stored_naga.hitpoints', value: 7 },
+			{ tag: 'hook', name: 'command:store' },
+			{ tag: 'message', text: _("hp=$stored_naga.hitpoints") },
+		] },
+	] }]`;
 	const runtime = new MwlRuntime(compile(source), {
 		onMessage: (message) => messages.push(message),
 		hooks: {
@@ -519,27 +374,14 @@ text=_ "hp=$stored_naga.hitpoints"
 test('runtime executes the remaining event command forms', () => {
 	const messages: MwlMessage[] = [];
 	let mark = '';
-	const source = `[game]
-[unit]
-id=victim
-hp=2
-[/unit]
-[event]
-on=commands
-[kill]
-target=victim
-[/kill]
-[else]
-[message]
-text=_ "Else"
-[/message]
-[/else]
-[hook]
-name=command:mark
-value=ok
-[/hook]
-[/event]
-[/game]`;
+	const source = `[{ tag: 'game', children: [
+		{ tag: 'unit', id: 'victim', hp: 2 },
+		{ tag: 'event', on: 'commands', children: [
+			{ tag: 'kill', target: 'victim' },
+			{ tag: 'else', children: [{ tag: 'message', text: _("Else") }] },
+			{ tag: 'hook', name: 'command:mark', value: 'ok' },
+		] },
+	] }]`;
 	const runtime = new MwlRuntime(compile(source), {
 		onMessage: (message) => messages.push(message),
 		hooks: { command: { 'command:mark': (_world, _emit, context) => (mark = context.value ?? '') } },
@@ -550,7 +392,9 @@ value=ok
 	assert.equal(mark, 'ok');
 
 	const outcome = (tag: 'win' | 'lose'): MwlRuntime => {
-		const runtime = new MwlRuntime(compile(`[game]\n[event]\non=outcome\n[${tag}]\n[/${tag}]\n[/event]\n[/game]`));
+		const runtime = new MwlRuntime(
+			compile(`[{ tag: 'game', children: [{ tag: 'event', on: 'outcome', children: [{ tag: '${tag}' }] }] }]`),
+		);
 		runtime.run('outcome');
 		return runtime;
 	};

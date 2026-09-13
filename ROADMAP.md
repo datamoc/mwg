@@ -4828,7 +4828,12 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      is left as-is: each of those groups is already reasonably-sized, single-purpose methods, not
      a second instance of the one-giant-function problem this item actually fixed, and splitting
      them into separate files without a demonstrated problem would be reorganisation for its own
-     sake, the same standard that kept this item parked as long as it only cited size.
+      sake, the same standard that kept this item parked as long as it only cited size.
+338. [Low] MWL's JSON5 authoring keeps the generic `tag`/`children` node envelope, which
+     converts mechanically with no schema knowledge. A named-field sugar layer on top
+     (`{ unit_type: { id: ... } }` with single vs. repeated children resolved by the
+     schema) would read better but needs that knowledge, so it waits until authors ask
+     for it rather than arriving with the cutover.
 
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list

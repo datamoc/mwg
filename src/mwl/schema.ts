@@ -704,7 +704,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
  * ```ts
  * import { parse, validate } from '@datamoc/mw_games/mwl';
  *
- * console.log(validate(parse('[game]\nschema=0.1\n[/game]'))); // []
+ * console.log(validate(parse("[{ tag: 'game', schema: 0.1 }]"))); // []
  * ```
  */
 export function validate(nodes: readonly MwlNode[], schemas = schema01): MwlDiagnostic[] {

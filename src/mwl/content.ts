@@ -153,7 +153,7 @@ export interface MwlContentCatalog {
  * ```ts
  * import { compile, contentCatalog } from '@datamoc/mw_games/mwl';
  *
- * console.log(contentCatalog(compile('[game]\nschema=0.1\n[/game]')).campaigns); // []
+ * console.log(contentCatalog(compile("[{ tag: 'game', schema: 0.1 }]")).campaigns); // []
  * ```
  */
 export function contentCatalog(game: MwlCompiledGame): MwlContentCatalog {

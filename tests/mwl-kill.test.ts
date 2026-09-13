@@ -10,16 +10,10 @@ import { MwlRuntime, type MwlWorld } from '../src/mwl/runtime.ts';
  * answer both with the same exception.
  */
 
-const source = (command: string) => `[game]
-[side]
-id=1
-controller=human
-[/side]
-[event]
-id=purge
-${command}
-[/event]
-[/game]`;
+const source = (command: string) => `[{ tag: 'game', children: [
+	{ tag: 'side', id: 1, controller: 'human' },
+	{ tag: 'event', id: 'purge', children: [${command}] },
+] }]`;
 
 const runtimeWith = (command: string) => {
 	const runtime = new MwlRuntime(compile(source(command)));
@@ -41,14 +35,14 @@ const aliveIds = (runtime: MwlRuntime) =>
 		.sort();
 
 test('a kill filter that matches nobody is a no-op, not an error', () => {
-	const runtime = runtimeWith('[kill]\nside=9\n[/kill]');
+	const runtime = runtimeWith(`{ tag: 'kill', side: 9 },`);
 
 	assert.equal(runtime.fireEvent('purge'), true, 'the event ran');
 	assert.deepEqual(aliveIds(runtime), ['buddy', 'hero', 'rat'], 'everyone the filter did not name lives');
 });
 
 test('a kill filter takes exactly the units it matches, alive ones only', () => {
-	const runtime = runtimeWith('[kill]\nside=2\n[/kill]');
+	const runtime = runtimeWith(`{ tag: 'kill', side: 2 },`);
 
 	runtime.fireEvent('purge');
 
@@ -56,13 +50,13 @@ test('a kill filter takes exactly the units it matches, alive ones only', () => 
 });
 
 test('naming a unit that is not there is still an error, because that is a content mistake', () => {
-	const runtime = runtimeWith('[kill]\nunit=ghost\n[/kill]');
+	const runtime = runtimeWith(`{ tag: 'kill', unit: 'ghost' },`);
 
 	assert.throws(() => runtime.fireEvent('purge'), /MWL unit is not alive: ghost/);
 });
 
 test('naming a unit that is there kills that one and nobody else', () => {
-	const runtime = runtimeWith('[kill]\nunit=hero\n[/kill]');
+	const runtime = runtimeWith(`{ tag: 'kill', unit: 'hero' },`);
 
 	runtime.fireEvent('purge');
 
@@ -70,7 +64,7 @@ test('naming a unit that is there kills that one and nobody else', () => {
 });
 
 test('an empty kill filter matches every unit, as it does in WML', () => {
-	const runtime = runtimeWith('[kill]\n[/kill]');
+	const runtime = runtimeWith(`{ tag: 'kill' },`);
 
 	runtime.fireEvent('purge');
 
@@ -78,7 +72,7 @@ test('an empty kill filter matches every unit, as it does in WML', () => {
 });
 
 test('a kill filter reads the same attributes an event filter does', () => {
-	const runtime = runtimeWith('[kill]\nx=2\ny=1\n[/kill]');
+	const runtime = runtimeWith(`{ tag: 'kill', x: 2, y: 1 },`);
 
 	runtime.fireEvent('purge');
 

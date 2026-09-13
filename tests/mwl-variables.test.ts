@@ -6,26 +6,15 @@ import { decodeSave, encodeSave } from '../src/mwl/persistence.ts';
 import { validate } from '../src/mwl/schema.ts';
 import { MwlRuntime, type MwlMessage } from '../src/mwl/runtime.ts';
 
-const BASE = `[game]
-schema=0.1
-[side]
-id=1
-controller=human
-gold=0
-[/side]
-[map]
-id=arena
-terrain=Gg,Gg
-[/map]
+const BASE = `[
+	{ tag: 'game', schema: 0.1, children: [
+		{ tag: 'side', id: 1, controller: 'human', gold: 0 },
+		{ tag: 'map', id: 'arena', terrain: 'Gg,Gg' },
 `;
 
 function runWith(events: string, variables: Record<string, string | number | boolean> = {}) {
 	const messages: MwlMessage[] = [];
-	const game = compile(
-		`${BASE}${events}[/game]
-`,
-		{ file: 'variables.mwl' },
-	);
+	const game = compile(`${BASE}${events}] } ]`, { file: 'variables.mwl' });
 	const rt = new MwlRuntime(game, { onMessage: (message) => messages.push(message) });
 	Object.assign(rt.world.variables, variables);
 	rt.run('start');
@@ -36,18 +25,10 @@ const fired = (messages: MwlMessage[]) => messages.some((message) => message.tex
 
 test('conditions compare a variable against another variable', () => {
 	const { messages } = runWith(
-		`[event]
-id=e
-on=start
-[condition]
-variable=picked
-equals=$secret
-[/condition]
-[message]
-text=_ "fired"
-[/message]
-[/event]
-`,
+		`{ tag: 'event', id: 'e', on: 'start', children: [
+			{ tag: 'condition', variable: 'picked', equals: '$secret' },
+			{ tag: 'message', text: _("fired") },
+		] },`,
 		{ picked: 'Sithrak!', secret: 'Sithrak!' },
 	);
 	assert.equal(fired(messages), true);
@@ -55,15 +36,9 @@ text=_ "fired"
 
 test('set_variable copies a bare variable reference', () => {
 	const { rt } = runWith(
-		`[event]
-id=e
-on=start
-[set_variable]
-name=copy
-value=$original
-[/set_variable]
-[/event]
-`,
+		`{ tag: 'event', id: 'e', on: 'start', children: [
+			{ tag: 'set_variable', name: 'copy', value: '$original' },
+		] },`,
 		{ original: 'Brena' },
 	);
 	assert.equal(rt.world.variables.copy, 'Brena');
@@ -71,42 +46,20 @@ value=$original
 
 test('mode=literal keeps text the shape-guessing rule would evaluate', () => {
 	const { rt } = runWith(
-		`[event]
-id=e
-on=start
-[set_variable]
-name=raise
-mode=literal
-value=Raise Walking Corpse (8 Gold)
-[/set_variable]
-[/event]
-`,
+		`{ tag: 'event', id: 'e', on: 'start', children: [
+			{ tag: 'set_variable', name: 'raise', mode: 'literal', value: 'Raise Walking Corpse (8 Gold)' },
+		] },`,
 	);
 	assert.equal(rt.world.variables.raise, 'Raise Walking Corpse (8 Gold)');
 });
 
 test('mode=literal keeps a numeric variable name and a $reference as text', () => {
 	const { rt } = runWith(
-		`[event]
-id=e
-on=start
-[set_variable]
-name=label
-mode=literal
-value=turn_number
-[/set_variable]
-[set_variable]
-name=template
-mode=literal
-value=$original
-[/set_variable]
-[set_variable]
-name=digits
-mode=literal
-value=42
-[/set_variable]
-[/event]
-`,
+		`{ tag: 'event', id: 'e', on: 'start', children: [
+			{ tag: 'set_variable', name: 'label', mode: 'literal', value: 'turn_number' },
+			{ tag: 'set_variable', name: 'template', mode: 'literal', value: '$original' },
+			{ tag: 'set_variable', name: 'digits', mode: 'literal', value: 42 },
+		] },`,
 		{ turn_number: 7, original: 'Brena' },
 	);
 	assert.equal(rt.world.variables.label, 'turn_number');
@@ -115,27 +68,16 @@ value=42
 });
 
 test('mode=number parses a number and refuses anything else', () => {
-	const { rt } = runWith(`[event]
-id=e
-on=start
-[set_variable]
-name=gold_left
-mode=number
-value=12
-[/set_variable]
-[set_variable]
-name=debt
-mode=number
-value=-3
-[/set_variable]
-[/event]
-`);
+	const { rt } = runWith(`{ tag: 'event', id: 'e', on: 'start', children: [
+		{ tag: 'set_variable', name: 'gold_left', mode: 'number', value: 12 },
+		{ tag: 'set_variable', name: 'debt', mode: 'number', value: -3 },
+	] },`);
 	assert.equal(rt.world.variables.gold_left, 12);
 	assert.equal(rt.world.variables.debt, -3);
 	assert.throws(
 		() =>
 			runWith(
-				`[event]\nid=e\non=start\n[set_variable]\nname=x\nmode=number\nvalue=twelve\n[/set_variable]\n[/event]\n`,
+				`{ tag: 'event', id: 'e', on: 'start', children: [{ tag: 'set_variable', name: 'x', mode: 'number', value: 'twelve' }] },`,
 			),
 		/MWL set_variable mode="number" needs a number/,
 	);
@@ -143,47 +85,32 @@ value=-3
 
 test('mode=expression evaluates, and a missing variable is an error rather than literal text', () => {
 	const { rt } = runWith(
-		`[event]
-id=e
-on=start
-[set_variable]
-name=total
-mode=expression
-value=counter * 2
-[/set_variable]
-[/event]
-`,
+		`{ tag: 'event', id: 'e', on: 'start', children: [
+			{ tag: 'set_variable', name: 'total', mode: 'expression', value: 'counter * 2' },
+		] },`,
 		{ counter: 4 },
 	);
 	assert.equal(rt.world.variables.total, 8);
 	assert.throws(
 		() =>
 			runWith(
-				`[event]\nid=e\non=start\n[set_variable]\nname=x\nmode=expression\nvalue=counter * 2\n[/set_variable]\n[/event]\n`,
+				`{ tag: 'event', id: 'e', on: 'start', children: [{ tag: 'set_variable', name: 'x', mode: 'expression', value: 'counter * 2' }] },`,
 			),
 		/missing MWL expression variable "counter"/,
 	);
 });
 
 test('the [command] spelling of set_variable takes the same mode', () => {
-	const { rt } = runWith(`[event]
-id=e
-on=start
-[command]
-name=set_variable
-target=raise
-mode=literal
-value=Raise Walking Corpse (8 Gold)
-[/command]
-[/event]
-`);
+	const { rt } = runWith(`{ tag: 'event', id: 'e', on: 'start', children: [
+		{ tag: 'command', name: 'set_variable', target: 'raise', mode: 'literal', value: 'Raise Walking Corpse (8 Gold)' },
+	] },`);
 	assert.equal(rt.world.variables.raise, 'Raise Walking Corpse (8 Gold)');
 });
 
 test('a mode outside the vocabulary is a compile-time diagnostic', () => {
 	const diagnostics = validate(
 		parse(
-			'[game]\nschema=0.1\n[event]\nid=e\non=start\n[set_variable]\nname=x\nmode=literl\nvalue=1\n[/set_variable]\n[/event]\n[/game]',
+			"[{ tag: 'game', schema: 0.1, children: [{ tag: 'event', id: 'e', on: 'start', children: [{ tag: 'set_variable', name: 'x', mode: 'literl', value: 1 }] }] }]",
 		),
 	);
 	assert.equal(diagnostics[0].code, 'MWL_VALUE');
@@ -192,15 +119,9 @@ test('a mode outside the vocabulary is a compile-time diagnostic', () => {
 
 test('a computed path builds its target from variables', () => {
 	const { rt } = runWith(
-		`[event]
-id=e
-on=start
-[set_variable]
-path=zombies[$index].allow_recruit
-value=yes
-[/set_variable]
-[/event]
-`,
+		`{ tag: 'event', id: 'e', on: 'start', children: [
+			{ tag: 'set_variable', path: 'zombies[$index].allow_recruit', value: 'yes' },
+		] },`,
 		{ index: 0 },
 	);
 	assert.deepEqual(rt.world.variables.zombies, [{ allow_recruit: 'yes' }]);
@@ -208,23 +129,11 @@ value=yes
 
 test('a computed path resolves an expression index and a path held in a variable', () => {
 	const { rt } = runWith(
-		`[event]
-id=e
-on=start
-[set_variable]
-path=party[0].name
-value=A
-[/set_variable]
-[set_variable]
-path=party[$(slot + 1)].name
-value=Brena
-[/set_variable]
-[set_variable]
-path=$target
-value=deep
-[/set_variable]
-[/event]
-`,
+		`{ tag: 'event', id: 'e', on: 'start', children: [
+			{ tag: 'set_variable', path: 'party[0].name', value: 'A' },
+			{ tag: 'set_variable', path: 'party[$(slot + 1)].name', value: 'Brena' },
+			{ tag: 'set_variable', path: '$target', value: 'deep' },
+		] },`,
 		{ slot: 0, target: 'progress.stage' },
 	);
 	assert.deepEqual(rt.world.variables.party, [{ name: 'A' }, { name: 'Brena' }]);
@@ -234,7 +143,7 @@ value=deep
 test('a computed path refuses a reference that names nothing a path can use', () => {
 	const write = (path: string, variables?: Record<string, string | number | boolean>) =>
 		runWith(
-			`[event]\nid=e\non=start\n[set_variable]\npath=${path}\nvalue=1\n[/set_variable]\n[/event]\n`,
+			`{ tag: 'event', id: 'e', on: 'start', children: [{ tag: 'set_variable', path: '${path}', value: 1 }] },`,
 			variables,
 		);
 	assert.throws(() => write('zombies[$missing].hp'), /MWL variable path reference "\$missing" names no variable/);
@@ -245,119 +154,61 @@ test('a computed path refuses a reference that names nothing a path can use', ()
 
 test('messages interpolate variables and expressions', () => {
 	const { messages } = runWith(
-		`[event]
-id=e
-on=start
-[message]
-text=_ "Hello $name, $(n + 1) left."
-[/message]
-[/event]
-`,
+		`{ tag: 'event', id: 'e', on: 'start', children: [
+			{ tag: 'message', text: _("Hello $name, $(n + 1) left.") },
+		] },`,
 		{ name: 'Arvith', n: 6 },
 	);
 	assert.equal(messages.at(-1)?.text, 'Hello Arvith, 7 left.');
 });
 
 test('while is bounded and can update structured variables', () => {
-	const { rt } = runWith(`[event]
-id=e
-on=start
-[set_variable]
-name=counter
-value=0
-[/set_variable]
-[while]
-test=counter < 3
-[set_variable]
-name=counter
-value=counter + 1
-[/set_variable]
-[/while]
-[set_variable]
-name=progress.current
-value=$counter
-[/set_variable]
-[/event]
-`);
+	const { rt } = runWith(`{ tag: 'event', id: 'e', on: 'start', children: [
+		{ tag: 'set_variable', name: 'counter', value: 0 },
+		{ tag: 'while', test: 'counter < 3', children: [
+			{ tag: 'set_variable', name: 'counter', value: 'counter + 1' },
+		] },
+		{ tag: 'set_variable', name: 'progress.current', value: '$counter' },
+	] },`);
 	assert.equal(rt.world.variables.counter, 3);
 	assert.deepEqual(rt.world.variables.progress, { current: 3 });
 });
 
 test('while runs a body carrying its condition child', () => {
-	const { rt } = runWith(`[event]
-id=e
-on=start
-[set_variable]
-name=counter
-value=0
-[/set_variable]
-[while]
-max_iterations=10
-[condition]
-variable=counter
-less_than=3
-[/condition]
-[set_variable]
-name=counter
-value=counter + 1
-[/set_variable]
-[/while]
-[/event]
-`);
+	const { rt } = runWith(`{ tag: 'event', id: 'e', on: 'start', children: [
+		{ tag: 'set_variable', name: 'counter', value: 0 },
+		{ tag: 'while', max_iterations: 10, children: [
+			{ tag: 'condition', variable: 'counter', less_than: 3 },
+			{ tag: 'set_variable', name: 'counter', value: 'counter + 1' },
+		] },
+	] },`);
 	assert.equal(rt.world.variables.counter, 3);
 });
 
 test('foreach iterates arrays and switch selects the matching case', () => {
-	const { rt } = runWith(`[event]
-id=e
-on=start
-[set_variable]
-name=choices
-value=red,green,blue
-[/set_variable]
-[foreach]
-variable=choices
-item=choice
-index=position
-[switch]
-variable=choice
-[case]
-equals=green
-[set_variable]
-name=selected.position
-value=$position
-[/set_variable]
-[/case]
-[/switch]
-[/foreach]
-[/event]
-`);
+	const { rt } = runWith(`{ tag: 'event', id: 'e', on: 'start', children: [
+		{ tag: 'set_variable', name: 'choices', value: 'red,green,blue' },
+		{ tag: 'foreach', variable: 'choices', item: 'choice', index: 'position', children: [
+			{ tag: 'switch', variable: 'choice', children: [
+				{ tag: 'case', equals: 'green', children: [
+					{ tag: 'set_variable', name: 'selected.position', value: '$position' },
+				] },
+			] },
+		] },
+	] },`);
 	assert.deepEqual(rt.world.variables.selected, { position: 1 });
 });
 
 test('a filter_condition reads the same dotted path set_variable wrote', () => {
-	const { messages } = runWith(`[event]
-id=write
-on=start
-[set_variable]
-name=zombies.0.allow_recruit
-value=yes
-[/set_variable]
-[/event]
-[event]
-id=read
-on=start
-[filter_condition]
-[variable]
-name=zombies.0.allow_recruit
-equals=yes
-[/variable]
-[/filter_condition]
-[message]
-text=_ "fired"
-[/message]
-[/event]
-`);
+	const { messages } = runWith(`{ tag: 'event', id: 'write', on: 'start', children: [
+		{ tag: 'set_variable', name: 'zombies.0.allow_recruit', value: 'yes' },
+	] },
+	{ tag: 'event', id: 'read', on: 'start', children: [
+		{ tag: 'filter_condition', children: [
+			{ tag: 'variable', name: 'zombies.0.allow_recruit', equals: 'yes' },
+		] },
+		{ tag: 'message', text: _("fired") },
+	] },`);
 	assert.deepEqual(
 		messages.map((message) => message.text),
 		['fired'],
@@ -366,32 +217,16 @@ text=_ "fired"
 
 test('a dotted path resolves in a filter_condition and a message, not only a top-level key', () => {
 	const { rt, messages } = runWith(
-		`[event]
-id=e
-on=start
-[set_variable]
-name=progress.stage
-value=two
-[/set_variable]
-[set_variable]
-name=mirror.stage
-value=two
-[/set_variable]
-[/event]
-[event]
-id=read
-on=start
-[filter_condition]
-[variable]
-name=progress.stage
-equals=$mirror.stage
-[/variable]
-[/filter_condition]
-[message]
-text=_ "at $progress.stage"
-[/message]
-[/event]
-`,
+		`{ tag: 'event', id: 'e', on: 'start', children: [
+			{ tag: 'set_variable', name: 'progress.stage', value: 'two' },
+			{ tag: 'set_variable', name: 'mirror.stage', value: 'two' },
+		] },
+		{ tag: 'event', id: 'read', on: 'start', children: [
+			{ tag: 'filter_condition', children: [
+				{ tag: 'variable', name: 'progress.stage', equals: '$mirror.stage' },
+			] },
+			{ tag: 'message', text: _("at $progress.stage") },
+		] },`,
 	);
 	assert.deepEqual(rt.world.variables.progress, { stage: 'two' });
 	assert.ok(
@@ -401,22 +236,16 @@ text=_ "at $progress.stage"
 });
 
 test('a[0].b reads and writes a real array index; a non-numeric index is refused', () => {
-	const { rt } = runWith(`[event]
-id=e
-on=start
-[set_variable]
-name=party[0].name
-value=A
-[/set_variable]
-[set_variable]
-name=party[1].name
-value=B
-[/set_variable]
-[/event]
-`);
+	const { rt } = runWith(`{ tag: 'event', id: 'e', on: 'start', children: [
+		{ tag: 'set_variable', name: 'party[0].name', value: 'A' },
+		{ tag: 'set_variable', name: 'party[1].name', value: 'B' },
+	] },`);
 	assert.deepEqual(rt.world.variables.party, [{ name: 'A' }, { name: 'B' }]);
 	assert.throws(
-		() => runWith(`[event]\nid=e\non=start\n[set_variable]\nname=a[x].b\nvalue=1\n[/set_variable]\n[/event]\n`),
+		() =>
+			runWith(
+				`{ tag: 'event', id: 'e', on: 'start', children: [{ tag: 'set_variable', name: 'a[x].b', value: 1 }] },`,
+			),
 		/invalid variable path: a\[x\]\.b/,
 	);
 

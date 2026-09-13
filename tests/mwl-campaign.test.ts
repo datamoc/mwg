@@ -14,20 +14,16 @@ import { Campaign } from '../src/simulation/Campaign.ts';
 
 const definitions = (source: string) => contentCatalog(compile(source)).campaigns;
 
+const campaignWith = (attributes: string, scenarioList: string) =>
+	`[{ tag: 'game', children: [{ tag: 'campaign', ${attributes}, children: [${scenarioList}] }] }]`;
+
 test('a campaign chain plays in the order the content declares', () => {
-	const [definition] = definitions(`[game]
-[campaign]
-id=prologue
-first_scenario=opening
-[scenario]
-id=opening
-next_scenario=siege
-[/scenario]
-[scenario]
-id=siege
-[/scenario]
-[/campaign]
-[/game]`);
+	const [definition] = definitions(
+		campaignWith(
+			`id: 'prologue', first_scenario: 'opening'`,
+			`{ tag: 'scenario', id: 'opening', next_scenario: 'siege' }, { tag: 'scenario', id: 'siege' }`,
+		),
+	);
 
 	assert.deepEqual(definition.scenarios, [
 		{ id: 'opening', nextScenario: 'siege' },
@@ -55,22 +51,12 @@ id=siege
 test('a scenario that decides for itself overrides the authored chain', () => {
 	// this is what a runtime `[endlevel]` with its own `next_scenario` does: the content said siege,
 	// the scenario says intercept
-	const [definition] = definitions(`[game]
-[campaign]
-id=override
-first_scenario=opening
-[scenario]
-id=opening
-next_scenario=siege
-[/scenario]
-[scenario]
-id=siege
-[/scenario]
-[scenario]
-id=intercept
-[/scenario]
-[/campaign]
-[/game]`);
+	const [definition] = definitions(
+		campaignWith(
+			`id: 'override', first_scenario: 'opening'`,
+			`{ tag: 'scenario', id: 'opening', next_scenario: 'siege' }, { tag: 'scenario', id: 'siege' }, { tag: 'scenario', id: 'intercept' }`,
+		),
+	);
 
 	const chain = campaignChain(definition, {
 		run: (scenario, state) =>
@@ -85,17 +71,9 @@ id=intercept
 });
 
 test('a campaign with no first_scenario opens on the first scenario it declares', () => {
-	const [definition] = definitions(`[game]
-[campaign]
-id=prologue
-[scenario]
-id=later
-[/scenario]
-[scenario]
-id=earlier
-[/scenario]
-[/campaign]
-[/game]`);
+	const [definition] = definitions(
+		campaignWith(`id: 'prologue'`, `{ tag: 'scenario', id: 'later' }, { tag: 'scenario', id: 'earlier' }`),
+	);
 
 	const chain = campaignChain(definition, {
 		run: (_scenario, state) => ({ outcome: 'completed', state }),
@@ -105,56 +83,46 @@ id=earlier
 });
 
 test('an empty next_scenario ends the campaign as surely as a missing one', () => {
-	const [definition] = definitions(`[game]
-[campaign]
-id=solo
-first_scenario=only
-[scenario]
-id=only
-next_scenario=""
-[/scenario]
-[/campaign]
-[/game]`);
+	const [definition] = definitions(
+		campaignWith(`id: 'solo', first_scenario: 'only'`, `{ tag: 'scenario', id: 'only', next_scenario: '' }`),
+	);
 
 	assert.deepEqual(definition.scenarios, [{ id: 'only', nextScenario: undefined }]);
 });
 
 test('a chain that cannot be followed is refused by name, not guessed at', () => {
-	const withScenarios = (id: string, body: string) =>
-		definitions(`[game]\n[campaign]\nid=${id}\n${body}\n[/campaign]\n[/game]`)[0];
+	const withScenarios = (id: string, extra: string, scenarioList: string) =>
+		definitions(campaignWith(`id: '${id}'${extra === '' ? '' : `, ${extra}`}`, scenarioList))[0];
 	const runner = {
 		run: (_scenario: { id: string }, state: Record<string, never>) => ({ outcome: 'completed' as const, state }),
 	};
 
-	assert.throws(() => campaignChain(withScenarios('empty', ''), runner), /campaign empty declares no scenarios/);
+	assert.throws(() => campaignChain(withScenarios('empty', '', ''), runner), /campaign empty declares no scenarios/);
 	assert.throws(
 		() =>
 			campaignChain(
-				withScenarios('twice', '[scenario]\nid=same\n[/scenario]\n[scenario]\nid=same\n[/scenario]'),
+				withScenarios('twice', '', `{ tag: 'scenario', id: 'same' }, { tag: 'scenario', id: 'same' }`),
 				runner,
 			),
 		/campaign twice declares a scenario twice/,
 	);
 	assert.throws(
-		() => campaignChain(withScenarios('lost', 'first_scenario=missing\n[scenario]\nid=only\n[/scenario]'), runner),
+		() =>
+			campaignChain(
+				withScenarios('lost', `first_scenario: 'missing'`, `{ tag: 'scenario', id: 'only' }`),
+				runner,
+			),
 		/campaign lost starts on an unknown scenario: missing/,
 	);
 });
 
 test('the carry-over state a scenario hands back is the state the next one is handed', () => {
-	const [definition] = definitions(`[game]
-[campaign]
-id=carry
-first_scenario=first
-[scenario]
-id=first
-next_scenario=second
-[/scenario]
-[scenario]
-id=second
-[/scenario]
-[/campaign]
-[/game]`);
+	const [definition] = definitions(
+		campaignWith(
+			`id: 'carry', first_scenario: 'first'`,
+			`{ tag: 'scenario', id: 'first', next_scenario: 'second' }, { tag: 'scenario', id: 'second' }`,
+		),
+	);
 
 	const seen: number[] = [];
 	const chain = campaignChain(definition, {
@@ -173,19 +141,12 @@ id=second
 });
 
 test('a campaign that fails stops where it stopped, and does not chain on', () => {
-	const [definition] = definitions(`[game]
-[campaign]
-id=failed
-first_scenario=first
-[scenario]
-id=first
-next_scenario=second
-[/scenario]
-[scenario]
-id=second
-[/scenario]
-[/campaign]
-[/game]`);
+	const [definition] = definitions(
+		campaignWith(
+			`id: 'failed', first_scenario: 'first'`,
+			`{ tag: 'scenario', id: 'first', next_scenario: 'second' }, { tag: 'scenario', id: 'second' }`,
+		),
+	);
 
 	const chain = campaignChain(definition, {
 		run: (scenario, state) =>

@@ -13,22 +13,13 @@ import { MwlRuntime } from '../src/mwl/runtime.ts';
  * three turns plays turns one to three and is over on the fourth.
  */
 
-const source = (gameAttributes: string, onTimeOver = '[gold]\nside=1\ndelta=5\n[/gold]') => `[game]
-${gameAttributes}
-[side]
-id=1
-controller=human
-[/side]
-[event]
-on=wait
-[end_turn]
-[/end_turn]
-[/event]
-[event]
-on=time_over
-${onTimeOver}
-[/event]
-[/game]`;
+const source = (gameAttributes: string, onTimeOver = `{ tag: 'gold', side: 1, delta: 5 },`) => `[
+	{ tag: 'game', ${gameAttributes} children: [
+		{ tag: 'side', id: 1, controller: 'human' },
+		{ tag: 'event', on: 'wait', children: [{ tag: 'end_turn' }] },
+		{ tag: 'event', on: 'time_over', children: [${onTimeOver}] },
+	] },
+]`;
 
 const runtimeWith = (attributes: string, onTimeOver?: string) => {
 	const runtime = new MwlRuntime(compile(source(attributes, onTimeOver)));
@@ -51,7 +42,7 @@ test('a scenario with no turn limit never runs out of time', () => {
 });
 
 test('time over arrives after the declared number of turns, not on the last one', () => {
-	const runtime = runtimeWith('turn_limit=3');
+	const runtime = runtimeWith('turn_limit: 3,');
 
 	wait(runtime, 2);
 	assert.equal(runtime.world.turn, 3);
@@ -64,7 +55,7 @@ test('time over arrives after the declared number of turns, not on the last one'
 });
 
 test('time over is reported once, however many turns follow it', () => {
-	const runtime = runtimeWith('turn_limit=1');
+	const runtime = runtimeWith('turn_limit: 1,');
 
 	wait(runtime, 6);
 
@@ -73,7 +64,7 @@ test('time over is reported once, however many turns follow it', () => {
 });
 
 test('content decides what time over means, including a defeat', () => {
-	const runtime = runtimeWith('turn_limit=3', '[endlevel]\nresult=defeat\n[/endlevel]');
+	const runtime = runtimeWith('turn_limit: 3,', `{ tag: 'endlevel', result: 'defeat' },`);
 
 	wait(runtime, 2);
 	assert.equal(runtime.world.status, 'playing', 'two turns in, the scenario is still on');

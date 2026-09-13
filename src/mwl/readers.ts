@@ -23,7 +23,7 @@ export interface MwlReadResult<T> {
  * ```ts
  * import { compile, readAttributes } from '@datamoc/mw_games/mwl';
  *
- * const game = compile('[game]\nschema=0.1\n[/game]');
+ * const game = compile("[{ tag: 'game', schema: 0.1 }]");
  * const { value } = readAttributes(game.roots[0]!, { schema: { type: 'string' } });
  * console.log(value.schema); // '0.1'
  * ```
@@ -60,7 +60,7 @@ export function readAttributes<T extends Record<string, unknown>>(
  * ```ts
  * import { compile, readAttributes, readChildren } from '@datamoc/mw_games/mwl';
  *
- * const game = compile('[game]\nschema=0.1\n[side]\nid=1\n[/side]\n[/game]');
+ * const game = compile("[{ tag: 'game', schema: 0.1, children: [{ tag: 'side', id: 1 }] }]");
  * const sides = readChildren(game.roots[0]!, 'side', (child) => readAttributes(child, { id: { type: 'id' } }));
  * console.log(sides.value.length); // 1
  * ```

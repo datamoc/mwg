@@ -31,7 +31,7 @@ export interface MwlContentLoadReport {
  * ```ts
  * import { loadContent } from '@datamoc/mw_games/mwl';
  *
- * const report = loadContent([{ file: 'a.mwl', source: '[game]\nschema=0.1\n[/game]' }]);
+ * const report = loadContent([{ file: 'a.mwl', source: "[{ tag: 'game', schema: 0.1 }]" }]);
  * console.log(report.game?.schema); // '0.1'
  * ```
  */
@@ -72,7 +72,7 @@ export function loadContent(files: readonly MwlSourceFile[], options: MwlCompile
  * ```ts
  * import { compile, contentReport } from '@datamoc/mw_games/mwl';
  *
- * console.log(contentReport(compile('[game]\nschema=0.1\n[/game]')).tags);
+ * console.log(contentReport(compile("[{ tag: 'game', schema: 0.1 }]")).tags);
  * ```
  */
 export function contentReport(game: MwlCompiledGame): MwlContentReport {

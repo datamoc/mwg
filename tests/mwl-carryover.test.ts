@@ -76,27 +76,15 @@ test('a side with no running gold falls back to what its own scenario declared',
 	assert.equal(endLevelCarryover(declared, side, { result: 'victory' }).gold, 96);
 });
 
-const SOURCE = `[game]
-[side]
-id=1
-controller=human
-gold=100
-[/side]
-[event]
-id=finish
-[endlevel]
-result=victory
-bonus=50
-next_scenario=siege
-[/endlevel]
-[/event]
-[event]
-id=give_up
-[endlevel]
-result=defeat
-[/endlevel]
-[/event]
-[/game]`;
+const SOURCE = `[{ tag: 'game', children: [
+	{ tag: 'side', id: 1, controller: 'human', gold: 100 },
+	{ tag: 'event', id: 'finish', children: [
+		{ tag: 'endlevel', result: 'victory', bonus: 50, next_scenario: 'siege' },
+	] },
+	{ tag: 'event', id: 'give_up', children: [
+		{ tag: 'endlevel', result: 'defeat' },
+	] },
+] }]`;
 
 test('[endlevel] ends the scenario, records the carry-over, and says where the campaign goes', () => {
 	const runtime = new MwlRuntime(compile(SOURCE));

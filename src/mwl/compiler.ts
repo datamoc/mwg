@@ -41,7 +41,7 @@ export interface MwlEmitOptions {
  * ```ts
  * import { compile } from '@datamoc/mw_games/mwl';
  *
- * const game = compile('[game]\nschema=0.1\n[/game]');
+ * const game = compile("[{ tag: 'game', schema: 0.1 }]");
  * console.log(game.schema); // '0.1'
  * ```
  */
@@ -62,7 +62,7 @@ export interface MwlSourceFile {
  * ```ts
  * import { compileSources } from '@datamoc/mw_games/mwl';
  *
- * const game = compileSources([{ file: 'a.mwl', source: '[game]\nschema=0.1\n[/game]' }]);
+ * const game = compileSources([{ file: 'a.mwl', source: "[{ tag: 'game', schema: 0.1 }]" }]);
  * console.log(game.roots.length); // 1
  * ```
  */
@@ -84,7 +84,7 @@ export function compileSources(files: readonly MwlSourceFile[], options: MwlComp
  * ```ts
  * import { compileNodes, parse } from '@datamoc/mw_games/mwl';
  *
- * const game = compileNodes(parse('[game]\nschema=0.1\n[/game]'));
+ * const game = compileNodes(parse("[{ tag: 'game', schema: 0.1 }]"));
  * console.log(game.schema); // '0.1'
  * ```
  */
@@ -197,7 +197,7 @@ export interface MwlCatalog {
  * ```ts
  * import { compile, extractCatalog } from '@datamoc/mw_games/mwl';
  *
- * const game = compile('[game]\nschema=0.1\n[/game]');
+ * const game = compile("[{ tag: 'game', schema: 0.1 }]");
  * console.log(extractCatalog(game, { locale: 'fr' }).locale); // 'fr'
  * ```
  */
@@ -214,7 +214,7 @@ export function extractCatalog(game: MwlCompiledGame, options: MwlCatalogOptions
  * ```ts
  * import { compile, emitModule } from '@datamoc/mw_games/mwl';
  *
- * console.log(emitModule(compile('[game]\nschema=0.1\n[/game]')).startsWith('export const gameData')); // true
+ * console.log(emitModule(compile("[{ tag: 'game', schema: 0.1 }]")).startsWith('export const gameData')); // true
  * ```
  */
 export function emitModule(game: MwlCompiledGame, variable = 'gameData'): string {
@@ -228,7 +228,7 @@ export function emitModule(game: MwlCompiledGame, variable = 'gameData'): string
  * ```ts
  * import { compile, emitArtifacts } from '@datamoc/mw_games/mwl';
  *
- * const artifacts = emitArtifacts(compile('[game]\nschema=0.1\n[/game]'));
+ * const artifacts = emitArtifacts(compile("[{ tag: 'game', schema: 0.1 }]"));
  * console.log(artifacts.map((artifact) => artifact.name)); // ['game-data.ts', 'i18n.json', 'assets.json']
  * ```
  */
@@ -252,7 +252,7 @@ export function emitArtifacts(game: MwlCompiledGame, options: MwlEmitOptions = {
  * ```ts
  * import { compileAndEmitSources } from '@datamoc/mw_games/mwl';
  *
- * const artifacts = compileAndEmitSources([{ file: 'a.mwl', source: '[game]\nschema=0.1\n[/game]' }]);
+ * const artifacts = compileAndEmitSources([{ file: 'a.mwl', source: "[{ tag: 'game', schema: 0.1 }]" }]);
  * console.log(artifacts.length); // 3
  * ```
  */

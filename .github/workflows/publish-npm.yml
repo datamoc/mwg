@@ -53,4 +53,8 @@ jobs:
       # `npm publish` - so a compromised or buggy workflow run can never make a version
       # public by itself. `npm stage approve` needs interactive 2FA and is run by hand
       # (`npm stage list` shows what's pending); OIDC tokens cannot approve, only stage.
-      - run: npm stage publish --access public
+      # a prerelease (0.9.0-alpha) may not take the default `latest` dist-tag, so it
+      # publishes under `alpha`; a final release publishes bare and takes `latest`.
+      - run: |
+          if [[ "${{ github.ref_name }}" == *-* ]]; then TAG="--tag alpha"; else TAG=""; fi
+          npm stage publish --access public $TAG

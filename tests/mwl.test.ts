@@ -40,30 +40,28 @@ test('EntityRegistry accepts stable caller-chosen ids and rejects collisions', (
 
 test('MWL preprocesses macros, conditionals, and gettext values', () => {
 	const source =
-		'#define UNIT ID\n[unit_type]\nid={ID}\nname=_ "Hero"\n[/unit_type]\n#enddef\n#ifdef HERO\n{UNIT hero}\n#endif';
+		"#define UNIT ID\n{ tag: 'unit_type', id: '{ID}', name: _(\"Hero\") }\n#enddef\n#ifdef HERO\n{UNIT hero}\n#endif";
 	const expanded = preprocess(source, { defines: ['HERO'] });
-	assert.match(expanded, /id=hero/);
-	assert.match(expanded, /name=_ "Hero"/);
+	assert.match(expanded, /tag: 'unit_type'/);
+	assert.match(expanded, /id: 'hero'/);
+	assert.match(expanded, /\$gettext/);
 });
 
 test('MWL parses nested tags with source locations and validates types', () => {
-	const nodes = parse('[game]\nschema="0.1"\n[unit_type]\nid=hero\nhitpoints=32\n[/unit_type]\n[/game]', 'game.mwl');
+	const nodes = parse(
+		"[\n  { tag: 'game', schema: 0.1, children: [\n    { tag: 'unit_type', id: 'hero', hitpoints: 32 },\n  ] },\n]",
+		'game.mwl',
+	);
 	assert.equal(nodes[0].children[0].location.line, 3);
 	assert.deepEqual(validate(nodes), []);
 });
 
 test('MWL accepts campaign metadata and preserves game-owned campaign children', () => {
-	const game = compile(`[game]
-[campaign]
-id=prologue
-title="The Beginning"
-description="A first journey"
-start_scene=opening
-[scenario]
-id=opening
-[/scenario]
-[/campaign]
-[/game]`);
+	const game = compile(`[{ tag: 'game', children: [
+		{ tag: 'campaign', id: 'prologue', title: 'The Beginning', description: 'A first journey',
+			start_scene: 'opening', children: [{ tag: 'scenario', id: 'opening' }] },
+	] }]`);
+	assert.equal(game.roots[0].children[0].location!.line, 2);
 	assert.deepEqual(contentCatalog(game).campaigns, [
 		{
 			id: 'prologue',
@@ -79,27 +77,20 @@ id=opening
 });
 
 test('MWL validation reports unknown tags and attributes', () => {
-	const nodes = parse('[game]\nwat=1\n[nope]\n[/nope]\n[/game]');
+	const nodes = parse("[{ tag: 'game', wat: 1, children: [{ tag: 'nope' }] }]");
 	const diagnostics = validate(nodes);
 	assert.equal(diagnostics[0].code, 'MWL_UNKNOWN_ATTRIBUTE');
 	assert.equal(diagnostics[1].code, 'MWL_CHILD');
 });
 
 test('MWL validates typed tables and exposes typed rows through the content catalog', () => {
-	const game = compile(`[game]
-[table]
-id=room_counts
-columns=kind:string|specialBase:number|flags:list|modifiers:map
-list_delimiter=;
-map_delimiter==
-[row]
-kind=standard
-specialBase=7
-flags=small;secret
-modifiers=str=2;dex=-1
-[/row]
-[/table]
-[/game]`);
+	const game = compile(`[{ tag: 'game', children: [
+		{ tag: 'table', id: 'room_counts', columns: 'kind:string|specialBase:number|flags:list|modifiers:map',
+			list_delimiter: ';', map_delimiter: '=', children: [
+			{ tag: 'row', kind: 'standard', specialBase: 7, flags: 'small;secret', modifiers: 'str=2;dex=-1' },
+		] },
+	] }]`);
+	assert.equal(game.roots[0].children[0].location!.line, 2);
 	assert.deepEqual(contentCatalog(game).tables, [
 		{
 			id: 'room_counts',
@@ -120,14 +111,14 @@ test('MWL rejects malformed table shape and typed cells before compilation', () 
 	assert.throws(
 		() =>
 			compile(
-				'[table]\nid=rooms\ncolumns=base:number|special:number\n[row]\nbase=6\nextra=true\n[/row]\n[/table]',
+				"[{ tag: 'table', id: 'rooms', columns: 'base:number|special:number', children: [{ tag: 'row', base: 6, extra: true }] }]",
 			),
 		/unknown table column extra/,
 	);
 	assert.throws(
 		() =>
 			compile(
-				'[table]\nid=rooms\ncolumns=base:number|special:number\n[row]\nbase=bad\nspecial=7\n[/row]\n[/table]',
+				"[{ tag: 'table', id: 'rooms', columns: 'base:number|special:number', children: [{ tag: 'row', base: 'bad', special: 7 }] }]",
 			),
 		/base must be a number/,
 	);
@@ -141,22 +132,28 @@ test('MWL validates declared references and acyclic reference graphs', () => {
 			acyclicRefs: ['parent'],
 		},
 	} as const;
-	assert.equal(validate(parse('[node]\nid=a\n[/node]\n[node]\nid=b\nparent=a\n[/node]'), schemas).length, 0);
-	assert.equal(validate(parse('[node]\nid=b\nparent=missing\n[/node]'), schemas)[0].code, 'MWL_REF_MISSING');
 	assert.equal(
-		validate(parse('[node]\nid=a\n[/node]\n[node]\nid=a\n[/node]\n[node]\nid=b\nparent=a\n[/node]'), schemas)[0]
-			.code,
+		validate(parse("[{ tag: 'node', id: 'a' }, { tag: 'node', id: 'b', parent: 'a' }]"), schemas).length,
+		0,
+	);
+	assert.equal(validate(parse("[{ tag: 'node', id: 'b', parent: 'missing' }]"), schemas)[0].code, 'MWL_REF_MISSING');
+	assert.equal(
+		validate(
+			parse("[{ tag: 'node', id: 'a' }, { tag: 'node', id: 'a' }, { tag: 'node', id: 'b', parent: 'a' }]"),
+			schemas,
+		)[0].code,
 		'MWL_REF_DUPLICATE',
 	);
 	assert.equal(
-		validate(parse('[node]\nid=a\nparent=b\n[/node]\n[node]\nid=b\nparent=a\n[/node]'), schemas)[0].code,
+		validate(parse("[{ tag: 'node', id: 'a', parent: 'b' }, { tag: 'node', id: 'b', parent: 'a' }]"), schemas)[0]
+			.code,
 		'MWL_REF_CYCLE',
 	);
 });
 
 test('MWL compiles JSON-shaped data, messages, and asset manifest', () => {
 	const result = compile(
-		'[game]\nschema=0.1\ntitle=_ "Demo"\n[unit_type]\nid=hero\nname=_ "Hero"\nimage=units/hero.png\n[/unit_type]\n[/game]',
+		"[{ tag: 'game', schema: 0.1, title: _(\"Demo\"), children: [{ tag: 'unit_type', id: 'hero', name: _(\"Hero\"), image: 'units/hero.png' }] }]",
 	);
 	assert.deepEqual(result.assets, ['units/hero.png']);
 	assert.deepEqual(result.messages, ['Demo', 'Hero']);
@@ -164,8 +161,8 @@ test('MWL compiles JSON-shaped data, messages, and asset manifest', () => {
 
 test('MWL compiles a directory-shaped source set in stable file order', () => {
 	const game = compileSources([
-		{ file: 'content/z.mwl', source: '[item]\nid=z\nname=_ "Z"\n[/item]' },
-		{ file: 'content/a.mwl', source: '[item]\nid=a\nname=_ "A"\n[/item]' },
+		{ file: 'content/z.mwl', source: "[{ tag: 'item', id: 'z', name: _(\"Z\") }]" },
+		{ file: 'content/a.mwl', source: "[{ tag: 'item', id: 'a', name: _(\"A\") }]" },
 	]);
 	assert.deepEqual(
 		game.roots.map((node) => node.attributes.id),
@@ -175,7 +172,7 @@ test('MWL compiles a directory-shaped source set in stable file order', () => {
 });
 
 test('MWL artifact emission is stable and accepts game-owned generated files', () => {
-	const files = [{ file: 'game.mwl', source: '[item]\nid=a\nname=A\n[/item]' }];
+	const files = [{ file: 'game.mwl', source: "[{ tag: 'item', id: 'a', name: 'A' }]" }];
 	const emitted: string[] = [];
 	const artifacts = emitArtifacts(compileSources(files), {
 		artifacts: { 'z.ts': 'export const z = 1;\n', 'a.ts': 'export const a = 1;\n' },
@@ -197,36 +194,44 @@ test('MWL artifact emission is stable and accepts game-owned generated files', (
 
 test('MWL asset extraction accepts native CFG image and sound attributes', () => {
 	const game = compile(
-		'[unit_type]\nid=hero\nimage=units/hero.png~FL(horiz)\nprofile=portraits/hero.png\n[/unit_type]\n[attack]\nid=hit\nsound=audio/hit.wav,audio/hit.ogg\n[/attack]',
+		"[{ tag: 'unit_type', id: 'hero', image: 'units/hero.png~FL(horiz)', profile: 'portraits/hero.png' }, { tag: 'attack', id: 'hit', sound: 'audio/hit.wav,audio/hit.ogg' }]",
 	);
 	assert.deepEqual(game.assets, ['audio/hit.ogg', 'audio/hit.wav', 'portraits/hero.png', 'units/hero.png']);
 });
 
 test('MWL asset extraction preserves sound range notation', () => {
-	const game = compile('[attack]\nid=hit\nsound=human-hit-[1~5].ogg\n[/attack]');
+	const game = compile("[{ tag: 'attack', id: 'hit', sound: 'human-hit-[1~5].ogg' }]");
 	assert.deepEqual(game.assets, ['human-hit-[1~5].ogg']);
 });
 
 test('MWL asset extraction does not split transform arguments into assets', () => {
-	const game = compile('[attack]\nid=hit\nicon=attacks/blank.png~CS(-20,-20,50)~BLIT(attacks/border.png)\n[/attack]');
+	const game = compile(
+		"[{ tag: 'attack', id: 'hit', icon: 'attacks/blank.png~CS(-20,-20,50)~BLIT(attacks/border.png)' }]",
+	);
 	assert.deepEqual(game.assets, ['attacks/blank.png']);
 });
 
 test('MWL asset extraction does not split bracketed asset lists', () => {
-	const game = compile('[attack]\nid=hit\nicon=attacks/hit-[1,2].png\n[/attack]');
+	const game = compile("[{ tag: 'attack', id: 'hit', icon: 'attacks/hit-[1,2].png' }]");
 	assert.deepEqual(game.assets, ['attacks/hit-[1,2].png']);
 });
 
 test('MWL asset extraction ignores numeric sound parameters', () => {
 	const game = compile(
-		'[unit_type]\nid=hero\nimage=units/hero.png\n[/unit_type]\n[attack]\nid=hit\nsound=-20\n[/attack]',
+		"[{ tag: 'unit_type', id: 'hero', image: 'units/hero.png' }, { tag: 'attack', id: 'hit', sound: -20 }]",
 	);
 	assert.deepEqual(game.assets, ['units/hero.png']);
 });
 
 test('MWL content catalog exposes reusable item, monster, status, loot, and clock data', () => {
 	const game = compile(
-		'[game]\nschema=0.1\n[item]\nid=ring_haste\nname="Haste"\nslot=ring\nstackable=false\nweight=0.1\n[effect]\napply_to=speed\nincrease=10%\n[/effect]\n[/item]\n[monster]\nid=rat\nname="Rat"\nhp=8\ndamage_min=1\ndamage_max=4\n[/monster]\n[status]\nid=poisoned\nduration=3\ntick=damage\n[/status]\n[loot]\nitem=ring_haste\nchance=0.25\n[/loot]\n[turn_clock]\nid=default\ntick=1\nhunger=0.1\n[/turn_clock]\n[/game]',
+		"[{ tag: 'game', schema: 0.1, children: [" +
+			"{ tag: 'item', id: 'ring_haste', name: 'Haste', slot: 'ring', stackable: false, weight: 0.1, children: [{ tag: 'effect', apply_to: 'speed', increase: '10%' }] }," +
+			"{ tag: 'monster', id: 'rat', name: 'Rat', hp: 8, damage_min: 1, damage_max: 4 }," +
+			"{ tag: 'status', id: 'poisoned', duration: 3, tick: 'damage' }," +
+			"{ tag: 'loot', item: 'ring_haste', chance: 0.25 }," +
+			"{ tag: 'turn_clock', id: 'default', tick: 1, hunger: 0.1 }," +
+			'] }]',
 	);
 	const result = contentCatalog(game);
 	assert.equal(result.items[0].effects[0].applyTo, 'speed');
@@ -238,7 +243,7 @@ test('MWL content catalog exposes reusable item, monster, status, loot, and cloc
 
 test('MWL extracts only gettext-marked strings and builds an i18n catalog', () => {
 	const result = compile(
-		'[game]\nschema=0.1\ntitle=_ "Demo"\n[movetype]\nname=smallfoot\n[/movetype]\n[unit_type]\nid=hero\nname=Hero\n[/unit_type]\n[/game]',
+		"[{ tag: 'game', schema: 0.1, title: _(\"Demo\"), children: [{ tag: 'movetype', name: 'smallfoot' }, { tag: 'unit_type', id: 'hero', name: 'Hero' }] }]",
 	);
 	// The unmarked technical `name` values are not translation messages.
 	assert.deepEqual(result.messages, ['Demo']);
@@ -250,51 +255,57 @@ test('MWL extracts only gettext-marked strings and builds an i18n catalog', () =
 });
 
 test('MWL records which attributes carried the gettext marker', () => {
-	const nodes = parse('[unit_type]\nid=hero\nname=_ "Hero"\n[/unit_type]');
+	const nodes = parse("[{ tag: 'unit_type', id: 'hero', name: _(\"Hero\") }]");
 	assert.deepEqual(nodes[0].gettext, ['name']);
 	assert.equal(nodes[0].attributes.name, 'Hero');
 });
 
 test('MWL keeps leading-underscore values such as aliasof=_bas intact', () => {
-	const nodes = parse('[terrain_type]\nid=village\nstring=^Ve\naliasof=_bas, Vt\n[/terrain_type]');
+	const nodes = parse("[{ tag: 'terrain_type', id: 'village', string: '^Ve', aliasof: '_bas, Vt' }]");
 	assert.equal(nodes[0].attributes.aliasof, '_bas, Vt');
 	assert.deepEqual(nodes[0].gettext, []);
 });
 
-test('a """ value spans lines and keeps its text exactly as written', () => {
-	const nodes = parse('[message]\ntext="""Line one\n  Line two\n"""\n[/message]');
+test('a "\\n" escape in a value keeps its text exactly as written', () => {
+	const nodes = parse("[{ tag: 'message', text: 'Line one\\n  Line two\\n' }]");
 	assert.equal(nodes[0].attributes.text, 'Line one\n  Line two\n');
 });
 
-test('a """ value may carry the gettext marker and reach the message catalog', () => {
-	const nodes = parse('[message]\ntext=_ """Hold the line,\nthen advance."""\n[/message]');
+test('a multi-line value may carry the gettext marker and reach the message catalog', () => {
+	const nodes = parse('[{ tag: \'message\', text: _("Hold the line,\\nthen advance.") }]');
 	assert.equal(nodes[0].attributes.text, 'Hold the line,\nthen advance.');
 	assert.deepEqual(nodes[0].gettext, ['text']);
-	const compiled = compile('[game]\nschema=0.1\ntitle=_ """Hold the line,\nthen advance."""\n[/game]');
+	const compiled = compile('[{ tag: \'game\', schema: 0.1, title: _("Hold the line,\\nthen advance.") }]');
 	assert.deepEqual(compiled.messages, ['Hold the line,\nthen advance.']);
 });
 
-test('a single-line """ value needs no closing line of its own', () => {
-	const nodes = parse('[message]\ntext="""done"""\n[/message]');
-	assert.equal(nodes[0].attributes.text, 'done');
-});
-
-test('a node after a """ value keeps its own source location', () => {
-	const nodes = parse('[game]\ntitle="""one\ntwo"""\n[unit_type]\nid=hero\n[/unit_type]\n[/game]');
-	assert.equal(nodes[0].children[0].location.line, 4);
-});
-
-test('a """ value that is unterminated or followed by text is a syntax error', () => {
-	assert.throws(() => parse('[message]\ntext="""never closed\n[/message]'), /unterminated """ value/);
-	assert.throws(
-		() => parse('[message]\ntext="""closed""" and more\n[/message]'),
-		/unexpected text after a """ value/,
+test('a backslash line continuation joins a value across source lines', () => {
+	const nodes = parse(
+		'[{ tag: \'message\', text: "The old king spoke slowly, \\\nas though each word cost him something." }]',
 	);
+	assert.equal(nodes[0].attributes.text, 'The old king spoke slowly, as though each word cost him something.');
+});
+
+test('a node after a multi-line value keeps its own source location', () => {
+	const nodes = parse(
+		"[\n  { tag: 'game', title: \"one\\ntwo\", children: [\n    { tag: 'unit_type', id: 'hero' },\n  ] },\n]",
+		'game.mwl',
+	);
+	assert.equal(nodes[0].children[0].location.line, 3);
+});
+
+test('an unterminated document or a non-scalar attribute value is a syntax error', () => {
+	assert.throws(() => parse("[{ tag: 'message'"), /JSON5/);
+	assert.throws(() => parse("[{ tag: 'message', text: ['never', 'a scalar'] }]"), /must be a string/);
+	assert.throws(() => parse("{ tag: 'game' }"), /top-level array/);
 });
 
 test('MWL collects, validates, and declares hook references', () => {
 	const game = compile(
-		'[game]\nschema=0.1\n[event]\nid=e\non=start\n[hook]\nname=command:haunted_ruin\nintensity=3\n[/hook]\n[/event]\n[objectives]\n[victory]\nside=1\ncondition=hook\nhook=predicate:relic_recovered\n[/victory]\n[/objectives]\n[/game]',
+		"[{ tag: 'game', schema: 0.1, children: [" +
+			"{ tag: 'event', id: 'e', on: 'start', children: [{ tag: 'hook', name: 'command:haunted_ruin', intensity: 3 }] }," +
+			"{ tag: 'objectives', children: [{ tag: 'victory', side: 1, condition: 'hook', hook: 'predicate:relic_recovered' }] }," +
+			'] }]',
 	);
 	const references = collectHookReferences(game);
 	assert.deepEqual(
@@ -327,7 +338,13 @@ test('MWL runtime executes deterministic world commands', () => {
 
 test('MWL runtime loads units and runs compiled event commands', () => {
 	const game = compile(
-		'[game]\nschema=0.1\n[unit]\nid=hero\nhp=20\nx=0\ny=1\n[/unit]\n[event]\nid=start\ntrigger=start\n[command]\nname=move\ntarget=hero\nx=2\ny=3\n[/command]\n[command]\nname=set_variable\ntarget=started\nvalue=true\n[/command]\n[/event]\n[/game]',
+		"[{ tag: 'game', schema: 0.1, children: [" +
+			"{ tag: 'unit', id: 'hero', hp: 20, x: 0, y: 1 }," +
+			"{ tag: 'event', id: 'start', trigger: 'start', children: [" +
+			"{ tag: 'command', name: 'move', target: 'hero', x: 2, y: 3 }," +
+			"{ tag: 'command', name: 'set_variable', target: 'started', value: true }," +
+			'] },' +
+			'] }]',
 	);
 	const runtime = new MwlRuntime(game);
 	runtime.run('start');
@@ -342,11 +359,12 @@ test('MWL runtime loads units and runs compiled event commands', () => {
 
 test('MWL event runtime supports numeric conditions, expressions, fire-by-id, ids, and coordinate ranges', () => {
 	const source =
-		'[game]\n[unit]\nid=hero\nx=2\ny=3\n[/unit]\n' +
-		'[event]\nid=start\non=start\n[set_variable]\nname=count\nvalue=1\n[/set_variable]\n[/event]\n' +
-		'[event]\nid=counter\non=turn\n[condition]\nvariable=count\nequals=1\n[/condition]\n[set_variable]\nname=count\nvalue=count + 2\n[/set_variable]\n[/event]\n' +
-		'[event]\nid=move-id\non=moveto\nx=1,2,4-5\ny=3\nonce=false\n[filter]\nunit=hero\n[/filter]\n[set_variable]\nname=arrived\nvalue=yes\n[/set_variable]\n[/event]\n' +
-		'[event]\nid=manual\non=never\n[set_variable]\nname=manual\nvalue=done\n[/set_variable]\n[/event]\n[/game]';
+		"[{ tag: 'game', children: [{ tag: 'unit', id: 'hero', x: 2, y: 3 }," +
+		"{ tag: 'event', id: 'start', on: 'start', children: [{ tag: 'set_variable', name: 'count', value: 1 }] }," +
+		"{ tag: 'event', id: 'counter', on: 'turn', children: [{ tag: 'condition', variable: 'count', equals: 1 }, { tag: 'set_variable', name: 'count', value: 'count + 2' }] }," +
+		"{ tag: 'event', id: 'move-id', on: 'moveto', x: '1,2,4-5', y: 3, once: false, children: [{ tag: 'filter', unit: 'hero' }, { tag: 'set_variable', name: 'arrived', value: 'yes' }] }," +
+		"{ tag: 'event', id: 'manual', on: 'never', children: [{ tag: 'set_variable', name: 'manual', value: 'done' }] }," +
+		'] }]';
 	const runtime = new MwlRuntime(compile(source));
 	runtime.run('start');
 	assert.equal(runtime.world.variables.count, 1);
@@ -360,9 +378,10 @@ test('MWL event runtime supports numeric conditions, expressions, fire-by-id, id
 
 test('MWL unit filters accept coordinate ranges and lists, the same shape a moveto event uses', () => {
 	const source =
-		'[game]\n[unit]\nid=hero\nx=4\ny=3\n[/unit]\n' +
-		'[event]\nid=in-range\non=turn\n[filter]\nx=1,2,4-5\ny=3\n[/filter]\n[set_variable]\nname=found\nvalue=yes\n[/set_variable]\n[/event]\n' +
-		'[event]\nid=out-of-range\non=turn\n[filter]\nx=6-9\n[/filter]\n[set_variable]\nname=missed\nvalue=yes\n[/set_variable]\n[/event]\n[/game]';
+		"[{ tag: 'game', children: [{ tag: 'unit', id: 'hero', x: 4, y: 3 }," +
+		"{ tag: 'event', id: 'in-range', on: 'turn', children: [{ tag: 'filter', x: '1,2,4-5', y: 3 }, { tag: 'set_variable', name: 'found', value: 'yes' }] }," +
+		"{ tag: 'event', id: 'out-of-range', on: 'turn', children: [{ tag: 'filter', x: '6-9' }, { tag: 'set_variable', name: 'missed', value: 'yes' }] }," +
+		'] }]';
 	const runtime = new MwlRuntime(compile(source));
 	runtime.run('turn');
 	assert.equal(runtime.world.variables.found, 'yes');
@@ -371,9 +390,10 @@ test('MWL unit filters accept coordinate ranges and lists, the same shape a move
 
 test('MWL unit filters and unit_at objectives can constrain by unit id and side', () => {
 	const source =
-		'[game]\n[unit]\nid=hero\nside=2\nx=1\ny=1\n[/unit]\n' +
-		'[event]\nid=hit\non=turn\n[filter]\nunit=hero\n[/filter]\n[set_variable]\nname=found\nvalue=yes\n[/set_variable]\n[/event]\n' +
-		'[objectives]\n[victory]\ncondition=unit_at\nx=1\ny=1\nside_filter=2\n[/victory]\n[/objectives]\n[/game]';
+		"[{ tag: 'game', children: [{ tag: 'unit', id: 'hero', side: 2, x: 1, y: 1 }," +
+		"{ tag: 'event', id: 'hit', on: 'turn', children: [{ tag: 'filter', unit: 'hero' }, { tag: 'set_variable', name: 'found', value: 'yes' }] }," +
+		"{ tag: 'objectives', children: [{ tag: 'victory', condition: 'unit_at', x: 1, y: 1, side_filter: 2 }] }," +
+		'] }]';
 	const runtime = new MwlRuntime(compile(source));
 	runtime.run('turn');
 	assert.equal(runtime.world.variables.found, 'yes');
@@ -382,7 +402,13 @@ test('MWL unit filters and unit_at objectives can constrain by unit id and side'
 
 test('MWL runtime respects event conditions and resolves attack damage', () => {
 	const game = compile(
-		'[game]\nschema=0.1\n[unit]\nid=hero\nhp=5\n[/unit]\n[event]\nid=hit\ntrigger=turn\n[condition]\nvariable=armed\nequals=true\n[/condition]\n[command]\nname=attack\ntarget=hero\namount=5\n[/command]\n[/event]\n[/game]',
+		"[{ tag: 'game', schema: 0.1, children: [" +
+			"{ tag: 'unit', id: 'hero', hp: 5 }," +
+			"{ tag: 'event', id: 'hit', trigger: 'turn', children: [" +
+			"{ tag: 'condition', variable: 'armed', equals: true }," +
+			"{ tag: 'command', name: 'attack', target: 'hero', amount: 5 }," +
+			'] },' +
+			'] }]',
 	);
 	const runtime = new MwlRuntime(game);
 	runtime.run('turn');
@@ -394,7 +420,14 @@ test('MWL runtime respects event conditions and resolves attack damage', () => {
 
 test('MWL runtime accepts the documented command tags and unit filters', () => {
 	const game = compile(
-		'[game]\nschema=0.1\n[unit]\nid=hero\ntype=Spearman\nside=1\nhp=5\n[/unit]\n[event]\nid=start\non=start\n[filter]\nside=1\ntype=Spearman\n[/filter]\n[attack]\ndefender=hero\namount=2\n[/attack]\n[gold]\nside=1\ndelta=10\n[/gold]\n[/event]\n[/game]',
+		"[{ tag: 'game', schema: 0.1, children: [" +
+			"{ tag: 'unit', id: 'hero', type: 'Spearman', side: 1, hp: 5 }," +
+			"{ tag: 'event', id: 'start', on: 'start', children: [" +
+			"{ tag: 'filter', side: 1, type: 'Spearman' }," +
+			"{ tag: 'attack', defender: 'hero', amount: 2 }," +
+			"{ tag: 'gold', side: 1, delta: 10 }," +
+			'] },' +
+			'] }]',
 	);
 	const runtime = new MwlRuntime(game);
 	runtime.run('start');
@@ -405,10 +438,14 @@ test('MWL runtime accepts the documented command tags and unit filters', () => {
 
 test('MWL open attribute maps accept game-defined keys and check their values', () => {
 	const nodes = parse(
-		'[movetype]\nname=smallfoot\n[movement_costs]\nflat=1\nforest=2\n[/movement_costs]\n[defense]\nflat=60\nforest=50\n[/defense]\n[resistance]\narcane=90\npierce=100\n[/resistance]\n[/movetype]',
+		"[{ tag: 'movetype', name: 'smallfoot', children: [" +
+			"{ tag: 'movement_costs', flat: 1, forest: 2 }," +
+			"{ tag: 'defense', flat: 60, forest: 50 }," +
+			"{ tag: 'resistance', arcane: 90, pierce: 100 }," +
+			'] }]',
 	);
 	assert.deepEqual(validate(nodes), []);
-	const bad = parse('[movetype]\nname=smallfoot\n[movement_costs]\nflat=fast\n[/movement_costs]\n[/movetype]');
+	const bad = parse("[{ tag: 'movetype', name: 'smallfoot', children: [{ tag: 'movement_costs', flat: 'fast' }] }]");
 	const diagnostics = validate(bad);
 	assert.equal(diagnostics[0].code, 'MWL_VALUE');
 	assert.match(diagnostics[0].message, /must be number/);
@@ -416,7 +453,7 @@ test('MWL open attribute maps accept game-defined keys and check their values', 
 
 test('MWL open child schemas accept opaque nested game-owned tags', () => {
 	const nodes = parse(
-		'[container]\n[damage]\ntype=fire\namount=2\n[filter]\nrole=leader\n[/filter]\n[/damage]\n[/container]',
+		"[{ tag: 'container', children: [{ tag: 'damage', type: 'fire', amount: 2, children: [{ tag: 'filter', role: 'leader' }] }] }]",
 	);
 	assert.deepEqual(
 		validate(nodes, {
@@ -427,7 +464,7 @@ test('MWL open child schemas accept opaque nested game-owned tags', () => {
 });
 
 test('MWL closed schemas still reject unknown child tags', () => {
-	const diagnostics = validate(parse('[container]\n[damage]\ntype=fire\n[/damage]\n[/container]'), {
+	const diagnostics = validate(parse("[{ tag: 'container', children: [{ tag: 'damage', type: 'fire' }] }]"), {
 		container: { children: [] },
 	});
 	assert.equal(diagnostics[0].code, 'MWL_CHILD');
@@ -436,13 +473,13 @@ test('MWL closed schemas still reject unknown child tags', () => {
 
 test('MWL terrain_type accepts the generic terrain attributes', () => {
 	const nodes = parse(
-		'[terrain_type]\nid=grassland\nstring=Gg\naliasof=Gt\nmvt_alias=-,_bas,St\ndefault_base=Gg\nheals=8\ngives_income=true\n[/terrain_type]',
+		"[{ tag: 'terrain_type', id: 'grassland', string: 'Gg', aliasof: 'Gt', mvt_alias: '-,_bas,St', default_base: 'Gg', heals: 8, gives_income: true }]",
 	);
 	assert.deepEqual(validate(nodes), []);
 });
 
 test('MWL still rejects unknown attributes on closed tags', () => {
-	const diagnostics = validate(parse('[terrain_type]\nid=meadow\nwat=1\n[/terrain_type]'));
+	const diagnostics = validate(parse("[{ tag: 'terrain_type', id: 'meadow', wat: 1 }]"));
 	assert.equal(diagnostics[0].code, 'MWL_UNKNOWN_ATTRIBUTE');
 });
 
@@ -484,7 +521,7 @@ test('MWL actor adapters translate every supported modifier operation', () => {
 
 test('an item authors image/icon (item 307), collected into the asset manifest like any other asset attribute', () => {
 	const game = compile(
-		'[game]\nschema=0.1\n[item]\nid=potion\nname=Potion\nimage=items/potion.png\nicon=items/potion-icon.png\n[/item]\n[/game]',
+		"[{ tag: 'game', schema: 0.1, children: [{ tag: 'item', id: 'potion', name: 'Potion', image: 'items/potion.png', icon: 'items/potion-icon.png' }] }]",
 	);
 	assert.deepEqual(new Set(game.assets), new Set(['items/potion.png', 'items/potion-icon.png']));
 
@@ -495,7 +532,9 @@ test('an item authors image/icon (item 307), collected into the asset manifest l
 
 test('MWL catalog validation catches duplicate ids, slots, effects, and hooks', () => {
 	const game = compile(
-		'[item]\nid=ring\nname=Ring\nslot=finger\n[effect]\nadd=1\n[/effect]\n[/item]\n[item]\nid=ring\nname=Other\n[/item]\n[hook]\nname=bad-hook\n[/hook]',
+		"[{ tag: 'item', id: 'ring', name: 'Ring', slot: 'finger', children: [{ tag: 'effect', add: 1 }] }," +
+			" { tag: 'item', id: 'ring', name: 'Other' }," +
+			" { tag: 'hook', name: 'bad-hook' }]",
 	);
 	const codes = validateCatalog(game, { slots: ['weapon'], hooks: ['command:known'] }).map(
 		(diagnostic) => diagnostic.code,
@@ -505,7 +544,8 @@ test('MWL catalog validation catches duplicate ids, slots, effects, and hooks', 
 
 test('a declared hook validates the attributes its own [hook] calls carry', () => {
 	const game = compile(
-		'[hook]\nname=command:set_variable_dynamic\nmode=literal\nvalue=ok\n[/hook]\n[hook]\nname=command:set_variable_dynamic\nmode=literl\nvalue=ok\n[/hook]',
+		"[{ tag: 'hook', name: 'command:set_variable_dynamic', mode: 'literal', value: 'ok' }," +
+			" { tag: 'hook', name: 'command:set_variable_dynamic', mode: 'literl', value: 'ok' }]",
 	);
 	assert.deepEqual(
 		validateCatalog(game, {
@@ -528,7 +568,7 @@ test('a declared hook validates the attributes its own [hook] calls carry', () =
 });
 
 test('an undeclared hook attribute and an undeclared hook name are both reported', () => {
-	const game = compile('[hook]\nname=command:mark\nmark=ok\n[/hook]');
+	const game = compile("[{ tag: 'hook', name: 'command:mark', mark: 'ok' }]");
 	assert.deepEqual(
 		validateCatalog(game, { hooks: [{ id: 'command:mark', attributes: { value: 'string' } }] }).map(
 			(diagnostic) => diagnostic.code,
@@ -545,8 +585,8 @@ test('an undeclared hook attribute and an undeclared hook name are both reported
 
 test('rowIdScope defaults to global: the same id reused across files is still a duplicate', () => {
 	const game = compileSources([
-		{ file: 'weapons.mwl', source: '[item]\nid=sword\nname=Sword\n[/item]' },
-		{ file: 'armor.mwl', source: '[item]\nid=sword\nname=Also Sword\n[/item]' },
+		{ file: 'weapons.mwl', source: "[{ tag: 'item', id: 'sword', name: 'Sword' }]" },
+		{ file: 'armor.mwl', source: "[{ tag: 'item', id: 'sword', name: 'Also Sword' }]" },
 	]);
 	const codes = validateCatalog(game).map((diagnostic) => diagnostic.code);
 	assert.deepEqual(codes, ['MWL_DUPLICATE_ID']);
@@ -554,13 +594,16 @@ test('rowIdScope defaults to global: the same id reused across files is still a 
 
 test("rowIdScope: 'file' allows the same id across files, catching a real duplicate within one", () => {
 	const acrossFiles = compileSources([
-		{ file: 'weapons.mwl', source: '[item]\nid=sword\nname=Sword\n[/item]' },
-		{ file: 'armor.mwl', source: '[item]\nid=sword\nname=Also Sword\n[/item]' },
+		{ file: 'weapons.mwl', source: "[{ tag: 'item', id: 'sword', name: 'Sword' }]" },
+		{ file: 'armor.mwl', source: "[{ tag: 'item', id: 'sword', name: 'Also Sword' }]" },
 	]);
 	assert.deepEqual(validateCatalog(acrossFiles, { rowIdScope: 'file' }), []);
 
 	const withinOneFile = compileSources([
-		{ file: 'weapons.mwl', source: '[item]\nid=sword\nname=Sword\n[/item]\n[item]\nid=sword\nname=Other\n[/item]' },
+		{
+			file: 'weapons.mwl',
+			source: "[{ tag: 'item', id: 'sword', name: 'Sword' }, { tag: 'item', id: 'sword', name: 'Other' }]",
+		},
 	]);
 	const codes = validateCatalog(withinOneFile, { rowIdScope: 'file' }).map((diagnostic) => diagnostic.code);
 	assert.deepEqual(codes, ['MWL_DUPLICATE_ID']);
@@ -589,7 +632,7 @@ test('MWL saves are versioned and migrated, while legacy snapshots remain readab
 });
 
 test('MWL unit_type accepts a spaced display id from a converted source', () => {
-	const nodes = parse('[unit_type]\nid=Drake Arbiter\nhitpoints=40\n[/unit_type]');
+	const nodes = parse("[{ tag: 'unit_type', id: 'Drake Arbiter', hitpoints: 40 }]");
 	assert.deepEqual(validate(nodes), []);
 });
 
@@ -619,7 +662,7 @@ test('MWL compileNodes validates and compiles a programmatic node tree', () => {
 
 test('MWL content catalog exposes game-neutral AI behaviors', () => {
 	const game = compile(
-		'[ai]\nid=basic\nstrategy=balanced\n[behavior]\nid=advance\nwhen=enemy_visible\naction=move_toward_enemy\nhook=ai:advance\n[/behavior]\n[/ai]',
+		"[{ tag: 'ai', id: 'basic', strategy: 'balanced', children: [{ tag: 'behavior', id: 'advance', when: 'enemy_visible', action: 'move_toward_enemy', hook: 'ai:advance' }] }]",
 	);
 	const catalog = contentCatalog(game);
 	assert.deepEqual(catalog.ai[0], {
@@ -643,8 +686,8 @@ test('MWL content catalog exposes game-neutral AI behaviors', () => {
 
 test('MWL describes actor and controller alpha-beta profiles', () => {
 	const game = compile(
-		'[ai]\nid=hero-brain\nscope=actor\nprovider=javascript\nalgorithm=alpha_beta\ndepth=2\nmax_nodes=500\nmoves=ai:legal\napply=ai:apply\nterminal=ai:terminal\nevaluate=ai:score\n[/ai]\n' +
-			'[ai]\nid=chess-master\nscope=controller\nprovider=lua\nalgorithm=alpha_beta\ndepth=4\nplayer=current_player\n[/ai]',
+		"[{ tag: 'ai', id: 'hero-brain', scope: 'actor', provider: 'javascript', algorithm: 'alpha_beta', depth: 2, max_nodes: 500, moves: 'ai:legal', apply: 'ai:apply', terminal: 'ai:terminal', evaluate: 'ai:score' }," +
+			" { tag: 'ai', id: 'chess-master', scope: 'controller', provider: 'lua', algorithm: 'alpha_beta', depth: 4, player: 'current_player' }]",
 	);
 	assert.deepEqual(contentCatalog(game).ai, [
 		{
@@ -720,7 +763,7 @@ test('MWL expression host is the statement-free default', () => {
 test('MWL content report counts tags and finds dangling references', () => {
 	const report = contentReport(
 		compile(
-			'[game]\n[unit_type]\nid=hero\n[ability]\nid=heal\nname=Heal\n[/ability]\n[/unit_type]\n[loot]\nitem=missing\n[/loot]\n[/game]',
+			"[{ tag: 'game', children: [{ tag: 'unit_type', id: 'hero', children: [{ tag: 'ability', id: 'heal', name: 'Heal' }] }, { tag: 'loot', item: 'missing' }] }]",
 		),
 	);
 	assert.deepEqual(report.tags, { ability: 1, game: 1, loot: 1, unit_type: 1 });
@@ -729,18 +772,21 @@ test('MWL content report counts tags and finds dangling references', () => {
 
 test('MWL content loading returns resources, dependencies and diagnostics', () => {
 	const loaded = loadContent([
-		{ file: 'content.mwl', source: '[game]\n[map]\nid=arena\nfile=hero.png\n[/map]\n[/game]' },
+		{
+			file: 'content.mwl',
+			source: "[{ tag: 'game', children: [{ tag: 'map', id: 'arena', file: 'hero.png' }] }]",
+		},
 	]);
 	assert.deepEqual(loaded.resources, ['hero.png']);
 	assert.deepEqual(loaded.diagnostics, []);
 	assert.ok(loaded.game);
-	const failed = loadContent([{ file: 'broken.mwl', source: '[unknown]\nvalue=x\n[/unknown]' }]);
+	const failed = loadContent([{ file: 'broken.mwl', source: "[{ tag: 'unknown', value: 'x' }]" }]);
 	assert.equal(failed.game, undefined);
 	assert.equal(failed.diagnostics[0]?.severity, 'error');
 });
 
 test('MWL readers coerce fields, collect children, and preserve diagnostics', () => {
-	const node = compile('[unit]\nid=hero\nside=2\nx=4\ny=5\n[/unit]').roots[0];
+	const node = compile("[{ tag: 'unit', id: 'hero', side: 2, x: 4, y: 5 }]").roots[0];
 	const result = readAttributes<{ id: string; side: number; active: boolean }>(node, {
 		id: { type: 'id', required: true },
 		side: { type: 'integer' },
@@ -758,7 +804,7 @@ test('MWL readers coerce fields, collect children, and preserve diagnostics', ()
 });
 
 test('the id reader accepts the same names the schema does, index brackets included', () => {
-	const node = compile('[unit]\nid=hero\n[/unit]').roots[0];
+	const node = compile("[{ tag: 'unit', id: 'hero' }]").roots[0];
 	//the schema types a variable name as `id` and now accepts `a[0].b` there, so the reader
 	//an adapter coerces that name with has to accept it too rather than call it invalid
 	const read = readAttributes<{ name: string; list: string[] }>(

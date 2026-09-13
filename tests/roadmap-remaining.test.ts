@@ -9,17 +9,9 @@ import { ActionJournal } from '../src/core/ActionJournal.ts';
 import { compile } from '../src/mwl/compiler.ts';
 import { MwlRuntime, type MwlTraceEvent } from '../src/mwl/runtime.ts';
 
-const MWL_TRACE_GAME = `[game]
-schema=0.1
-[side]
-id=1
-controller=human
-gold=0
-[/side]
-[map]
-id=arena
-terrain=Gg,Gg
-[/map]
+const MWL_TRACE_GAME = `[{ tag: 'game', schema: 0.1, children: [
+	{ tag: 'side', id: 1, controller: 'human', gold: 0 },
+	{ tag: 'map', id: 'arena', terrain: 'Gg,Gg' },
 `;
 
 test('TerrainKind carries game-defined flags and extras through kindAt', () => {
@@ -146,16 +138,10 @@ test('ActionJournal preserves ordered action batches and supports checkpoints', 
 test('MWL runtime traces event lifecycle and variable writes', () => {
 	const traces: MwlTraceEvent[] = [];
 	const game = compile(
-		`${MWL_TRACE_GAME}[event]
-id=trace_event
-on=start
-[set_variable]
-name=counter
-value=1
-[/set_variable]
-[/event]
-[/game]
-`,
+		`${MWL_TRACE_GAME}{ tag: 'event', id: 'trace_event', on: 'start', children: [
+		{ tag: 'set_variable', name: 'counter', value: 1 },
+	] },
+] }]`,
 		{ file: 'trace.mwl' },
 	);
 	const runtime = new MwlRuntime(game, { onTrace: (event) => traces.push(event) });
@@ -169,21 +155,11 @@ value=1
 test('MWL predicate registry evaluates game-defined filter conditions', () => {
 	const messages: string[] = [];
 	const game = compile(
-		`${MWL_TRACE_GAME}[event]
-id=predicate_event
-on=start
-[filter_condition]
-[predicate]
-name=can_fire
-stance=ready
-[/predicate]
-[/filter_condition]
-[message]
-text=_ "predicate fired"
-[/message]
-[/event]
-[/game]
-`,
+		`${MWL_TRACE_GAME}{ tag: 'event', id: 'predicate_event', on: 'start', children: [
+		{ tag: 'filter_condition', children: [{ tag: 'predicate', name: 'can_fire', stance: 'ready' }] },
+		{ tag: 'message', text: _("predicate fired") },
+	] },
+] }]`,
 		{ file: 'predicate.mwl' },
 	);
 	const runtime = new MwlRuntime(game, {

@@ -3,51 +3,23 @@ import test from 'node:test';
 import { compile } from '../src/mwl/compiler.ts';
 import { MwlRuntime, type MwlMessage } from '../src/mwl/runtime.ts';
 
-const GAME = `[game]
-schema=0.1
-[side]
-id=1
-controller=human
-gold=0
-[/side]
-[map]
-id=arena
-terrain=Gg,Gg
-[/map]
-[event]
-id=ask
-on=start
-[dialogue]
-[message]
-speaker=Guide
-text=_ "Which way?"
-[/message]
-[choice]
-text=_ "Left"
-event=go-left
-[/choice]
-[choice]
-text=_ "Right"
-event=go-right
-[/choice]
-[/dialogue]
-[/event]
-[event]
-id=go-left
-[set_variable]
-name=path
-value=left
-[/set_variable]
-[/event]
-[event]
-id=go-right
-[set_variable]
-name=path
-value=right
-[/set_variable]
-[/event]
-[/game]
-`;
+const GAME = `[{ tag: 'game', schema: 0.1, children: [
+	{ tag: 'side', id: 1, controller: 'human', gold: 0 },
+	{ tag: 'map', id: 'arena', terrain: 'Gg,Gg' },
+	{ tag: 'event', id: 'ask', on: 'start', children: [
+		{ tag: 'dialogue', children: [
+			{ tag: 'message', speaker: 'Guide', text: _("Which way?") },
+			{ tag: 'choice', text: _("Left"), event: 'go-left' },
+			{ tag: 'choice', text: _("Right"), event: 'go-right' },
+		] },
+	] },
+	{ tag: 'event', id: 'go-left', children: [
+		{ tag: 'set_variable', name: 'path', value: 'left' },
+	] },
+	{ tag: 'event', id: 'go-right', children: [
+		{ tag: 'set_variable', name: 'path', value: 'right' },
+	] },
+] }]`;
 
 function runtime() {
 	const messages: MwlMessage[] = [];
@@ -89,31 +61,19 @@ test('a pending dialogue survives save and restore', () => {
 });
 
 test('inline dialogue branches become answerable choices', () => {
-	const source = `[event]
-on=start
-[dialogue]
-[say]
-speaker=Guide
-text=Choose
-[/say]
-[choice]
-text=Advance
-[branch]
-[set_variable]
-name=path
-value=forward
-[/set_variable]
-[/branch]
-[branch]
-text=Hold
-[set_variable]
-name=path
-value=still
-[/set_variable]
-[/branch]
-[/choice]
-[/dialogue]
-[/event]`;
+	const source = `[{ tag: 'event', on: 'start', children: [
+		{ tag: 'dialogue', children: [
+			{ tag: 'say', speaker: 'Guide', text: 'Choose' },
+			{ tag: 'choice', text: 'Advance', children: [
+				{ tag: 'branch', children: [
+					{ tag: 'set_variable', name: 'path', value: 'forward' },
+				] },
+				{ tag: 'branch', text: 'Hold', children: [
+					{ tag: 'set_variable', name: 'path', value: 'still' },
+				] },
+			] },
+		] },
+	] }]`;
 	const messages: MwlMessage[] = [];
 	const runtime = new MwlRuntime(compile(source), { onMessage: (message) => messages.push(message) });
 	runtime.run('start');
@@ -126,38 +86,19 @@ value=still
 });
 
 test('a choice gate reads a dotted variable path, like every other reader', () => {
-	const source = `[game]
-schema=0.1
-[event]
-on=start
-[set_variable]
-name=gate.open
-value=yes
-[/set_variable]
-[dialogue]
-[message]
-text=_ "Advance?"
-[/message]
-[choice]
-text=Secret
-event=go
-variable=gate.open
-equals=yes
-[/choice]
-[choice]
-text=Wait
-event=go
-[/choice]
-[/dialogue]
-[/event]
-[event]
-id=go
-[set_variable]
-name=path
-value=taken
-[/set_variable]
-[/event]
-[/game]`;
+	const source = `[{ tag: 'game', schema: 0.1, children: [
+		{ tag: 'event', on: 'start', children: [
+			{ tag: 'set_variable', name: 'gate.open', value: 'yes' },
+			{ tag: 'dialogue', children: [
+				{ tag: 'message', text: _("Advance?") },
+				{ tag: 'choice', text: 'Secret', event: 'go', variable: 'gate.open', equals: 'yes' },
+				{ tag: 'choice', text: 'Wait', event: 'go' },
+			] },
+		] },
+		{ tag: 'event', id: 'go', children: [
+			{ tag: 'set_variable', name: 'path', value: 'taken' },
+		] },
+	] }]`;
 	const messages: MwlMessage[] = [];
 	const runtime = new MwlRuntime(compile(source), { onMessage: (message) => messages.push(message) });
 	runtime.run('start');

@@ -1,7 +1,7 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
-  "serialNumber": "urn:uuid:db6c0d2f-3190-5a11-815f-8c4fad1e7a0a",
+  "serialNumber": "urn:uuid:eda34080-9a9a-5505-a584-14881232d48b",
   "version": 1,
   "metadata": {
     "tools": {
@@ -10,16 +10,16 @@
           "type": "application",
           "group": "datamoc",
           "name": "tools/sbom.mjs",
-          "version": "0.8.2"
+          "version": "0.9.0-alpha"
         }
       ]
     },
     "component": {
       "type": "library",
-      "bom-ref": "pkg:npm/%40datamoc/mw_games@0.8.2",
+      "bom-ref": "pkg:npm/%40datamoc/mw_games@0.9.0-alpha",
       "name": "@datamoc/mw_games",
-      "version": "0.8.2",
-      "purl": "pkg:npm/%40datamoc/mw_games@0.8.2",
+      "version": "0.9.0-alpha",
+      "purl": "pkg:npm/%40datamoc/mw_games@0.9.0-alpha",
       "description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
       "licenses": [
         {
@@ -2175,6 +2175,27 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:npm/json5@2.2.3",
+      "name": "json5",
+      "version": "2.2.3",
+      "purl": "pkg:npm/json5@2.2.3",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5e63967bb7b21d81f5e1c2dd54fa3283e18e1f7ad85fef8aa73af2949c125bdf2ddcd93e53c5ce97c15628e830b7375bf255c67facd8c035337873167f16acca"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:npm/jsonfile@6.2.1",
       "name": "jsonfile",
       "version": "6.2.1",
@@ -3823,7 +3844,7 @@
       ]
     },
     {
-      "ref": "pkg:npm/%40datamoc/mw_games@0.8.2",
+      "ref": "pkg:npm/%40datamoc/mw_games@0.9.0-alpha",
       "dependsOn": [
         "pkg:npm/%40babylonjs/core@9.26.0",
         "pkg:npm/%40babylonjs/loaders@9.26.0",
@@ -3834,6 +3855,7 @@
         "pkg:npm/%40types/node@26.5.1",
         "pkg:npm/%40types/ws@8.18.1",
         "pkg:npm/fengari@0.1.5",
+        "pkg:npm/json5@2.2.3",
         "pkg:npm/pixi.js@8.20.1",
         "pkg:npm/playwright-core@1.63.0",
         "pkg:npm/prettier@3.9.6",
@@ -4318,6 +4340,10 @@
     },
     {
       "ref": "pkg:npm/js-binary-schema-parser@2.0.3",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/json5@2.2.3",
       "dependsOn": []
     },
     {

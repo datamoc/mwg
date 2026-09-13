@@ -11,42 +11,20 @@ import { MwlRuntime } from '../src/mwl/runtime.ts';
  * `<side> <code>` marker, a `[kill]` filter, a side condition and an `[endlevel]` carry-over.
  */
 
-const NAMED = `[game]
-[unit_type]
-id=Spearman
-hitpoints=20
-movement=5
-[/unit_type]
-[side]
-id=rebels
-controller=human
-leader=Spearman
-gold=100
-[defeat]
-condition=units_dead
-[/defeat]
-[/side]
-[map]
-id=field
-terrain=rebels Kh,Gg
-[/map]
-[event]
-id=finish
-on=finish
-[endlevel]
-result=victory
-side=rebels
-bonus=10
-[/endlevel]
-[/event]
-[event]
-id=purge
-on=purge
-[kill]
-side=rebels
-[/kill]
-[/event]
-[/game]`;
+const NAMED_BODY = `
+	{ tag: 'unit_type', id: 'Spearman', hitpoints: 20, movement: 5 },
+	{ tag: 'side', id: 'rebels', controller: 'human', leader: 'Spearman', gold: 100, children: [
+		{ tag: 'defeat', condition: 'units_dead' },
+	] },
+	{ tag: 'map', id: 'field', terrain: 'rebels Kh,Gg' },
+	{ tag: 'event', id: 'finish', on: 'finish', children: [
+		{ tag: 'endlevel', result: 'victory', side: 'rebels', bonus: 10 },
+	] },
+	{ tag: 'event', id: 'purge', on: 'purge', children: [
+		{ tag: 'kill', side: 'rebels' },
+	] },`;
+
+const NAMED = `[{ tag: 'game', children: [${NAMED_BODY}] }]`;
 
 test('a named side marks its keep, and its leader carries the same id', () => {
 	const runtime = new MwlRuntime(compile(NAMED));
@@ -64,22 +42,11 @@ test('a named side marks its keep, and its leader carries the same id', () => {
 
 test('a leader=yes filter selects the side leader through the unit flag', () => {
 	const runtime = new MwlRuntime(
-		compile(
-			NAMED.replace(
-				'[/game]',
-				`[event]
-id=mark
-on=mark
-[store_unit]
-variable=only
-[filter]
-leader=yes
-[/filter]
-[/store_unit]
-[/event]
-[/game]`,
-			),
-		),
+		compile(`[{ tag: 'game', children: [${NAMED_BODY}
+			{ tag: 'event', id: 'mark', on: 'mark', children: [
+				{ tag: 'store_unit', variable: 'only', children: [{ tag: 'filter', leader: true }] },
+			] },
+		] }]`),
 	);
 	runtime.fireEvent('mark');
 

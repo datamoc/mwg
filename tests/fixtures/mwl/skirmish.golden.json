@@ -12,8 +12,8 @@
 			"children": [],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 1,
-				"column": 1
+				"line": 6,
+				"column": 5
 			},
 			"gettext": ["title"]
 		},
@@ -28,8 +28,8 @@
 			"children": [],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 9,
-				"column": 1
+				"line": 12,
+				"column": 5
 			},
 			"gettext": []
 		},
@@ -41,14 +41,14 @@
 				"aliasof": "_bas, village_base",
 				"default_base": "Gg",
 				"heals": "8",
-				"gives_income": "yes",
+				"gives_income": "true",
 				"overlay_tile": "terrain/village/camp-tile.png"
 			},
 			"children": [],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 16,
-				"column": 1
+				"line": 14,
+				"column": 5
 			},
 			"gettext": []
 		},
@@ -70,7 +70,7 @@
 					"location": {
 						"file": "skirmish.mwl",
 						"line": 28,
-						"column": 5
+						"column": 9
 					},
 					"gettext": []
 				},
@@ -85,8 +85,8 @@
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 34,
-						"column": 5
+						"line": 35,
+						"column": 9
 					},
 					"gettext": []
 				},
@@ -101,16 +101,16 @@
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 40,
-						"column": 5
+						"line": 42,
+						"column": 9
 					},
 					"gettext": []
 				}
 			],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 26,
-				"column": 1
+				"line": 24,
+				"column": 5
 			},
 			"gettext": []
 		},
@@ -123,8 +123,8 @@
 			"children": [],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 48,
-				"column": 1
+				"line": 51,
+				"column": 5
 			},
 			"gettext": ["name"]
 		},
@@ -157,16 +157,16 @@
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 64,
-						"column": 5
+						"line": 69,
+						"column": 9
 					},
 					"gettext": ["description"]
 				}
 			],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 53,
-				"column": 1
+				"line": 56,
+				"column": 5
 			},
 			"gettext": ["name"]
 		},
@@ -185,8 +185,8 @@
 			"children": [],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 75,
-				"column": 1
+				"line": 81,
+				"column": 5
 			},
 			"gettext": []
 		},
@@ -202,8 +202,8 @@
 			"children": [],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 86,
-				"column": 1
+				"line": 92,
+				"column": 5
 			},
 			"gettext": []
 		},
@@ -216,8 +216,8 @@
 			"children": [],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 94,
-				"column": 1
+				"line": 100,
+				"column": 5
 			},
 			"gettext": []
 		},
@@ -237,8 +237,8 @@
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 102,
-						"column": 5
+						"line": 115,
+						"column": 9
 					},
 					"gettext": ["name"]
 				},
@@ -252,8 +252,8 @@
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 107,
-						"column": 5
+						"line": 121,
+						"column": 9
 					},
 					"gettext": ["name"]
 				},
@@ -267,8 +267,8 @@
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 112,
-						"column": 5
+						"line": 127,
+						"column": 9
 					},
 					"gettext": ["name"]
 				},
@@ -282,16 +282,16 @@
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 117,
-						"column": 5
+						"line": 133,
+						"column": 9
 					},
 					"gettext": ["name"]
 				}
 			],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 100,
-				"column": 1
+				"line": 111,
+				"column": 5
 			},
 			"gettext": []
 		},
@@ -306,13 +306,13 @@
 					"tag": "filter",
 					"attributes": {
 						"side": "2",
-						"can_recruit": "yes"
+						"can_recruit": "true"
 					},
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 127,
-						"column": 5
+						"line": 146,
+						"column": 9
 					},
 					"gettext": []
 				},
@@ -324,16 +324,16 @@
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 131,
-						"column": 5
+						"line": 151,
+						"column": 9
 					},
 					"gettext": []
 				}
 			],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 124,
-				"column": 1
+				"line": 141,
+				"column": 5
 			},
 			"gettext": []
 		},
@@ -354,8 +354,8 @@
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 139,
-						"column": 5
+						"line": 162,
+						"column": 9
 					},
 					"gettext": []
 				},
@@ -367,16 +367,16 @@
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 144,
-						"column": 5
+						"line": 168,
+						"column": 9
 					},
 					"gettext": []
 				}
 			],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 136,
-				"column": 1
+				"line": 157,
+				"column": 5
 			},
 			"gettext": []
 		},
@@ -395,8 +395,8 @@
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 151,
-						"column": 5
+						"line": 178,
+						"column": 9
 					},
 					"gettext": ["text"]
 				},
@@ -419,16 +419,16 @@
 									"children": [],
 									"location": {
 										"file": "skirmish.mwl",
-										"line": 158,
-										"column": 13
+										"line": 190,
+										"column": 17
 									},
 									"gettext": ["text"]
 								}
 							],
 							"location": {
 								"file": "skirmish.mwl",
-								"line": 157,
-								"column": 9
+								"line": 187,
+								"column": 13
 							},
 							"gettext": []
 						},
@@ -447,32 +447,32 @@
 									"children": [],
 									"location": {
 										"file": "skirmish.mwl",
-										"line": 165,
-										"column": 13
+										"line": 201,
+										"column": 17
 									},
 									"gettext": ["text"]
 								}
 							],
 							"location": {
 								"file": "skirmish.mwl",
-								"line": 163,
-								"column": 9
+								"line": 197,
+								"column": 13
 							},
 							"gettext": ["text"]
 						}
 					],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 155,
-						"column": 5
+						"line": 183,
+						"column": 9
 					},
 					"gettext": ["text"]
 				}
 			],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 149,
-				"column": 1
+				"line": 174,
+				"column": 5
 			},
 			"gettext": []
 		},
@@ -490,8 +490,8 @@
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 174,
-						"column": 5
+						"line": 215,
+						"column": 9
 					},
 					"gettext": []
 				},
@@ -505,16 +505,16 @@
 					"children": [],
 					"location": {
 						"file": "skirmish.mwl",
-						"line": 179,
-						"column": 5
+						"line": 221,
+						"column": 9
 					},
 					"gettext": []
 				}
 			],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 173,
-				"column": 1
+				"line": 212,
+				"column": 5
 			},
 			"gettext": []
 		},
@@ -527,8 +527,8 @@
 			"children": [],
 			"location": {
 				"file": "skirmish.mwl",
-				"line": 186,
-				"column": 1
+				"line": 229,
+				"column": 5
 			},
 			"gettext": []
 		}

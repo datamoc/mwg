@@ -7,6 +7,21 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.9.0-alpha] - 2026-09-13
+
+### Changed
+
+- MWL authoring syntax is now JSON5 instead of the WML-inspired tag/`key=value`
+  form: every `.mwl` file is a top-level array of `{ tag, ...attributes, children }`
+  nodes, values are real JSON5 numbers, booleans and strings (stringified back to
+  the `Record<string, string>` the schema, compiler and runtime already see), and
+  translatable strings are marked `_("...")` via a preprocessor rewrite. The
+  `#define`/`#include`/`#ifdef` textual pass is unchanged. The `"""..."""` block
+  form (item 317) is superseded by JSON5 `\n` escapes and backslash line
+  continuations. Clean cutover: all fixtures, examples, tests and doc examples
+  are migrated, the old tag parser is deleted, and `json5` (pure JS, no native
+  build) is a runtime dependency.
+
 ## [0.8.2] - 2026-09-13
 
 ### Added

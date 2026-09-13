@@ -402,9 +402,12 @@ The optional 3D group is now implemented without changing the existing 2D entry 
 
 ## MWL
 
-MWL is the framework's declarative, WML-inspired authoring layer. It describes
-game data and commands while `mwg` remains responsible for execution, rendering,
-input, audio, and saves. MWL is a new language, not a WML compatibility layer.
+MWL is the framework's declarative, WML-inspired authoring layer. Content files
+are JSON5: a top-level array of `{ tag, ...attributes, children }` nodes, with
+real numbers and booleans for scalar values and `_("...")` marking translatable
+strings. It describes game data and commands while `mwg` remains responsible for
+execution, rendering, input, audio, and saves. MWL is a new language, not a WML
+compatibility layer.
 The Wesnoth port can nevertheless use its native `.cfg` files as build inputs:
 the port-owned WML front end parses them, the adapter converts the supported
 nodes to MWL, and the normal MWL compiler emits the runtime module.
@@ -461,7 +464,7 @@ reported as warnings. The output directory is safe to regenerate: its extracted
 CSS `url(data:...)` values and HTML `srcset` candidates are handled too, including
 their density descriptors.
 
-Translation messages are the values marked `_ "..."` in the source; the
+Translation messages are the values marked `_("...")` in the source; the
 extracted catalog matches `@datamoc/mw_games/i18n`. Hooks are referenced as
 `type:name`, declared in a manifest, and bundled with esbuild, which a game
 project installs itself (`npm install --save-dev esbuild`). The framework does

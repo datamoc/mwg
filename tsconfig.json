@@ -12,6 +12,7 @@
 		"skipLibCheck": true,
 		"types": ["node"],
 		"isolatedModules": true,
+		"allowSyntheticDefaultImports": true,
 		"verbatimModuleSyntax": true,
 		"allowImportingTsExtensions": true,
 		"rewriteRelativeImportExtensions": true,

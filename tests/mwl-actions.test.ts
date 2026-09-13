@@ -11,48 +11,25 @@ import { MwlRuntime } from '../src/mwl/runtime.ts';
  * framework sequences it and keeps it in the save.
  */
 
-const source = (body: string) => `[game]
-[side]
-id=1
-controller=human
-[/side]
-[side]
-id=2
-controller=ai
-[/side]
-[unit]
-id=hero
-hp=10
-x=1
-y=1
-side=1
-type=Swordsman
-[/unit]
-[unit]
-id=grunt
-hp=6
-x=3
-y=3
-side=2
-type=Grunt
-[/unit]
-[map]
-id=m
-file=m.map
-[/map]
-${body}
-[/game]`;
+const source = (body: string) => `[{ tag: 'game', children: [
+	{ tag: 'side', id: 1, controller: 'human' },
+	{ tag: 'side', id: 2, controller: 'ai' },
+	{ tag: 'unit', id: 'hero', hp: 10, x: 1, y: 1, side: 1, type: 'Swordsman' },
+	{ tag: 'unit', id: 'grunt', hp: 6, x: 3, y: 3, side: 2, type: 'Grunt' },
+	{ tag: 'map', id: 'm', file: 'm.map' },
+	${body}
+] }]`;
 
 const MAP = ['Gg,Gg,Gg,Gg', 'Gg,Gg,Gg,Gg'].join('\n');
 
 const runtimeFor = (body: string) => new MwlRuntime(compile(source(body)), { resolveMap: () => MAP });
 
-const event = (inner: string, on = 'go') => `[event]\non=${on}\n${inner}\n[/event]`;
+const event = (inner: string, on = 'go') => `{ tag: 'event', on: '${on}', children: [${inner}] },`;
 
 test('fire_event runs another event by id', () => {
 	const runtime = runtimeFor(
-		event('[fire_event]\nid=ping\n[/fire_event]') +
-			'\n[event]\nid=ping\non=ping\n[gold]\nside=1\ndelta=5\n[/gold]\n[/event]',
+		event(`{ tag: 'fire_event', id: 'ping' },`) +
+			`{ tag: 'event', id: 'ping', on: 'ping', children: [{ tag: 'gold', side: 1, delta: 5 }] },`,
 	);
 
 	runtime.run('go');
@@ -63,7 +40,7 @@ test('fire_event runs another event by id', () => {
 test('store_unit captures matching units and unstore_unit puts them back', () => {
 	const runtime = runtimeFor(
 		event(
-			'[store_unit]\nvariable=party\n[filter]\nside=1\n[/filter]\n[/store_unit]\n[kill]\nside=1\n[/kill]\n[unstore_unit]\nvariable=party\n[/unstore_unit]',
+			`{ tag: 'store_unit', variable: 'party', children: [{ tag: 'filter', side: 1 }] }, { tag: 'kill', side: 1 }, { tag: 'unstore_unit', variable: 'party' },`,
 		),
 	);
 
@@ -78,7 +55,7 @@ test('store_unit captures matching units and unstore_unit puts them back', () =>
 test('recall places a stored unit at a chosen hex and side', () => {
 	const runtime = runtimeFor(
 		event(
-			'[store_unit]\nvariable=party\n[/store_unit]\n[recall]\nvariable=party\nid=grunt\nx=0\ny=0\nside=1\n[/recall]',
+			`{ tag: 'store_unit', variable: 'party' }, { tag: 'recall', variable: 'party', id: 'grunt', x: 0, y: 0, side: 1 },`,
 		),
 	);
 
@@ -97,7 +74,7 @@ test('recall places a stored unit at a chosen hex and side', () => {
 test('modify_unit changes only what [set] names, on the units [filter] selects', () => {
 	const runtime = runtimeFor(
 		event(
-			'[modify_unit]\n[filter]\ntype=Swordsman\n[/filter]\n[set]\nhp=3\nmoves=1\nside=2\n[/set]\n[/modify_unit]',
+			`{ tag: 'modify_unit', children: [{ tag: 'filter', type: 'Swordsman' }, { tag: 'set', hp: 3, moves: 1, side: 2 }] },`,
 		),
 	);
 
@@ -110,7 +87,7 @@ test('modify_unit changes only what [set] names, on the units [filter] selects',
 });
 
 test('heal_unit adds its amount to the units it matches', () => {
-	const runtime = runtimeFor(event('[heal_unit]\namount=4\n[filter]\nunit=hero\n[/filter]\n[/heal_unit]'));
+	const runtime = runtimeFor(event(`{ tag: 'heal_unit', amount: 4, children: [{ tag: 'filter', unit: 'hero' }] },`));
 
 	runtime.run('go');
 
@@ -119,12 +96,12 @@ test('heal_unit adds its amount to the units it matches', () => {
 });
 
 test('heal_unit without amount or hp is a named content error', () => {
-	const runtime = runtimeFor(event('[heal_unit]\n[/heal_unit]'));
+	const runtime = runtimeFor(event(`{ tag: 'heal_unit' },`));
 	assert.throws(() => runtime.run('go'), /\[heal_unit\] requires amount or hp/);
 });
 
 test('set_terrain changes one cell of the primary map', () => {
-	const runtime = runtimeFor(event('[set_terrain]\nterrain=Ww\nx=1\ny=0\n[/set_terrain]'));
+	const runtime = runtimeFor(event(`{ tag: 'set_terrain', terrain: 'Ww', x: 1, y: 0 },`));
 
 	runtime.run('go');
 
@@ -134,17 +111,17 @@ test('set_terrain changes one cell of the primary map', () => {
 });
 
 test('capture_village records who holds a village, and a later capture changes it', () => {
-	const runtime = runtimeFor(event('[capture_village]\nside=1\nx=2\ny=1\nname=Mill\n[/capture_village]'));
+	const runtime = runtimeFor(event(`{ tag: 'capture_village', side: 1, x: 2, y: 1, name: 'Mill' },`));
 	runtime.run('go');
 	assert.deepEqual(runtime.world.villages?.['2,1'], { x: 2, y: 1, side: '1', name: 'Mill' });
 
-	const recaptured = runtimeFor(event('[capture_village]\nside=2\nx=2\ny=1\n[/capture_village]'));
+	const recaptured = runtimeFor(event(`{ tag: 'capture_village', side: 2, x: 2, y: 1 },`));
 	recaptured.run('go');
 	assert.equal(recaptured.world.villages?.['2,1'].side, '2');
 });
 
 test('clear_shroud records the hexes a side has uncovered', () => {
-	const runtime = runtimeFor(event('[clear_shroud]\nside=1\nx=2\ny=2\nradius=1\n[/clear_shroud]'));
+	const runtime = runtimeFor(event(`{ tag: 'clear_shroud', side: 1, x: 2, y: 2, radius: 1 },`));
 
 	runtime.run('go');
 
@@ -154,7 +131,7 @@ test('clear_shroud records the hexes a side has uncovered', () => {
 });
 
 test('a scenario-level role names the units it matches, and stamps the role on them', () => {
-	const runtime = runtimeFor('[role]\nrole=courier\ntype=Swordsman\n[/role]');
+	const runtime = runtimeFor(`{ tag: 'role', role: 'courier', type: 'Swordsman' },`);
 
 	assert.deepEqual(runtime.world.roles, { courier: ['hero'] });
 	assert.equal(runtime.world.units.hero.role, 'courier', 'the matched unit learns the role it was given');
@@ -163,7 +140,7 @@ test('a scenario-level role names the units it matches, and stamps the role on t
 test('a role assigned from an event matches by the attributes it names, not the role being set', () => {
 	//`role`/`name` on the tag assign the role; reading them back as a filter would require every
 	//unit to already carry the role it is about to be given, and match nobody
-	const runtime = runtimeFor(event('[role]\nrole=courier\ntype=Swordsman\n[/role]'));
+	const runtime = runtimeFor(event(`{ tag: 'role', role: 'courier', type: 'Swordsman' },`));
 	runtime.run('go');
 
 	assert.deepEqual(runtime.world.roles, { courier: ['hero'] });
@@ -173,8 +150,8 @@ test('a role assigned from an event matches by the attributes it names, not the 
 test('a scenario-level object and story beat are kept as data', () => {
 	const runtime = runtimeFor(
 		[
-			'[object]\nid=chest\nname=Chest\nimage=items/chest.png\nside=1\nx=4\ny=1\n[/object]',
-			'[story]\ntitle=_ "Prologue"\ntext=_ "The war begins."\nimage=story/intro.png\nmusic=main.ogg\n[/story]',
+			`{ tag: 'object', id: 'chest', name: 'Chest', image: 'items/chest.png', side: 1, x: 4, y: 1 },`,
+			`{ tag: 'story', title: _("Prologue"), text: _("The war begins."), image: 'story/intro.png', music: 'main.ogg' },`,
 		].join('\n'),
 	);
 
@@ -187,15 +164,15 @@ test('a scenario-level object and story beat are kept as data', () => {
 });
 
 test('unstore_unit on a variable that is not a stored unit list is a named error', () => {
-	const runtime = runtimeFor(event('[unstore_unit]\nvariable=missing\n[/unstore_unit]'));
+	const runtime = runtimeFor(event(`{ tag: 'unstore_unit', variable: 'missing' },`));
 	assert.throws(() => runtime.run('go'), /not a stored unit list/);
 });
 
 test('village ownership and scenario data survive a save and restore', () => {
 	const compiled = compile(
 		source(
-			event('[capture_village]\nside=1\nx=2\ny=1\n[/capture_village]') +
-				'\n[role]\nrole=guard\ntype=Grunt\n[/role]',
+			event(`{ tag: 'capture_village', side: 1, x: 2, y: 1 },`) +
+				`{ tag: 'role', role: 'guard', type: 'Grunt' },`,
 		),
 	);
 	const runtime = new MwlRuntime(compiled);
@@ -209,47 +186,21 @@ test('village ownership and scenario data survive a save and restore', () => {
 });
 
 /** one named leader (name/role/can_recruit) and one plain unit, for the attribute tests below */
-const namedSource = (body: string) => `[game]
-[side]
-id=1
-controller=human
-[/side]
-[side]
-id=2
-controller=ai
-[/side]
-[unit]
-id=hero
-hp=10
-x=1
-y=1
-side=1
-type=Swordsman
-name=Kalenz
-role=courier
-can_recruit=yes
-[/unit]
-[unit]
-id=grunt
-hp=6
-x=3
-y=3
-side=2
-type=Grunt
-[/unit]
-[map]
-id=m
-file=m.map
-[/map]
-${body}
-[/game]`;
+const namedSource = (body: string) => `[{ tag: 'game', children: [
+	{ tag: 'side', id: 1, controller: 'human' },
+	{ tag: 'side', id: 2, controller: 'ai' },
+	{ tag: 'unit', id: 'hero', hp: 10, x: 1, y: 1, side: 1, type: 'Swordsman', name: 'Kalenz', role: 'courier', can_recruit: true },
+	{ tag: 'unit', id: 'grunt', hp: 6, x: 3, y: 3, side: 2, type: 'Grunt' },
+	{ tag: 'map', id: 'm', file: 'm.map' },
+	${body}
+] }]`;
 
 test('a unit carries its own name, role and leader flag, and a filter selects by all three', () => {
 	const runtime = new MwlRuntime(
 		compile(
 			namedSource(
 				event(
-					'[store_unit]\nvariable=leaders\n[filter]\ncan_recruit=yes\nrole=courier\nname=Kalenz\n[/filter]\n[/store_unit]\n[store_unit]\nvariable=others\n[filter]\ncan_recruit=no\n[/filter]\n[/store_unit]',
+					`{ tag: 'store_unit', variable: 'leaders', children: [{ tag: 'filter', can_recruit: true, role: 'courier', name: 'Kalenz' }] }, { tag: 'store_unit', variable: 'others', children: [{ tag: 'filter', can_recruit: false }] },`,
 				),
 			),
 		),
@@ -271,7 +222,7 @@ test('store_unit and unstore_unit accept a dotted variable path', () => {
 		compile(
 			namedSource(
 				event(
-					'[store_unit]\nvariable=party.units\n[filter]\nunit=hero\n[/filter]\n[/store_unit]\n[kill]\nunit=hero\n[/kill]\n[unstore_unit]\nvariable=party.units\n[/unstore_unit]',
+					`{ tag: 'store_unit', variable: 'party.units', children: [{ tag: 'filter', unit: 'hero' }] }, { tag: 'kill', unit: 'hero' }, { tag: 'unstore_unit', variable: 'party.units' },`,
 				),
 			),
 		),
@@ -288,7 +239,7 @@ test('store_unit keeps a unit s name, role and leader flag, and unstore_unit put
 		compile(
 			namedSource(
 				event(
-					'[store_unit]\nvariable=party\n[filter]\nunit=hero\n[/filter]\n[/store_unit]\n[kill]\nunit=hero\n[/kill]\n[unstore_unit]\nvariable=party\n[/unstore_unit]',
+					`{ tag: 'store_unit', variable: 'party', children: [{ tag: 'filter', unit: 'hero' }] }, { tag: 'kill', unit: 'hero' }, { tag: 'unstore_unit', variable: 'party' },`,
 				),
 			),
 		),

@@ -281,7 +281,7 @@ const variableReference = /\$([A-Za-z_][A-Za-z0-9_.]*)/g;
  * ```ts
  * import { compile, MwlRuntime } from '@datamoc/mw_games/mwl';
  *
- * const runtime = new MwlRuntime(compile('[game]\nschema=0.1\n[/game]'), {
+ * const runtime = new MwlRuntime(compile("[{ tag: 'game', schema: 0.1 }]"), {
  *   resolveMap: () => 'Gg,Gg\nGg,Gg',
  * });
  * console.log(runtime.world.turn); // 1

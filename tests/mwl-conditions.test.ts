@@ -3,50 +3,19 @@ import test from 'node:test';
 import { compile } from '../src/mwl/compiler.ts';
 import { MwlRuntime, type MwlMessage } from '../src/mwl/runtime.ts';
 
-const BASE = `[game]
-schema=0.1
-[side]
-id=1
-controller=human
-gold=0
-[/side]
-[map]
-id=arena
-terrain=Gg,Gg
-[/map]
-[unit_type]
-id=Swordsman
-hitpoints=10
-movement=3
-[/unit_type]
-[unit_type]
-id=Archer
-hitpoints=6
-movement=3
-[/unit_type]
-[unit]
-id=hero
-type=Swordsman
-side=1
-x=0
-y=0
-[/unit]
-[unit]
-id=foe
-type=Archer
-side=2
-x=1
-y=0
-[/unit]
+const BASE = `[
+	{ tag: 'game', schema: 0.1, children: [
+		{ tag: 'side', id: 1, controller: 'human', gold: 0 },
+		{ tag: 'map', id: 'arena', terrain: 'Gg,Gg' },
+		{ tag: 'unit_type', id: 'Swordsman', hitpoints: 10, movement: 3 },
+		{ tag: 'unit_type', id: 'Archer', hitpoints: 6, movement: 3 },
+		{ tag: 'unit', id: 'hero', type: 'Swordsman', side: 1, x: 0, y: 0 },
+		{ tag: 'unit', id: 'foe', type: 'Archer', side: 2, x: 1, y: 0 },
 `;
 
 function runWith(events: string, variables: Record<string, string | number | boolean> = {}) {
 	const messages: MwlMessage[] = [];
-	const game = compile(
-		`${BASE}${events}[/game]
-`,
-		{ file: 'conditions.mwl' },
-	);
+	const game = compile(`${BASE}${events}] } ]`, { file: 'conditions.mwl' });
 	const rt = new MwlRuntime(game, { onMessage: (message) => messages.push(message) });
 	Object.assign(rt.world.variables, variables);
 	rt.run('start');
@@ -55,168 +24,67 @@ function runWith(events: string, variables: Record<string, string | number | boo
 
 const fired = (messages: MwlMessage[]) => messages.some((message) => message.text === 'fired');
 
+const startEvent = (children: string) => `{ tag: 'event', id: 'e', on: 'start', children: [${children}] },`;
+
+const firedMessage = `{ tag: 'message', text: _("fired") },`;
+
 test('conditions compare with not_equals, in, not_in and numeric operators', () => {
-	const yes = runWith(
-		`[event]
-id=e
-on=start
-[condition]
-variable=path
-not_equals=left
-[/condition]
-[message]
-text=_ "fired"
-[/message]
-[/event]
-`,
-		{ path: 'right' },
-	);
+	const yes = runWith(startEvent(`{ tag: 'condition', variable: 'path', not_equals: 'left' }, ${firedMessage}`), {
+		path: 'right',
+	});
 	assert.equal(fired(yes.messages), true);
 
-	const no = runWith(
-		`[event]
-id=e
-on=start
-[condition]
-variable=path
-not_equals=right
-[/condition]
-[message]
-text=_ "fired"
-[/message]
-[/event]
-`,
-		{ path: 'right' },
-	);
+	const no = runWith(startEvent(`{ tag: 'condition', variable: 'path', not_equals: 'right' }, ${firedMessage}`), {
+		path: 'right',
+	});
 	assert.equal(fired(no.messages), false);
 
 	const list = runWith(
-		`[event]
-id=e
-on=start
-[condition]
-variable=path
-in=left,right
-[/condition]
-[condition]
-variable=n
-less_than=7
-[/condition]
-[message]
-text=_ "fired"
-[/message]
-[/event]
-`,
+		startEvent(
+			`{ tag: 'condition', variable: 'path', in: 'left,right' }, { tag: 'condition', variable: 'n', less_than: 7 }, ${firedMessage}`,
+		),
 		{ path: 'right', n: 6 },
 	);
 	assert.equal(fired(list.messages), true, 'all condition children must match');
 
 	const range = runWith(
-		`[event]
-id=e
-on=start
-[condition]
-variable=n
-greater_than_or_equal_to=7
-[/condition]
-[message]
-text=_ "fired"
-[/message]
-[/event]
-`,
+		startEvent(`{ tag: 'condition', variable: 'n', greater_than_or_equal_to: 7 }, ${firedMessage}`),
 		{ n: 6 },
 	);
 	assert.equal(range.messages.length, 0);
 });
 
 test('filters exclude not_type and filter_condition checks units and variables', () => {
-	const excluded = runWith(`[event]
-id=e
-on=start
-[filter]
-side=2
-not_type=Archer,Swordsman
-[/filter]
-[message]
-text=_ "fired"
-[/message]
-[/event]
-`);
+	const excluded = runWith(startEvent(`{ tag: 'filter', side: 2, not_type: 'Archer,Swordsman' }, ${firedMessage}`));
 	assert.equal(fired(excluded.messages), false, 'the only side-2 unit is an Archer');
 
 	const seen = runWith(
-		`[event]
-id=e
-on=start
-[filter_condition]
-[have_unit]
-id=hero
-[/have_unit]
-[variable]
-name=turn_number
-equals=1
-[/variable]
-[/filter_condition]
-[message]
-text=_ "fired"
-[/message]
-[/event]
-`,
+		startEvent(
+			`{ tag: 'filter_condition', children: [{ tag: 'have_unit', id: 'hero' }, { tag: 'variable', name: 'turn_number', equals: 1 }] }, ${firedMessage}`,
+		),
 		{ turn_number: 1 },
 	);
 	assert.equal(fired(seen.messages), true);
 
-	const missing = runWith(`[event]
-id=e
-on=start
-[filter_condition]
-[have_unit]
-id=nobody
-[/have_unit]
-[/filter_condition]
-[message]
-text=_ "fired"
-[/message]
-[/event]
-`);
+	const missing = runWith(
+		startEvent(`{ tag: 'filter_condition', children: [{ tag: 'have_unit', id: 'nobody' }] }, ${firedMessage}`),
+	);
 	assert.equal(fired(missing.messages), false);
 });
 
 test('an if branch runs its body when its condition holds, and skips it when it does not', () => {
 	const yes = runWith(
-		`[event]
-id=e
-on=start
-[if]
-[condition]
-variable=flag
-equals=yes
-[/condition]
-[message]
-text=_ "fired"
-[/message]
-[/if]
-[/event]
-`,
+		startEvent(
+			`{ tag: 'if', children: [{ tag: 'condition', variable: 'flag', equals: 'yes' }, ${firedMessage}] },`,
+		),
 		{ flag: 'yes' },
 	);
 	assert.equal(fired(yes.messages), true);
 
 	const no = runWith(
-		`[event]
-id=e
-on=start
-[if]
-[condition]
-variable=flag
-equals=yes
-[/condition]
-[message]
-text=_ "fired"
-[/message]
-[/if]
-[/event]
-`,
+		startEvent(
+			`{ tag: 'if', children: [{ tag: 'condition', variable: 'flag', equals: 'yes' }, ${firedMessage}] },`,
+		),
 		{ flag: 'no' },
 	);
 	assert.equal(fired(no.messages), false);
@@ -224,60 +92,22 @@ text=_ "fired"
 
 test('if and else select between branches from a condition and a test expression', () => {
 	const conditionForm = runWith(
-		`[event]
-id=e
-on=start
-[if]
-[condition]
-variable=ready
-equals=yes
-[/condition]
-[message]
-text=_ "fired"
-[/message]
-[/if]
-[/event]
-`,
+		startEvent(
+			`{ tag: 'if', children: [{ tag: 'condition', variable: 'ready', equals: 'yes' }, ${firedMessage}] },`,
+		),
 		{ ready: 'yes' },
 	);
 	assert.equal(fired(conditionForm.messages), true);
 
-	const testForm = runWith(
-		`[event]
-id=e
-on=start
-[if]
-test=score >= 3
-[message]
-text=_ "fired"
-[/message]
-[/if]
-[/event]
-`,
-		{ score: 4 },
-	);
+	const testForm = runWith(startEvent(`{ tag: 'if', test: 'score >= 3', children: [${firedMessage}] },`), {
+		score: 4,
+	});
 	assert.equal(fired(testForm.messages), true);
 
 	const taken = runWith(
-		`[event]
-id=e
-on=start
-[if]
-[condition]
-variable=ready
-equals=yes
-[/condition]
-[message]
-text=_ "fired"
-[/message]
-[/if]
-[else]
-[message]
-text=_ "other"
-[/message]
-[/else]
-[/event]
-`,
+		startEvent(
+			`{ tag: 'if', children: [{ tag: 'condition', variable: 'ready', equals: 'yes' }, ${firedMessage}] }, { tag: 'else', children: [{ tag: 'message', text: _("other") }] },`,
+		),
 		{ ready: 'yes' },
 	);
 	assert.equal(fired(taken.messages), true);
@@ -288,25 +118,9 @@ text=_ "other"
 	);
 
 	const fallback = runWith(
-		`[event]
-id=e
-on=start
-[if]
-[condition]
-variable=ready
-equals=yes
-[/condition]
-[message]
-text=_ "fired"
-[/message]
-[/if]
-[else]
-[message]
-text=_ "other"
-[/message]
-[/else]
-[/event]
-`,
+		startEvent(
+			`{ tag: 'if', children: [{ tag: 'condition', variable: 'ready', equals: 'yes' }, ${firedMessage}] }, { tag: 'else', children: [{ tag: 'message', text: _("other") }] },`,
+		),
 		{ ready: 'no' },
 	);
 	assert.equal(fired(fallback.messages), false);
@@ -318,39 +132,10 @@ text=_ "other"
 
 test('a second if/else pair is independent, and a free-standing else still runs', () => {
 	const second = runWith(
-		`[event]
-id=e
-on=start
-[if]
-[condition]
-variable=a
-equals=1
-[/condition]
-[message]
-text=_ "fired"
-[/message]
-[/if]
-[else]
-[message]
-text=_ "other"
-[/message]
-[/else]
-[if]
-[condition]
-variable=b
-equals=1
-[/condition]
-[message]
-text=_ "second"
-[/message]
-[/if]
-[else]
-[message]
-text=_ "other"
-[/message]
-[/else]
-[/event]
-`,
+		startEvent(
+			`{ tag: 'if', children: [{ tag: 'condition', variable: 'a', equals: 1 }, ${firedMessage}] }, { tag: 'else', children: [{ tag: 'message', text: _("other") }] },` +
+				` { tag: 'if', children: [{ tag: 'condition', variable: 'b', equals: 1 }, { tag: 'message', text: _("second") }] }, { tag: 'else', children: [{ tag: 'message', text: _("other") }] },`,
+		),
 		{ a: 1, b: 2 },
 	);
 	assert.equal(fired(second.messages), true, 'the first pair takes its then-branch');
@@ -360,18 +145,7 @@ text=_ "other"
 		'the second pair takes its own else, not the first',
 	);
 
-	const free = runWith(
-		`[event]
-id=e
-on=start
-[else]
-[message]
-text=_ "other"
-[/message]
-[/else]
-[/event]
-`,
-	);
+	const free = runWith(startEvent(`{ tag: 'else', children: [{ tag: 'message', text: _("other") }] },`));
 	assert.equal(
 		free.messages.some((message) => message.text === 'other'),
 		true,
