@@ -131,9 +131,9 @@
 		"declarationFiles": 278
 	},
 	"bundle": {
-		"globalRaw": 1065994,
-		"globalGzip": 316614,
-		"distRaw": 3397397
+		"globalRaw": 1065727,
+		"globalGzip": 316576,
+		"distRaw": 3396810
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
