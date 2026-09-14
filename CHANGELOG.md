@@ -7,6 +7,16 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-09-14
+
+### Added
+
+- `tools/single-file.mjs` and `emit-page --single-file [--single-file-compress[=level]]` -
+  a genuinely single-file `file://` build with no sibling `.js` at all: every script an
+  example's build loads is inlined into one additional `standalone.html`, optionally gzipped
+  and unpacked at load through the browser's own `DecompressionStream` behind a splash
+  screen, additive to the existing multi-file output (item 349).
+
 ## [0.9.1] - 2026-09-14
 
 ### Added

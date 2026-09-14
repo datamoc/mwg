@@ -579,9 +579,14 @@ async function loadRoadmapMarkdown() {
 	}
 	if (typeof fetch === 'function') {
 		try {
-			const response = await fetch('../ROADMAP.md');
-			if (response.ok) {
-				return await response.text();
+			// CLOSED.md (shipped history) first, then ROADMAP.md (open work), so the numbered
+			// sequence parseRoadmap sees matches the order the two files were split from.
+			const [closedResponse, openResponse] = await Promise.all([fetch('../CLOSED.md'), fetch('../ROADMAP.md')]);
+			if (closedResponse.ok && openResponse.ok) {
+				return (await closedResponse.text()) + '\n' + (await openResponse.text());
+			}
+			if (openResponse.ok) {
+				return await openResponse.text();
 			}
 		} catch (_) {
 			// fetch fails on file:// protocol in standard browsers

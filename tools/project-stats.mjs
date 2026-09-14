@@ -62,7 +62,9 @@ function collectStats() {
 		.filter((entry) => entry.isDirectory() && existsSync(join(root, 'examples', entry.name, 'main.ts')))
 		.map((entry) => entry.name)
 		.sort();
-	const roadmap = measureRoadmap(readFileSync(join(root, 'ROADMAP.md'), 'utf8'));
+	const roadmapSource =
+		readFileSync(join(root, 'CLOSED.md'), 'utf8') + '\n' + readFileSync(join(root, 'ROADMAP.md'), 'utf8');
+	const roadmap = measureRoadmap(roadmapSource);
 	const bundle = measureBundle();
 	const declarationFiles = existsSync(join(root, 'dist')) ? countFilesOnDisk(join(root, 'dist'), '.d.ts') : null;
 

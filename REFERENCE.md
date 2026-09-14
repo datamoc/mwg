@@ -6,7 +6,7 @@ full generated API (every parameter, every doc comment) lives beside it at
 `webpage/documentation/api/` (both from `npm run webpage:docs`). For *why* the framework
 is shaped this way and what it's for, see `README.md`'s capability spec. For architecture
 and build commands, see `DEVELOPMENT.md`. For the order things shipped in and the reasoning
-behind it, see `ROADMAP.md`.
+behind it, see `CLOSED.md`; for what's still open, see `ROADMAP.md`.
 
 Every module is its own barrel: `import { X } from '@datamoc/mw_games/core'` (or the
 matching subpath for any module below), or `import { X } from '@datamoc/mw_games'` for the

@@ -10,6 +10,7 @@ const __dirname = dirname(__filename);
 const root = resolve(__dirname, '..');
 
 const roadmapPath = join(root, 'ROADMAP.md');
+const closedPath = join(root, 'CLOSED.md');
 const htmlPath = join(__dirname, 'roadmap-progress.html');
 
 const args = process.argv.slice(2);
@@ -27,7 +28,10 @@ Options:
 	process.exit(0);
 }
 
-const markdown = readFileSync(roadmapPath, 'utf8');
+// CLOSED.md holds the shipped, numbered history; ROADMAP.md holds what's still open plus the
+// 1.0 exit checklist. Concatenated in that order, parseRoadmap sees one continuous numbered
+// sequence, same as before the two files were split.
+const markdown = readFileSync(closedPath, 'utf8') + '\n' + readFileSync(roadmapPath, 'utf8');
 const data = globalThis.parseRoadmap(markdown);
 
 function renderProgressBar(done, total, width = 30) {

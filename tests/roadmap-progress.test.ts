@@ -111,8 +111,11 @@ test('parses empty or item-free markdown gracefully', () => {
 	assert.equal(result.openItems.length, 0);
 });
 
-test('parses repository ROADMAP.md correctly', () => {
-	const realRoadmap = readFileSync(resolve(import.meta.dirname, '../ROADMAP.md'), 'utf8');
+test('parses repository CLOSED.md + ROADMAP.md correctly', () => {
+	const realRoadmap =
+		readFileSync(resolve(import.meta.dirname, '../CLOSED.md'), 'utf8') +
+		'\n' +
+		readFileSync(resolve(import.meta.dirname, '../ROADMAP.md'), 'utf8');
 	const result = parseRoadmap(realRoadmap);
 
 	assert.ok(result.overallTotal >= 160, `expected at least 160 items, got ${result.overallTotal}`);
@@ -207,8 +210,11 @@ test('reports the checklist beside the numbered list instead of inside it', () =
 	assert.equal(result.checklist.open[0].text, 'A check still open');
 });
 
-test('no numbered item of the repository roadmap is invisible to the parser', () => {
-	const realRoadmap = readFileSync(resolve(import.meta.dirname, '../ROADMAP.md'), 'utf8');
+test('no numbered item of the repository roadmap (CLOSED.md + ROADMAP.md) is invisible to the parser', () => {
+	const realRoadmap =
+		readFileSync(resolve(import.meta.dirname, '../CLOSED.md'), 'utf8') +
+		'\n' +
+		readFileSync(resolve(import.meta.dirname, '../ROADMAP.md'), 'utf8');
 	const result = parseRoadmap(realRoadmap);
 
 	// The list is dense: every number from 1 to its last one exists, no gaps and no repeats. A

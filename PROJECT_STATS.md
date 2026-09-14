@@ -1,14 +1,14 @@
 # Project statistics
 
-Generated for **mwg 0.9.1** on 2026-09-14.
+Generated for **mwg 0.10.0** on 2026-09-14.
 
 | Area | Statistics |
 | --- | ---: |
 | Source | 280 TypeScript files, 45,695 lines, 15 modules |
-| Tests | 230 files, 2,201 test cases, 29,892 lines |
-| Tools | 37 files, 6,754 lines |
+| Tests | 231 files, 2,209 test cases, 30,042 lines |
+| Tools | 38 files, 6,969 lines |
 | Examples | 22 runnable examples |
-| Roadmap | 348/348 items complete, 0 open |
+| Roadmap | 349/349 items complete, 0 open |
 | API | 279 declaration files |
 | Bundle | 1042.3 kB raw, 309.6 kB gzip |
 | Published dist | 3325.9 kB excluding source maps |

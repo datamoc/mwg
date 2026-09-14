@@ -3,6 +3,7 @@ import { join, resolve as resolvePath } from 'node:path';
 import { compileResources } from './compile-resources.mjs';
 import { compressDist } from './compress-dist.mjs';
 import { toClassicScript } from './classic-html.mjs';
+import { buildSingleFile } from './single-file.mjs';
 
 /**
  * Turns a vite build into a folder that opens by double-clicking.
@@ -18,12 +19,20 @@ import { toClassicScript } from './classic-html.mjs';
  *     `file://` page cannot read a directory to discover them.
  *
  * usage: node tools/emit-page.mjs <example folder> [--no-compress] [--xz]
+ *                                  [--single-file] [--single-file-compress[=level]]
  *
  * After the page is rewritten, precompressed `.gz`/`.br` siblings are written next to
  * the text files (see `tools/compress-dist.mjs`): the `file://` page keeps loading the
  * originals, while a server in front of the same folder can serve the smaller files.
  * `--no-compress` (or `MWG_NO_COMPRESS=1`) skips that pass; `--xz` also writes `.xz`
  * archives where the system `xz` binary exists.
+ *
+ * `--single-file` additionally writes `dist/standalone.html` (see `tools/single-file.mjs`):
+ * every script the page loads, inlined into one file with no sibling `.js` at all.
+ * `--single-file-compress[=level]` also gzips each inlined script, unpacked at load with the
+ * browser's own `DecompressionStream`. Both are additive - the regular multi-file
+ * `index.html` this function already writes is untouched - so the build-options matrix
+ * (multi-file/single-file, compressed/not) is a choice per build, not a fork of the pipeline.
  */
 
 const exampleDir = process.argv[2];
@@ -84,4 +93,19 @@ if (!skipCompress) {
 	}
 } else {
 	console.log('  (compression skipped)');
+}
+
+if (process.argv.includes('--single-file')) {
+	const compressFlag = process.argv.find(
+		(a) => a === '--single-file-compress' || a.startsWith('--single-file-compress='),
+	);
+	const singleFileCompress = Boolean(compressFlag);
+	const level = compressFlag && compressFlag.includes('=') ? Number(compressFlag.split('=')[1]) : 9;
+	const single = await buildSingleFile({ dist, compress: singleFileCompress, level });
+	console.log(
+		`\n  ${single.path}`,
+		`\n  ${single.scripts} script(s) inlined, ${kb(single.rawBytes)} raw -> ${kb(single.embeddedBytes)} embedded` +
+			(singleFileCompress ? ` (gzip level ${level})` : ' (uncompressed)'),
+	);
+	console.log('  one file, no server, no sibling script - open it directly');
 }

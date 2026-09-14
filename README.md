@@ -17,7 +17,8 @@ and the [mwg Pixel Dungeon study](https://datamoc.github.io/mwg-pixel-dungeon/).
 
 > **Status: pre-alpha (v0.7.7).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
-> [ROADMAP.md](https://github.com/datamoc/mwg/blob/main/ROADMAP.md) for the full, numbered history.
+> [ROADMAP.md](https://github.com/datamoc/mwg/blob/main/ROADMAP.md) for open work, and
+> [CLOSED.md](https://github.com/datamoc/mwg/blob/main/CLOSED.md) for the full, numbered shipped history.
 >
 > 0.4.0 was the reshaping release: the renderer moved out of `mwg/core`, `render`/`ui`/`stage`
 > became `mwg/two-d`, and a set of names that meant several things each were made to mean one.
@@ -397,7 +398,8 @@ with `advanceToInput`.
 
 ## Roadmap
 
-See [ROADMAP.md](https://github.com/datamoc/mwg/blob/main/ROADMAP.md) for the full, numbered build order and implementation notes.
+See [ROADMAP.md](https://github.com/datamoc/mwg/blob/main/ROADMAP.md) for open work and
+[CLOSED.md](https://github.com/datamoc/mwg/blob/main/CLOSED.md) for the full, numbered build order and implementation notes.
 The optional 3D group is now implemented without changing the existing 2D entry point.
 
 ## MWL

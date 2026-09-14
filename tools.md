@@ -23,6 +23,7 @@ by double-clicking. Run from the repo root.
 | `emit-page` | Rewrites an example's vite build (classic script tag, inlined assets) so it opens from `file://` with no server | called by each `example:*:build` script |
 | `classic-html` | Rewrites a bundler build's `<script type="module">` entry tag to a classic deferred script, the shipped, reusable half of what `emit-page` does for this repo's own examples (item 306) | `node -e "..."` calling `toClassicScript` from a game's own build script, or `node tools/classic-html.mjs dist/index.html` directly |
 | `compress-dist` | Writes `.gz`/`.br` siblings for large build outputs | used by the packaging flow |
+| `single-file` | Inlines every `<script src>` an `emit-page` output loads into one additional standalone HTML file, no sibling `.js` at all; `compress: true` gzips each script first, unpacked at load through the browser's own `DecompressionStream` behind a splash screen (item 349) | `node tools/single-file.mjs <dist folder> [--compress[=level]] [--no-splash] [--output name.html]`, or `emit-page --single-file [--single-file-compress[=level]]` |
 
 ## Verification and benchmarks
 
@@ -42,7 +43,7 @@ by double-clicking. Run from the repo root.
 
 | tool | what it does | run |
 | --- | --- | --- |
-| `roadmap-progress` | Reports ROADMAP.md completion: numbered items in batches of 25, plus the 1.0 exit checklist on its own row (checks to run, not capabilities, so they stay out of the numbered totals), optionally in a browser | `npm run roadmap:progress` |
+| `roadmap-progress` | Reports CLOSED.md + ROADMAP.md completion: numbered items in batches of 25, plus the 1.0 exit checklist on its own row (checks to run, not capabilities, so they stay out of the numbered totals), optionally in a browser | `npm run roadmap:progress` |
 | `build-webpage-examples` / `build-webpage-docs` | Generate the live examples and Documentation page under `webpage/` (`REFERENCE.md` guide + TypeDoc under `documentation/api/`) | `npm run webpage:examples`, `npm run webpage:docs` |
 | `make-example-diagrams` / `make-architecture-diagrams` | Rebuild the generated diagrams under `webpage/assets` (never hand-drawn) | `npm run webpage:diagrams` |
 | `api-report` | Regenerates `API_REPORT.md` from the built declarations; `--check` compares instead. A CI gate | `npm run api:report`, `npm run api:check` |
