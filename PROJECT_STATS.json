@@ -87,12 +87,12 @@
 	},
 	"tests": {
 		"files": 231,
-		"lines": 30042,
+		"lines": 30045,
 		"cases": 2209
 	},
 	"tools": {
 		"files": 38,
-		"lines": 6969
+		"lines": 6975
 	},
 	"examples": {
 		"count": 22,
