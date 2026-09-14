@@ -574,7 +574,10 @@ reach the compiled asset map without it.
 
 ## `audio`
 
-- `Sound` - a pooled, round-robin one-shot sound effect player.
+- `Sound` - a pooled, round-robin one-shot sound effect player. `play(gain, pitch)` takes an
+  optional pitch as `HTMLAudioElement.playbackRate` (1 unchanged); there is no matching `pan` -
+  a plain `<audio>` element has no pan of its own, the same reason `Positional.audioPan` only
+  reports a number rather than owning a panner node.
 - `onCaption`/`CaptionEvent` - accessibility captions fired alongside a sound cue.
 - `Music` - crossfading background music.
 - `createAudio`/`Playable` - an injectable audio backend (tests supply a fake in place of `new Audio()`).
@@ -845,8 +848,17 @@ the classic top-down RPG half.
   `StageScript`-shaped command interpreter for map events. Dialogue goes through an injected
   `present` function rather than a widget, so the interpreter is renderer-free and a game can
   drive it from a 3D scene, a DOM overlay, or a test asserting on script order.
-  `two-d/ui.messageBoxPresenter` is the ready-made 2D implementation.
+  `two-d/ui.messageBoxPresenter` is the ready-made 2D implementation. `DialogueRequest.portrait`
+  is an opaque, renderer-specific value (`Texture2D` for `messageBoxPresenter`), kept untyped
+  here so `rpg` stays renderer-free.
 - `GridMover`/`Direction4` - tweened tile-to-tile movement plus a walk-cycle hook.
+  `GridMover.jumpBy` repositions instantly, with no tween or walk animation, for a move-route
+  "jump" step.
+- `MoveRouteRunner`/`MoveRoute`/`MoveRouteStep`/`MoveRouteOptions` - drives any `GridMover`
+  (the player's or an NPC's) through a scripted route over successive `update(dt)` calls:
+  fixed/random/toward/away directional steps, a turn-in-place step, a jump step, and a wait
+  step, with `repeat` and `skippable` policies. Whether a step is passable is asked through the
+  same `canMove` contract `GridMover` itself expects of its own caller.
 - `FreeMover` - continuous (non-grid) position and facing, for action-game movement.
 - `MovableSprite` - what both movers actually require: `x`/`y`, and optionally `update`/`has`/
   `play`. A static sprite, a 3D mesh wrapper or a plain test record all satisfy it.

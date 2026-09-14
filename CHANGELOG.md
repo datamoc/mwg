@@ -7,6 +7,58 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-09-14
+
+### Added
+
+- `rpg.EventRunner`'s `DialogueRequest` (and `EventCommand`'s `say`/`ask`) gained an optional
+  `portrait` field, threaded through to `two-d/ui.messageBoxPresenter` and `MessageBox`'s own
+  pre-existing `portrait` support - a portrait-bearing line no longer has to bypass `present`
+  and build its own `MessageBox` directly (item 352).
+- `rpg.GridMover.jumpBy` - an instant reposition with no tween and no walk animation, for a
+  "jump" move-route step over terrain `moveBy`'s glide has no way to skip.
+- `rpg.MoveRouteRunner`/`MoveRoute`/`MoveRouteStep`/`MoveRouteOptions` - drives any `GridMover`
+  through a scripted route (fixed/random/toward/away steps, turn, jump, wait) with `repeat` and
+  `skippable` policies, built entirely on `GridMover`'s existing primitives (item 353).
+- `audio.Sound.play(gain, pitch)` - an optional pitch parameter as `HTMLAudioElement.
+  playbackRate`. No matching `pan`: a plain `<audio>` element has none to set, the same reason
+  `Positional.audioPan` only ever reported a number rather than owning a panner node (item 354).
+
+### Fixed
+
+- `mobile:build` (and everything built on it: `cap:sync`, `cap:add:android`, `desktop:build`,
+  `desktop:run`) now passes `--no-compress` to `emit-page.mjs`. Item 349/350's `.gz`/`.br`
+  sidecar files, written by default into every build since those items shipped, broke the
+  Android/Capacitor asset merge (`Duplicate resources` from AAPT, which treats `game.js` and
+  `game.js.gz` as colliding) the first time the full pipeline was actually built and run
+  end to end (item 351) - those sidecars were always dead weight for a packaged native app
+  with no server to negotiate `Content-Encoding` for, so this drops them at the source rather
+  than special-casing the generated `android/` project.
+
+### Changed
+
+- `android/` is no longer `.gitignore`d (item 110's original choice, kept since). The
+  Capacitor-scaffolded project's own generated `.gitignore` already excludes build output,
+  `local.properties`, and the copied web assets/config that `cap sync` regenerates every
+  build - the 53 files it leaves are ordinary scaffold source (manifest, Java, gradle files,
+  launcher/splash resources), the same kind of thing worth tracking as any other native
+  wrapper customization: this session's own `ignoreAssetsPattern` fix (above) would otherwise
+  have been silently lost the next time someone ran `cap add android` fresh.
+- `webpage/assets/0c_framework_architecture.svg` regenerated - it had gone stale since the
+  `ai` and `mwl` modules were added to `src/`, so the "generated, never hand-drawn" diagram
+  was quietly wrong about the current module list until `npm run webpage:diagrams` was
+  actually re-run (item 351's Android/Windows verification pass turned this up while
+  double-checking related documentation).
+- `webpage/design/architecture-explorer.html`, the interactive module-graph explorer, was
+  regenerated via the archify skill for the same reason: authored once at release 0.4.3, it
+  had never been updated and was missing `ai`/`mwl` entirely despite linking to itself as
+  "generated straight from src/'s own import graph". Rebuilt with real, verified import-graph
+  data for all 15 current modules and a fourth guided view ("mwl as data-authoring backbone").
+- `desktop/README.md` documented only the older, unwired `desktop/webview2` host and never
+  mentioned `desktop/MwgDesktopHost` - the one `desktop:build`/`desktop:run` actually build -
+  or its `SetVirtualHostNameToFolderMapping` capability. Rewritten to cover both hosts and
+  which job each is for.
+
 ## [0.11.0] - 2026-09-14
 
 ### Added

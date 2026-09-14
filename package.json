@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.11.0",
+	"version": "0.12.0",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -247,7 +247,7 @@
 		"webpage:examples": "node tools/build-webpage-examples.mjs",
 		"webpage:docs": "node tools/build-webpage-docs.mjs",
 		"webpage:diagrams": "node tools/make-example-diagrams.mjs && node tools/make-architecture-diagrams.mjs",
-		"mobile:build": "npm run example:tower-defense:build",
+		"mobile:build": "vite build --config examples/tower-defense/vite.config.ts && node tools/emit-page.mjs examples/tower-defense --no-compress",
 		"cap:cli": "node --require ./tools/capacitor-node-workaround.cjs ./node_modules/@capacitor/cli/bin/capacitor",
 		"cap:add:android": "npm run mobile:build && npm run cap:cli -- add android",
 		"cap:add:ios": "npm run mobile:build && npm run cap:cli -- add ios",

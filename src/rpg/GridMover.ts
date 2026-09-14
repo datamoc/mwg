@@ -97,6 +97,24 @@ export class GridMover {
 		return true;
 	}
 
+	/**
+	 * Repositions by a delta instantly, with no tween and no walk animation - what a "jump"
+	 * move-route step is, as opposed to `moveBy`'s glide. Refuses while a `moveBy` is still in
+	 * flight, the same as `moveBy` itself does, rather than fighting over `x`/`y` mid-tween.
+	 */
+	jumpBy(dx: number, dy: number): boolean {
+		if (this.target) return false;
+
+		this.facing = directionOf(dx, dy);
+		this.x += dx;
+		this.y += dy;
+		this.fromX = this.x;
+		this.fromY = this.y;
+		this.place();
+		this.playIdle();
+		return true;
+	}
+
 	update(dt: number): void {
 		this.sprite.update?.(dt);
 		if (!this.target) return;

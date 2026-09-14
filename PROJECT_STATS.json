@@ -1,17 +1,17 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.11.0",
+	"version": "0.12.0",
 	"releaseDate": "2026-09-14",
 	"source": {
-		"files": 280,
-		"lines": 45716,
+		"files": 281,
+		"lines": 45920,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 80,
-				"lines": 15478
+				"lines": 15485
 			},
 			{
 				"name": "mwl",
@@ -45,8 +45,8 @@
 			},
 			{
 				"name": "rpg",
-				"files": 11,
-				"lines": 1607
+				"files": 12,
+				"lines": 1795
 			},
 			{
 				"name": "ai",
@@ -61,7 +61,7 @@
 			{
 				"name": "audio",
 				"files": 9,
-				"lines": 987
+				"lines": 996
 			},
 			{
 				"name": "simulation",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 233,
-		"lines": 30356,
-		"cases": 2223
+		"files": 234,
+		"lines": 30574,
+		"cases": 2237
 	},
 	"tools": {
 		"files": 39,
@@ -122,18 +122,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 350,
-		"completed": 350,
+		"items": 354,
+		"completed": 354,
 		"open": 0,
 		"percent": 100
 	},
 	"api": {
-		"declarationFiles": 279
+		"declarationFiles": 280
 	},
 	"bundle": {
-		"globalRaw": 1067475,
-		"globalGzip": 317194,
-		"distRaw": 3406977
+		"globalRaw": 1069077,
+		"globalGzip": 317748,
+		"distRaw": 3418624
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

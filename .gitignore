@@ -24,7 +24,6 @@ webpage/examples/headless/
 webpage/examples/mwl-content/
 webpage/documentation/
 benchmark-results/
-android/
 ios/
 desktop/**/bin/
 desktop/**/obj/

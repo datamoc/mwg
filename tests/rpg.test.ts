@@ -99,6 +99,27 @@ test('EventRunner runs a call command with the shared state', async () => {
 	assert.equal(sawGame, state);
 });
 
+test('EventRunner threads a portrait through say and ask to the presenter, opaque and untouched', async () => {
+	const state = new GameState();
+	const seen: unknown[] = [];
+	const portrait = { marker: 'portrait' };
+	const runner = new EventRunner({
+		present: async (request) => {
+			seen.push(request.portrait);
+			return 'chosen';
+		},
+		game: state,
+	});
+
+	await runner.run([
+		{ say: 'A cold wind blows.', portrait },
+		{ ask: 'Open the door?', portrait, choices: [{ text: 'Yes' }, { text: 'No' }], store: 'answer' },
+		{ say: 'No portrait here.' },
+	]);
+
+	assert.deepEqual(seen, [portrait, portrait, undefined]);
+});
+
 test('EventRunner stops running once cancelled', async () => {
 	const state = new GameState();
 	const runner = new EventRunner({ present: silent, game: state });
@@ -362,4 +383,31 @@ test('GridMover plays the walk/idle animation for the facing direction, when pre
 
 	mover.update(1); // finishes immediately at speed 100
 	assert.equal(sprite.playing, 'idle-right');
+});
+
+test('GridMover.jumpBy repositions instantly, with no tween and no walk animation', () => {
+	const sprite = new AnimatedSprite();
+	sprite.add('walk-right', [Texture.WHITE]);
+	sprite.add('idle-right', [Texture.WHITE]);
+	const mover = new GridMover(sprite, 0, 0, {
+		tileWidth: 16,
+		tileHeight: 16,
+		walkAnimation: (d) => `walk-${d}`,
+		idleAnimation: (d) => `idle-${d}`,
+	});
+
+	assert.equal(mover.jumpBy(2, 0), true);
+	assert.equal(mover.isMoving, false, 'no tween is in flight');
+	assert.equal(mover.x, 2);
+	assert.equal(sprite.x, 32);
+	assert.equal(mover.facing, 'right');
+	assert.equal(sprite.playing, 'idle-right', 'idle, not the walk animation');
+});
+
+test('GridMover.jumpBy refuses while a moveBy is still in flight', () => {
+	const sprite = new AnimatedSprite();
+	const mover = new GridMover(sprite, 0, 0, { tileWidth: 16, tileHeight: 16 });
+
+	mover.moveBy(1, 0);
+	assert.equal(mover.jumpBy(0, 1), false);
 });

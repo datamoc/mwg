@@ -1,6 +1,7 @@
 import { MessageBox } from './MessageBox.ts';
 import type { WindowStack } from './WindowStack.ts';
 import type { DialoguePresenter } from '../../rpg/EventRunner.ts';
+import type { Texture2D } from '../render/Types2D.ts';
 
 export interface MessageBoxPresenterOptions {
 	/** width/height of the dialogue box; characters revealed per second */
@@ -30,7 +31,13 @@ export function messageBoxPresenter(windows: WindowStack, options: MessageBoxPre
 					width: options.width ?? 480,
 					height: options.height ?? 120,
 					speed: options.speed ?? 45,
-					pages: [{ text: request.text, speaker: request.speaker }],
+					pages: [
+						{
+							text: request.text,
+							speaker: request.speaker,
+							portrait: request.portrait as Texture2D | undefined,
+						},
+					],
 					choices: request.choices,
 					anchor: options.anchor ?? 'bottom',
 					onDone: (chosen) => resolve(chosen),

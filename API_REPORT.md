@@ -2822,7 +2822,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.11.0";
+    export declare const version = "0.12.0";
 
 ### `VerticalLabel` (class)
 
@@ -3966,7 +3966,7 @@ build instead.
         volume: number;
         constructor(path: string, options?: SoundOptions);
 
-        play(gain?: number): void;
+        play(gain?: number, pitch?: number): void;
         stopAll(): void;
     }
 
@@ -6605,6 +6605,8 @@ build instead.
         turnTo(dx: number, dy: number): void;
 
         moveBy(dx: number, dy: number): boolean;
+
+        jumpBy(dx: number, dy: number): boolean;
         update(dt: number): void;
         private place;
         private playWalk;
@@ -6614,6 +6616,25 @@ build instead.
 ### `hashDefaultOf` (function)
 
     export declare function hashDefaultOf(hash: Map<unknown, unknown>): unknown;
+
+### `MoveRouteRunner` (class)
+
+    export declare class MoveRouteRunner {
+        private mover;
+        private route;
+        private options;
+        private index;
+        private waiting;
+        constructor(mover: GridMover, route: MoveRoute, options?: MoveRouteOptions);
+
+        get done(): boolean;
+        update(dt: number): void;
+
+        private runStep;
+        private resolveDirection;
+        private attempt;
+        private pickDirection;
+    }
 
 ### `QuestLog` (class)
 

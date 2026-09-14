@@ -100,7 +100,17 @@ none forced on the others (see `tools.md` for the full flag reference):
   sibling `.js` at all. Both outputs are written; single-file is additive, not a replacement,
   so pick whichever a given distribution channel needs (a bug report attachment, an itch.io
   upload, a USB stick) without re-running the build differently.
-- **Compression, single-file only.** Inlined scripts are plain text by default. `--single-file-
+- **Compression.** Every build (multi-file or single-file) writes `.gz`/`.br` siblings next to
+  its text files by default (`tools/compress-dist.mjs`; `--no-compress` or `MWG_NO_COMPRESS=1`
+  opts out) - for a server able to negotiate `Content-Encoding`, not for the page itself, which
+  never references them. A native wrapper whose asset packaging chokes on same-name sibling
+  files needs `--no-compress`: Android's AAPT merger does exactly this (`.gz`/`.br` siblings
+  collide with the original as "duplicate resources"), which is why `mobile:build`
+  (`npm run cap:sync`/`cap:add:android`/`desktop:build`/`desktop:run` all build through it)
+  passes `--no-compress` rather than building through the plain `example:*:build` scripts -
+  those sidecars are dead weight for a packaged native app anyway, since nothing there
+  negotiates `Content-Encoding`.
+  Single-file inlined scripts are a separate, opt-in compression path: `--single-file-
   compress[=level]` gzips them (level 1-9, default 9); `--single-file-brotli[=quality]`
   compresses with brotli instead (quality 0-11, default 11), usually smaller. Either way the
   bytes are unpacked in the browser via `DecompressionStream`, not a shipped decoder, so

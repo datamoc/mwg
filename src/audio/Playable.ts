@@ -12,6 +12,8 @@ export interface Playable {
 	currentTime: number;
 	volume: number;
 	loop: boolean;
+	/** speed and pitch together, matching `HTMLAudioElement.playbackRate`; 1 is unchanged */
+	playbackRate?: number;
 	/** Optional completion hook, matching HTMLAudioElement.onended. Backends without an
 	 * end event can omit it; single-track Music remains fully usable there. */
 	onended?: ((event: Event) => unknown) | null;

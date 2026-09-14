@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MW Games</string>
+    <string name="title_activity_main">MW Games</string>
+    <string name="package_name">com.datamoc.mwgames</string>
+    <string name="custom_url_scheme">com.datamoc.mwgames</string>
+</resources>

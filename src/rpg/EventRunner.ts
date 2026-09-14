@@ -13,6 +13,9 @@ export interface DialogueRequest {
 	text: string;
 	speaker?: string;
 
+	/** an opaque, renderer-specific portrait image; `two-d/ui.messageBoxPresenter` expects a `Texture2D` */
+	portrait?: unknown;
+
 	/** present when the runner is asking rather than telling; resolve with the chosen `value` */
 	choices?: EventChoice[];
 }
@@ -44,8 +47,8 @@ export interface MoveStep {
  * needed reinventing.
  */
 export type EventCommand =
-	| { say: string; speaker?: string }
-	| { ask: string; speaker?: string; choices: EventChoice[]; store?: string }
+	| { say: string; speaker?: string; portrait?: unknown }
+	| { ask: string; speaker?: string; portrait?: unknown; choices: EventChoice[]; store?: string }
 	| { wait: number }
 	| { setSwitch: string; value: boolean }
 	| { setVariable: string; value: number }
@@ -108,12 +111,12 @@ export class EventRunner {
 
 	private async step(command: EventCommand): Promise<void> {
 		if ('say' in command) {
-			await this.speak(command.say, command.speaker);
+			await this.speak(command.say, command.speaker, command.portrait);
 			return;
 		}
 
 		if ('ask' in command) {
-			const chosen = await this.speak(command.ask, command.speaker, command.choices);
+			const chosen = await this.speak(command.ask, command.speaker, command.portrait, command.choices);
 			if (command.store) this.state.answers[command.store] = chosen;
 			return;
 		}
@@ -155,7 +158,12 @@ export class EventRunner {
 		}
 	}
 
-	private speak(text: string, speaker: string | undefined, choices?: EventChoice[]): Promise<unknown> {
-		return this.options.present({ text, speaker, choices });
+	private speak(
+		text: string,
+		speaker: string | undefined,
+		portrait?: unknown,
+		choices?: EventChoice[],
+	): Promise<unknown> {
+		return this.options.present({ text, speaker, portrait, choices });
 	}
 }

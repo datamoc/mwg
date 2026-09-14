@@ -79,6 +79,17 @@ test('Sound.play resets currentTime and applies volume', () => {
 	assert.equal(audio.volume, 0.5);
 });
 
+test('Sound.play defaults playbackRate to 1 and applies an explicit pitch', () => {
+	const audio = fakeAudio();
+	const sound = new Sound('blip.wav', { poolSize: 1, create: () => audio });
+
+	sound.play();
+	assert.equal(audio.playbackRate, 1);
+
+	sound.play(1, 1.5);
+	assert.equal(audio.playbackRate, 1.5);
+});
+
 test('Sound.stopAll pauses every pooled instance', () => {
 	const instances = [fakeAudio(), fakeAudio()];
 	let i = 0;

@@ -5043,3 +5043,133 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      source for what the embedded bytes actually are - falling back to the path extension only
      when that is unavailable (a new `MIME_TO_FORMAT` table), with a regression test in
      `tests/assets.test.ts` and re-verified rendering correctly in a real browser afterward.
+
+351. ~~[Low] Verify Android and Windows builds actually work end to end, add a documented
+     prerequisites check for each, and cover both in the getting-started/DEVELOPMENT
+     documentation. Today the getting-started page and `DEVELOPMENT.md` only walk through the
+     `file://`/browser path (see "Testing the getting-started page as a new user would" in
+     CLAUDE.md); a native wrapper (Android via something like Capacitor/Cordova/Tauri-mobile,
+     Windows via an Electron/Tauri/WebView2 shell) is a different install story with its own
+     toolchain requirements (Android SDK/NDK, JDK, Rust toolchain for Tauri, etc.) that nobody
+     has walked through from a clean machine yet. Scope: (a) actually build and run on both
+     targets from scratch to find what's missing, (b) turn what's needed into an explicit,
+     checkable prerequisites list (versions, SDKs, platform-specific setup) rather than
+     assumed tribal knowledge, (c) document both paths the same way the existing
+     getting-started page documents the npm/no-npm browser paths, verified from a clean
+     directory outside this repo the same way that page's own verification works.~~ Both
+     verified for real, end to end, not just built. **Windows/WebView2**: `npm run
+     desktop:build`/`desktop:run` (`desktop/MwgDesktopHost`) built and ran cleanly - .NET 8 SDK
+     and the WebView2 Runtime were already present, so no new prerequisite gap there beyond
+     what CLOSED.md items 110/136 already recorded.
+
+     **Android** surfaced two real, previously-undocumented prerequisite gaps that a clean
+     checkout would hit immediately: (1) `JAVA_HOME` had drifted to a JDK install path that no
+     longer existed after a Temurin 17 patch update, and (2) Capacitor's current Android Gradle
+     Plugin requires JDK 21 to compile at all - a plain JDK 17 (what item 110/CLAUDE.md's own
+     "Commands" section assumed) fails with `invalid source release: 21`. Fixed by installing
+     Temurin 21 (`winget install EclipseAdoptium.Temurin.21.JDK`) and pointing `JAVA_HOME` at
+     it; both are now the documented prerequisite rather than tribal knowledge.
+
+     Building the full pipeline end to end (not just `cap add android`'s one-time scaffold, but
+     `mobile:build` -> `cap:sync` -> a real `gradlew assembleDebug`) surfaced a genuine
+     regression: items 349/350's `.gz`/`.br` compression sidecars, written into every build by
+     default since those items shipped, broke Android's asset merge outright (`Duplicate
+     resources` from AAPT, which collides `game.js` against `game.js.gz`) - nobody had run the
+     mobile pipeline since those items landed. Fixed at the source: `mobile:build` now passes
+     `--no-compress` (those sidecars are dead weight for a packaged native app with no server to
+     negotiate `Content-Encoding` for), verified with a real `gradlew clean assembleDebug` after
+     the fix, and further verified past "it compiles" - the resulting APK was installed and
+     launched on a real AVD (`Medium_Phone_API_35`), screenshotted, and shows the actual
+     tower-defense game rendering (grid, enemies, HUD text), not a blank or error page.
+
+     Also un-parked a related, silently-load-bearing decision: `android/` had been
+     `.gitignore`d wholesale since item 110 on the assumption the whole project was disposable
+     scaffold. It is not - the JDK-21 build fix above needed a real customization
+     (`ignoreAssetsPattern` gaining `!*.gz:!*.br`) to `android/app/build.gradle`, which would
+     have been silently lost on the next fresh `cap add android` had the folder stayed
+     untracked. `android/` now tracks its own already-correct, Capacitor-generated
+     `.gitignore` (which already excludes `build/`, `.gradle/`, `local.properties`, the
+     `cap sync`-copied web assets, and the regenerated `capacitor-cordova-android-plugins/`) -
+     53 ordinary scaffold source files, the same kind of thing `desktop/`'s own narrower
+     `bin/`/`obj/`-only ignore already tracks for the WebView2 host.
+
+     Documentation drift found and fixed along the way, not part of the original ask but
+     surfaced by actually exercising both paths: `desktop/README.md` documented only the older
+     `desktop/webview2` host's manual `dotnet run` invocation and never mentioned
+     `desktop/MwgDesktopHost` - the one `desktop:build`/`desktop:run` actually build, and the
+     only one with the `SetVirtualHostNameToFolderMapping` capability items 136/137 depend on -
+     rewritten to cover both and which job each is for. `DEVELOPMENT.md`'s build-options section
+     claimed compression was "single-file only", which was already false before this item (item
+     349/350 made it unconditional for every build) - corrected, with a pointer to the
+     `--no-compress` fix above. `webpage/assets/0c_framework_architecture.svg` (auto-generated,
+     supposedly never stale by construction - see CLAUDE.md's own note on this) had gone stale
+     regardless: `ai`/`mwl` were missing because nobody had re-run `npm run webpage:diagrams`
+     since those modules were added; regenerating it was a one-command fix.
+     `webpage/design/architecture-explorer.html`, the *interactive* module-graph explorer
+     (a separate, hand-built artifact from the auto-generated SVGs, made once via the archify
+     skill at release 0.4.3 and never regenerated since) had the same staleness for the same
+     reason, worse: it still claimed to be "generated straight from `src`'s own import graph"
+     while missing two whole modules. Regenerated via archify with real, verified import-graph
+     data for all 15 current modules, a fourth guided view ("mwl as data-authoring backbone"),
+     validated (9/9 showcase checks, 0 errors), and confirmed in a real rendered screenshot.
+
+352. ~~[Low] `rpg.EventRunner`'s `DialogueRequest` (and the built-in `messageBoxPresenter`) has no
+     `portrait` field, so a portrait-bearing `say`/`ask` can't go through the `present` seam at
+     all today and has to build its own `mwg.MessageBox` directly. Add an optional
+     `portrait?: Texture2D` to `DialogueRequest` and have `messageBoxPresenter` honor it.~~
+     Landed with one shape change from the original ask: `DialogueRequest.portrait` (and the
+     matching `EventCommand.say`/`ask` field) is typed `unknown`, not `Texture2D` - `rpg` naming
+     `two-d/render`'s `Texture2D` directly, even as a type-only import, makes that file
+     reachable from `rpg/index.ts`'s own import graph, and `Types2D.ts` itself is a real,
+     value-level `pixi.js` import (it re-exports `Texture`/`Container` as facade classes usable
+     in value position, not just as types) - `tests/renderer-isolation.test.ts`'s walker does
+     not care that the import *into* it was type-only, only whether the file it reaches does
+     a bare import of its own, so this tripped "every module documented as renderer-free stays
+     that way" for `rpg` the first time it was tried. `unknown`, cast to `Texture2D` only in
+     `two-d/ui.messageBoxPresenter` (the renderer-aware half), keeps the same seam `rpg` already
+     uses for everything else it hands off to a presenter. Threaded through `EventRunner.step`/
+     `speak` and `MessageBox`'s own pre-existing `portrait` field (already there, unused by this
+     seam). Regression test in `tests/rpg.test.ts` asserts the value reaches the presenter
+     unchanged for both `say` and `ask`, and undisturbed when omitted.
+
+353. ~~[Low] `rpg.GridMover` only exposes one-step-at-a-time `moveBy`/`turnTo`; there is no route
+     type covering random/relative-facing steps, jumps, or repeat/skip policies, and no way to
+     drive a non-player target through one. A `MoveRoute` interpreter built on `GridMover`'s
+     existing primitives would close this without changing what `GridMover` itself owns.~~
+     `rpg/MoveRoute.ts`'s new `MoveRouteRunner` drives any `GridMover` (the player's or an NPC's)
+     through a `MoveRoute`: fixed/`random`/`toward`/`away` directional steps, a `turn` step, a
+     `jump` step (backed by a new `GridMover.jumpBy`, an instant reposition with no tween and no
+     walk animation - `moveBy`'s tween has no way to skip terrain the way a "jump" move needs
+     to), and a `wait` step, with `repeat` (loops back to the first step) and `skippable` (moves
+     past a blocked directional step instead of retrying it every tick) policies. Passability
+     stays the caller's question, the same contract `GridMover.moveBy` itself already expects:
+     `MoveRouteOptions.canMove` is asked before every directional/jump step, never assumed. 15
+     new tests in `tests/move-route.test.ts` plus two in `tests/rpg.test.ts` for `jumpBy` itself.
+
+354. ~~[Low] `audio.Sound.play()` only takes a `gain` argument; there is no pitch/pan pair for a
+     one-shot sound effect (distinct from the existing `Positional` spatial-audio panner, which
+     solves a different problem). Add optional pitch/pan parameters to `Sound.play`.~~ Landed
+     half of the original ask, the half that actually fits this project's existing audio
+     architecture: `Sound.play(gain, pitch)` takes pitch as `HTMLAudioElement.playbackRate` (1
+     unchanged), a real, already-native property `Playable`'s minimal surface simply hadn't
+     named yet. `pan` is deliberately not added: a plain `<audio>` element has no pan property to
+     set at all, and `Positional.audioPan`'s own doc comment already made this project's stance
+     on that explicit - "the framework has no panner node of its own, so it reports the number
+     rather than pretending to pan." Adding a `pan` parameter to `Sound.play` that silently did
+     nothing on the one backend this project ships would be exactly the kind of dishonest
+     fallback CLAUDE.md's own conventions rule out elsewhere; a game wanting real stereo pan on
+     a one-shot needs a Web Audio graph regardless, the same as it already does for
+     `Positional`'s reported pan number.
+
+Items 352-354 came from a port's own improvement-proposals notes (the RPG Maker MV player at
+`mwgp/4MWG`, checked there against `@datamoc/mw_games@0.9.1`): two of that document's four
+proposals were not framework gaps and were not added as items at all - first-class RPG Maker
+autotile support was already shipped as `two-d/render/RpgmAutotile.ts`'s `RpgmAutotileAtlas`/
+`rpgmAutotileFrame` (the proposal's own note was stale against the version it named), and MV
+compatibility diagnostics is explicitly scoped as player-side work in the proposal's own text
+(the report shape `mwg`'s `convert-mv` tooling already emits matches what was asked for; only
+reading it before launch is left, and that reading happens in the port, not here). A third,
+map-transition state carrying `GameState` across maps without a full-page reload, is already
+addressed by `world.World`'s `enter`/`current` (in-memory map swap, no reload) - the port
+predates or hasn't adopted it, which is an integration question for that project rather than a
+capability this framework was missing.

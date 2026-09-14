@@ -4957,10 +4957,9 @@
         <div class="pulse-dot"></div>
         <h1>MWG framework architecture</h1>
       </div>
-      <p class="subtitle">Real module dependencies, read from src/ by walking its runtime import graph</p>
     </div>
 
-    <script id="archify-guided-views-data" type="application/json">[{"id":"core-independence","label":"core's zero dependencies","focus":["core","actors","audio","battle","board","roguelike","rpg","simulation","world","two-d"],"note":"Every module in the No renderer group reaches core; core reaches nothing, no other module and no renderer."},{"id":"renderer-split","label":"PixiJS vs Babylon.js","focus":["assets","two-d","three-d"],"note":"assets is the one loader shared by both renderers; a 2D game never pays for Babylon."},{"id":"roguelike-stack","label":"Turn-based systems","focus":["roguelike","simulation","core"],"note":"simulation layers procedural systems on roguelike's field-of-view and pathfinding."}]</script>
+    <script id="archify-guided-views-data" type="application/json">[{"id":"core-independence","label":"core's zero dependencies","focus":["core","actors","ai","audio","battle","board","i18n","mwl","roguelike","rpg","simulation","world","two-d"],"note":"Every renderer-free module reaches core through some path; core itself imports nothing, no other module and no renderer."},{"id":"renderer-split","label":"PixiJS vs Babylon.js","focus":["assets","two-d","three-d"],"note":"assets is the one loader shared by both renderers; a 2D game never pays for Babylon, since three-d is the only module that reaches it."},{"id":"mwl-backbone","label":"mwl as data-authoring backbone","focus":["mwl","ai","board","actors","core","simulation"],"note":"ai's behaviour trees author against mwl's command/expression language; mwl itself leans on actors and simulation."},{"id":"roguelike-stack","label":"Turn-based systems","focus":["roguelike","simulation","core"],"note":"simulation layers procedural systems on roguelike's field-of-view and pathfinding."}]</script>
 
     <script id="archify-i18n-data" type="application/json">{"locale":"en","messages":{"viewer.kind.frontend":"Frontend","viewer.kind.backend":"Backend","viewer.kind.database":"Database","viewer.kind.cloud":"Cloud","viewer.kind.security":"Security","viewer.kind.messagebus":"Message bus","viewer.kind.external":"External","viewer.kind.neutral":"Neutral","viewer.kind.node":"Node","viewer.kind.start":"Start","viewer.kind.active":"Active","viewer.kind.waiting":"Waiting","viewer.kind.decision":"Decision","viewer.kind.success":"Success","viewer.kind.failure":"Failure","viewer.toolbar.actions":"Diagram actions","viewer.theme.toggle.title":"Toggle theme (T)","viewer.theme.toggle":"Toggle color theme","viewer.theme.dark":"Dark","viewer.theme.light":"Light","viewer.preset.choose.title":"Choose visual style (S cycles)","viewer.preset.choose":"Choose visual style","viewer.preset.style":"Style","viewer.preset.menu":"Visual style","viewer.preset.identity":"Visual identity","viewer.preset.cycles":"S cycles","viewer.preset.classic":"Classic","viewer.preset.classic.short":"Classic","viewer.preset.classic.hint":"Stable technical default","viewer.preset.flow":"Signal Flow","viewer.preset.flow.short":"Flow","viewer.preset.flow.hint":"Motion-forward presentation","viewer.preset.blueprint":"Blueprint","viewer.preset.blueprint.hint":"Engineering review","viewer.preset.editorial":"Editorial","viewer.preset.editorial.hint":"Publication and launch notes","viewer.preset.badge.signalFlow":"SIGNAL FLOW","viewer.preset.badge.blueprint":"BLUEPRINT / REV 01","viewer.preset.badge.editorial":"EDITORIAL / FIELD NOTE","viewer.preset.badge.editorialPlate":"ARCHIFY / PLATE 04","viewer.preset.current":"Visual style: {style}. Choose visual style","viewer.motion.live":"Live","viewer.motion.still":"Still","viewer.motion.pause":"Pause motion","viewer.motion.resume":"Resume motion","viewer.motion.reduced":"Motion paused by reduced-motion preference","viewer.motion.hidden":"Motion paused while this page is hidden","viewer.motion.yielding":"Pause motion; currently yielding to {owner}","viewer.motion.yielding.title":"Live preview enabled · yielding to {owner}","viewer.owner.story":"the guided story","viewer.owner.chapter":"the active chapter","viewer.owner.chapterPreview":"the chapter delta preview","viewer.owner.handoff":"the chapter handoff","viewer.owner.route":"Route Probe","viewer.owner.lens":"Semantic Lens","viewer.owner.relationship":"Relationship Preview","viewer.owner.intent":"Intent Trace","viewer.owner.focus":"semantic focus","viewer.owner.legend":"legend preview","viewer.owner.reader":"reader interaction","viewer.present.enter":"Enter presentation stage","viewer.present.enter.title":"Presentation stage (F)","viewer.present.exit":"Exit presentation stage","viewer.present.exit.title":"Exit presentation stage (F or Escape)","viewer.present.present":"Present","viewer.present.exit.label":"Exit","viewer.export.button":"Export","viewer.export.button.title":"Export diagram (E)","viewer.export.diagram":"Export diagram","viewer.export.menu":"Export","viewer.export.subtitle":"Portable, clean outputs","viewer.export.share":"Share","viewer.export.shareCard":"Share Card","viewer.export.routeShareCard":"Route Share Card","viewer.export.reachShareCard":"Reach Share Card","viewer.export.copyShareCard":"Copy Share Card","viewer.export.copyDiagram":"Copy diagram","viewer.export.clipboardPng":"PNG to clipboard","viewer.export.raster":"Raster images","viewer.export.image":"Image","viewer.export.lossless":"Lossless image","viewer.export.compact":"Compact image","viewer.export.modern":"Modern image","viewer.export.vectorMotion":"Vector and motion","viewer.export.vectorMotion.heading":"Vector \u0026 motion","viewer.export.editable":"Editable vector","viewer.export.motion6s":"6s motion","viewer.export.unsupported":"Not supported by this browser","viewer.export.clipboardUnsupported":"Clipboard image write not supported by this browser","viewer.export.clipboardUnsupported.period":"Clipboard image write not supported by this browser.","viewer.export.clipboardUnsupported.short":"Clipboard image write not supported in this browser.","viewer.export.motionUnavailable":"Motion capture unavailable in this browser","viewer.export.webmUnavailable":"WebM unavailable in this browser","viewer.export.failed":"Export failed: {message}","viewer.export.unknownVariant":"Unknown Share Card variant: {variant}","viewer.export.routeRequired":"Trace a route before exporting a Route Share Card","viewer.export.reachRequired":"Trace authored reach before exporting a Reach Share Card","viewer.export.unknown":"unknown","viewer.export.routeFailed":"Route Share Card export failed: {message}","viewer.export.reachFailed":"Reach Share Card export failed: {message}","viewer.export.copyFailed":"Copy failed: {message}","viewer.export.copiedPng":"Copied PNG to clipboard","viewer.export.copiedShare":"Copied Share Card","viewer.export.downloadedShare":"Downloaded Share Card","viewer.export.downloadedRoute":"Downloaded Route Share Card","viewer.export.downloadedReach":"Downloaded Reach Share Card","viewer.export.downloadedWebm":"Downloaded WebM","viewer.export.recording":"Recording 6 seconds of motion…","viewer.export.card.routeSummary.one":"Route: {source} → {target} · {count} directed hop","viewer.export.card.routeSummary.other":"Route: {source} → {target} · {count} directed hops","viewer.export.card.reachSummary":"Authored {direction} from {origin} · {nodes} · {links} · max {hops}","viewer.export.card.node.one":"{count} node","viewer.export.card.node.other":"{count} nodes","viewer.export.card.link.one":"{count} link","viewer.export.card.link.other":"{count} links","viewer.export.card.hop.one":"{count} hop","viewer.export.card.hop.other":"{count} hops","viewer.export.card.routeBadge":"ARCHIFY · ROUTE · {hops}","viewer.export.card.reachBadge":"ARCHIFY · {direction} REACH","viewer.export.card.defaultBadge":"ARCHIFY · {preset} · {theme}","viewer.export.direction.upstream":"Upstream","viewer.export.direction.downstream":"Downstream","viewer.export.error.canvasUnavailable":"Canvas unavailable for {label}","viewer.export.error.contextUnavailable":"2D canvas context unavailable for {label}","viewer.export.error.toBlobUnavailable":"canvas.toBlob unavailable for {label}","viewer.export.error.toBlobNull":"canvas.toBlob returned no data for {label}","viewer.export.error.variantsCombined":"Share Card variants cannot be combined","viewer.export.error.viewerState":"Share Card export could not remove temporary viewer state","viewer.export.error.routeState":"Route Card export could not preserve the resolved route safely","viewer.export.error.reachState":"Reach Card export could not preserve authored reach safely","viewer.export.error.webmRequirements":"WebM motion export requires a trace animation and browser MediaRecorder support","viewer.export.error.mediaRecorder":"MediaRecorder failed","viewer.export.error.emptyWebm":"MediaRecorder produced an empty WebM","viewer.export.error.webmBackground":"SVG background could not be loaded for WebM export","viewer.guided.region":"Guided diagram views","viewer.guided.previous":"Previous guided view","viewer.guided.previous.title":"Previous guided view ([)","viewer.guided.next":"Next guided view","viewer.guided.next.title":"Next guided view (])","viewer.guided.views":"Guided views","viewer.guided.explore":"Explore this system","viewer.guided.intro":"Step through curated paths without changing the source diagram.","viewer.guided.trail":"Story trail","viewer.guided.beat":"Beat","viewer.guided.nextBeat":"Next","viewer.guided.play":"Play guided story","viewer.guided.play.title":"Play guided story (P)","viewer.guided.pause":"Pause guided story","viewer.guided.pause.title":"Pause guided story (P)","viewer.guided.replay":"Replay guided story","viewer.guided.replay.title":"Replay guided story (P)","viewer.guided.playStory":"Play story","viewer.guided.pauseStory":"Pause","viewer.guided.replayStory":"Replay story","viewer.guided.motionUnavailable":"Story playback unavailable while motion is Still","viewer.guided.enableMotion":"Switch motion to Live to play the guided story","viewer.guided.selectBeatLink":"Select a Story Beat to copy its exact link","viewer.guided.copyMoment":"Copy moment","viewer.guided.momentCopied":"Moment link copied","viewer.guided.momentCopyFailed":"Could not copy story moment link","viewer.guided.copied":"Copied","viewer.guided.copyFailed":"Copy failed","viewer.guided.showAll":"Show all","viewer.guided.showAll.aria":"Show entire diagram","viewer.guided.chapters":"Story chapters","viewer.guided.storyTrail":"Story trail for {label}: {count} beats","viewer.guided.chapter.open":"Open chapter {index} of {total}: {label}, {count} stops","viewer.guided.chapter.current":"Current chapter {index} of {total}: {label}, {count} stops","viewer.guided.chapter.selectedNodes":"{count} selected nodes","viewer.guided.chapter.stops":"{count} stops","viewer.guided.chapter.stop.one":"{count} stop","viewer.guided.chapter.stop.other":"{count} stops","viewer.guided.chapter.current.title":"{label} — current chapter, {count} stops","viewer.guided.chapter.delta.expanded":"{stay} stay, {enter} enter, {leave} leave","viewer.guided.chapter.delta.aria":"Open chapter {index} of {total}: {label}. Chapter focus delta: {delta}","viewer.guided.chapter.delta.title":"{label} — {delta} chapter focus","viewer.guided.handoff":"{from} → {to} · via {label}","viewer.guided.share.chapter":"Chapter {index} / {total}","viewer.guided.share.initial":"Chapter 01 / 01","viewer.guided.share.default":"Guided chapter","viewer.guided.state.ready":"Ready","viewer.guided.state.playing":"Playing","viewer.guided.state.settled":"Settled","viewer.guided.state.paused":"Paused","viewer.guided.state.pinned":"Pinned","viewer.guided.state.still":"Still","viewer.guided.share.step":"Step {index} / {total} · {label}","viewer.guided.share.staticMoment":"{step} · Static moment","viewer.guided.share.complete":"{count} steps complete · {note}","viewer.guided.share.settled":"Path settled for reading.","viewer.guided.share.staticPath":"{count} steps · Static path","viewer.guided.share.ready":"{count} steps · Ready","viewer.guided.share.aria":"{state} chapter {index} of {total}: {label}. {beat}. {route}","viewer.guided.beat.start":"Beat {index} / {total} · {label} · starting point","viewer.guided.beat.forward":"Beat {index} / {total} · {from} → {to}","viewer.guided.beat.reverse":"Beat {index} / {total} · {from} → {to} · reverse authored link","viewer.guided.beat.multiple":"Beat {index} / {total} · {from} ⇄ {to} · {count} authored links","viewer.guided.beat.group":"Beat {index} / {total} · {from} · {to} · grouped · no direct link","viewer.guided.beat.aria.prefix":"Story beat {index} of {total}: {label}. ","viewer.guided.beat.aria.start":"Starting point.","viewer.guided.beat.aria.forward":"From {from} through one authored forward relationship.","viewer.guided.beat.aria.reverse":"From {from}; the authored relationship points from {to} to {from}.","viewer.guided.beat.aria.multiple":"From {from} through {count} authored relationships; shown without arbitrary motion.","viewer.guided.beat.aria.group":"Grouped from {from} with no direct authored relationship.","viewer.guided.caption.start":"Starting point","viewer.guided.caption.grouped":"Grouped transition · no direct authored link","viewer.guided.caption.more":" +{count} more","viewer.guided.caption.reverse":"Reverse authored relationship","viewer.guided.caption.relationships":"{count} authored relationships","viewer.guided.caption.relationship":"Authored relationship","viewer.guided.caption.direction":"authored direction: {from} → {to}","viewer.guided.caption.starting":"Authored starting point","viewer.guided.beatLink":"Copy link to current story moment: Beat {index} of {total}: {label}","viewer.guided.noStory":"This diagram has no authored guided story.","viewer.guide.eyebrow":"Diagram guide","viewer.guide.close":"Close diagram guide","viewer.guide.inspecting":"Inspecting compiled semantics","viewer.guide.actions":"Diagram exploration actions","viewer.guide.find":"Find any node","viewer.guide.find.hint":"Search labels, responsibilities, kinds, and stable IDs.","viewer.guide.route":"Trace a route","viewer.guide.route.aria":"Trace a directed route","viewer.guide.route.hint":"Ask how two semantic nodes connect in authored direction.","viewer.guide.map":"See the whole system","viewer.guide.map.hint":"Open Semantic Radar with a live viewport and stable nodes.","viewer.guide.lens":"Compare semantic kinds","viewer.guide.lens.hint":"Count roles, reveal their traffic, and compare direct authored links.","viewer.guide.story":"Play the guided story","viewer.guide.story.hint":"Walk the authored chapters and real relationships.","viewer.guide.present":"Enter Presentation Stage","viewer.guide.present.hint":"Give the live diagram the viewport without changing export.","viewer.guide.shortcuts":"Additional keyboard shortcuts","viewer.guide.shortcut.export":"Export","viewer.guide.shortcut.theme":"Theme","viewer.guide.shortcut.style":"Style","viewer.guide.shortcut.reset":"Reset","viewer.guide.shortcut.zoomIn":"Zoom in","viewer.guide.shortcut.zoomOut":"Zoom out","viewer.guide.shortcut.close":"Close","viewer.guide.facts":"{nodes} · {relationships} · {views}","viewer.guide.fact.node.one":"{count} semantic node","viewer.guide.fact.node.other":"{count} semantic nodes","viewer.guide.fact.relationship.one":"{count} relationship","viewer.guide.fact.relationship.other":"{count} relationships","viewer.guide.fact.view.one":"{count} guided view","viewer.guide.fact.view.other":"{count} guided views","viewer.guide.story.available.one":"Walk {count} authored chapter and its real relationships.","viewer.guide.story.available.other":"Walk {count} authored chapters and their real relationships.","viewer.guide.story.unavailable":"No authored guided story in this diagram.","viewer.guide.open":"Open diagram guide","viewer.guide.noStory":"This diagram has no authored guided story.","viewer.finder.title":"Find a node","viewer.finder.close":"Close node finder","viewer.finder.placeholder":"Search labels or IDs","viewer.finder.search":"Search diagram nodes","viewer.finder.results":"Diagram nodes","viewer.finder.empty":"No matching nodes","viewer.finder.result.focus":"Focus {label}","viewer.finder.result.routeStart":"Choose {label} as route start","viewer.finder.result.routeTarget":"Choose {label} as route destination, {links}","viewer.finder.status.empty":"No matching nodes","viewer.finder.status.count.one":"{count} matching node","viewer.finder.status.count.other":"{count} matching nodes","viewer.finder.noun.nodes":"nodes","viewer.finder.link.one":"{count} link","viewer.finder.link.other":"{count} links","viewer.finder.result.focus.one":"Focus {label}, {count} related connection","viewer.finder.result.focus.other":"Focus {label}, {count} related connections","viewer.finder.status.filtered":"{visible} of {available} {noun}","viewer.finder.status.all":"{available} {noun}","viewer.passport.eyebrow":"Semantic passport","viewer.passport.metadata":"Node metadata","viewer.passport.evidence":"Verified source evidence","viewer.passport.verified":"Verified source","viewer.passport.verificationScope":"Verified against local Git at the pinned revision. Remote access has not been checked.","viewer.passport.reach":"Authored reach","viewer.passport.reach.trace":"Trace authored reachability","viewer.passport.upstream":"Upstream","viewer.passport.downstream":"Downstream","viewer.passport.upstream.trace":"Trace upstream authored reachability","viewer.passport.downstream.trace":"Trace downstream authored reachability","viewer.passport.close":"Close semantic passport","viewer.passport.copy":"Copy link","viewer.passport.copy.focus":"Copy link to focused node","viewer.passport.relations":"Relations","viewer.passport.relations.show":"Show connected relationships","viewer.passport.relations.hide":"Hide connected relationships","viewer.passport.relations.list":"Connected relationships","viewer.passport.copyRelation":"Copy relation","viewer.passport.copyNode":"Copy node","viewer.passport.copyPinned":"Copy link to pinned relationship","viewer.passport.copySource":"Copy link to source node","viewer.passport.copy.focused.success":"Focused node link copied","viewer.passport.copy.pinned.success":"Pinned relationship link copied","viewer.passport.copy.focused.failed":"Could not copy focused node link","viewer.passport.copy.pinned.failed":"Could not copy pinned relationship link","viewer.passport.relationship.none":"No connected relationships","viewer.passport.relationship.count.one":"{count} relation","viewer.passport.relationship.count.other":"{count} relations","viewer.passport.relationship.show.one":"Show {count} connected relationship","viewer.passport.relationship.show.other":"Show {count} connected relationships","viewer.passport.relationship.summary":"{out} outgoing · {in} incoming{loops}","viewer.passport.relationship.loops":" · {count} loop","viewer.passport.relationship.explorer":"Direct relationship explorer","viewer.passport.relationship.help":"Use arrow keys to explore relationships. Press Enter or Space to pin details; Escape clears.","viewer.passport.relationship.loopsBack":"loops back","viewer.passport.relationship.connectsTo":"connects to","viewer.passport.relationship.connectsFrom":"connects from","viewer.passport.relationship.pinned":"Pinned relationship · {from} → {to} · {label}","viewer.passport.relationship.inspect":"Inspect relationship {index} of {total}: {from} to {to}, {label}. Press Enter for details.","viewer.passport.relationship.group.out":"Outgoing","viewer.passport.relationship.group.in":"Incoming","viewer.passport.relationship.group.loop":"Self loops","viewer.passport.relationship.row":"{group}: {relationship}, {neighbor}","viewer.passport.relationship.direction.out":"OUT →","viewer.passport.relationship.direction.in":"← IN","viewer.passport.relationship.direction.loop":"LOOP","viewer.passport.sourceCount.one":"{count} verified source reference","viewer.passport.sourceCount.other":"{count} verified source references","viewer.passport.sourceMarker":"SRC","viewer.passport.beacon.one":"{count} verified source; focus this node to inspect","viewer.passport.beacon.other":"{count} verified sources; focus this node to inspect","viewer.passport.repository.open":"Open verified repository revision {revision}","viewer.passport.source.open":"Open verified source {path} at revision {revision}","viewer.passport.source.openLink":"Open ↗","viewer.passport.reach.upstream.one":"Trace {count} upstream authored node","viewer.passport.reach.upstream.other":"Trace {count} upstream authored nodes","viewer.passport.reach.downstream.one":"Trace {count} downstream authored node","viewer.passport.reach.downstream.other":"Trace {count} downstream authored nodes","viewer.passport.reach.noUpstream":"No upstream authored nodes","viewer.passport.reach.noDownstream":"No downstream authored nodes","viewer.passport.reach.status":"{direction} · {nodes} nodes · {links} links · max {hops} hops","viewer.route.eyebrow":"Route probe","viewer.route.start":"Choose a start node","viewer.route.start.find":"Find start","viewer.route.start.find.aria":"Find a route start","viewer.route.copy":"Copy link","viewer.route.copy.aria":"Copy link to traced route","viewer.route.clear":"Clear","viewer.route.clear.aria":"Clear route probe","viewer.route.traced":"Traced route","viewer.route.pickTwo":"Pick two semantic nodes on the diagram","viewer.route.pickOne":"Pick a semantic node on the diagram","viewer.route.controls":"Route journey controls","viewer.route.previous":"Previous route position","viewer.route.play":"Play route journey","viewer.route.pause":"Pause route journey","viewer.route.replay":"Replay route journey","viewer.route.next":"Next route position","viewer.route.journey":"Journey","viewer.route.pause.label":"Pause","viewer.route.replay.label":"Replay","viewer.route.overview":"Overview","viewer.route.overview.aria":"Show complete route overview","viewer.route.instructions":"Choose the source, then the destination. Direction matters.","viewer.route.destination":"Choose a destination from {label}","viewer.route.destination.find":"Find target","viewer.route.destination.find.aria":"Find a reachable route destination","viewer.route.differentDestination":"Choose a different destination","viewer.route.distinct":"A route needs two distinct semantic nodes.","viewer.route.unreachable":"No directed route to {label}","viewer.route.unreachable.detail":"{target} is not reachable from {source}. Pick a highlighted destination.","viewer.route.start.instructions":"Select the source. The next step will reveal only directed destinations.","viewer.route.copy.success":"Traced route link copied","viewer.route.copy.failed":"Could not copy traced route link","viewer.route.position":"Route position {index} of {total}: {label}","viewer.route.step":"Step {index} of {total} · {phase} · {label}","viewer.route.motionRequired":"Automatic journey requires Live motion","viewer.route.trigger.clear":"Clear traced route","viewer.route.overview.status":"{nodes} · {hops} · shortest authored route","viewer.route.overview.node.one":"{count} node","viewer.route.overview.node.other":"{count} nodes","viewer.route.overview.hop.one":"{count} directed hop","viewer.route.overview.hop.other":"{count} directed hops","viewer.route.phase.playing":"Playing","viewer.route.phase.complete":"Complete","viewer.route.phase.inspecting":"Inspecting","viewer.route.destination.count.one":"{count} directed destination available. Pick a highlighted node.","viewer.route.destination.count.other":"{count} directed destinations available. Pick a highlighted node.","viewer.route.noOutgoing":"No outgoing route starts here. Clear and choose another source.","viewer.route.result.title":"{source} to {target}","viewer.route.finder.source.title":"Choose route start","viewer.route.finder.source.placeholder":"Search route sources","viewer.route.finder.source.empty":"No matching route sources","viewer.route.finder.source.results":"Nodes that can start a route","viewer.route.finder.source.noun":"route sources","viewer.route.finder.source.badge":"start","viewer.route.finder.target.title":"Destination from {label}","viewer.route.finder.target.placeholder":"Search reachable destinations","viewer.route.finder.target.empty":"No matching reachable destinations","viewer.route.finder.target.results":"Reachable route destinations","viewer.route.finder.target.noun":"reachable destinations","viewer.route.hop.one":"{count} hop","viewer.route.hop.other":"{count} hops","viewer.lens.eyebrow":"Semantic lens","viewer.lens.title":"Compare system roles","viewer.lens.close":"Close semantic lens","viewer.lens.instruction":"Choose up to two semantic kinds. One reveals its real traffic; two compare only direct authored relationships.","viewer.lens.kinds":"Semantic kinds","viewer.lens.choose":"Choose a kind to inspect its nodes and touching relationships.","viewer.lens.copy":"Copy link to semantic lens","viewer.lens.clear":"Clear semantic lens","viewer.lens.open":"Open semantic lens","viewer.lens.openActive":"Open active semantic lens","viewer.lens.legend":"Semantic legend","viewer.lens.legend.inspect.one":"Inspect {label}, {count} node","viewer.lens.legend.inspect.other":"Inspect {label}, {count} nodes","viewer.lens.kind.count.one":"{label}, {count} node","viewer.lens.kind.count.other":"{label}, {count} nodes","viewer.lens.compare.one":"{first} → {second}: {forward} · {second} → {first}: {reverse} · {count} direct relationship","viewer.lens.compare.other":"{first} → {second}: {forward} · {second} → {first}: {reverse} · {count} direct relationships","viewer.lens.single":"{nodes} · {relationships} · connected peers remain visible","viewer.lens.node.one":"{count} {label} node","viewer.lens.node.other":"{count} {label} nodes","viewer.lens.relationship.one":"{count} touching relationship","viewer.lens.relationship.other":"{count} touching relationships","viewer.radar.title":"Semantic radar","viewer.radar.building":"Building overview","viewer.radar.openFull":"Open full semantic radar","viewer.radar.open":"Open radar","viewer.radar.close":"Close semantic radar","viewer.radar.surface":"Diagram overview. Click a node to focus it, or use arrow keys to pan.","viewer.radar.click":"Click node","viewer.radar.drag":"Drag to pan","viewer.radar.space":"Semantic radar needs more MAP space.","viewer.radar.nodes":"Semantic diagram radar nodes","viewer.radar.focus":"Focus {label} from Semantic Radar","viewer.radar.status":"{count} nodes · {viewport}","viewer.radar.fullMap":"{count} nodes · full map","viewer.radar.compacted":"Radar compacted to avoid covering the Semantic Passport or MAP controls.","viewer.radar.cancelWaiting":"Cancel semantic radar waiting for more MAP space","viewer.radar.needsSpace":"Semantic radar needs more visible MAP space","viewer.radar.viewport.full":"full map","viewer.radar.viewport.width":"{percent}% width","viewer.radar.viewport.scale":"{percent}% viewport","viewer.nav.controls":"Diagram view controls","viewer.nav.route":"Trace a directed route","viewer.nav.route.title":"Trace route (R)","viewer.nav.route.short":"PATH","viewer.nav.radar":"Open semantic radar","viewer.nav.radar.title":"Semantic radar (M)","viewer.nav.radar.short":"MAP","viewer.nav.lens":"Open semantic lens","viewer.nav.lens.title":"Semantic lens (L)","viewer.nav.lens.short":"LENS","viewer.nav.find":"Find a node","viewer.nav.find.title":"Find a node (/)","viewer.nav.guide":"Open diagram guide","viewer.nav.guide.title":"Diagram guide (?)","viewer.nav.zoomOut":"Zoom out","viewer.nav.zoomOut.title":"Zoom out (-)","viewer.nav.reset":"Reset diagram view","viewer.nav.reset.title":"Reset view (0)","viewer.nav.read":"READ","viewer.nav.zoomIn":"Zoom in","viewer.nav.zoomIn.title":"Zoom in (+)","viewer.nav.camera":"{hint}. Reset diagram view","viewer.nav.camera.title":"{semantic}{hint} · reset view (0)","viewer.nav.camera.semantic":"Semantic camera active · ","viewer.nav.level.map":"MAP","viewer.nav.level.read":"READ","viewer.nav.level.full":"FULL","viewer.nav.level.auto":"AUTO","viewer.nav.detail.map":"Zoom in to reveal relationship labels and node context","viewer.nav.detail.read":"Zoom in again to reveal tags and annotations","viewer.nav.detail.full":"Full diagram detail","viewer.intent.summary":"{label}. {out} outgoing, {in} incoming{loops}. {total} connections. Press Enter for details.","viewer.intent.loops":", {count} self loop","viewer.common.copied":"Copied","viewer.common.copyFailed":"Copy failed","viewer.common.copyLink":"Copy link","viewer.common.clear":"Clear","viewer.common.close":"Close"}}</script>
     <div class="guided-views no-print" id="guided-views" hidden aria-label="Guided diagram views">
@@ -5005,9 +5004,9 @@
     <!-- Main Diagram -->
     <div class="diagram-container" data-detail-level="read"
          data-preset-badge-editorial-plate="ARCHIFY / PLATE 04">
-      <svg viewBox="0 0 990 486" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase">
+      <svg viewBox="0 0 1148 488" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase">
         <title id="archify-diagram-title">MWG framework architecture</title>
-        <desc id="archify-diagram-description">Real module dependencies, read from src/ by walking its runtime import graph</desc>
+        <desc id="archify-diagram-description">An architecture diagram generated by Archify.</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -5031,200 +5030,238 @@
         <rect width="100%" height="100%" fill="url(#grid)" />
 
         <!-- Boundaries (behind everything) -->
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="Renderer-facing" x="390" y="222" width="370" height="196" rx="12" class="c-region" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="No renderer - usable from any renderer, or none" x="12" y="112" width="816" height="308" rx="12" class="c-region" stroke-width="1"/>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="1" data-composition-frame-label="No renderer - usable from any renderer, or none" x="10" y="50" width="940" height="368" rx="12" class="c-region" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="1" data-composition-frame-label="Renderer-facing" x="892" y="112" width="216" height="308" rx="12" class="c-region" stroke-width="1"/>
 
         <!-- Connection paths (before components for correct z-order) -->
-        <path data-edge-from="battle" data-edge-to="actors" data-edge-key="0" data-edge-id="battle-actors" data-composition-points="290,140;290,166" d="M 290 140 L 290 166" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="simulation" data-edge-to="roguelike" data-edge-key="1" data-edge-id="simulation-roguelike" data-composition-points="670,140;670,166" d="M 670 140 L 670 166" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="audio" data-edge-to="assets" data-edge-key="2" data-edge-id="audio-assets" data-composition-points="290,312;290,780;670,780;670,398" d="M 290 312 L 290 772 Q 290 780 298 780 L 662 780 Q 670 780 670 772 L 670 398" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="three-d" data-edge-to="assets" data-edge-key="3" data-edge-id="three-d-assets" data-composition-points="670,312;670,338" d="M 670 312 L 670 338" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="two-d" data-edge-to="assets" data-edge-key="4" data-edge-id="two-d-assets" data-composition-points="540,282;575,282;575,368;610,368" d="M 540 282 L 567 282 Q 575 282 575 290 L 575 360 Q 575 368 583 368 L 610 368" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="two-d" data-edge-to="core" data-edge-key="5" data-edge-id="two-d-core" data-composition-points="480,312;480,338" d="M 480 312 L 480 338" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="battle" data-edge-to="actors" data-edge-label="StatBlock" data-edge-key="0" data-edge-id="battle-actors" data-composition-points="440,170;400,170" d="M 440 170 L 400 170" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="simulation" data-edge-to="roguelike" data-edge-label="FOV, pathfinding" data-edge-key="1" data-edge-id="simulation-roguelike" data-composition-points="440,270;400,270" d="M 440 270 L 400 270" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="ai" data-edge-to="mwl" data-edge-label="authored trees" data-edge-key="2" data-edge-id="ai-mwl" data-composition-points="440,370;400,370" d="M 440 370 L 400 370" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="board" data-edge-to="ai" data-edge-key="3" data-edge-id="board-ai" data-composition-points="640,370;600,370" d="M 640 370 L 600 370" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="three-d" data-edge-to="assets" data-edge-key="4" data-edge-id="three-d-assets" data-composition-points="1000,340;1000,300" d="M 1000 340 L 1000 300" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="two-d" data-edge-to="assets" data-edge-key="5" data-edge-id="two-d-assets" data-composition-points="1000,200;1000,240" d="M 1000 200 L 1000 240" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="two-d" data-edge-to="core" data-edge-key="6" data-edge-id="two-d-core" data-composition-points="1000,140;1000,60;120,60;120,140" d="M 1000 140 L 1000 68 Q 1000 60 992 60 L 128 60 Q 120 60 120 68 L 120 140" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="audio" data-edge-to="assets" data-edge-label="loader" data-edge-key="7" data-edge-id="audio-assets" data-composition-points="120,400;120,440;1100,440;1100,270;1080,270" d="M 120 400 L 120 432 Q 120 440 128 440 L 1092 440 Q 1100 440 1100 432 L 1100 278 Q 1100 270 1092 270 L 1080 270" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
 
         <!-- Components -->
-        <g id="node-battle" data-node-id="battle" data-node-label="battle" tabindex="0" role="button" aria-label="Focus battle, 13 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="13 files" data-node-context="No renderer - usable from any renderer, or none">
-          <title>battle · 13 files · No renderer - usable from any renderer, or none</title>
-          <rect x="230" y="80" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="230" y="80" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(236 86) scale(0.6875)">
+        <g id="node-core" data-node-id="core" data-node-label="core" tabindex="0" role="button" aria-label="Focus core, 43 files - zero dependencies, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="43 files - zero dependencies" data-node-context="No renderer - usable from any renderer, or none">
+          <title>core · 43 files - zero dependencies · No renderer - usable from any renderer, or none</title>
+          <rect x="40" y="140" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="40" y="140" width="160" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(46 146) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="290" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">battle</text>
-        <text data-detail="context" x="290" y="124" class="t-muted" font-size="9" text-anchor="middle">13 files</text>
-        </g>
-
-        <g id="node-simulation" data-node-id="simulation" data-node-label="simulation" tabindex="0" role="button" aria-label="Focus simulation, 6 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="6 files" data-node-context="No renderer - usable from any renderer, or none">
-          <title>simulation · 6 files · No renderer - usable from any renderer, or none</title>
-          <rect x="610" y="80" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="610" y="80" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(616 86) scale(0.6875)">
-            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
-          </g>
-          <text data-node-label="" data-detail-anchor="" x="670" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">simulation</text>
-        <text data-detail="context" x="670" y="124" class="t-muted" font-size="9" text-anchor="middle">6 files</text>
-        </g>
-
-        <g id="node-world" data-node-id="world" data-node-label="world" tabindex="0" role="button" aria-label="Focus world, 8 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="8 files" data-node-context="No renderer - usable from any renderer, or none">
-          <title>world · 8 files · No renderer - usable from any renderer, or none</title>
-          <rect x="40" y="166" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="40" y="166" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(46 172) scale(0.6875)">
-            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
-          </g>
-          <text data-node-label="" data-detail-anchor="" x="100" y="194" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">world</text>
-        <text data-detail="context" x="100" y="210" class="t-muted" font-size="9" text-anchor="middle">8 files</text>
+          <text data-node-label="" data-detail-anchor="" x="120" y="168" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">core</text>
+        <text data-detail="context" x="120" y="184" class="t-muted" font-size="9" text-anchor="middle">43 files - zero dependencies</text>
         </g>
 
         <g id="node-actors" data-node-id="actors" data-node-label="actors" tabindex="0" role="button" aria-label="Focus actors, 24 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="24 files" data-node-context="No renderer - usable from any renderer, or none">
           <title>actors · 24 files · No renderer - usable from any renderer, or none</title>
-          <rect x="230" y="166" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="230" y="166" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(236 172) scale(0.6875)">
+          <rect x="240" y="140" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="240" y="140" width="160" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(246 146) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="290" y="194" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">actors</text>
-        <text data-detail="context" x="290" y="210" class="t-muted" font-size="9" text-anchor="middle">24 files</text>
+          <text data-node-label="" data-detail-anchor="" x="320" y="168" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">actors</text>
+        <text data-detail="context" x="320" y="184" class="t-muted" font-size="9" text-anchor="middle">24 files</text>
         </g>
 
-        <g id="node-board" data-node-id="board" data-node-label="board" tabindex="0" role="button" aria-label="Focus board, 9 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="9 files" data-node-context="No renderer - usable from any renderer, or none">
-          <title>board · 9 files · No renderer - usable from any renderer, or none</title>
-          <rect x="420" y="166" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="420" y="166" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(426 172) scale(0.6875)">
+        <g id="node-battle" data-node-id="battle" data-node-label="battle" tabindex="0" role="button" aria-label="Focus battle, 15 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="15 files" data-node-context="No renderer - usable from any renderer, or none">
+          <title>battle · 15 files · No renderer - usable from any renderer, or none</title>
+          <rect x="440" y="140" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="440" y="140" width="160" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(446 146) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="480" y="194" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">board</text>
-        <text data-detail="context" x="480" y="210" class="t-muted" font-size="9" text-anchor="middle">9 files</text>
+          <text data-node-label="" data-detail-anchor="" x="520" y="168" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">battle</text>
+        <text data-detail="context" x="520" y="184" class="t-muted" font-size="9" text-anchor="middle">15 files</text>
         </g>
 
-        <g id="node-roguelike" data-node-id="roguelike" data-node-label="roguelike" tabindex="0" role="button" aria-label="Focus roguelike, 25 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="25 files" data-node-context="No renderer - usable from any renderer, or none">
-          <title>roguelike · 25 files · No renderer - usable from any renderer, or none</title>
-          <rect x="610" y="166" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="610" y="166" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(616 172) scale(0.6875)">
+        <g id="node-world" data-node-id="world" data-node-label="world" tabindex="0" role="button" aria-label="Focus world, 7 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="7 files" data-node-context="No renderer - usable from any renderer, or none">
+          <title>world · 7 files · No renderer - usable from any renderer, or none</title>
+          <rect x="640" y="140" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="640" y="140" width="160" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(646 146) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="670" y="194" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">roguelike</text>
-        <text data-detail="context" x="670" y="210" class="t-muted" font-size="9" text-anchor="middle">25 files</text>
+          <text data-node-label="" data-detail-anchor="" x="720" y="168" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">world</text>
+        <text data-detail="context" x="720" y="184" class="t-muted" font-size="9" text-anchor="middle">7 files</text>
         </g>
 
-        <g id="node-rpg" data-node-id="rpg" data-node-label="rpg" tabindex="0" role="button" aria-label="Focus rpg, 12 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="12 files" data-node-context="No renderer - usable from any renderer, or none">
-          <title>rpg · 12 files · No renderer - usable from any renderer, or none</title>
-          <rect x="800" y="166" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="800" y="166" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(806 172) scale(0.6875)">
+        <g id="node-rpg" data-node-id="rpg" data-node-label="rpg" tabindex="0" role="button" aria-label="Focus rpg, 11 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="11 files" data-node-context="No renderer - usable from any renderer, or none">
+          <title>rpg · 11 files · No renderer - usable from any renderer, or none</title>
+          <rect x="40" y="240" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="40" y="240" width="160" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(46 246) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="860" y="194" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">rpg</text>
-        <text data-detail="context" x="860" y="210" class="t-muted" font-size="9" text-anchor="middle">12 files</text>
+          <text data-node-label="" data-detail-anchor="" x="120" y="268" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">rpg</text>
+        <text data-detail="context" x="120" y="284" class="t-muted" font-size="9" text-anchor="middle">11 files</text>
         </g>
 
-        <g id="node-i18n" data-node-id="i18n" data-node-label="i18n" tabindex="0" role="button" aria-label="Focus i18n, 6 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="6 files" data-node-context="No renderer - usable from any renderer, or none">
-          <title>i18n · 6 files · No renderer - usable from any renderer, or none</title>
-          <rect x="40" y="252" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="40" y="252" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(46 258) scale(0.6875)">
+        <g id="node-roguelike" data-node-id="roguelike" data-node-label="roguelike" tabindex="0" role="button" aria-label="Focus roguelike, 22 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="22 files" data-node-context="No renderer - usable from any renderer, or none">
+          <title>roguelike · 22 files · No renderer - usable from any renderer, or none</title>
+          <rect x="240" y="240" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="240" y="240" width="160" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(246 246) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="100" y="280" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">i18n</text>
-        <text data-detail="context" x="100" y="296" class="t-muted" font-size="9" text-anchor="middle">6 files</text>
+          <text data-node-label="" data-detail-anchor="" x="320" y="268" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">roguelike</text>
+        <text data-detail="context" x="320" y="284" class="t-muted" font-size="9" text-anchor="middle">22 files</text>
         </g>
 
-        <g id="node-audio" data-node-id="audio" data-node-label="audio" tabindex="0" role="button" aria-label="Focus audio, 10 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="10 files" data-node-context="No renderer - usable from any renderer, or none">
-          <title>audio · 10 files · No renderer - usable from any renderer, or none</title>
-          <rect x="230" y="252" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="230" y="252" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(236 258) scale(0.6875)">
+        <g id="node-simulation" data-node-id="simulation" data-node-label="simulation" tabindex="0" role="button" aria-label="Focus simulation, 8 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="8 files" data-node-context="No renderer - usable from any renderer, or none">
+          <title>simulation · 8 files · No renderer - usable from any renderer, or none</title>
+          <rect x="440" y="240" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="440" y="240" width="160" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(446 246) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="290" y="280" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">audio</text>
-        <text data-detail="context" x="290" y="296" class="t-muted" font-size="9" text-anchor="middle">10 files</text>
+          <text data-node-label="" data-detail-anchor="" x="520" y="268" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">simulation</text>
+        <text data-detail="context" x="520" y="284" class="t-muted" font-size="9" text-anchor="middle">8 files</text>
         </g>
 
-        <g id="node-two-d" data-node-id="two-d" data-node-label="two-d" tabindex="0" role="button" aria-label="Focus two-d, 74 files, Renderer-facing" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="74 files" data-node-tag="PixiJS" data-node-context="Renderer-facing">
-          <title>two-d · 74 files · Renderer-facing · PixiJS</title>
-          <rect x="420" y="252" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="420" y="252" width="120" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(426 258) scale(0.6875)">
+        <g id="node-i18n" data-node-id="i18n" data-node-label="i18n" tabindex="0" role="button" aria-label="Focus i18n, 10 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="10 files" data-node-context="No renderer - usable from any renderer, or none">
+          <title>i18n · 10 files · No renderer - usable from any renderer, or none</title>
+          <rect x="640" y="240" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="640" y="240" width="160" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(646 246) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="720" y="268" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">i18n</text>
+        <text data-detail="context" x="720" y="284" class="t-muted" font-size="9" text-anchor="middle">10 files</text>
+        </g>
+
+        <g id="node-audio" data-node-id="audio" data-node-label="audio" tabindex="0" role="button" aria-label="Focus audio, 9 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="9 files" data-node-context="No renderer - usable from any renderer, or none">
+          <title>audio · 9 files · No renderer - usable from any renderer, or none</title>
+          <rect x="40" y="340" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="40" y="340" width="160" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(46 346) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="120" y="368" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">audio</text>
+        <text data-detail="context" x="120" y="384" class="t-muted" font-size="9" text-anchor="middle">9 files</text>
+        </g>
+
+        <g id="node-mwl" data-node-id="mwl" data-node-label="mwl" tabindex="0" role="button" aria-label="Focus mwl, 21 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="21 files" data-node-context="No renderer - usable from any renderer, or none">
+          <title>mwl · 21 files · No renderer - usable from any renderer, or none</title>
+          <rect x="240" y="340" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="240" y="340" width="160" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(246 346) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="320" y="368" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">mwl</text>
+        <text data-detail="context" x="320" y="384" class="t-muted" font-size="9" text-anchor="middle">21 files</text>
+        </g>
+
+        <g id="node-ai" data-node-id="ai" data-node-label="ai" tabindex="0" role="button" aria-label="Focus ai, 5 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="5 files" data-node-context="No renderer - usable from any renderer, or none">
+          <title>ai · 5 files · No renderer - usable from any renderer, or none</title>
+          <rect x="440" y="340" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="440" y="340" width="160" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(446 346) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="520" y="368" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">ai</text>
+        <text data-detail="context" x="520" y="384" class="t-muted" font-size="9" text-anchor="middle">5 files</text>
+        </g>
+
+        <g id="node-board" data-node-id="board" data-node-label="board" tabindex="0" role="button" aria-label="Focus board, 8 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="8 files" data-node-context="No renderer - usable from any renderer, or none">
+          <title>board · 8 files · No renderer - usable from any renderer, or none</title>
+          <rect x="640" y="340" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="640" y="340" width="160" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(646 346) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="720" y="368" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">board</text>
+        <text data-detail="context" x="720" y="384" class="t-muted" font-size="9" text-anchor="middle">8 files</text>
+        </g>
+
+        <g id="node-two-d" data-node-id="two-d" data-node-label="two-d" tabindex="0" role="button" aria-label="Focus two-d, 80 files - PixiJS, Renderer-facing" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="80 files - PixiJS" data-node-context="Renderer-facing">
+          <title>two-d · 80 files - PixiJS · Renderer-facing</title>
+          <rect x="920" y="140" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="920" y="140" width="160" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(926 146) scale(0.6875)">
             <rect x="2" y="3" width="12" height="10" rx="2"/>
             <path d="M2 6.5h12"/>
             <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="480" y="280" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">two-d</text>
-        <text data-detail="context" x="480" y="296" class="t-muted" font-size="9" text-anchor="middle">74 files</text>
-        <text data-detail="fine" x="480" y="304" class="t-frontend" font-size="7" text-anchor="middle">PixiJS</text>
+          <text data-node-label="" data-detail-anchor="" x="1000" y="168" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">two-d</text>
+        <text data-detail="context" x="1000" y="184" class="t-muted" font-size="9" text-anchor="middle">80 files - PixiJS</text>
         </g>
 
-        <g id="node-three-d" data-node-id="three-d" data-node-label="3d" tabindex="0" role="button" aria-label="Focus 3d, 9 files, Renderer-facing" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="9 files" data-node-tag="Babylon.js, optional" data-node-context="Renderer-facing">
-          <title>3d · 9 files · Renderer-facing · Babylon.js, optional</title>
-          <rect x="610" y="252" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="610" y="252" width="120" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(616 258) scale(0.6875)">
+        <g id="node-assets" data-node-id="assets" data-node-label="assets" tabindex="0" role="button" aria-label="Focus assets, 6 files - renderer-facing, Renderer-facing" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="6 files - renderer-facing" data-node-context="Renderer-facing">
+          <title>assets · 6 files - renderer-facing · Renderer-facing</title>
+          <rect x="920" y="240" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="920" y="240" width="160" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(926 246) scale(0.6875)">
             <rect x="2" y="3" width="12" height="10" rx="2"/>
             <path d="M2 6.5h12"/>
             <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="670" y="280" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">3d</text>
-        <text data-detail="context" x="670" y="296" class="t-muted" font-size="9" text-anchor="middle">9 files</text>
-        <text data-detail="fine" x="670" y="304" class="t-frontend" font-size="7" text-anchor="middle">Babylon.js, optional</text>
+          <text data-node-label="" data-detail-anchor="" x="1000" y="268" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">assets</text>
+        <text data-detail="context" x="1000" y="284" class="t-muted" font-size="9" text-anchor="middle">6 files - renderer-facing</text>
         </g>
 
-        <g id="node-core" data-node-id="core" data-node-label="core" tabindex="0" role="button" aria-label="Focus core, 32 files, No renderer - usable from any renderer, or none" aria-pressed="false" data-node-kind="backend" data-node-sublabel="32 files" data-node-tag="zero dependencies" data-node-context="No renderer - usable from any renderer, or none">
-          <title>core · 32 files · No renderer - usable from any renderer, or none · zero dependencies</title>
-          <rect x="420" y="338" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="420" y="338" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(426 344) scale(0.6875)">
-            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+        <g id="node-three-d" data-node-id="three-d" data-node-label="three-d" tabindex="0" role="button" aria-label="Focus three-d, 9 files - Babylon.js, optional, Renderer-facing" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="9 files - Babylon.js, optional" data-node-context="Renderer-facing">
+          <title>three-d · 9 files - Babylon.js, optional · Renderer-facing</title>
+          <rect x="920" y="340" width="160" height="60" rx="6" class="c-mask"/>
+          <rect x="920" y="340" width="160" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(926 346) scale(0.6875)">
+            <rect x="2" y="3" width="12" height="10" rx="2"/>
+            <path d="M2 6.5h12"/>
+            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
+            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="480" y="366" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">core</text>
-        <text data-detail="context" x="480" y="382" class="t-muted" font-size="9" text-anchor="middle">32 files</text>
-        <text data-detail="fine" x="480" y="390" class="t-backend" font-size="7" text-anchor="middle">zero dependencies</text>
-        </g>
-
-        <g id="node-assets" data-node-id="assets" data-node-label="assets" tabindex="0" role="button" aria-label="Focus assets, 6 files, Renderer-facing" aria-pressed="false" data-node-kind="backend" data-node-sublabel="6 files" data-node-context="Renderer-facing">
-          <title>assets · 6 files · Renderer-facing</title>
-          <rect x="610" y="338" width="120" height="60" rx="6" class="c-mask"/>
-          <rect x="610" y="338" width="120" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(616 344) scale(0.6875)">
-            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
-          </g>
-          <text data-node-label="" data-detail-anchor="" x="670" y="366" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">assets</text>
-        <text data-detail="context" x="670" y="382" class="t-muted" font-size="9" text-anchor="middle">6 files</text>
+          <text data-node-label="" data-detail-anchor="" x="1000" y="368" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">three-d</text>
+        <text data-detail="context" x="1000" y="384" class="t-muted" font-size="8.4" text-anchor="middle">9 files - Babylon.js, optional</text>
         </g>
 
         <!-- Connection labels -->
-
-
-
-
-
-
-
-        <!-- Boundary labels (foreground masks keep routes out of titles) -->
-        <g data-graph-role="structural-frame-label" data-composition-frame-id="0" data-composition-frame-kind="region" data-composition-frame-label="Renderer-facing">
-          <rect data-graph-role="structural-frame-label-mask" x="394" y="232" width="91" height="16" rx="3" class="c-mask"/>
-          <text data-boundary-label="" x="398" y="245" class="t-cloud" font-size="9" font-weight="600">Renderer-facing</text>
+        <g data-detail="context" data-edge-from="battle" data-edge-to="actors" data-edge-label="StatBlock" data-edge-key="0" data-edge-id="battle-actors">
+          <rect x="393.4" y="204" width="53.199999999999996" height="14" rx="3" class="c-mask"/>
+          <text x="420" y="214" class="t-muted" font-size="8" text-anchor="middle">StatBlock</text>
+        </g>
+        <g data-detail="context" data-edge-from="simulation" data-edge-to="roguelike" data-edge-label="FOV, pathfinding" data-edge-key="1" data-edge-id="simulation-roguelike">
+          <rect x="376.6" y="304" width="86.8" height="14" rx="3" class="c-mask"/>
+          <text x="420" y="314" class="t-muted" font-size="8" text-anchor="middle">FOV, pathfinding</text>
+        </g>
+        <g data-detail="context" data-edge-from="ai" data-edge-to="mwl" data-edge-label="authored trees" data-edge-key="2" data-edge-id="ai-mwl">
+          <rect x="381.4" y="404" width="77.2" height="14" rx="3" class="c-mask"/>
+          <text x="420" y="414" class="t-muted" font-size="8" text-anchor="middle">authored trees</text>
         </g>
 
-        <g data-graph-role="structural-frame-label" data-composition-frame-id="1" data-composition-frame-kind="region" data-composition-frame-label="No renderer - usable from any renderer, or none">
-          <rect data-graph-role="structural-frame-label-mask" x="14" y="60" width="263.79999999999995" height="16" rx="3" class="c-mask"/>
-          <text data-boundary-label="" x="18" y="73" class="t-cloud" font-size="9" font-weight="600">No renderer - usable from any renderer, or none</text>
+
+
+
+        <g data-detail="context" data-edge-from="audio" data-edge-to="assets" data-edge-label="loader" data-edge-key="7" data-edge-id="audio-assets">
+          <rect x="590.6" y="420" width="38.8" height="14" rx="3" class="c-mask"/>
+          <text x="610" y="430" class="t-muted" font-size="8" text-anchor="middle">loader</text>
+        </g>
+
+        <!-- Boundary labels (foreground masks keep routes out of titles) -->
+        <g data-graph-role="structural-frame-label" data-composition-frame-id="0" data-composition-frame-kind="region" data-composition-frame-label="No renderer - usable from any renderer, or none">
+          <rect data-graph-role="structural-frame-label-mask" x="16" y="120" width="263.79999999999995" height="16" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="20" y="133" class="t-cloud" font-size="9" font-weight="600">No renderer - usable from any renderer, or none</text>
+        </g>
+
+        <g data-graph-role="structural-frame-label" data-composition-frame-id="1" data-composition-frame-kind="region" data-composition-frame-label="Renderer-facing">
+          <rect data-graph-role="structural-frame-label-mask" x="896" y="120" width="91" height="16" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="900" y="133" class="t-cloud" font-size="9" font-weight="600">Renderer-facing</text>
         </g>
 
         <!-- Legend -->
         <g data-legend="" data-legend-bridge="">
-          <text x="40" y="450" class="t-primary" font-size="12" font-weight="650">Legend</text>
-          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="Frontend" data-legend-x="40" data-legend-baseline="470" data-legend-width="83">
-            <rect x="40" y="461" width="16" height="10" rx="2.5" class="c-frontend" stroke-width="1"/>
-            <text x="62" y="470" class="t-muted" font-size="10" font-weight="500">Frontend</text>
+          <text x="40" y="452" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="Frontend" data-legend-x="40" data-legend-baseline="472" data-legend-width="83">
+            <rect x="40" y="463" width="16" height="10" rx="2.5" class="c-frontend" stroke-width="1"/>
+            <text x="62" y="472" class="t-muted" font-size="10" font-weight="500">Frontend</text>
           </g>
-          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Backend" data-legend-x="145" data-legend-baseline="470" data-legend-width="78">
-            <rect x="145" y="461" width="16" height="10" rx="2.5" class="c-backend" stroke-width="1"/>
-            <text x="167" y="470" class="t-muted" font-size="10" font-weight="500">Backend</text>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Backend" data-legend-x="145" data-legend-baseline="472" data-legend-width="78">
+            <rect x="145" y="463" width="16" height="10" rx="2.5" class="c-backend" stroke-width="1"/>
+            <text x="167" y="472" class="t-muted" font-size="10" font-weight="500">Backend</text>
           </g>
         </g>
       </svg>
@@ -5415,34 +5452,45 @@
     <div class="cards">
       <div class="card">
         <div class="card-header">
-          <div class="card-dot emerald"></div>
+          <div class="card-dot cyan"></div>
           <h3>core has zero dependencies</h3>
         </div>
         <ul>
-          <li>&bull; Imports no other module and no renderer, enforced by tests/renderer-isolation.test.ts</li>
-          <li>&bull; Every module in the No renderer group reaches it; lets a Babylon.js game reuse core&#39;s input, saves, RNG and scene stack unchanged</li>
+          <li>&bull; Every other module reaches core, directly or through mwl/actors/roguelike</li>
+          <li>&bull; core imports no other module and no renderer - the renderer-isolation test enforces it</li>
         </ul>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div class="card-dot cyan"></div>
+          <div class="card-dot emerald"></div>
           <h3>Renderer isolation</h3>
         </div>
         <ul>
-          <li>&bull; Only two-d and 3d import a renderer package: PixiJS or Babylon.js</li>
-          <li>&bull; assets is the one loader both renderers share for compiled resources</li>
+          <li>&bull; Only two-d reaches PixiJS and only three-d reaches Babylon.js</li>
+          <li>&bull; assets is the one loader shared by both, with no renderer import of its own beyond PixiJS&#39;s texture types</li>
         </ul>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div class="card-dot violet"></div>
+          <div class="card-dot amber"></div>
+          <h3>mwl as data-authoring backbone</h3>
+        </div>
+        <ul>
+          <li>&bull; ai&#39;s behaviour trees author against mwl&#39;s command/expression language</li>
+          <li>&bull; mwl itself depends on actors and simulation for the data it validates</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot rose"></div>
           <h3>Genre modules build on the shared floor</h3>
         </div>
         <ul>
-          <li>&bull; rpg, battle, roguelike and board each depend on core, never on each other&#39;s peers</li>
-          <li>&bull; simulation layers procedural systems on top of roguelike&#39;s algorithms</li>
+          <li>&bull; battle wraps actors&#39; StatBlock/Progression rather than keeping its own stat system</li>
+          <li>&bull; roguelike and simulation share core&#39;s turn-based primitives</li>
         </ul>
       </div>
     </div>

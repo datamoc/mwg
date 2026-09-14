@@ -46,12 +46,19 @@ export class Sound {
 	 *
 	 * @param gain multiplied into the sound's own volume, for a distance-attenuated one-shot
 	 * (`Positional.SoundSource.playFor`); 1 leaves it at `volume`.
+	 * @param pitch played back at this rate, matching `HTMLAudioElement.playbackRate` (1 is
+	 * unchanged, above 1 higher and faster, below 1 lower and slower) - a footstep or a hit
+	 * that always sounds identical reads as a loop faster than one with a little variance.
+	 * There is no matching `pan` parameter: a plain `<audio>` element has no pan of its own to
+	 * set, and `Positional.audioPan` already made the deliberate call to report a number rather
+	 * than own a panner node a game does not necessarily want - the same reasoning applies here.
 	 */
-	play(gain = 1): void {
+	play(gain = 1, pitch = 1): void {
 		const audio = this.pool[this.next];
 		this.next = (this.next + 1) % this.pool.length;
 
 		audio.volume = this.volume * gain;
+		audio.playbackRate = pitch;
 		audio.currentTime = 0;
 		// play() can return a Promise that rejects if this reuse interrupts its own prior,
 		// still-loading play() (a real browser, not the fakes tests supply) - swallow it the
