@@ -5,13 +5,13 @@
 	"releaseDate": "2026-09-14",
 	"source": {
 		"files": 280,
-		"lines": 45700,
+		"lines": 45695,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 80,
-				"lines": 15483
+				"lines": 15478
 			},
 			{
 				"name": "mwl",
@@ -133,7 +133,7 @@
 	"bundle": {
 		"globalRaw": 1067324,
 		"globalGzip": 317074,
-		"distRaw": 3405742
+		"distRaw": 3405704
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
