@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { gunzipSync } from 'node:zlib';
+import { gunzipSync, brotliDecompressSync } from 'node:zlib';
 
 import { buildSingleFile } from '../tools/single-file.mjs';
 
@@ -65,7 +65,7 @@ test('buildSingleFile with compress: true gzips each script, and the browser-sid
 		const result = await buildSingleFile({ dist: dir, compress: true, level: 9 });
 		const page = await readFile(result.path, 'utf8');
 
-		assert.ok(page.includes('COMPRESSED=true'));
+		assert.ok(page.includes('FORMAT="gzip"'));
 		assert.ok(
 			page.includes('DecompressionStream'),
 			'the bootstrap must use the native decode API, not a shipped one',
@@ -106,12 +106,76 @@ test('buildSingleFile without compress embeds plain base64, decodable without De
 	await withEmittedPage(async (dir) => {
 		const result = await buildSingleFile({ dist: dir, compress: false });
 		const page = await readFile(result.path, 'utf8');
-		assert.ok(page.includes('COMPRESSED=false'));
+		assert.ok(page.includes('FORMAT=""'));
 
 		const match = page.match(/var PAYLOADS=(\[.*?\]);\n/);
 		const payloads = JSON.parse(match![1]);
 		const bundle = payloads.find((p: { name: string }) => p.name === 'entry-abc123.js');
 		assert.equal(Buffer.from(bundle.b64, 'base64').toString('utf8'), 'console.log("game started");\n'.repeat(200));
+	});
+});
+
+test('buildSingleFile with algorithm: brotli compresses with brotli, and round-trips', async () => {
+	await withEmittedPage(async (dir) => {
+		const result = await buildSingleFile({ dist: dir, compress: true, algorithm: 'brotli' });
+		const page = await readFile(result.path, 'utf8');
+
+		assert.ok(page.includes('FORMAT="br"'));
+
+		const match = page.match(/var PAYLOADS=(\[.*?\]);\n/);
+		assert.ok(match, 'expected an embedded PAYLOADS array');
+		const payloads = JSON.parse(match![1]);
+		const bundle = payloads.find((p: { name: string }) => p.name === 'entry-abc123.js');
+		assert.ok(bundle);
+		const decompressed = brotliDecompressSync(Buffer.from(bundle.b64, 'base64')).toString('utf8');
+		assert.equal(decompressed, 'console.log("game started");\n'.repeat(200));
+	});
+});
+
+test('buildSingleFile bootstrap: an unsupported DecompressionStream format rejects rather than throwing synchronously', async () => {
+	// `new DecompressionStream(fmt)` throws synchronously (a TypeError, not a rejected promise)
+	// when the browser does not support `fmt` - a real Chrome build hit exactly this for 'br'
+	// during this feature's own verification pass. decodeText must convert that synchronous
+	// throw into a rejection, or the runNext().catch(...) chain never runs and a splash screen
+	// is stuck forever instead of failing visibly. This extracts the actual generated
+	// `decodeText` function text out of the bootstrap and exercises it directly, with a fake
+	// DecompressionStream standing in for the unsupported-format browser behaviour.
+	await withEmittedPage(async (dir) => {
+		const result = await buildSingleFile({ dist: dir, compress: true, algorithm: 'brotli' });
+		const page = await readFile(result.path, 'utf8');
+		const match = page.match(/function decodeText\(bytes\)\{[\s\S]*?\n\t\}/);
+		assert.ok(match, 'expected to find the generated decodeText function');
+
+		class FakeDecompressionStream {
+			constructor(format: string) {
+				throw new TypeError(
+					`Failed to construct 'DecompressionStream': Unsupported compression format: '${format}'`,
+				);
+			}
+		}
+		const decodeText = new Function(
+			'DecompressionStream',
+			'Blob',
+			'Response',
+			'TextDecoder',
+			'FORMAT',
+			`${match![0]}\nreturn decodeText;`,
+		)(FakeDecompressionStream, Blob, Response, TextDecoder, 'br');
+
+		// the call itself must not throw synchronously...
+		const promise = decodeText(new Uint8Array([1, 2, 3]));
+		// ...and the promise it returns must reject, not hang or resolve
+		await assert.rejects(promise, /Unsupported compression format/);
+	});
+});
+
+test('buildSingleFile rejects an unknown algorithm rather than silently falling back', async () => {
+	await withEmittedPage(async (dir) => {
+		await assert.rejects(
+			// @ts-expect-error - deliberately invalid to test the runtime guard
+			buildSingleFile({ dist: dir, compress: true, algorithm: 'deflate' }),
+			/algorithm must be 'gzip' or 'brotli'/,
+		);
 	});
 });
 

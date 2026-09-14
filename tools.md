@@ -19,11 +19,12 @@ by double-clicking. Run from the repo root.
 
 | tool | what it does | run |
 | --- | --- | --- |
-| `compile-resources` | Turns an asset folder into `data:` URI scripts under `window.__MWG_ASSETS__`, grouped by top-level folder | called by the example builds |
+| `compile-resources` | Turns an asset folder into `data:` URI scripts under `window.__MWG_ASSETS__`, grouped by top-level folder. `toWebp: true` converts `.png`/`.jpg`/`.jpeg` to WebP first (lossless by default, only kept when actually smaller, key unchanged) via the optional `sharp` devDependency, dynamically imported only when used (item 350) | called by the example builds; `node tools/compile-resources.mjs <asset folder> <output folder> [--to-webp] [--webp-lossy[=quality]]` |
+| `webp-convert` | Converts one raster image buffer (PNG/JPEG) to WebP, lossless by default; the standalone half of `compile-resources`'s `toWebp` option (item 350) | `node tools/webp-convert.mjs <file.png\|file.jpg> [--lossy[=quality]]` |
 | `emit-page` | Rewrites an example's vite build (classic script tag, inlined assets) so it opens from `file://` with no server | called by each `example:*:build` script |
 | `classic-html` | Rewrites a bundler build's `<script type="module">` entry tag to a classic deferred script, the shipped, reusable half of what `emit-page` does for this repo's own examples (item 306) | `node -e "..."` calling `toClassicScript` from a game's own build script, or `node tools/classic-html.mjs dist/index.html` directly |
 | `compress-dist` | Writes `.gz`/`.br` siblings for large build outputs | used by the packaging flow |
-| `single-file` | Inlines every `<script src>` an `emit-page` output loads into one additional standalone HTML file, no sibling `.js` at all; `compress: true` gzips each script first, unpacked at load through the browser's own `DecompressionStream` behind a splash screen (item 349) | `node tools/single-file.mjs <dist folder> [--compress[=level]] [--no-splash] [--output name.html]`, or `emit-page --single-file [--single-file-compress[=level]]` |
+| `single-file` | Inlines every `<script src>` an `emit-page` output loads into one additional standalone HTML file, no sibling `.js` at all; `compress: true` compresses each script first (gzip by default, or `algorithm: 'brotli'`), unpacked at load through the browser's own `DecompressionStream` behind a splash screen. Brotli needs `DecompressionStream('br')`, unsupported in a directly-tested current Chrome (153) as of this writing - gzip is the broadly-supported default, brotli an advanced option that degrades to a clear, catchable error rather than hanging (items 349, 350) | `node tools/single-file.mjs <dist folder> [--compress[=level]] [--brotli[=quality]] [--no-splash] [--output name.html]`, or `emit-page --single-file [--single-file-compress[=level]] [--single-file-brotli[=quality]]` |
 
 ## Verification and benchmarks
 

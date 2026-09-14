@@ -1,11 +1,11 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.10.0",
+	"version": "0.11.0",
 	"releaseDate": "2026-09-14",
 	"source": {
 		"files": 280,
-		"lines": 45695,
+		"lines": 45716,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -81,18 +81,18 @@
 			{
 				"name": "assets",
 				"files": 6,
-				"lines": 572
+				"lines": 593
 			}
 		]
 	},
 	"tests": {
-		"files": 231,
-		"lines": 30045,
-		"cases": 2209
+		"files": 233,
+		"lines": 30356,
+		"cases": 2223
 	},
 	"tools": {
-		"files": 38,
-		"lines": 6975
+		"files": 39,
+		"lines": 7183
 	},
 	"examples": {
 		"count": 22,
@@ -122,8 +122,8 @@
 		]
 	},
 	"roadmap": {
-		"items": 349,
-		"completed": 349,
+		"items": 350,
+		"completed": 350,
 		"open": 0,
 		"percent": 100
 	},
@@ -131,9 +131,9 @@
 		"declarationFiles": 279
 	},
 	"bundle": {
-		"globalRaw": 1067325,
-		"globalGzip": 317074,
-		"distRaw": 3405707
+		"globalRaw": 1067475,
+		"globalGzip": 317194,
+		"distRaw": 3406977
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

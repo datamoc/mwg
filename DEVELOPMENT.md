@@ -87,6 +87,40 @@ Every shipped example must run by double-clicking a local HTML file, without a s
 
 Do not replace this with a server-only solution for convenience.
 
+### Build options
+
+`emit-page.mjs` runs the pipeline above for every example, and exposes three independent
+choices on top of it - multi-file vs. single-file, compression, and image format - each a flag,
+none forced on the others (see `tools.md` for the full flag reference):
+
+- **Multi-file (default) vs. single-file.** The default output is `dist/index.html` plus a
+  handful of sibling `.js` files (the classic-script bundle, one or more compiled-asset
+  scripts). `--single-file` additionally writes `dist/standalone.html`
+  (`tools/single-file.mjs`): every one of those scripts inlined into that one file, with no
+  sibling `.js` at all. Both outputs are written; single-file is additive, not a replacement,
+  so pick whichever a given distribution channel needs (a bug report attachment, an itch.io
+  upload, a USB stick) without re-running the build differently.
+- **Compression, single-file only.** Inlined scripts are plain text by default. `--single-file-
+  compress[=level]` gzips them (level 1-9, default 9); `--single-file-brotli[=quality]`
+  compresses with brotli instead (quality 0-11, default 11), usually smaller. Either way the
+  bytes are unpacked in the browser via `DecompressionStream`, not a shipped decoder, so
+  compression adds nothing to the page itself - only a requirement that the browser opening it
+  actually implements that `DecompressionStream` format. gzip is the broadly-supported choice;
+  brotli's `DecompressionStream('br')` support varies enough across current browsers (verified
+  directly, not assumed - see item 350 in `CLOSED.md`) that it is worth treating as an
+  advanced option for a known target browser rather than a default for unknown players. A
+  browser missing the requested format fails visibly with a clear error rather than hanging.
+- **Image format.** `--to-webp` runs `tools/compile-resources.mjs`'s `toWebp` option over the
+  example's own assets before they are inlined: `.png`/`.jpg`/`.jpeg` sources convert to WebP,
+  lossless by default (`--webp-lossy[=quality]` opts into lossy re-encoding instead), and only
+  when the result is actually smaller - never a silent quality trade a game did not ask for.
+  Needs the optional `sharp` devDependency; a build that never passes `--to-webp` never needs
+  it installed.
+
+None of these change what a game calls to load an asset (`load('sprite.png')` keeps working
+identically whether that path resolved to a PNG or a WebP `data:` URI) or how the page is
+opened (`file://`, no server, either way).
+
 ## Release process
 
 1. Update `package.json` and `src/version.ts` to the same version.

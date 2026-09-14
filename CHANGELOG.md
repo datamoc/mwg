@@ -7,6 +7,37 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-09-14
+
+### Added
+
+- `tools/webp-convert.mjs` (`toWebp`) and `compileResources`'s `toWebp`/`webpLossless`/
+  `webpQuality` options - convert `.png`/`.jpg`/`.jpeg` build assets to WebP before embedding,
+  lossless by default (verified pixel-for-pixel identical to the source) and only kept when
+  actually smaller, under the asset's unchanged key so `load('sprite.png')` keeps working the
+  same in dev and built modes. Needs the optional `sharp` devDependency, dynamically imported
+  only when `toWebp` is used, so a build that never asks for it never needs it installed
+  (item 350).
+- `single-file.mjs`'s `algorithm: 'gzip' | 'brotli'` option (`--brotli[=quality]` on the CLI,
+  `--single-file-brotli[=quality]` on `emit-page`) - brotli compression for the single-file
+  build alongside the existing gzip path. gzip stays the broadly-supported default: a real
+  Chrome (153) tested directly during this feature's own verification throws for
+  `DecompressionStream('br')`, so brotli is documented as an advanced, narrower-reach option
+  rather than an assumed-safe default (item 350).
+
+### Fixed
+
+- `single-file.mjs`'s generated bootstrap: `new DecompressionStream(format)` throws
+  synchronously for an unsupported format rather than rejecting a promise, which escaped the
+  bootstrap's own error handling entirely and left the splash screen stuck forever instead of
+  failing visibly - found live in the browser while verifying item 350's brotli option, fixed
+  for both gzip and brotli by converting the throw into a rejection.
+- `assets.load`'s `data:` URI format hint now comes from the URI's own MIME type first, falling
+  back to the asset path's extension only when that is unavailable. Found while reviewing
+  item 350's WebP conversion: `toWebp` can compile a `sprite.png` path into `image/webp` bytes
+  (keeping the `.png` key so dev and built modes keep agreeing), and the old, path-only hint
+  would have told Pixi's resolver to run the PNG parser over WebP data.
+
 ## [0.10.0] - 2026-09-14
 
 ### Added

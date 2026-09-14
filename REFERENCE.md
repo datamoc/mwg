@@ -530,7 +530,12 @@ Dialogue scenes: backdrop, characters, a script runner - the visual-novel half.
 ## `assets`
 
 The `file://` story: a compiled build resolves paths through a `data:` URI map; dev mode
-serves them normally. Load once per scene; everything after is synchronous.
+serves them normally. Load once per scene; everything after is synchronous. The compiler side
+of this (`tools/compile-resources.mjs`, `tools/emit-page.mjs`, `tools/single-file.mjs`) offers
+independent build options on top of that one story - multi-file vs. single-file output,
+compression (gzip or brotli, single-file only), and WebP image conversion - documented in
+`DEVELOPMENT.md`'s "Build options" section and `tools.md`'s tool reference; none of them
+change what a game calls to load an asset.
 
 Split by renderer specificity: `assets/paths.ts` resolves paths and needs no renderer,
 `assets/binary.ts` caches raw bytes just as renderer-free, `assets/loader.ts` fetches and

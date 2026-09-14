@@ -1,6 +1,7 @@
 export interface SingleFileOptions {
 	dist: string;
 	compress?: boolean;
+	algorithm?: 'gzip' | 'brotli';
 	level?: number;
 	splash?: boolean;
 	output?: string;

@@ -4989,3 +4989,57 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      decoding starts, so the check still passes without changing any example's template. 8 new
      tests in `tests/single-file.test.ts`, including a gzip round-trip through the real
      `DecompressionStream` API the generated bootstrap calls.
+
+350. ~~[Low] Asset pipeline: automatic picture-to-WebP conversion, and brotli as a build option.
+     Two related ideas for `tools/compile-resources.mjs` and the `single-file`/`compress-dist`
+     paths item 349 shipped: (a) automatically convert source images (`.png`/`.jpg`/`.jpeg`)
+     to WebP during compilation, before they become `data:` URIs, since WebP is typically
+     smaller than PNG/JPEG at equivalent visual quality and every browser this project targets
+     decodes it; keep this opt-in and lossless-aware (a pixel-art tileset's exact colours must
+     survive) rather than a silent lossy recompression, and leave `.gif`/`.svg`/already-WebP
+     assets alone. (b) Brotli as a `single-file.mjs` compression option beside the existing
+     gzip path (item 349), unpacked in the browser bootstrap via `DecompressionStream('br')`.
+     Must preserve the `file://`-with-no-server constraint throughout.~~ Landed as
+     `tools/webp-convert.mjs` (`toWebp`, dynamically importing the optional `sharp`
+     devDependency only when actually used) plus `compileResources`'s new `toWebp`/
+     `webpLossless`/`webpQuality` options: lossless by default (verified pixel-for-pixel
+     identical to the source after decoding both, not merely "high quality"), embedding the
+     WebP bytes under the asset's *unchanged* key so `load('sprite.png')` keeps working the
+     same in both dev and built modes, and only when the result is actually smaller than the
+     original (a tiny random-noise fixture confirms the "keep original" branch: WebP's
+     container overhead can exceed PNG's for incompressible pixels). `.gif`/`.svg`/`.webp`
+     are left untouched. `emit-page` exposes `--to-webp`/`--webp-lossy[=quality]`. `sharp` is
+     a devDependency only, never a published dependency of `mwg` itself: `compile-resources.mjs`
+     (a shipped, published tool) dynamically imports it, so a build that never asks for
+     `toWebp` never needs it installed at all.
+
+     Brotli landed as `single-file.mjs`'s new `algorithm: 'gzip' | 'brotli'` option
+     (`--brotli[=quality]` on the CLI, `--single-file-brotli[=quality]` on `emit-page`), node-side
+     via `brotliCompressSync` and client-side via `DecompressionStream('br')`. Verifying this in
+     a real, current browser (Chrome 153) found the item's own premise wrong: `DecompressionStream`
+     there throws `Unsupported compression format` for both `'br'` and `'brotli'` - contradicting
+     both this item's original text and several search summaries claiming Chromium shipped it
+     first. gzip stays the safe default; brotli is real, tested (a Node-side round-trip through
+     `brotliDecompressSync`, since Node also lacks `DecompressionStream('br')`), and degrades
+     to a clear, catchable error on a browser that lacks the format, but is documented as an
+     advanced, narrower-reach option rather than an assumed-safe default until broader browser
+     support is reconfirmed directly. That same browser verification pass found and fixed a real
+     bug: `new DecompressionStream(fmt)` throws *synchronously* for an unsupported format rather
+     than rejecting a promise, which escaped the bootstrap's own `.catch()` entirely and left the
+     splash screen stuck forever instead of failing visibly - fixed by wrapping the construction
+     in `try`/`catch` inside `decodeText` and converting the throw into a rejection, with a
+     regression test that extracts the generated `decodeText` function and drives it with a
+     stand-in `DecompressionStream` that throws synchronously, asserting the returned promise
+     rejects instead of the call throwing. 21 new tests across `tests/webp-convert.test.ts`,
+     `tests/compile-resources.test.ts` (compile-resources.mjs's first test coverage) and
+     additions to `tests/single-file.test.ts`.
+
+     Verifying the WebP half end to end in a real browser (past what unit tests can reach,
+     since Pixi's actual texture parsing needs a renderer) surfaced one more real bug:
+     `assets.load`'s `data:` URI format hint was derived purely from the asset's path
+     extension, so a `toWebp`-converted `sprite.png` (image/webp bytes under the unchanged
+     `.png` key) would tell Pixi's resolver to run the PNG parser over WebP data. Fixed in
+     `assets/loader.ts` by preferring the `data:` URI's own MIME type - the authoritative
+     source for what the embedded bytes actually are - falling back to the path extension only
+     when that is unavailable (a new `MIME_TO_FORMAT` table), with a regression test in
+     `tests/assets.test.ts` and re-verified rendering correctly in a real browser afterward.

@@ -133,6 +133,30 @@ test('load() supplies a format hint for a compiled data: URI asset, since the UR
 	assert.equal(added[0].format, 'png', 'the format Pixi cannot read from an extension-less data: URI');
 });
 
+test("load() takes the format hint from the data: URI's own MIME type, not a stale path extension (item 350)", async () => {
+	// tools/compile-resources.mjs's toWebp option keeps an asset's key as "sprite.png" (so dev
+	// and built modes agree) but can compile it into image/webp bytes when that is smaller. The
+	// path's own extension would tell Pixi's resolver to run the PNG parser over WebP data.
+	const added: { alias: string; src: string; format?: string }[] = [];
+	const originalAdd = Assets.add.bind(Assets);
+	const originalLoad = Assets.load.bind(Assets);
+	(Assets as unknown as { add: typeof Assets.add }).add = ((descriptor: (typeof added)[number]) => {
+		added.push(descriptor);
+	}) as typeof Assets.add;
+	(Assets as unknown as { load: typeof Assets.load }).load = (async () => undefined) as unknown as typeof Assets.load;
+	try {
+		await withCompiledAssets({ 'format-hint/sprite.png': 'data:image/webp;base64,AAAA' }, () =>
+			assets.load(['format-hint/sprite.png']),
+		);
+	} finally {
+		Assets.add = originalAdd;
+		Assets.load = originalLoad;
+	}
+
+	assert.equal(added.length, 1);
+	assert.equal(added[0].format, 'webp', 'the embedded bytes are WebP, regardless of the ".png" path');
+});
+
 test('load() does not set a format hint for a plain dev-server path, which already has its own extension', async () => {
 	const added: { alias: string; src: string; format?: string }[] = [];
 	const originalAdd = Assets.add.bind(Assets);

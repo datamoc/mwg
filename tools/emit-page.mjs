@@ -20,6 +20,7 @@ import { buildSingleFile } from './single-file.mjs';
  *
  * usage: node tools/emit-page.mjs <example folder> [--no-compress] [--xz]
  *                                  [--single-file] [--single-file-compress[=level]]
+ *                                  [--single-file-brotli[=quality]] [--to-webp] [--webp-lossy[=quality]]
  *
  * After the page is rewritten, precompressed `.gz`/`.br` siblings are written next to
  * the text files (see `tools/compress-dist.mjs`): the `file://` page keeps loading the
@@ -29,10 +30,16 @@ import { buildSingleFile } from './single-file.mjs';
  *
  * `--single-file` additionally writes `dist/standalone.html` (see `tools/single-file.mjs`):
  * every script the page loads, inlined into one file with no sibling `.js` at all.
- * `--single-file-compress[=level]` also gzips each inlined script, unpacked at load with the
- * browser's own `DecompressionStream`. Both are additive - the regular multi-file
- * `index.html` this function already writes is untouched - so the build-options matrix
- * (multi-file/single-file, compressed/not) is a choice per build, not a fork of the pipeline.
+ * `--single-file-compress[=level]` gzips each inlined script; `--single-file-brotli[=quality]`
+ * compresses with brotli instead (smaller, needs a newer browser - see `single-file.mjs`'s own
+ * doc comment), unpacked either way at load with the browser's own `DecompressionStream`. Both
+ * are additive - the regular multi-file `index.html` this function already writes is untouched
+ * - so the build-options matrix (multi-file/single-file, compressed/not, gzip/brotli) is a
+ * choice per build, not a fork of the pipeline.
+ *
+ * `--to-webp` converts `.png`/`.jpg`/`.jpeg` example assets to WebP before embedding (see
+ * `tools/webp-convert.mjs`), lossless by default; `--webp-lossy[=quality]` opts into lossy
+ * re-encoding instead. Needs the optional `sharp` devDependency installed.
  */
 
 const exampleDir = process.argv[2];
@@ -45,11 +52,19 @@ const root = resolvePath(exampleDir);
 const dist = join(root, 'dist');
 const assetsSource = resolvePath(root, '..', 'assets');
 
-const { groups, rawBytes } = await compileResources({
+const toWebp = process.argv.includes('--to-webp');
+const webpLossyFlag = process.argv.find((a) => a === '--webp-lossy' || a.startsWith('--webp-lossy='));
+const webpLossless = !webpLossyFlag;
+const webpQuality = webpLossyFlag && webpLossyFlag.includes('=') ? Number(webpLossyFlag.split('=')[1]) : 90;
+
+const { groups, rawBytes, embeddedBytes, webpConverted } = await compileResources({
 	from: assetsSource,
 	to: join(dist, 'assets'),
 	//the example assets sit in one flat folder, so they become one script
 	groupBy: () => 'assets',
+	toWebp,
+	webpLossless,
+	webpQuality,
 });
 
 const html = await readFile(join(dist, 'index.html'), 'utf8');
@@ -79,6 +94,12 @@ await rm(join(dist, '.vite'), { recursive: true, force: true });
 const kb = (n) => (n / 1024).toFixed(1) + ' KB';
 console.log(`\n  ${dist}`);
 console.log(`  index.html + ${entry ?? 'bundle'} + ${groups.length} asset script(s), ${kb(rawBytes)} of assets`);
+if (toWebp) {
+	console.log(
+		`  ${webpConverted} image(s) converted to WebP (${webpLossless ? 'lossless' : `lossy, quality ${webpQuality}`}), ` +
+			`${kb(rawBytes)} -> ${kb(embeddedBytes)} embedded`,
+	);
+}
 console.log('  open index.html directly - no server needed');
 
 const skipCompress = process.argv.includes('--no-compress') || process.env.MWG_NO_COMPRESS === '1';
@@ -96,16 +117,21 @@ if (!skipCompress) {
 }
 
 if (process.argv.includes('--single-file')) {
+	const brotliFlag = process.argv.find((a) => a === '--single-file-brotli' || a.startsWith('--single-file-brotli='));
 	const compressFlag = process.argv.find(
 		(a) => a === '--single-file-compress' || a.startsWith('--single-file-compress='),
 	);
-	const singleFileCompress = Boolean(compressFlag);
-	const level = compressFlag && compressFlag.includes('=') ? Number(compressFlag.split('=')[1]) : 9;
-	const single = await buildSingleFile({ dist, compress: singleFileCompress, level });
+	const singleFileCompress = Boolean(brotliFlag || compressFlag);
+	const algorithm = brotliFlag ? 'brotli' : 'gzip';
+	const levelFlag = brotliFlag ?? compressFlag;
+	const level = levelFlag && levelFlag.includes('=') ? Number(levelFlag.split('=')[1]) : undefined;
+	const single = await buildSingleFile({ dist, compress: singleFileCompress, algorithm, level });
 	console.log(
 		`\n  ${single.path}`,
 		`\n  ${single.scripts} script(s) inlined, ${kb(single.rawBytes)} raw -> ${kb(single.embeddedBytes)} embedded` +
-			(singleFileCompress ? ` (gzip level ${level})` : ' (uncompressed)'),
+			(singleFileCompress
+				? ` (${algorithm} level ${level ?? (algorithm === 'brotli' ? 11 : 9)})`
+				: ' (uncompressed)'),
 	);
 	console.log('  one file, no server, no sibling script - open it directly');
 }

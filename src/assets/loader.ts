@@ -46,6 +46,21 @@ export interface LoadAssetsOptions {
 	onMissing?: (path: string, error: unknown) => void;
 }
 
+/**
+ * `data:` URI MIME type to the format token Pixi's resolver expects - the authoritative source
+ * when it is available, since a compiled asset's embedded bytes can differ from what its path's
+ * extension suggests (`tools/compile-resources.mjs`'s `toWebp` option, item 350, compiles a
+ * `sprite.png` path into `image/webp` bytes when that is smaller, keeping the `.png` key so
+ * `load('sprite.png')` still works the same in dev and built modes).
+ */
+const MIME_TO_FORMAT: Record<string, string> = {
+	'image/png': 'png',
+	'image/jpeg': 'jpg',
+	'image/webp': 'webp',
+	'image/gif': 'gif',
+	'image/svg+xml': 'svg',
+};
+
 /** the `Assets.add` descriptor for one path, with the resolution carried through */
 interface AssetDescriptor {
 	alias: string;
@@ -79,9 +94,15 @@ export async function load(paths: string[], options: AssetProgress | LoadAssetsO
 		if (resolution !== undefined) descriptor.data = { resolution };
 		//a compiled build's `src` is a `data:` URI, which carries no extension for Pixi's
 		//resolver to pick a parser from - `path` still does, so it is supplied explicitly
-		//instead of a game having to pass its own {src, parser} descriptor to Assets directly
+		//instead of a game having to pass its own {src, parser} descriptor to Assets directly.
+		//The URI's own MIME type is tried first, not just `path`'s extension: `toWebp` (item
+		//350) can compile a `sprite.png` path into `data:image/webp;...` bytes when that is
+		//smaller, and the *key* deliberately stays "sprite.png" so dev and built modes agree -
+		//trusting only the stale `.png` extension here would tell Pixi's resolver to run the
+		//PNG parser over WebP bytes.
 		if (src.startsWith('data:')) {
-			const extension = /\.([a-z0-9]+)$/i.exec(path)?.[1];
+			const mime = /^data:([^;,]+)/.exec(src)?.[1];
+			const extension = (mime && MIME_TO_FORMAT[mime]) ?? /\.([a-z0-9]+)$/i.exec(path)?.[1];
 			if (extension) descriptor.format = extension;
 		}
 		Assets.add(descriptor);

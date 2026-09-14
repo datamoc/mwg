@@ -1,5 +1,6 @@
 import { readdir, readFile, mkdir, writeFile, rm } from 'node:fs/promises';
 import { join, extname, relative, sep, dirname, basename } from 'node:path';
+import { WEBP_CONVERTIBLE_EXTENSIONS } from './webp-convert.mjs';
 
 /**
  * Turns a folder of assets into scripts a `file://` page can load.
@@ -56,9 +57,27 @@ export async function* walk(dir) {
  * @param options.to folder to write the generated scripts into
  * @param options.mime extension to MIME type, merged over the defaults
  * @param options.groupBy how to name the script an asset lands in; defaults to its top folder
+ * @param options.toWebp convert `.png`/`.jpg`/`.jpeg` assets to WebP before embedding
+ *   (default false - see `tools/webp-convert.mjs`). The asset's *key* never changes (a game
+ *   still calls `load('tiles.png')` in both dev and built modes; dev mode serves the literal
+ *   file from disk, unconverted), only the embedded `data:` URI's bytes and MIME type do, and
+ *   only when the WebP result is actually smaller - a conversion that would not save
+ *   anything is silently skipped rather than embedded anyway.
+ * @param options.webpLossless use WebP's lossless mode when converting (default true - a
+ *   pixel-art tileset's exact colours survive; set false only with `webpQuality` to opt into
+ *   lossy re-encoding for photographic source art)
+ * @param options.webpQuality 0-100, used only when `webpLossless` is false (default 90)
  * @returns the group names, in the order the page should load them
  */
-export async function compileResources({ from, to, mime = {}, groupBy } = {}) {
+export async function compileResources({
+	from,
+	to,
+	mime = {},
+	groupBy,
+	toWebp: convertToWebp = false,
+	webpLossless = true,
+	webpQuality = 90,
+} = {}) {
 	if (!from || !to) throw new Error('compileResources needs both `from` and `to`');
 
 	const types = { ...DEFAULT_MIME, ...mime };
@@ -70,9 +89,16 @@ export async function compileResources({ from, to, mime = {}, groupBy } = {}) {
 	const groups = new Map();
 	let skipped = 0;
 	let rawBytes = 0;
+	let embeddedBytes = 0;
+	let webpConverted = 0;
+
+	// only paid when toWebp is actually used, so a build that never asks for it never imports
+	// (or requires installing) sharp
+	const toWebp = convertToWebp ? (await import('./webp-convert.mjs')).toWebp : null;
 
 	for await (const file of walk(from)) {
-		const type = types[extname(file).toLowerCase()];
+		const ext = extname(file).toLowerCase();
+		const type = types[ext];
 		if (!type) {
 			skipped++;
 			continue;
@@ -81,10 +107,22 @@ export async function compileResources({ from, to, mime = {}, groupBy } = {}) {
 		const key = relative(from, file).split(sep).join('/');
 		const data = await readFile(file);
 
+		let mimeType = type;
+		let bytes = data;
+		if (toWebp && WEBP_CONVERTIBLE_EXTENSIONS.has(ext)) {
+			const webp = await toWebp(data, { lossless: webpLossless, quality: webpQuality });
+			if (webp.length < data.length) {
+				mimeType = 'image/webp';
+				bytes = webp;
+				webpConverted++;
+			}
+		}
+
 		const name = group(key);
 		if (!groups.has(name)) groups.set(name, {});
-		groups.get(name)[key] = `data:${type};base64,${data.toString('base64')}`;
+		groups.get(name)[key] = `data:${mimeType};base64,${bytes.toString('base64')}`;
 		rawBytes += data.length;
+		embeddedBytes += bytes.length;
 	}
 
 	const written = [];
@@ -98,7 +136,7 @@ export async function compileResources({ from, to, mime = {}, groupBy } = {}) {
 		written.push({ name, count: Object.keys(assets).length, size: js.length });
 	}
 
-	return { groups: written, rawBytes, skipped };
+	return { groups: written, rawBytes, embeddedBytes, webpConverted, skipped };
 }
 
 // ---------------------------------------------------------------- CLI
@@ -106,17 +144,27 @@ export async function compileResources({ from, to, mime = {}, groupBy } = {}) {
 const isMain = process.argv[1] && import.meta.url.endsWith(basename(process.argv[1]));
 
 if (isMain) {
-	const [from, to] = process.argv.slice(2);
+	const args = process.argv.slice(2);
+	const [from, to] = args.filter((a) => !a.startsWith('--'));
 	if (!from || !to) {
-		console.error('usage: node compile-resources.mjs <asset folder> <output folder>');
+		console.error(
+			'usage: node compile-resources.mjs <asset folder> <output folder> [--to-webp] [--webp-lossy[=quality]]',
+		);
 		process.exit(1);
 	}
+	const toWebp = args.includes('--to-webp');
+	const lossyFlag = args.find((a) => a === '--webp-lossy' || a.startsWith('--webp-lossy='));
+	const webpLossless = !lossyFlag;
+	const webpQuality = lossyFlag && lossyFlag.includes('=') ? Number(lossyFlag.split('=')[1]) : 90;
 
-	const { groups, rawBytes, skipped } = await compileResources({
+	const { groups, rawBytes, embeddedBytes, webpConverted, skipped } = await compileResources({
 		from,
 		to,
 		//a flat folder has no subdirectories to group by, so everything lands in one file
 		groupBy: (key) => (key.includes('/') ? key.slice(0, key.indexOf('/')) : 'assets'),
+		toWebp,
+		webpLossless,
+		webpQuality,
 	});
 
 	const kb = (n) => (n / 1024).toFixed(1).padStart(8) + ' KB';
@@ -124,6 +172,12 @@ if (isMain) {
 		console.log(`  ${join(relative(process.cwd(), to), name + '.js').padEnd(40)}${kb(size)}  (${count} files)`);
 	}
 	console.log(`  ${groups.length} script(s), ${kb(rawBytes)} of assets` + (skipped ? `, ${skipped} skipped` : ''));
+	if (toWebp) {
+		console.log(
+			`  ${webpConverted} image(s) converted to WebP (${webpLossless ? 'lossless' : `lossy, quality ${webpQuality}`}), ` +
+				`${kb(rawBytes)} -> ${kb(embeddedBytes)} embedded`,
+		);
+	}
 }
 
 export { dirname };

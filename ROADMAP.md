@@ -5,7 +5,7 @@ among what is still open is reevaluated periodically, not just appended to. Entr
 mention "the capability spec" and other [README.md](README.md) sections by name; that's
 where those live.
 
-The shipped, numbered build history (everything through item 349) has moved to
+The shipped, numbered build history (everything through item 350) has moved to
 [CLOSED.md](CLOSED.md), so this file stays to what is actually open: new numbered items,
 parked decisions, and the 1.0 exit checklist. Item numbers are never reassigned, so a new
 item continues the sequence in CLOSED.md rather than restarting at 1.
@@ -63,7 +63,7 @@ standing intentions.
 ### 1.0 exit checklist
 
 The definition of done for 1.0. Each line is a check to run, not a feature to build. Every numbered
-item through 349 is closed (see [CLOSED.md](CLOSED.md)); item 347 is external project work, not
+item through 350 is closed (see [CLOSED.md](CLOSED.md)); item 347 is external project work, not
 an MWG deliverable.
 Items 339-340 were planning entries regrouped into 341-342 and 346, and items 338,
 341-345 and 346 were implemented or verified against existing APIs. The
