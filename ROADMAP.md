@@ -28,8 +28,8 @@ where those live.
     inventory screen (`Tab`) equips a weapon or armor through `EquipmentSlots`, which applies
     its modifiers immediately (verified in a browser: ATK went 3 → 5 equipping an iron
     sword, a potion healed 5 → 13 HP, death still ends the run with no continue)
-**Everything numbered through 346 has shipped; item 347 is closed as external project work
-outside this repository.** Item 338 shipped schema-neutral named-node sugar; items 339-340 were
+**Everything numbered through 348 is closed; item 347 is external project work.** Item 338 shipped
+schema-neutral named-node sugar; items 339-340 were
 regrouped into 341-342 and 346; 341-342 shipped canonical state, campaign persistence,
 deterministic replay/undo, a hardened lockstep protocol, strict MWL diagnostics, the published
 1.0 schema, and a seeded RNG threaded through hooks; 343-345 were verified against already-shipped
@@ -4941,6 +4941,18 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      migrations, their project-local CI budgets, and their publication cannot be implemented
      in this repository.
 
+348. ~~[Medium] `mwg/render` / `mwg/rpg` - RPG Maker MV autotile atlas compatibility. Provide a
+     format-specific, renderer-neutral compositor or frame-description helper for the four
+     RPG Maker autotile slots: decode the tile id into its atlas kind, select the four source
+     quadrants from the shape table, and compose or describe the resulting 48px tile for a
+     `TileMap` or equivalent renderer. Keep the atlas layout and quadrant ordering explicit,
+     validate slot and tile-id ranges, and cache repeated compositions. This complements the
+     generic 47-shape `Autotile` API and `[terrain_graphics]` rules rather than changing either
+     one. Reference extract: `mwgp/4MWG/extracts/rpgm-autotiles.js`.~~ Landed as the pure
+     `rpgmAutotileFrame` geometry helper and cached `RpgmAutotileAtlas`, exported from
+     `two-d/render`, with four renderer-free tests covering quadrant order, all slot origins,
+     cache clearing, and invalid inputs. `REFERENCE.md` and `API_REPORT.md` are updated.
+
 Not open work, and not forgotten: these are decisions this project has deliberately
 deferred, each with a note on what would un-park it. They stay out of the numbered list
 until someone actually picks them up, because the list records shipped capabilities, not
@@ -4988,8 +5000,8 @@ standing intentions.
 ### 1.0 exit checklist
 
 The definition of done for 1.0. Each line is a check to run, not a feature to build. Every numbered
-item above through 346 has shipped; item 347 is closed as external project work, not an MWG
-deliverable. Items 339-340 were planning entries regrouped into 341-342 and 346, and items 338,
+item above through 348 is closed; item 347 is external project work, not an MWG deliverable.
+Items 339-340 were planning entries regrouped into 341-342 and 346, and items 338,
 341-345 and 346 were implemented or verified against existing APIs. The
 Wesnoth-port cluster (247 and up, 311-313 last, plus 314 found
 reconciling it) included - all but item 320, which is the port's own side of a disagreement the

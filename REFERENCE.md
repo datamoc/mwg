@@ -346,6 +346,10 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   builds is a `TileMap` out of `SpriteSheet`s.
 - `blobIndex`/`autotileFrames`/`BLOB_SHAPES` - auto-tiling: the 47-shape "blob tile"
   reduction of 8-neighbour terrain matches.
+- `rpgmAutotileFrame`/`RpgmAutotileAtlas` - renderer-neutral RPG Maker MV autotile atlas
+  geometry: decode one of the four atlas slots, select its four 24px source quadrants for a
+  shape, and describe their 48px output position. `RpgmAutotileAtlas` caches repeated frame
+  descriptions.
 - `resolveTerrainGraphics`/`matchTerrainRule`/`squareRotate`/`hexRotate` over `TerrainRule`/
   `TerrainCondition`/`TerrainImage`/`TerrainPlacement`/`TerrainFlagsAt` - a rule-driven
   `[terrain_graphics]`-style transition pass for what `Autotile`'s fixed 47-shape table cannot

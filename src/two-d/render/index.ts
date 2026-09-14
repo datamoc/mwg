@@ -67,6 +67,14 @@ export type { TintTarget, StatusVisualStyle, StatusVisualsOptions } from './Stat
 
 export { blobIndex, autotileFrames, BLOB_SHAPES } from './Autotile.ts';
 export type { NeighborMask } from './Autotile.ts';
+export { RpgmAutotileAtlas, rpgmAutotileFrame } from './RpgmAutotile.ts';
+export type {
+	RpgmAutotileFrame,
+	RpgmAutotileQuadrant,
+	RpgmAutotileShape,
+	RpgmAutotileShapeTable,
+	RpgmAutotileSlot,
+} from './RpgmAutotile.ts';
 
 export { hexRotate, matchTerrainRule, resolveTerrainGraphics, squareRotate } from './TerrainGraphics.ts';
 export type {

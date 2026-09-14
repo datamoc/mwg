@@ -1,17 +1,17 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.9.0",
-	"releaseDate": "2026-09-13",
+	"version": "0.9.1",
+	"releaseDate": "2026-09-14",
 	"source": {
-		"files": 279,
-		"lines": 45535,
+		"files": 280,
+		"lines": 45700,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 79,
-				"lines": 15318
+				"files": 80,
+				"lines": 15483
 			},
 			{
 				"name": "mwl",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 229,
-		"lines": 29838,
-		"cases": 2197
+		"files": 230,
+		"lines": 29892,
+		"cases": 2201
 	},
 	"tools": {
 		"files": 37,
@@ -122,18 +122,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 347,
-		"completed": 347,
+		"items": 348,
+		"completed": 348,
 		"open": 0,
 		"percent": 100
 	},
 	"api": {
-		"declarationFiles": 278
+		"declarationFiles": 279
 	},
 	"bundle": {
-		"globalRaw": 1065727,
-		"globalGzip": 316576,
-		"distRaw": 3396810
+		"globalRaw": 1067324,
+		"globalGzip": 317074,
+		"distRaw": 3405742
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

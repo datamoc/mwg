@@ -7,6 +7,14 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-09-14
+
+### Added
+
+- `rpgmAutotileFrame` and `RpgmAutotileAtlas` - renderer-neutral RPG Maker MV autotile
+  atlas geometry, including four-slot decoding, quadrant selection, validation, and cached
+  frame descriptions (roadmap item 348).
+
 ## [0.9.0] - 2026-09-13
 
 ### Added

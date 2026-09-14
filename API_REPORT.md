@@ -1799,6 +1799,20 @@ build instead.
 
     export * as Rpg from './rpg/index.ts'
 
+### `RpgmAutotileAtlas` (class)
+
+    export declare class RpgmAutotileAtlas {
+        private readonly cache;
+        private readonly table;
+        constructor(table: RpgmAutotileShapeTable);
+        get(tileId: number, slot: RpgmAutotileSlot, shape: number): RpgmAutotileFrame;
+        clear(): void;
+    }
+
+### `rpgmAutotileFrame` (function)
+
+    export declare function rpgmAutotileFrame(tileId: number, slot: RpgmAutotileSlot, shape: number, table: RpgmAutotileShapeTable): RpgmAutotileFrame;
+
 ### `RunHistory` (class)
 
     export declare class RunHistory<T> {
@@ -2808,7 +2822,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.9.0";
+    export declare const version = "0.9.1";
 
 ### `VerticalLabel` (class)
 
@@ -8056,6 +8070,20 @@ build instead.
 
     export declare function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number, mode?: RotateMode): RotatedPixels;
 
+### `RpgmAutotileAtlas` (class)
+
+    export declare class RpgmAutotileAtlas {
+        private readonly cache;
+        private readonly table;
+        constructor(table: RpgmAutotileShapeTable);
+        get(tileId: number, slot: RpgmAutotileSlot, shape: number): RpgmAutotileFrame;
+        clear(): void;
+    }
+
+### `rpgmAutotileFrame` (function)
+
+    export declare function rpgmAutotileFrame(tileId: number, slot: RpgmAutotileSlot, shape: number, table: RpgmAutotileShapeTable): RpgmAutotileFrame;
+
 ### `Scene2D` (class)
 
     export declare abstract class Scene2D extends Scene {
@@ -9469,6 +9497,20 @@ build instead.
 ### `rotatePixels` (function)
 
     export declare function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number, mode?: RotateMode): RotatedPixels;
+
+### `RpgmAutotileAtlas` (class)
+
+    export declare class RpgmAutotileAtlas {
+        private readonly cache;
+        private readonly table;
+        constructor(table: RpgmAutotileShapeTable);
+        get(tileId: number, slot: RpgmAutotileSlot, shape: number): RpgmAutotileFrame;
+        clear(): void;
+    }
+
+### `rpgmAutotileFrame` (function)
+
+    export declare function rpgmAutotileFrame(tileId: number, slot: RpgmAutotileSlot, shape: number, table: RpgmAutotileShapeTable): RpgmAutotileFrame;
 
 ### `ScreenEffects` (class)
 
