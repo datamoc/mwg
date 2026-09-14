@@ -24,7 +24,7 @@ function texture(): Texture {
 	return new Texture({ source: new TextureSource({ width: 8, height: 8 }) });
 }
 
-test('TiledSprite resolves to Pixi\'s own registered tiling-sprite pipe', () => {
+test("TiledSprite resolves to Pixi's own registered tiling-sprite pipe", () => {
 	const tiled = new TiledSprite({ texture: texture(), width: 8, height: 8 });
 	assert.equal((tiled as unknown as { renderPipeId: string }).renderPipeId, 'tilingSprite');
 });

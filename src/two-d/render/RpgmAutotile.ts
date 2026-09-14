@@ -16,12 +16,7 @@ export interface RpgmAutotileFrame {
 	shape: number;
 	destinationX: number;
 	destinationY: number;
-	quadrants: readonly [
-		RpgmAutotileQuadrant,
-		RpgmAutotileQuadrant,
-		RpgmAutotileQuadrant,
-		RpgmAutotileQuadrant,
-	];
+	quadrants: readonly [RpgmAutotileQuadrant, RpgmAutotileQuadrant, RpgmAutotileQuadrant, RpgmAutotileQuadrant];
 }
 
 /** Four atlas-cell offsets, in 24px source cells, for one autotile shape. */
