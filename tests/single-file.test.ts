@@ -66,7 +66,10 @@ test('buildSingleFile with compress: true gzips each script, and the browser-sid
 		const page = await readFile(result.path, 'utf8');
 
 		assert.ok(page.includes('COMPRESSED=true'));
-		assert.ok(page.includes('DecompressionStream'), 'the bootstrap must use the native decode API, not a shipped one');
+		assert.ok(
+			page.includes('DecompressionStream'),
+			'the bootstrap must use the native decode API, not a shipped one',
+		);
 
 		// Pull the embedded payload back out and decode it the same way gunzipSync would, to prove
 		// the bytes buildSingleFile wrote are a real gzip stream, not just base64 of the raw source.

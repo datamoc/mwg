@@ -40,7 +40,13 @@ import { fileURLToPath } from 'node:url';
  *   `standalone.html`) - additive, so the existing multi-file `index.html` is untouched
  * @returns {Promise<{path: string, scripts: number, rawBytes: number, embeddedBytes: number}>}
  */
-export async function buildSingleFile({ dist, compress = false, level = 9, splash = true, output = 'standalone.html' } = {}) {
+export async function buildSingleFile({
+	dist,
+	compress = false,
+	level = 9,
+	splash = true,
+	output = 'standalone.html',
+} = {}) {
 	if (!dist) throw new Error('buildSingleFile needs a `dist` folder');
 
 	const htmlPath = join(dist, 'index.html');
