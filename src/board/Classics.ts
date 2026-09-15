@@ -1,3 +1,4 @@
+import { cellIndex, cellInside } from '../core/Grid.ts';
 import * as Random from '../core/Random.ts';
 
 export type BoardOwner = string;
@@ -41,11 +42,11 @@ export class BoardGrid<P> {
 
 	index(x: number, y: number): number {
 		if (!this.inside(x, y)) throw new Error(`cell (${x},${y}) is outside the board`);
-		return y * this.width + x;
+		return cellIndex(this.width, x, y);
 	}
 
 	inside(x: number, y: number): boolean {
-		return x >= 0 && y >= 0 && x < this.width && y < this.height;
+		return cellInside(this.width, this.height, x, y);
 	}
 	get(x: number, y: number): P | null {
 		return this.cells[this.index(x, y)];

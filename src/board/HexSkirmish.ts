@@ -1,4 +1,5 @@
 import { hexNeighbors, hexDistance } from '../core/Hex.ts';
+import { cellInside } from '../core/Grid.ts';
 import * as Random from '../core/Random.ts';
 
 /**
@@ -334,7 +335,7 @@ function getUnit(state: SkirmishState, id: string): SkirmishUnit {
 	return unit;
 }
 function inside(state: SkirmishState, x: number, y: number): boolean {
-	return x >= 0 && y >= 0 && x < state.width && y < state.height;
+	return cellInside(state.width, state.height, x, y);
 }
 function occupied(state: SkirmishState, x: number, y: number): boolean {
 	return state.units.some((unit) => unit.x === x && unit.y === y);

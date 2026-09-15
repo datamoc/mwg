@@ -1,3 +1,5 @@
+import { cellIndex, cellInside } from '../core/Grid.ts';
+
 export interface VisionCell {
 	x: number;
 	y: number;
@@ -146,9 +148,11 @@ export class FactionFog {
 	}
 
 	private inside(x: number, y: number): boolean {
-		return x >= 0 && y >= 0 && x < this.width && y < this.height;
+		return cellInside(this.width, this.height, x, y);
 	}
 	private index(x: number, y: number): number {
-		return this.inside(x, y) ? y * this.width + x : -1;
+		//-1 rather than a throw: a vision pass asks about every neighbour of every cell, and
+		//"outside contributes nothing" is the answer it wants, not an exception to catch
+		return this.inside(x, y) ? cellIndex(this.width, x, y) : -1;
 	}
 }

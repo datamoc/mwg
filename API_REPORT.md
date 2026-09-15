@@ -424,6 +424,31 @@ build instead.
         transaction<T>(work: (state: CanonicalState<State>) => T): T;
     }
 
+### `cellFromKey` (function)
+
+    export declare function cellFromKey(key: string): {
+        x: number;
+
+### `cellIndex` (function)
+
+    export declare function cellIndex(width: number, x: number, y: number): number;
+
+### `cellInside` (function)
+
+    export declare function cellInside(width: number, height: number, x: number, y: number): boolean;
+
+### `cellKey` (function)
+
+    export declare function cellKey(x: number, y: number): string;
+
+### `cellX` (function)
+
+    export declare function cellX(width: number, index: number): number;
+
+### `cellY` (function)
+
+    export declare function cellY(width: number, index: number): number;
+
 ### `channelScaleMatrix` (function)
 
     export declare function channelScaleMatrix(scale: {
@@ -813,6 +838,8 @@ build instead.
         step(dt: number): void;
 
         private expose;
+
+        private fitResolutionToDevice;
         private frame;
         private switchNow;
 
@@ -2839,7 +2866,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.13.0";
+    export declare const version = "0.14.0";
 
 ### `VerticalLabel` (class)
 
@@ -4661,6 +4688,31 @@ build instead.
         restore(snapshot: CanonicalStateSnapshot<State>, options?: Parameters<StateRegistry['restore']>[1]): readonly StateRestoreDiagnostic[];
         transaction<T>(work: (state: CanonicalState<State>) => T): T;
     }
+
+### `cellFromKey` (function)
+
+    export declare function cellFromKey(key: string): {
+        x: number;
+
+### `cellIndex` (function)
+
+    export declare function cellIndex(width: number, x: number, y: number): number;
+
+### `cellInside` (function)
+
+    export declare function cellInside(width: number, height: number, x: number, y: number): boolean;
+
+### `cellKey` (function)
+
+    export declare function cellKey(x: number, y: number): string;
+
+### `cellX` (function)
+
+    export declare function cellX(width: number, index: number): number;
+
+### `cellY` (function)
+
+    export declare function cellY(width: number, index: number): number;
 
 ### `checkNoControlCharacters` (function)
 
@@ -7516,6 +7568,8 @@ build instead.
         step(dt: number): void;
 
         private expose;
+
+        private fitResolutionToDevice;
         private frame;
         private switchNow;
 

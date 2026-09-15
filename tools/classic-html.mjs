@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url';
  * @example
  * ```js
  * import { readFile, writeFile } from 'node:fs/promises';
- * import { toClassicScript } from '@datamoc/mw_games/tools/classic-html.mjs';
+ * import { toClassicScript } from '@datamoc/mw_games/tools/classic-html';
  *
  * const html = await readFile('dist/index.html', 'utf8');
  * const result = toClassicScript(html);

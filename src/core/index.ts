@@ -63,6 +63,7 @@ export { Spawner } from './Spawner.ts';
 export type { Wave, SpawnerOptions } from './Spawner.ts';
 export { hexNeighbors, hexDistance, hexLine, hexRange, hexToPixel, pixelToHex } from './Hex.ts';
 export type { HexCoord } from './Hex.ts';
+export { cellInside, cellIndex, cellX, cellY, cellKey, cellFromKey } from './Grid.ts';
 export { motionDuration, prefersReducedMotion, reducedMotion, setReducedMotion, watchReducedMotion } from './Motion.ts';
 export type { MotionIntent } from './Motion.ts';
 export { Blob } from './Blob.ts';

@@ -1,4 +1,5 @@
 import { hexNeighbors } from '../core/Hex.ts';
+import { cellIndex, cellInside, cellX, cellY } from '../core/Grid.ts';
 
 /**
  * The map a roguelike reasons about.
@@ -138,19 +139,19 @@ export class Level {
 	}
 
 	index(x: number, y: number): number {
-		return y * this.width + x;
+		return cellIndex(this.width, x, y);
 	}
 
 	xOf(cell: number): number {
-		return cell % this.width;
+		return cellX(this.width, cell);
 	}
 
 	yOf(cell: number): number {
-		return Math.floor(cell / this.width);
+		return cellY(this.width, cell);
 	}
 
 	inside(x: number, y: number): boolean {
-		return x >= 0 && y >= 0 && x < this.width && y < this.height;
+		return cellInside(this.width, this.height, x, y);
 	}
 
 	/**

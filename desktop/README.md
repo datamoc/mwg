@@ -19,11 +19,28 @@ npm run desktop:build   # mobile:build (builds tower-defense) + dotnet build
 npm run desktop:run     # mobile:build + dotnet run
 ```
 
-It serves the built game through `CoreWebView2.SetVirtualHostNameToFolderMapping` - a real
-`https://mwg.local/` origin WebView2 maps to the built game's own folder - rather than a
-plain `file://` navigation, which is what makes `assets.fetchWithByteProgress` (or a
-WebSocket multiplayer connection, or any other real network call) work at all inside this
-host. The game's own build is otherwise unchanged.
+With no argument it loads this repository's own `tower-defense` build. It serves the built game
+through `CoreWebView2.SetVirtualHostNameToFolderMapping` - a real `https://mwg.local/` origin
+WebView2 maps to the built game's own folder - rather than a plain `file://` navigation, which
+is what makes `assets.fetchWithByteProgress` (or a WebSocket multiplayer connection, or any
+other real network call) work at all inside this host. The game's own build is otherwise
+unchanged.
+
+### From a project that uses mwg
+
+Give it the game's built page as the first argument and the same host loads that game instead:
+
+```powershell
+cp -r <a clone of mwg>/desktop/MwgDesktopHost ./desktop/MwgDesktopHost
+dotnet run --project desktop/MwgDesktopHost -- dist/index.html
+```
+
+The page path is resolved against the directory the command runs from, and a page that is not
+there is reported in a dialog naming what it looked for rather than an unhandled exception.
+`desktop/` is deliberately not part of the npm package (`package.json`'s own `files` list),
+so these two files are copied from a clone rather than installed.
+[tools.md](../tools.md#packaging-as-a-native-app) carries this recipe in full, plus the
+`dotnet publish` line for a distributable.
 
 ## `desktop/webview2` - a plain `file://` host for any built game
 

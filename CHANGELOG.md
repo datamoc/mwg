@@ -7,6 +7,98 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-09-15
+
+### Added
+
+- `core.cellInside`/`cellIndex`/`cellX`/`cellY`/`cellKey`/`cellFromKey` - bounded-grid
+  indexing as one statement of the row-major convention, asked for by the Wesnoth port's own
+  MWG backlog ("primitives `inside`, `cellIndex` and coordinate keys", with the exit criterion
+  "no more duplicated indexing in the game systems; out-of-bounds tested"). The framework had
+  four private copies of exactly these two lines (`roguelike.Level`, `board.Classics`,
+  `board.FogOfWar`, `board/HexSkirmish`); all four now forward to the shared functions and
+  keep their own out-of-bounds policy, which is what differs between them: `Classics` still
+  throws, `FogOfWar` still answers `-1`, and `Level`'s public shape is unchanged. `cellIndex`
+  itself is deliberately unchecked arithmetic so a hot loop pays nothing for a check it has
+  already done, and `cellKey`/`cellFromKey` are the `'x,y'` spelling a `Map`/`Set` wants, which
+  consumers were each inventing for themselves (item 361).
+
+- `tools.md`'s "Packaging as a native app" section now covers the mobile (Capacitor/Android)
+  target beside the desktop one: the two toolchain prerequisites that stop a clean machine (JDK
+  21 with `JAVA_HOME`, an SDK that Gradle can find), the five commands from a game's own folder
+  to an installed app on a device, and the three things the generated project gets wrong once and
+  never revisits. Each was reproduced rather than restated: the `.gz`/`.br` sidecars break the
+  asset merge (`mergeDebugAssets FAILED ... Duplicate resources`), `ignoreAssetsPattern` gaining
+  `:!*.gz:!*.br` clears it, and an unchanged `versionCode` refuses the second install
+  (`INSTALL_FAILED_VERSION_DOWNGRADE`). Finishes what item 351 left as a scaffold-only
+  verification and P18 asked for (item 357).
+
+- Package subpaths for the three shipped `tools/*.mjs` helpers a game imports as a library -
+  `./tools/classic-html`, `./tools/extract-html` and `./tools/single-file` - beside the three
+  that already had one. An `exports` map blocks every deep path it does not name, so naming
+  three of the seven shipped helpers left the other four unimportable outright:
+  `import { toClassicScript } from '@datamoc/mw_games/tools/classic-html'` failed with
+  `ERR_PACKAGE_PATH_NOT_EXPORTED` even though the file ships, pushing a consumer to hardcode a
+  `node_modules/@datamoc/mw_games/...` path that stops existing the moment the package is
+  installed under an npm alias. `tools/classic-html.mjs`'s own `@example` showed the
+  `.mjs`-suffixed spelling, which is exactly what the map refuses; it now shows the specifier
+  that resolves. `tools/mwl.mjs` deliberately keeps no subpath: it reads its arguments and
+  dispatches at import time, so one would make importing it run the CLI. Its library half,
+  `@datamoc/mw_games/mwl`, is the typed, already-exported entry point. `tests/package-tools.test.ts`
+  holds all of that (item 358).
+
+### Changed
+
+- `desktop/MwgDesktopHost` loads the built game page named as its first argument instead of
+  only this repository's own `tower-defense` example, and a page it cannot find is reported in
+  a dialog naming what it looked for rather than an unhandled `FileNotFoundException`. With no
+  argument it still walks up to the example, so `npm run desktop:run` is unchanged. This is what
+  makes the reference host usable by a game that merely *uses* `mwg`: the published package
+  ships no packaging scaffold at all (`files` excludes `desktop/`, and every `desktop:`/`cap:`
+  script is repo-relative), so such a game copies the host's two files rather than installing
+  them. The consumer recipe is now written up, with the `dotnet publish` line and the
+  `--no-compress` requirement a native build needs, in `tools.md`'s new "Packaging as a native
+  app" section, in `desktop/README.md`, and as an optional step 11 of the getting-started page;
+  README's status note says where the packaging lives, and stops claiming v0.7.7, instead of
+  leaving the distance between its claim and the package for a consumer to discover. The mobile
+  (Capacitor) half of the same recipe followed as item 357, in the same section of `tools.md`.
+
+- `Game` keeps the renderer's resolution inside what the device reports it can make. The canvas
+  was sized to `window x devicePixelRatio` whatever the viewport, and a backing store past the
+  GPU's `MAX_TEXTURE_SIZE` is refused by WebGL *silently*, by clamping the drawing buffer: the
+  game carries on rendering into a surface that is not the one it asked for, and nothing is
+  reported anywhere. A full-window 816x1812 canvas at `devicePixelRatio` 2.625 asks for
+  2121x4709, which a device reporting a 4096 limit answered with a 2121x4096 buffer (item 360).
+  That process also painted an entirely black screen, and that is *not* attributed here: the
+  failure never reproduced (every later run of the same emulator reported 8192) and a
+  deliberately clamped 1050x10500 request rendered correctly, so the black screen has no cause
+  recorded against it. What stands on its own is the clamped request the game never made. The
+  resolution is now reduced to the largest whole number that fits, with a warning naming the
+  limit, and re-fitted on rotation and on a `devicePixelRatio` change; a device that can afford
+  what it asked for is untouched.
+
+- `ROADMAP.md`'s one open 1.0 exit-checklist line (both reference ports complete and playable)
+  was corrected and its framework half tested, since the premise it was written on had gone
+  stale. It named a `mwg-wesno` directory that was never used: the Wesnoth port is `mwg-wesnoth`
+  inside a Wesnoth source checkout, and it was pinned at mwg 0.9.0, so it had never been tested
+  against this release. With 0.13.0 placed in its install for both names it imports, that port
+  typechecks, passes all 334 of its tests, builds (124 MB `dist/game.js`) and passes its own
+  headless-browser verification with `"errors": []`; the Pixel Dungeon port, already on
+  `^0.13.0`, builds and plays in a browser. Neither port's README claims completeness, so the
+  line stays unchecked with that evidence recorded beside it.
+
+### Fixed
+
+- `tools/single-file.mjs`'s `output` is now documented and enforced as a file *name* written
+  inside `dist`. An absolute path used to be joined onto `dist` and fail later inside
+  `writeFile` with an `ENOENT` naming a doubled-up path; a value containing a separator is now
+  refused up front with an error naming the argument and the value, since the argument is what
+  was wrong. `tools/single-file.d.mts` and `tools/compress-dist.d.mts` gained the prose their
+  `.mjs` counterparts had and their declarations did not: `output` is a name, not a path,
+  `compressDist`'s `dir` is rewritten in place (its `.gz`/`.br`/`.xz` siblings appear inside it,
+  originals untouched), and each result field's meaning is stated, including that an unwritten
+  sibling reports 0 rather than being absent (item 359).
+
 ## [0.13.0] - 2026-09-15
 
 ### Added

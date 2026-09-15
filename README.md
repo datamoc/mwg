@@ -15,10 +15,14 @@ playable in the browser with no download, plus the generated API reference.
 planning or porting a demanding game with mwg, with links to the [mwg reference](https://github.com/datamoc/mwg/blob/main/REFERENCE.md)
 and the [mwg Pixel Dungeon study](https://datamoc.github.io/mwg-pixel-dungeon/).
 
-> **Status: pre-alpha (v0.7.7).** Every module in the shared floor below, plus optional
+> **Status: pre-alpha (v0.13.0).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
 > [ROADMAP.md](https://github.com/datamoc/mwg/blob/main/ROADMAP.md) for open work, and
 > [CLOSED.md](https://github.com/datamoc/mwg/blob/main/CLOSED.md) for the full, numbered shipped history.
+> The packaging scaffolding is part of this repository rather than the published package, so a
+> game that installs `@datamoc/mw_games` supplies its own native shell:
+> [tools.md](https://github.com/datamoc/mwg/blob/main/tools.md#packaging-as-a-native-app)
+> carries the recipe.
 >
 > 0.4.0 was the reshaping release: the renderer moved out of `mwg/core`, `render`/`ui`/`stage`
 > became `mwg/two-d`, and a set of names that meant several things each were made to mean one.

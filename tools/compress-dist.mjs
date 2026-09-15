@@ -58,6 +58,11 @@ function compressXz(data) {
 }
 
 /**
+ * Writes sibling files *into the folder it is given*: each `<file>.gz`/`.br`/`.xz` appears
+ * beside its original inside `dir`, which is rewritten in place, with no separate output
+ * directory. The originals themselves are never modified, so a caller whose `dist` is also
+ * what it publishes should still hand this a copy.
+ *
  * @param dir folder to compress, normally an example's `dist`
  * @param options.gzip write `.gz` siblings (default true)
  * @param options.brotli write `.br` siblings (default true)

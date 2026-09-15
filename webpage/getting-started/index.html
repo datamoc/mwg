@@ -401,7 +401,39 @@ node node_modules/@datamoc/mw_games/tools/compile-resources.mjs ./assets ./dist/
 				</article>
 
 				<article class="step">
-					<h3><span class="n">11</span> Finished code</h3>
+					<h3><span class="n">11</span> A real app window (optional)</h3>
+					<p>
+						<code>dist/</code> opens by double-click, in whatever browser the machine
+						has. To ship it as its own window instead, wrap it in a native host: this
+						repository carries a minimal WebView2 one at
+						<code>desktop/MwgDesktopHost</code>, and it is
+						<strong style="color: var(--paper)">not part of the npm package</strong>, so
+						its two files are copied into your project rather than installed:
+					</p>
+					<pre><code>cp -r &lt;a clone of mwg&gt;/desktop/MwgDesktopHost ./desktop/MwgDesktopHost
+dotnet run --project desktop/MwgDesktopHost -- dist/index.html</code></pre>
+					<p>
+						Building it needs the .NET 8 SDK on your machine; the machine that runs the
+						finished app needs only the WebView2 Runtime, which current Windows already
+						has. The argument is the page step 10 produced, resolved against the folder
+						you run from:
+						<code>dotnet publish -c Release -r win-x64 --self-contained true</code>
+						turns the host into a distributable build.
+					</p>
+					<p>
+						That host serves the page from a virtual
+						<code>https://mwg.local/</code> origin rather than <code>file://</code>,
+						which is what lets real network calls
+						(<code>assets.fetchWithByteProgress</code>, a WebSocket multiplayer
+						connection) work inside the shipped app.
+						<a href="https://github.com/datamoc/mwg/blob/main/tools.md#packaging-as-a-native-app">tools.md</a>
+						carries this recipe in full, and says where the mobile (Capacitor) target
+						still stands.
+					</p>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">12</span> Finished code</h3>
 					<p>The whole scene, about 60 lines:</p>
 					<pre><code>import { Game, Scene2D } from '@datamoc/mw_games/two-d';
 import { Input, Random } from '@datamoc/mw_games/core';

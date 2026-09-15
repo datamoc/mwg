@@ -51,7 +51,8 @@ import { fileURLToPath } from 'node:url';
  *   set (default 9 for gzip, 11 for brotli)
  * @param {boolean} [options.splash] show a splash screen while scripts decode (default true)
  * @param {string} [options.output] output file name, written inside `dist` (default
- *   `standalone.html`) - additive, so the existing multi-file `index.html` is untouched
+ *   `standalone.html`) - a name, not a path: one containing a separator is refused rather than
+ *   joined onto `dist`. Additive, so the existing multi-file `index.html` is untouched
  * @returns {Promise<{path: string, scripts: number, rawBytes: number, embeddedBytes: number}>}
  */
 export async function buildSingleFile({
@@ -65,6 +66,12 @@ export async function buildSingleFile({
 	if (!dist) throw new Error('buildSingleFile needs a `dist` folder');
 	if (algorithm !== 'gzip' && algorithm !== 'brotli') {
 		throw new Error(`buildSingleFile: algorithm must be 'gzip' or 'brotli', got ${JSON.stringify(algorithm)}`);
+	}
+	if (/[\\/]/.test(output)) {
+		throw new Error(
+			'buildSingleFile: `output` is a file name written inside `dist`, not a path, so it cannot ' +
+				`contain a separator - got ${JSON.stringify(output)}`,
+		);
 	}
 
 	const htmlPath = join(dist, 'index.html');

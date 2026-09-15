@@ -184,6 +184,13 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   hex's edge.
 - `weightedFlood`/`WeightedCell`/`WeightedFloodOptions` - renderer- and rules-neutral Dijkstra
   flood over any cell topology, with injected costs, blockers, budget and stopping rules.
+- `cellInside`/`cellIndex`/`cellX`/`cellY`/`cellKey`/`cellFromKey` - bounded-grid indexing:
+  the row-major arithmetic and bounds check that `roguelike.Level` and the `board` modules used
+  to spell out for themselves, now stated once (the Wesnoth port asked for exactly this, to stop
+  duplicating it in its own systems). `cellInside` is the shared bounds check and `cellIndex` is
+  deliberately *unchecked* arithmetic, so a loop that has already proved its coordinates pays
+  nothing while a module that wants a throw or a `-1` keeps that policy in its own method;
+  `cellKey`/`cellFromKey` are the `'x,y'` spelling for `Map`/`Set` membership.
 - `Blob` - a spreading volume field over a grid: a per-cell number that `spread` diffuses a
   share of into its open 4-neighbours and decays the rest (`decay: 1` conserves and only
   moves volume around). `seed` adds to a cell, `clear` zeroes one cell and leaves its
@@ -223,7 +230,10 @@ bundle should reach for.
 
 - `Game` - owns the Pixi `Application`, the frame loop, and the current scene; reachable as
   the singleton `Game.current`. `step(dt)` drives one frame by hand, which defeats Chrome's
-  background-tab throttling of `requestAnimationFrame`.
+  background-tab throttling of `requestAnimationFrame`. It draws at the display's
+  `devicePixelRatio`, reduced to the largest whole number whose backing store fits the device's
+  `MAX_TEXTURE_SIZE`, with a warning naming the limit when that happens: WebGL clamps a larger
+  request silently, so a device with a small limit renders softer rather than not at all.
 - `Scene2D` - `core.Scene`'s lifecycle plus the `stage` container everything this screen draws
   hangs off, destroyed with the scene. This is what a 2D game extends.
 

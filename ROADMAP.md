@@ -10,9 +10,11 @@ The shipped, numbered build history (everything through item 356) has moved to
 parked decisions, and the 1.0 exit checklist. Item numbers are never reassigned, so a new
 item continues the sequence in CLOSED.md rather than restarting at 1.
 
-There is no open numbered item right now - the roadmap can legitimately reach zero, and did
-before (see CLOSED.md's own note on 2026-09-11). What's left before 1.0 is the exit checklist
-below.
+No numbered item is open. Items 357 (the mobile consumer recipe), 358 and 359 (the two the
+Pixel Dungeon study raised as P19 and P20), 360 (the renderer resolution bound) and 361 (grid
+indexing, from the Wesnoth port's own MWG backlog) all closed, and the sequence continues in
+[CLOSED.md](CLOSED.md). What's left before 1.0 is the exit
+checklist below.
 
 ### Parked decisions
 
@@ -93,7 +95,9 @@ that says so rather than a numbered item of its own.
       line used to claim. Kept because what a player downloads is the 1.0 MB tarball, and the
       reader these serve is a consumer debugging a bundled game: the `.d.ts.map` is also what
       makes an editor's go-to-definition land in TypeScript instead of emitted JavaScript.
-      Re-decide on packed size, not file count.)
+      Re-decide on packed size, not file count. 2026-09-15: re-measured at 0.13.0, the decision
+      unchanged - 574 of 1168 files, 22% of the gzipped bytes and 28% of the raw ones, so the
+      share held while the package grew.)
 - [x] The getting-started tutorial is followed from scratch, in an empty directory
       outside this repo, once for each documented path: `npm install @datamoc/mw_games
       pixi.js vite`, the `npm pack` + install-by-path `.tgz` fallback, and the no-install
@@ -141,8 +145,73 @@ that says so rather than a numbered item of its own.
       the stale empty one that had been sitting between 0.7.2 and 0.7.1.)
 - [ ] **Both reference ports are complete and playable end to end against this release**
       (requested directly, 2026-09-11): the Shattered Pixel Dungeon port
-      (`mwg-pixel-dungeon`) and the Wesnoth port (`mwg-wesno`, an empty directory today). This
+      (`mwg-pixel-dungeon`) and the Wesnoth port. This
       is the one line here that is not a check to run in this repo - it depends on two other
       projects - and it earns its place in the 1.0 definition of done because finished games are
       what validate the framework, where the examples only exercise it. The current 0.x release
-      is what the ports build against in the meantime.
+      is what the ports build against in the meantime. (2026-09-15: still open, and the premise
+      this line was written on was wrong in one place and stale in another, both corrected here.
+      The Wesnoth port is not `mwg-wesno`, which was never used: it is `mwg-wesnoth`, living
+      inside a Wesnoth source checkout at `wesnoth-1.19.27/mwg/` - a real port with ~50 source
+      files, 41 test files, its own ROADMAP/PORT_COVERAGE/FIDELITY documents and a `release`
+      script, not the empty directory this line described. **Neither port claims to be
+      complete:** both READMEs open their Status section with "In progress, not yet
+      feature-complete", `mwg-pixel-dungeon` naming unported boss arena scripts and the absent
+      ally-vs-monster combat system, `mwg-wesnoth` naming a "Playable reference slice" phase it
+      has not reached. So the completeness half of this line is a statement about two projects
+      that their own maintainers do not yet make, and no work in this repository can make it
+      true - closing it means finishing those ports in their own repos, a season of work each,
+      not a session here.
+      What *is* this repository's half of the line - do both ports build and run against this
+      release? - was tested rather than assumed, and holds. `mwg-pixel-dungeon` pins `^0.13.0`,
+      with its own `mwg:check` reporting pin, install and published latest all at 0.13.0, its
+      `test:mwg` passing 4/4 framework-compatibility checks, its vault/items/Lua verification
+      suites passing, its `npm run build` producing a 27.9 MB page from `dist/`, and the built
+      game played in a browser at a phone-sized viewport: Sewers level 1 rendering the real
+      level, HUD, quickslots and its own localized message log. `mwg-wesnoth` was pinned at mwg
+      **0.9.0** and had therefore never been tested against this release at all; with 0.13.0
+      placed in its `node_modules` for both names it imports, `tsc --noEmit` passed, all 334
+      tests passed, the full vite build succeeded (124 MB `dist/game.js`), and its own
+      `npm run verify` booted the built page in headless Chrome from `file://` reporting
+      `"ok": true` and `"errors": []`, with The Freelands loaded, six units on a 39x26 hex map
+      with real terrain art and the objective on screen. Both ports were left exactly as found,
+      including `mwg-wesnoth`'s pinned install restored after that test.
+      One thing found along the way and worth someone's attention, since it is outside this
+      repository: the Wesnoth port's git repository has **no commits at all** (`git log` reports
+      no commits on `master`), so that work exists only as loose files on one disk.)
+
+**Re-verified against the current tree, 2026-09-15** (0.13.0 plus this session's changes, not
+the 0.7.6 the notes above were written against). Every check that can be run here was, and the
+results are recorded in one place rather than scattered per line:
+
+- `npm run check` clean, `npm test` 2267 passing, `npm run build` clean, `npm run audit`
+  0 vulnerabilities.
+- `npm run api:check` passes, after regenerating for the new `core` grid exports.
+- `npm publish --dry-run`: 1168 files, 1.4 MB packed, 5.2 MB unpacked, and **no leakage** -
+  `tools/docs`, `node_modules`, `desktop/`, `android/`, `examples/` and `notes/` all absent from
+  the shipped list, with a sanity check on the same extraction confirming that the list itself
+  was real. Worth stating because the first attempt at this check parsed the CLI's coloured
+  output by column and produced a file list containing none of the files that must ship, which
+  would have "passed" the leakage test for the wrong reason; the result above comes from
+  `npm pack --dry-run --json` instead.
+- The tutorial's install path, re-run through `npm run package:smoke`: `pageErrors: []`,
+  `gameReady: true`, WebGL, 1280x720 canvas, and I looked at the screenshot it wrote rather
+  than reading only its JSON. Both published-package paths (`npm` tarball and the standalone
+  global) reached a working `file://` page. The registry path is still the published 0.13.0's,
+  since this session's changes are not published.
+- The peer-dependency contract: a bare `npm install` of the packed tarball, in a scratch
+  directory with no parent install to shadow it, has **no `pixi.js`**, and
+  `@datamoc/mw_games/core` imports and runs there with 71 exports, the new grid functions
+  among them. The resolved path was printed to prove the local install answered, after an
+  earlier run of this same check silently resolved a stale package in a parent directory.
+- The browser smoke check (`npm run visual:smoke:ui`): `pageErrors: []`, `gameReady: true`, and
+  the screenshot shows what the line above describes - the `motionDot` square, the
+  frame-time readout beside its label, the deliberately un-carryable bag row - with nothing
+  clipped and no text over text.
+- `REFERENCE.md` and the generated documentation page are current, the former gaining the
+  grid-indexing entry and `Game`'s resolution note this session.
+
+What is deliberately *not* re-run: the full tutorial from a clean machine along each of its
+three paths, since steps 01-10 are unchanged (only an optional step 11 was added, and its own
+commands were verified on a real device); and the release itself, which needs the version bump
+and the npm 2FA step, so it stays where the release process puts it.

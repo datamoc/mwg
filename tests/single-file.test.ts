@@ -209,3 +209,13 @@ test('buildSingleFile throws a clear error when the page has no <script src> to 
 		await rm(dir, { recursive: true, force: true });
 	}
 });
+
+test('buildSingleFile refuses a path-shaped output rather than joining it onto dist', async () => {
+	await withEmittedPage(async (dir) => {
+		// `output` is a name written inside `dist`, so an absolute path (or any path) used to
+		// become `<dist>/<that path>` and fail later inside writeFile with ENOENT on a
+		// doubled-up path; the argument itself is what is wrong, so it is what should throw.
+		await assert.rejects(buildSingleFile({ dist: dir, output: join(dir, 'elsewhere', 'game.html') }), /not a path/);
+		await assert.rejects(buildSingleFile({ dist: dir, output: 'nested/game.html' }), /not a path/);
+	});
+});

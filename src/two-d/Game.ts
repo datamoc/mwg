@@ -3,9 +3,13 @@ import type { Scene2D } from './Scene2D.ts';
 import type { SceneClass } from '../core/Scene.ts';
 import { SceneStack } from '../core/SceneStack.ts';
 import { Signal } from '../core/Signal.ts';
+import { Logger } from '../core/Log.ts';
+import { fitResolution } from './ResolutionFit.ts';
 import * as Input from '../core/Input.ts';
 
 const PIXEL_ART_CLASS = 'mwg-pixel-art';
+
+const log = new Logger('renderer');
 
 /** one queued scene change, applied in order at the start of the next frame */
 type SceneRequest =
@@ -109,6 +113,13 @@ export interface GameOptions {
  * The application: owns the renderer, the loop, and the current scene.
  *
  * Construct it, `await start(FirstScene)`, and the rest is scenes.
+ *
+ * The canvas is drawn at the display's `devicePixelRatio`, up to what the device can actually
+ * make: a backing store of `viewport * devicePixelRatio` pixels is refused past the GPU's
+ * `MAX_TEXTURE_SIZE` (WebGL clamps it rather than failing, with nothing reported), so the
+ * resolution is reduced to the largest whole number that fits and a warning says so. A game
+ * therefore keeps rendering on a device with a small limit, softer than the display asked for
+ * rather than wrong; nothing changes on a device that can afford what it asked for.
  */
 export class Game {
 	private static instance: Game | null = null;
@@ -218,7 +229,11 @@ export class Game {
 		//them the backing size would push everything they centre off the screen.
 		this.app.renderer.on('resize', () => {
 			this.stack.resize(this.width, this.height);
+			//a rotation or a window resize changes how much of a backing store this device
+			//can afford, so re-fit rather than keeping whatever was chosen at startup
+			this.fitResolutionToDevice();
 		});
+		this.fitResolutionToDevice();
 
 		//the resolution passed to app.init() above is a one-time snapshot of
 		//devicePixelRatio; a later browser zoom (or dragging the window to a display with a
@@ -228,7 +243,7 @@ export class Game {
 		//non-integer ratio duplicates pixel columns inconsistently - the seams a pixel-art
 		//tilemap shows between tiles that were perfectly adjacent in the buffer itself.
 		this.stopWatchingDpr = watchDevicePixelRatio(() => {
-			this.app.renderer.resize(this.width, this.height, window.devicePixelRatio || 1);
+			this.fitResolutionToDevice();
 		});
 
 		this.expose();
@@ -314,6 +329,36 @@ export class Game {
 		const target = globalThis as unknown as Record<string, unknown>;
 		target.__PIXI_APP__ = this.app;
 		target.__MWG__ = this;
+	}
+
+	/**
+	 * Resizes the renderer to a resolution this device can actually afford.
+	 *
+	 * A full-window canvas at device resolution can ask for a backing store larger than the
+	 * GPU's `MAX_TEXTURE_SIZE`, and WebGL clamps that silently instead of failing: the canvas
+	 * keeps its size, the scene keeps being rendered into a surface that is not the one asked
+	 * for, and nothing anywhere says so. A 1080-wide phone at `devicePixelRatio` 2.625 asks for
+	 * 2121x4709 against the 4096 limit one emulator reported, and got a 2121x4096 drawing
+	 * buffer; see `fitResolution` for the arithmetic and for what that investigation did and
+	 * did not establish about the black screen that process showed.
+	 *
+	 * Called after `init`, whenever the renderer is resized (a rotation changes which one fits),
+	 * and when `devicePixelRatio` itself changes. It returns immediately when the device can
+	 * afford what was asked for, which is every ordinary case, so nothing about a normal
+	 * startup changes.
+	 */
+	private fitResolutionToDevice(): void {
+		const gl = (this.app.renderer as { gl?: WebGL2RenderingContext }).gl;
+		const limit = gl ? (gl.getParameter(gl.MAX_TEXTURE_SIZE) as number) : Number.POSITIVE_INFINITY;
+		const wanted = window.devicePixelRatio || 1;
+		const fitted = fitResolution(this.width, this.height, wanted, limit);
+		if (fitted === this.app.renderer.resolution) return;
+
+		log.warn(
+			`this device cannot render a ${this.width}x${this.height} canvas at ${wanted}x ` +
+				`(its limit is ${limit}); using ${fitted}x instead, which is softer than the display`,
+		);
+		this.app.renderer.resize(this.width, this.height, fitted);
 	}
 
 	private frame(deltaSeconds: number): void {

@@ -5271,3 +5271,161 @@ capability this framework was missing.
      the shared engines directly. All four existing test files (`dialogue-text.test.ts`,
      `rpg-dialogue-text.test.ts`, `twee.test.ts`, `rpg-event-story.test.ts`) still pass
      unchanged, since neither wrapper's observable behavior moved.
+
+358. ~~[Low] `package.json` lists seven `tools/*.mjs` helpers in `files`, but only three of them
+     (`compile-resources`, `compress-dist`, `webp-convert`) have an `exports` subpath. An
+     `exports` map blocks every deep path it does not name, so the other four cannot be imported
+     by specifier at all: `import { toClassicScript } from '@datamoc/mw_games/tools/classic-html'`
+     fails with `ERR_PACKAGE_PATH_NOT_EXPORTED` while the file sits in the installed package. A
+     consumer is left hardcoding a `node_modules/@datamoc/mw_games/...` path, which breaks the
+     day the package is installed under an npm alias - and no TypeScript consumer sees the
+     `.d.mts` files shipped beside them. Acceptance: the specifier resolves and type-checks for
+     each, no consumer needs a `node_modules` path literal, and the seven are exported
+     consistently rather than three-of-seven.~~ Added `./tools/classic-html`,
+     `./tools/extract-html` and `./tools/single-file` - the three remaining helpers that export
+     anything at all. `tools/mwl.mjs` deliberately keeps no subpath, which is where the item's
+     own acceptance needed correcting rather than implementing: it reads `process.argv` and
+     dispatches at import time, so `import '@datamoc/mw_games/tools/mwl'` would run a CLI, and a
+     subpath would be a trap rather than a convenience. The typed entry point for that half was
+     already there as `@datamoc/mw_games/mwl` (the library `tools/mwl.mjs` itself imports from
+     `../dist/mwl/index.js`), so the documented answer for `mwl` is the library specifier plus
+     the CLI by path. `tools/classic-html.mjs`'s own `@example` had been showing
+     `@datamoc/mw_games/tools/classic-html.mjs` - the one spelling the map refuses - and now
+     shows the subpath, which also explains why this was never caught: the framework's own tests
+     import these files by relative path, so nothing in the repository ever exercised its own
+     published map. `tests/package-tools.test.ts` now does, cheaply and without executing a
+     tool: it derives the tool list from `files`, reads each source's top-level `export`s as
+     text rather than importing it (`mwl.mjs` would dispatch if imported), asserts every tool
+     that exports something has a subpath, resolves each subpath through the package's own name
+     (Node self-referencing, which goes through the same map an installed consumer's import
+     does), asserts the deep `.mjs` path is still refused with `ERR_PACKAGE_PATH_NOT_EXPORTED`,
+     asserts `mwl` has no subpath, and asserts every importable tool ships a `.d.mts` beside it.
+     Verified beyond the repository as well, since an in-repo self-reference is still not an
+     install: `npm pack`, extracted into a scratch `node_modules/@datamoc/mw_games` outside the
+     repository, resolves all three new specifiers, refuses the old `.mjs` one and `tools/mwl`,
+     and a two-line `tsc --moduleResolution bundler` fixture importing all three type-checks
+     against the shipped `.d.mts` files.
+
+359. ~~[Low] Two shipped tools' declarations do not say where they write. `single-file.mjs`'s
+     `output` is a file *name* that the tool joins onto its `dist` argument, so an absolute path
+     becomes `<dist>/<that path>` and an `ENOENT` from `writeFile` naming a doubled-up path
+     rather than a rejected argument; its JSDoc says "output file name, written inside `dist`",
+     but `single-file.d.mts` declares `output?: string` with no such note, which is what a
+     TypeScript consumer actually reads. `compress-dist.mjs` writes its siblings into the
+     directory it is handed, modifying the input in place; its declaration is a bare
+     `compressDist(dir, options)` with no prose at all. Acceptance: each shipped tool's
+     declaration states, for every path-shaped argument, whether it is a path or a name, what it
+     is relative to, and whether the tool modifies its input; an absolute or outside-`dist`
+     `output` is either supported or refused with a named error, not an `ENOENT` from an internal
+     `writeFile`.~~ Chose refusal over support, since the tool's whole model is one extra file
+     inside the `dist` it was handed, and a silently-outside write would surprise the CLI's own
+     `--output` rather than help it: `buildSingleFile` now throws
+     `buildSingleFile: \`output\` is a file name written inside \`dist\`, not a path, so it
+     cannot contain a separator - got "..."` before it reads anything, so the argument is what
+     gets named rather than the path it would have produced. Both declarations now carry the
+     prose their `.mjs` counterparts had and they lacked: `output` is a name, not a path;
+     `compressDist`'s `dir` is rewritten in place with each `.<format>` sibling appearing beside
+     its original and the originals themselves never modified (checked against the source, not
+     the changelog that had only asserted it: `writeFile(file + '.gz', ...)` and siblings, and
+     no write back to `file`); and `CompressRow`'s fields are stated, including that a sibling
+     which was not asked for, was not smaller, or needed a missing `xz` binary reports `0` rather
+     than being absent, so a caller summing those columns is not silently reading `undefined`.
+     `tools.md`'s `compress-dist` row gained the same two things it had left out, `.xz` and the
+     in-place behaviour. A case in `tests/single-file.test.ts` covers the refusal for both an
+     absolute path and a nested relative one. The declaration prose itself is held by review,
+     not by a check - only the exports half of this pair has a test.
+
+357. ~~[Low] The mobile (Capacitor/Android) half of the consumer packaging recipe - the same gap
+     the desktop host's own recipe closed this session. `mobile:build`, `cap:sync`,
+     `cap:add:android` and `cap:add:ios` are all repo-relative against this repository's own
+     `android/` scaffold and `tools/capacitor-node-workaround.cjs`, so a game that installs
+     `@datamoc/mw_games` cannot produce an Android package without authoring the Capacitor
+     config and the platform tree itself. This item is `tools.md`'s "Packaging as a native app"
+     section extended to that target, carrying the three things a consumer otherwise meets one
+     failed build at a time: `--no-compress` (the `.gz`/`.br` siblings collide as AAPT duplicate
+     resources), the `ignoreAssetsPattern` the merge needs, and the `versionCode`/`versionName`
+     that `cap add android` writes once and never revises. Recorded as P18, suggestion 1, in
+     `mwg-pixel-dungeon`'s own `4MWG/IMPROVEMENT_PROPOSALS.md`.~~ Written and verified by
+     building a consumer game for real, outside this repository: a game installed `mwg` from a
+     packed tarball, built its web output with the `@datamoc/mw_games/tools/classic-html`
+     subpath item 358 had just added, ran `cap add android` / `cap sync` / `gradlew
+     assembleDebug`, and the APK was installed and launched on this machine's
+     `Medium_Phone_API_35` emulator, where the game rendered - checked at the pixel level, not
+     by eye, by reading the region the test box is drawn into back out of a `screencap`
+     (uniformly `#FFD166`, the exact fill). Every prerequisite and gotcha in the recipe was hit
+     rather than predicted. The toolchain needs the **JDK 21** item 351 recorded (Capacitor's
+     Android Gradle Plugin refuses JDK 17 outright) with `JAVA_HOME` pointing at it, and
+     something Gradle can find the **Android SDK** through: `ANDROID_HOME`, or an
+     `android/local.properties` written by hand - a step P18's own list did not name, and one
+     that fails quietly if the properties file is written with single backslashes, since Java
+     then drops every separator and Gradle reports an unreadable path much later. All three of
+     P18's gotchas reproduced exactly: `mergeDebugAssets FAILED ... [public/game.js.gz]:
+     Duplicate resources` from the `.gz`/`.br` sidecars, the same task clearing once
+     `ignoreAssetsPattern` gained `:!*.gz:!*.br` (which is why `android/` is tracked), and
+     `INSTALL_FAILED_VERSION_DOWNGRADE: Downgrade detected: Update version code 1 is older than
+     current 2` from installing a build whose `versionCode` had not been stamped upward. The
+     Node workaround (`tools/capacitor-node-workaround.cjs`, whose `os.userInfo` patch keeps
+     the Capacitor CLI loadable on Windows Node 26) did **not** reproduce: a bare `npx cap add
+     android` worked on this machine today, so the recipe documents it as a conditional
+     workaround with its own 12 lines inline, rather than presenting it as required. Left
+     unwritten deliberately: release signing (a keystore is the game's own business, and no
+     release APK was produced) and iOS, which needs a macOS host this repository has no way to
+     verify from.
+
+360. ~~[Low] `Game` sized the canvas to `window x devicePixelRatio` with no upper bound. A
+     backing store past a device's `MAX_TEXTURE_SIZE` is refused by WebGL without saying so: it
+     clamps the drawing buffer, so the game keeps rendering into a surface it did not ask for
+     and nothing anywhere reports it.~~ Found while verifying item 357 on a real device: a
+     full-window 816x1812 canvas at `devicePixelRatio` 2.625 asks for 2121x4709, and an emulator
+     reporting a 4096 limit produced a drawing buffer clamped to 2121x4096. `two-d/ResolutionFit.ts`
+     now answers what a device can afford - the largest whole number at or below the requested
+     ratio whose backing store fits, never below 1, and the requested ratio untouched when there
+     is no cap to apply (a WebGPU renderer has no WebGL context to ask, and must still start) -
+     with `tests/resolution-fit.test.ts` covering the measured case, the boundary, a
+     non-integer ratio, a canvas longer than the limit even at 1x, and the no-cap inputs.
+     `Game.fitResolutionToDevice` applies it after `init`, on every renderer resize (a rotation
+     changes which one fits), and on a `devicePixelRatio` change, warning with the device's
+     limit when it has to; it returns immediately when the device can afford what was asked for,
+     so ordinary startup is bit-for-bit unchanged. Recorded honestly, because the investigation
+     did not end where it started: the process that showed the clamped buffer also painted an
+     entirely black screen, which is what sent this looking, and it was **never reproduced** -
+     every later start of the same emulator reported 8192, a deliberately clamped 1050x10500
+     request on the next process rendered correctly, and the same build that had been black
+     rendered once reinstalled. So the black screen has no cause attributed to it here, and the
+     fix is not claimed to cure one; what is established is the clamped request, and a game no
+     longer makes one. `Game`'s own doc comment carries the same distinction, and REFERENCE.md
+     repeats it.
+
+361. ~~[Low] Bounded-grid indexing has no home in `core`: `inside`, the row-major cell arithmetic
+     and coordinate keys are written out privately by every module that needs them
+     (`roguelike/Level`, `board/Classics`, `board/FogOfWar`, `board/HexSkirmish`), so a consumer
+     - the Wesnoth port names this in its own MWG extraction backlog, priority "Haute" - has to
+     invent the same two lines again. Its exit criterion: no more duplicated indexing in the
+     game systems, and out-of-bounds tested.~~ Added `core/Grid.ts`, exporting
+     `cellInside`/`cellIndex`/`cellX`/`cellY`/`cellKey`/`cellFromKey`, and moved all four
+     framework copies onto it. Two design decisions were made rather than defaulted. First,
+     free functions, not a `Grid` class: every existing caller already holds a width and
+     height, and the copies live in loops hot enough (`FieldOfView`, `Elevation`, `Autotile`)
+     that a per-call wrapper would be the wrong trade; `Level.index`/`inside`/`xOf`/`yOf` are
+     now one-line forwards, so the public shape of the module the roguelike examples and the
+     port's own systems consume did not move at all. Second, `cellIndex` does the arithmetic
+     and *no* bounds check, deliberately, because the four copies disagree on what out of
+     bounds should do and that disagreement is worth keeping: `board/Classics.index` throws
+     (callers of a board game hand it author-supplied coordinates), `board/FogOfWar.index`
+     answers `-1` (a vision pass asks about every neighbour of every cell and wants "outside
+     contributes nothing", not an exception), and `Level.index` checks nothing because its
+     callers check first. A single checked primitive would have forced one of those policies on
+     the other two and cost the hot paths a redundant test, so `cellInside` is offered for
+     callers that have not proved their coordinates and each module keeps its own wrapper. The
+     key functions are the port's third ask: `'x,y'` is the spelling consumers reach for anyway
+     (the port keys `Map`s by hand with it in at least six places), and taking it from the
+     framework means a key one system wrote is understood by the next.
+     `tests/grid.test.ts` covers the whole edge list rather than a sample: every
+     boundary (all four edges, both corners, negative coordinates, a zero-sized grid), the
+     `cellIndex`/`cellX`/`cellY` round trip for every cell of a 7x5 grid, the deliberately
+     unchecked cases, and `cellFromKey` refusing nine malformed keys rather than guessing.
+     Recorded here for the port's benefit: its MWG backlog table's other open "Haute" row is
+     the texture load/cache/release ask, and its "Moyenne" `ActionJournal` row asks for
+     something `core/ActionJournal.ts` already provides (a serializable append-only action log
+     "for replay, undo checkpoints, synchronization and debugging"), so that row is stale
+     rather than outstanding.
