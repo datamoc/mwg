@@ -5,7 +5,7 @@
 	"releaseDate": "2026-09-15",
 	"source": {
 		"files": 286,
-		"lines": 46373,
+		"lines": 46375,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -21,7 +21,7 @@
 			{
 				"name": "core",
 				"files": 45,
-				"lines": 5704
+				"lines": 5706
 			},
 			{
 				"name": "roguelike",
@@ -131,9 +131,9 @@
 		"declarationFiles": 285
 	},
 	"bundle": {
-		"globalRaw": 1074058,
-		"globalGzip": 319631,
-		"distRaw": 3450595
+		"globalRaw": 1071343,
+		"globalGzip": 318567,
+		"distRaw": 3447880
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
