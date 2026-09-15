@@ -1,14 +1,18 @@
+import { parseDialogueLines } from '../core/DialogueText.ts';
 import type { Catalog, Direction } from '../i18n/index.ts';
 import type { EventCommand } from './EventRunner.ts';
 
 /**
  * A terse, line-based text format for straight (non-branching) dialogue - the format a
  * text-only RPG (`core` plus `rpg`, no renderer at all) can use for its own `EventCommand`
- * scripts without depending on `two-d` for anything. `two-d/stage` has its own, independent
- * copy of this same format targeting `StageCommand` instead - declared separately for the
- * same reason `EventChoice` is declared separately from `two-d/ui`'s `Choice`: a Pixi-based
- * visual novel that never touches `rpg`'s map events should not have to pull the whole module
- * in just to parse dialogue text, and a text-only RPG should not have to pull in Pixi either.
+ * scripts without depending on `two-d` for anything. `two-d/stage` has its own wrapper
+ * around the same parsing engine (`core.parseDialogueLines`) targeting `StageCommand`
+ * instead - declared separately for the same reason `EventChoice` is declared separately
+ * from `two-d/ui`'s `Choice`: a Pixi-based visual novel that never touches `rpg`'s map
+ * events should not have to pull the whole module in just to parse dialogue text, and a
+ * text-only RPG should not have to pull in Pixi either. The actual `@id`/`-` parsing logic
+ * lives once in `core.parseDialogueLines`, not copied between the two - only the final
+ * command shape (`speaker` here, `as` in `two-d/stage`) differs.
  *
  * Three kinds of line:
  *
@@ -59,54 +63,9 @@ import type { EventCommand } from './EventRunner.ts';
  * ```
  */
 export function parseDialogueText(source: string): EventCommand[] {
-	const commands: EventCommand[] = [];
-	const established: string[] = [];
-	let lastSpeaker: string | undefined;
-
-	const register = (id: string): void => {
-		if (established.includes(id)) return;
-		if (established.length >= 2) {
-			throw new Error(
-				`dialogue text supports at most two speakers for the "-" shorthand; found a third speaker ` +
-					`"${id}" after "${established[0]}" and "${established[1]}" were already established`,
-			);
-		}
-		established.push(id);
-	};
-
-	for (const rawLine of source.split('\n')) {
-		const line = rawLine.trim();
-		if (line === '') continue;
-
-		const at = /^@(\S+)(?:\s+(.*))?$/.exec(line);
-		if (at) {
-			const [, id, text] = at;
-			register(id);
-			if (text) {
-				commands.push({ say: text.trim(), speaker: id });
-				lastSpeaker = id;
-			}
-			continue;
-		}
-
-		if (line.startsWith('-')) {
-			if (established.length < 2) {
-				throw new Error(
-					'a "-" line needs two established speakers first (write two "@id text" lines before it)',
-				);
-			}
-			const text = line.slice(1).trim();
-			const speaker = established.find((id) => id !== lastSpeaker) ?? established[0];
-			commands.push({ say: text, speaker });
-			lastSpeaker = speaker;
-			continue;
-		}
-
-		commands.push({ say: line });
-		lastSpeaker = undefined;
-	}
-
-	return commands;
+	return parseDialogueLines(source).map((line) =>
+		line.speaker === undefined ? { say: line.text } : { say: line.text, speaker: line.speaker },
+	);
 }
 
 /**

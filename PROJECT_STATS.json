@@ -4,14 +4,14 @@
 	"version": "0.13.0",
 	"releaseDate": "2026-09-15",
 	"source": {
-		"files": 284,
-		"lines": 46453,
+		"files": 286,
+		"lines": 46373,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 81,
-				"lines": 15626
+				"lines": 15424
 			},
 			{
 				"name": "mwl",
@@ -20,8 +20,8 @@
 			},
 			{
 				"name": "core",
-				"files": 43,
-				"lines": 5395
+				"files": 45,
+				"lines": 5704
 			},
 			{
 				"name": "roguelike",
@@ -41,7 +41,7 @@
 			{
 				"name": "rpg",
 				"files": 14,
-				"lines": 2187
+				"lines": 2000
 			},
 			{
 				"name": "i18n",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 237,
-		"lines": 30875,
-		"cases": 2258
+		"files": 238,
+		"lines": 30918,
+		"cases": 2260
 	},
 	"tools": {
 		"files": 39,
@@ -128,12 +128,12 @@
 		"percent": 100
 	},
 	"api": {
-		"declarationFiles": 283
+		"declarationFiles": 285
 	},
 	"bundle": {
 		"globalRaw": 1074058,
 		"globalGzip": 319631,
-		"distRaw": 3452374
+		"distRaw": 3450595
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

@@ -1,17 +1,21 @@
+import { parseDialogueLines } from '../../core/DialogueText.ts';
 import type { Catalog, Direction } from '../../i18n/index.ts';
 import type { StageCommand, StoryScript } from './script.ts';
 
 /**
  * A terse, line-based text format for straight (non-branching) dialogue - the
  * counterpart to `twee.ts`'s passage graphs, for the common case of a scene
- * that is just a sequence of lines. `rpg` has its own, independent copy of this
- * same format (`rpg.parseDialogueText`, targeting `EventCommand`) for a
- * text-only RPG's map events - declared separately here for the same reason
- * `EventChoice` is declared separately from this module's own `Choice`: a
- * text-only RPG built on `core` and `rpg` alone should not have to depend on
- * `two-d` (and its Pixi peer dependency) just to parse dialogue text, and a
- * Pixi-based visual novel that never touches map events should not have to
- * pull in `rpg` either. Three kinds of line:
+ * that is just a sequence of lines. `rpg` has its own wrapper around the same
+ * parsing engine (`core.parseDialogueLines`) for a text-only RPG's map events
+ * (`rpg.parseDialogueText`, targeting `EventCommand`) - declared separately
+ * here for the same reason `EventChoice` is declared separately from this
+ * module's own `Choice`: a text-only RPG built on `core` and `rpg` alone
+ * should not have to depend on `two-d` (and its Pixi peer dependency) just to
+ * parse dialogue text, and a Pixi-based visual novel that never touches map
+ * events should not have to pull in `rpg` either. The actual `@id`/`-`
+ * parsing logic lives once in `core.parseDialogueLines`, not copied between
+ * the two - only the final command shape (`as` here, `speaker` in `rpg`)
+ * differs. Three kinds of line:
  *
  * - `@id text` names who is speaking and says `text`; `@id` alone (no text)
  *   just registers the speaker, without saying anything yet.
@@ -56,54 +60,9 @@ import type { StageCommand, StoryScript } from './script.ts';
  * ```
  */
 export function parseDialogueText(source: string): StageCommand[] {
-	const commands: StageCommand[] = [];
-	const established: string[] = [];
-	let lastSpeaker: string | undefined;
-
-	const register = (id: string): void => {
-		if (established.includes(id)) return;
-		if (established.length >= 2) {
-			throw new Error(
-				`dialogue text supports at most two speakers for the "-" shorthand; found a third speaker ` +
-					`"${id}" after "${established[0]}" and "${established[1]}" were already established`,
-			);
-		}
-		established.push(id);
-	};
-
-	for (const rawLine of source.split('\n')) {
-		const line = rawLine.trim();
-		if (line === '') continue;
-
-		const at = /^@(\S+)(?:\s+(.*))?$/.exec(line);
-		if (at) {
-			const [, id, text] = at;
-			register(id);
-			if (text) {
-				commands.push({ say: text.trim(), as: id });
-				lastSpeaker = id;
-			}
-			continue;
-		}
-
-		if (line.startsWith('-')) {
-			if (established.length < 2) {
-				throw new Error(
-					'a "-" line needs two established speakers first (write two "@id text" lines before it)',
-				);
-			}
-			const text = line.slice(1).trim();
-			const speaker = established.find((id) => id !== lastSpeaker) ?? established[0];
-			commands.push({ say: text, as: speaker });
-			lastSpeaker = speaker;
-			continue;
-		}
-
-		commands.push({ say: line });
-		lastSpeaker = undefined;
-	}
-
-	return commands;
+	return parseDialogueLines(source).map((line) =>
+		line.speaker === undefined ? { say: line.text } : { say: line.text, as: line.speaker },
+	);
 }
 
 /**

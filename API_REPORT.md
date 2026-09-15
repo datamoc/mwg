@@ -1439,6 +1439,10 @@ build instead.
 
     export declare function parseCSV<T = Record<string, string>>(source: string, options?: CsvOptions): T[];
 
+### `parseDialogueLines` (function)
+
+    export declare function parseDialogueLines(source: string): DialogueLine[];
+
 ### `parseDialogueText` (function)
 
     export declare function parseDialogueText(source: string): StageCommand[];
@@ -1462,6 +1466,10 @@ build instead.
 ### `parseRotateMode` (function)
 
     export declare function parseRotateMode(argument: string | undefined): RotateMode;
+
+### `parseTwee` (function)
+
+    export declare function parseTwee(source: string): TweeStory;
 
 ### `ParticleEmitter` (class)
 
@@ -4899,6 +4907,14 @@ build instead.
 ### `parseCSV` (function)
 
     export declare function parseCSV<T = Record<string, string>>(source: string, options?: CsvOptions): T[];
+
+### `parseDialogueLines` (function)
+
+    export declare function parseDialogueLines(source: string): DialogueLine[];
+
+### `parseTwee` (function)
+
+    export declare function parseTwee(source: string): TweeStory;
 
 ### `pixelToHex` (function)
 

@@ -81,4 +81,8 @@ export type { PresentationQueueOptions } from './Presentation.ts';
 export { SyncGuard, stateChecksum } from './SyncGuard.ts';
 export { parseCSV } from './Csv.ts';
 export type { CsvOptions, CsvColumnType } from './Csv.ts';
+export { parseDialogueLines } from './DialogueText.ts';
+export type { DialogueLine } from './DialogueText.ts';
+export { parseTwee } from './Twee.ts';
+export type { TweeCommand, TweeChoice, TweeStory } from './Twee.ts';
 export { clamp } from './Math.ts';

@@ -11,26 +11,33 @@ the public API may still change between minor versions.
 
 ### Added
 
+- `core.parseDialogueLines`/`DialogueLine` and `core.parseTwee`/`TweeCommand`/`TweeChoice`/
+  `TweeStory` - the two-speaker `@id`/`-` dialogue-text state machine and the Twee-notation
+  passage/link parser, each shared by a `two-d/stage` and an `rpg` wrapper (`parseDialogueText`,
+  `importTwee`) rather than copied between them, the same precedent `core.parseCSV` already
+  set for a generic text-format parser other modules build a typed result around.
+  `TweeCommand`/`TweeChoice` are structurally compatible with both `StoryScript`/`StageChoice`
+  and `EventStoryScript`/`EventChoice`, so neither wrapper needs a per-field conversion.
 - `two-d/stage.parseDialogueText`/`extractDialogueCatalog` and `rpg.parseDialogueText`/
   `extractDialogueCatalog` - a terse line-based dialogue format, alongside `importTwee`, for
   straight (non-branching) scenes: `@id text` names the speaker, an unprefixed line
   narrates, and `- text` alternates between the first two speakers a scene establishes
-  (capped at two; a third distinct speaker is refused rather than guessed at). Declared
-  independently in both modules, the same way `rpg.EventChoice` already duplicates
-  `two-d/ui.Choice`, so a text-only RPG needs no Pixi dependency to use it and a Pixi-based
-  visual novel needs no `rpg` dependency either. Each module's `extractDialogueCatalog`
-  builds an identity `i18n` catalog from the result (`two-d/stage`'s also reads a
-  `StoryScript`), the same shape MWL's `extractCatalog` builds from `_("...")`-marked
-  strings, so a translator has real entries to start from (item 355).
+  (capped at two; a third distinct speaker is refused rather than guessed at). Each is a
+  thin wrapper around `core.parseDialogueLines` naming its own command shape (`StageCommand`'s
+  `as` versus `EventCommand`'s `speaker`), so a text-only RPG needs no Pixi dependency to use
+  it and a Pixi-based visual novel needs no `rpg` dependency either. Each module's
+  `extractDialogueCatalog` builds an identity `i18n` catalog from the result (`two-d/stage`'s
+  also reads a `StoryScript`), the same shape MWL's `extractCatalog` builds from
+  `_("...")`-marked strings, so a translator has real entries to start from (item 355).
 - `rpg.EventRunner.runStory`/`EventStoryScript`/`EventCommand`'s new `goto` variant/
   `EventChoice.goto` - a named-passage graph for map-event scripts, the `EventCommand`
   counterpart to `StageScript.runStory`/`StoryScript`: a `goto` command or a choice's own
   `goto` jumps to a different passage, and a plain `run()` refuses a stray `goto` instead of
   silently ignoring it.
 - `rpg.importTwee`/`EventTwineStory` - imports Twee-notation Twine stories into
-  `EventStoryScript`, the `rpg` counterpart to `two-d/stage.importTwee`, declared
-  independently for the same reason `EventChoice` already duplicates `two-d/ui.Choice`, so a
-  text-only RPG can import a branching Twee story with no `two-d`/Pixi dependency (item 356).
+  `EventStoryScript`, a thin wrapper around `core.parseTwee` (the same engine
+  `two-d/stage.importTwee` wraps for `StageCommand`/`StoryScript` instead), so a text-only
+  RPG can import a branching Twee story with no `two-d`/Pixi dependency (item 356).
 
 ## [0.12.0] - 2026-09-14
 

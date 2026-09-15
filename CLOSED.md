@@ -5248,3 +5248,26 @@ capability this framework was missing.
      `tests/rpg-event-story.test.ts` cover `goto`, choice-goto, a `goto` inside an `if` branch,
      `run()` refusing a stray `goto`, `runStory` refusing a missing passage, and an imported
      Twee story run end to end through `EventRunner.runStory`.
+     Corrected on review, the same session: "an independent copy" was the wrong call for the
+     Twee importer specifically - unlike `EventChoice`/`Choice` (a genuinely tiny, 3-field
+     shape, cheap to keep in sync by inspection), `two-d/stage/twee.ts`'s parser was ~150 lines
+     with real branching logic (passage splitting, link extraction, `StoryData`/`StoryTitle`
+     handling, goto-target validation), and copying that much logic into `rpg/twee-events.ts`
+     meant a bug fix or a format extension in one would silently not reach the other. The
+     actual parsing now lives once, in `core.parseTwee` (`src/core/Twee.ts`) - the same
+     precedent `core.parseCSV` already set for a generic text-format parser shared by several
+     higher modules - returning a generic `TweeCommand`/`TweeChoice` shape. Both
+     `two-d/stage/twee.ts` and `rpg/twee-events.ts` shrank to thin wrappers naming their own
+     return type; no cast was needed in either direction, since `TweeCommand`/`TweeChoice`
+     turned out structurally compatible with both `StoryScript`/`StageChoice` and
+     `EventStoryScript`/`EventChoice` (every field either matches by name or is optional on the
+     wider side). The item 355 dialogue-text parser had the same problem at smaller scale (the
+     ~20-line two-speaker alternation state machine, genuinely duplicated rather than merely
+     type-duplicated) and got the same fix: `core.parseDialogueLines` (`src/core/
+     DialogueText.ts`) is now the one implementation, with `two-d/stage/dialogue-text.ts` and
+     `rpg/dialogue-text.ts` reduced to a one-line field rename each (`as` versus `speaker`).
+     `tests/renderer-isolation.test.ts` confirms `core` (already renderer-free) stays that way
+     with both new files added, and 2 new tests in `tests/core-dialogue-twee.test.ts` exercise
+     the shared engines directly. All four existing test files (`dialogue-text.test.ts`,
+     `rpg-dialogue-text.test.ts`, `twee.test.ts`, `rpg-event-story.test.ts`) still pass
+     unchanged, since neither wrapper's observable behavior moved.
