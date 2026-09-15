@@ -6,6 +6,9 @@ export interface EventChoice {
 	text: string;
 	value?: unknown;
 	disabled?: boolean;
+
+	/** the passage to jump to when this choice is picked, in an `EventRunner.runStory` story */
+	goto?: string;
 }
 
 /** what the runner wants shown; how it looks is the presenter's business entirely */
@@ -55,7 +58,16 @@ export type EventCommand =
 	| { addVariable: string; amount: number }
 	| { if: EventCondition; then: EventCommand[]; else?: EventCommand[] }
 	| { move: { target: string; steps: MoveStep[] } }
+	| { goto: string }
 	| { call: (state: EventRunnerState) => void | Promise<void> };
+
+/**
+ * A branching event script: named passages, the same graph shape `two-d/stage`'s
+ * `StoryScript` is - a passage runs until it falls off the end, a `{ goto }` command or a
+ * choice's own `goto` jumps to a different one. `EventRunner.runStory` follows it the same
+ * way `StageScript.runStory` follows a `StoryScript`.
+ */
+export type EventStoryScript = Record<string, readonly EventCommand[]>;
 
 export interface EventRunnerState {
 	game: GameState;
@@ -102,60 +114,102 @@ export class EventRunner {
 	}
 
 	async run(commands: readonly EventCommand[]): Promise<EventRunnerState> {
-		for (const command of commands) {
-			if (this.cancelled) break;
-			await this.step(command);
+		const jump = await this.runList(commands);
+		if (jump !== undefined) {
+			throw new Error(`a "goto ${jump}" only runs inside runStory, not a straight run`);
 		}
 		return this.state;
 	}
 
-	private async step(command: EventCommand): Promise<void> {
+	/**
+	 * Runs a graph of passages starting at `start`, following `goto` commands and choice
+	 * jumps until a passage runs out or the script is cancelled - the `EventCommand`
+	 * counterpart to `StageScript.runStory`.
+	 */
+	async runStory(story: EventStoryScript, start: string): Promise<EventRunnerState> {
+		if (!Object.prototype.hasOwnProperty.call(story, start)) {
+			throw new Error(`this event story has no passage named "${start}"`);
+		}
+		let commands = story[start];
+		let index = 0;
+		while (index < commands.length) {
+			if (this.cancelled) break;
+			const jump = await this.step(commands[index]);
+			index++;
+			if (jump !== undefined) {
+				if (!Object.prototype.hasOwnProperty.call(story, jump)) {
+					throw new Error(`this event story has no passage named "${jump}"`);
+				}
+				commands = story[jump];
+				index = 0;
+			}
+		}
+		return this.state;
+	}
+
+	/** runs a plain list of commands, returning the passage to jump to, if any */
+	private async runList(commands: readonly EventCommand[]): Promise<string | undefined> {
+		for (const command of commands) {
+			if (this.cancelled) break;
+			const jump = await this.step(command);
+			if (jump !== undefined) return jump;
+		}
+		return undefined;
+	}
+
+	/** runs one command; returns the passage to jump to, if the command jumps anywhere */
+	private async step(command: EventCommand): Promise<string | undefined> {
 		if ('say' in command) {
 			await this.speak(command.say, command.speaker, command.portrait);
-			return;
+			return undefined;
 		}
 
 		if ('ask' in command) {
 			const chosen = await this.speak(command.ask, command.speaker, command.portrait, command.choices);
 			if (command.store) this.state.answers[command.store] = chosen;
-			return;
+			//a MessageBox resolves with the chosen value, which defaults to the text
+			return command.choices.find((c) => (c.value ?? c.text) === chosen)?.goto;
 		}
 
 		if ('wait' in command) {
 			await new Promise<void>((resolve) => setTimeout(resolve, command.wait * 1000));
-			return;
+			return undefined;
 		}
 
 		if ('setSwitch' in command) {
 			this.state.game.setSwitch(command.setSwitch, command.value);
-			return;
+			return undefined;
 		}
 
 		if ('setVariable' in command) {
 			this.state.game.setVariable(command.setVariable, command.value);
-			return;
+			return undefined;
 		}
 
 		if ('addVariable' in command) {
 			const current = this.state.game.variable(command.addVariable);
 			this.state.game.setVariable(command.addVariable, current + command.amount);
-			return;
+			return undefined;
 		}
 
 		if ('if' in command) {
 			const holds = conditionHolds(command.if, this.state.game);
-			await this.run(holds ? command.then : (command.else ?? []));
-			return;
+			return this.runList(holds ? command.then : (command.else ?? []));
 		}
 
 		if ('move' in command) {
 			await this.options.move?.(command.move.target, command.move.steps);
-			return;
+			return undefined;
+		}
+
+		if ('goto' in command) {
+			return command.goto;
 		}
 
 		if ('call' in command) {
 			await command.call(this.state);
 		}
+		return undefined;
 	}
 
 	private speak(

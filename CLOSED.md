@@ -5173,3 +5173,78 @@ map-transition state carrying `GameState` across maps without a full-page reload
 addressed by `world.World`'s `enter`/`current` (in-memory map swap, no reload) - the port
 predates or hasn't adopted it, which is an integration question for that project rather than a
 capability this framework was missing.
+
+355. ~~[Low] Both dialogue authoring paths today are verbose for what is usually the bulk of a
+     game's text: `two-d/stage`'s `StageCommand[]` (`{ say: 'Hello.', as: 'alice' }` per line)
+     and MWL's `message`/`say` nodes (`{ tag: 'message', speaker: 'alice', text: 'Hello.' }`),
+     one object per line either way. A terse text format - one line per line of dialogue,
+     `@alice Hello.` naming the speaker id, an unprefixed line narrating with no speaker -
+     would read the way `twee.ts` already lets a passage's prose read, for the common case of
+     a straight conversation with no branching, plus a shorter two-speaker notation: the first
+     two `@speaker` lines establish who is talking, and every following `-` line alternates
+     between them. Must stay i18n-compatible from the start, the same way MWL's `_("...")`
+     marks a string for `extract-i18n`.~~ Landed as `two-d/stage/dialogue-text.ts`'s
+     `parseDialogueText`/`extractDialogueCatalog`, exported alongside `importTwee` rather than
+     folded into it: twee still owns `[[links]]`/passage graphs, this format only owns the
+     terse per-line speaker shorthand, and a twee passage body written in `@speaker` lines
+     composes with it rather than replacing it. `parseDialogueText` reads `@id text` (name the
+     speaker, say the line), a bare `@id` (register the speaker without saying anything yet,
+     for opening a `-` exchange without an opening line), a bare non-`@`/non-`-` line
+     (narration, no speaker), and `- text` (alternates between the first two speakers
+     established by `@id` lines, relative to whoever spoke last rather than a fixed parity, so
+     an explicit `@id` line in the middle of a `-` exchange still leaves the next `-` resuming
+     correctly). The two-speaker cap is enforced eagerly: a third distinct `@id` anywhere in
+     the source throws immediately, naming the two already established, and a `-` line before
+     two speakers exist throws too, rather than guessing at silence. i18n compatibility landed
+     the same way `twee.ts` already handles it, not with a runtime `t()` call baked into the
+     parser: lines reach `StageCommand.say` as plain, untranslated text, and
+     `extractDialogueCatalog` builds an identity catalog from the result (or from an
+     `importTwee` `StoryScript`) the same shape MWL's own `extractCatalog` builds from
+     `_("...")`-marked strings - each key mapping to itself, ready for a translator to fill in,
+     with no wall of English trapped in source with no extraction path. Speaker ids resolving
+     to a display name (`ScriptOptions.displayName`) needed no change, since this format never
+     touches that seam. 8 new tests in `tests/dialogue-text.test.ts`.
+     Revised once more the same session, on review: putting the parser only under `two-d/stage`
+     made a text-only RPG depend on Pixi just to author dialogue, which is exactly the kind of
+     misplacement this project's own module-graph discipline exists to catch. `rpg/dialogue-
+     text.ts` now carries an independent copy of the same format targeting `EventCommand`
+     (`speaker` instead of `as`, no `StoryScript` concept), for the same reason `EventChoice`
+     is already declared separately from `two-d/ui`'s `Choice` rather than importing it: a
+     text-only RPG (`core` plus `rpg`, no renderer at all) needs no Pixi dependency to use it,
+     and a Pixi-based visual novel that never touches map events needs no `rpg` dependency
+     either. `tests/renderer-isolation.test.ts`'s `rpg` check confirms the new file stays
+     Pixi-free. 4 more tests in `tests/rpg-dialogue-text.test.ts` (12 total across both copies).
+     A follow-up audit of the rest of the module graph for the same class of mistake found the
+     dependency graph otherwise clean (every renderer-free module still only imports downward,
+     matching CLAUDE.md's documented order) - the one comparable case, `two-d/stage/twee.ts`
+     (pure string parsing, no Pixi, but `StoryScript`'s branching has no `rpg.EventCommand`
+     equivalent to duplicate into), is left as a parked idea rather than acted on here, since
+     porting it is a real design question, not a small duplication like this item's fix was.
+
+356. ~~[Low] `two-d/stage/twee.ts` imports Twine's Twee notation into a `StoryScript` (a
+     named-passage graph with `[[links]]`/choice jumps) - pure string parsing, no Pixi, but it
+     lives only under `two-d/stage`, so a text-only RPG (`core` plus `rpg`, no renderer at
+     all) cannot use it without depending on `two-d` for nothing but this parser, the same
+     placement mistake item 355 found and fixed for the terse `@id`/`-` dialogue format.
+     Unlike that fix, this is not a small duplication: `rpg.EventCommand` has no equivalent of
+     `StoryScript`'s branching (`goto`, a choice jumping to a different passage) to target, so
+     porting Twee import to `rpg` means first deciding what a branching, passage-graph dialogue
+     shape looks like in `EventCommand` terms.~~ Landed the design the item's own note guessed
+     at: `EventCommand` gained a `{ goto: string }` variant and `EventChoice` gained an optional
+     `goto`, and `EventRunner` gained `runStory(story, start)`/`EventStoryScript` - the same
+     named-passage-graph shape `StageScript.runStory`/`StoryScript` already have, resolved the
+     same way (a `goto` command or a choice's own `goto` jumps to a different passage; a
+     passage runs off the end otherwise). `EventRunner.step` now returns the passage to jump to
+     instead of `void`, threaded through a new private `runList` helper so an `if` command's
+     nested `then`/`else` list can still propagate a jump up to the enclosing passage (a `goto`
+     two levels deep inside a conditional correctly switches passages) - `run()` itself refuses
+     a stray jump with the same wording `StageScript.run` already uses, rather than silently
+     dropping it. `rpg/twee-events.ts` carries an independent copy of `two-d/stage/twee.ts`'s
+     Twee-notation importer targeting `EventStoryScript`/`EventChoice` instead of `StoryScript`/
+     `StageChoice`, for the same reason the dialogue-text parser above does: a text-only RPG
+     needs no Pixi dependency to import a branching Twee story, and a Pixi-based visual novel
+     that never touches map events needs no `rpg` dependency either. `tests/renderer-
+     isolation.test.ts`'s `rpg` check confirms both new files stay Pixi-free. 9 new tests in
+     `tests/rpg-event-story.test.ts` cover `goto`, choice-goto, a `goto` inside an `if` branch,
+     `run()` refusing a stray `goto`, `runStory` refusing a missing passage, and an imported
+     Twee story run end to end through `EventRunner.runStory`.

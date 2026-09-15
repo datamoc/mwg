@@ -8,6 +8,7 @@ export type { EventTrigger, EventCondition, EventPage, MapEvent } from './Event.
 export { EventRunner } from './EventRunner.ts';
 export type {
 	EventCommand,
+	EventStoryScript,
 	EventRunnerState,
 	EventRunnerOptions,
 	MoveStep,
@@ -27,3 +28,6 @@ export { QuestLog, questsFromRows } from './Quest.ts';
 export type { QuestStage, QuestDefinition, QuestStatus, QuestMarker, QuestStageRow } from './Quest.ts';
 export { decodeMarshal, encodeMarshal, RubySymbol, hashDefaultOf, withHashDefault } from './Marshal.ts';
 export type { RubyObject, RubyUserDefined } from './Marshal.ts';
+export { parseDialogueText, extractDialogueCatalog } from './dialogue-text.ts';
+export { importTwee } from './twee-events.ts';
+export type { EventTwineStory } from './twee-events.ts';

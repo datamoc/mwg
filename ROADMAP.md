@@ -5,7 +5,7 @@ among what is still open is reevaluated periodically, not just appended to. Entr
 mention "the capability spec" and other [README.md](README.md) sections by name; that's
 where those live.
 
-The shipped, numbered build history (everything through item 354) has moved to
+The shipped, numbered build history (everything through item 356) has moved to
 [CLOSED.md](CLOSED.md), so this file stays to what is actually open: new numbered items,
 parked decisions, and the 1.0 exit checklist. Item numbers are never reassigned, so a new
 item continues the sequence in CLOSED.md rather than restarting at 1.

@@ -1,17 +1,17 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.12.0",
-	"releaseDate": "2026-09-14",
+	"version": "0.13.0",
+	"releaseDate": "2026-09-15",
 	"source": {
-		"files": 281,
-		"lines": 45920,
+		"files": 284,
+		"lines": 46453,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 80,
-				"lines": 15485
+				"files": 81,
+				"lines": 15626
 			},
 			{
 				"name": "mwl",
@@ -39,14 +39,14 @@
 				"lines": 2456
 			},
 			{
+				"name": "rpg",
+				"files": 14,
+				"lines": 2187
+			},
+			{
 				"name": "i18n",
 				"files": 10,
 				"lines": 1879
-			},
-			{
-				"name": "rpg",
-				"files": 12,
-				"lines": 1795
 			},
 			{
 				"name": "ai",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 234,
-		"lines": 30574,
-		"cases": 2237
+		"files": 237,
+		"lines": 30875,
+		"cases": 2258
 	},
 	"tools": {
 		"files": 39,
@@ -122,18 +122,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 354,
-		"completed": 354,
+		"items": 356,
+		"completed": 356,
 		"open": 0,
 		"percent": 100
 	},
 	"api": {
-		"declarationFiles": 280
+		"declarationFiles": 283
 	},
 	"bundle": {
-		"globalRaw": 1069077,
-		"globalGzip": 317748,
-		"distRaw": 3418624
+		"globalRaw": 1074058,
+		"globalGzip": 319631,
+		"distRaw": 3452374
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

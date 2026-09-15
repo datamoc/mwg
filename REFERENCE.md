@@ -521,6 +521,15 @@ Dialogue scenes: backdrop, characters, a script runner - the visual-novel half.
   `ScriptOptions.mode: 'nvl'` for the accumulating-block presentation.
 - `importTwee`/`TwineStory` - imports Twee-notation Twine stories into `StageScript`'s
   command format.
+- `parseDialogueText`/`extractDialogueCatalog` - a terse line-based dialogue format for
+  straight (non-branching) scenes: `@id text` names the speaker, an unprefixed line
+  narrates, and `- text` alternates between the first two speakers established by `@id`
+  lines (capped at two - a third distinct speaker is refused). `extractDialogueCatalog`
+  builds an identity `i18n` catalog from the resulting commands (or a `StoryScript`),
+  the same shape MWL's own `extractCatalog` builds from `_("...")`-marked strings.
+  `rpg` has its own, independent copy of this same format targeting `EventCommand`, so a
+  text-only RPG needs no Pixi dependency to use it, and a visual novel that never touches
+  map events needs no `rpg` dependency either.
 - `StoryScreen`/`StoryScreenOptions` with `StorySequence`/`StoryBeat` - the between-scenario
   interlude `DialogueStage` is not: a full-screen backdrop, title and text advanced by a click. The
   sequencing (advance/back/`goTo`/`skip`/`restart`, and the current beat's `music` reported as a
@@ -850,7 +859,15 @@ the classic top-down RPG half.
   drive it from a 3D scene, a DOM overlay, or a test asserting on script order.
   `two-d/ui.messageBoxPresenter` is the ready-made 2D implementation. `DialogueRequest.portrait`
   is an opaque, renderer-specific value (`Texture2D` for `messageBoxPresenter`), kept untyped
-  here so `rpg` stays renderer-free.
+  here so `rpg` stays renderer-free. `EventRunner.runStory`/`EventStoryScript` follow a named-
+  passage graph the same way `StageScript.runStory`/`StoryScript` do - a `goto` command, or a
+  choice's own `goto`, jumps to a different passage; a plain `run()` refuses a stray `goto`
+  rather than silently ignoring it, the same guard `StageScript.run` applies.
+- `importTwee`/`EventTwineStory` - imports Twee-notation Twine stories into `EventStoryScript`,
+  the `rpg` counterpart to `two-d/stage.importTwee` (which targets `StageCommand`/`StoryScript`
+  instead) - declared independently for the same reason `EventChoice` already duplicates
+  `two-d/ui.Choice`, so a text-only RPG can import a branching Twee story without depending on
+  `two-d` for anything.
 - `GridMover`/`Direction4` - tweened tile-to-tile movement plus a walk-cycle hook.
   `GridMover.jumpBy` repositions instantly, with no tween or walk animation, for a move-route
   "jump" step.
@@ -874,6 +891,11 @@ the classic top-down RPG half.
   (the container format RPG Maker's own `.rxdata` saves use).
 - `hashDefaultOf`/`withHashDefault` - reads and attaches a Ruby hash's default value, which
   `Marshal` carries alongside the entries rather than as one of them.
+- `parseDialogueText`/`extractDialogueCatalog` - the terse `@id text`/`-`-alternation dialogue
+  format (`two-d/stage` has its own copy of the same format) targeting `EventCommand`, so a
+  text-only RPG (`core` plus `rpg`, no renderer at all) can author dialogue without depending
+  on `two-d` for anything. `extractDialogueCatalog` builds an identity `i18n` catalog from the
+  result, the same shape MWL's own `extractCatalog` builds from `_("...")`-marked strings.
 
 ## `simulation`
 

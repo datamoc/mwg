@@ -697,6 +697,11 @@ build instead.
 
     export declare function escapeHtml(text: string): string;
 
+### `extractDialogueCatalog` (function)
+
+    export declare function extractDialogueCatalog(commands: readonly StageCommand[] | StoryScript, options?: {
+        locale?: string;
+
 ### `FeedbackClient` (class)
 
     export declare class FeedbackClient extends HttpTransport {
@@ -1433,6 +1438,10 @@ build instead.
 ### `parseCSV` (function)
 
     export declare function parseCSV<T = Record<string, string>>(source: string, options?: CsvOptions): T[];
+
+### `parseDialogueText` (function)
+
+    export declare function parseDialogueText(source: string): StageCommand[];
 
 ### `parseImagePath` (function)
 
@@ -2822,7 +2831,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.12.0";
+    export declare const version = "0.13.0";
 
 ### `VerticalLabel` (class)
 
@@ -6539,9 +6548,19 @@ build instead.
         constructor(options: EventRunnerOptions);
         cancel(): void;
         run(commands: readonly EventCommand[]): Promise<EventRunnerState>;
+
+        runStory(story: EventStoryScript, start: string): Promise<EventRunnerState>;
+
+        private runList;
+
         private step;
         private speak;
     }
+
+### `extractDialogueCatalog` (function)
+
+    export declare function extractDialogueCatalog(commands: readonly EventCommand[], options?: {
+        locale?: string;
 
 ### `FreeMover` (class)
 
@@ -6617,6 +6636,10 @@ build instead.
 
     export declare function hashDefaultOf(hash: Map<unknown, unknown>): unknown;
 
+### `importTwee` (function)
+
+    export declare function importTwee(source: string): EventTwineStory;
+
 ### `MoveRouteRunner` (class)
 
     export declare class MoveRouteRunner {
@@ -6635,6 +6658,10 @@ build instead.
         private attempt;
         private pickDirection;
     }
+
+### `parseDialogueText` (function)
+
+    export declare function parseDialogueText(source: string): EventCommand[];
 
 ### `QuestLog` (class)
 
@@ -7364,6 +7391,11 @@ build instead.
 
     export declare function escapeHtml(text: string): string;
 
+### `extractDialogueCatalog` (function)
+
+    export declare function extractDialogueCatalog(commands: readonly StageCommand[] | StoryScript, options?: {
+        locale?: string;
+
 ### `FLOATING_TEXT_STACK_GAP` (const)
 
     export declare const FLOATING_TEXT_STACK_GAP = 4;
@@ -7904,6 +7936,10 @@ build instead.
 ### `parseColorPairs` (function)
 
     export declare function parseColorPairs(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
+
+### `parseDialogueText` (function)
+
+    export declare function parseDialogueText(source: string): StageCommand[];
 
 ### `parseImagePath` (function)
 
@@ -9862,9 +9898,18 @@ build instead.
         get isBusy(): boolean;
     }
 
+### `extractDialogueCatalog` (function)
+
+    export declare function extractDialogueCatalog(commands: readonly StageCommand[] | StoryScript, options?: {
+        locale?: string;
+
 ### `importTwee` (function)
 
     export declare function importTwee(source: string): TwineStory;
+
+### `parseDialogueText` (function)
+
+    export declare function parseDialogueText(source: string): StageCommand[];
 
 ### `StageScript` (class)
 

@@ -5,6 +5,7 @@ export { StageScript } from './script.ts';
 export type { StageCommand, StageChoice, StoryScript, ScriptOptions, ScriptState, HistoryEntry } from './script.ts';
 export { importTwee } from './twee.ts';
 export type { TwineStory } from './twee.ts';
+export { parseDialogueText, extractDialogueCatalog } from './dialogue-text.ts';
 
 export { StoryScreen, StorySequence } from './StoryScreen.ts';
 export type { StoryBeat, StoryScreenOptions } from './StoryScreen.ts';
