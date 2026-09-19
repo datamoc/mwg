@@ -1,9 +1,17 @@
-import { Container, Graphics } from 'pixi.js';
-import type { Texture } from 'pixi.js';
+import { Container, Graphics, Rectangle, Texture } from 'pixi.js';
 import { TintedSprite } from './TintedSprite.ts';
 import type { SpriteSheet } from './SpriteSheet.ts';
 import type { Camera } from './Camera.ts';
 import { hexToPixel, pixelToHex } from '../../core/Hex.ts';
+import {
+	assertAutotileLayout,
+	autotileCellParts,
+	rpgmAutotileSlot,
+	xpAutotileRef,
+	RPGM_FLOOR_AUTOTILE_TABLE,
+	RPGM_WALL_AUTOTILE_TABLE,
+} from './RpgmAutotile.ts';
+import type { AutotileCellPart, AutotileLayout, RpgmAutotileShapeTable, RpgmAutotileSlot } from './RpgmAutotile.ts';
 
 /**
  * The frame value meaning "nothing here"; a cell holding it gets no sprite at all.
@@ -126,11 +134,71 @@ export interface TileMapOptions {
 	heightStep?: number;
 }
 
-interface Layer {
+/**
+ * Which engine family an autotile sheet comes from: RPG Maker MV's A1-A4
+ * quadrant sheets, or RPG Maker XP's 96 by 128 pattern templates (and 32px
+ * single-tile strips).
+ */
+export type AutotileFormat = 'rpgm-mv' | 'rpgm-xp';
+
+/**
+ * One autotile source a layer draws from. MV sets name an A-sheet family;
+ * XP sets name one autotile image. A layer takes one set, or one per family
+ * slot (MV) or image index (XP), and each cell routes to the set claiming
+ * its id - the same split a multi-sheet map already uses for plain layers.
+ */
+export interface AutotileSet {
+	/** the raw source image: an MV A-sheet of 48px cells, or one XP autotile image */
+	sheet: SpriteSheet;
+	/** which family; MV quadrant sheets unless 'rpgm-xp' says otherwise */
+	format?: AutotileFormat;
+	/** MV only, required: which A-family (0-3) this sheet is */
+	slot?: RpgmAutotileSlot;
+	/** MV only: which shape table to sample; floor for slots 0-1, wall for 2-3 */
+	mode?: 'floor' | 'wall';
+	/** MV only: a custom shape table, overriding mode for non-standard sheets */
+	table?: RpgmAutotileShapeTable;
+	/** XP only: which autotile image this sheet is, 0-7 */
+	index?: number;
+	/** XP only: animation stripes in the image; counted from the sheet width when omitted */
+	frames?: number;
+	/** MV only: kind runs advancing together when the frame changes (water, waterfalls) */
+	animation?: ReadonlyArray<ReadonlyArray<number>>;
+	/** the layer's initial animation frame */
+	animationFrame?: number;
+}
+
+/**
+ * One autotile cell: a raw MV tile id or XP tile value. EMPTY (or any
+ * value at or below zero) leaves the cell blank.
+ */
+export type AutotileCell = number;
+
+interface TileLayer {
+	kind: 'tiles';
 	name: string;
 	data: Int32Array;
 	sprites: Array<TintedSprite | null>;
 	container: Container;
+}
+
+interface AutotileLayer {
+	kind: 'autotile';
+	name: string;
+	data: Int32Array;
+	sprites: Array<TintedSprite[] | null>;
+	container: Container;
+	sets: ResolvedAutotileSet[];
+	frame: number;
+}
+
+type Layer = TileLayer | AutotileLayer;
+
+interface ResolvedAutotileSet {
+	sheet: SpriteSheet;
+	layout: AutotileLayout;
+	cache: Map<string, { parts: AutotileCellPart[]; textures: Texture[] }>;
+	claims: (tile: number) => boolean;
 }
 
 /**
@@ -284,22 +352,10 @@ export class TileMap extends Container {
 	 * `tileFrame` packs rather than plain indices.
 	 */
 	addLayer(name: string, data?: ArrayLike<number>): this {
-		if (this.layersByName.has(name)) throw new Error(`this map already has a layer named "${name}"`);
+		const { cells, container, chunks } = this.beginLayer(name, data?.length);
 
-		const cells = this.widthInTiles * this.heightInTiles;
-		if (data && data.length !== cells) {
-			throw new Error(`layer "${name}" has ${data.length} cells, but the map has ${cells}`);
-		}
-
-		const container = new Container();
-		const chunkContainers: Container[] = [];
-		for (let i = 0; i < this.chunkColumns * this.chunkRows; i++) {
-			const chunk = new Container();
-			chunkContainers.push(chunk);
-			container.addChild(chunk);
-		}
-
-		const layer: Layer = {
+		const layer: TileLayer = {
+			kind: 'tiles',
 			name,
 			data: data ? Int32Array.from(data) : new Int32Array(cells).fill(EMPTY),
 			sprites: new Array(cells).fill(null),
@@ -308,7 +364,7 @@ export class TileMap extends Container {
 
 		this.layers.push(layer);
 		this.layersByName.set(name, layer);
-		this.chunks.push(chunkContainers);
+		this.chunks.push(chunks);
 		this.addChild(container);
 
 		//sprites are built after registration so setTile can find the layer
@@ -324,6 +380,321 @@ export class TileMap extends Container {
 		}
 
 		return this;
+	}
+
+	private beginLayer(
+		name: string,
+		length: number | undefined,
+	): { cells: number; container: Container; chunks: Container[] } {
+		if (this.layersByName.has(name)) throw new Error(`this map already has a layer named "${name}"`);
+
+		const cells = this.widthInTiles * this.heightInTiles;
+		if (length !== undefined && length !== cells) {
+			throw new Error(`layer "${name}" has ${length} cells, but the map has ${cells}`);
+		}
+
+		const container = new Container();
+		const chunks: Container[] = [];
+		for (let i = 0; i < this.chunkColumns * this.chunkRows; i++) {
+			const chunk = new Container();
+			chunks.push(chunk);
+			container.addChild(chunk);
+		}
+		return { cells, container, chunks };
+	}
+
+	/**
+	 * Adds an autotile layer on top of the existing ones: each non-blank cell
+	 * holds a raw MV tile id or XP tile value, and the map assembles that
+	 * cell's quadrant halves straight from the source sheet - no prebuilt
+	 * atlas canvas in between. Cells route to the set claiming their id, so
+	 * one layer can span every A-sheet (or every autotile image) the same way
+	 * one plain layer can span several sheets.
+	 *
+	 * @param cells one raw id per cell, row-major; EMPTY (or at/below zero)
+	 * for a blank cell. Every other value must fall in one of the sets'
+	 * ranges, or the call throws naming it.
+	 * @param set one source, or one per family slot (MV) or image index (XP).
+	 *
+	 * @example
+	 * ```ts
+	 * import { TileMap, SpriteSheet, type AutotileSet } from '@datamoc/mw_games/two-d/render';
+	 *
+	 * declare const sheet: SpriteSheet; // a raw MV A1 sheet: 48px cells, slot 0
+	 *
+	 * const map = new TileMap({ width: 4, height: 4, sheet });
+	 * const sea: AutotileSet = { sheet, slot: 0, animation: [[0, 1, 2]] };
+	 * map.addAutotileLayer('sea', new Array(16).fill(2048), sea);
+	 * map.setAutotileFrame('sea', 1);
+	 * console.log(map.getAutotileFrame('sea')); // 1
+	 * console.log(map.getTile('sea', 0, 0)); // 2048 - raw MV ids, EMPTY where blank
+	 * ```
+	 */
+	addAutotileLayer(name: string, cells: ArrayLike<number>, set: AutotileSet | readonly AutotileSet[]): this {
+		const entries = Array.isArray(set) ? set : [set];
+		if (entries.length === 0) throw new Error(`autotile layer "${name}" needs at least one set`);
+		const { cells: total, container, chunks } = this.beginLayer(name, cells.length);
+
+		const sets = entries.map((entry, position) => this.resolveAutotileSet(name, entry, position));
+		const claimed = new Set<string>();
+		for (const resolved of sets) {
+			const key =
+				resolved.layout.format === 'rpgm-mv'
+					? `slot ${resolved.layout.slot}`
+					: `autotile ${resolved.layout.index}`;
+			if (claimed.has(key)) throw new Error(`autotile layer "${name}" has two sets for ${key}`);
+			claimed.add(key);
+		}
+		let frame = 0;
+		entries.forEach((entry, position) => {
+			const initial = entry.animationFrame ?? 0;
+			if (!Number.isInteger(initial) || initial < 0) {
+				throw new Error(
+					`autotile layer "${name}" set ${position} starts at an invalid animation frame, got ${entry.animationFrame}`,
+				);
+			}
+			if (position === 0) frame = initial;
+			else if (initial !== frame) {
+				throw new Error(
+					`autotile layer "${name}" sets disagree on their initial animation frame (${frame} vs ${initial})`,
+				);
+			}
+		});
+
+		const data = Int32Array.from(cells);
+		for (let cell = 0; cell < total; cell++) {
+			if (data[cell] > 0) this.claimAutotileSets(sets, name, data[cell]);
+		}
+
+		const layer: AutotileLayer = {
+			kind: 'autotile',
+			name,
+			data,
+			sprites: new Array(total).fill(null),
+			container,
+			sets,
+			frame,
+		};
+		this.layers.push(layer);
+		this.layersByName.set(name, layer);
+		this.chunks.push(chunks);
+		this.addChild(container);
+
+		//sprites are built after registration so the claim above stays the only check
+		const isBottom = this.layers.length === 1;
+		for (let y = 0; y < this.heightInTiles; y++) {
+			for (let x = 0; x < this.widthInTiles; x++) {
+				const at = this.index(x, y);
+				const tile = data[at];
+				if (tile <= 0) continue;
+				layer.sprites[at] = this.makeAutotileSprites(
+					layer,
+					this.claimAutotileSets(sets, name, tile),
+					x,
+					y,
+					tile,
+				);
+				if (isBottom) this.syncFaces(x, y);
+			}
+		}
+
+		return this;
+	}
+
+	/**
+	 * Advances an autotile layer's animation frame: every animated cell
+	 * re-points its quadrant textures (MV kind cycles, XP frame stripes)
+	 * while cells outside any cycle stay on frame zero's art. A repeated
+	 * frame is a no-op.
+	 */
+	setAutotileFrame(layer: string | number, frame: number): void {
+		const target = this.layerAt(layer);
+		if (target.kind !== 'autotile') throw new Error(`layer "${target.name}" is not an autotile layer`);
+		if (!Number.isInteger(frame) || frame < 0) {
+			throw new Error(`an autotile animation frame must be an integer at or above zero, got ${frame}`);
+		}
+		if (target.frame === frame) return;
+		target.frame = frame;
+
+		for (let y = 0; y < this.heightInTiles; y++) {
+			for (let x = 0; x < this.widthInTiles; x++) {
+				const cell = this.index(x, y);
+				const tile = target.data[cell];
+				if (tile <= 0) continue;
+				const set = this.claimAutotileSets(target.sets, target.name, tile);
+				const pieces = this.autotilePieces(set, tile, frame);
+				const sprites = target.sprites[cell];
+				if (!sprites) continue;
+				for (let i = 0; i < sprites.length; i++) sprites[i].texture = pieces.textures[i];
+			}
+		}
+	}
+
+	/** the animation frame an autotile layer currently shows */
+	getAutotileFrame(layer: string | number): number {
+		const target = this.layerAt(layer);
+		if (target.kind !== 'autotile') throw new Error(`layer "${target.name}" is not an autotile layer`);
+		return target.frame;
+	}
+
+	private resolveAutotileSet(layerName: string, entry: AutotileSet, position: number): ResolvedAutotileSet {
+		const where = `autotile layer "${layerName}" set ${position}`;
+		if (!entry || !entry.sheet) throw new Error(`${where} needs a source sheet`);
+		const format = entry.format ?? 'rpgm-mv';
+		if (format !== 'rpgm-mv' && format !== 'rpgm-xp')
+			throw new Error(`${where} has an unknown format "${entry.format}"`);
+		if (format === 'rpgm-mv') return this.resolveRpgmSet(where, entry);
+		return this.resolveXpSet(where, entry);
+	}
+
+	private resolveRpgmSet(where: string, entry: AutotileSet): ResolvedAutotileSet {
+		if (entry.slot === undefined) throw new Error(`${where} needs a slot (0-3) for its MV sheet`);
+		if (entry.mode !== undefined && entry.mode !== 'floor' && entry.mode !== 'wall') {
+			throw new Error(`${where} has an unknown mode "${entry.mode}"`);
+		}
+		if (entry.animation !== undefined && !Array.isArray(entry.animation)) {
+			throw new Error(`${where} animation must list kind runs, got ${typeof entry.animation}`);
+		}
+		const mode = entry.mode ?? (entry.slot < 2 ? 'floor' : 'wall');
+		const layout: AutotileLayout = {
+			format: 'rpgm-mv',
+			slot: entry.slot,
+			table: entry.table ?? (mode === 'floor' ? RPGM_FLOOR_AUTOTILE_TABLE : RPGM_WALL_AUTOTILE_TABLE),
+			cycles: entry.animation ?? [],
+		};
+		assertAutotileLayout(layout);
+		return {
+			sheet: entry.sheet,
+			layout,
+			cache: new Map(),
+			claims: (tile) => rpgmAutotileSlot(tile) === entry.slot,
+		};
+	}
+
+	private resolveXpSet(where: string, entry: AutotileSet): ResolvedAutotileSet {
+		const index = entry.index ?? 0;
+		const texture = entry.sheet.texture;
+		//a 32px-tall strip holds whole animated tiles rather than a quadrant
+		//template; anything else must be the 128px template (the 192px
+		//expanded-corner variant stays game-side, unsupported here)
+		const single = texture.height === 32;
+		if (texture.height !== 32 && texture.height !== 128) {
+			throw new Error(
+				`${where} is ${texture.height}px tall - XP autotile images are 128px templates or 32px single-tile strips`,
+			);
+		}
+		const stripe = single ? 32 : 96;
+		const frames = entry.frames ?? Math.max(1, Math.floor(texture.width / stripe));
+		const layout: AutotileLayout = { format: 'rpgm-xp', index, frames, single };
+		assertAutotileLayout(layout);
+		if (frames > Math.floor(texture.width / stripe)) {
+			throw new Error(
+				`${where} asks for ${frames} frames but its sheet fits ${Math.floor(texture.width / stripe)}`,
+			);
+		}
+		return {
+			sheet: entry.sheet,
+			layout,
+			cache: new Map(),
+			claims: (tile) => {
+				const ref = xpAutotileRef(tile);
+				return ref !== null && ref.index === index;
+			},
+		};
+	}
+
+	private claimAutotileSets(sets: ResolvedAutotileSet[], layerName: string, tile: number): ResolvedAutotileSet {
+		for (const set of sets) {
+			if (set.claims(tile)) return set;
+		}
+		throw new Error(`tile ${tile} in autotile layer "${layerName}" matches none of its sets`);
+	}
+
+	private autotilePieces(
+		set: ResolvedAutotileSet,
+		tile: number,
+		frame: number,
+	): { parts: AutotileCellPart[]; textures: Texture[] } {
+		const key = `${tile}:${frame}`;
+		const cached = set.cache.get(key);
+		if (cached) return cached;
+		//tile > 0 is established by every caller, so these parts exist
+		const parts = autotileCellParts(set.layout, tile, frame)!;
+		const textures = parts.map(
+			(part) =>
+				new Texture({
+					source: set.sheet.texture.source,
+					frame: new Rectangle(part.sourceX, part.sourceY, part.sourceWidth, part.sourceHeight),
+				}),
+		);
+		const pieces = { parts, textures };
+		set.cache.set(key, pieces);
+		return pieces;
+	}
+
+	private makeAutotileSprites(
+		layer: AutotileLayer,
+		set: ResolvedAutotileSet,
+		x: number,
+		y: number,
+		tile: number,
+	): TintedSprite[] {
+		const cell = this.index(x, y);
+		const pieces = this.autotilePieces(set, tile, layer.frame);
+		const origin = this.cellOrigin(x, y);
+		const lift = this.cellHeight[cell] * this.heightStep;
+		const made = pieces.textures.map((texture, i) => {
+			const part = pieces.parts[i];
+			const sprite = new TintedSprite(texture);
+			sprite.x = origin.x + part.destX * this.tileWidth;
+			sprite.y = origin.y - lift + part.destY * this.tileHeight;
+			sprite.scale.set(
+				(part.destWidth * this.tileWidth) / part.sourceWidth,
+				(part.destHeight * this.tileHeight) / part.sourceHeight,
+			);
+			sprite.tint = this.cellTint[cell];
+			sprite.colorAdd = this.cellAdd[cell];
+			return sprite;
+		});
+		const chunk = this.chunks[this.layers.indexOf(layer)][this.chunkIndex(x, y)];
+		for (const sprite of made) chunk.addChild(sprite);
+		return made;
+	}
+
+	private setAutotileCell(layer: AutotileLayer, x: number, y: number, tile: number): void {
+		const cell = this.index(x, y);
+		layer.data[cell] = tile;
+
+		const existing = layer.sprites[cell];
+		if (tile <= 0) {
+			if (existing) for (const sprite of existing) sprite.destroy();
+			layer.sprites[cell] = null;
+			return;
+		}
+		const set = this.claimAutotileSets(layer.sets, layer.name, tile);
+		const pieces = this.autotilePieces(set, tile, layer.frame);
+		if (existing && existing.length === pieces.textures.length) {
+			for (let i = 0; i < existing.length; i++) existing[i].texture = pieces.textures[i];
+			return;
+		}
+		if (existing) for (const sprite of existing) sprite.destroy();
+		layer.sprites[cell] = this.makeAutotileSprites(layer, set, x, y, tile);
+	}
+
+	private eachCellSprite(layer: Layer, cell: number, apply: (sprite: TintedSprite) => void): void {
+		const entry = layer.sprites[cell];
+		if (!entry) return;
+		if (Array.isArray(entry)) {
+			for (const sprite of entry) apply(sprite);
+		} else {
+			apply(entry);
+		}
+	}
+
+	private firstCellSprite(layer: Layer, cell: number): TintedSprite | null {
+		const entry = layer.sprites[cell];
+		if (!entry) return null;
+		return Array.isArray(entry) ? entry[0] : entry;
 	}
 
 	private layerAt(layer: string | number): Layer {
@@ -395,7 +766,7 @@ export class TileMap extends Container {
 		return this.sheets[sheet].get(tileFrameIndex(frame));
 	}
 
-	private buildSprite(layer: Layer, x: number, y: number, frame: number): TintedSprite {
+	private buildSprite(layer: TileLayer, x: number, y: number, frame: number): TintedSprite {
 		const sprite = new TintedSprite(this.textureFor(frame));
 		const origin = this.cellOrigin(x, y);
 		sprite.x = origin.x;
@@ -417,6 +788,11 @@ export class TileMap extends Container {
 		return this.layerAt(layer).data[this.index(x, y)];
 	}
 
+	/**
+	 * Replaces one cell. On an autotile layer the value is a raw autotile id
+	 * rather than a frame index; EMPTY (or any value at or below zero)
+	 * clears the cell there too.
+	 */
 	setTile(layer: string | number, x: number, y: number, frame: number): void {
 		if (!this.inside(x, y)) return;
 
@@ -424,16 +800,20 @@ export class TileMap extends Container {
 		const cell = this.index(x, y);
 		if (target.data[cell] === frame) return;
 
-		target.data[cell] = frame;
-
-		const existing = target.sprites[cell];
-		if (frame === EMPTY) {
-			existing?.destroy();
-			target.sprites[cell] = null;
-		} else if (existing) {
-			existing.texture = this.textureFor(frame);
+		if (target.kind === 'autotile') {
+			this.setAutotileCell(target, x, y, frame);
 		} else {
-			this.buildSprite(target, x, y, frame);
+			target.data[cell] = frame;
+
+			const existing = target.sprites[cell];
+			if (frame === EMPTY) {
+				existing?.destroy();
+				target.sprites[cell] = null;
+			} else if (existing) {
+				existing.texture = this.textureFor(frame);
+			} else {
+				this.buildSprite(target, x, y, frame);
+			}
 		}
 
 		//faces follow the bottom layer: no tile there, no block to side
@@ -470,11 +850,10 @@ export class TileMap extends Container {
 		this.cellAdd[cell] = add;
 
 		for (const layer of this.layers) {
-			const sprite = layer.sprites[cell];
-			if (sprite) {
+			this.eachCellSprite(layer, cell, (sprite) => {
 				sprite.tint = tint;
 				sprite.colorAdd = add;
-			}
+			});
 		}
 		const face = this.faces[cell];
 		if (face) face.tint = tint;
@@ -513,12 +892,15 @@ export class TileMap extends Container {
 
 		const cell = this.index(x, y);
 		if (this.cellHeight[cell] === height) return;
+		//a delta keeps each sprite's own offset inside its cell, so the four
+		//quadrant halves of an autotile ride up together with plain tiles
+		const rise = (height - this.cellHeight[cell]) * this.heightStep;
 		this.cellHeight[cell] = height;
 
-		const lift = height * this.heightStep;
 		for (const layer of this.layers) {
-			const sprite = layer.sprites[cell];
-			if (sprite) sprite.y = this.cellOrigin(x, y).y - lift;
+			this.eachCellSprite(layer, cell, (sprite) => {
+				sprite.y -= rise;
+			});
 		}
 		this.syncFaces(x, y);
 	}
@@ -559,7 +941,7 @@ export class TileMap extends Container {
 			this.faces[cell] = face;
 			//behind the cell's own top, after everything drawn above it on screen
 			const chunk = this.chunks[0][this.chunkIndex(x, y)];
-			const top = this.layers[0].sprites[cell];
+			const top = this.firstCellSprite(this.layers[0], cell);
 			if (top) chunk.addChildAt(face, chunk.getChildIndex(top));
 			else chunk.addChild(face);
 		}

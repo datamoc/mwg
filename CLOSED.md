@@ -5540,3 +5540,29 @@ capability this framework was missing.
     changes were needed. `tests/sprite-group.test.ts` covers the four edges, the margin,
     the rotation-centre promise, freeze and resume, and membership; REFERENCE.md and
     CHANGELOG carry the entry, and `npm run api:check` passes.
+
+370. ~~[Low] A first-class autotile layer on `TileMap`.~~ Landed as
+    `TileMap.addAutotileLayer` over `AutotileSet`/`AutotileCell`: raw MV ids or XP
+    values route to the set claiming them (one per family slot or image index), and
+    each cell builds its quadrant halves as `TintedSprite`s cut straight from the
+    source sheet and cached per tile and frame, so the prebuilt atlas canvas is gone.
+    `setAutotileFrame`/`getAutotileFrame` advance and read the animation frame (MV
+    kind cycles, XP frame stripes, wrapping, a repeated frame a no-op);
+    `setTile`/`getTile` keep working with raw ids, and tints, adds, lifts and
+    elevation faces propagate to every quadrant. Two shape changes from the
+    proposal: the set names the family `slot`, not a single `kind` (a layer spans
+    many kinds), and there is no `waterfall` mode (A1 waterfall tiles sample through
+    the floor table like everything else in slots 0-1 and animate through the same
+    cycles). The standard MV tables ship as `RPGM_FLOOR_AUTOTILE_TABLE`/
+    `RPGM_WALL_AUTOTILE_TABLE` with the address facts and `rpgmAutotileSlot`; the XP
+    side ships `XP_AUTOTILE_PATTERNS`/`XP_NEIGHBORS_TO_PATTERN` with
+    `xpAutotileRef`/`xpAutotilePattern` (plus 32px single-tile strips, the 192px
+    expanded-corner variant staying game-side). Every table verified mechanically
+    against its source, the MV sampling proven pixel-equal to the field-tested
+    player geometry over all 24576 quadrant rects, and the XP neighbour mapping
+    reproducing baked map patterns (202 of 202 and 73 of 79 on real maps, the six
+    misses hand-tweaked cells). `tests/autotile-sets.test.ts` pins the tables,
+    classifiers, layout validation and cell resolution;
+    `tests/tilemap-autotile.test.ts` pins the layer build, routing, frames, edits,
+    colours, lifts, faces and every validation error; REFERENCE.md and CHANGELOG
+    carry the entry, and `npm run api:check` passes.

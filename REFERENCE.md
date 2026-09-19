@@ -386,7 +386,17 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
 - `rpgmAutotileFrame`/`RpgmAutotileAtlas` - renderer-neutral RPG Maker MV autotile atlas
   geometry: decode one of the four atlas slots, select its four 24px source quadrants for a
   shape, and describe their 48px output position. `RpgmAutotileAtlas` caches repeated frame
-  descriptions.
+  descriptions. `RPGM_FLOOR_AUTOTILE_TABLE`/`RPGM_WALL_AUTOTILE_TABLE` are the standard MV
+  shape tables, `RPGM_AUTOTILE_SLOT_BASES`/`RPGM_AUTOTILE_SLOT_COUNTS` the family address
+  facts, and `rpgmAutotileSlot` classifies a raw map id into its family (item 370).
+- `TileMap` `addAutotileLayer` over `AutotileSet`/`AutotileCell` - a native autotile layer:
+  raw MV ids or XP values route to the set claiming them, and the map assembles each
+  cell's quadrant halves straight from the source sheet (item 370). `setAutotileFrame`/
+  `getAutotileFrame` advance and read the animation frame; `setTile`/`getTile` keep
+  working with raw ids. `XP_AUTOTILE_PATTERNS`/`XP_NEIGHBORS_TO_PATTERN` are the XP
+  template and neighbourhood tables, `xpAutotileRef`/`xpAutotilePattern` decode and
+  compute XP cells, and `autotileCellParts`/`assertAutotileLayout` resolve and validate
+  one cell's pieces renderer-free.
 - `resolveTerrainGraphics`/`matchTerrainRule`/`squareRotate`/`hexRotate` over `TerrainRule`/
   `TerrainCondition`/`TerrainImage`/`TerrainPlacement`/`TerrainFlagsAt` - a rule-driven
   `[terrain_graphics]`-style transition pass for what `Autotile`'s fixed 47-shape table cannot

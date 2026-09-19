@@ -5,7 +5,23 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
-## [Unreleased]
+## [0.16.0] - 2026-09-19
+
+### Added
+
+- First-class autotile layers on `TileMap` (item 370): `addAutotileLayer` takes raw
+  MV tile ids or XP tile values plus one `AutotileSet` per family slot (MV) or image
+  index (XP), and the map assembles each cell's quadrant halves straight from the
+  source sheet, no prebuilt atlas canvas in between. `setAutotileFrame`/
+  `getAutotileFrame` advance and read the animation frame (MV kind cycles, XP frame
+  stripes, wrapping); `setTile`/`getTile` keep working with raw ids. The standard MV
+  floor/wall shape tables ship as `RPGM_FLOOR_AUTOTILE_TABLE`/
+  `RPGM_WALL_AUTOTILE_TABLE` with the family address facts
+  (`RPGM_AUTOTILE_SLOT_BASES`/`RPGM_AUTOTILE_SLOT_COUNTS`, `rpgmAutotileSlot`), and
+  the XP side ships `XP_AUTOTILE_PATTERNS`/`XP_NEIGHBORS_TO_PATTERN` with
+  `xpAutotileRef` (baked cells) and `xpAutotilePattern` (procedural neighbourhoods);
+  `autotileCellParts`/`assertAutotileLayout` resolve and validate one cell
+  renderer-free.
 
 ## [0.15.0] - 2026-09-19
 

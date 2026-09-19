@@ -160,9 +160,17 @@ build instead.
 
     export declare function applyTextureModifiers(texture: Texture, parsed: ParsedImagePath, probe?: ImageTextureProbe): Texture;
 
+### `assertAutotileLayout` (function)
+
+    export declare function assertAutotileLayout(layout: AutotileLayout): void;
+
 ### `Audio` (namespace)
 
     export * as Audio from './audio/index.ts'
+
+### `autotileCellParts` (function)
+
+    export declare function autotileCellParts(layout: AutotileLayout, tile: number, frame: number): AutotileCellPart[] | null;
 
 ### `autotileFrames` (function)
 
@@ -1926,6 +1934,22 @@ build instead.
 
     export * as Rpg from './rpg/index.ts'
 
+### `RPGM_AUTOTILE_SLOT_BASES` (const)
+
+    export declare const RPGM_AUTOTILE_SLOT_BASES: readonly [2048, 2816, 4352, 5888];
+
+### `RPGM_AUTOTILE_SLOT_COUNTS` (const)
+
+    export declare const RPGM_AUTOTILE_SLOT_COUNTS: readonly [768, 1536, 1536, 2304];
+
+### `RPGM_FLOOR_AUTOTILE_TABLE` (const)
+
+    export declare const RPGM_FLOOR_AUTOTILE_TABLE: RpgmAutotileShapeTable;
+
+### `RPGM_WALL_AUTOTILE_TABLE` (const)
+
+    export declare const RPGM_WALL_AUTOTILE_TABLE: RpgmAutotileShapeTable;
+
 ### `RpgmAutotileAtlas` (class)
 
     export declare class RpgmAutotileAtlas {
@@ -1939,6 +1963,10 @@ build instead.
 ### `rpgmAutotileFrame` (function)
 
     export declare function rpgmAutotileFrame(tileId: number, slot: RpgmAutotileSlot, shape: number, table: RpgmAutotileShapeTable): RpgmAutotileFrame;
+
+### `rpgmAutotileSlot` (function)
+
+    export declare function rpgmAutotileSlot(tile: number): RpgmAutotileSlot | null;
 
 ### `RunHistory` (class)
 
@@ -2837,6 +2865,22 @@ build instead.
         private index;
 
         addLayer(name: string, data?: ArrayLike<number>): this;
+        private beginLayer;
+
+        addAutotileLayer(name: string, cells: ArrayLike<number>, set: AutotileSet | readonly AutotileSet[]): this;
+
+        setAutotileFrame(layer: string | number, frame: number): void;
+
+        getAutotileFrame(layer: string | number): number;
+        private resolveAutotileSet;
+        private resolveRpgmSet;
+        private resolveXpSet;
+        private claimAutotileSets;
+        private autotilePieces;
+        private makeAutotileSprites;
+        private setAutotileCell;
+        private eachCellSprite;
+        private firstCellSprite;
         private layerAt;
         private chunkIndex;
 
@@ -2849,6 +2893,7 @@ build instead.
         private textureFor;
         private buildSprite;
         getTile(layer: string | number, x: number, y: number): number;
+
         setTile(layer: string | number, x: number, y: number, frame: number): void;
 
         setLayerData(layer: string | number, data: ArrayLike<number>): void;
@@ -3040,7 +3085,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.15.0";
+    export declare const version = "0.16.0";
 
 ### `VerticalLabel` (class)
 
@@ -3160,6 +3205,22 @@ build instead.
 ### `World` (namespace)
 
     export * as World from './world/index.ts'
+
+### `XP_AUTOTILE_PATTERNS` (const)
+
+    export declare const XP_AUTOTILE_PATTERNS: readonly XpAutotilePattern[];
+
+### `XP_NEIGHBORS_TO_PATTERN` (const)
+
+    export declare const XP_NEIGHBORS_TO_PATTERN: readonly number[];
+
+### `xpAutotilePattern` (function)
+
+    export declare function xpAutotilePattern(sameTerrain: (dx: number, dy: number) => boolean): number;
+
+### `xpAutotileRef` (function)
+
+    export declare function xpAutotileRef(tile: number): XpAutotileRef | null;
 
 ## `./3d`
 
@@ -7293,6 +7354,14 @@ build instead.
 
     export declare function applyTextureModifiers(texture: Texture, parsed: ParsedImagePath, probe?: ImageTextureProbe): Texture;
 
+### `assertAutotileLayout` (function)
+
+    export declare function assertAutotileLayout(layout: AutotileLayout): void;
+
+### `autotileCellParts` (function)
+
+    export declare function autotileCellParts(layout: AutotileLayout, tile: number, frame: number): AutotileCellPart[] | null;
+
 ### `autotileFrames` (function)
 
     export declare function autotileFrames(width: number, height: number, sameTerrain: (x: number, y: number) => boolean, frames: readonly number[]): Int32Array;
@@ -8509,6 +8578,22 @@ build instead.
 
     export declare function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number, mode?: RotateMode): RotatedPixels;
 
+### `RPGM_AUTOTILE_SLOT_BASES` (const)
+
+    export declare const RPGM_AUTOTILE_SLOT_BASES: readonly [2048, 2816, 4352, 5888];
+
+### `RPGM_AUTOTILE_SLOT_COUNTS` (const)
+
+    export declare const RPGM_AUTOTILE_SLOT_COUNTS: readonly [768, 1536, 1536, 2304];
+
+### `RPGM_FLOOR_AUTOTILE_TABLE` (const)
+
+    export declare const RPGM_FLOOR_AUTOTILE_TABLE: RpgmAutotileShapeTable;
+
+### `RPGM_WALL_AUTOTILE_TABLE` (const)
+
+    export declare const RPGM_WALL_AUTOTILE_TABLE: RpgmAutotileShapeTable;
+
 ### `RpgmAutotileAtlas` (class)
 
     export declare class RpgmAutotileAtlas {
@@ -8522,6 +8607,10 @@ build instead.
 ### `rpgmAutotileFrame` (function)
 
     export declare function rpgmAutotileFrame(tileId: number, slot: RpgmAutotileSlot, shape: number, table: RpgmAutotileShapeTable): RpgmAutotileFrame;
+
+### `rpgmAutotileSlot` (function)
+
+    export declare function rpgmAutotileSlot(tile: number): RpgmAutotileSlot | null;
 
 ### `Scene2D` (class)
 
@@ -9167,6 +9256,22 @@ build instead.
         private index;
 
         addLayer(name: string, data?: ArrayLike<number>): this;
+        private beginLayer;
+
+        addAutotileLayer(name: string, cells: ArrayLike<number>, set: AutotileSet | readonly AutotileSet[]): this;
+
+        setAutotileFrame(layer: string | number, frame: number): void;
+
+        getAutotileFrame(layer: string | number): number;
+        private resolveAutotileSet;
+        private resolveRpgmSet;
+        private resolveXpSet;
+        private claimAutotileSets;
+        private autotilePieces;
+        private makeAutotileSprites;
+        private setAutotileCell;
+        private eachCellSprite;
+        private firstCellSprite;
         private layerAt;
         private chunkIndex;
 
@@ -9179,6 +9284,7 @@ build instead.
         private textureFor;
         private buildSprite;
         getTile(layer: string | number, x: number, y: number): number;
+
         setTile(layer: string | number, x: number, y: number, frame: number): void;
 
         setLayerData(layer: string | number, data: ArrayLike<number>): void;
@@ -9433,6 +9539,22 @@ build instead.
 
     export declare function withTextureCanvas(texture: Texture, probe: RecolorProbe, paint: (context: RemapCanvasContext, width: number, height: number) => void): Texture;
 
+### `XP_AUTOTILE_PATTERNS` (const)
+
+    export declare const XP_AUTOTILE_PATTERNS: readonly XpAutotilePattern[];
+
+### `XP_NEIGHBORS_TO_PATTERN` (const)
+
+    export declare const XP_NEIGHBORS_TO_PATTERN: readonly number[];
+
+### `xpAutotilePattern` (function)
+
+    export declare function xpAutotilePattern(sameTerrain: (dx: number, dy: number) => boolean): number;
+
+### `xpAutotileRef` (function)
+
+    export declare function xpAutotileRef(tile: number): XpAutotileRef | null;
+
 ## `./two-d/pixi-interop`
 
 ### `Container` (re-export)
@@ -9561,6 +9683,14 @@ build instead.
 ### `applyTextureModifiers` (function)
 
     export declare function applyTextureModifiers(texture: Texture, parsed: ParsedImagePath, probe?: ImageTextureProbe): Texture;
+
+### `assertAutotileLayout` (function)
+
+    export declare function assertAutotileLayout(layout: AutotileLayout): void;
+
+### `autotileCellParts` (function)
+
+    export declare function autotileCellParts(layout: AutotileLayout, tile: number, frame: number): AutotileCellPart[] | null;
 
 ### `autotileFrames` (function)
 
@@ -10000,6 +10130,22 @@ build instead.
 
     export declare function rotatePixels(pixels: Uint8ClampedArray, width: number, height: number, degrees: number, mode?: RotateMode): RotatedPixels;
 
+### `RPGM_AUTOTILE_SLOT_BASES` (const)
+
+    export declare const RPGM_AUTOTILE_SLOT_BASES: readonly [2048, 2816, 4352, 5888];
+
+### `RPGM_AUTOTILE_SLOT_COUNTS` (const)
+
+    export declare const RPGM_AUTOTILE_SLOT_COUNTS: readonly [768, 1536, 1536, 2304];
+
+### `RPGM_FLOOR_AUTOTILE_TABLE` (const)
+
+    export declare const RPGM_FLOOR_AUTOTILE_TABLE: RpgmAutotileShapeTable;
+
+### `RPGM_WALL_AUTOTILE_TABLE` (const)
+
+    export declare const RPGM_WALL_AUTOTILE_TABLE: RpgmAutotileShapeTable;
+
 ### `RpgmAutotileAtlas` (class)
 
     export declare class RpgmAutotileAtlas {
@@ -10013,6 +10159,10 @@ build instead.
 ### `rpgmAutotileFrame` (function)
 
     export declare function rpgmAutotileFrame(tileId: number, slot: RpgmAutotileSlot, shape: number, table: RpgmAutotileShapeTable): RpgmAutotileFrame;
+
+### `rpgmAutotileSlot` (function)
+
+    export declare function rpgmAutotileSlot(tile: number): RpgmAutotileSlot | null;
 
 ### `ScreenEffects` (class)
 
@@ -10240,6 +10390,22 @@ build instead.
         private index;
 
         addLayer(name: string, data?: ArrayLike<number>): this;
+        private beginLayer;
+
+        addAutotileLayer(name: string, cells: ArrayLike<number>, set: AutotileSet | readonly AutotileSet[]): this;
+
+        setAutotileFrame(layer: string | number, frame: number): void;
+
+        getAutotileFrame(layer: string | number): number;
+        private resolveAutotileSet;
+        private resolveRpgmSet;
+        private resolveXpSet;
+        private claimAutotileSets;
+        private autotilePieces;
+        private makeAutotileSprites;
+        private setAutotileCell;
+        private eachCellSprite;
+        private firstCellSprite;
         private layerAt;
         private chunkIndex;
 
@@ -10252,6 +10418,7 @@ build instead.
         private textureFor;
         private buildSprite;
         getTile(layer: string | number, x: number, y: number): number;
+
         setTile(layer: string | number, x: number, y: number, frame: number): void;
 
         setLayerData(layer: string | number, data: ArrayLike<number>): void;
@@ -10320,6 +10487,22 @@ build instead.
 ### `withTextureCanvas` (function)
 
     export declare function withTextureCanvas(texture: Texture, probe: RecolorProbe, paint: (context: RemapCanvasContext, width: number, height: number) => void): Texture;
+
+### `XP_AUTOTILE_PATTERNS` (const)
+
+    export declare const XP_AUTOTILE_PATTERNS: readonly XpAutotilePattern[];
+
+### `XP_NEIGHBORS_TO_PATTERN` (const)
+
+    export declare const XP_NEIGHBORS_TO_PATTERN: readonly number[];
+
+### `xpAutotilePattern` (function)
+
+    export declare function xpAutotilePattern(sameTerrain: (dx: number, dy: number) => boolean): number;
+
+### `xpAutotileRef` (function)
+
+    export declare function xpAutotileRef(tile: number): XpAutotileRef | null;
 
 ## `./two-d/stage`
 

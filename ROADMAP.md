@@ -5,7 +5,7 @@ among what is still open is reevaluated periodically, not just appended to. Entr
 mention "the capability spec" and other [README.md](README.md) sections by name; that's
 where those live.
 
-The shipped, numbered build history (everything through item 362) has moved to
+The shipped, numbered build history (everything through item 370) has moved to
 [CLOSED.md](CLOSED.md), so this file stays to what is actually open: new numbered items,
 parked decisions, and the 1.0 exit checklist. Item numbers are never reassigned, so a new
 item continues the sequence in CLOSED.md rather than restarting at 1.
@@ -17,11 +17,10 @@ cross-table reference checks, Pixel Dungeon study proposal P21), 363 (persisted 
 settings: music/sfx levels, mute, zoom, bindings, and a game-defined custom bag), 364
 (a ready-made settings screen over those values), 365 (auto-pause and auto-mute on
 page hide), 366 (frame-time quality scaling over the static fit), 367 (audio ducking
-for dialogue and menus), 368 (a discrete meter widget: hearts, stars, pips) and 369
-(skip animation work for off-screen sprites) all
-closed, and the shipped history
-continues in [CLOSED.md](CLOSED.md). What's left before 1.0 is the exit
-checklist below.
+for dialogue and menus), 368 (a discrete meter widget: hearts, stars, pips), 369
+(skip animation work for off-screen sprites) and 370 (the first-class autotile layer)
+all closed, and the shipped history continues in [CLOSED.md](CLOSED.md). What's left
+before 1.0 is the exit checklist below.
 
 ### Parked decisions
 
@@ -72,7 +71,7 @@ standing intentions.
 ### 1.0 exit checklist
 
 The definition of done for 1.0. Each line is a check to run, not a feature to build. Every numbered
-item through 362 is closed (see [CLOSED.md](CLOSED.md)); item 347 is external project work, not
+item through 370 is closed (see [CLOSED.md](CLOSED.md)); item 347 is external project work, not
 an MWG deliverable.
 Items 339-340 were planning entries regrouped into 341-342 and 346, and items 338,
 341-345 and 346 were implemented or verified against existing APIs. The

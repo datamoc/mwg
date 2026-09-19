@@ -44,7 +44,7 @@ export type { ColorBlindnessType } from './ColorBlindness.ts';
 export { Minimap, newlyRevealed, minimapCellCenter } from './Minimap.ts';
 export type { MinimapMarker, MinimapOptions } from './Minimap.ts';
 export { TileMap, EMPTY, tileFrame, tileFrameSheet, tileFrameIndex } from './TileMap.ts';
-export type { TileMapOptions } from './TileMap.ts';
+export type { TileMapOptions, AutotileSet, AutotileCell, AutotileFormat } from './TileMap.ts';
 export { LayeredSprite } from './LayeredSprite.ts';
 export { Projectile } from './Projectile.ts';
 export type { ProjectilePoint, ProjectileOptions } from './Projectile.ts';
@@ -69,13 +69,31 @@ export type { TintTarget, StatusVisualStyle, StatusVisualsOptions } from './Stat
 
 export { blobIndex, autotileFrames, BLOB_SHAPES } from './Autotile.ts';
 export type { NeighborMask } from './Autotile.ts';
-export { RpgmAutotileAtlas, rpgmAutotileFrame } from './RpgmAutotile.ts';
+export {
+	RpgmAutotileAtlas,
+	rpgmAutotileFrame,
+	rpgmAutotileSlot,
+	xpAutotileRef,
+	xpAutotilePattern,
+	assertAutotileLayout,
+	autotileCellParts,
+	RPGM_AUTOTILE_SLOT_BASES,
+	RPGM_AUTOTILE_SLOT_COUNTS,
+	RPGM_FLOOR_AUTOTILE_TABLE,
+	RPGM_WALL_AUTOTILE_TABLE,
+	XP_AUTOTILE_PATTERNS,
+	XP_NEIGHBORS_TO_PATTERN,
+} from './RpgmAutotile.ts';
 export type {
 	RpgmAutotileFrame,
 	RpgmAutotileQuadrant,
 	RpgmAutotileShape,
 	RpgmAutotileShapeTable,
 	RpgmAutotileSlot,
+	XpAutotilePattern,
+	XpAutotileRef,
+	AutotileCellPart,
+	AutotileLayout,
 } from './RpgmAutotile.ts';
 
 export { hexRotate, matchTerrainRule, resolveTerrainGraphics, squareRotate } from './TerrainGraphics.ts';
