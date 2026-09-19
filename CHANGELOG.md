@@ -25,6 +25,11 @@ the public API may still change between minor versions.
   `effectiveMusicVolume`/`effectiveSfxVolume` read 0 while muted, and corrupt storage
   reads as defaults.
 
+- `two-d/ui.SettingsScreen`/`SettingsCustomRow` - a ready-made settings screen over
+  `core.Settings` (item 364): music/sfx sliders, mute checkbox, zoom slider, one row
+  per `custom` descriptor (boolean/number/choice), an embedded controls page that
+  writes rebinds back into `Settings` on exit, and a reset row.
+
 ## [0.14.0] - 2026-09-15
 
 ### Added

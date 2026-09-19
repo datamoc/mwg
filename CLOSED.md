@@ -5465,3 +5465,18 @@ capability this framework was missing.
     round trip, the clamps, the mute helpers, corrupt storage, namespaces, bindings
     survival, the custom bag, and reset; REFERENCE.md carries the entry and
     `npm run api:check` passes.
+
+364. ~~[Low] A ready-made settings screen to go with item 363's values.~~ Landed as
+    `two-d/ui/SettingsScreen.ts`: music and sound-effect sliders (0..100), a mute
+    checkbox, a zoom slider with configurable bounds, one row per game-defined `custom`
+    descriptor (boolean through `Checkbox`, number through `Slider`, choice through an
+    index `Spinner` with wrap), an embedded `RebindScreen` controls page, and a reset
+    row, every change writing straight through to the given `Settings` with no apply
+    step. Keyboard `handleAction` wraps at both ends like `ListView`, `cancel` on the
+    main page returns false for the caller to close, and leaving the controls page
+    writes `Input` bindings back into `Settings`, since captures bypass it. Keyboard
+    steps are per-row (`keyStep`) rather than a fraction of the range, after the first
+    version's 10% step rounded back to zero on coarse grids. `tests/settings-screen.test.ts`
+    covers row order, write-through persistence, zoom bounds, custom rows, reset, the
+    controls round trip, wrapping, and refresh; REFERENCE.md and CHANGELOG carry the
+    entry, and `npm run api:check` passes.

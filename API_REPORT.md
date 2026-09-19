@@ -2155,6 +2155,49 @@ build instead.
         reset(): void;
     }
 
+### `SettingsScreen` (class)
+
+    export declare class SettingsScreen extends Container {
+        private readonly settings;
+        private readonly width_;
+        private readonly rowHeight;
+        private readonly labels;
+        private readonly zoomMin;
+        private readonly zoomMax;
+        private readonly zoomStep;
+        private readonly customRows;
+        private readonly actionsOption;
+        private readonly onConflict;
+        private readonly highlight;
+        private readonly main;
+        private readonly rebindLayer;
+        private rows;
+        private selected;
+        private rebind;
+        private readonly themeListener;
+        constructor(options: SettingsScreenOptions);
+
+        get selectedRow(): string;
+
+        get isRebinding(): boolean;
+
+        handleAction(action: Action): boolean;
+
+        refresh(): void;
+        private select;
+        private drawHighlight;
+        private buildMain;
+        private addSliderRow;
+        private readSlider;
+        private addToggleRow;
+        private readToggle;
+        private addCustomRow;
+        private addActionRow;
+        private openRebind;
+        private closeRebind;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
 ### `Shape2D` (class)
 
     export declare class Shape2D extends Graphics {
@@ -8413,6 +8456,49 @@ build instead.
 
     export declare function setTheme(next: Partial<Theme>): void;
 
+### `SettingsScreen` (class)
+
+    export declare class SettingsScreen extends Container {
+        private readonly settings;
+        private readonly width_;
+        private readonly rowHeight;
+        private readonly labels;
+        private readonly zoomMin;
+        private readonly zoomMax;
+        private readonly zoomStep;
+        private readonly customRows;
+        private readonly actionsOption;
+        private readonly onConflict;
+        private readonly highlight;
+        private readonly main;
+        private readonly rebindLayer;
+        private rows;
+        private selected;
+        private rebind;
+        private readonly themeListener;
+        constructor(options: SettingsScreenOptions);
+
+        get selectedRow(): string;
+
+        get isRebinding(): boolean;
+
+        handleAction(action: Action): boolean;
+
+        refresh(): void;
+        private select;
+        private drawHighlight;
+        private buildMain;
+        private addSliderRow;
+        private readSlider;
+        private addToggleRow;
+        private readToggle;
+        private addCustomRow;
+        private addActionRow;
+        private openRebind;
+        private closeRebind;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
 ### `Shape2D` (class)
 
     export declare class Shape2D extends Graphics {
@@ -10828,6 +10914,49 @@ build instead.
 ### `setTheme` (function)
 
     export declare function setTheme(next: Partial<Theme>): void;
+
+### `SettingsScreen` (class)
+
+    export declare class SettingsScreen extends Container {
+        private readonly settings;
+        private readonly width_;
+        private readonly rowHeight;
+        private readonly labels;
+        private readonly zoomMin;
+        private readonly zoomMax;
+        private readonly zoomStep;
+        private readonly customRows;
+        private readonly actionsOption;
+        private readonly onConflict;
+        private readonly highlight;
+        private readonly main;
+        private readonly rebindLayer;
+        private rows;
+        private selected;
+        private rebind;
+        private readonly themeListener;
+        constructor(options: SettingsScreenOptions);
+
+        get selectedRow(): string;
+
+        get isRebinding(): boolean;
+
+        handleAction(action: Action): boolean;
+
+        refresh(): void;
+        private select;
+        private drawHighlight;
+        private buildMain;
+        private addSliderRow;
+        private readSlider;
+        private addToggleRow;
+        private readToggle;
+        private addCustomRow;
+        private addActionRow;
+        private openRebind;
+        private closeRebind;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
 
 ### `Skins` (class)
 

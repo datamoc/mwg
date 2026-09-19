@@ -93,6 +93,8 @@ export type { Skin, SkinData, SkinStates, WidgetState } from './Skins.ts';
 
 export { RebindScreen } from './RebindScreen.ts';
 export type { RebindScreenOptions } from './RebindScreen.ts';
+export { SettingsScreen } from './SettingsScreen.ts';
+export type { SettingsCustomRow, SettingsScreenOptions } from './SettingsScreen.ts';
 
 export { Button } from './Button.ts';
 export type { ButtonOptions, ButtonSkin, ButtonState } from './Button.ts';

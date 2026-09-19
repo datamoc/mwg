@@ -10,13 +10,43 @@ The shipped, numbered build history (everything through item 362) has moved to
 parked decisions, and the 1.0 exit checklist. Item numbers are never reassigned, so a new
 item continues the sequence in CLOSED.md rather than restarting at 1.
 
-No numbered item is open. Items 357 (the mobile consumer recipe), 358 and 359 (the two the
-Pixel Dungeon study raised as P19 and P20), 360 (the renderer resolution bound), 361 (grid
-indexing, from the Wesnoth port's own MWG backlog), 362 (declarative MWL cross-table
-reference checks, Pixel Dungeon study proposal P21) and 363 (persisted player settings:
-music/sfx levels, mute, zoom, bindings, and a game-defined custom bag) all closed, and the
-shipped history continues in [CLOSED.md](CLOSED.md). What's left before 1.0 is the exit
-checklist below.
+Open items: 365 to 368 below. Items 357 (the mobile consumer recipe), 358 and 359 (the
+two the Pixel Dungeon study raised as P19 and P20), 360 (the renderer resolution bound),
+361 (grid indexing, from the Wesnoth port's own MWG backlog), 362 (declarative MWL
+cross-table reference checks, Pixel Dungeon study proposal P21), 363 (persisted player
+settings: music/sfx levels, mute, zoom, bindings, and a game-defined custom bag) and 364
+(a ready-made settings screen over those values) all closed, and the shipped history
+continues in [CLOSED.md](CLOSED.md). What's left before 1.0 is the items below plus the
+exit checklist further down.
+
+365. [Low] Auto-pause (and auto-mute) on page hide. Nothing in `src/` listens to
+    `visibilitychange`, so a game moved to a background tab keeps its loop running into
+    Chrome's throttled `requestAnimationFrame` (the freeze AGENTS.md already warns is
+    unrelated to the code) and comes back to a burst of catch-up time, with the music
+    playing audibly the whole time it was hidden: neither `Music` nor `Sound` exposes a
+    public suspend of its own. `Game` should suspend the loop and silence audio on hide
+    and resume both on show, restoring the pre-hide levels without touching the player's
+    own `Settings.muted` flag, opt-out for games that drive their own loop, with the
+    resume path going through the existing `onSuspend`/`onResume` lifecycle rather than
+    inventing a parallel one.
+
+366. [Low] Frame-time-driven quality scaling on top of item 360's static fit.
+    `ResolutionFit` answers what a device can afford once; nothing watches actual frame
+    time and steps the backing-store ratio down when a scene misses its budget, so a heavy
+    scene on a weak device just stays slow. The shape should be a small `two-d` policy over
+    the existing fit (measure, step down, step back up cautiously), off by default, never a
+    canvas-2D fallback anywhere in the path.
+
+367. [Low] Audio ducking for dialogue and menus. `Music` owns crossfade fades but has no
+    notion of yielding: narration or a menu opened over exploration plays at full volume
+    under the music. A transient duck factor on `Music` (target attenuation while held,
+    released back through the existing fade path) covers it without touching `Sound`.
+
+368. [Low] A discrete meter widget: hearts, stars, pips. `Bar` covers continuous fills
+    (HP, mana, XP) and `IconGrid` is an interactive bag, so a Zelda-style heart row or a
+    star rating has no readout widget today. The shape is N icons with K filled (plus
+    half states), the icon art game-supplied since the framework never invents display
+    of its own, over the same theme machinery `Bar` already draws from.
 
 ### Parked decisions
 

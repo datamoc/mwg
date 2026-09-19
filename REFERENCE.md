@@ -512,6 +512,11 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   `WindowStack`, in one argument: `present: messageBoxPresenter(this.windows)`.
 - `VerticalLabel`/`layoutVertical` - vertical writing layout, with CJK glyph rotation.
 - `RebindScreen` - a keybind-rebinding flow over `Input`, with an optional conflict hook.
+- `SettingsScreen`/`SettingsCustomRow`/`SettingsScreenOptions` (item 364) - a ready-made
+  settings screen over `core.Settings`: music/sfx sliders, mute checkbox, zoom slider,
+  one row per `custom` descriptor (boolean/number/choice), an embedded controls page
+  that writes rebinds back into `Settings` on exit, and a reset row. `cancel` on the
+  main page returns false for the caller to close.
 - `Button`/`ButtonSkin`/`ButtonState` - idle/hover/pressed/disabled clickable region, icon
   and/or text, optional per-button nine-patch skin with per-state tints.
 - `Bar` - a filled-proportion track (health/mana/XP); flat colour or texture, optional
