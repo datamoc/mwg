@@ -1383,6 +1383,40 @@ build instead.
 
     export declare function messageBoxPresenter(windows: WindowStack, options?: MessageBoxPresenterOptions): DialoguePresenter;
 
+### `Meter` (class)
+
+    export declare class Meter extends Container {
+        private emptyLayer;
+        private filledLayer;
+        private maskShape;
+        private count_;
+        private size_;
+        private gap_;
+        private value_;
+        private explicitColor;
+        private fillColor;
+        private emptyColor_?;
+        private readonly filledTexture?;
+        private readonly emptyTexture?;
+        private readonly themeListener;
+        constructor(options: MeterOptions);
+
+        get value(): number;
+
+        get count(): number;
+
+        get color(): number;
+        setValue(value: number, count?: number): void;
+
+        setColor(color: number): void;
+        resize(size: number, gap?: number): void;
+        private get totalWidth();
+        private iconX;
+        private draw;
+        private icon;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
 ### `Minimap` (class)
 
     export declare class Minimap extends Container {
@@ -8131,6 +8165,40 @@ build instead.
 
     export declare function messageBoxPresenter(windows: WindowStack, options?: MessageBoxPresenterOptions): DialoguePresenter;
 
+### `Meter` (class)
+
+    export declare class Meter extends Container {
+        private emptyLayer;
+        private filledLayer;
+        private maskShape;
+        private count_;
+        private size_;
+        private gap_;
+        private value_;
+        private explicitColor;
+        private fillColor;
+        private emptyColor_?;
+        private readonly filledTexture?;
+        private readonly emptyTexture?;
+        private readonly themeListener;
+        constructor(options: MeterOptions);
+
+        get value(): number;
+
+        get count(): number;
+
+        get color(): number;
+        setValue(value: number, count?: number): void;
+
+        setColor(color: number): void;
+        resize(size: number, gap?: number): void;
+        private get totalWidth();
+        private iconX;
+        private draw;
+        private icon;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
 ### `Minimap` (class)
 
     export declare class Minimap extends Container {
@@ -10856,6 +10924,40 @@ build instead.
 ### `messageBoxPresenter` (function)
 
     export declare function messageBoxPresenter(windows: WindowStack, options?: MessageBoxPresenterOptions): DialoguePresenter;
+
+### `Meter` (class)
+
+    export declare class Meter extends Container {
+        private emptyLayer;
+        private filledLayer;
+        private maskShape;
+        private count_;
+        private size_;
+        private gap_;
+        private value_;
+        private explicitColor;
+        private fillColor;
+        private emptyColor_?;
+        private readonly filledTexture?;
+        private readonly emptyTexture?;
+        private readonly themeListener;
+        constructor(options: MeterOptions);
+
+        get value(): number;
+
+        get count(): number;
+
+        get color(): number;
+        setValue(value: number, count?: number): void;
+
+        setColor(color: number): void;
+        resize(size: number, gap?: number): void;
+        private get totalWidth();
+        private iconX;
+        private draw;
+        private icon;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
 
 ### `NinePatch` (class)
 

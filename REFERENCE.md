@@ -527,6 +527,10 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   and/or text, optional per-button nine-patch skin with per-state tints.
 - `Bar` - a filled-proportion track (health/mana/XP); flat colour or texture, optional
   `roundUpToPixel` so a nonzero value never rounds down to invisible.
+- `Meter`/`MeterOptions` (item 368) - a discrete meter: N icons with a value filled, the
+  heart row or star rating to `Bar`'s continuous fill. Fractions clip mid-icon through a
+  mask, so halves need no extra art; flat theme pips by default, a game-supplied
+  filled/empty texture pair (which must come together) otherwise.
 - `FloatingText`/`floatingTextAlpha`/`floatingTextRise`/`floatingTextAgeAtLeast` - a rising, fading
   damage/pickup number and its pure motion, opacity and age curves; `FloatingTextStack` with
   `floatingTextStackLift`/`floatingTextStackMoves`/`floatingTextStackLifePenalty` and

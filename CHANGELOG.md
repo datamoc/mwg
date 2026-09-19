@@ -45,6 +45,11 @@ the public API may still change between minor versions.
   attenuated level until `unduck`, through the existing fade path, with tracks started
   while ducked starting ducked and pending fades retargeted. `Sound` is untouched.
 
+- A discrete meter widget, `two-d/ui.Meter` (item 368): N icons with a value filled,
+  the heart row or star rating to `Bar`'s continuous fill. Fractions clip mid-icon
+  through a mask, so halves need no extra art; flat theme pips by default, a
+  game-supplied filled/empty texture pair otherwise.
+
 ## [0.14.0] - 2026-09-15
 
 ### Added

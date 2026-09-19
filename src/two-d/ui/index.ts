@@ -98,6 +98,8 @@ export type { SettingsCustomRow, SettingsScreenOptions } from './SettingsScreen.
 
 export { Button } from './Button.ts';
 export type { ButtonOptions, ButtonSkin, ButtonState } from './Button.ts';
+export { Meter } from './Meter.ts';
+export type { MeterOptions } from './Meter.ts';
 
 export { Bar } from './Bar.ts';
 export type { BarOptions } from './Bar.ts';

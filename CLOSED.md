@@ -5518,3 +5518,14 @@ capability this framework was missing.
     covers the glide, the instant cut, ducked starts, the mid-crossfade retarget, the
     clamps, and the trackless hold; REFERENCE.md and CHANGELOG carry the entry, and
     `npm run api:check` passes.
+
+368. ~~[Low] A discrete meter widget: hearts, stars, pips.~~ Landed as
+    `two-d/ui/Meter.ts`: N icons with a value filled, over an empty layer plus a filled
+    layer clipped by a mask (the `ScrollBox` pattern), so fractions clip mid-icon and
+    halves need no extra art. Flat theme pips by default with `Bar`'s explicit-colour
+    semantics; game art arrives as a filled/empty texture pair that must come together,
+    one without the other throwing by name. `setValue` takes a new count too, for
+    growing max hearts. `tests/meter.test.ts` covers the defaults, the fraction math
+    off the mask width, count changes, degenerate inputs, the texture-pair rule, and
+    theme survival; REFERENCE.md and CHANGELOG carry the entry, and `npm run api:check`
+    passes.
