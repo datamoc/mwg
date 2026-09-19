@@ -7,6 +7,8 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-09-19
+
 ### Added
 
 - `mwl.MwlTableReference` and `MwlValidationOptions.tableReferences` - declarative
@@ -49,6 +51,13 @@ the public API may still change between minor versions.
   the heart row or star rating to `Bar`'s continuous fill. Fractions clip mid-icon
   through a mask, so halves need no extra art; flat theme pips by default, a
   game-supplied filled/empty texture pair otherwise.
+
+- Animate only what is on screen, `two-d/render.SpriteGroup`/`isOnScreen` (item 369):
+  `update(camera, dt)` advances the members inside `camera.view` (plus `margin`) and leaves
+  the rest on their current frame. Members are `AnimatedSprite`s, `ParticleEmitter`s, or
+  anything with `x`/`y` in world units plus `update(dt)`; skipped members resume where they
+  left off, and a rotated camera tests the same over-inclusive box `TileMap.cull` uses, so
+  nothing visible ever freezes.
 
 ## [0.14.0] - 2026-09-15
 

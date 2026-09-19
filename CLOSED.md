@@ -5529,3 +5529,14 @@ capability this framework was missing.
     off the mask width, count changes, degenerate inputs, the texture-pair rule, and
     theme survival; REFERENCE.md and CHANGELOG carry the entry, and `npm run api:check`
     passes.
+
+369. ~~[Low] Skip animation work for off-screen sprites.~~ Landed as
+    `two-d/render/SpriteGroup.ts`: `update(camera, dt, margin)` advances only the members
+    inside `camera.view` (edges inclusive, a rotated view testing the same over-inclusive
+    box `TileMap.cull` uses) and leaves the rest on their frame with no state touched, so
+    they resume where they left off when they come back. `isOnScreen` is the same rule
+    extracted for custom loops. Members are structural (`x`/`y` in world units plus
+    `update`), which `AnimatedSprite` and `ParticleEmitter` already satisfy, so no sprite
+    changes were needed. `tests/sprite-group.test.ts` covers the four edges, the margin,
+    the rotation-centre promise, freeze and resume, and membership; REFERENCE.md and
+    CHANGELOG carry the entry, and `npm run api:check` passes.

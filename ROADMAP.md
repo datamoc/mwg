@@ -17,7 +17,8 @@ cross-table reference checks, Pixel Dungeon study proposal P21), 363 (persisted 
 settings: music/sfx levels, mute, zoom, bindings, and a game-defined custom bag), 364
 (a ready-made settings screen over those values), 365 (auto-pause and auto-mute on
 page hide), 366 (frame-time quality scaling over the static fit), 367 (audio ducking
-for dialogue and menus) and 368 (a discrete meter widget: hearts, stars, pips) all
+for dialogue and menus), 368 (a discrete meter widget: hearts, stars, pips) and 369
+(skip animation work for off-screen sprites) all
 closed, and the shipped history
 continues in [CLOSED.md](CLOSED.md). What's left before 1.0 is the exit
 checklist below.

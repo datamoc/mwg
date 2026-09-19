@@ -311,6 +311,11 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   reported through `AnimatedSprite.frameOffset` for the caller to add where it positions the sprite,
   because that position is the caller's (`GridMover`, a walk tween) and a sprite that overwrote it
   every frame would undo it every frame.
+- `SpriteGroup`/`isOnScreen` (item 369) - animate only what is on screen: `update(camera, dt)`
+  advances the members inside `camera.view` (plus `margin`) and leaves the rest on their current
+  frame, so a crowd of `AnimatedSprite`s (or `ParticleEmitter`s, which satisfy the same
+  `SpriteGroupMember` shape) costs no CPU off screen. Never freezes anything visible: under a
+  rotated camera the tested box is the over-inclusive one `TileMap.cull` uses.
 - `SpriteSheet` - a grid-sliced sprite sheet, or, built with no frame size, one whose frames are
   its own `rect(index, x, y, width, height)` declarations: a hand-packed icon atlas, a strip of bar
   segments, an item whose art is smaller than its cell. A rect is cached under its index like any

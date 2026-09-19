@@ -31,6 +31,8 @@ export type {
 } from './ImageModifiers.ts';
 export { AnimatedSprite, Animation } from './AnimatedSprite.ts';
 export type { AnimationFrame, AnimationFrameInput, AnimationOptions } from './AnimatedSprite.ts';
+export { SpriteGroup, isOnScreen } from './SpriteGroup.ts';
+export type { SpriteGroupMember } from './SpriteGroup.ts';
 export { SpriteSheet } from './SpriteSheet.ts';
 export { Camera, createCamera, snapZoom } from './Camera.ts';
 export type { CameraOptions } from './Camera.ts';

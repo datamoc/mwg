@@ -1065,6 +1065,10 @@ build instead.
 
     export declare function inspectGraphicsCapabilities(probe?: GraphicsProbe): GraphicsCapabilities;
 
+### `isOnScreen` (function)
+
+    export declare function isOnScreen(camera: Camera, x: number, y: number, margin?: number): boolean;
+
 ### `Label` (class)
 
     export declare class Label extends Text {
@@ -2440,6 +2444,22 @@ build instead.
 
     export declare function spriteColorMatrix(sprite: Sprite, matrix: ColorMatrixFilter['matrix']): void;
 
+### `SpriteGroup` (class)
+
+    export declare class SpriteGroup {
+        private members;
+
+        get size(): number;
+
+        add(member: SpriteGroupMember): this;
+
+        remove(member: SpriteGroupMember): boolean;
+
+        clear(): void;
+
+        update(camera: Camera, dt: number, margin?: number): void;
+    }
+
 ### `SpriteSheet` (class)
 
     export declare class SpriteSheet {
@@ -3020,7 +3040,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.14.0";
+    export declare const version = "0.15.0";
 
 ### `VerticalLabel` (class)
 
@@ -7939,6 +7959,10 @@ build instead.
 
     export declare function inspectGraphicsCapabilities(probe?: GraphicsProbe): GraphicsCapabilities;
 
+### `isOnScreen` (function)
+
+    export declare function isOnScreen(camera: Camera, x: number, y: number, margin?: number): boolean;
+
 ### `Label` (class)
 
     export declare class Label extends Text {
@@ -8794,6 +8818,22 @@ build instead.
 ### `spriteColorMatrix` (function)
 
     export declare function spriteColorMatrix(sprite: Sprite, matrix: ColorMatrixFilter['matrix']): void;
+
+### `SpriteGroup` (class)
+
+    export declare class SpriteGroup {
+        private members;
+
+        get size(): number;
+
+        add(member: SpriteGroupMember): this;
+
+        remove(member: SpriteGroupMember): boolean;
+
+        clear(): void;
+
+        update(camera: Camera, dt: number, margin?: number): void;
+    }
 
 ### `SpriteSheet` (class)
 
@@ -9732,6 +9772,10 @@ build instead.
 
     export declare function inspectGraphicsCapabilities(probe?: GraphicsProbe): GraphicsCapabilities;
 
+### `isOnScreen` (function)
+
+    export declare function isOnScreen(camera: Camera, x: number, y: number, margin?: number): boolean;
+
 ### `LayeredSprite` (class)
 
     export declare class LayeredSprite extends Container {
@@ -10054,6 +10098,22 @@ build instead.
 ### `spriteColorMatrix` (function)
 
     export declare function spriteColorMatrix(sprite: Sprite, matrix: ColorMatrixFilter['matrix']): void;
+
+### `SpriteGroup` (class)
+
+    export declare class SpriteGroup {
+        private members;
+
+        get size(): number;
+
+        add(member: SpriteGroupMember): this;
+
+        remove(member: SpriteGroupMember): boolean;
+
+        clear(): void;
+
+        update(camera: Camera, dt: number, margin?: number): void;
+    }
 
 ### `SpriteSheet` (class)
 
