@@ -38,6 +38,7 @@ export class Music {
 	private playlistFade = 1;
 	volume: number;
 	private suspended_ = false;
+	private duckLevel_ = 1;
 
 	constructor(options: MusicOptions = {}) {
 		this.volume = options.volume ?? 1;
@@ -86,7 +87,7 @@ export class Music {
 		this.current = incoming;
 
 		if (fadeDuration <= 0) {
-			incoming.volume = this.volume;
+			incoming.volume = this.volume * this.duckLevel_;
 			// a rejection here means the switch itself (or the previous.pause() right below)
 			// interrupted this play()'s own in-flight load - expected during a track switch,
 			// so swallow it the standard way rather than let it surface as unhandled.
@@ -102,7 +103,7 @@ export class Music {
 			elapsed: 0,
 			duration: fadeDuration,
 			from: 0,
-			to: this.volume,
+			to: this.volume * this.duckLevel_,
 			stopAtEnd: false,
 		});
 
@@ -150,6 +151,47 @@ export class Music {
 		if (!this.suspended_) return;
 		this.suspended_ = false;
 		if (this.current) void Promise.resolve(this.current.play()).catch(() => {});
+	}
+
+	/**
+	 * Ducks the music under dialogue or a menu: the current track glides to
+	 * `volume * level` over `fadeDuration` and stays there until `unduck`, and tracks
+	 * started while ducked start ducked. Pending fades are retargeted proportionally, so
+	 * ducking mid-crossfade still lands quiet. `Sound` is untouched. Idempotent.
+	 *
+	 * @param level 0 (silent) to 1 (full); clamped, 0.5 by default
+	 */
+	duck(level = 0.5, fadeDuration = 0.5): void {
+		const next = Number.isFinite(level) ? Math.max(0, Math.min(1, level)) : 1;
+		const previous = this.duckLevel_;
+		this.duckLevel_ = next;
+		for (const fade of this.fades) {
+			fade.to = previous > 0 ? (fade.to / previous) * next : this.volume * next;
+		}
+		if (this.current) {
+			const target = this.volume * next;
+			if (fadeDuration <= 0) this.current.volume = target;
+			else {
+				this.fades.push({
+					audio: this.current,
+					elapsed: 0,
+					duration: fadeDuration,
+					from: this.current.volume,
+					to: target,
+					stopAtEnd: false,
+				});
+			}
+		}
+	}
+
+	/** releases a `duck` back to full volume through the same fade path */
+	unduck(fadeDuration = 0.5): void {
+		this.duck(1, fadeDuration);
+	}
+
+	/** the held duck attenuation, 1 when full */
+	get duckLevel(): number {
+		return this.duckLevel_;
 	}
 
 	get isSuspended(): boolean {

@@ -41,6 +41,10 @@ the public API may still change between minor versions.
   only after a much longer streak inside budget, wired to `Game` via the
   `qualityScaling` option (off unless given) with the fitted ratio as its ceiling.
 
+- Audio ducking for dialogue and menus (item 367): `Music.duck` glides to an
+  attenuated level until `unduck`, through the existing fade path, with tracks started
+  while ducked starting ducked and pending fades retargeted. `Sound` is untouched.
+
 ## [0.14.0] - 2026-09-15
 
 ### Added

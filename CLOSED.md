@@ -5508,3 +5508,13 @@ capability this framework was missing.
     floor and ceiling, the cautious recovery, and the fallbacks; the `Game` glue rode
     along under `check` like item 365's. REFERENCE.md and CHANGELOG carry the entry, and
     `npm run api:check` passes.
+
+367. ~~[Low] Audio ducking for dialogue and menus.~~ Landed as `Music.duck`/`unduck` plus
+    a `duckLevel` getter: ducking pushes a fade of the current track to
+    `volume * level` (or cuts straight there with a zero duration), tracks started while
+    ducked start ducked, pending fades are retargeted proportionally so ducking
+    mid-crossfade still lands quiet, and levels clamp to 0..1 with a non-finite level
+    reading as full. `Sound` is untouched, per the item. `tests/audio-duck.test.ts`
+    covers the glide, the instant cut, ducked starts, the mid-crossfade retarget, the
+    clamps, and the trackless hold; REFERENCE.md and CHANGELOG carry the entry, and
+    `npm run api:check` passes.

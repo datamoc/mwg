@@ -4073,6 +4073,7 @@ build instead.
         private playlistFade;
         volume: number;
         private suspended_;
+        private duckLevel_;
         constructor(options?: MusicOptions);
 
         play(path: string, fadeDuration?: number): void;
@@ -4085,6 +4086,12 @@ build instead.
         suspend(): void;
 
         resume(): void;
+
+        duck(level?: number, fadeDuration?: number): void;
+
+        unduck(fadeDuration?: number): void;
+
+        get duckLevel(): number;
         get isSuspended(): boolean;
         update(dt: number): void;
     }

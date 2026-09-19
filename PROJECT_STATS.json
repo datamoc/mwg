@@ -5,7 +5,7 @@
 	"releaseDate": "2026-09-15",
 	"source": {
 		"files": 291,
-		"lines": 47630,
+		"lines": 47672,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -61,7 +61,7 @@
 			{
 				"name": "audio",
 				"files": 9,
-				"lines": 1055
+				"lines": 1097
 			},
 			{
 				"name": "simulation",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 246,
-		"lines": 31850,
-		"cases": 2324
+		"files": 247,
+		"lines": 31959,
+		"cases": 2330
 	},
 	"tools": {
 		"files": 39,
@@ -123,9 +123,9 @@
 	},
 	"roadmap": {
 		"items": 368,
-		"completed": 366,
-		"open": 2,
-		"percent": 99
+		"completed": 367,
+		"open": 1,
+		"percent": 100
 	},
 	"api": {
 		"declarationFiles": 290
@@ -133,7 +133,7 @@
 	"bundle": {
 		"globalRaw": 1072249,
 		"globalGzip": 318927,
-		"distRaw": 3513901
+		"distRaw": 3516188
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

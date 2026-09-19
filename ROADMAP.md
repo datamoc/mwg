@@ -10,21 +10,17 @@ The shipped, numbered build history (everything through item 362) has moved to
 parked decisions, and the 1.0 exit checklist. Item numbers are never reassigned, so a new
 item continues the sequence in CLOSED.md rather than restarting at 1.
 
-Open items: 367 to 368 below. Items 357 (the mobile consumer recipe), 358 and 359 (the
+Open items: 368 below. Items 357 (the mobile consumer recipe), 358 and 359 (the
 two the Pixel Dungeon study raised as P19 and P20), 360 (the renderer resolution bound),
 361 (grid indexing, from the Wesnoth port's own MWG backlog), 362 (declarative MWL
 cross-table reference checks, Pixel Dungeon study proposal P21), 363 (persisted player
 settings: music/sfx levels, mute, zoom, bindings, and a game-defined custom bag), 364
 (a ready-made settings screen over those values), 365 (auto-pause and auto-mute on
-page hide) and 366 (frame-time quality scaling over the static fit) all closed, and the
+page hide), 366 (frame-time quality scaling over the static fit) and 367 (audio ducking
+for dialogue and menus) all closed, and the
 shipped history
 continues in [CLOSED.md](CLOSED.md). What's left before 1.0 is the items below plus the
 exit checklist further down.
-
-367. [Low] Audio ducking for dialogue and menus. `Music` owns crossfade fades but has no
-    notion of yielding: narration or a menu opened over exploration plays at full volume
-    under the music. A transient duck factor on `Music` (target attenuation while held,
-    released back through the existing fade path) covers it without touching `Sound`.
 
 368. [Low] A discrete meter widget: hearts, stars, pips. `Bar` covers continuous fills
     (HP, mana, XP) and `IconGrid` is an interactive bag, so a Zelda-style heart row or a

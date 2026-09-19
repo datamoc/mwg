@@ -632,7 +632,8 @@ reach the compiled asset map without it.
   silences `play` until `resume`.
 - `onCaption`/`CaptionEvent` - accessibility captions fired alongside a sound cue.
 - `Music` - crossfading background music. `suspend` pauses the current and fading tracks
-  and freezes `update` until `resume` restarts the current one where it paused.
+  and freezes `update` until `resume` restarts the current one where it paused. `duck`
+  glides to an attenuated level until `unduck`, for dialogue and menus.
 - `createAudio`/`Playable` - an injectable audio backend (tests supply a fake in place of `new Audio()`).
 - `Orchestrator`/`OrchestratorState` - maps a named game state ("combat", "boss") to a
   `Music` track and crossfade, and fires one-shot cues by event name; re-entering the same
