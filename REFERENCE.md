@@ -170,6 +170,12 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   queues unlocks for a UI to announce. An achievement can name several `criteria`
   instead of one `counter`/`target` (item 273's sub-achievements, "recruit every unit
   type"), unlocking only once every criterion is met; `subProgress` reads them individually.
+- `Settings`/`GameSettings`/`SettingsOptions`/`CustomSettingValue` - persisted player
+  settings over the same storage `SaveSystem` uses (in-memory fallback under `file://`):
+  music and sound-effect levels, master mute, zoom preference, key bindings (applied to
+  `Input` on load), and a game-defined `custom` bag for the rest (`hints`, `violence`,
+  ...). `defaultSettings` names the fresh-game values, `effectiveMusicVolume`/
+  `effectiveSfxVolume` read 0 while muted, corrupt storage reads as defaults.
 - `Session` - counts launches over the same storage `SaveSystem` uses, for a native
   wrapper's own rating-prompt timing; never prompts itself.
 - `FeedbackClient`/`HttpTransportOptions` - an injectable HTTPS JSON transport for
@@ -1143,6 +1149,12 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   validates column shape and values, and `contentCatalog(game).tables` exposes typed rows.
   Supported column types match `core.parseCSV`: `string`, `number`, `boolean`, `list`, and
   `map`, with configurable list and map delimiters.
+- `MwlValidationOptions.tableReferences`/`MwlTableReference` (item 362) - declarative
+  cross-table checks, so no game hand-rolls one validator per table: a column declares
+  `references: { table, column }` or `oneOf: [...]`, and `validateCatalog` checks every cell
+  once for all tables, reporting `MWL_TABLE_REFERENCE` with the table, the row, and the
+  offending value. The declarations' contents stay game data; absent or empty cells are
+  skipped and a `list` cell checks each entry under the table's own delimiter.
 - `composeEffects` - resolves MWL effects through `actors.composeModifiers`, so declarative
   item effects and actor stats use one composition rule.
 - `evaluateCondition` - evaluates bounded content conditions with comparisons, `and`/`or`/`not`,

@@ -55,6 +55,8 @@ export type { AchievementDef } from './Achievements.ts';
 export { ReactionTable } from './Reactions.ts';
 export type { ReactionRule } from './Reactions.ts';
 export { Session } from './Session.ts';
+export { Settings, defaultSettings, effectiveMusicVolume, effectiveSfxVolume } from './Settings.ts';
+export type { GameSettings, SettingsOptions, CustomSettingValue } from './Settings.ts';
 export type { SessionOptions } from './Session.ts';
 export { FeedbackClient } from './Feedback.ts';
 export type { FeedbackOptions, FeedbackRequest, FeedbackResponse } from './Feedback.ts';

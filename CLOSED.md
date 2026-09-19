@@ -5429,3 +5429,39 @@ capability this framework was missing.
      something `core/ActionJournal.ts` already provides (a serializable append-only action log
      "for replay, undo checkpoints, synchronization and debugging"), so that row is stale
      rather than outstanding.
+
+362. ~~Declarative MWL cross-table reference checks~~ (Pixel Dungeon study proposal P21,
+     written 2026-09-17 against 0.14.0). `src/mwl/catalog.ts` now exports `MwlTableReference`
+     beside the `MwlValidationOptions` it extends: a column declares
+     `references: { table, column }` or `oneOf: [...]`, and `validateCatalog` checks every
+     cell once for all tables, reporting `MWL_TABLE_REFERENCE` with the table, the row, and
+     the offending value; `validateCatalogNodes` covers parsed-but-uncompiled trees the same
+     way. Absent or empty cells are skipped so column shape stays the schema's job, a `list`
+     cell checks each entry under the table's own delimiter, and a declaration naming a
+     missing table, column, or target is itself a diagnostic, so a typo in the declarations
+     cannot pass silently. Deliberately no CLI flag: the declarations' contents stay game
+     data and the game's own small build script remains the extension point (item 305), it
+     now declares instead of validating, so `tools/mwl.mjs` is untouched.
+     `tests/mwl-table-references.test.ts` covers the pass case, the failure message, the
+     `oneOf` form, list splitting, skipped cells, bad declarations, row locations, and the
+     nodes path; REFERENCE.md and CHANGELOG carry the entry, the type's own `@example` is
+     the minimal example (compiled by the api-examples gate), and `npm run api:check`
+     passes. P21's remaining half, the port deleting its hand validators and hand-copied
+     sets in favor of declarations, belongs to that repo, not this one.
+
+363. ~~[Low] Persisted player settings for zoom, music volume, and sound-effect volume/mute.~~
+    Landed as `core/Settings.ts`: a `Settings` store over the same storage abstraction
+    `SaveSystem` uses (`localStorage` with the in-memory fallback, so `file://` keeps
+    working), holding music and sound-effect levels, master mute, zoom preference, key
+    bindings, and a game-defined `custom` bag for the rest (`hints`, `violence`, ... - the
+    request that arrived mid-build was that fixed fields alone would not cover every game).
+    The values stay renderer-free in `core`; the wiring stays with the game, except
+    bindings, which are applied to `Input` on load and on every bindings mutation, since
+    persisted keys that a game must remember to apply would silently do nothing.
+    `effectiveMusicVolume`/`effectiveSfxVolume` read 0 while muted with the stored levels
+    kept, volumes clamp to 0..1, zoom never drops below 0.01 like `Camera` itself, and
+    corrupt storage reads as defaults rather than throwing, so a settings screen shows
+    the defaults instead of a crash. `tests/settings.test.ts` covers the persistence
+    round trip, the clamps, the mute helpers, corrupt storage, namespaces, bindings
+    survival, the custom bag, and reset; REFERENCE.md carries the entry and
+    `npm run api:check` passes.

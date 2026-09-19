@@ -7,6 +7,24 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `mwl.MwlTableReference` and `MwlValidationOptions.tableReferences` - declarative
+  cross-table reference checks (item 362, from the Pixel Dungeon study's proposal P21). A
+  table column declares `references: { table, column }` or `oneOf: [...]`, and
+  `validateCatalog` checks every cell once for all tables, reporting `MWL_TABLE_REFERENCE`
+  with the table, the row, and the offending value. The declarations' contents (which column
+  points where, which set is legal) stay game data in the consuming repository; absent or
+  empty cells are skipped and a `list` cell checks each entry under the table's own
+  delimiter.
+
+- `core.Settings`/`GameSettings`/`SettingsOptions`/`CustomSettingValue` - persisted
+  player settings (item 363): music and sound-effect levels, master mute, zoom
+  preference, key bindings applied to `Input` on load, and a game-defined `custom` bag
+  (`hints`, `violence`, ...). `defaultSettings` names the fresh-game values,
+  `effectiveMusicVolume`/`effectiveSfxVolume` read 0 while muted, and corrupt storage
+  reads as defaults.
+
 ## [0.14.0] - 2026-09-15
 
 ### Added

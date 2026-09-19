@@ -1,7 +1,43 @@
 import type { MwlCompiledGame, MwlCompiledNode } from './compiler.ts';
 import type { MwlDiagnostic, MwlLocation, MwlNode } from './grammar.ts';
 import { collectHookReferences, parseHookReference, validateHookAttributes, type MwlHookDeclaration } from './hooks.ts';
+import { parseTableColumns, type MwlTableColumn } from './schema.ts';
 import { flattenNodes } from './utils.ts';
+
+/**
+ * One declarative cross-table reference: a column of one `[table]` whose every cell must
+ * resolve, either against a column of another `[table]` or against a closed value set.
+ * The declaration names the shape; the *contents* (which column points where, which set is
+ * legal) stay game data in the consuming repository.
+ *
+ * @example
+ * ```ts
+ * import { compile, validateCatalog } from '@datamoc/mw_games/mwl';
+ *
+ * const game = compile(
+ * 	"[{ tag: 'table', id: 'items', columns: 'id:string', children: [{ tag: 'row', id: 'sword' }] }, { tag: 'table', id: 'recipes', columns: 'ingredient:string', children: [{ tag: 'row', ingredient: 'sword' }] }]",
+ * );
+ * const declarations = [{ table: 'recipes', column: 'ingredient', references: { table: 'items', column: 'id' } }];
+ * console.log(validateCatalog(game, { tableReferences: declarations })); // []
+ * ```
+ */
+export type MwlTableReference =
+	| {
+			/** id of the `[table]` holding the referencing column */
+			readonly table: string;
+			/** column whose cells must resolve */
+			readonly column: string;
+			/** the referenced table and the column its values are drawn from */
+			readonly references: { readonly table: string; readonly column: string };
+	  }
+	| {
+			/** id of the `[table]` holding the referencing column */
+			readonly table: string;
+			/** column whose cells must resolve */
+			readonly column: string;
+			/** the exact closed set the column's cells must belong to */
+			readonly oneOf: readonly string[];
+	  };
 
 export interface MwlValidationOptions {
 	/** Slots are game-defined. Supplying them enables unknown-slot diagnostics. */
@@ -16,6 +52,13 @@ export interface MwlValidationOptions {
 	readonly hookAttributes?: readonly string[];
 	/** Optional map dimensions used to reject authored coordinates outside the map. */
 	readonly mapBounds?: { readonly width: number; readonly height: number };
+	/**
+	 * Declarative cross-table references (item 362): each entry names a `[table]` column whose
+	 * cells must resolve against another table's column or a closed value set. A failure reports
+	 * the table, the row, and the offending value. Purely additive and optional: saves, replays
+	 * and every existing check are untouched when it is absent.
+	 */
+	readonly tableReferences?: readonly MwlTableReference[];
 
 	/**
 	 * What `MWL_DUPLICATE_ID`'s `tag:id` key is scoped to.
@@ -83,6 +126,7 @@ export function validateCatalog(game: MwlCompiledGame, options: MwlValidationOpt
 		validateCoordinateBounds(node, options.mapBounds, diagnostics);
 	}
 	validateAliasCycles(nodes, diagnostics);
+	validateTableReferences(nodes, options.tableReferences, diagnostics);
 	const references = collectHookReferences(game, ['hook', 'migration', ...(options.hookAttributes ?? [])]);
 	const declarations = new Map<string, MwlHookDeclaration>();
 	for (const hook of options.hooks ?? [])
@@ -156,6 +200,110 @@ function validateAliasCycles(nodes: readonly MwlCompiledNode[], diagnostics: Mwl
 		visited.add(node);
 	};
 	for (const node of nodes) if (node.attributes.aliasof !== undefined) walk(node, []);
+}
+
+/**
+ * Checks every declared cross-table reference: each cell of the source column must resolve
+ * against the target table's column or the closed set. A failure reports the table, the row
+ * and the offending value. Absent or empty cells are skipped (a missing column's shape stays
+ * the schema's `MWL_TABLE` job), and a `list` cell checks each entry the way `coerceTableValue`
+ * splits one. A declaration naming a table or column that is not there is itself a diagnostic,
+ * so a typo in the declaration cannot pass silently.
+ */
+function validateTableReferences(
+	nodes: readonly MwlCompiledNode[],
+	declarations: readonly MwlTableReference[] | undefined,
+	diagnostics: MwlDiagnostic[],
+): void {
+	if (!declarations) return;
+	const tables = new Map<string, MwlCompiledNode>();
+	for (const node of nodes) {
+		const id = node.tag === 'table' ? node.attributes.id : undefined;
+		if (id && !tables.has(id)) tables.set(id, node);
+	}
+	const columnsOf = (table: MwlCompiledNode): MwlTableColumn[] | undefined => {
+		try {
+			return parseTableColumns(table.attributes.columns ?? '');
+		} catch {
+			return undefined;
+		}
+	};
+	const rowsOf = (table: MwlCompiledNode): MwlCompiledNode[] => table.children.filter((child) => child.tag === 'row');
+	for (const declaration of declarations) {
+		const source = tables.get(declaration.table);
+		if (!source) {
+			diagnostics.push(
+				diagnostic(
+					'MWL_TABLE_REFERENCE',
+					`unknown table "${declaration.table}" in tableReferences`,
+					fallbackLocation(),
+				),
+			);
+			continue;
+		}
+		const sourceColumn = columnsOf(source)?.find((column) => column.name === declaration.column);
+		if (!sourceColumn) {
+			diagnostics.push(
+				diagnostic(
+					'MWL_TABLE_REFERENCE',
+					`unknown column "${declaration.column}" in table "${declaration.table}"`,
+					source.location,
+				),
+			);
+			continue;
+		}
+		let allowed: ReadonlySet<string> | undefined;
+		let expectation: string | undefined;
+		if ('oneOf' in declaration) {
+			allowed = new Set(declaration.oneOf);
+			expectation = 'one of the declared values';
+		} else {
+			const target = tables.get(declaration.references.table);
+			const targetColumn = target
+				? columnsOf(target)?.find((column) => column.name === declaration.references.column)
+				: undefined;
+			if (!target || !targetColumn) {
+				diagnostics.push(
+					diagnostic(
+						'MWL_TABLE_REFERENCE',
+						`unknown reference target "${declaration.references.table}.${declaration.references.column}" for table "${declaration.table}" column "${declaration.column}"`,
+						source.location,
+					),
+				);
+				continue;
+			}
+			const values = new Set<string>();
+			for (const row of rowsOf(target))
+				for (const value of cellsOf(row, targetColumn, target.attributes.list_delimiter)) values.add(value);
+			allowed = values;
+			expectation = `${declaration.references.table}.${declaration.references.column}`;
+		}
+		const delimiter = source.attributes.list_delimiter;
+		rowsOf(source).forEach((row, index) => {
+			for (const value of cellsOf(row, sourceColumn, delimiter))
+				if (!allowed.has(value))
+					diagnostics.push({
+						code: 'MWL_TABLE_REFERENCE',
+						message: `table "${declaration.table}" row ${index + 1} column "${declaration.column}": unknown value "${value}" (expected ${expectation})`,
+						location:
+							row.valueLocations?.[declaration.column] ??
+							row.attributeLocations?.[declaration.column] ??
+							row.location ??
+							fallbackLocation(),
+					});
+		});
+	}
+}
+
+/** The authored values one row contributes for a reference check: every `list` entry, else the cell. */
+function cellsOf(row: MwlCompiledNode, column: MwlTableColumn, listDelimiter: string | undefined): string[] {
+	const raw = row.attributes[column.name];
+	if (raw === undefined || raw === '') return [];
+	if (column.type !== 'list') return [raw];
+	return raw
+		.split(listDelimiter ?? ';')
+		.map((entry) => entry.trim())
+		.filter((entry) => entry.length > 0);
 }
 
 function diagnostic(code: string, message: string, location: MwlLocation | undefined): MwlDiagnostic {

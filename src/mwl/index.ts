@@ -100,7 +100,7 @@ export type { MwlExpression, MwlExpressionContext } from './expression.ts';
 export { composeEffects, effectToModifier, inventoryItem, itemDefinition } from './actors.ts';
 export type { MwlActorItem, MwlEquipment } from './actors.ts';
 export { validateCatalog, validateCatalogNodes } from './catalog.ts';
-export type { MwlValidationOptions } from './catalog.ts';
+export type { MwlTableReference, MwlValidationOptions } from './catalog.ts';
 export { decodeSave, decodeSaveEnvelope, encodeSave, validateWorld } from './persistence.ts';
 export type { MwlMigration, MwlPersistenceOptions, MwlSaveEnvelope } from './persistence.ts';
 export { contentReport, loadContent } from './report.ts';

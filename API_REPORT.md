@@ -608,6 +608,10 @@ build instead.
         private firstEnabled;
     }
 
+### `defaultSettings` (function)
+
+    export declare function defaultSettings(): GameSettings;
+
 ### `defaultTheme` (const)
 
     export declare const defaultTheme: Theme;
@@ -697,6 +701,14 @@ build instead.
 ### `Easing` (const)
 
     export declare const Easing: Record<'linear' | 'easeInQuad' | 'easeOutQuad' | 'easeInOutQuad' | 'easeInCubic' | 'easeOutCubic' | 'easeInOutCubic', Easing>;
+
+### `effectiveMusicVolume` (function)
+
+    export declare function effectiveMusicVolume(settings: Pick<GameSettings, 'musicVolume' | 'muted'>): number;
+
+### `effectiveSfxVolume` (function)
+
+    export declare function effectiveSfxVolume(settings: Pick<GameSettings, 'sfxVolume' | 'muted'>): number;
 
 ### `EMPTY` (const)
 
@@ -2110,6 +2122,38 @@ build instead.
 ### `setTheme` (function)
 
     export declare function setTheme(next: Partial<Theme>): void;
+
+### `Settings` (class)
+
+    export declare class Settings {
+        private readonly storage;
+        private readonly key;
+        private value;
+        constructor(options?: SettingsOptions);
+
+        get current(): GameSettings;
+
+        getCustom(key: string, fallback: CustomSettingValue): CustomSettingValue;
+
+        setCustom(key: string, value: CustomSettingValue): void;
+        setMusicVolume(volume: number): void;
+        setSfxVolume(volume: number): void;
+        setMuted(muted: boolean): void;
+        setZoom(zoom: number): void;
+        setBindings(bindings: Readonly<Record<Action, readonly string[]>>): void;
+        update(patch: {
+            musicVolume?: number;
+            sfxVolume?: number;
+            muted?: boolean;
+            zoom?: number;
+            bindings?: Readonly<Record<Action, readonly string[]>>;
+            custom?: Readonly<Record<string, CustomSettingValue>>;
+        }): void;
+
+        applyBindings(): void;
+
+        reset(): void;
+    }
 
 ### `Shape2D` (class)
 
@@ -4748,6 +4792,10 @@ build instead.
         private read;
     }
 
+### `defaultSettings` (function)
+
+    export declare function defaultSettings(): GameSettings;
+
 ### `deserializeReplay` (function)
 
     export declare function deserializeReplay(json: string): ReplayEvent[];
@@ -4755,6 +4803,14 @@ build instead.
 ### `Easing` (const)
 
     export declare const Easing: Record<'linear' | 'easeInQuad' | 'easeOutQuad' | 'easeInOutQuad' | 'easeInCubic' | 'easeOutCubic' | 'easeInOutCubic', Easing>;
+
+### `effectiveMusicVolume` (function)
+
+    export declare function effectiveMusicVolume(settings: Pick<GameSettings, 'musicVolume' | 'muted'>): number;
+
+### `effectiveSfxVolume` (function)
+
+    export declare function effectiveSfxVolume(settings: Pick<GameSettings, 'sfxVolume' | 'muted'>): number;
 
 ### `EntityRegistry` (class)
 
@@ -5274,6 +5330,38 @@ build instead.
 ### `setReducedMotion` (function)
 
     export declare function setReducedMotion(value: boolean | null): void;
+
+### `Settings` (class)
+
+    export declare class Settings {
+        private readonly storage;
+        private readonly key;
+        private value;
+        constructor(options?: SettingsOptions);
+
+        get current(): GameSettings;
+
+        getCustom(key: string, fallback: CustomSettingValue): CustomSettingValue;
+
+        setCustom(key: string, value: CustomSettingValue): void;
+        setMusicVolume(volume: number): void;
+        setSfxVolume(volume: number): void;
+        setMuted(muted: boolean): void;
+        setZoom(zoom: number): void;
+        setBindings(bindings: Readonly<Record<Action, readonly string[]>>): void;
+        update(patch: {
+            musicVolume?: number;
+            sfxVolume?: number;
+            muted?: boolean;
+            zoom?: number;
+            bindings?: Readonly<Record<Action, readonly string[]>>;
+            custom?: Readonly<Record<string, CustomSettingValue>>;
+        }): void;
+
+        applyBindings(): void;
+
+        reset(): void;
+    }
 
 ### `Signal` (class)
 

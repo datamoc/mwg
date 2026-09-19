@@ -5,15 +5,17 @@ among what is still open is reevaluated periodically, not just appended to. Entr
 mention "the capability spec" and other [README.md](README.md) sections by name; that's
 where those live.
 
-The shipped, numbered build history (everything through item 356) has moved to
+The shipped, numbered build history (everything through item 362) has moved to
 [CLOSED.md](CLOSED.md), so this file stays to what is actually open: new numbered items,
 parked decisions, and the 1.0 exit checklist. Item numbers are never reassigned, so a new
 item continues the sequence in CLOSED.md rather than restarting at 1.
 
 No numbered item is open. Items 357 (the mobile consumer recipe), 358 and 359 (the two the
-Pixel Dungeon study raised as P19 and P20), 360 (the renderer resolution bound) and 361 (grid
-indexing, from the Wesnoth port's own MWG backlog) all closed, and the sequence continues in
-[CLOSED.md](CLOSED.md). What's left before 1.0 is the exit
+Pixel Dungeon study raised as P19 and P20), 360 (the renderer resolution bound), 361 (grid
+indexing, from the Wesnoth port's own MWG backlog), 362 (declarative MWL cross-table
+reference checks, Pixel Dungeon study proposal P21) and 363 (persisted player settings:
+music/sfx levels, mute, zoom, bindings, and a game-defined custom bag) all closed, and the
+shipped history continues in [CLOSED.md](CLOSED.md). What's left before 1.0 is the exit
 checklist below.
 
 ### Parked decisions
@@ -65,7 +67,7 @@ standing intentions.
 ### 1.0 exit checklist
 
 The definition of done for 1.0. Each line is a check to run, not a feature to build. Every numbered
-item through 354 is closed (see [CLOSED.md](CLOSED.md)); item 347 is external project work, not
+item through 362 is closed (see [CLOSED.md](CLOSED.md)); item 347 is external project work, not
 an MWG deliverable.
 Items 339-340 were planning entries regrouped into 341-342 and 346, and items 338,
 341-345 and 346 were implemented or verified against existing APIs. The

@@ -4,8 +4,8 @@
 	"version": "0.14.0",
 	"releaseDate": "2026-09-15",
 	"source": {
-		"files": 288,
-		"lines": 46544,
+		"files": 289,
+		"lines": 46929,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -16,12 +16,12 @@
 			{
 				"name": "mwl",
 				"files": 21,
-				"lines": 6303
+				"lines": 6451
 			},
 			{
 				"name": "core",
-				"files": 46,
-				"lines": 5787
+				"files": 47,
+				"lines": 6024
 			},
 			{
 				"name": "roguelike",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 241,
-		"lines": 31138,
-		"cases": 2282
+		"files": 243,
+		"lines": 31432,
+		"cases": 2301
 	},
 	"tools": {
 		"files": 39,
@@ -122,18 +122,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 361,
-		"completed": 361,
+		"items": 363,
+		"completed": 363,
 		"open": 0,
 		"percent": 100
 	},
 	"api": {
-		"declarationFiles": 287
+		"declarationFiles": 288
 	},
 	"bundle": {
 		"globalRaw": 1072249,
 		"globalGzip": 318927,
-		"distRaw": 3464633
+		"distRaw": 3482106
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
