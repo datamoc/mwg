@@ -30,6 +30,12 @@ the public API may still change between minor versions.
   per `custom` descriptor (boolean/number/choice), an embedded controls page that
   writes rebinds back into `Settings` on exit, and a reset row.
 
+- Auto-pause and auto-mute on page hide (item 365): `Game` suspends the loop and
+  silences its `audio` rig while hidden and resumes both on show (`autoPause`, on by
+  default), via `suspend`/`resume` that park the clock at 0 and route through the top
+  scene's `onSuspend`/`onResume`. `Music`/`Sound`/`Orchestrator` gain matching
+  `suspend`/`resume`, and the player's own mute setting is never touched.
+
 ## [0.14.0] - 2026-09-15
 
 ### Added

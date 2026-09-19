@@ -829,6 +829,9 @@ build instead.
         private options;
         private started;
         private stopWatchingDpr;
+        private stopWatchingVisibility;
+        private suspended_;
+        private timeScaleBeforeSuspend;
         constructor(options?: GameOptions);
 
         get width(): number;
@@ -848,6 +851,12 @@ build instead.
         hitStop(duration: number, scale?: number): void;
 
         step(dt: number): void;
+
+        get suspended(): boolean;
+
+        suspend(): void;
+
+        resume(): void;
 
         private expose;
 
@@ -4039,6 +4048,7 @@ build instead.
         private trackQueue;
         private playlistFade;
         volume: number;
+        private suspended_;
         constructor(options?: MusicOptions);
 
         play(path: string, fadeDuration?: number): void;
@@ -4047,6 +4057,11 @@ build instead.
         private startNextTrack;
         private start;
         stop(fadeDuration?: number): void;
+
+        suspend(): void;
+
+        resume(): void;
+        get isSuspended(): boolean;
         update(dt: number): void;
     }
 
@@ -4074,6 +4089,10 @@ build instead.
         on(event: string, cue: Sound): void;
 
         trigger(event: string): void;
+
+        suspend(): void;
+
+        resume(): void;
     }
 
 ### `parseMidi` (function)
@@ -4094,11 +4113,17 @@ build instead.
         private pool;
         private next;
         private caption?;
+        private suspended_;
         volume: number;
         constructor(path: string, options?: SoundOptions);
 
         play(gain?: number, pitch?: number): void;
         stopAll(): void;
+
+        suspend(): void;
+
+        resume(): void;
+        get isSuspended(): boolean;
     }
 
 ### `SoundSource` (class)
@@ -7678,6 +7703,9 @@ build instead.
         private options;
         private started;
         private stopWatchingDpr;
+        private stopWatchingVisibility;
+        private suspended_;
+        private timeScaleBeforeSuspend;
         constructor(options?: GameOptions);
 
         get width(): number;
@@ -7697,6 +7725,12 @@ build instead.
         hitStop(duration: number, scale?: number): void;
 
         step(dt: number): void;
+
+        get suspended(): boolean;
+
+        suspend(): void;
+
+        resume(): void;
 
         private expose;
 

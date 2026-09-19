@@ -37,6 +37,7 @@ export class Music {
 	private trackQueue: string[] | null = null;
 	private playlistFade = 1;
 	volume: number;
+	private suspended_ = false;
 
 	constructor(options: MusicOptions = {}) {
 		this.volume = options.volume ?? 1;
@@ -130,7 +131,33 @@ export class Music {
 		this.fades.push({ audio, elapsed: 0, duration: fadeDuration, from: audio.volume, to: 0, stopAtEnd: true });
 	}
 
+	/**
+	 * Silences everything for a page hide: pauses the current track and every fading one,
+	 * and freezes `update` until `resume`, so a crossfade mid-flight continues where it
+	 * stopped rather than finishing inaudibly in a background tab. Idempotent.
+	 */
+	suspend(): void {
+		this.suspended_ = true;
+		this.current?.pause();
+		for (const fade of this.fades) fade.audio.pause();
+	}
+
+	/**
+	 * The counterpart to `suspend`: restarts the current track where it paused. A track
+	 * stopped (not suspended) while hidden stays stopped - resume only resumes.
+	 */
+	resume(): void {
+		if (!this.suspended_) return;
+		this.suspended_ = false;
+		if (this.current) void Promise.resolve(this.current.play()).catch(() => {});
+	}
+
+	get isSuspended(): boolean {
+		return this.suspended_;
+	}
+
 	update(dt: number): void {
+		if (this.suspended_) return;
 		//iterate a copy: a fade finishing may not touch the list, but this stays safe if one day it does
 		for (const fade of [...this.fades]) {
 			fade.elapsed += dt;

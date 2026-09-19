@@ -5,13 +5,13 @@
 	"releaseDate": "2026-09-15",
 	"source": {
 		"files": 290,
-		"lines": 47365,
+		"lines": 47488,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 83,
-				"lines": 15941
+				"lines": 16005
 			},
 			{
 				"name": "mwl",
@@ -61,7 +61,7 @@
 			{
 				"name": "audio",
 				"files": 9,
-				"lines": 996
+				"lines": 1055
 			},
 			{
 				"name": "simulation",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 244,
-		"lines": 31644,
-		"cases": 2310
+		"files": 245,
+		"lines": 31752,
+		"cases": 2315
 	},
 	"tools": {
 		"files": 39,
@@ -123,8 +123,8 @@
 	},
 	"roadmap": {
 		"items": 368,
-		"completed": 364,
-		"open": 4,
+		"completed": 365,
+		"open": 3,
 		"percent": 99
 	},
 	"api": {
@@ -133,7 +133,7 @@
 	"bundle": {
 		"globalRaw": 1072249,
 		"globalGzip": 318927,
-		"distRaw": 3499637
+		"distRaw": 3505991
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

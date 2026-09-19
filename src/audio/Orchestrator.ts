@@ -73,4 +73,16 @@ export class Orchestrator {
 	trigger(event: string): void {
 		this.cues.get(event)?.play();
 	}
+
+	/** suspends the music and every cue - the rig a `Game` silences on page hide */
+	suspend(): void {
+		this.music.suspend();
+		for (const cue of this.cues.values()) cue.suspend();
+	}
+
+	/** resumes the music and every cue after `suspend` */
+	resume(): void {
+		this.music.resume();
+		for (const cue of this.cues.values()) cue.resume();
+	}
 }

@@ -5480,3 +5480,18 @@ capability this framework was missing.
     covers row order, write-through persistence, zoom bounds, custom rows, reset, the
     controls round trip, wrapping, and refresh; REFERENCE.md and CHANGELOG carry the
     entry, and `npm run api:check` passes.
+
+365. ~~[Low] Auto-pause (and auto-mute) on page hide.~~ Landed as `suspend`/`resume`
+    pairs plus `Game` wiring: `Music.suspend` pauses the current and fading tracks and
+    freezes `update`, `Sound.suspend` cuts in-flight one-shots and silences `play`,
+    `Orchestrator` delegates to its music and every cue, and `Game` (new `autoPause`
+    option, on by default, and an `audio` rig slot an `Orchestrator` fits) suspends the
+    loop and the rig on `visibilitychange` and resumes both on show. The loop suspends
+    through the documented `timeScale` 0 pause plus the top scene's `onSuspend`/`onResume`
+    rather than a parallel mechanism, a `hitStop` in flight no longer clobbers the parked
+    clock, `resume` restores pre-hide levels without touching the player's mute setting,
+    and `destroy` unwatches. `tests/audio-suspend.test.ts` pins the audio side with the
+    usual fake-`Playable` seam; the `Game` glue itself is constructor-coupled to Pixi's
+    `Application` like the rest of that file (excluded from headless coverage for that
+    reason) and was verified by `check` rather than a test. REFERENCE.md and CHANGELOG
+    carry the entry, and `npm run api:check` passes.

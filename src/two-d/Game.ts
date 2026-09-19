@@ -107,6 +107,22 @@ export interface GameOptions {
 	 * caller to remember it.
 	 */
 	extensions?: readonly (() => void)[];
+
+	/**
+	 * Suspends the loop and silences `audio` while the page is hidden, resuming both on
+	 * show. True unless a game drives its own loop (or its own visibility handling), in
+	 * which case set false and call `suspend`/`resume` itself.
+	 */
+	autoPause?: boolean;
+
+	/** the game's own audio rig, silenced while the page is hidden - an `Orchestrator` fits */
+	audio?: AudioSuspendRig | null;
+}
+
+/** the suspend/resume pair `Game` calls on its audio rig around a page hide */
+export interface AudioSuspendRig {
+	suspend(): void;
+	resume(): void;
 }
 
 /**
@@ -146,6 +162,9 @@ export class Game {
 	private options: Required<GameOptions>;
 	private started = false;
 	private stopWatchingDpr: (() => void) | null = null;
+	private stopWatchingVisibility: (() => void) | null = null;
+	private suspended_ = false;
+	private timeScaleBeforeSuspend = 1;
 
 	constructor(options: GameOptions = {}) {
 		this.options = {
@@ -155,6 +174,8 @@ export class Game {
 			pixelArt: options.pixelArt ?? true,
 			resizeTo: options.resizeTo ?? window,
 			extensions: options.extensions ?? [],
+			autoPause: options.autoPause ?? true,
+			audio: options.audio ?? null,
 		};
 
 		if (this.options.pixelArt) {
@@ -246,6 +267,15 @@ export class Game {
 			this.fitResolutionToDevice();
 		});
 
+		if (this.options.autoPause && typeof document !== 'undefined') {
+			const onVisibility = (): void => {
+				if (document.hidden) this.suspend();
+				else this.resume();
+			};
+			document.addEventListener('visibilitychange', onVisibility);
+			this.stopWatchingVisibility = () => document.removeEventListener('visibilitychange', onVisibility);
+		}
+
 		this.expose();
 		this.switchNow(first);
 
@@ -314,6 +344,39 @@ export class Game {
 		this.app.renderer.render(this.app.stage);
 	}
 
+	/** true while suspended by `suspend` (a page hide, usually) */
+	get suspended(): boolean {
+		return this.suspended_;
+	}
+
+	/**
+	 * Freezes the simulation for a page hide: the clock (`timeScale`) parks at 0, the top
+	 * scene hears `onSuspend`, and the game's own audio rig is silenced. The renderer keeps
+	 * going and `step(dt)` still works, so consoles and screenshots are unaffected.
+	 * Idempotent; `resume` restores the parked clock and audio, and the player's own mute
+	 * setting is never touched.
+	 */
+	suspend(): void {
+		if (this.suspended_) return;
+		this.suspended_ = true;
+		this.timeScaleBeforeSuspend = this.timeScale;
+		this.timeScale = 0;
+		this.stack.current?.onSuspend();
+		this.options.audio?.suspend();
+	}
+
+	/**
+	 * The counterpart to `suspend`: restores the parked clock, fires `onResume` on the top
+	 * scene, and unsilences the audio rig. Calling it without a `suspend` does nothing.
+	 */
+	resume(): void {
+		if (!this.suspended_) return;
+		this.suspended_ = false;
+		this.timeScale = this.timeScaleBeforeSuspend;
+		this.stack.current?.onResume(undefined);
+		this.options.audio?.resume();
+	}
+
 	/**
 	 * Publishes the running game on the global object, for tools and for the console.
 	 *
@@ -371,7 +434,7 @@ export class Game {
 		}
 		this.pending.length = 0;
 
-		if (this.hitStopRemaining > 0) {
+		if (this.hitStopRemaining > 0 && !this.suspended_) {
 			//counts down in real time, not scaled time, or a hit-stop would extend itself
 			this.hitStopRemaining -= deltaSeconds;
 			this.timeScale = this.hitStopRemaining > 0 ? this.hitStopScale : 1;
@@ -432,6 +495,7 @@ export class Game {
 	destroy(): void {
 		Input.detach();
 		this.stopWatchingDpr?.();
+		this.stopWatchingVisibility?.();
 		this.stack.destroy();
 		this.onFrame.removeAll();
 		this.app.destroy(true, { children: true });

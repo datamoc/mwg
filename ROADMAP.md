@@ -10,25 +10,15 @@ The shipped, numbered build history (everything through item 362) has moved to
 parked decisions, and the 1.0 exit checklist. Item numbers are never reassigned, so a new
 item continues the sequence in CLOSED.md rather than restarting at 1.
 
-Open items: 365 to 368 below. Items 357 (the mobile consumer recipe), 358 and 359 (the
+Open items: 366 to 368 below. Items 357 (the mobile consumer recipe), 358 and 359 (the
 two the Pixel Dungeon study raised as P19 and P20), 360 (the renderer resolution bound),
 361 (grid indexing, from the Wesnoth port's own MWG backlog), 362 (declarative MWL
 cross-table reference checks, Pixel Dungeon study proposal P21), 363 (persisted player
-settings: music/sfx levels, mute, zoom, bindings, and a game-defined custom bag) and 364
-(a ready-made settings screen over those values) all closed, and the shipped history
+settings: music/sfx levels, mute, zoom, bindings, and a game-defined custom bag), 364
+(a ready-made settings screen over those values) and 365 (auto-pause and auto-mute on
+page hide) all closed, and the shipped history
 continues in [CLOSED.md](CLOSED.md). What's left before 1.0 is the items below plus the
 exit checklist further down.
-
-365. [Low] Auto-pause (and auto-mute) on page hide. Nothing in `src/` listens to
-    `visibilitychange`, so a game moved to a background tab keeps its loop running into
-    Chrome's throttled `requestAnimationFrame` (the freeze AGENTS.md already warns is
-    unrelated to the code) and comes back to a burst of catch-up time, with the music
-    playing audibly the whole time it was hidden: neither `Music` nor `Sound` exposes a
-    public suspend of its own. `Game` should suspend the loop and silence audio on hide
-    and resume both on show, restoring the pre-hide levels without touching the player's
-    own `Settings.muted` flag, opt-out for games that drive their own loop, with the
-    resume path going through the existing `onSuspend`/`onResume` lifecycle rather than
-    inventing a parallel one.
 
 366. [Low] Frame-time-driven quality scaling on top of item 360's static fit.
     `ResolutionFit` answers what a device can afford once; nothing watches actual frame

@@ -236,7 +236,11 @@ bundle should reach for.
 
 - `Game` - owns the Pixi `Application`, the frame loop, and the current scene; reachable as
   the singleton `Game.current`. `step(dt)` drives one frame by hand, which defeats Chrome's
-  background-tab throttling of `requestAnimationFrame`. It draws at the display's
+  background-tab throttling of `requestAnimationFrame`. With `autoPause` (the default) it
+  suspends the loop and silences its `audio` rig (`AudioSuspendRig`, an `Orchestrator`
+  fits) on page hide and resumes both on show, via `suspend`/`resume`: the clock parks at
+  0, the top scene hears `onSuspend`/`onResume`, and the player's mute setting is never
+  touched. It draws at the display's
   `devicePixelRatio`, reduced to the largest whole number whose backing store fits the device's
   `MAX_TEXTURE_SIZE`, with a warning naming the limit when that happens: WebGL clamps a larger
   request silently, so a device with a small limit renders softer rather than not at all.
@@ -622,13 +626,16 @@ reach the compiled asset map without it.
 - `Sound` - a pooled, round-robin one-shot sound effect player. `play(gain, pitch)` takes an
   optional pitch as `HTMLAudioElement.playbackRate` (1 unchanged); there is no matching `pan` -
   a plain `<audio>` element has no pan of its own, the same reason `Positional.audioPan` only
-  reports a number rather than owning a panner node.
+  reports a number rather than owning a panner node. `suspend` cuts in-flight sounds and
+  silences `play` until `resume`.
 - `onCaption`/`CaptionEvent` - accessibility captions fired alongside a sound cue.
-- `Music` - crossfading background music.
+- `Music` - crossfading background music. `suspend` pauses the current and fading tracks
+  and freezes `update` until `resume` restarts the current one where it paused.
 - `createAudio`/`Playable` - an injectable audio backend (tests supply a fake in place of `new Audio()`).
 - `Orchestrator`/`OrchestratorState` - maps a named game state ("combat", "boss") to a
   `Music` track and crossfade, and fires one-shot cues by event name; re-entering the same
-  state never restarts its track.
+  state never restarts its track. `suspend`/`resume` silence and restore the music and
+  every cue.
 - `AudioListener`/`SoundSource`/`AudioFalloff` - positional audio: a listener the game moves,
   a `Sound` placed at a point, and `audioGain`/`audioPan` turning distance and heading into a
   volume and a stereo position. `SoundSource.playFor` applies the distance gain through

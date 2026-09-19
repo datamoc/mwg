@@ -31,6 +31,7 @@ export class Sound {
 	private pool: Playable[];
 	private next = 0;
 	private caption?: string;
+	private suspended_ = false;
 	volume: number;
 
 	constructor(path: string, options: SoundOptions = {}) {
@@ -54,6 +55,7 @@ export class Sound {
 	 * than own a panner node a game does not necessarily want - the same reasoning applies here.
 	 */
 	play(gain = 1, pitch = 1): void {
+		if (this.suspended_) return;
 		const audio = this.pool[this.next];
 		this.next = (this.next + 1) % this.pool.length;
 
@@ -73,5 +75,23 @@ export class Sound {
 			audio.pause();
 			audio.currentTime = 0;
 		}
+	}
+
+	/**
+	 * Cuts in-flight one-shots and silences later `play` calls until `resume` - the page-hide
+	 * half of `Music.suspend`. One-shots have nothing to restart, so resume only re-enables.
+	 */
+	suspend(): void {
+		this.suspended_ = true;
+		this.stopAll();
+	}
+
+	/** re-enables `play` after `suspend` */
+	resume(): void {
+		this.suspended_ = false;
+	}
+
+	get isSuspended(): boolean {
+		return this.suspended_;
 	}
 }
