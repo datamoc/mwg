@@ -5,6 +5,7 @@ import { SceneStack } from '../core/SceneStack.ts';
 import { Signal } from '../core/Signal.ts';
 import { Logger } from '../core/Log.ts';
 import { fitResolution } from './ResolutionFit.ts';
+import { QualityScaler, type QualityScalerOptions } from './QualityScaler.ts';
 import * as Input from '../core/Input.ts';
 
 const PIXEL_ART_CLASS = 'mwg-pixel-art';
@@ -117,6 +118,14 @@ export interface GameOptions {
 
 	/** the game's own audio rig, silenced while the page is hidden - an `Orchestrator` fits */
 	audio?: AudioSuspendRig | null;
+
+	/**
+	 * Frame-time quality scaling over the static device fit, off unless given: the backing
+	 * store steps down after sustained over-budget frames and recovers only after a much
+	 * longer streak inside budget. The ceiling stays the `fitResolution` answer, so this
+	 * never asks for more than the device can make.
+	 */
+	qualityScaling?: Omit<QualityScalerOptions, 'ceiling'> | null;
 }
 
 /** the suspend/resume pair `Game` calls on its audio rig around a page hide */
@@ -165,6 +174,7 @@ export class Game {
 	private stopWatchingVisibility: (() => void) | null = null;
 	private suspended_ = false;
 	private timeScaleBeforeSuspend = 1;
+	private scaler: QualityScaler | null = null;
 
 	constructor(options: GameOptions = {}) {
 		this.options = {
@@ -176,6 +186,7 @@ export class Game {
 			extensions: options.extensions ?? [],
 			autoPause: options.autoPause ?? true,
 			audio: options.audio ?? null,
+			qualityScaling: options.qualityScaling ?? null,
 		};
 
 		if (this.options.pixelArt) {
@@ -415,13 +426,17 @@ export class Game {
 		const limit = gl ? (gl.getParameter(gl.MAX_TEXTURE_SIZE) as number) : Number.POSITIVE_INFINITY;
 		const wanted = window.devicePixelRatio || 1;
 		const fitted = fitResolution(this.width, this.height, wanted, limit);
-		if (fitted === this.app.renderer.resolution) return;
+		if (!this.scaler && this.options.qualityScaling) {
+			this.scaler = new QualityScaler({ ...this.options.qualityScaling, ceiling: fitted });
+		}
+		const target = this.scaler ? this.scaler.setCeiling(fitted) : fitted;
+		if (target === this.app.renderer.resolution) return;
 
 		log.warn(
 			`this device cannot render a ${this.width}x${this.height} canvas at ${wanted}x ` +
 				`(its limit is ${limit}); using ${fitted}x instead, which is softer than the display`,
 		);
-		this.app.renderer.resize(this.width, this.height, fitted);
+		this.app.renderer.resize(this.width, this.height, target);
 	}
 
 	private frame(deltaSeconds: number): void {
@@ -441,6 +456,13 @@ export class Game {
 		}
 
 		this.elapsed = Math.min(deltaSeconds, this.options.maxDelta) * this.timeScale;
+		//a parked clock reads 0, which is always inside budget - observing it would ratchet
+		//the ratio back up while hidden or hit-stopped, so only real frames count
+		const scaler = this.suspended_ || this.elapsed <= 0 ? null : this.scaler;
+		if (scaler) {
+			const ratio = scaler.observe(this.elapsed);
+			if (ratio !== this.app.renderer.resolution) this.app.renderer.resize(this.width, this.height, ratio);
+		}
 		this.timeTotal += this.elapsed;
 
 		//no native "gamepad button pressed" event exists to attach a listener to, so this

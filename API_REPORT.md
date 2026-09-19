@@ -832,6 +832,7 @@ build instead.
         private stopWatchingVisibility;
         private suspended_;
         private timeScaleBeforeSuspend;
+        private scaler;
         constructor(options?: GameOptions);
 
         get width(): number;
@@ -1676,6 +1677,29 @@ build instead.
         get frameOffset(): ProjectilePoint;
 
         update(dt: number): boolean;
+    }
+
+### `QualityScaler` (class)
+
+    export declare class QualityScaler {
+        private ceiling;
+        private readonly floor;
+        private readonly budget;
+        private readonly downAfter;
+        private readonly upAfter;
+        private readonly step;
+        private ratio_;
+        private over;
+        private under;
+        constructor(options: QualityScalerOptions);
+
+        get ratio(): number;
+
+        setCeiling(ceiling: number): number;
+
+        observe(frameSeconds: number): number;
+
+        reset(): void;
     }
 
 ### `Random` (namespace)
@@ -7706,6 +7730,7 @@ build instead.
         private stopWatchingVisibility;
         private suspended_;
         private timeScaleBeforeSuspend;
+        private scaler;
         constructor(options?: GameOptions);
 
         get width(): number;
@@ -8269,6 +8294,29 @@ build instead.
         get frameOffset(): ProjectilePoint;
 
         update(dt: number): boolean;
+    }
+
+### `QualityScaler` (class)
+
+    export declare class QualityScaler {
+        private ceiling;
+        private readonly floor;
+        private readonly budget;
+        private readonly downAfter;
+        private readonly upAfter;
+        private readonly step;
+        private ratio_;
+        private over;
+        private under;
+        constructor(options: QualityScalerOptions);
+
+        get ratio(): number;
+
+        setCeiling(ceiling: number): number;
+
+        observe(frameSeconds: number): number;
+
+        reset(): void;
     }
 
 ### `RebindScreen` (class)

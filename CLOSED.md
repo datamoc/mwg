@@ -5495,3 +5495,16 @@ capability this framework was missing.
     `Application` like the rest of that file (excluded from headless coverage for that
     reason) and was verified by `check` rather than a test. REFERENCE.md and CHANGELOG
     carry the entry, and `npm run api:check` passes.
+
+366. ~~[Low] Frame-time-driven quality scaling on top of item 360's static fit.~~ Landed
+    as `two-d/QualityScaler.ts` plus `Game` wiring: a renderer-free policy that steps the
+    backing-store ratio down one step after a streak of over-budget frames and back up
+    only after a much longer streak inside budget (a reduced ratio proves nothing about
+    the next one up), floored, never above the device-fitted ceiling, with non-finite
+    and non-positive frames ignored so a parked clock can never drive it. `Game` takes a
+    `qualityScaling` option (off unless given), creates the scaler at the fitted ceiling
+    on first fit, re-ceilings on every re-fit, and observes real frames only (never
+    suspended or zero). `tests/quality-scaler.test.ts` pins the streak boundaries, the
+    floor and ceiling, the cautious recovery, and the fallbacks; the `Game` glue rode
+    along under `check` like item 365's. REFERENCE.md and CHANGELOG carry the entry, and
+    `npm run api:check` passes.

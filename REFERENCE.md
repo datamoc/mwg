@@ -240,7 +240,9 @@ bundle should reach for.
   suspends the loop and silences its `audio` rig (`AudioSuspendRig`, an `Orchestrator`
   fits) on page hide and resumes both on show, via `suspend`/`resume`: the clock parks at
   0, the top scene hears `onSuspend`/`onResume`, and the player's mute setting is never
-  touched. It draws at the display's
+  touched. `qualityScaling` steps the backing-store ratio down after sustained
+  over-budget frames (and back up only after a much longer streak inside budget) via a
+  `QualityScaler` over the static fit, off unless given. It draws at the display's
   `devicePixelRatio`, reduced to the largest whole number whose backing store fits the device's
   `MAX_TEXTURE_SIZE`, with a warning naming the limit when that happens: WebGL clamps a larger
   request silently, so a device with a small limit renders softer rather than not at all.

@@ -36,6 +36,11 @@ the public API may still change between minor versions.
   scene's `onSuspend`/`onResume`. `Music`/`Sound`/`Orchestrator` gain matching
   `suspend`/`resume`, and the player's own mute setting is never touched.
 
+- Frame-time quality scaling over the static device fit (item 366): a `QualityScaler`
+  steps the backing-store ratio down after sustained over-budget frames and back up
+  only after a much longer streak inside budget, wired to `Game` via the
+  `qualityScaling` option (off unless given) with the fitted ratio as its ceiling.
+
 ## [0.14.0] - 2026-09-15
 
 ### Added

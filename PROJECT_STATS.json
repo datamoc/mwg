@@ -4,14 +4,14 @@
 	"version": "0.14.0",
 	"releaseDate": "2026-09-15",
 	"source": {
-		"files": 290,
-		"lines": 47488,
+		"files": 291,
+		"lines": 47630,
 		"modules": 15,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 83,
-				"lines": 16005
+				"files": 84,
+				"lines": 16147
 			},
 			{
 				"name": "mwl",
@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 245,
-		"lines": 31752,
-		"cases": 2315
+		"files": 246,
+		"lines": 31850,
+		"cases": 2324
 	},
 	"tools": {
 		"files": 39,
@@ -123,17 +123,17 @@
 	},
 	"roadmap": {
 		"items": 368,
-		"completed": 365,
-		"open": 3,
+		"completed": 366,
+		"open": 2,
 		"percent": 99
 	},
 	"api": {
-		"declarationFiles": 289
+		"declarationFiles": 290
 	},
 	"bundle": {
 		"globalRaw": 1072249,
 		"globalGzip": 318927,
-		"distRaw": 3505991
+		"distRaw": 3513901
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

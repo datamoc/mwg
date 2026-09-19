@@ -12,7 +12,9 @@
  */
 
 export { Game } from './Game.ts';
-export type { GameOptions } from './Game.ts';
+export type { GameOptions, AudioSuspendRig } from './Game.ts';
+export { QualityScaler } from './QualityScaler.ts';
+export type { QualityScalerOptions } from './QualityScaler.ts';
 
 export { Scene2D } from './Scene2D.ts';
 export type { Scene2DClass } from './Scene2D.ts';
