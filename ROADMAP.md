@@ -10,8 +10,8 @@ The shipped, numbered build history (everything through item 371) has moved to
 parked decisions, and the 1.0 exit checklist. Item numbers are never reassigned, so a new
 item continues the sequence in CLOSED.md rather than restarting at 1.
 
-Items 372-380 are open: the security review of 2026-09-25 (372-379) and the consumer-side
-SBOM it led to (380). Before them, no numbered item was open: items 357 (the mobile consumer
+Items 372-389 are open: the security review of 2026-09-25 (372-379), the consumer-side
+SBOM it led to (380), and the repository-only tools worth shipping to a game (381-389). Before them, no numbered item was open: items 357 (the mobile consumer
 recipe), 358 and 359 (the two the Pixel Dungeon study raised as P19 and P20), 360 (the renderer resolution bound),
 361 (grid indexing, from the Wesnoth port's own MWG backlog), 362 (declarative MWL
 cross-table reference checks, Pixel Dungeon study proposal P21), 363 (persisted player
@@ -92,6 +92,68 @@ found.
     list what was actually bundled. `emit-page` can write `<page>.cdx.json` from vite's module
     graph (the packages whose modules reached the bundle, with their versions and licences)
     plus the compiled assets as `data` components with their hashes.
+
+Repository-only tools a game would use, reviewed 2026-09-25. The package already ships
+`compile-resources`, `classic-html`, `single-file`, `compress-dist`, `webp-convert`,
+`extract-html` and `mwl` under `tools/`. The pieces below were built for this repository's
+own examples and CI, and solve problems every game built on the framework has too. The rule
+for each: ship it only once it takes the consumer's project root as an argument, imports
+from `dist/` rather than `src/*.ts`, and keeps any heavy dependency (Playwright, `ws`) an
+optional peer, so shipping a tool never adds weight to a game that does not use it.
+Deliberately not proposed: `api-report`, `project-stats`, `ci-status`, `roadmap-progress`,
+the webpage and diagram builders, `package-smoke` and `npm-audit` (a workaround for this
+repository's own npm policy), which describe this project rather than a game.
+
+381. [High] Ship the build step itself: `tools/emit-page.mjs` and the shared vite config.
+    Every example is finished by `emit-page` (classic entry tag, compiled assets, optional
+    single file, precompression), and the getting-started page's step 10 tells a user that
+    this script exists "in the framework's own repository" and to do the edit by hand. A game
+    also has to rediscover `examples/vite.shared.ts`: IIFE output, `base: './'`,
+    `assetsInlineLimit: 0`, the asset folder served at the root. Proposal:
+    `@datamoc/mw_games/tools/emit-page` (`emitPage(dir, options)` plus the CLI) and a
+    `mwgViteConfig({ root, assets })` preset, or a vite plugin that runs `emitPage` on
+    `closeBundle`, so `vite build` alone produces a `file://` page. It is also where 374 (CSP)
+    and 380(c) (artifact SBOM) naturally live, so it comes first.
+382. [Medium] `bin` entries. `tools/mwl.mjs` ships but has no `bin`, so a game runs
+    `node node_modules/@datamoc/mw_games/tools/mwl.mjs`; with 381 and 383 the same holds for
+    `emit-page` and the smoke check. `mwg-mwl`, `mwg-emit` and `mwg-smoke` make `npx` work.
+383. [Medium] A `file://` smoke check for a game's own build: `browser-smoke.mjs` +
+    `find-chrome.mjs` + `visual-smoke.mjs` open a built page from `file://` in headless
+    Chromium and assert no page error, a WebGL/WebGPU canvas and non-flat pixels, then write
+    a screenshot. That is the one check that proves a game still opens by double-clicking,
+    the promise the whole framework is built around. Ship as
+    `@datamoc/mw_games/tools/browser-smoke` with `playwright-core` an optional peer, and let
+    `CHROME_PATH` keep overriding the executable (needed in containers, see the 2026-09-25
+    reevaluation above).
+384. [Medium] Ship the translation editor `tools/i18n-edit.mjs`: split-screen terminal editor
+    for `i18n` catalogs, JSON/FTL auto-detected, placeholder-drift warnings, and a `--check`
+    mode a game's CI can run on every translation. It already has a `.d.mts`, but imports
+    `../src/i18n/index.ts` and `../src/two-d/ui/markdown.ts`, which are not in the package, so
+    it needs to import from `dist/` first. A game translated into several languages (right-to-left
+    ones included, which `i18n.direction()` already supports) gains the most.
+385. [Medium] Ship the reference lockstep server `tools/multiplayer-server.mjs`. Its own doc
+    comment says "a game using this either runs it as-is or replaces it", but it is not in
+    `files`, so a game cannot run it as-is. Ship as `@datamoc/mw_games/tools/multiplayer-server`
+    with `ws` an optional peer; it should pick up 372's message validation and 375's transport
+    rules at the same time, since a server is exactly where hostile input arrives.
+386. [Low] A bundle-size budget for a game: `tools/bundle-size.mjs` gates this repository's
+    own global build and `dist` tree against a committed baseline with a tolerance. Taking
+    the files to measure and the baseline path as arguments turns it into a CI gate a game can
+    reuse for its page size, which matters on mobile.
+387. [Low] Frame-rate measurement for a game's page: `tools/benchmark-browser.mjs` (with
+    `benchmark-history.mjs`) measures a built page's rendering and FPS in headless Chrome.
+    Ship after 383, which it shares its Chrome lookup with.
+388. [Low] A `@datamoc/mw_games/testing` subpath with the doubles the framework's own tests keep
+    rewriting: `fakeAudio` is defined separately in six test files, next to `fakeFetch`/
+    `fakeResponse`, `FakeSocket`, fake gamepads and an in-memory `SaveStorage`. Games test
+    against the same injectable seams (`Sound.create`, `HttpTransport.fetch`,
+    `LockstepClient.create`), and the repository's own tests lose the duplication. Stays
+    dependency-free like the rest of the test path.
+389. [Low] Two developer-side tools with narrower audiences. `extract-rgssad` (the vendored
+    `rgssad-wasm` decoder, MIT) for someone porting a game whose archive they own; it adds the
+    `.wasm` to the package, so perhaps a separate package. And the procedural placeholder
+    generator `make-example-assets.mjs` (tileset and sounds with no licence history), useful
+    for prototyping before real art exists, once it takes an output folder.
 
 ### Parked decisions
 
