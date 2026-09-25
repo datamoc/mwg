@@ -123,6 +123,21 @@ test('the Content-Security-Policy hashes each inline script and opens connect-sr
 	assert.throws(() => withContentSecurityPolicy('<p>no head</p>'), /no <head>/);
 });
 
+test('the policy is the same whether the checkout hands the page CRLF or LF', async () => {
+	const { contentSecurityPolicy } = await import('../tools/csp.mjs');
+	const { createHash } = await import('node:crypto');
+	//a multi-line script on purpose: a one-line one has no newline to normalise. The HTML parser
+	//turns CRLF into LF before hashing, so a checkout with core.autocrlf (every Windows clone)
+	//would otherwise make this hash the bytes on disk while Chrome hashes the text it parsed -
+	//the page then refuses its own script, logs a violation the smoke checks treat as an error,
+	//and the same build on Linux stays quiet
+	const lf = '<html><head><script>\n\twindow.x = 1;\n\twindow.y = 2;\n</script></head></html>';
+	const crlf = lf.replace(/\n/g, '\r\n');
+	const hash = createHash('sha256').update('\n\twindow.x = 1;\n\twindow.y = 2;\n', 'utf8').digest('base64');
+	assert.match(contentSecurityPolicy(lf), new RegExp(`'sha256-${hash.replace(/[+/]/g, '\\$&')}'`));
+	assert.equal(contentSecurityPolicy(crlf), contentSecurityPolicy(lf), 'same policy either way');
+});
+
 test('emitPage writes the policy by default and leaves it out with csp: false', async () => {
 	const dir = scratch();
 	try {
