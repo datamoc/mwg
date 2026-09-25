@@ -1,4 +1,5 @@
 import type { StateValue } from '../core/State.ts';
+import { cloneData } from '../core/Clone.ts';
 
 export type CampaignOutcome = 'completed' | 'failed' | 'abandoned';
 
@@ -53,7 +54,7 @@ export class Campaign<State extends StateValue, Result extends StateValue = Stat
 		if (this.levels.size !== options.levels.length) throw new Error('campaign level ids must be unique');
 		if (!this.levels.has(options.start)) throw new Error(`unknown campaign start level: ${options.start}`);
 		this._currentLevel = options.start;
-		this._state = structuredClone(options.state);
+		this._state = cloneData(options.state, 'campaign state');
 	}
 
 	get currentLevel(): string | null {
@@ -79,8 +80,11 @@ export class Campaign<State extends StateValue, Result extends StateValue = Stat
 	completeCurrent(result: CampaignLevelResult<State, Result>): CampaignLevelResult<State, Result> {
 		if (!this._currentLevel) throw new Error('campaign has no current level');
 		const completedId = this._currentLevel;
-		this._state = structuredClone(result.state);
-		if (result.result !== undefined) this._results[completedId] = structuredClone(result.result);
+		// Both copies before either assignment, so a refused result leaves the campaign unchanged.
+		const state = cloneData(result.state, 'level result state');
+		const levelResult = result.result === undefined ? undefined : cloneData(result.result, 'level result');
+		this._state = state;
+		if (levelResult !== undefined) this._results[completedId] = levelResult;
 		this._reminders = [...(result.reminders ?? [])];
 		if (result.outcome !== 'completed') this._currentLevel = null;
 		else if (result.next === undefined)
@@ -111,7 +115,7 @@ export class Campaign<State extends StateValue, Result extends StateValue = Stat
 		const campaign = new Campaign({ levels: options.levels, start, state: snapshot.state });
 		campaign._currentLevel = snapshot.currentLevel;
 		campaign._reminders = [...snapshot.reminders];
-		campaign._results = structuredClone(snapshot.results);
+		campaign._results = cloneData(snapshot.results, 'snapshot.results');
 		return campaign;
 	}
 }

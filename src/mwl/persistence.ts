@@ -1,6 +1,7 @@
 import { assertNoForbiddenKeys } from '../core/Sanitize.ts';
 import type { ActionJournalEntry } from '../core/ActionJournal.ts';
 import type { MwlWorld } from './runtime.ts';
+import { cloneData } from '../core/Clone.ts';
 
 export interface MwlSaveEnvelope {
 	readonly format: 'mwl-save';
@@ -119,7 +120,7 @@ export function validateWorld(value: unknown): MwlWorld {
 		throw new Error('invalid MWL saved world: turn, variables, and units are required');
 	if (world.status !== undefined && !['playing', 'won', 'lost'].includes(world.status))
 		throw new Error('invalid MWL saved world status');
-	return structuredClone(world as MwlWorld);
+	return cloneData(world as MwlWorld, 'saved world');
 }
 
 function isEnvelope(value: unknown): value is MwlSaveEnvelope {

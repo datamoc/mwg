@@ -25,6 +25,11 @@ the public API may still change between minor versions.
 - `ActionJournal.append` stored the caller's action object by reference, so mutating it
   afterwards rewrote history; the action is now copied like the events, and a refused
   append no longer consumes a sequence number.
+- `Campaign.completeCurrent` assigned the carried-over state before copying the level's
+  result, so a result that could not be copied left the new state applied and the result
+  missing. Both are copied first now. `CanonicalState`, `StateRegistry`, `Campaign`,
+  `runHeadlessScenario` and the MWL save reader copy incoming values through
+  `core.cloneData`, so a non-data value names its path there too.
 
 ## [0.16.0] - 2026-09-19
 

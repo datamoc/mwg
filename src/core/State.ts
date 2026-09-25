@@ -1,3 +1,5 @@
+import { cloneData } from './Clone.ts';
+
 /** A JSON-compatible value owned by a game or one of its framework extensions. */
 export type StateValue = null | boolean | number | string | StateValue[] | { readonly [key: string]: StateValue };
 
@@ -66,7 +68,7 @@ export class CanonicalState<State extends StateValue> {
 			readonly extensions?: StateRegistry;
 		} = {},
 	) {
-		this._state = structuredClone(initial);
+		this._state = cloneData(initial, 'initial state');
 		this.version = options.version ?? 1;
 		this.migrations = options.migrations ?? {};
 		this.extensions = options.extensions ?? new StateRegistry();
@@ -77,7 +79,7 @@ export class CanonicalState<State extends StateValue> {
 	}
 
 	set(next: State): void {
-		this._state = structuredClone(next);
+		this._state = cloneData(next, 'state');
 	}
 
 	update(transform: (current: State) => State): State {
@@ -106,13 +108,13 @@ export class CanonicalState<State extends StateValue> {
 			throw new Error(`canonical state snapshot version ${snapshot.version} is newer than ${this.version}`);
 		const before = this.snapshot();
 		try {
-			let state: StateValue = structuredClone(snapshot.state);
+			let state: StateValue = cloneData(snapshot.state, 'snapshot.state');
 			for (let version = snapshot.version; version < this.version; version++) {
 				const migration = this.migrations[version + 1];
 				if (!migration) throw new Error(`missing canonical state migration to version ${version + 1}`);
 				state = migration(state);
 			}
-			this._state = structuredClone(state as State);
+			this._state = cloneData(state as State, 'migrated state');
 			return this.extensions.restore(
 				{ extensions: snapshot.extensions, versions: snapshot.extensionVersions },
 				options,
@@ -177,7 +179,8 @@ export class StateRegistry {
 
 	snapshot(): StateSnapshot {
 		const extensions: Record<string, StateValue> = {};
-		for (const [id, extension] of this.extensions) extensions[id] = structuredClone(extension.capture());
+		for (const [id, extension] of this.extensions)
+			extensions[id] = cloneData(extension.capture(), `extension ${id}`);
 		const versions: Record<string, number> = {};
 		for (const [id, extension] of this.extensions) versions[id] = extension.version ?? 1;
 		return { extensions, versions };
@@ -206,13 +209,13 @@ export class StateRegistry {
 				}
 				const from = snapshot.versions?.[id] ?? 1;
 				const to = extension.version ?? 1;
-				let state = structuredClone(snapshot.extensions[id]);
+				let state = cloneData(snapshot.extensions[id], `snapshot.extensions.${id}`);
 				for (let version = from; version < to; version++) {
 					const migration = extension.migrations?.[version + 1];
 					if (!migration) throw new Error(`missing state migration for ${id} to version ${version + 1}`);
 					state = migration(state);
 				}
-				extension.restore(structuredClone(state));
+				extension.restore(cloneData(state, `migrated extension ${id}`));
 				diagnostics.push({ extension: id, from, to, status: from === to ? 'unchanged' : 'migrated' });
 			}
 		} catch (error) {

@@ -1,5 +1,6 @@
 import { Generator } from '../core/Random.ts';
 import { runScenario, type Scenario, type ScenarioResult } from './Scenario.ts';
+import { cloneData } from '../core/Clone.ts';
 
 export interface HeadlessScenario<State, Command, Event> {
 	readonly seed: number;
@@ -30,7 +31,7 @@ export function runHeadlessScenario<State, Command, Event>(
 ): HeadlessScenarioResult<State, Event> {
 	const random = new Generator(scenario.seed);
 	const result = runScenario({
-		state: structuredClone(scenario.initialState),
+		state: cloneData(scenario.initialState, 'initialState'),
 		commands: scenario.commands,
 		status: scenario.status,
 		random,

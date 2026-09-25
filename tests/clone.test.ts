@@ -2,6 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { cloneData, uncloneablePath } from '../src/core/Clone.ts';
 import { ActionJournal } from '../src/core/ActionJournal.ts';
+import { CanonicalState } from '../src/core/State.ts';
+import { Campaign } from '../src/simulation/Campaign.ts';
 import { ReactionTable } from '../src/core/Reactions.ts';
 import { Generator } from '../src/core/Random.ts';
 import { Scheduler } from '../src/roguelike/Scheduler.ts';
@@ -107,4 +109,28 @@ test('SimulationRuntime.dispatch commits nothing when its command cannot be jour
 	assert.equal(runtime.journal.size, 1);
 	assert.ok(runtime.state.hp.king < 20);
 	assert.ok(runtime.canUndo);
+});
+
+test('CanonicalState and Campaign refuse non-data with a path, and Campaign stays unchanged', () => {
+	assert.throws(
+		() => new CanonicalState({ hero: { onDeath: () => {} } } as never),
+		/initial state\.hero\.onDeath cannot be structured-cloned/,
+	);
+	const campaign = new Campaign<{ gold: number }, { boss: string }>({
+		levels: [{ id: 'keep', run: (state) => ({ state, outcome: 'completed', next: null }) }],
+		start: 'keep',
+		state: { gold: 1 },
+	});
+	assert.throws(
+		() =>
+			campaign.completeCurrent({
+				state: { gold: 5 },
+				result: { boss: 'king', reactions: () => {} } as never,
+				outcome: 'completed',
+				next: null,
+			}),
+		/level result\.reactions cannot be structured-cloned/,
+	);
+	assert.deepEqual(campaign.state, { gold: 1 });
+	assert.equal(campaign.currentLevel, 'keep');
 });
