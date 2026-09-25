@@ -524,6 +524,7 @@ build instead.
         clear(): void;
         private keys;
         private read;
+        private parse;
     }
 
 ### `COLOR_BLINDNESS_MATRICES` (const)
@@ -1252,10 +1253,15 @@ build instead.
             checksums: Record<string, number>;
         }>;
         readonly onClose: Signal<void>;
+
+        readonly onProtocolError: Signal<{
+            reason: string;
+        }>;
         private socket;
         private readonly url;
         private readonly createSocket;
         private readonly validateInput?;
+        private readonly maxMessageBytes;
         private _id;
         constructor(options: LockstepClientOptions);
 
@@ -1549,6 +1555,11 @@ build instead.
 ### `parseImagePath` (function)
 
     export declare function parseImagePath(value: string): ParsedImagePath;
+
+### `parseInbound` (function)
+
+    export declare function parseInbound(text: string, options?: SizeLimitOptions & {
+        label?: string;
 
 ### `parseMarkdown` (function)
 
@@ -5016,6 +5027,7 @@ build instead.
         clear(): void;
         private keys;
         private read;
+        private parse;
     }
 
 ### `defaultSettings` (function)
@@ -5157,10 +5169,15 @@ build instead.
             checksums: Record<string, number>;
         }>;
         readonly onClose: Signal<void>;
+
+        readonly onProtocolError: Signal<{
+            reason: string;
+        }>;
         private socket;
         private readonly url;
         private readonly createSocket;
         private readonly validateInput?;
+        private readonly maxMessageBytes;
         private _id;
         constructor(options: LockstepClientOptions);
 
@@ -5245,6 +5262,11 @@ build instead.
 ### `parseDialogueLines` (function)
 
     export declare function parseDialogueLines(source: string): DialogueLine[];
+
+### `parseInbound` (function)
+
+    export declare function parseInbound(text: string, options?: SizeLimitOptions & {
+        label?: string;
 
 ### `parseTwee` (function)
 

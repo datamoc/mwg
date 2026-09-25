@@ -140,7 +140,9 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
 - `PlayerInput` - a per-player scoped `Input`, for local multiplayer/split-screen.
 - `SaveSystem` - named, versioned save slots over `localStorage` (in-memory fallback under
   `file://`); a `migrations` chain, and `importExternal` as a plug-in point for a foreign
-  save format's own `normalize` function.
+  save format's own `normalize` function. `load`, `list` and `importSlot` read every slot
+  through `parseInbound` plus a `{ meta: { version, savedAt }, state }` shape check: a
+  corrupt or tampered slot loads as `null` and is left out of `list`.
 - `StateRegistry`/`StateExtension`/`StateRestoreDiagnostic` - named game-owned state extensions with deep-cloned
   snapshots and transaction rollback, with independent versions, ordered migrations and
   explicit handling of extensions absent from a restored save, so custom save data has one
@@ -155,6 +157,8 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
 - `scramble`/`unscramble` - light save-data obfuscation, not encryption.
 - `SaveSyncClient` - pushes/pulls save data to a server the game supplies.
 - `LockstepClient` - deterministic multiplayer over an injectable WebSocket, tick-driven.
+  Server messages are size-capped (`maxMessageBytes`, 1 MB) and type-checked; a malformed one
+  is dropped and reported on `onProtocolError` instead of throwing out of `onmessage`.
 - `stateChecksum`/`SyncGuard` - out-of-sync detection for lockstep: a key-order-stable 32-bit
   checksum of JSON state, and a guard comparing the checksums two peers compute for each tick,
   recording the first tick they disagree on.
@@ -165,8 +169,13 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
 - `TelemetryClient` - sends usage/error events to a server the game supplies.
 - `NewsClient`/`NewsSeenTracker` - a game's own patch-notes/announcement feed, with a
   seen-tracker so a player is only notified of what's actually new.
-- `checkSize`/`checkNoControlCharacters`/`sanitizeInboundText`/`validateSchema` - security
-  sanitization of inbound data: an imported save, a network payload, player-typed text.
+- `checkSize`/`checkNoControlCharacters`/`sanitizeInboundText`/`validateSchema`/`parseInbound` -
+  security sanitization of inbound data: an imported save, a network payload, player-typed
+  text. `parseInbound` is the whole pass in one call (size, control characters, `JSON.parse`
+  refusing `__proto__`/`constructor`/`prototype` at any depth), and every `core` reader of
+  JSON it did not just produce uses it: save slots, `Collection`, stored values, settings,
+  `NewsClient` and `LockstepClient`. Under `file://` Chromium shares one `localStorage`
+  between every local page, so a game's own storage is inbound data too.
 - `Collection` - named, queryable record collections over `localStorage`
   (`all`/`get`/`put`/`remove`/`where`/`clear`) - a quest log or bestiary, not a save blob.
 - `Recorder`/`Player`/`serializeReplay`/`deserializeReplay` - records `Input.onAction`

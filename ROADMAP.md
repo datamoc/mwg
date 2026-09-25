@@ -36,18 +36,6 @@ constraint shared by 372-378 is **secure by default: a game that changes nothing
 protection**, and an opt-out is explicit and named. Ordered by risk, not by when they were
 found.
 
-372. [High] One inbound pipeline, applied everywhere by default. `SaveSystem.load`,
-    `StoredValue`, `Collection`, `LockstepClient`'s message handler and `SaveSync.download`
-    parse with a bare `JSON.parse`, and `importSlot` checks size and control characters but not
-    forbidden keys or the shape of `meta`. `load`'s doc comment says local storage has "no reason
-    to distrust"; that is false under `file://`, where Chromium gives **every local page one
-    shared `localStorage`**. Measured: a page opened from an unrelated folder read a game's save
-    back verbatim. Proposal: one internal `parseInbound(text, { maxBytes })` (size, control
-    characters, `JSON.parse` with a reviver that refuses `__proto__`/`constructor`/`prototype`,
-    failure reported as a diagnostic or `null` rather than a raw `TypeError`), called by every
-    path above with no new public call a game has to make. `LockstepClient` also validates
-    `tick`/`inputs` types and survives a malformed message instead of throwing out of
-    `onmessage`.
 373. [High] A memory bound for the Lua host. The instruction limit does not bound allocation:
     measured, `#string.rep("x", 2^28)` under a 1000-instruction limit allocated 268 million
     characters (614 MB RSS, 4 s blocked), and doubling it takes the tab down. Proposal: bounded

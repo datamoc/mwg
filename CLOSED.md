@@ -5585,3 +5585,16 @@ capability this framework was missing.
     copies the journal once per checkpoint instead of twice. `tests/clone.test.ts` replays
     the boss case and pins that nothing is committed; REFERENCE.md and CHANGELOG carry the
     entry, and `npm run api:check` passes.
+
+372. ~~[High] One inbound pipeline, applied everywhere by default.~~ Landed as
+    `core.parseInbound` (size cap, control characters, and a `JSON.parse` reviver that refuses
+    `__proto__`/`constructor`/`prototype` at any depth, every failure a named `Error`), used by
+    `SaveSystem.load`/`list`/`importSlot` (plus a `{ meta: { version, savedAt }, state }` shape
+    check), `Collection`, `StoredValue`, `Settings`, `NewsClient` and `LockstepClient`. The
+    trigger, measured in Chromium: a page opened from an unrelated folder read a game's save
+    back, because every `file://` page shares one `localStorage`. `load` returns `null` and
+    `list` skips a tampered slot (a corrupt slot used to make `list` throw). `LockstepClient`
+    gained `maxMessageBytes` (1 MB) and `onProtocolError`, and validates the three server
+    messages' field types. `SaveSync.download` still returns raw text by design: `importSlot` is
+    where it is parsed. `tests/inbound.test.ts` covers each reader; REFERENCE.md and CHANGELOG
+    carry the entry.

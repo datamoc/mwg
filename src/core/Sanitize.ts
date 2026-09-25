@@ -142,3 +142,40 @@ export function validateSchema(value: unknown, schema: Schema, path = '$'): void
 		}
 	}
 }
+
+/**
+ * The whole inbound pass in one call: `sanitizeInboundText`, then `JSON.parse` with a reviver
+ * that refuses `__proto__`/`constructor`/`prototype` at any depth. Every path in `core` that
+ * reads JSON it did not just produce goes through this (save slots, `Collection`, stored
+ * values, `LockstepClient` messages, `NewsClient`), because under `file://` Chromium gives every
+ * local page one shared `localStorage`: a value this game wrote can have been rewritten by any
+ * other HTML file opened on the same machine. Throws a named `Error` for every failure.
+ *
+ * @example
+ * ```ts
+ * import { parseInbound } from '@datamoc/mw_games/core';
+ *
+ * parseInbound('{"hp": 3}'); // { hp: 3 }
+ * parseInbound('{"__proto__": {"admin": true}}'); // throws: $ contains a forbidden key "__proto__"
+ * ```
+ */
+export function parseInbound(text: string, options: SizeLimitOptions & { label?: string } = {}): unknown {
+	const label = options.label ?? 'inbound data';
+	sanitizeInboundText(text, options);
+	try {
+		return JSON.parse(text, (key, value: unknown) => {
+			if (FORBIDDEN_KEYS.has(key)) throw new ForbiddenKey(key);
+			return value;
+		});
+	} catch (error) {
+		if (error instanceof ForbiddenKey) throw new Error(`${label} contains a forbidden key "${error.key}"`);
+		throw new Error(`${label} is not valid JSON (${error instanceof Error ? error.message : String(error)})`);
+	}
+}
+
+class ForbiddenKey {
+	readonly key: string;
+	constructor(key: string) {
+		this.key = key;
+	}
+}

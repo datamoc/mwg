@@ -89,7 +89,7 @@ test('load returns null for a corrupted slot instead of throwing', () => {
 
 test('importSlot throws a labelled error for a payload that is not valid JSON', () => {
 	const saves = new SaveSystem<{ gold: number }>({ namespace: 'import-corrupt', version: 1 });
-	assert.throws(() => saves.importSlot('slot1', '{not valid json'), /not valid save data/);
+	assert.throws(() => saves.importSlot('slot1', '{not valid json'), /importSlot: payload is not valid JSON/);
 });
 
 test('importSlot runs an older-versioned export through the same migrations load would', () => {

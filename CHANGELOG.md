@@ -7,6 +7,22 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Security
+
+- One inbound pipeline, on by default (item 372). `core.parseInbound` runs the size cap,
+  the control-character check and a `JSON.parse` that refuses `__proto__`/`constructor`/
+  `prototype` at any depth. `SaveSystem.load`/`list`/`importSlot`, `Collection`, the stored
+  values behind `PlayerStats`/`RunHistory`/`NewsSeenTracker`, `Settings`, `NewsClient` and
+  `LockstepClient` all use it, with no call for a game to add. The reason: under `file://`,
+  Chromium shares one `localStorage` between every local page, so any HTML file opened on
+  the same machine can read or rewrite a game's saves. `load` now returns `null`, and `list`
+  skips the slot, for a tampered or malformed slot (a corrupt slot used to make `list`
+  throw). `importSlot` checks the `meta` shape and throws a named error.
+  `LockstepClient` caps server messages at `maxMessageBytes` (1 MB), type-checks `welcome`/
+  `tick`/`rejected`, and reports anything else on the new `onProtocolError` signal instead of
+  throwing out of `onmessage`. An unknown message type, which was silently ignored, is
+  reported there too.
+
 ### Added
 
 - `core.cloneData`/`core.uncloneablePath` - `structuredClone` whose failure names the first

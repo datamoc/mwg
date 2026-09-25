@@ -1,4 +1,5 @@
 import { defaultStorage, type SaveStorage } from './Save.ts';
+import { parseInbound } from './Sanitize.ts';
 
 /**
  * One JSON record in a `Collection`: a string id plus whatever fields the game
@@ -61,7 +62,7 @@ export class Collection {
 
 	get(id: string): DbRecord | undefined {
 		const raw = this.storage.read(this.prefix + id);
-		return raw === null ? undefined : (JSON.parse(raw) as DbRecord);
+		return raw === null ? undefined : this.parse(raw, this.prefix + id);
 	}
 
 	/** inserts or replaces the record with the same id */
@@ -94,6 +95,10 @@ export class Collection {
 	}
 
 	private read(key: string): DbRecord {
-		return JSON.parse(this.storage.read(key) as string) as DbRecord;
+		return this.parse(this.storage.read(key) as string, key);
+	}
+
+	private parse(raw: string, key: string): DbRecord {
+		return parseInbound(raw, { label: `record "${key}"` }) as DbRecord;
 	}
 }

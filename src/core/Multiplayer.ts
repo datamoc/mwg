@@ -1,3 +1,4 @@
+import { parseInbound } from './Sanitize.ts';
 import { Signal } from './Signal.ts';
 
 /** the subset of the DOM/Node `WebSocket` this needs - injectable so a test never opens a real socket */
@@ -19,6 +20,8 @@ export interface LockstepClientOptions {
 	create?: (url: string) => WebSocketLike;
 	/** Optional client-side command contract. Returning a string rejects with that reason. */
 	validateInput?: (payload: unknown) => boolean | string;
+	/** largest server message accepted, in bytes; defaults to 1 MB */
+	maxMessageBytes?: number;
 }
 
 export interface LockstepWelcome {
@@ -74,11 +77,14 @@ export class LockstepClient {
 	readonly onReject = new Signal<{ reason: string }>();
 	readonly onDesync = new Signal<{ tick: number; checksums: Record<string, number> }>();
 	readonly onClose = new Signal<void>();
+	/** a server message that was oversized, not JSON, or not a well-formed protocol message; it is dropped */
+	readonly onProtocolError = new Signal<{ reason: string }>();
 
 	private socket: WebSocketLike | null = null;
 	private readonly url: string;
 	private readonly createSocket: (url: string) => WebSocketLike;
 	private readonly validateInput?: (payload: unknown) => boolean | string;
+	private readonly maxMessageBytes: number;
 	private _id: string | null = null;
 
 	constructor(options: LockstepClientOptions) {
@@ -86,6 +92,7 @@ export class LockstepClient {
 		this.url = options.url;
 		this.createSocket = options.create ?? ((url) => new WebSocket(url) as unknown as WebSocketLike);
 		this.validateInput = options.validateInput;
+		this.maxMessageBytes = options.maxMessageBytes ?? 1024 * 1024;
 	}
 
 	/** this client's own id, assigned by the server's `welcome` message; `null` before it arrives */
@@ -126,25 +133,25 @@ export class LockstepClient {
 		this.socket?.close();
 	}
 
-	private handleMessage(raw: string): void {
-		const message = JSON.parse(raw) as {
-			type: string;
-			id?: string;
-			seed?: number;
-			initialState?: unknown;
-			tick?: number;
-			inputs?: Record<string, unknown>;
-			checksums?: Record<string, number>;
-			reason?: string;
-		};
-		if (message.type === 'welcome' && message.id !== undefined) {
+	private handleMessage(raw: unknown): void {
+		let message: ServerMessage;
+		try {
+			if (typeof raw !== 'string') throw new Error('lockstep message is not text');
+			message = readServerMessage(
+				parseInbound(raw, { maxBytes: this.maxMessageBytes, label: 'lockstep message' }),
+			);
+		} catch (error) {
+			this.onProtocolError.dispatch({ reason: error instanceof Error ? error.message : String(error) });
+			return;
+		}
+		if (message.type === 'welcome') {
 			this._id = message.id;
 			this.onWelcome.dispatch({
 				id: message.id,
 				...(message.seed === undefined ? {} : { seed: message.seed }),
 				...(message.initialState === undefined ? {} : { initialState: message.initialState }),
 			});
-		} else if (message.type === 'tick' && message.tick !== undefined && message.inputs !== undefined) {
+		} else if (message.type === 'tick') {
 			const event = {
 				tick: message.tick,
 				inputs: message.inputs,
@@ -156,8 +163,42 @@ export class LockstepClient {
 				if (checksums.some((checksum) => checksum !== checksums[0]))
 					this.onDesync.dispatch({ tick: message.tick, checksums: message.checksums });
 			}
-		} else if (message.type === 'rejected') {
+		} else {
 			this.onReject.dispatch({ reason: message.reason ?? 'input rejected by server' });
 		}
+	}
+}
+
+type ServerMessage =
+	({ type: 'welcome' } & LockstepWelcome) | ({ type: 'tick' } & TickEvent) | { type: 'rejected'; reason?: string };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/** checks the three server messages' field types, so a listener only ever sees the documented shapes */
+function readServerMessage(value: unknown): ServerMessage {
+	if (!isRecord(value) || typeof value.type !== 'string') throw new Error('lockstep message has no type');
+	switch (value.type) {
+		case 'welcome':
+			if (typeof value.id !== 'string' || value.id === '') throw new Error('welcome needs a string id');
+			if (value.seed !== undefined && !Number.isSafeInteger(value.seed))
+				throw new Error('welcome seed must be an integer');
+			return value as ServerMessage;
+		case 'tick':
+			if (!Number.isSafeInteger(value.tick) || (value.tick as number) < 0)
+				throw new Error('tick needs a non-negative integer tick');
+			if (!isRecord(value.inputs)) throw new Error('tick needs an inputs object');
+			if (
+				value.checksums !== undefined &&
+				(!isRecord(value.checksums) || Object.values(value.checksums).some((sum) => typeof sum !== 'number'))
+			)
+				throw new Error('tick checksums must map ids to numbers');
+			return value as ServerMessage;
+		case 'rejected':
+			if (value.reason !== undefined && typeof value.reason !== 'string')
+				throw new Error('rejected reason must be a string');
+			return value as ServerMessage;
+		default:
+			throw new Error(`unknown lockstep message type "${value.type}"`);
 	}
 }

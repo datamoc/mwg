@@ -19,7 +19,7 @@
  * ```
  */
 import { scramble, unscramble } from './Scramble.ts';
-import { checkSize, sanitizeInboundText } from './Sanitize.ts';
+import { checkSize, parseInbound } from './Sanitize.ts';
 
 export interface SaveMeta {
 	version: number;
@@ -32,6 +32,19 @@ export interface SaveMeta {
 export interface SaveData<T> {
 	meta: SaveMeta;
 	state: T;
+}
+
+/** `parseInbound`, then the `{ meta: { version, savedAt }, state }` shape every slot has */
+function parseSaveData(text: string, label: string): SaveData<unknown> {
+	const data = parseInbound(text, { label }) as Partial<SaveData<unknown>> | null;
+	const meta = data?.meta as Partial<SaveMeta> | undefined;
+	if (typeof data !== 'object' || data === null || Array.isArray(data) || !('state' in data))
+		throw new Error(`${label} is not save data (expected { meta, state })`);
+	if (typeof meta !== 'object' || meta === null || !Number.isSafeInteger(meta.version) || meta.version! < 0)
+		throw new Error(`${label} has no valid meta.version`);
+	if (typeof meta.savedAt !== 'number' || !Number.isFinite(meta.savedAt))
+		throw new Error(`${label} has no valid meta.savedAt`);
+	return data as SaveData<unknown>;
 }
 
 /** the storage a `SaveSystem` writes through - `localStorage`'s shape, so that is the default */
@@ -109,18 +122,19 @@ export class SaveSystem<T> {
 
 	/**
 	 * Reads a slot, migrating it up to the current version if it was saved at an older one.
-	 * Returns `null` for a corrupted or malformed slot the same way it already does for a
-	 * missing one - a slot this `SaveSystem` wrote itself is trusted, but a truncated write
-	 * (an interrupted browser storage flush, a quota eviction, a hand-edited value) is still
-	 * possible, and a save-select screen should see "no usable save here", not an uncaught
-	 * `SyntaxError`.
+	 * Returns `null` for a corrupted, malformed or tampered slot the same way it already does
+	 * for a missing one. The slot is read through `parseInbound` and a shape check, not trusted
+	 * because this `SaveSystem` wrote it: a truncated write (an interrupted flush, a quota
+	 * eviction) is possible anywhere, and under `file://` Chromium shares one `localStorage`
+	 * between every local page, so any other HTML file on the machine can rewrite it. A
+	 * save-select screen should see "no usable save here", not an uncaught `SyntaxError`.
 	 */
 	load(slot: string): SaveData<T> | null {
 		const raw = this.storage.read(this.key(slot));
 		if (!raw) return null;
 
 		try {
-			const data = JSON.parse(raw) as SaveData<T>;
+			const data = parseSaveData(raw, `save slot "${slot}"`);
 			let state: unknown = data.state;
 			for (let v = data.meta.version; v < this.version; v++) {
 				state = (this.migrations[v] ?? ((s: unknown) => s))(state);
@@ -181,20 +195,14 @@ export class SaveSystem<T> {
 	 * migrated up to the current version the same way `load` migrates an older save found
 	 * locally. `scrambleKey` must match whatever `exportSlot` scrambled it with, if any.
 	 *
-	 * `payload` is size- and control-character-checked before it is unscrambled or parsed -
-	 * this crossed a device or a server, unlike `load`'s own `localStorage`, which this same
-	 * `SaveSystem` wrote itself and has no reason to distrust.
+	 * `payload` is size-checked before it is unscrambled, then read through `parseInbound` and
+	 * the same shape check `load` applies; any failure throws a named `Error` and leaves the
+	 * slot untouched.
 	 */
 	importSlot(slot: string, payload: string, scrambleKey?: string): void {
 		checkSize(payload);
 		const raw = scrambleKey ? unscramble(payload, scrambleKey) : payload;
-		const sanitized = sanitizeInboundText(raw);
-		let data: SaveData<unknown>;
-		try {
-			data = JSON.parse(sanitized) as SaveData<unknown>;
-		} catch {
-			throw new Error('SaveSystem.importSlot: payload is not valid save data (not parseable JSON)');
-		}
+		const data = parseSaveData(raw, 'SaveSystem.importSlot: payload');
 		let state = data.state;
 		for (let v = data.meta.version; v < this.version; v++) {
 			state = (this.migrations[v] ?? ((s: unknown) => s))(state);
@@ -204,7 +212,7 @@ export class SaveSystem<T> {
 		this.storage.write(this.key(slot), JSON.stringify(normalized));
 	}
 
-	/** every slot with a save, and its metadata - for a save-select screen */
+	/** every slot holding a readable save, and its metadata - for a save-select screen */
 	list(): Array<{ slot: string; meta: SaveMeta }> {
 		const prefix = `mwg-save:${this.namespace}:`;
 		const out: Array<{ slot: string; meta: SaveMeta }> = [];
@@ -214,7 +222,11 @@ export class SaveSystem<T> {
 			const raw = this.storage.read(key);
 			if (!raw) continue;
 
-			out.push({ slot: key.slice(prefix.length), meta: (JSON.parse(raw) as SaveData<T>).meta });
+			try {
+				out.push({ slot: key.slice(prefix.length), meta: parseSaveData(raw, key).meta });
+			} catch {
+				//a slot `load` would refuse is not listed as usable either
+			}
 		}
 		return out;
 	}

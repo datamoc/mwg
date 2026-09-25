@@ -1,4 +1,5 @@
 import { defaultStorage, type SaveStorage } from './Save.ts';
+import { parseInbound } from './Sanitize.ts';
 import { DEFAULT_BINDINGS, importBindings, type Action } from './Input.ts';
 import { clamp } from './Math.ts';
 
@@ -224,7 +225,7 @@ function readSettings(storage: SaveStorage, key: string): GameSettings {
 	const raw = storage.read(key);
 	if (!raw) return defaultSettings();
 	try {
-		return sanitizeSettings(JSON.parse(raw) as unknown);
+		return sanitizeSettings(parseInbound(raw, { label: 'settings' }));
 	} catch {
 		return defaultSettings();
 	}

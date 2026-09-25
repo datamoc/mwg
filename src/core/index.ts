@@ -42,7 +42,7 @@ export { TelemetryClient } from './Telemetry.ts';
 export type { TelemetryEvent, TelemetryOptions, TelemetryResponse } from './Telemetry.ts';
 export { NewsClient, NewsSeenTracker } from './News.ts';
 export type { NewsItem, NewsOptions, NewsSeenOptions } from './News.ts';
-export { checkSize, checkNoControlCharacters, sanitizeInboundText, validateSchema } from './Sanitize.ts';
+export { checkSize, checkNoControlCharacters, parseInbound, sanitizeInboundText, validateSchema } from './Sanitize.ts';
 export type { SizeLimitOptions, Schema } from './Sanitize.ts';
 export { Collection } from './Collection.ts';
 export type { DbRecord, CollectionOptions } from './Collection.ts';
