@@ -265,3 +265,20 @@ Not re-run: the full vite builds, the headless-browser `verify` passes, or playi
 games, all of which the 2026-09-15 note covers against 0.13.0. The completeness half of the
 line is still with the ports' own maintainers, and the Wesnoth port's repository still has
 no commits.
+
+**Ports re-tested against 0.17.0, 2026-09-25.** The same method, run once 0.17.0 was public:
+
+- `mwg-pixel-dungeon`: its `@datamoc/mw_games` dependency had already been moved to `^0.17.0`
+  (installed 0.17.0), but the port's own source imports only through the `mwg` alias (47
+  files import `mwg/...`, and `@datamoc/mw_games` appears in its documentation and in no
+  import), and that alias was installed 0.16.0 - so the first run against the installed
+  dependency was testing 0.16.0 in everything the code actually reaches. Overlaid with 0.17.0
+  under the alias name, its `test:mwg` passes 22/22 and `tsc --noEmit` is clean. The alias was
+  restored to 0.16.0 with its backup removed, and the port's own uncommitted work was left
+  untouched.
+- `mwg-wesnoth`: not re-run. `mwg-wesno` in this workspace is an empty directory (no files,
+  no repository), so there was nothing to overlay onto, and the 2026-09-20 results above stand
+  as the last recorded run for that port.
+
+Not re-run again: the full vite builds, the headless-browser `verify` passes, or playing the
+built games.
