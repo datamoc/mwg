@@ -327,7 +327,7 @@
 	"peerDependencies": {
 		"@babylonjs/core": "^9.25.0",
 		"@babylonjs/loaders": "^9.25.0",
-		"@capacitor/core": "^7.4.4",
+		"@capacitor/core": "^8.5.2",
 		"pixi.js": "^8.20.1",
 		"playwright-core": "^1.62.1",
 		"ws": "^8.21.3"
@@ -357,7 +357,7 @@
 		"@babylonjs/loaders": "^9.25.0",
 		"@capacitor/android": "^7.4.4",
 		"@capacitor/cli": "^7.4.4",
-		"@capacitor/core": "^7.4.4",
+		"@capacitor/core": "^8.5.2",
 		"@capacitor/ios": "^7.4.4",
 		"@types/node": "^26.4.1",
 		"@types/ws": "^8.18.1",
