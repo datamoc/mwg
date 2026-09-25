@@ -16,7 +16,17 @@ concurrency:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    # The same gates on Linux and Windows, not a Linux gate with a Windows smoke beside it:
+    # three of the committed-artifact checks (API_REPORT, PROJECT_STATS, sbom.cdx.json) and two
+    # tests compared bytes, so a Windows checkout - where core.autocrlf hands text files over as
+    # CRLF and the repository stores LF - failed them on a tree git reported as clean. Only a
+    # Windows runner sees that class of breakage, and ubuntu-only CI never did.
+    strategy:
+      # one OS failing must not cancel the other: the pair is the point of the job
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
