@@ -34,6 +34,7 @@
 		"./dist/two-d/render/TintedSprite.js"
 	],
 	"bin": {
+		"mwg-bench": "tools/benchmark-browser.mjs",
 		"mwg-emit": "tools/emit-page.mjs",
 		"mwg-i18n": "tools/i18n-edit.mjs",
 		"mwg-lockstep-server": "tools/multiplayer-server.mjs",
@@ -65,6 +66,10 @@
 		"tools/multiplayer-server.mjs",
 		"tools/multiplayer-server.d.mts",
 		"tools/mwl.mjs",
+		"tools/benchmark-browser.mjs",
+		"tools/benchmark-browser.d.mts",
+		"tools/benchmark-history.mjs",
+		"tools/benchmark-history.d.mts",
 		"tools/browser-smoke.mjs",
 		"tools/bundle-size.mjs",
 		"tools/bundle-size.d.mts",
@@ -162,6 +167,8 @@
 			"types": "./dist/ai/lua.d.ts",
 			"import": "./dist/ai/lua.js"
 		},
+		"./tools/benchmark-browser": "./tools/benchmark-browser.mjs",
+		"./tools/benchmark-history": "./tools/benchmark-history.mjs",
 		"./tools/browser-smoke": "./tools/browser-smoke.mjs",
 		"./tools/bundle-size": "./tools/bundle-size.mjs",
 		"./tools/classic-html": "./tools/classic-html.mjs",

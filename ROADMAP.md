@@ -48,9 +48,6 @@ Deliberately not proposed: `api-report`, `project-stats`, `ci-status`, `roadmap-
 the webpage and diagram builders, `package-smoke` and `npm-audit` (a workaround for this
 repository's own npm policy), which describe this project rather than a game.
 
-387. [Low] Frame-rate measurement for a game's page: `tools/benchmark-browser.mjs` (with
-    `benchmark-history.mjs`) measures a built page's rendering and FPS in headless Chrome.
-    Ship after 383, which it shares its Chrome lookup with.
 388. [Low] A `@datamoc/mw_games/testing` subpath with the doubles the framework's own tests keep
     rewriting: `fakeAudio` is defined separately in six test files, next to `fakeFetch`/
     `fakeResponse`, `FakeSocket`, fake gamepads and an in-memory `SaveStorage`. Games test

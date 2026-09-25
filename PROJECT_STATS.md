@@ -5,10 +5,10 @@ Generated for **mwg 0.16.0** on 2026-09-19.
 | Area | Statistics |
 | --- | ---: |
 | Source | 294 TypeScript files, 49,682 lines, 15 modules |
-| Tests | 259 files, 2,403 test cases, 33,759 lines |
-| Tools | 41 files, 7,769 lines |
+| Tests | 260 files, 2,404 test cases, 33,790 lines |
+| Tools | 41 files, 7,803 lines |
 | Examples | 22 runnable examples |
-| Roadmap | 386/389 items complete, 3 open |
+| Roadmap | 387/389 items complete, 2 open |
 | API | 293 declaration files |
 | Bundle | 1078.5 kB raw, 320.7 kB gzip |
 | Published dist | 3552.8 kB excluding source maps |

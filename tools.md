@@ -146,7 +146,7 @@ same build.
 
 | tool | what it does | run |
 | --- | --- | --- |
-| `benchmark-browser` | Builds an example and measures rendering/FPS in headless Chrome | `npm run benchmark:browser` |
+| `benchmark-browser` | Measures a built page's frame rate in headless Chrome: mean fps, 95th-percentile frame time, JS heap, a per-page history compared with its best run (item 387) | `npm run benchmark:browser` here; `npx mwg-bench dist [--frames=] [--min-fps=] [--max-p95=] [--history=]` in a game (optional peer `playwright-core`), or `measurePage(options)` from `@datamoc/mw_games/tools/benchmark-browser` |
 | `benchmark-simulation` | Headless throughput for `mwg/simulation` (no frame, canvas, or Pixi involved) | `npm run benchmark:simulation` |
 | `benchmark-animation` | CSS/SVG element animation vs Pixi sprites vs both, at increasing counts, sampling rAF intervals in headless Chrome. A measurement, not a gate | `npm run benchmark:animation` |
 | `graphics-capabilities` | Probes the host's WebGL capabilities headless | `npm run graphics:capabilities` |

@@ -5761,3 +5761,12 @@ capability this framework was missing.
     new file with no baseline is reported and passes, since the total still counts it, and the
     first run writes the baseline. `tests/bundle-size.test.ts` covers the file selection and the
     tolerance.
+
+387. ~~[Low] Frame-rate measurement for a game's page.~~ Landed as `measurePage(options)` in
+    `tools/benchmark-browser.mjs` (shipped with `benchmark-history.mjs`,
+    `@datamoc/mw_games/tools/benchmark-browser`) and `mwg-bench <page | dist> [--frames=]
+    [--min-fps=] [--max-p95=] [--history=]`, the environment variables still read as before, so
+    `npm run benchmark:*` and the scheduled workflow are unchanged. The script's module-level
+    run became a function that throws with the measured result attached. The readiness wait it
+    duplicated with `browser-smoke.mjs` is now one `waitForGame` both use. Checked on the
+    dungeon example: 25 fps under software WebGL, exit 1 when `--min-fps` is set above it.

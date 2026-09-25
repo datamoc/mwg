@@ -25,3 +25,6 @@ export interface SmokePageResult {
 
 /** opens a built page from `file://` in headless Chrome and throws unless it rendered a live, non-blank game canvas */
 export function smokePage(options: SmokePageOptions): Promise<SmokePageResult>;
+
+/** waits up to 5 s for an mwg game to be ready on `page`, then throws naming the page and its logged errors */
+export function waitForGame(page: Page, url: string, pageErrors?: string[]): Promise<void>;

@@ -6,6 +6,30 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { launchChrome } from './find-chrome.mjs';
 
 /**
+ * Waits up to five seconds for an mwg game to be ready on `page` (`window.__MWG__` or
+ * `window.__MWG_3D__` set, and a canvas with a size), and otherwise throws a sentence naming the
+ * page and whatever errors it logged. Shared with `benchmark-browser.mjs`.
+ */
+export async function waitForGame(page, url, pageErrors = []) {
+	try {
+		await page.waitForFunction(
+			() => {
+				const canvas = document.querySelector('canvas');
+				return (
+					Boolean(window.__MWG__ || window.__MWG_3D__) &&
+					Boolean(canvas && canvas.width > 0 && canvas.height > 0)
+				);
+			},
+			undefined,
+			{ timeout: 5000 },
+		);
+	} catch {
+		const errors = pageErrors.length ? `; page errors: ${pageErrors.join('; ')}` : '';
+		throw new Error(`no mwg game became ready within 5 s on ${url} (window.__MWG__ and a sized canvas)${errors}`);
+	}
+}
+
+/**
  * Opens a built page from `file://` in headless Chrome and asserts it actually rendered.
  *
  * Shared by the per-pull-request visual smoke and the published-package smoke so both judge
@@ -49,24 +73,7 @@ export async function smokePage({
 		});
 
 		await page.goto(url, { waitUntil: 'load' });
-		try {
-			await page.waitForFunction(
-				() => {
-					const canvas = document.querySelector('canvas');
-					return (
-						Boolean(window.__MWG__ || window.__MWG_3D__) &&
-						Boolean(canvas && canvas.width > 0 && canvas.height > 0)
-					);
-				},
-				undefined,
-				{ timeout: 5000 },
-			);
-		} catch {
-			const errors = pageErrors.length ? `; page errors: ${pageErrors.join('; ')}` : '';
-			throw new Error(
-				`no mwg game became ready within 5 s on ${url} (window.__MWG__ and a sized canvas)${errors}`,
-			);
-		}
+		await waitForGame(page, url, pageErrors);
 
 		//let the scene finish its first frames before reading pixels back
 		await page.waitForTimeout(250);

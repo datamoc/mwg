@@ -82,6 +82,10 @@ the public API may still change between minor versions.
   repository gates its own build with, for a game's build. Every file a player receives, raw and
   gzipped, plus the total, against `size-budget.json` (written on first run or with `--update`),
   failing past `--tolerance` (2 %).
+- `mwg-bench <page | dist>` (`@datamoc/mw_games/tools/benchmark-browser`'s `measurePage`, item
+  387): a game's own frame-rate gate in headless Chrome, with mean fps, 95th-percentile frame
+  time, an optional history compared against its best run, and the software-WebGL switch for a
+  runner with no GPU.
 - The translation editor ships (item 384): `npx mwg-i18n <base> <target> [--check]`
   (`@datamoc/mw_games/tools/i18n-edit`) runs from an installed package, loading `dist` there
   and the TypeScript sources inside this repository, so a game's CI can gate its translations
