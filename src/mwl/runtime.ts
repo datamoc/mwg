@@ -248,6 +248,9 @@ export function createWorld(): MwlWorld {
 	};
 }
 
+/** 1024x1024: far past any hand-made map, and short of a grid that exhausts memory while filling */
+const MAX_TERRAIN_CELLS = 1024 * 1024;
+
 /**
  * Parse map text: one row per line, comma-separated codes. A token may be
  * `<side> <code>` to mark that side's keep/start, which is how a leader knows
@@ -272,7 +275,10 @@ export function parseTerrain(text: string): {
 		.filter((line) => line.trim() !== '')
 		.map((line) => line.split(',').map((token) => token.trim()));
 	const height = rows.length;
-	const width = rows.length ? Math.max(...rows.map((row) => row.length)) : 0;
+	//a reduce, not `Math.max(...rows)`: spreading a hundred thousand rows overflows the stack
+	const width = rows.reduce((widest, row) => Math.max(widest, row.length), 0);
+	if (width * height > MAX_TERRAIN_CELLS)
+		throw new Error(`MWL terrain is ${width}x${height}, more than ${MAX_TERRAIN_CELLS} cells`);
 	const codes: string[] = [];
 	const starts: Record<string, { x: number; y: number }[]> = {};
 	for (let y = 0; y < height; y++) {

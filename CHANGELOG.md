@@ -44,6 +44,13 @@ the public API may still change between minor versions.
   `maxResponseBytes` (10 MB), checked against `content-length` first and cancelled as soon as
   they pass it. `SaveSyncClient.download`/`list` parsed their JSON envelope with a bare
   `response.json()`; they now go through `parseInbound` like every other reader.
+- Seeded fuzzing of every decoder that reads outside input (item 376) found four defects, all
+  fixed: `mwl.parseExpression` overflowed the stack on 13 000 nested parentheses (now bounded at
+  256 levels and 4096 operators, which also bounds `evaluateExpression`'s recursion, and it no
+  longer copies the rest of the source for every token); `parseMapFile` trimmed lines with a
+  backtracking `/[,\s]+$/` that took a second on 28 000 spaces; `parseTerrain` spread every row
+  into `Math.max`, which overflows past about 100 000 rows, and had no size bound (now 1024x1024
+  cells); and `rpg.decodeMarshal` overflowed the stack on nested arrays (now 1000 levels).
 
 ### Added
 

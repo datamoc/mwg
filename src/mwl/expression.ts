@@ -65,8 +65,18 @@ export function evaluateExpression(expression: MwlExpression | string, context: 
 	return left ** right;
 }
 
+/** deepest parenthesis or `^` nesting, and most operators, one expression may hold: both bound
+ * the recursion of parsing and of `evaluateExpression`, so hostile content fails with a message
+ * instead of overflowing the stack */
+const MAX_NESTING = 256;
+const MAX_OPERATORS = 4096;
+const NUMBER = /(?:\d+(?:\.\d*)?|\.\d+)/y;
+const NAME = /[A-Za-z_][A-Za-z0-9_.-]*/y;
+
 class Parser {
 	private index = 0;
+	private depth = 0;
+	private operators = 0;
 	private readonly source: string;
 	constructor(source: string) {
 		this.source = source;
@@ -81,6 +91,7 @@ class Parser {
 			const op = this.peek('+') ? '+' : this.peek('-') ? '-' : null;
 			if (!op) return left;
 			this.index++;
+			this.operator();
 			left = { kind: 'binary', op, left, right: this.multiplicative() };
 		}
 	}
@@ -91,6 +102,7 @@ class Parser {
 			const op = this.peek('*') ? '*' : this.peek('/') ? '/' : null;
 			if (!op) return left;
 			this.index++;
+			this.operator();
 			left = { kind: 'binary', op, left, right: this.power() };
 		}
 	}
@@ -99,7 +111,8 @@ class Parser {
 		this.skip();
 		if (this.peek('^')) {
 			this.index++;
-			left = { kind: 'binary', op: '^', left, right: this.power() };
+			this.operator();
+			left = { kind: 'binary', op: '^', left, right: this.nested(() => this.power()) };
 		}
 		return left;
 	}
@@ -107,23 +120,40 @@ class Parser {
 		this.skip();
 		if (this.peek('(')) {
 			this.index++;
-			const value = this.expression();
+			const value = this.nested(() => this.expression());
 			this.skip();
 			if (!this.peek(')')) throw new Error('missing closing parenthesis in MWL expression');
 			this.index++;
 			return value;
 		}
-		const number = /^(?:\d+(?:\.\d*)?|\.\d+)/.exec(this.rest());
+		const number = this.match(NUMBER);
 		if (number) {
 			this.index += number[0].length;
 			return { kind: 'number', value: Number(number[0]) };
 		}
-		const name = /^[A-Za-z_][A-Za-z0-9_.-]*/.exec(this.rest());
+		const name = this.match(NAME);
 		if (name) {
 			this.index += name[0].length;
 			return { kind: 'variable', name: name[0] };
 		}
 		throw new Error(`expected number, variable, or parenthesis near "${this.rest()}"`);
+	}
+	/** a sticky match at the current position, without copying the rest of the source */
+	private match(pattern: RegExp): RegExpExecArray | null {
+		pattern.lastIndex = this.index;
+		return pattern.exec(this.source);
+	}
+	private nested<T>(parse: () => T): T {
+		if (++this.depth > MAX_NESTING) throw new Error(`MWL expression is nested more than ${MAX_NESTING} deep`);
+		try {
+			return parse();
+		} finally {
+			this.depth--;
+		}
+	}
+	private operator(): void {
+		if (++this.operators > MAX_OPERATORS)
+			throw new Error(`MWL expression has more than ${MAX_OPERATORS} operators`);
 	}
 	private peek(value: string): boolean {
 		return this.source[this.index] === value;
@@ -134,7 +164,9 @@ class Parser {
 	atEnd(): boolean {
 		return this.index >= this.source.length;
 	}
+	/** the unparsed remainder, shortened for an error message */
 	rest(): string {
-		return this.source.slice(this.index);
+		const rest = this.source.slice(this.index, this.index + 40);
+		return this.index + 40 < this.source.length ? `${rest}...` : rest;
 	}
 }

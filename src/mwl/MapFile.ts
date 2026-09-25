@@ -53,7 +53,17 @@ export function parseMapFile(text: string): MwlMapFile {
 	}
 
 	//a trailing separator or stray spaces would otherwise become an empty cell
-	const grid = lines.slice(index).map((line) => line.replace(/[,\s]+$/, ''));
+	const grid = lines.slice(index).map(trimSeparators);
 	const parsed = parseTerrain(grid.join('\n'));
 	return { header, ...parsed };
+}
+
+/**
+ * `line` without its trailing commas and whitespace. A scan from the end rather than
+ * `/[,\s]+$/`, which backtracks quadratically: a line of 28 000 spaces took a second.
+ */
+function trimSeparators(line: string): string {
+	let end = line.length;
+	while (end > 0 && (line[end - 1] === ',' || /\s/.test(line[end - 1]))) end--;
+	return line.slice(0, end);
 }

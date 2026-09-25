@@ -82,8 +82,12 @@ export function withHashDefault(hash: Map<unknown, unknown>, defaultValue: unkno
 	return hash;
 }
 
+/** far deeper than any real save nests, and far short of the stack: a hostile file of nested arrays fails with a message */
+const MAX_DEPTH = 1000;
+
 class Reader {
 	private pos = 0;
+	private depth = 0;
 	private symbols: string[] = [];
 	private objects: unknown[] = [];
 	private bytes: Uint8Array;
@@ -242,6 +246,15 @@ class Reader {
 	}
 
 	readValue(): unknown {
+		if (++this.depth > MAX_DEPTH) throw new Error(`Marshal: values nested more than ${MAX_DEPTH} deep`);
+		try {
+			return this.readTagged();
+		} finally {
+			this.depth--;
+		}
+	}
+
+	private readTagged(): unknown {
 		const tag = String.fromCharCode(this.byte());
 		switch (tag) {
 			case '0':

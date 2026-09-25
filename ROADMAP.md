@@ -36,10 +36,6 @@ constraint shared by 372-378 is **secure by default: a game that changes nothing
 protection**, and an opt-out is explicit and named. Ordered by risk, not by when they were
 found.
 
-376. [Medium] Fuzz the decoders inside `npm test`: seeded random and mutated inputs against
-    `decodeMarshal`, `loadTiledMap`, the MWL grammar, save import, `deserializeReplay` and
-    `parseTwee`, asserting only "a named `Error`, never a hang, a stack overflow or a
-    non-`Error` throw". Seeded, so it stays deterministic and dependency-free.
 377. [Low] Saves under `file://`: prefix keys with a game id and store a checksum beside each
     slot, so a write from another local page is detected and reported as "not this game's
     save" instead of being loaded. Robustness, not confidentiality (nothing protects local

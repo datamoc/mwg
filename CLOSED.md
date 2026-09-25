@@ -5677,3 +5677,19 @@ capability this framework was missing.
     `package:smoke` runs `npx mwg-smoke` from an installed tarball, and the whole smoke ran with
     no `CHROME_PATH`. `visual-smoke.mjs` stays repo-only: it is this repository's wrapper
     choosing its own example and output folder.
+
+376. ~~[Medium] Fuzz the decoders inside `npm test`.~~ Landed as `tests/fuzz.test.ts` +
+    `tests/helpers/fuzz-worker.ts`: eleven targets (Ruby Marshal, the MWL grammar, map files,
+    MWL expressions, Twee, dialogue text, replays, `parseInbound`, Fluent, gettext and
+    `SaveSystem.importSlot`), each fed seeded mutations of a valid corpus (truncation, deletion,
+    duplication, syntax-aware insertion and replacement, deep nesting, random bytes) in a worker
+    the test terminates after 20 s, so a loop fails instead of hanging the run. The contract:
+    return, or throw an `Error` with a message; a call-stack `RangeError` or a non-`Error` throw
+    fails. 400 mutations per target in `npm test` (6 s), `MWG_FUZZ_ITERATIONS` for longer runs.
+    `loadTiledMap` from the proposal was left out, since it needs Pixi sheets; the JSON it reads
+    goes through the same `JSON.parse`. It found four real defects on its first runs, each fixed
+    and pinned by an ordinary regression test: stack overflow in `parseExpression` (nesting and
+    operator bounds, plus sticky regexes instead of copying the source per token), a
+    backtracking trim in `parseMapFile`, `Math.max(...rows)` and an unbounded grid in
+    `parseTerrain`, and unbounded recursion in `decodeMarshal`, the last found by a hand-built
+    input, since mutations cannot get past its version header.
