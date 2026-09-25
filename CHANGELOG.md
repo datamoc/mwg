@@ -5,6 +5,31 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
+## [0.17.1] - 2026-09-25
+
+### Fixed
+
+- A page built on a Windows checkout refused its own inline script. The HTML parser turns
+  newlines into LF before it hashes an inline script, while `contentSecurityPolicy` hashed the
+  CRLF bytes a `core.autocrlf=true` checkout hands over, so Chrome computed a different hash
+  from the one the policy allowed. The page logged a Content-Security-Policy violation that
+  `mwg-smoke`, the visual smoke and `mwg-bench` read as a page error, the source-page fallback
+  script never ran, and the same build on Linux stayed quiet - which is why no browser job had
+  caught it. Inline scripts are now hashed after CRLF and lone CR become LF; the standalone
+  page's unpacker scripts stay hashed as written, since no parser touches those. A CRLF
+  checkout and an LF checkout now produce the same policy, pinned by a test.
+- The committed-artifact checks no longer read the checkout's line endings. `api:check`,
+  `stats:check`, `sbom:check` and the committed-SBOM test compared generated text against the
+  committed file byte for byte, so a Windows clone failed them on a tree `git diff` called
+  clean; `bundle.distRaw` summed the bytes `tsc` copies out of a source file's comments, which
+  recorded who generated the file rather than what ships.
+
+### Changed
+
+- The `check` job runs on `windows-latest` alongside `ubuntu-latest`, so the two failures above
+  fail the push instead of reaching a Windows contributor. The gates themselves are unchanged,
+  and `fail-fast` is off so one OS failing still shows the other.
+
 ## [0.17.0] - 2026-09-25
 
 ### Security
