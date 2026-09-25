@@ -2756,6 +2756,9 @@ build instead.
 
     export declare class TelemetryClient extends HttpTransport {
         private consented;
+        private readonly maxStringLength;
+        private readonly maxProperties;
+        private readonly allowed;
         constructor(options: TelemetryOptions);
 
         get hasConsent(): boolean;
@@ -2763,6 +2766,8 @@ build instead.
         setConsent(granted: boolean): void;
 
         send(event: TelemetryEvent): Promise<TelemetryResponse | null>;
+
+        private bounded;
     }
 
 ### `TerrainGraphicsLayer` (class)
@@ -5679,6 +5684,9 @@ build instead.
 
     export declare class TelemetryClient extends HttpTransport {
         private consented;
+        private readonly maxStringLength;
+        private readonly maxProperties;
+        private readonly allowed;
         constructor(options: TelemetryOptions);
 
         get hasConsent(): boolean;
@@ -5686,6 +5694,8 @@ build instead.
         setConsent(granted: boolean): void;
 
         send(event: TelemetryEvent): Promise<TelemetryResponse | null>;
+
+        private bounded;
     }
 
 ### `Tweener` (class)

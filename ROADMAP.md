@@ -36,13 +36,6 @@ constraint shared by 372-378 is **secure by default: a game that changes nothing
 protection**, and an opt-out is explicit and named. Ordered by risk, not by when they were
 found.
 
-377. [Low] Saves under `file://`: prefix keys with a game id and store a checksum beside each
-    slot, so a write from another local page is detected and reported as "not this game's
-    save" instead of being loaded. Robustness, not confidentiality (nothing protects local
-    storage from someone at the keyboard), and README says so in one sentence: never put a
-    secret in a save.
-378. [Low] Telemetry output bounds: a length cap on string properties and an optional allowlist
-    of property names, so a game cannot leak a file path or an email address by accident.
 379. [Low] CI hardening: `permissions: contents: read` at the top of `ci.yml` and
     `benchmark-browser.yml` (they inherit the repository default today), actions pinned by
     commit SHA instead of tag, and Dependabot for both npm and Actions to keep those pins

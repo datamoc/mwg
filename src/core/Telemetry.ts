@@ -5,7 +5,14 @@ export interface TelemetryEvent {
 	properties?: Record<string, string | number | boolean | null>;
 }
 
-export type TelemetryOptions = HttpTransportOptions;
+export interface TelemetryOptions extends HttpTransportOptions {
+	/** longest string sent (event name, property name or value), in characters; a longer one is cut there. Default 256 */
+	maxStringLength?: number;
+	/** most properties one event carries; the rest are dropped. Default 32 */
+	maxProperties?: number;
+	/** the only property names sent, when given; any other is dropped */
+	allowedProperties?: readonly string[];
+}
 
 export interface TelemetryResponse {
 	ok: boolean;
@@ -38,9 +45,15 @@ export interface TelemetryResponse {
  */
 export class TelemetryClient extends HttpTransport {
 	private consented = false;
+	private readonly maxStringLength: number;
+	private readonly maxProperties: number;
+	private readonly allowed: ReadonlySet<string> | null;
 
 	constructor(options: TelemetryOptions) {
 		super(options, 'telemetry');
+		this.maxStringLength = options.maxStringLength ?? 256;
+		this.maxProperties = options.maxProperties ?? 32;
+		this.allowed = options.allowedProperties ? new Set(options.allowedProperties) : null;
 	}
 
 	/** whether `send` will actually transmit anything right now */
@@ -62,11 +75,32 @@ export class TelemetryClient extends HttpTransport {
 			const response = await this.fetchFn(this.endpoint, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify(event),
+				body: JSON.stringify(this.bounded(event)),
 				signal,
 			});
 			if (!response.ok) throw new Error(`telemetry request failed with HTTP ${response.status}`);
 			return { ok: true, status: response.status };
 		});
+	}
+
+	/**
+	 * The event as it leaves the machine: strings cut at `maxStringLength`, at most
+	 * `maxProperties` properties, and only `allowedProperties` when that list is given. A game
+	 * that passes an error message or a file path by mistake then sends a bounded fragment of
+	 * it rather than the whole thing, and an allowlist makes the payload's shape a decision
+	 * rather than whatever the calling code happened to put in.
+	 */
+	private bounded(event: TelemetryEvent): TelemetryEvent {
+		const cut = (value: string) =>
+			value.length > this.maxStringLength ? value.slice(0, this.maxStringLength) : value;
+		if (!event.properties) return { name: cut(event.name) };
+		const properties: Record<string, string | number | boolean | null> = {};
+		let count = 0;
+		for (const [key, value] of Object.entries(event.properties)) {
+			if (this.allowed && !this.allowed.has(key)) continue;
+			if (count++ >= this.maxProperties) break;
+			properties[cut(key)] = typeof value === 'string' ? cut(value) : value;
+		}
+		return { name: cut(event.name), properties };
 	}
 }

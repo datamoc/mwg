@@ -172,6 +172,14 @@ image, font or media URL but `data:`/`blob:`. A compromised dependency can run, 
 a save or anything else off the machine. `'unsafe-eval'` stays allowed because Pixi 8 refuses
 to start without it unless a game imports `pixi.js/unsafe-eval` (then pass `csp: { eval: false }`).
 
+One consequence of `file://` a game has to design around: **Chromium gives every local page one
+shared `localStorage`**. Any other HTML file opened on the same machine can read a game's saves
+and settings, and rewrite them. mwg treats that storage as outside input (`SaveSystem.load`
+rejects a tampered slot rather than loading it, item 372), but no checksum can make it
+private or trustworthy, since the page that rewrites a save can recompute any checksum too. So
+never put a secret in a save or in settings (an account token, a password, a licence key), and
+treat a save as the player's own editable file, which it is.
+
 ## Capability spec
 
 The definition of done for 1.0, drawn from what each of the nine references actually

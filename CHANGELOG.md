@@ -50,6 +50,13 @@ the public API may still change between minor versions.
   at `maxMessageBytes` (64 KB, where `ws` accepted 100 MiB), reads them through `parseInbound`
   (an input carrying `__proto__` counts as missing), closes a connection naming an invalid
   room (1008) or a full one (`maxClientsPerRoom`, 64; 1013).
+- `TelemetryClient` bounds what leaves the machine (item 378): strings (event name, property
+  names and values) are cut at `maxStringLength` (256), at most `maxProperties` (32) are sent,
+  and `allowedProperties`, when given, drops every other name. A path or an error message
+  passed by mistake leaves as a bounded fragment.
+- README and `SaveSystem`'s doc state the rule item 377 settled on: under `file://`, any local
+  page shares a game's `localStorage`, so nothing in a save is private and no secret belongs
+  there.
 - Seeded fuzzing of every decoder that reads outside input (item 376) found four defects, all
   fixed: `mwl.parseExpression` overflowed the stack on 13 000 nested parentheses (now bounded at
   256 levels and 4096 operators, which also bounds `evaluateExpression`'s recursion, and it no

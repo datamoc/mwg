@@ -5728,3 +5728,19 @@ capability this framework was missing.
     with no listener that ended the process. Transport-level TLS stays a reverse proxy's job,
     documented where the command is. Integration tests cover each limit and a hostile
     `__proto__` input; `package:smoke` starts and stops the server from an installed tarball.
+
+377. ~~[Low] Saves under `file://`.~~ Closed with the documentation half only, deliberately. The
+    proposed checksum would detect nothing that matters: its algorithm is public, so the local
+    page that can rewrite a save in the shared `localStorage` can recompute it, and the
+    corruption it would catch (a truncated or garbled slot) is already refused by item 372's
+    `parseInbound` and shape check. A per-install secret would live in that same storage. A key
+    prefix per game already exists (`mwg-save:<namespace>:<slot>`). What shipped is the rule, in
+    README's `file://` section and in `SaveSystem`'s doc: under `file://` every local page
+    shares a game's storage, so a save is the player's own editable file and never the place for
+    a secret.
+
+378. ~~[Low] Telemetry output bounds.~~ Landed as `TelemetryOptions.maxStringLength` (256,
+    applied to the event name and to property names and values), `maxProperties` (32) and
+    `allowedProperties` (every other name dropped). Cutting rather than refusing, because
+    telemetry is best-effort and an event that fails is an event lost, while a fragment of a
+    path is still a fragment. `tests/telemetry.test.ts` checks the sent body for each bound.

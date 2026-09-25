@@ -71,3 +71,28 @@ test('requires a non-empty endpoint and a positive timeout', () => {
 		/timeout must be positive/,
 	);
 });
+
+test('send() bounds what leaves the machine: string length, property count and an optional allowlist', async () => {
+	const bodies: unknown[] = [];
+	const fetch = async (_url: unknown, init?: RequestInit) => {
+		bodies.push(JSON.parse(String(init?.body)));
+		return new Response(null, { status: 202 });
+	};
+	const client = new TelemetryClient({
+		endpoint: 'https://telemetry.invalid',
+		fetch,
+		maxStringLength: 8,
+		maxProperties: 2,
+	});
+	client.setConsent(true);
+	await client.send({
+		name: 'crash_report',
+		properties: { path: 'C:\\Users\\someone\\save.json', level: 3, extra: true },
+	});
+	assert.deepEqual(bodies[0], { name: 'crash_re', properties: { path: 'C:\\Users', level: 3 } });
+
+	const strict = new TelemetryClient({ endpoint: 'https://telemetry.invalid', fetch, allowedProperties: ['level'] });
+	strict.setConsent(true);
+	await strict.send({ name: 'level_started', properties: { level: 3, email: 'someone@example.com' } });
+	assert.deepEqual(bodies[1], { name: 'level_started', properties: { level: 3 } });
+});

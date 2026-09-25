@@ -5,6 +5,11 @@
  * constructor pair), not to be serialised by reference with cycles preserved; that is a
  * different, much larger problem than a save system needs to solve.
  *
+ * Nothing stored here is private. Under `file://`, Chromium shares one `localStorage` between
+ * every local page, so any HTML file opened on the same machine can read and rewrite these
+ * slots; every read is checked (`parseInbound` and the slot shape) for that reason. Never store
+ * a secret in a save.
+ *
  * @example
  * ```ts
  * import { SaveSystem } from '@datamoc/mw_games/core';
