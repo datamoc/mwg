@@ -14,8 +14,9 @@ import { smokePage } from './browser-smoke.mjs';
  *
  * Both documented paths are exercised in a scratch directory outside the repo:
  *
- *   - with npm: `npm pack`, install the tarball, build a tiny game through the tutorial's own
- *     vite config, apply step 10's module-to-classic script edit, and open the result;
+ *   - with npm: `npm pack`, install the tarball, build a tiny game through step 10's by-hand
+ *     variant (a plain vite config and the module-to-classic script edit), then again through
+ *     the shipped `mwgPage()` plugin and through the `mwg-emit` command, and open each result;
  *   - without npm: `dist/mw_games.global.js` in a plain `<script>` tag, also from `file://`.
  *
  * Run `npm run build` first. Each page is judged the same way the per-PR visual smoke judges
@@ -88,7 +89,7 @@ const game = new Game({ canvas: document.getElementById('game') as HTMLCanvasEle
 game.start(SmokeScene).catch((error) => console.error(error));
 `;
 
-//the tutorial's step 10: a classic-script build with relative paths, so file:// can load it
+//step 10's by-hand variant: a classic-script build with relative paths, so file:// can load it
 const VITE_CONFIG = `import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -99,6 +100,13 @@ export default defineConfig({
 		},
 	},
 });
+`;
+
+//the shipped plugin: vite build alone finishes the page, assets included
+const PLUGIN_VITE_CONFIG = `import { defineConfig } from 'vite';
+import { mwgPage } from '@datamoc/mw_games/tools/vite';
+
+export default defineConfig({ plugins: [mwgPage({ compress: false })], build: { outDir: 'dist-plugin' } });
 `;
 
 const GLOBAL_INDEX = `<!doctype html>
@@ -203,6 +211,33 @@ try {
 	});
 	console.log(JSON.stringify({ path: 'npm-app', ...npmResult }, null, 2));
 
+	// the plugin path: the same app, finished by `mwgPage()` instead of by hand, with one asset
+	// so the compiled asset map is proven to reach the page as well
+	mkdirSync(join(npmApp, 'assets'), { recursive: true });
+	writeFileSync(join(npmApp, 'assets', 'smoke.txt'), 'compiled');
+	writeFileSync(join(npmApp, 'vite.plugin.config.ts'), PLUGIN_VITE_CONFIG);
+	run('npx', ['vite', 'build', '--config', 'vite.plugin.config.ts'], npmApp);
+	const pluginResult = await smokePage({
+		url: pathToFileURL(join(npmApp, 'dist-plugin', 'index.html')).href,
+		screenshot: join(root, 'benchmark-results', 'package-smoke', 'plugin-app.png'),
+		probe: "Object.keys(window.__MWG_ASSETS__ ?? {})",
+	});
+	if (!pluginResult.probe?.includes('smoke.txt'))
+		throw new Error(`the plugin build did not ship its compiled assets: ${JSON.stringify(pluginResult.probe)}`);
+	console.log(JSON.stringify({ path: 'plugin-app', ...pluginResult }, null, 2));
+
+	// the command: the by-hand vite config again, finished by the `mwg-emit` bin instead of the edit
+	run('npx', ['vite', 'build', '--outDir', 'dist-cli'], npmApp);
+	run('npx', ['mwg-emit', '.', '--dist=dist-cli', '--no-compress'], npmApp);
+	const cliResult = await smokePage({
+		url: pathToFileURL(join(npmApp, 'dist-cli', 'index.html')).href,
+		screenshot: join(root, 'benchmark-results', 'package-smoke', 'cli-app.png'),
+		probe: "Object.keys(window.__MWG_ASSETS__ ?? {})",
+	});
+	if (!cliResult.probe?.includes('smoke.txt'))
+		throw new Error(`mwg-emit did not ship the compiled assets: ${JSON.stringify(cliResult.probe)}`);
+	console.log(JSON.stringify({ path: 'cli-app', ...cliResult }, null, 2));
+
 	// the no-install path: the standalone global, no node_modules at all
 	const globalApp = join(scratch, 'global-app');
 	mkdirSync(globalApp, { recursive: true });
@@ -215,7 +250,7 @@ try {
 	});
 	console.log(JSON.stringify({ path: 'global', ...globalResult }, null, 2));
 
-	console.log('\nboth published-package paths reached a working file:// page');
+	console.log('\nall four published-package paths reached a working file:// page');
 } finally {
 	rmSync(scratch, { recursive: true, force: true });
 }

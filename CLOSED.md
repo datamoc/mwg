@@ -5615,3 +5615,24 @@ capability this framework was missing.
     design, so the documented rule is one host per mutually untrusted script.
     `tests/lua-sandbox.test.ts` covers the limit, reuse after it, the emit path and the
     metatable.
+
+381. ~~[High] Ship the build step itself: `tools/emit-page.mjs` and the shared vite config.~~
+    Landed as `@datamoc/mw_games/tools/vite`'s `mwgPage(options)` and
+    `@datamoc/mw_games/tools/emit-page`'s `emitPage(options)`. The script became a function plus
+    a thin command line (`--dist=`, `--assets=` with project-relative defaults; the examples now
+    pass `--assets=examples/assets` and produce byte-identical pages). The plugin sets what the
+    target needs (IIFE `game.js`, `base: './'`, no inlined assets, `copyPublicDir: false` since
+    the assets are compiled, `assets/` as the dev public folder) and runs `emitPage` in
+    `closeBundle`, only for a real build: vite also closes the bundle when a dev server stops.
+    Proven where it matters, from a packed tarball in a scratch consumer project:
+    `package:smoke` gained a plugin path and a `mwg-emit` path, each opened from `file://` with
+    a probe confirming the compiled asset reached the page. The getting-started page's step 10
+    is now the plugin line, with the by-hand variant kept below it as the explanation.
+    `tests/emit-page.test.ts` covers the rewrite, the no-assets case, the plugin configuration
+    and the dev-server guard.
+
+382. ~~[Medium] `bin` entries.~~ Landed as `mwg-emit` (`tools/emit-page.mjs`) and `mwg-mwl`
+    (`tools/mwl.mjs`), both with a node shebang; `emit-page` compares the `realpath` of
+    `argv[1]`, since an npm bin shim reaches it through a symlink. `npx mwg-emit` is exercised
+    by `package:smoke` from an installed tarball. `mwg-smoke` arrives with item 383. A test
+    checks every `bin` target is in `files` and starts with the shebang.

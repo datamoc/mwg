@@ -84,19 +84,6 @@ Deliberately not proposed: `api-report`, `project-stats`, `ci-status`, `roadmap-
 the webpage and diagram builders, `package-smoke` and `npm-audit` (a workaround for this
 repository's own npm policy), which describe this project rather than a game.
 
-381. [High] Ship the build step itself: `tools/emit-page.mjs` and the shared vite config.
-    Every example is finished by `emit-page` (classic entry tag, compiled assets, optional
-    single file, precompression), and the getting-started page's step 10 tells a user that
-    this script exists "in the framework's own repository" and to do the edit by hand. A game
-    also has to rediscover `examples/vite.shared.ts`: IIFE output, `base: './'`,
-    `assetsInlineLimit: 0`, the asset folder served at the root. Proposal:
-    `@datamoc/mw_games/tools/emit-page` (`emitPage(dir, options)` plus the CLI) and a
-    `mwgViteConfig({ root, assets })` preset, or a vite plugin that runs `emitPage` on
-    `closeBundle`, so `vite build` alone produces a `file://` page. It is also where 374 (CSP)
-    and 380(c) (artifact SBOM) naturally live, so it comes first.
-382. [Medium] `bin` entries. `tools/mwl.mjs` ships but has no `bin`, so a game runs
-    `node node_modules/@datamoc/mw_games/tools/mwl.mjs`; with 381 and 383 the same holds for
-    `emit-page` and the smoke check. `mwg-mwl`, `mwg-emit` and `mwg-smoke` make `npx` work.
 383. [Medium] A `file://` smoke check for a game's own build: `browser-smoke.mjs` +
     `find-chrome.mjs` + `visual-smoke.mjs` open a built page from `file://` in headless
     Chromium and assert no page error, a WebGL/WebGPU canvas and non-flat pixels, then write

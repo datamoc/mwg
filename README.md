@@ -160,6 +160,11 @@ finds no such tag - the guard against running it against an unbuilt dev template
 The bundle itself still has to already be a classic script (an IIFE or UMD build, not further
 ES module output); this only rewrites the tag pointing at it.
 
+With Vite, none of that is by hand: `@datamoc/mw_games/tools/vite`'s `mwgPage()` plugin sets
+the classic-script configuration and, when `vite build` finishes, compiles `assets/`, rewrites
+the tag and precompresses the output (item 381). The same finishing step is `emitPage` from
+`@datamoc/mw_games/tools/emit-page`, or the `mwg-emit` command, for another bundler.
+
 ## Capability spec
 
 The definition of done for 1.0, drawn from what each of the nine references actually

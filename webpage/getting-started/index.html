@@ -364,39 +364,39 @@ override create(): void {
 
 				<article class="step">
 					<h3><span class="n">10</span> Building it for <code>file://</code></h3>
-					<p>The dev server is gone from here on: this step is what removes the need for it. First, tell Vite to bundle as a classic script rather than an ES module, with every path relative rather than site-absolute:</p>
+					<p>The dev server is gone from here on: this step is what removes the need for it. The framework ships a Vite plugin that does the whole job, so the configuration is one line:</p>
 					<pre><code>// vite.config.ts
 import { defineConfig } from 'vite';
+import { mwgPage } from '@datamoc/mw_games/tools/vite';
 
-export default defineConfig({
-	base: './',
-	build: {
-		rollupOptions: {
-			output: { format: 'iife', entryFileNames: 'game.js' },
-		},
-	},
-});</code></pre>
-					<p>Then run the build, and compile <code>assets/</code> into a script the finished page can load with no server:</p>
-					<pre><code>npx vite build
-node node_modules/@datamoc/mw_games/tools/compile-resources.mjs ./assets ./dist/assets</code></pre>
-					<p>
-						That leaves <code>dist/index.html</code>, <code>dist/game.js</code> and
-						<code>dist/assets/assets.js</code>, but the page still points at
-						<code>game.js</code> as an ES module, which <code>file://</code> refuses to
-						load, and has no <code>&lt;script&gt;</code> for the compiled assets yet. Open
-						<code>dist/index.html</code> and change this one line:
-					</p>
-					<pre><code>&lt;script type="module" crossorigin src="./game.js"&gt;&lt;/script&gt;</code></pre>
-					<p>to these two, in this order: the asset script has to run first, so <code>game.js</code> finds <code>window.__MWG_ASSETS__</code> already populated:</p>
-					<pre><code>&lt;script defer src="./assets/assets.js"&gt;&lt;/script&gt;
-&lt;script defer src="./game.js"&gt;&lt;/script&gt;</code></pre>
+export default defineConfig({ plugins: [mwgPage()] });</code></pre>
+					<p>Then build:</p>
+					<pre><code>npx vite build</code></pre>
 					<p>
 						<code>dist/</code> is now a finished game: double-click <code>dist/index.html</code>
 						and it runs, no server, nothing installed on the machine that opens it. Ship
-						that folder. <code>tools/emit-page.mjs</code> in the framework's own repository
-						scripts exactly this last edit; every one of the
-						<a href="../examples/index.html">examples</a> is built this same way, for
-						anyone who wants it automated rather than by hand.
+						that folder. Every one of the <a href="../examples/index.html">examples</a> is
+						finished by the same code. <code>mwgPage({ singleFile: true })</code> also
+						writes <code>dist/standalone.html</code>, one file with every script inlined.
+					</p>
+					<p>
+						What the plugin does, in case you want to do it by hand or with another
+						bundler. It bundles as a classic script rather than an ES module
+						(<code>format: 'iife'</code>), with every path relative rather than site-absolute
+						(<code>base: './'</code>). It compiles <code>assets/</code> into
+						<code>dist/assets/assets.js</code>, since a <code>file://</code> page cannot fetch
+						files (<code>node node_modules/@datamoc/mw_games/tools/compile-resources.mjs ./assets ./dist/assets</code>).
+						Last, in <code>dist/index.html</code>, it replaces
+						<code>&lt;script type="module" crossorigin src="./game.js"&gt;&lt;/script&gt;</code>,
+						which <code>file://</code> refuses to run, with these two lines, in this order,
+						so <code>game.js</code> finds <code>window.__MWG_ASSETS__</code> already populated:
+					</p>
+					<pre><code>&lt;script defer src="./assets/assets.js"&gt;&lt;/script&gt;
+&lt;script defer src="./game.js"&gt;&lt;/script&gt;</code></pre>
+					<p>
+						The same finishing step is also a command, <code>npx mwg-emit .</code>, run after
+						<code>vite build</code> (it finds <code>dist/</code> and <code>assets/</code>, both
+						overridable with <code>--dist=</code> and <code>--assets=</code>).
 					</p>
 				</article>
 

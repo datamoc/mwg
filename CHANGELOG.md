@@ -31,6 +31,15 @@ the public API may still change between minor versions.
 
 ### Added
 
+- The build step a game needs, shipped (item 381): `@datamoc/mw_games/tools/vite`'s
+  `mwgPage(options)` plugin makes `vite build` alone produce a page that opens from
+  `file://` (IIFE `game.js`, `base: './'`, `assets/` served in dev and compiled into the
+  build, raw copies left out, optional `singleFile`/`compress`/`toWebp`).
+  `@datamoc/mw_games/tools/emit-page` exports the underlying `emitPage(options)`, which every
+  example here still uses through its command line. The getting-started page's step 10 is
+  now that one plugin line; it used to tell users to make the edit by hand.
+- `bin` entries (item 382): `mwg-emit <folder> [--dist=] [--assets=]` and `mwg-mwl`, so `npx`
+  runs them instead of a `node node_modules/...` path.
 - `core.cloneData`/`core.uncloneablePath` - `structuredClone` whose failure names the first
   value that cannot be copied and where it sits (`action.target.reactions.rules[0].when`),
   plus that path lookup on its own for a game to assert its commands are plain data.
