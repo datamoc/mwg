@@ -165,6 +165,13 @@ the classic-script configuration and, when `vite build` finishes, compiles `asse
 the tag and precompresses the output (item 381). The same finishing step is `emitPage` from
 `@datamoc/mw_games/tools/emit-page`, or the `mwg-emit` command, for another bundler.
 
+The finished page also carries a Content-Security-Policy, with nothing to configure (item 374):
+scripts only from its own folder and its own hashed inline scripts, no network request except to
+origins the game declares (`mwgPage({ csp: { connect: ['https://news.example'] } })`), and no
+image, font or media URL but `data:`/`blob:`. A compromised dependency can run, but cannot send
+a save or anything else off the machine. `'unsafe-eval'` stays allowed because Pixi 8 refuses
+to start without it unless a game imports `pixi.js/unsafe-eval` (then pass `csp: { eval: false }`).
+
 ## Capability spec
 
 The definition of done for 1.0, drawn from what each of the nine references actually

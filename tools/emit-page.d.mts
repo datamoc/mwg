@@ -18,6 +18,15 @@ export interface EmitPageOptions {
 	toWebp?: boolean;
 	webpLossless?: boolean;
 	webpQuality?: number;
+	/** the page's Content-Security-Policy: on by default, `false` to leave it out */
+	csp?: boolean | CspOptions;
+}
+
+export interface CspOptions {
+	/** origins the game connects to (`NewsClient`, `TelemetryClient`, `LockstepClient`...) */
+	connect?: string[];
+	/** keep `'unsafe-eval'`, which Pixi 8 needs unless the game imports `pixi.js/unsafe-eval`; default true */
+	eval?: boolean;
 }
 
 export interface EmitPageResult {

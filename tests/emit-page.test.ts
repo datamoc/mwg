@@ -98,3 +98,39 @@ test('every bin entry is a shipped file with a node shebang', () => {
 		assert.match(readFileSync(new URL(`../${file}`, import.meta.url), 'utf8'), /^#!\/usr\/bin\/env node\n/, name);
 	}
 });
+
+test('the Content-Security-Policy hashes each inline script and opens connect-src only to declared origins', async () => {
+	const { contentSecurityPolicy, withContentSecurityPolicy } = await import('../tools/csp.mjs');
+	const { createHash } = await import('node:crypto');
+	const html = '<html><head><script>window.x = 1</script><script defer src="./game.js"></script></head></html>';
+	const hash = createHash('sha256').update('window.x = 1').digest('base64');
+	const policy = contentSecurityPolicy(html, { connect: ['https://news.example'] });
+	assert.match(policy, new RegExp(`script-src 'self' file: 'sha256-${hash.replace(/[+/]/g, '\\$&')}' 'unsafe-eval'`));
+	assert.match(policy, /connect-src data: blob: https:\/\/news\.example;/);
+	assert.match(policy, /default-src 'none'/);
+	assert.match(policy, /object-src 'none'/);
+	assert.doesNotMatch(contentSecurityPolicy(html, { eval: false }), /unsafe-eval/);
+
+	const once = withContentSecurityPolicy(html);
+	assert.match(once, /^<html><head>\n\t<meta http-equiv="Content-Security-Policy"/);
+	assert.equal(withContentSecurityPolicy(once).match(/Content-Security-Policy/g)?.length, 1, 'a rerun replaces it');
+	assert.throws(() => withContentSecurityPolicy('<p>no head</p>'), /no <head>/);
+});
+
+test('emitPage writes the policy by default and leaves it out with csp: false', async () => {
+	const dir = scratch();
+	try {
+		mkdirSync(join(dir, 'dist'));
+		writeFileSync(join(dir, 'dist', 'index.html'), VITE_HTML);
+		await emitPage({ dist: join(dir, 'dist'), compress: false, csp: { connect: ['wss://room.example'] } });
+		assert.match(
+			readFileSync(join(dir, 'dist', 'index.html'), 'utf8'),
+			/connect-src data: blob: wss:\/\/room\.example/,
+		);
+		writeFileSync(join(dir, 'dist', 'index.html'), VITE_HTML);
+		await emitPage({ dist: join(dir, 'dist'), compress: false, csp: false });
+		assert.doesNotMatch(readFileSync(join(dir, 'dist', 'index.html'), 'utf8'), /Content-Security-Policy/);
+	} finally {
+		rmSync(dir, { recursive: true, force: true });
+	}
+});

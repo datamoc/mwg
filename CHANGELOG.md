@@ -28,6 +28,16 @@ the public API may still change between minor versions.
   exceeded" in milliseconds instead of allocating hundreds of megabytes and freezing the tab.
   A script-level `pcall` cannot swallow it. `getmetatable("")` no longer exposes the string
   library.
+- Every page `emitPage` finishes carries a Content-Security-Policy (item 374), so every
+  example and every game built through `mwgPage()`/`mwg-emit` gets it with no configuration:
+  `default-src 'none'`, scripts from the page's own folder plus hashes of its inline scripts
+  (including the scripts a compressed standalone page unpacks), images/fonts/media from
+  `data:`/`blob:` only, and `connect-src` limited to `data:`/`blob:` plus the origins a game
+  declares (`csp: { connect: [...] }`). Measured in Chromium from `file://`: a `fetch`, an image
+  beacon, a remote script and an injected inline script are all refused, and all 22 examples
+  and both standalone variants still start. `'unsafe-eval'` stays allowed, because Pixi 8
+  refuses to start without it unless the game imports `pixi.js/unsafe-eval` (`eval: false`
+  then drops it). `csp: false` leaves the policy out.
 
 ### Added
 

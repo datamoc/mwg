@@ -378,6 +378,9 @@ export default defineConfig({ plugins: [mwgPage()] });</code></pre>
 						that folder. Every one of the <a href="../examples/index.html">examples</a> is
 						finished by the same code. <code>mwgPage({ singleFile: true })</code> also
 						writes <code>dist/standalone.html</code>, one file with every script inlined.
+						The page carries a Content-Security-Policy that blocks every network request by
+						default; a game that talks to a server names it,
+						<code>mwgPage({ csp: { connect: ['https://news.example'] } })</code>.
 					</p>
 					<p>
 						What the plugin does, in case you want to do it by hand or with another

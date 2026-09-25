@@ -7,6 +7,7 @@ import { compileResources } from './compile-resources.mjs';
 import { compressDist } from './compress-dist.mjs';
 import { toClassicScript } from './classic-html.mjs';
 import { buildSingleFile } from './single-file.mjs';
+import { withContentSecurityPolicy } from './csp.mjs';
 
 /**
  * Turns a vite build into a folder that opens by double-clicking.
@@ -25,7 +26,8 @@ import { buildSingleFile } from './single-file.mjs';
  * below maps onto) and as the `mwg-emit` command; `@datamoc/mw_games/tools/vite`'s `mwgPage()`
  * plugin calls `emitPage` at the end of `vite build`, so a game needs neither by hand.
  *
- * usage: mwg-emit <project folder> [--dist=<dir>] [--assets=<dir>] [--no-compress] [--xz]
+ * usage: mwg-emit <project folder> [--dist=<dir>] [--assets=<dir>] [--no-csp] [--connect=<origin>]...
+ *                 [--no-compress] [--xz]
  *                 [--single-file] [--single-file-compress[=level]]
  *                 [--single-file-brotli[=quality]] [--to-webp] [--webp-lossy[=quality]]
  *
@@ -55,8 +57,10 @@ import { buildSingleFile } from './single-file.mjs';
 /**
  * Finishes a vite build in `dist` as a page that opens from `file://`: compiles `assets` into
  * scripts under `dist/assets`, rewrites the module entry tag to a classic deferred one with the
- * asset scripts before it, removes vite's `.vite` metadata, then optionally precompresses and
- * writes a single-file variant. Returns what it did, for a caller to report.
+ * asset scripts before it, writes a Content-Security-Policy into the page (`csp`, see
+ * `tools/csp.mjs`; `false` leaves it out, `{ connect: [...] }` declares the endpoints a game
+ * talks to), removes vite's `.vite` metadata, then optionally precompresses and writes a
+ * single-file variant. Returns what it did, for a caller to report.
  */
 export async function emitPage({
 	dist,
@@ -68,6 +72,7 @@ export async function emitPage({
 	toWebp = false,
 	webpLossless = true,
 	webpQuality = 90,
+	csp = true,
 }) {
 	if (!dist) throw new Error('emitPage needs the dist folder of a vite build');
 	const compiled = assets
@@ -83,13 +88,22 @@ export async function emitPage({
 	const assetTags = compiled.groups.map((g) => `\t<script defer src="./assets/${g.name}.js"></script>`).join('\n');
 	//defer preserves document order, so the asset scripts still run before the game does
 	const page = assetTags ? classic.html.replace(tag, `${assetTags}\n\t${tag}`) : classic.html;
-	await writeFile(join(dist, 'index.html'), page, 'utf8');
+	const cspOptions = csp === true ? {} : csp;
+	await writeFile(join(dist, 'index.html'), cspOptions ? withContentSecurityPolicy(page, cspOptions) : page, 'utf8');
 
 	//vite leaves a .vite folder of build metadata that the shipped folder does not need
 	await rm(join(dist, '.vite'), { recursive: true, force: true });
 
 	const compressed = compress ? await compressDist(dist, { xz }) : null;
 	const single = singleFile ? await buildSingleFile({ dist, ...(singleFile === true ? {} : singleFile) }) : null;
+	if (single && cspOptions) {
+		//a compressed standalone page unpacks each script and inserts it inline, so the scripts
+		//the multi-file page loads by src are allowed by hash as well
+		const sources = [...page.matchAll(/<script[^>]*\bsrc="\.\/([^"]+)"[^>]*><\/script>/g)].map((m) => m[1]);
+		const scripts = await Promise.all(sources.map((source) => readFile(join(dist, source), 'utf8')));
+		const standalone = await readFile(single.path, 'utf8');
+		await writeFile(single.path, withContentSecurityPolicy(standalone, { ...cspOptions, scripts }), 'utf8');
+	}
 	return { dist, entry: classic.src, ...compiled, compressed, single };
 }
 
@@ -129,6 +143,9 @@ async function main(argv) {
 		toWebp: argv.includes('--to-webp'),
 		webpLossless: !webpLossyFlag,
 		webpQuality: webpLossyFlag?.includes('=') ? Number(webpLossyFlag.split('=')[1]) : 90,
+		csp: argv.includes('--no-csp')
+			? false
+			: { connect: argv.filter((a) => a.startsWith('--connect=')).map((a) => a.slice('--connect='.length)) },
 	});
 
 	console.log(`\n  ${dist}`);
