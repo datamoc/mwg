@@ -97,7 +97,11 @@ test('the committed sbom.cdx.json matches the current package.json and package-l
 	const expected = serialize(buildSbom(read<PackageJson>('package.json'), read<Lockfile>('package-lock.json')));
 	const committed = readFileSync(new URL('../sbom.cdx.json', import.meta.url), 'utf8');
 
-	assert.equal(committed, expected, 'run "npm run sbom" and commit the result');
+	assert.equal(
+		committed.replace(/\r\n/g, '\n'),
+		expected.replace(/\r\n/g, '\n'),
+		'run "npm run sbom" and commit the result',
+	);
 });
 
 test('the artifact SBOM lists only the packages whose modules reached the bundle, and the shipped files', async () => {

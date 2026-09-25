@@ -34,7 +34,12 @@ const files = [
 ];
 
 if (check) {
-	const stale = files.filter(([path, content]) => !existsSync(path) || readFileSync(path, 'utf8') !== content);
+	//generated content is LF, a Windows checkout hands these files over with CRLF: normalise
+	//both sides, or every generated file reads as stale on a fresh Windows clone
+	const stale = files.filter(
+		([path, content]) =>
+			!existsSync(path) || readFileSync(path, 'utf8').replace(/\r\n/g, '\n') !== content.replace(/\r\n/g, '\n'),
+	);
 	if (stale.length > 0) {
 		console.error(`project statistics are out of date: ${stale.map(([path]) => relative(root, path)).join(', ')}`);
 		console.error('Run `npm run stats:write` and include the generated files in the release commit.');
