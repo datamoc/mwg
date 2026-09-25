@@ -3,11 +3,16 @@ import type { Playable } from './Playable.ts';
 
 /**
  * A Standard MIDI File (SMF) reader plus a player that voices each note through
- * `audio.synthesizeTone` - `.mid` is a small, patent-free, well-documented event format
- * (timing and note-on/note-off, not audio), so reading one is ordinary format engineering,
- * and playback needed exactly the instrument item 120's waveform synth already supplies: a
- * crude but real, entirely generated-not-borrowed one, closer to a chiptune cover than a
- * sampled orchestra.
+ * `audio.synthesizeTone` - `.mid` is a small, patent-free, well-documented event format,
+ * so reading one is ordinary format engineering, and playback needed exactly the
+ * instrument item 120's waveform synth already supplies: a crude but real,
+ * entirely generated-not-borrowed one, closer to a chiptune cover than a sampled
+ * orchestra.
+ *
+ * Beyond notes and tempo the reader keeps program changes, bank select and channel
+ * controllers (volume, expression, pan, sustain, the RPG Maker loop marker) and pitch
+ * bend, and each scheduled note carries the channel voice in effect when it starts,
+ * so a sampled renderer can pick the right instrument at the right level.
  */
 
 export interface MidiNoteEvent {
@@ -25,15 +30,61 @@ export interface MidiTempoEvent {
 	microsecondsPerQuarter: number;
 }
 
-export type MidiEvent = MidiNoteEvent | MidiTempoEvent;
+export interface MidiProgramEvent {
+	tick: number;
+	type: 'program';
+	channel: number;
+	/** General MIDI program number, 0 to 127 */
+	program: number;
+}
+
+export interface MidiControlEvent {
+	tick: number;
+	type: 'control';
+	channel: number;
+	/** controller number, 0 to 127: 0 is bank select, 7 volume, 10 pan, 11 expression, 64 sustain, 111 the RPG Maker loop marker */
+	controller: number;
+	/** controller value, 0 to 127 */
+	value: number;
+}
+
+export interface MidiPitchBendEvent {
+	tick: number;
+	type: 'pitchBend';
+	channel: number;
+	/** signed bend amount, -8192 to 8191, 0 is centered */
+	value: number;
+}
+
+/** the channel voice in effect when a scheduled note starts */
+export interface MidiVoice {
+	/** General MIDI program number, 0 to 127 */
+	program: number;
+	/** bank select (CC0) */
+	bank: number;
+	/** combined channel volume (CC7) and expression (CC11), 0 to 1 */
+	gain: number;
+	/** channel pan (CC10), -1 (left) to 1 (right), 0 centered */
+	pan: number;
+}
+
+export type MidiEvent = MidiNoteEvent | MidiTempoEvent | MidiProgramEvent | MidiControlEvent | MidiPitchBendEvent;
 
 export interface MidiFile {
 	ticksPerQuarter: number;
-	/** every note-on/note-off and tempo-change event from every track, merged and sorted by tick */
+	/** every kept event from every track, merged and sorted by tick */
 	events: readonly MidiEvent[];
+	/**
+	 * Tick of the first controller-111 event (the RPG Maker XP/VX/Ace loop marker),
+	 * or null when the file carries none and loops from the start instead.
+	 */
+	loopStartTick: number | null;
 }
 
 const DEFAULT_TEMPO = 500000; // 120 BPM
+
+/** RPG Maker XP/VX/Ace loop a MIDI from this controller to the end (whole file when absent) */
+const LOOP_CONTROLLER = 111;
 
 /**
  * Reads format 0/1 Standard MIDI File bytes into a flat, tick-ordered event list.
@@ -96,6 +147,7 @@ export function parseMidi(data: ArrayBuffer | ArrayBufferView): MidiFile {
 	const ticksPerQuarter = division;
 
 	const events: MidiEvent[] = [];
+	let loopStartTick: number | null = null;
 	for (let t = 0; t < trackCount; t++) {
 		const chunkId = readAscii(4);
 		const chunkLength = readUint32();
@@ -135,10 +187,20 @@ export function parseMidi(data: ArrayBuffer | ArrayBufferView): MidiFile {
 					const velocity = bytes[offset++];
 					const isNoteOn = type === 0x90 && velocity > 0;
 					events.push({ tick, type: isNoteOn ? 'noteOn' : 'noteOff', note, velocity, channel });
-				} else if (type === 0xa0 || type === 0xb0 || type === 0xe0) {
-					offset += 2;
-				} else if (type === 0xc0 || type === 0xd0) {
-					offset += 1;
+				} else if (type === 0xb0) {
+					const controller = bytes[offset++];
+					const value = bytes[offset++];
+					events.push({ tick, type: 'control', channel, controller, value });
+					if (controller === LOOP_CONTROLLER && loopStartTick === null) loopStartTick = tick;
+				} else if (type === 0xc0) {
+					const program = bytes[offset++];
+					events.push({ tick, type: 'program', channel, program });
+				} else if (type === 0xe0) {
+					const lsb = bytes[offset++];
+					const msb = bytes[offset++];
+					events.push({ tick, type: 'pitchBend', channel, value: ((msb << 7) | lsb) - 8192 });
+				} else if (type === 0xa0 || type === 0xd0) {
+					offset += type === 0xa0 ? 2 : 1; //key and channel pressure: timing only, never voiced
 				} else {
 					throw new Error(`unsupported MIDI status byte 0x${statusByte.toString(16)}`);
 				}
@@ -147,10 +209,10 @@ export function parseMidi(data: ArrayBuffer | ArrayBufferView): MidiFile {
 	}
 
 	events.sort((a, b) => a.tick - b.tick);
-	return { ticksPerQuarter, events };
+	return { ticksPerQuarter, events, loopStartTick };
 }
 
-export interface ScheduledNote {
+export interface ScheduledNote extends MidiVoice {
 	/** seconds from the start of playback */
 	time: number;
 	duration: number;
@@ -159,32 +221,107 @@ export interface ScheduledNote {
 	channel: number;
 }
 
+interface TempoSegment {
+	tick: number;
+	time: number;
+	microsecondsPerQuarter: number;
+}
+
+/** the file's tempo map: each entry gives the playback time at its tick */
+function tempoMap(file: MidiFile): TempoSegment[] {
+	const map: TempoSegment[] = [{ tick: 0, time: 0, microsecondsPerQuarter: DEFAULT_TEMPO }];
+	for (const event of file.events) {
+		if (event.type !== 'tempo') continue;
+		const last = map[map.length - 1];
+		map.push({
+			tick: event.tick,
+			time:
+				last.time + ((event.tick - last.tick) * last.microsecondsPerQuarter) / file.ticksPerQuarter / 1_000_000,
+			microsecondsPerQuarter: event.microsecondsPerQuarter,
+		});
+	}
+	return map;
+}
+
+/** playback seconds at a tick, honouring every tempo change up to it */
+function tickToSeconds(map: readonly TempoSegment[], ticksPerQuarter: number, tick: number): number {
+	let entry = map[0];
+	for (const candidate of map) {
+		if (candidate.tick <= tick) entry = candidate;
+		else break;
+	}
+	return entry.time + ((tick - entry.tick) * entry.microsecondsPerQuarter) / ticksPerQuarter / 1_000_000;
+}
+
+/**
+ * Seconds from the start of playback at which the file loops (its controller-111
+ * marker through the file's own tempo map), or null when the file carries no marker
+ * and loops from the start instead.
+ *
+ * @example
+ * ```ts
+ * import { parseMidi, midiLoopStart } from '@datamoc/mw_games/audio';
+ *
+ * declare const midiBytes: ArrayBuffer;
+ *
+ * const file = parseMidi(midiBytes);
+ * console.log(midiLoopStart(file)); // seconds, or null with no loop marker
+ * ```
+ */
+export function midiLoopStart(file: MidiFile): number | null {
+	if (file.loopStartTick === null) return null;
+	return tickToSeconds(tempoMap(file), file.ticksPerQuarter, file.loopStartTick);
+}
+
 /**
  * Resolves a parsed file's tick-based events into real-time seconds, honouring tempo
  * changes and pairing each note-on with its matching note-off to find a duration. A
  * note-on with no matching note-off (a malformed or truncated file) still sounds, for a
- * short default duration, rather than being dropped silently.
+ * short default duration, rather than being dropped silently. Each note carries the
+ * channel voice in effect when it starts (program, bank, combined volume/expression
+ * gain, pan), so a sampled renderer can voice it without re-reading the events.
  */
 export function scheduleMidi(file: MidiFile): ScheduledNote[] {
-	const notes: ScheduledNote[] = [];
-	const active = new Map<string, { time: number; velocity: number }>();
+	const map = tempoMap(file);
+	const channels = Array.from({ length: 16 }, () => ({
+		program: 0,
+		bank: 0,
+		volume: 100,
+		expression: 127,
+		pan: 64,
+	}));
+	const voiceOf = (channel: number): MidiVoice => {
+		const state = channels[channel] ?? channels[0];
+		return {
+			program: state.program,
+			bank: state.bank,
+			gain: (state.volume / 127) * (state.expression / 127),
+			pan: (state.pan - 64) / 64,
+		};
+	};
 
-	let tempo = DEFAULT_TEMPO;
-	let lastTick = 0;
-	let time = 0;
+	const notes: ScheduledNote[] = [];
+	const active = new Map<string, { time: number; velocity: number; voice: MidiVoice }>();
 
 	for (const event of file.events) {
-		time += ((event.tick - lastTick) * tempo) / file.ticksPerQuarter / 1_000_000;
-		lastTick = event.tick;
-
-		if (event.type === 'tempo') {
-			tempo = event.microsecondsPerQuarter;
+		if (event.type === 'tempo' || event.type === 'pitchBend') continue;
+		if (event.type === 'program') {
+			(channels[event.channel] ?? channels[0]).program = event.program;
+			continue;
+		}
+		if (event.type === 'control') {
+			const state = channels[event.channel] ?? channels[0];
+			if (event.controller === 0) state.bank = event.value;
+			else if (event.controller === 7) state.volume = event.value;
+			else if (event.controller === 10) state.pan = event.value;
+			else if (event.controller === 11) state.expression = event.value;
 			continue;
 		}
 
+		const time = tickToSeconds(map, file.ticksPerQuarter, event.tick);
 		const key = `${event.channel}:${event.note}`;
 		if (event.type === 'noteOn') {
-			active.set(key, { time, velocity: event.velocity });
+			active.set(key, { time, velocity: event.velocity, voice: voiceOf(event.channel) });
 		} else {
 			const start = active.get(key);
 			if (start) {
@@ -194,6 +331,7 @@ export function scheduleMidi(file: MidiFile): ScheduledNote[] {
 					note: event.note,
 					velocity: start.velocity,
 					channel: event.channel,
+					...start.voice,
 				});
 				active.delete(key);
 			}
@@ -202,7 +340,7 @@ export function scheduleMidi(file: MidiFile): ScheduledNote[] {
 
 	for (const [key, start] of active) {
 		const [channel, note] = key.split(':').map(Number);
-		notes.push({ time: start.time, duration: 0.3, note, velocity: start.velocity, channel });
+		notes.push({ time: start.time, duration: 0.3, note, velocity: start.velocity, channel, ...start.voice });
 	}
 
 	return notes.sort((a, b) => a.time - b.time);

@@ -5,6 +5,20 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
+## [0.18.0] - 2026-09-25
+
+### Added
+
+- `audio.parseMidi` keeps program-change, control-change and pitch-bend events and reports
+  the controller-111 loop marker as `loopStartTick`; `scheduleMidi` notes carry their channel
+  voice (`MidiVoice`: program, bank, gain, pan) and `midiLoopStart` resolves the marker to seconds.
+- `audio.renderMidiToBuffer` renders a parsed MIDI file to stereo PCM frames, offline and
+  deterministic, voiced by an optional game-supplied `SoundFont` or the built-in waveform
+  synth, with the loop region attached.
+- `audio.parseSoundFont` reads SoundFont 2 bytes into layered preset voices.
+- `audio.Channel` (a seekable buffered WebAudio voice with volume, pitch, pan and a loop
+  region) and `audio.AudioBus` (independent BGM/BGS loops, ME jingles that suspend and resume
+  the BGM, overlapping SE one-shots, save and replay with playheads, plain-data snapshots).
 ## [0.17.1] - 2026-09-25
 
 ### Fixed

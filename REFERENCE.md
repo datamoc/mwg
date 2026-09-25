@@ -683,8 +683,21 @@ reach the compiled asset map without it.
   `Sound.play`; panning is reported for a backend that has a panner. `Music` stays global.
 - `synthesizeTone`/`playTone`/`Waveform` - a runtime square/triangle/sine/noise waveform
   synth for a procedural tone or SFX, no sample library.
-- `parseMidi`/`scheduleMidi`/`noteToFrequency`/`MidiPlayer` - a small `.mid` file player
-  built on `synthesizeTone` rather than a licensed instrument library.
+- `parseMidi`/`scheduleMidi`/`midiLoopStart`/`noteToFrequency`/`MidiPlayer` - a small `.mid` file player
+  built on `synthesizeTone` rather than a licensed instrument library: program, bank,
+  controller and pitch-bend events plus the controller-111 loop start, with each
+  scheduled note carrying its channel voice.
+- `renderMidiToBuffer` - renders a parsed `.mid` file to stereo PCM frames, offline and
+  deterministic: browsers cannot decode MIDI, so the file is synthesized once and plays
+  back like any decoded track, with its controller-111 loop region. An optional game-supplied
+  `SoundFont` voices real samples; without one the built-in waveform synth plays.
+- `parseSoundFont` - reads SoundFont 2 bytes into layered preset voices (key and velocity
+  ranges, tuning, loops, envelopes, pan, attenuation); the font file itself stays the
+  game's to ship and to license.
+- `Channel`/`AudioBus` - buffered WebAudio music: a `Channel` plays one looping track with
+  volume, pitch, pan, a loop region and a seekable playhead, and an `AudioBus` wires two of
+  them into independent BGM/BGS loops, ME jingles that suspend and resume the BGM,
+  overlapping SE one-shots, save and replay with playheads, and plain-data snapshots.
 
 ## `battle`
 

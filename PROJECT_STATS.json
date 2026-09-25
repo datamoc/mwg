@@ -1,11 +1,11 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.17.1",
+	"version": "0.18.0",
 	"releaseDate": "2026-09-25",
 	"source": {
-		"files": 295,
-		"lines": 49839,
+		"files": 298,
+		"lines": 51206,
 		"modules": 16,
 		"breakdown": [
 			{
@@ -34,6 +34,11 @@
 				"lines": 2746
 			},
 			{
+				"name": "audio",
+				"files": 12,
+				"lines": 2464
+			},
+			{
 				"name": "actors",
 				"files": 24,
 				"lines": 2456
@@ -57,11 +62,6 @@
 				"name": "battle",
 				"files": 15,
 				"lines": 1156
-			},
-			{
-				"name": "audio",
-				"files": 9,
-				"lines": 1097
 			},
 			{
 				"name": "simulation",
@@ -91,9 +91,9 @@
 		]
 	},
 	"tests": {
-		"files": 262,
-		"lines": 33662,
-		"cases": 2409
+		"files": 265,
+		"lines": 34566,
+		"cases": 2453
 	},
 	"tools": {
 		"files": 41,
@@ -133,12 +133,12 @@
 		"percent": 100
 	},
 	"api": {
-		"declarationFiles": 294
+		"declarationFiles": 297
 	},
 	"bundle": {
-		"globalRaw": 1104374,
-		"globalGzip": 328383,
-		"distRaw": 3646895
+		"globalRaw": 1120130,
+		"globalGzip": 333457,
+		"distRaw": 3719850
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

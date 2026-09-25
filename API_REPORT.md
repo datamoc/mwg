@@ -3109,7 +3109,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.17.1";
+    export declare const version = "0.18.0";
 
 ### `VerticalLabel` (class)
 
@@ -4152,6 +4152,56 @@ build instead.
 
 ## `./audio`
 
+### `AudioBus` (class)
+
+    export declare class AudioBus {
+        private readonly context;
+        private readonly destination;
+        private readonly load;
+        private readonly bgmChannel;
+        private readonly bgsChannel;
+        private readonly tracks;
+        private readonly saved;
+        private readonly requests;
+        private me;
+        private meToken;
+        private suspendedBgm;
+        private readonly seNodes;
+        constructor(context: AudioContext, options?: AudioBusOptions);
+
+        playBgm(track: BusTrack): Promise<void>;
+
+        playBgs(track: BusTrack): Promise<void>;
+        stopBgm(): void;
+        stopBgs(): void;
+        fadeOutBgm(seconds?: number): void;
+        fadeOutBgs(seconds?: number): void;
+
+        currentTrack(kind: 'bgm' | 'bgs'): SavedBusTrack | null;
+
+        saveBgm(): SavedBusTrack | null;
+
+        saveBgs(): SavedBusTrack | null;
+        replayBgm(): Promise<void>;
+        replayBgs(): Promise<void>;
+
+        playMe(track: BusTrack): Promise<void>;
+
+        stopMe(resume?: boolean): void;
+
+        playSe(track: BusTrack): Promise<void>;
+        stopSe(): void;
+        stopAll(): void;
+
+        snapshot(): BusSnapshot;
+
+        restore(state: BusSnapshot | null | undefined): void;
+        private static normalize;
+        private playLoop;
+        private stopMeNodes;
+        private finishMe;
+    }
+
 ### `audioGain` (function)
 
     export declare function audioGain(distance: number, falloff?: AudioFalloff): number;
@@ -4177,9 +4227,51 @@ build instead.
     export declare function audioPan(listener: AudioPoint & {
         facing: number;
 
+### `Channel` (class)
+
+    export declare class Channel {
+        private readonly context;
+        private readonly destination;
+        private source;
+        private gainNode;
+        private pannerNode;
+        private buffer;
+        private params;
+        private loopRegion;
+        private repeat;
+        private startedAt;
+        private offset;
+        constructor(context: AudioContext, destination?: AudioNode);
+        get isPlaying(): boolean;
+        get duration(): number;
+
+        play(buffer: AudioBuffer, options?: ChannelPlayOptions): void;
+
+        update(params: {
+            volume?: number;
+            pitch?: number;
+            pan?: number;
+        }): void;
+
+        stop(fadeSeconds?: number): void;
+
+        position(): number;
+
+        seek(pos: number): void;
+
+        state(): ChannelState;
+
+        restore(state: ChannelState): void;
+        private clearNodes;
+    }
+
 ### `createAudio` (function)
 
     export declare function createAudio(path: string): Playable;
+
+### `midiLoopStart` (function)
+
+    export declare function midiLoopStart(file: MidiFile): number | null;
 
 ### `MidiPlayer` (class)
 
@@ -4269,9 +4361,17 @@ build instead.
 
     export declare function parseMidi(data: ArrayBuffer | ArrayBufferView): MidiFile;
 
+### `parseSoundFont` (function)
+
+    export declare function parseSoundFont(data: ArrayBuffer | ArrayBufferView): SoundFont;
+
 ### `playTone` (function)
 
     export declare function playTone(options?: ToneOptions, create?: (dataUri: string) => Playable): Playable;
+
+### `renderMidiToBuffer` (function)
+
+    export declare function renderMidiToBuffer(file: MidiFile, options?: RenderMidiOptions): RenderedMidi;
 
 ### `scheduleMidi` (function)
 
