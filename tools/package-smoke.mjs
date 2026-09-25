@@ -222,7 +222,7 @@ try {
 	const pluginResult = await smokePage({
 		url: pathToFileURL(join(npmApp, 'dist-plugin', 'index.html')).href,
 		screenshot: join(root, 'benchmark-results', 'package-smoke', 'plugin-app.png'),
-		probe: "Object.keys(window.__MWG_ASSETS__ ?? {})",
+		probe: 'Object.keys(window.__MWG_ASSETS__ ?? {})',
 	});
 	if (!pluginResult.probe?.includes('smoke.txt'))
 		throw new Error(`the plugin build did not ship its compiled assets: ${JSON.stringify(pluginResult.probe)}`);
@@ -245,7 +245,7 @@ try {
 	const cliResult = await smokePage({
 		url: pathToFileURL(join(npmApp, 'dist-cli', 'index.html')).href,
 		screenshot: join(root, 'benchmark-results', 'package-smoke', 'cli-app.png'),
-		probe: "Object.keys(window.__MWG_ASSETS__ ?? {})",
+		probe: 'Object.keys(window.__MWG_ASSETS__ ?? {})',
 	});
 	if (!cliResult.probe?.includes('smoke.txt'))
 		throw new Error(`mwg-emit did not ship the compiled assets: ${JSON.stringify(cliResult.probe)}`);
