@@ -249,3 +249,19 @@ What is deliberately *not* re-run: the full tutorial from a clean machine along 
 three paths, since steps 01-10 are unchanged (only an optional step 11 was added, and its own
 commands were verified on a real device); and the release itself, which needs the version bump
 and the npm 2FA step, so it stays where the release process puts it.
+
+**Ports re-tested against 0.16.0, 2026-09-20.** This repository's half of the open line above
+(do both ports build and run against this release?) was re-run, since both ports pin older
+releases than the current tree. Method: `npm pack` of the 0.16.0 tree overlaid onto each
+port's `node_modules` (every alias name it imports), with the pinned install backed up first
+and restored after, so both ports were left exactly as found:
+
+- `mwg-pixel-dungeon` (pins `^0.15.0`, installed 0.15.0): with 0.16.0 overlaid, its
+  `test:mwg` passes 19/19 and `tsc --noEmit` is clean. Restored to 0.15.0.
+- `mwg-wesnoth` (pins `^0.9.0-alpha`, installed 0.9.0): with 0.16.0 overlaid under both
+  names, `tsc --noEmit` is clean and `npm test` passes 334/334. Restored to 0.9.0.
+
+Not re-run: the full vite builds, the headless-browser `verify` passes, or playing the built
+games, all of which the 2026-09-15 note covers against 0.13.0. The completeness half of the
+line is still with the ports' own maintainers, and the Wesnoth port's repository still has
+no commits.
