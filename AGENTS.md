@@ -10,6 +10,13 @@ npm test                # node --test "tests/**/*.test.ts"; runs a single file: 
 npm run build           # library build: tsc emit + the standalone mw_games.global.js IIFE
 npm run audit           # npm dependency audit, fails for high or critical advisories
 npm run ci:status       # waits for every workflow run of HEAD and fails if any of them did
+npm run format:check    # prettier over the tree; CI gate, no lint rules behind it
+npm run coverage:check  # the suite again against a coverage floor; CI gate
+npm run api:check       # committed API_REPORT.md matches the declarations the build emits
+npm run stats:check     # committed PROJECT_STATS.* match the checkout (stats:write regenerates)
+npm run size:check      # global bundle and published dist inside their recorded size budget
+npm run sbom:check      # committed sbom.cdx.json matches package-lock.json
+npm run package:smoke   # npm pack, install in a scratch dir, open the tutorial from file://
 npm run benchmark:browser # builds the dungeon example and measures headless Chrome rendering/FPS
 npm run cap:sync        # builds the mobile web output and synchronizes Capacitor platforms
 npm run cap:add:android # creates the Android platform after building the mobile web output
@@ -39,6 +46,11 @@ typechecker.
 Each `example:*:build` script runs vite build then `tools/emit-page.mjs`, which rewrites the
 `<script type="module">` entry tag to a classic deferred script and inlines compiled assets,
 required because the output must open via `file://` with no server.
+
+The package's own tools ship as `mwg-*` bins (`mwg-emit`, `mwg-smoke`, `mwg-bench`, `mwg-size`,
+`mwg-sbom`, `mwg-i18n`, `mwg-mwl`, `mwg-lockstep-server`, `mwg-extract-rgssad`,
+`mwg-placeholder-assets`), `package.json`'s `bin` mapping each onto a `tools/*.mjs` file and
+`tools.md` describing what each is for.
 
 ## Architecture
 
@@ -144,6 +156,10 @@ double-clicking a local HTML file, with no server:
 
 `tests/**/*.test.ts` run directly under `node --test`, no framework, importing `.ts` sources
 via the extension-rewriting above. Keep new tests dependency-free in the same way.
+The doubles every test used to rewrite for itself are `src/testing`, shipped to games as
+`@datamoc/mw_games/testing`: `memoryStorage`, `fakeAudio`/`fakeAudioWithEnded`, `FakeSocket`,
+`fakeFetch` and `fakeGamepad`. Import those (tests reach them at `../src/testing/index.ts`)
+instead of writing another copy.
 
 ## Verifying
 
