@@ -1,5 +1,6 @@
 import { Generator } from '../core/Random.ts';
 import { ActionJournal, type ActionJournalEntry } from '../core/ActionJournal.ts';
+import { cloneData } from '../core/Clone.ts';
 import { stateChecksum } from '../core/SyncGuard.ts';
 import { UndoHistory, type UndoHistoryOptions } from '../core/UndoHistory.ts';
 import { Scheduler, type Actor, type SchedulerSnapshot } from '../roguelike/Scheduler.ts';
@@ -155,6 +156,15 @@ export function validateSimulationReplay<State, Command, Event, A extends Actor>
  * automatic-actor loop and fixed-command replay respectively; a game composes both against
  * the same `scheduler` rather than choosing one over the other.
  *
+ * Every command and event batch is journalled, and with `history` every committed state is
+ * checkpointed, all through `structuredClone`: `Command`, `Event` and `State` must be plain data.
+ * A command naming its target as a live actor object (one that owns a `ReactionTable`, or any
+ * other callback) cannot be copied, so carry the actor's id and resolve it in the rule. A
+ * `dispatch` whose command, events or checkpoint cannot be copied throws a `TypeError` naming
+ * the offending path and commits nothing: state, scheduler, random stream and journal stay as
+ * they were before the call. The type system cannot enforce this, since a class instance with
+ * methods is perfectly cloneable while a plain object with one function field is not.
+ *
  * @example
  * ```ts
  * import { SimulationRuntime, type SimulationRuntimeRule } from '@datamoc/mw_games/simulation';
@@ -231,11 +241,20 @@ export class SimulationRuntime<State, Command, Event, A extends Actor> {
 	/** Runs one command through the rule, commits the resulting state, and charges its cost
 	 * to the scheduler's current actor when one is given. */
 	dispatch(command: Command): SimulationOutcome<State, Event> {
+		const random = this.random.getState();
 		const outcome = this.rule(this._state, command, { random: this.random, scheduler: this._scheduler });
+		let checkpoint: State | null;
+		try {
+			checkpoint = this.history ? cloneData(outcome.state, 'state') : null;
+			// Last fallible step, so a refused command or event batch leaves the journal unchanged.
+			this.journal.append(command, outcome.events);
+		} catch (error) {
+			this.random.setState(random);
+			throw error;
+		}
 		this._state = outcome.state;
 		if (outcome.cost != null) this._scheduler.spend(outcome.cost);
-		this.journal.append(command, outcome.events);
-		if (this.history) this.history.push(this.historySnapshot());
+		if (this.history) this.history.push(this.historySnapshot(checkpoint as State));
 		return outcome;
 	}
 
@@ -303,8 +322,9 @@ export class SimulationRuntime<State, Command, Event, A extends Actor> {
 		});
 	}
 
-	private historySnapshot(): SimulationSnapshot<State> {
-		return structuredClone(this.snapshot());
+	/** `snapshot()` already copies the scheduler, random state and journal; only state is live. */
+	private historySnapshot(state: State = cloneData(this._state, 'state')): SimulationSnapshot<State> {
+		return { ...this.snapshot(), state };
 	}
 
 	private restoreCheckpoint(snapshot: SimulationSnapshot<State>): void {

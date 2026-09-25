@@ -49,6 +49,7 @@ export type { DbRecord, CollectionOptions } from './Collection.ts';
 export { Recorder, Player, serializeReplay, deserializeReplay } from './Replay.ts';
 export type { ReplayEvent } from './Replay.ts';
 export { ActionJournal } from './ActionJournal.ts';
+export { cloneData, uncloneablePath } from './Clone.ts';
 export type { ActionJournalEntry } from './ActionJournal.ts';
 export { Achievements } from './Achievements.ts';
 export type { AchievementDef } from './Achievements.ts';

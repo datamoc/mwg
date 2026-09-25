@@ -500,6 +500,10 @@ build instead.
 
     export declare function clamp(value: number, min: number, max: number): number;
 
+### `cloneData` (function)
+
+    export declare function cloneData<T>(value: T, label: string): T;
+
 ### `Collection` (class)
 
     export declare class Collection {
@@ -3054,6 +3058,10 @@ build instead.
         clear(): void;
     }
 
+### `uncloneablePath` (function)
+
+    export declare function uncloneablePath(value: unknown, root?: string): string | null;
+
 ### `UndoHistory` (class)
 
     export declare class UndoHistory<T> {
@@ -4984,6 +4992,10 @@ build instead.
 
     export declare function clamp(value: number, min: number, max: number): number;
 
+### `cloneData` (function)
+
+    export declare function cloneData<T>(value: T, label: string): T;
+
 ### `Collection` (class)
 
     export declare class Collection {
@@ -5666,6 +5678,10 @@ build instead.
 
         clear(): void;
     }
+
+### `uncloneablePath` (function)
+
+    export declare function uncloneablePath(value: unknown, root?: string): string | null;
 
 ### `UndoHistory` (class)
 
@@ -7253,6 +7269,7 @@ build instead.
             actorOf: (id: string) => A;
             actorId: (actor: A) => string;
         }): SimulationRuntime<State, Command, Event, A>;
+
         private historySnapshot;
         private restoreCheckpoint;
     }

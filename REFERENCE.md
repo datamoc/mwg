@@ -147,6 +147,11 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   atomic boundary.
 - `ActionJournal` - serializable ordered action and outcome batches with checkpoints,
   incremental reads, truncation and validated restore for replay, undo and synchronization.
+  Actions and events are copied on `append`, so both must be plain data.
+- `cloneData`/`uncloneablePath` - `structuredClone` with an error naming the first value that
+  cannot be copied (`action.target.reactions.rules[0].when`), and that path on its own. The
+  journal and `simulation.SimulationRuntime` use it, so a command carrying a live actor fails
+  with where and why instead of a bare `DataCloneError`.
 - `scramble`/`unscramble` - light save-data obfuscation, not encryption.
 - `SaveSyncClient` - pushes/pulls save data to a server the game supplies.
 - `LockstepClient` - deterministic multiplayer over an injectable WebSocket, tick-driven.
@@ -979,7 +984,10 @@ live game loop.
   `SimulationSnapshot` - a facade over one state + one `roguelike.Scheduler` + one `core.
   Generator`, for the interactive half of a turn-based simulation: `dispatch` runs a single
   command through the game's rule, threading `random`/`scheduler` as context and charging any
-  returned cost; `snapshot`/`restore` capture and rebuild the whole triple. Composes with
+  returned cost; `snapshot`/`restore` capture and rebuild the whole triple. Commands, events and
+  (with `history`) state are journalled through `structuredClone`, so they must be plain data:
+  name an actor by id, never pass the live object. A `dispatch` that cannot copy them throws
+  with the offending path and commits nothing. Composes with
   `advanceToInput` against the same scheduler for the automatic-actor loop, rather than
   replacing it.
 - `EventPresentation`/`EventPresentationOptions` - the documented pattern tying a

@@ -1,3 +1,5 @@
+import { cloneData } from './Clone.ts';
+
 /** One deterministic action and the framework/game events it produced. */
 export interface ActionJournalEntry<Action, Event> {
 	readonly sequence: number;
@@ -9,6 +11,11 @@ export interface ActionJournalEntry<Action, Event> {
  * A serializable, append-only action log for replay, undo checkpoints, synchronization and
  * debugging. It does not interpret actions or events: the game decides how to reapply an
  * action, while the journal preserves the exact order and resulting event batch.
+ *
+ * Actions and events are copied with `structuredClone` on the way in, so both must be plain
+ * data. An action that carries a live object holding callbacks (an actor with a
+ * `ReactionTable`, say) is refused by `append` with the path of the first value that cannot be
+ * copied; carry that object's id instead.
  *
  * @example
  * ```ts
@@ -25,7 +32,12 @@ export class ActionJournal<Action, Event> {
 	private nextSequence = 0;
 
 	append(action: Action, events: readonly Event[] = []): ActionJournalEntry<Action, Event> {
-		const entry = { sequence: this.nextSequence++, action, events: structuredClone([...events]) };
+		const entry = {
+			sequence: this.nextSequence,
+			action: cloneData(action, 'action'),
+			events: cloneData([...events], 'events'),
+		};
+		this.nextSequence++;
 		this.entries.push(entry);
 		return structuredClone(entry);
 	}

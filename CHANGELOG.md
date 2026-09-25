@@ -5,6 +5,27 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
+## [Unreleased]
+
+### Added
+
+- `core.cloneData`/`core.uncloneablePath` - `structuredClone` whose failure names the first
+  value that cannot be copied and where it sits (`action.target.reactions.rules[0].when`),
+  plus that path lookup on its own for a game to assert its commands are plain data.
+
+### Fixed
+
+- `SimulationRuntime.dispatch` committed a command's state and scheduler cost before
+  journalling it, so a command that could not be copied (one carrying a live actor that owns
+  a `ReactionTable`, say) threw a bare `DataCloneError` after the turn had already
+  happened. It now copies the event batch, the command and (with `history`) the checkpoint
+  state first, and on failure throws a `TypeError` naming the path and restores the random
+  stream, leaving state, scheduler and journal untouched. The plain-data contract for
+  `Command`, `Event` and `State` is now stated on the class.
+- `ActionJournal.append` stored the caller's action object by reference, so mutating it
+  afterwards rewrote history; the action is now copied like the events, and a refused
+  append no longer consumes a sequence number.
+
 ## [0.16.0] - 2026-09-19
 
 ### Added
