@@ -5778,5 +5778,4 @@ capability this framework was missing.
     `fakeFetch` (a `Response` or a JSON value per request, `calls` recorded). Off the root
     barrel and on the renderer-free list the isolation test enforces. The repository's tests
     adopted it: twelve identical storage doubles, six fake audio elements and two fake sockets
-    removed. The fake gamepads from the proposal stayed in their tests, since the two copies
-    differ in what they model.
+    removed. `fakeGamepad` replaced the two identical `fakePad` copies in the input tests.

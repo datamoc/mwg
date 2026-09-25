@@ -7335,6 +7335,10 @@ build instead.
         init?: RequestInit;
     }
 
+### `fakeGamepad` (function)
+
+    export declare function fakeGamepad(index: number, buttons?: number[], axes?: number[]): Gamepad;
+
 ### `FakePlayable` (interface)
 
     export interface FakePlayable extends Playable {

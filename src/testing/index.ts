@@ -142,3 +142,16 @@ export function fakeFetch(
 	};
 	return Object.assign(fetch as typeof globalThis.fetch, { calls });
 }
+
+/**
+ * A `Gamepad` for `Input`/`PlayerInput` tests: `buttons` are values from 0 to 1 (pressed above
+ * 0.5), `axes` from -1 to 1. Hand it to the code under test the way `navigator.getGamepads()`
+ * would.
+ */
+export function fakeGamepad(index: number, buttons: number[] = [], axes: number[] = []): Gamepad {
+	return {
+		index,
+		buttons: buttons.map((value) => ({ pressed: value > 0.5, touched: value > 0.5, value })),
+		axes,
+	} as unknown as Gamepad;
+}

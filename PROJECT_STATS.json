@@ -4,9 +4,9 @@
 	"version": "0.16.0",
 	"releaseDate": "2026-09-19",
 	"source": {
-		"files": 294,
-		"lines": 49682,
-		"modules": 15,
+		"files": 295,
+		"lines": 49839,
+		"modules": 16,
 		"breakdown": [
 			{
 				"name": "two-d",
@@ -82,12 +82,17 @@
 				"name": "assets",
 				"files": 6,
 				"lines": 593
+			},
+			{
+				"name": "testing",
+				"files": 1,
+				"lines": 157
 			}
 		]
 	},
 	"tests": {
 		"files": 261,
-		"lines": 33560,
+		"lines": 33546,
 		"cases": 2405
 	},
 	"tools": {
@@ -133,7 +138,7 @@
 	"bundle": {
 		"globalRaw": 1104374,
 		"globalGzip": 328385,
-		"distRaw": 3646168
+		"distRaw": 3646895
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

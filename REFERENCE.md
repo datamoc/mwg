@@ -1035,6 +1035,8 @@ nothing here reaches a shipped game unless a test imports it.
   `receiveRaw(text)`, `close()`.
 - `fakeFetch`/`FakeFetchCall` - a `fetch` for every `HttpTransport` client, answering with a
   `Response` or a value sent as JSON, recording each call.
+- `fakeGamepad` - a `Gamepad` from button values (pressed above 0.5) and axes, for `Input` and
+  `PlayerInput`.
 
 ## `three-d` (optional)
 

@@ -3,24 +3,17 @@ import assert from 'node:assert/strict';
 
 import * as Input from '../src/core/Input.ts';
 import { PlayerInput } from '../src/core/PlayerInput.ts';
-
-function fakePad(index: number, buttons: number[] = [], axes: number[] = []): Gamepad {
-	return {
-		index,
-		buttons: buttons.map((v) => ({ pressed: v > 0.5, touched: v > 0.5, value: v })),
-		axes,
-	} as unknown as Gamepad;
-}
+import { fakeGamepad } from '../src/testing/index.ts';
 
 test('bind/isDown work through a PlayerInput exactly like the underlying Input action', () => {
 	const p1 = new PlayerInput('p1-basic', { padIndex: 5 });
 	p1.bindButton('confirm', [0]);
 
-	Input.pollGamepads([fakePad(5, [1])]);
+	Input.pollGamepads([fakeGamepad(5, [1])]);
 	assert.equal(p1.isDown('confirm'), true);
 	assert.equal(p1.justPressed('confirm'), true);
 
-	Input.pollGamepads([fakePad(5, [0])]);
+	Input.pollGamepads([fakeGamepad(5, [0])]);
 	Input.endFrame();
 	assert.equal(p1.isDown('confirm'), false);
 });
@@ -32,14 +25,14 @@ test('two players bound to the same action name on different pads never collide'
 	p2.bindButton('confirm', [0]);
 
 	//only player 1's pad is pressed
-	Input.pollGamepads([fakePad(10, [1]), fakePad(11, [0])]);
+	Input.pollGamepads([fakeGamepad(10, [1]), fakeGamepad(11, [0])]);
 	assert.equal(p1.isDown('confirm'), true);
 	assert.equal(p2.isDown('confirm'), false, "player 2's own action must not fire from player 1's pad");
 
 	Input.endFrame();
 
 	//now only player 2's pad is pressed
-	Input.pollGamepads([fakePad(10, [0]), fakePad(11, [1])]);
+	Input.pollGamepads([fakeGamepad(10, [0]), fakeGamepad(11, [1])]);
 	assert.equal(p1.isDown('confirm'), false);
 	assert.equal(p2.isDown('confirm'), true);
 });
@@ -48,7 +41,7 @@ test('this is the collision PlayerInput exists to avoid: binding the bare action
 	Input.bindButton('shared-confirm', 20, [0]);
 	Input.bindButton('shared-confirm', 21, [0]);
 
-	Input.pollGamepads([fakePad(20, [1]), fakePad(21, [0])]);
+	Input.pollGamepads([fakeGamepad(20, [1]), fakeGamepad(21, [0])]);
 	//either pad fires the SAME action - there is no way to tell which one did
 	assert.equal(Input.isDown('shared-confirm'), true);
 	Input.unbind('shared-confirm');
@@ -75,8 +68,8 @@ test('justReleased reports through the scoped action too', () => {
 	const p1 = new PlayerInput('p1-release', { padIndex: 30 });
 	p1.bindButton('confirm', [0]);
 
-	Input.pollGamepads([fakePad(30, [1])]);
+	Input.pollGamepads([fakeGamepad(30, [1])]);
 	Input.endFrame();
-	Input.pollGamepads([fakePad(30, [0])]);
+	Input.pollGamepads([fakeGamepad(30, [0])]);
 	assert.equal(p1.justReleased('confirm'), true);
 });

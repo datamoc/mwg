@@ -26,14 +26,7 @@ import {
 	releaseTouch,
 	attachSwipe,
 } from '../src/core/Input.ts';
-
-function fakePad(index: number, buttons: number[] = [], axes: number[] = []): Gamepad {
-	return {
-		index,
-		buttons: buttons.map((v) => ({ pressed: v > 0.5, touched: v > 0.5, value: v })),
-		axes,
-	} as unknown as Gamepad;
-}
+import { fakeGamepad } from '../src/testing/index.ts';
 
 /**
  * Key bindings, tested without a browser.
@@ -134,17 +127,17 @@ test('pollGamepads treats a held button as isDown, firing justPressed once and j
 	resetBindings();
 	bindButton('jump', 0, [0]);
 
-	pollGamepads([fakePad(0, [1])]);
+	pollGamepads([fakeGamepad(0, [1])]);
 	assert.equal(isDown('jump'), true);
 	assert.equal(justPressed('jump'), true);
 
 	endFrame();
-	pollGamepads([fakePad(0, [1])]); // still held
+	pollGamepads([fakeGamepad(0, [1])]); // still held
 	assert.equal(isDown('jump'), true);
 	assert.equal(justPressed('jump'), false, 'should not re-fire while still held');
 
 	endFrame();
-	pollGamepads([fakePad(0)]); // released
+	pollGamepads([fakeGamepad(0)]); // released
 	assert.equal(isDown('jump'), false);
 	assert.equal(justReleased('jump'), true);
 });
@@ -154,17 +147,17 @@ test('bindAxis maps a stick direction past its deadzone to a digital action', ()
 	bindAxis('right', 0, 0, 1);
 	bindAxis('left', 0, 0, -1);
 
-	pollGamepads([fakePad(0, [], [0.9])]);
+	pollGamepads([fakeGamepad(0, [], [0.9])]);
 	assert.equal(isDown('right'), true);
 	assert.equal(isDown('left'), false);
 
 	endFrame();
-	pollGamepads([fakePad(0, [], [-0.9])]);
+	pollGamepads([fakeGamepad(0, [], [-0.9])]);
 	assert.equal(isDown('left'), true);
 	assert.equal(isDown('right'), false);
 
 	endFrame();
-	pollGamepads([fakePad(0, [], [0.1])]); // inside the deadzone
+	pollGamepads([fakeGamepad(0, [], [0.1])]); // inside the deadzone
 	assert.equal(isDown('left'), false);
 	assert.equal(isDown('right'), false);
 });
@@ -177,7 +170,7 @@ test('gamepadButtonCode/gamepadAxisCode never collide with a real KeyboardEvent.
 test('rumble plays a dual-rumble effect on a pad with a vibration actuator', () => {
 	let seen: [string, Record<string, number>] | null = null;
 	const pad = {
-		...fakePad(0),
+		...fakeGamepad(0),
 		vibrationActuator: { playEffect: (type: string, params: Record<string, number>) => (seen = [type, params]) },
 	} as unknown as Gamepad;
 
@@ -191,7 +184,7 @@ test('rumble plays a dual-rumble effect on a pad with a vibration actuator', () 
 test('rumble defaults both magnitudes to 1', () => {
 	let seen: Record<string, number> | null = null;
 	const pad = {
-		...fakePad(0),
+		...fakeGamepad(0),
 		vibrationActuator: { playEffect: (_type: string, params: Record<string, number>) => (seen = params) },
 	} as unknown as Gamepad;
 
@@ -200,11 +193,11 @@ test('rumble defaults both magnitudes to 1', () => {
 });
 
 test('rumble is a no-op, not a throw, on a pad with no vibration actuator', () => {
-	assert.doesNotThrow(() => rumble(0, { duration: 100 }, [fakePad(0)]));
+	assert.doesNotThrow(() => rumble(0, { duration: 100 }, [fakeGamepad(0)]));
 });
 
 test('rumble is a no-op on an out-of-range pad index', () => {
-	assert.doesNotThrow(() => rumble(5, { duration: 100 }, [fakePad(0)]));
+	assert.doesNotThrow(() => rumble(5, { duration: 100 }, [fakeGamepad(0)]));
 });
 
 //---- touch input ----

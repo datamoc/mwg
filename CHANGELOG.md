@@ -87,9 +87,9 @@ the public API may still change between minor versions.
   time, an optional history compared against its best run, and the software-WebGL switch for a
   runner with no GPU.
 - `@datamoc/mw_games/testing` (item 388): `memoryStorage`, `fakeAudio`/`fakeAudioWithEnded`,
-  `FakeSocket` and `fakeFetch`, the doubles for the seams mwg takes by injection. Off the root
+  `FakeSocket`, `fakeFetch` and `fakeGamepad`, the doubles for the seams mwg takes by injection. Off the root
   barrel, renderer-free. This repository's own tests now use them, which removed twelve copies
-  of the same in-memory storage, six of the same fake audio element and two fake sockets.
+  of the same in-memory storage, six of the same fake audio element, two fake sockets and two fake gamepads.
   `core.MemoryStorage`, the fallback `defaultStorage()` already used, is exported.
 - The translation editor ships (item 384): `npx mwg-i18n <base> <target> [--check]`
   (`@datamoc/mw_games/tools/i18n-edit`) runs from an installed package, loading `dist` there
