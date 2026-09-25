@@ -1,6 +1,8 @@
+#!/usr/bin/env node
 import { deflateSync } from 'node:zlib';
+import { existsSync, realpathSync } from 'node:fs';
 import { writeFile, mkdir } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -16,7 +18,8 @@ import { fileURLToPath } from 'node:url';
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
-const OUT = join(here, '..', 'examples', 'assets');
+//this repository's examples read their assets from here; an installed package has no examples
+const EXAMPLE_ASSETS = join(here, '..', 'examples', 'assets');
 
 const TILE = 16;
 const COLUMNS = 8;
@@ -598,86 +601,127 @@ const MUSIC = {
 
 // ---------------------------------------------------------------- write it out
 
-await mkdir(OUT, { recursive: true });
+/** every file `writePlaceholderAssets` writes, so it can refuse to overwrite one first */
+const NAMES = [
+	'tiles.png',
+	'backdrop_room.png',
+	'char_alice.png',
+	'char_bob.png',
+	...Object.keys(SOUNDS),
+	...Object.keys(MUSIC),
+	'icon_gem.svg',
+	'tiles.json',
+];
 
-const png = buildTileset();
-await writeFile(join(OUT, 'tiles.png'), png);
+/**
+ * Writes the placeholder set into `out`: a 16px tileset and its `tiles.json`, a backdrop, two
+ * characters, sound effects, two looping tunes and an SVG icon, all drawn and synthesised here,
+ * so they carry no licence but the project's own (item 389). Refuses to replace a file that
+ * already exists unless `force`, since `out` may be a game's real asset folder.
+ */
+export async function writePlaceholderAssets(out, { force = false } = {}) {
+	if (!force) {
+		const existing = NAMES.filter((name) => existsSync(join(out, name)));
+		if (existing.length) throw new Error(`${out} already holds ${existing.join(', ')}; pass force to replace them`);
+	}
+	await mkdir(out, { recursive: true });
+	const png = buildTileset();
+	await writeFile(join(out, 'tiles.png'), png);
 
-const backdrop = buildBackdrop({
-	wall: [72, 62, 78],
-	floor: [96, 78, 62],
-	floorLine: [78, 62, 48],
-	sky: [126, 168, 208],
-	frame: [52, 44, 56],
-});
-await writeFile(join(OUT, 'backdrop_room.png'), backdrop);
+	const backdrop = buildBackdrop({
+		wall: [72, 62, 78],
+		floor: [96, 78, 62],
+		floorLine: [78, 62, 48],
+		sky: [126, 168, 208],
+		frame: [52, 44, 56],
+	});
+	await writeFile(join(out, 'backdrop_room.png'), backdrop);
 
-//two people, one silhouette: only the five colours differ
-const characters = {
-	'char_alice.png': buildCharacter({
-		skin: [236, 198, 168],
-		eyes: [64, 128, 92],
-		hair: [168, 84, 52],
-		top: [188, 92, 108],
-		bottom: [58, 62, 96],
-	}),
-	'char_bob.png': buildCharacter({
-		skin: [166, 122, 92],
-		eyes: [78, 108, 168],
-		hair: [42, 38, 40],
-		top: [96, 148, 120],
-		bottom: [92, 78, 62],
-	}),
-};
-for (const [name, character] of Object.entries(characters)) {
-	await writeFile(join(OUT, name), character.png);
-}
+	//two people, one silhouette: only the five colours differ
+	const characters = {
+		'char_alice.png': buildCharacter({
+			skin: [236, 198, 168],
+			eyes: [64, 128, 92],
+			hair: [168, 84, 52],
+			top: [188, 92, 108],
+			bottom: [58, 62, 96],
+		}),
+		'char_bob.png': buildCharacter({
+			skin: [166, 122, 92],
+			eyes: [78, 108, 168],
+			hair: [42, 38, 40],
+			top: [96, 148, 120],
+			bottom: [92, 78, 62],
+		}),
+	};
+	for (const [name, character] of Object.entries(characters)) {
+		await writeFile(join(out, name), character.png);
+	}
 
-for (const [name, samples] of Object.entries(SOUNDS)) {
-	await writeFile(join(OUT, name), encodeWav(samples));
-}
+	for (const [name, samples] of Object.entries(SOUNDS)) {
+		await writeFile(join(out, name), encodeWav(samples));
+	}
 
-for (const [name, samples] of Object.entries(MUSIC)) {
-	await writeFile(join(OUT, name), encodeWav(samples));
-}
+	for (const [name, samples] of Object.entries(MUSIC)) {
+		await writeFile(join(out, name), encodeWav(samples));
+	}
 
-const gemIcon = buildGemIcon();
-await writeFile(join(OUT, 'icon_gem.svg'), gemIcon);
+	const gemIcon = buildGemIcon();
+	await writeFile(join(out, 'icon_gem.svg'), gemIcon);
 
-//the examples import this rather than hard-coding tile numbers and frame sizes
-await writeFile(
-	join(OUT, 'tiles.json'),
-	JSON.stringify(
-		{
-			tileSize: TILE,
-			columns: COLUMNS,
-			rows: ROWS,
-			tiles: TILES,
-			character: {
-				frameWidth: CHARACTER_FRAME.width,
-				frameHeight: CHARACTER_FRAME.height,
-				expressions: Object.fromEntries(EXPRESSIONS.map((name, i) => [name, i])),
+	//the examples import this rather than hard-coding tile numbers and frame sizes
+	await writeFile(
+		join(out, 'tiles.json'),
+		JSON.stringify(
+			{
+				tileSize: TILE,
+				columns: COLUMNS,
+				rows: ROWS,
+				tiles: TILES,
+				character: {
+					frameWidth: CHARACTER_FRAME.width,
+					frameHeight: CHARACTER_FRAME.height,
+					expressions: Object.fromEntries(EXPRESSIONS.map((name, i) => [name, i])),
+				},
 			},
-		},
-		null,
-		'\t',
-	) + '\n',
-	'utf8',
-);
-
-const kb = (n) => (n / 1024).toFixed(1) + ' KB';
-console.log(`tiles.png   ${kb(png.length)}  (${COLUMNS}x${ROWS} tiles of ${TILE}px)`);
-console.log(`backdrop_room.png ${kb(backdrop.length)}  (320x180)`);
-for (const [name, character] of Object.entries(characters)) {
-	console.log(
-		`${name.padEnd(12)}${kb(character.png.length)}  (${character.expressions} expressions of ${character.frameWidth}x${character.frameHeight})`,
+			null,
+			'\t',
+		) + '\n',
+		'utf8',
 	);
+
+	const kb = (n) => (n / 1024).toFixed(1) + ' KB';
+	console.log(`tiles.png   ${kb(png.length)}  (${COLUMNS}x${ROWS} tiles of ${TILE}px)`);
+	console.log(`backdrop_room.png ${kb(backdrop.length)}  (320x180)`);
+	for (const [name, character] of Object.entries(characters)) {
+		console.log(
+			`${name.padEnd(12)}${kb(character.png.length)}  (${character.expressions} expressions of ${character.frameWidth}x${character.frameHeight})`,
+		);
+	}
+	for (const [name, samples] of Object.entries(SOUNDS)) {
+		console.log(`${name.padEnd(12)}${kb(samples.length * 2 + 44)}`);
+	}
+	for (const [name, samples] of Object.entries(MUSIC)) {
+		console.log(`${name.padEnd(14)}${kb(samples.length * 2 + 44)}`);
+	}
+	console.log(`icon_gem.svg${kb(gemIcon.length)}`);
+	console.log(`\nwritten to ${out} - generated, so redistributable under the project licence`);
 }
-for (const [name, samples] of Object.entries(SOUNDS)) {
-	console.log(`${name.padEnd(12)}${kb(samples.length * 2 + 44)}`);
+
+/**
+ * `mwg-placeholder-assets <folder> [--force]`: the set above, for a game to prototype with before
+ * its own art exists. With no folder inside this repository, it regenerates `examples/assets`.
+ */
+//realpath, since an npm `bin` shim reaches this file through a symlink
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
+	const args = process.argv.slice(2);
+	const folder = args.find((arg) => !arg.startsWith('--'));
+	const inRepository = existsSync(join(here, '..', 'examples'));
+	if (!folder && !inRepository) {
+		console.error('usage: mwg-placeholder-assets <folder> [--force]');
+		process.exit(1);
+	}
+	await writePlaceholderAssets(folder ? resolve(folder) : EXAMPLE_ASSETS, {
+		force: !folder || args.includes('--force'),
+	});
 }
-for (const [name, samples] of Object.entries(MUSIC)) {
-	console.log(`${name.padEnd(14)}${kb(samples.length * 2 + 44)}`);
-}
-console.log(`icon_gem.svg${kb(gemIcon.length)}`);
-console.log('\nwritten to examples/assets - generated, so redistributable under the project licence');

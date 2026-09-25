@@ -61,6 +61,9 @@ the public API may still change between minor versions.
   comment), `ci.yml` and `benchmark-browser.yml` run with a read-only token, and Dependabot
   keeps both the action pins and the npm dependencies current. `tests/workflows.test.ts`
   fails on an unpinned action or a workflow without `permissions`.
+- `extract-rgssad` wrote each entry to `path.join(outDir, name)` with the name taken from the
+  archive, so a crafted entry (`../x`, or `..\x` on Windows) could write outside the output
+  folder. Entry names are now normalised and refused unless they resolve inside it (item 389).
 - Seeded fuzzing of every decoder that reads outside input (item 376) found four defects, all
   fixed: `mwl.parseExpression` overflowed the stack on 13 000 nested parentheses (now bounded at
   256 levels and 4096 operators, which also bounds `evaluateExpression`'s recursion, and it no
@@ -91,6 +94,10 @@ the public API may still change between minor versions.
   barrel, renderer-free. This repository's own tests now use them, which removed twelve copies
   of the same in-memory storage, six of the same fake audio element, two fake sockets and two fake gamepads.
   `core.MemoryStorage`, the fallback `defaultStorage()` already used, is exported.
+- Two developer tools ship (item 389): `mwg-placeholder-assets <folder>` writes the generated,
+  licence-free placeholder set the examples use (refusing to overwrite without `--force`), and
+  `mwg-extract-rgssad <archive> <outDir>` unpacks an RPG Maker XP/VX archive through the
+  vendored MIT decoder, now in the package with its licence.
 - The translation editor ships (item 384): `npx mwg-i18n <base> <target> [--check]`
   (`@datamoc/mw_games/tools/i18n-edit`) runs from an installed package, loading `dist` there
   and the TypeScript sources inside this repository, so a game's CI can gate its translations

@@ -48,11 +48,6 @@ Deliberately not proposed: `api-report`, `project-stats`, `ci-status`, `roadmap-
 the webpage and diagram builders, `package-smoke` and `npm-audit` (a workaround for this
 repository's own npm policy), which describe this project rather than a game.
 
-389. [Low] Two developer-side tools with narrower audiences. `extract-rgssad` (the vendored
-    `rgssad-wasm` decoder, MIT) for someone porting a game whose archive they own; it adds the
-    `.wasm` to the package, so perhaps a separate package. And the procedural placeholder
-    generator `make-example-assets.mjs` (tileset and sounds with no licence history), useful
-    for prototyping before real art exists, once it takes an output folder.
 
 ### Parked decisions
 

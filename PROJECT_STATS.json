@@ -97,7 +97,7 @@
 	},
 	"tools": {
 		"files": 41,
-		"lines": 7803
+		"lines": 7874
 	},
 	"examples": {
 		"count": 22,
@@ -128,8 +128,8 @@
 	},
 	"roadmap": {
 		"items": 389,
-		"completed": 388,
-		"open": 1,
+		"completed": 389,
+		"open": 0,
 		"percent": 100
 	},
 	"api": {

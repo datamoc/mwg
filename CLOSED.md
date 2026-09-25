@@ -5779,3 +5779,16 @@ capability this framework was missing.
     barrel and on the renderer-free list the isolation test enforces. The repository's tests
     adopted it: twelve identical storage doubles, six fake audio elements and two fake sockets
     removed. `fakeGamepad` replaced the two identical `fakePad` copies in the input tests.
+
+389. ~~[Low] Two developer-side tools with narrower audiences.~~ Landed in the main package
+    rather than a separate one: the decoder is 42 KB, against a 1.45 MB tarball.
+    `extract-rgssad` became `extractRgssad(archive, outDir)` plus `mwg-extract-rgssad`, with
+    `tools/vendored/rgssad-wasm` (and its MIT licence) in `files`. Preparing it to ship found a
+    path traversal: entry names, which come from the archive, went straight into
+    `path.join(outDir, name)`, so `../x` (and `..\\x` on Windows) wrote outside the folder.
+    `entryPath` now normalises `\\` and refuses anything that does not resolve inside `outDir`,
+    tested end to end against archives written by a minimal RGSSAD v1 encoder in the test
+    itself. The generator became `writePlaceholderAssets(out, { force })` plus
+    `mwg-placeholder-assets <folder> [--force]`: it refuses to replace existing files without
+    `force`, since the folder may hold a game's real art. With no folder inside this repository
+    it regenerates `examples/assets`, byte-identical to before.
