@@ -5566,3 +5566,22 @@ capability this framework was missing.
     `tests/tilemap-autotile.test.ts` pins the layer build, routing, frames, edits,
     colours, lifts, faces and every validation error; REFERENCE.md and CHANGELOG
     carry the entry, and `npm run api:check` passes.
+
+371. ~~[Low] Make the simulation journal's plain-data contract explicit.~~ Raised by a
+    port's boss fight: an `attack` command carried live actor objects, one of which owned a
+    `core.ReactionTable`, whose closures `structuredClone` refuses. The crash was a bare
+    `DataCloneError`, and it came after `SimulationRuntime.dispatch` had already committed
+    the new state and charged the scheduler, so the turn happened without a journal entry.
+    Landed as `core.cloneData`/`uncloneablePath` (a copy whose failure names the first
+    uncopyable path, and that path on its own for a game's tests), used by
+    `ActionJournal.append` (which also stopped aliasing the caller's action object) and by
+    `dispatch`, which now copies command, events and checkpoint state before committing
+    anything and restores the random stream on refusal. The same copy guards every inbound
+    state copy in `CanonicalState`, `StateRegistry`, `Campaign` (whose `completeCurrent` had
+    the same half-commit shape, fixed), `runHeadlessScenario` and the MWL save reader. The
+    contract is documented on `SimulationRuntime` rather than typed, because a class
+    instance with methods clones fine while a plain object with one function field does not,
+    so a function-rejecting type would refuse valid commands. With `history`, a dispatch now
+    copies the journal once per checkpoint instead of twice. `tests/clone.test.ts` replays
+    the boss case and pins that nothing is committed; REFERENCE.md and CHANGELOG carry the
+    entry, and `npm run api:check` passes.

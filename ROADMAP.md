@@ -5,7 +5,7 @@ among what is still open is reevaluated periodically, not just appended to. Entr
 mention "the capability spec" and other [README.md](README.md) sections by name; that's
 where those live.
 
-The shipped, numbered build history (everything through item 370) has moved to
+The shipped, numbered build history (everything through item 371) has moved to
 [CLOSED.md](CLOSED.md), so this file stays to what is actually open: new numbered items,
 parked decisions, and the 1.0 exit checklist. Item numbers are never reassigned, so a new
 item continues the sequence in CLOSED.md rather than restarting at 1.
@@ -18,8 +18,9 @@ settings: music/sfx levels, mute, zoom, bindings, and a game-defined custom bag)
 (a ready-made settings screen over those values), 365 (auto-pause and auto-mute on
 page hide), 366 (frame-time quality scaling over the static fit), 367 (audio ducking
 for dialogue and menus), 368 (a discrete meter widget: hearts, stars, pips), 369
-(skip animation work for off-screen sprites) and 370 (the first-class autotile layer)
-all closed, and the shipped history continues in [CLOSED.md](CLOSED.md). What's left
+(skip animation work for off-screen sprites), 370 (the first-class autotile layer) and
+371 (the simulation journal's plain-data contract, from a port's boss-fight crash) all
+closed, and the shipped history continues in [CLOSED.md](CLOSED.md). What's left
 before 1.0 is the exit checklist below.
 
 ### Parked decisions
@@ -71,7 +72,7 @@ standing intentions.
 ### 1.0 exit checklist
 
 The definition of done for 1.0. Each line is a check to run, not a feature to build. Every numbered
-item through 370 is closed (see [CLOSED.md](CLOSED.md)); item 347 is external project work, not
+item through 371 is closed (see [CLOSED.md](CLOSED.md)); item 347 is external project work, not
 an MWG deliverable.
 Items 339-340 were planning entries regrouped into 341-342 and 346, and items 338,
 341-345 and 346 were implemented or verified against existing APIs. The
@@ -216,6 +217,25 @@ results are recorded in one place rather than scattered per line:
   clipped and no text over text.
 - `REFERENCE.md` and the generated documentation page are current, the former gaining the
   grid-indexing entry and `Game`'s resolution note this session.
+
+**Reevaluated 2026-09-25** (0.16.0 plus item 371, unreleased). No numbered item is open, so
+there is no order to change; the question was whether anything should be. The parked decisions
+still hold as written: nothing since 2026-09-15 touched nested variable writing (320), external
+migration (347), or created a game that needs a new reference pick (28/30) or board semantics
+(41). Item 371 is the kind of finding the one open checklist line exists to produce: a port
+reaching real content (a boss fight) found a framework contract nobody had stated, which no
+example here exercised. That argues for leaving the ports' line as the gate rather than
+declaring 1.0 on the in-repo checks alone. Performance: nothing shipped since 2026-09-15 adds
+frame time on the render path, and 371 removed one journal copy per undo checkpoint. Re-run
+here: `npm run check` clean, `npm test` 2360 passing, `npm run build` clean, `npm run audit` 0
+vulnerabilities, `npm run api:check` passing, and `npm pack --dry-run --json` at 1192 files,
+1.45 MB packed, 5.41 MB unpacked, with none of `tools/docs`, `node_modules`, `notes/`,
+`examples/`, `android/` or `desktop/` in the list. `npm run package:smoke`: both
+published-package paths reached a working `file://` page. `npm run visual:smoke:ui` (needed
+here because the settings screen, 364, and the meter widget, 368, changed `two-d/ui` since the
+last look): `pageErrors: []`, `gameReady: true`, WebGL, and the screenshot looked at, with
+nothing clipped or off-screen and no text over text. Both need `CHROME_PATH` pointed at a
+Chromium when no system Chrome is installed.
 
 What is deliberately *not* re-run: the full tutorial from a clean machine along each of its
 three paths, since steps 01-10 are unchanged (only an optional step 11 was added, and its own
