@@ -78,6 +78,10 @@ the public API may still change between minor versions.
   `@datamoc/mw_games/tools/emit-page` exports the underlying `emitPage(options)`, which every
   example here still uses through its command line. The getting-started page's step 10 is
   now that one plugin line; it used to tell users to make the edit by hand.
+- `mwg-size dist` (`@datamoc/mw_games/tools/bundle-size`, item 386): the size budget this
+  repository gates its own build with, for a game's build. Every file a player receives, raw and
+  gzipped, plus the total, against `size-budget.json` (written on first run or with `--update`),
+  failing past `--tolerance` (2 %).
 - The translation editor ships (item 384): `npx mwg-i18n <base> <target> [--check]`
   (`@datamoc/mw_games/tools/i18n-edit`) runs from an installed package, loading `dist` there
   and the TypeScript sources inside this repository, so a game's CI can gate its translations

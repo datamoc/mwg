@@ -48,10 +48,6 @@ Deliberately not proposed: `api-report`, `project-stats`, `ci-status`, `roadmap-
 the webpage and diagram builders, `package-smoke` and `npm-audit` (a workaround for this
 repository's own npm policy), which describe this project rather than a game.
 
-386. [Low] A bundle-size budget for a game: `tools/bundle-size.mjs` gates this repository's
-    own global build and `dist` tree against a committed baseline with a tolerance. Taking
-    the files to measure and the baseline path as arguments turns it into a CI gate a game can
-    reuse for its page size, which matters on mobile.
 387. [Low] Frame-rate measurement for a game's page: `tools/benchmark-browser.mjs` (with
     `benchmark-history.mjs`) measures a built page's rendering and FPS in headless Chrome.
     Ship after 383, which it shares its Chrome lookup with.

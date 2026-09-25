@@ -154,7 +154,7 @@ same build.
 | `package-smoke` | `npm pack`, installs the tarball outside the repo, builds the tutorial's tiny game and opens both that and the standalone global from `file://` | `npm run package:smoke` |
 | `motion-smoke` | Opens the interface example three ways (no preference, an emulated `prefers-reduced-motion: reduce`, and a flip while the page is open) and asserts the demo's own state: the preference arrives, stops the motion, and is seen when it changes | `npm run motion:smoke` |
 | `build-all-examples` | Runs every `example:*:build` script, so a vite/emit-page regression in any example is caught, not just the benchmarked ones | `npm run examples:build` |
-| `bundle-size` | Compares the global bundle and `dist` against the committed `tools/bundle-size.json` budget; `--update` rewrites it | `npm run size:check` |
+| `bundle-size` | The size budget: raw and gzipped bytes against a committed baseline, failing past a tolerance (2 % by default). Here, the global bundle and the published `dist`; in a game, every file a player receives plus their total (item 386) | `npm run size:check`/`size:update` here; `npx mwg-size dist [--baseline=size-budget.json] [--update] [--tolerance=0.02]` in a game |
 
 ## Project chores
 

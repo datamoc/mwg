@@ -39,6 +39,7 @@
 		"mwg-lockstep-server": "tools/multiplayer-server.mjs",
 		"mwg-mwl": "tools/mwl.mjs",
 		"mwg-sbom": "tools/sbom.mjs",
+		"mwg-size": "tools/bundle-size.mjs",
 		"mwg-smoke": "tools/browser-smoke.mjs"
 	},
 	"publishConfig": {
@@ -65,6 +66,8 @@
 		"tools/multiplayer-server.d.mts",
 		"tools/mwl.mjs",
 		"tools/browser-smoke.mjs",
+		"tools/bundle-size.mjs",
+		"tools/bundle-size.d.mts",
 		"tools/browser-smoke.d.mts",
 		"tools/csp.mjs",
 		"tools/csp.d.mts",
@@ -160,6 +163,7 @@
 			"import": "./dist/ai/lua.js"
 		},
 		"./tools/browser-smoke": "./tools/browser-smoke.mjs",
+		"./tools/bundle-size": "./tools/bundle-size.mjs",
 		"./tools/classic-html": "./tools/classic-html.mjs",
 		"./tools/compile-resources": "./tools/compile-resources.mjs",
 		"./tools/compress-dist": "./tools/compress-dist.mjs",

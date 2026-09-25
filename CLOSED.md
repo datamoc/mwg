@@ -5752,3 +5752,12 @@ capability this framework was missing.
     already declared theirs), and `.github/dependabot.yml` for `github-actions` (grouped) and
     `npm`, weekly. `tests/workflows.test.ts` holds both rules. Provenance needed nothing: npm
     attaches it on its own to a trusted-publishing release from a public repository.
+
+386. ~~[Low] A bundle-size budget for a game.~~ Landed as `measureBuild`/`compareBudget` in
+    `tools/bundle-size.mjs` (shipped, `@datamoc/mw_games/tools/bundle-size`) and `mwg-size
+    <dist> [--baseline=] [--update] [--tolerance=]`. With no folder it keeps this repository's
+    own two measurements and baseline, unchanged. With one, it measures every file a player
+    receives (maps, precompressed siblings and SBOMs left out) raw and gzipped, plus a total; a
+    new file with no baseline is reported and passes, since the total still counts it, and the
+    first run writes the baseline. `tests/bundle-size.test.ts` covers the file selection and the
+    tolerance.
