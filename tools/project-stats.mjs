@@ -21,6 +21,12 @@ if (invisible.length > 0) {
 	console.error('`git add` them first, then re-run.');
 	if (check) process.exit(1);
 }
+const unbuilt = staleBuild();
+if (unbuilt) {
+	console.error(unbuilt);
+	console.error('Run `npm run build` first, then re-run: these numbers describe what dist/ contains.');
+	process.exit(1);
+}
 const outputs = {
 	json: JSON.stringify(stats, null, '\t') + '\n',
 	markdown: renderMarkdown(stats),
@@ -171,6 +177,27 @@ function measureRoadmap(source) {
 	const items = [...source.matchAll(/^(?:\s*~~)?\s*(\d+)\.\s+/gm)];
 	const completed = source.split(/\r?\n/).filter((line) => /^\s*(?:\d+\.\s+~~|~~\s*\d+\.)/.test(line)).length;
 	return { items: items.length, completed, open: items.length - completed };
+}
+
+/**
+ * `dist/` is where the bundle and declaration numbers come from, so a build older than the
+ * sources describes the previous release rather than this one. That is not hypothetical: the
+ * 0.17.1 bump recorded 0.17.0's gzip, because `stats:write` ran before `npm run build` and the
+ * version string changed two bytes with an identical raw size. Refuse instead of recording it.
+ *
+ * @returns {string | null} an explanation to print, or null when the build is current
+ */
+function staleBuild() {
+	const bundle = join(root, 'dist', 'mw_games.global.js');
+	if (!existsSync(bundle)) return null; //no build at all is a different, self-describing state
+	const builtAt = statSync(bundle).mtimeMs;
+	let newestSource = 0;
+	for (const path of walk(join(root, 'src'))) {
+		const mtime = statSync(path).mtimeMs;
+		if (mtime > newestSource) newestSource = mtime;
+	}
+	if (newestSource <= builtAt) return null;
+	return 'dist/mw_games.global.js is older than src/, so these numbers would describe the previous build.';
 }
 
 function measureBundle() {
