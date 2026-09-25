@@ -355,7 +355,7 @@
 	"devDependencies": {
 		"@babylonjs/core": "^9.25.0",
 		"@babylonjs/loaders": "^9.25.0",
-		"@capacitor/android": "^7.4.4",
+		"@capacitor/android": "^8.5.2",
 		"@capacitor/cli": "^7.4.4",
 		"@capacitor/core": "^7.4.4",
 		"@capacitor/ios": "^7.4.4",
