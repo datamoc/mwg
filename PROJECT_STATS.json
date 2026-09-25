@@ -87,12 +87,12 @@
 	},
 	"tests": {
 		"files": 258,
-		"lines": 33659,
-		"cases": 2398
+		"lines": 33710,
+		"cases": 2400
 	},
 	"tools": {
 		"files": 41,
-		"lines": 7645
+		"lines": 7710
 	},
 	"examples": {
 		"count": 22,
@@ -123,8 +123,8 @@
 	},
 	"roadmap": {
 		"items": 389,
-		"completed": 380,
-		"open": 9,
+		"completed": 382,
+		"open": 7,
 		"percent": 98
 	},
 	"api": {

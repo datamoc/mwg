@@ -1,5 +1,22 @@
-import { WebSocketServer } from 'ws';
-import { pathToFileURL } from 'node:url';
+#!/usr/bin/env node
+import { existsSync, realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+//the inbound pipeline every client-side reader uses: the TypeScript source inside this
+//repository, the built `dist` inside an installed package, which ships no `src`
+const { parseInbound } = await import(
+	existsSync(new URL('../src/core/Sanitize.ts', import.meta.url))
+		? '../src/core/Sanitize.ts'
+		: '../dist/core/index.js'
+);
+
+/** `ws`, an optional peer of the published package: only a game running this server needs it */
+const { WebSocketServer } = await import('ws').catch(() => {
+	throw new Error('the lockstep server needs ws: npm install ws');
+});
+
+/** a room name a client can choose: short, printable, so one client cannot mint unbounded keys */
+const ROOM_NAME = /^[\w-]{1,64}$/;
 
 /**
  * A reference lockstep server for `core.LockstepClient` (item 129 of ROADMAP.md).
@@ -22,8 +39,18 @@ import { pathToFileURL } from 'node:url';
  * actor's turn, repeat its last input, whatever the game decides).
  */
 export function createLockstepServer(options = {}) {
-	const { port = 0, tickTimeoutMs = 200, seed, initialState, validateInput } = options;
-	const wss = new WebSocketServer({ port });
+	const {
+		port = 0,
+		host,
+		tickTimeoutMs = 200,
+		seed,
+		initialState,
+		validateInput,
+		maxMessageBytes = 64 * 1024,
+		maxClientsPerRoom = 64,
+	} = options;
+	//ws accepts 100 MiB messages unless told otherwise; an input is a few bytes
+	const wss = new WebSocketServer({ port, host, maxPayload: maxMessageBytes });
 
 	const rooms = new Map();
 	let nextId = 1;
@@ -76,6 +103,8 @@ export function createLockstepServer(options = {}) {
 	wss.on('connection', (socket, request) => {
 		const url = new URL(request.url ?? '/', 'http://localhost');
 		const roomName = url.searchParams.get('room') ?? 'default';
+		if (!ROOM_NAME.test(roomName)) return socket.close(1008, 'invalid room name');
+		if ((rooms.get(roomName)?.clients.size ?? 0) >= maxClientsPerRoom) return socket.close(1013, 'room is full');
 		const id = `p${nextId++}`;
 		const entry = room(roomName);
 		entry.clients.set(id, { socket, pendingInput: null, hasSubmitted: false });
@@ -90,10 +119,14 @@ export function createLockstepServer(options = {}) {
 		);
 		if (!entry.timer) scheduleTimeout(entry);
 
+		//ws reports an oversized or malformed frame as an 'error' event and closes the socket itself;
+		//with no listener, that event would throw and stop the whole server, every room with it
+		socket.on('error', () => {});
+
 		socket.on('message', (raw) => {
 			let message;
 			try {
-				message = JSON.parse(String(raw));
+				message = parseInbound(String(raw), { maxBytes: maxMessageBytes, label: 'lockstep input' });
 			} catch {
 				return; //malformed input from one client must not take the room down
 			}
@@ -145,9 +178,18 @@ export function createLockstepServer(options = {}) {
 	};
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-	const port = Number(process.argv[2] ?? 8787);
-	const server = createLockstepServer({ port });
+/**
+ * `mwg-lockstep-server [port] [--host=<address>]`: listens on 127.0.0.1 unless `--host` names
+ * another address, so running it never exposes a port by accident. It speaks plain `ws:`, and
+ * `LockstepClient` refuses `ws:` to anything but this machine: a deployment puts it behind a TLS
+ * reverse proxy and connects with `wss:`.
+ */
+//realpath, since an npm `bin` shim reaches this file through a symlink
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
+	const args = process.argv.slice(2);
+	const port = Number(args.find((arg) => !arg.startsWith('--')) ?? 8787);
+	const host = args.find((arg) => arg.startsWith('--host='))?.slice(7) ?? '127.0.0.1';
+	const server = createLockstepServer({ port, host });
 	await server.ready;
-	console.log(`mwg reference lockstep server listening on ws://localhost:${server.address().port}`);
+	console.log(`mwg reference lockstep server listening on ws://${host}:${server.address().port}`);
 }

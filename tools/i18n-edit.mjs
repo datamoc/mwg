@@ -1,11 +1,16 @@
+#!/usr/bin/env node
 import { readFile, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { basename, dirname, resolve } from 'node:path';
 import readline from 'node:readline';
 
-import {
+//the framework's own modules: the TypeScript sources inside this repository, the built `dist`
+//inside an installed package, which ships no `src`
+const fromSource = existsSync(new URL('../src/i18n/index.ts', import.meta.url));
+const {
 	parseFTL,
 	createEditSession,
 	cueKeyFor,
@@ -22,8 +27,8 @@ import {
 	validateCatalog,
 	validateMessageAudio,
 	messageText,
-} from '../src/i18n/index.ts';
-import { parseMarkdown } from '../src/two-d/ui/markdown.ts';
+} = await import(fromSource ? '../src/i18n/index.ts' : '../dist/i18n/index.js');
+const { parseMarkdown } = await import(fromSource ? '../src/two-d/ui/markdown.ts' : '../dist/two-d/ui/markdown.js');
 
 /**
  * A split-screen translation editor for `mwg/i18n` catalogs, in the shape of a small
@@ -731,7 +736,8 @@ function createEditor({ session, basePath, targetPath, targetIsNew, assetsDir })
 	return { run };
 }
 
-const isMain = process.argv[1] && import.meta.url.endsWith(basename(process.argv[1]));
+//realpath, since an npm `bin` shim reaches this file through a symlink
+const isMain = process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
 	main().catch((error) => {
 		console.error(`i18n-edit: ${error?.stack ?? error}`);

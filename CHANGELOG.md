@@ -44,6 +44,12 @@ the public API may still change between minor versions.
   `maxResponseBytes` (10 MB), checked against `content-length` first and cancelled as soon as
   they pass it. `SaveSyncClient.download`/`list` parsed their JSON envelope with a bare
   `response.json()`; they now go through `parseInbound` like every other reader.
+- The reference lockstep server could be stopped by any one client (item 385): `ws` reports
+  an oversized or malformed frame as an `error` event on the socket, and with no listener that
+  event threw and ended the process, every room with it. It now has a listener, caps messages
+  at `maxMessageBytes` (64 KB, where `ws` accepted 100 MiB), reads them through `parseInbound`
+  (an input carrying `__proto__` counts as missing), closes a connection naming an invalid
+  room (1008) or a full one (`maxClientsPerRoom`, 64; 1013).
 - Seeded fuzzing of every decoder that reads outside input (item 376) found four defects, all
   fixed: `mwl.parseExpression` overflowed the stack on 13 000 nested parentheses (now bounded at
   256 levels and 4096 operators, which also bounds `evaluateExpression`'s recursion, and it no
@@ -61,6 +67,13 @@ the public API may still change between minor versions.
   `@datamoc/mw_games/tools/emit-page` exports the underlying `emitPage(options)`, which every
   example here still uses through its command line. The getting-started page's step 10 is
   now that one plugin line; it used to tell users to make the edit by hand.
+- The translation editor ships (item 384): `npx mwg-i18n <base> <target> [--check]`
+  (`@datamoc/mw_games/tools/i18n-edit`) runs from an installed package, loading `dist` there
+  and the TypeScript sources inside this repository, so a game's CI can gate its translations
+  with `--check`.
+- The reference lockstep server ships (item 385): `npx mwg-lockstep-server [port]
+  [--host=]` (`@datamoc/mw_games/tools/multiplayer-server`), with `ws` an optional peer. The
+  command listens on 127.0.0.1 unless `--host` says otherwise.
 - CycloneDX SBOMs for a game (item 380): `mwgPage()` writes `dist/sbom.cdx.json`, the SBOM
   of what the build ships (the packages vite's module graph put in the bundle, with versions
   and licences, and every shipped file with its SHA-256; `sbom: false` skips it). For a small

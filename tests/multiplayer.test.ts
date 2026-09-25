@@ -234,3 +234,54 @@ test('a client that never submits is reported null once the tick timeout elapses
 	b.close();
 	await server.close();
 });
+
+function closeCode(url: string, send?: string): Promise<number> {
+	return new Promise((resolve) => {
+		const socket = new WebSocket(url);
+		if (send !== undefined) socket.onmessage = () => socket.send(send);
+		socket.onclose = (event) => resolve(event.code);
+	});
+}
+
+test('the reference server refuses bad room names, full rooms and oversized messages', async () => {
+	const server = createLockstepServer({ port: 0, tickTimeoutMs: 150, maxMessageBytes: 256, maxClientsPerRoom: 1 });
+	await server.ready;
+	const port = (server.address() as { port: number }).port;
+	try {
+		assert.equal(await closeCode(`ws://localhost:${port}/?room=${'x'.repeat(65)}`), 1008);
+		assert.equal(await closeCode(`ws://localhost:${port}/?room=a%20b`), 1008);
+		assert.equal(
+			await closeCode(
+				`ws://localhost:${port}/?room=big`,
+				JSON.stringify({ type: 'input', payload: 'x'.repeat(1000) }),
+			),
+			1009,
+			'ws closes a connection whose message passes maxMessageBytes',
+		);
+		const first = await connectClient(port, 'solo');
+		assert.equal(await closeCode(`ws://localhost:${port}/?room=solo`), 1013);
+		first.close();
+	} finally {
+		await server.close();
+	}
+});
+
+test('the reference server drops an input with a forbidden key instead of relaying it', async () => {
+	const server = await startServer();
+	const port = (server.address() as { port: number }).port;
+	try {
+		const a = await connectClient(port, 'proto');
+		const ticks: Array<Record<string, unknown>> = [];
+		a.onTick.add(({ inputs }) => void ticks.push(inputs));
+		const raw = new WebSocket(`ws://localhost:${port}/?room=proto`);
+		await new Promise((resolve) => (raw.onmessage = resolve));
+		raw.send('{"type":"input","payload":{"__proto__":{"admin":true}}}');
+		a.submitInput('left');
+		await once(a.onTick);
+		assert.equal(Object.values(ticks[0]).includes(null), true, 'the hostile input counts as missing');
+		raw.close();
+		a.close();
+	} finally {
+		await server.close();
+	}
+});

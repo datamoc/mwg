@@ -35,6 +35,8 @@
 	],
 	"bin": {
 		"mwg-emit": "tools/emit-page.mjs",
+		"mwg-i18n": "tools/i18n-edit.mjs",
+		"mwg-lockstep-server": "tools/multiplayer-server.mjs",
 		"mwg-mwl": "tools/mwl.mjs",
 		"mwg-sbom": "tools/sbom.mjs",
 		"mwg-smoke": "tools/browser-smoke.mjs"
@@ -59,6 +61,8 @@
 		"sbom.cdx.json",
 		"tools/single-file.mjs",
 		"tools/single-file.d.mts",
+		"tools/multiplayer-server.mjs",
+		"tools/multiplayer-server.d.mts",
 		"tools/mwl.mjs",
 		"tools/browser-smoke.mjs",
 		"tools/browser-smoke.d.mts",
@@ -67,6 +71,8 @@
 		"tools/emit-page.mjs",
 		"tools/emit-page.d.mts",
 		"tools/find-chrome.mjs",
+		"tools/i18n-edit.mjs",
+		"tools/i18n-edit.d.mts",
 		"tools/find-chrome.d.mts",
 		"tools/vite.mjs",
 		"tools/vite.d.mts",
@@ -161,7 +167,9 @@
 		"./tools/emit-page": "./tools/emit-page.mjs",
 		"./tools/extract-html": "./tools/extract-html.mjs",
 		"./tools/find-chrome": "./tools/find-chrome.mjs",
+		"./tools/i18n-edit": "./tools/i18n-edit.mjs",
 		"./tools/sbom": "./tools/sbom.mjs",
+		"./tools/multiplayer-server": "./tools/multiplayer-server.mjs",
 		"./tools/single-file": "./tools/single-file.mjs",
 		"./tools/vite": "./tools/vite.mjs",
 		"./tools/webp-convert": "./tools/webp-convert.mjs",
@@ -297,7 +305,8 @@
 		"@babylonjs/loaders": "^9.25.0",
 		"@capacitor/core": "^7.4.4",
 		"pixi.js": "^8.20.1",
-		"playwright-core": "^1.62.1"
+		"playwright-core": "^1.62.1",
+		"ws": "^8.21.3"
 	},
 	"peerDependenciesMeta": {
 		"@babylonjs/core": {
@@ -313,6 +322,9 @@
 			"optional": true
 		},
 		"playwright-core": {
+			"optional": true
+		},
+		"ws": {
 			"optional": true
 		}
 	},

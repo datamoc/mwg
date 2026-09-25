@@ -5707,3 +5707,24 @@ capability this framework was missing.
     `pixi.js` and six of Pixi's own dependencies, no `vite`, against 60 components in the same
     project's lockfile SBOM. `mwg-emit` alone writes no artifact SBOM, since without the bundler
     it has no module graph.
+
+384. ~~[Medium] Ship the translation editor `tools/i18n-edit.mjs`.~~ Landed as
+    `@datamoc/mw_games/tools/i18n-edit` and `mwg-i18n`. The runtime imports became dynamic ones
+    choosing the TypeScript sources when `src/` sits beside the tool (this repository, where the
+    tests exercise the current source with no build) and `dist/` otherwise (an installed
+    package). The `.d.mts` names its types through the package's own subpaths, which
+    `tsconfig.json` now maps to `src/*/index.ts` so the repository typechecks with no build.
+    `package:smoke` runs `npx mwg-i18n en.ftl fr.ftl --check` from an installed tarball (1 key,
+    100 %).
+
+385. ~~[Medium] Ship the reference lockstep server `tools/multiplayer-server.mjs`.~~ Landed as
+    `@datamoc/mw_games/tools/multiplayer-server` and `mwg-lockstep-server [port] [--host=]`,
+    `ws` an optional peer loaded once at module load with an install hint. Hardening, as the
+    item asked: `maxMessageBytes` (64 KB, passed to `ws` as `maxPayload`, whose default is 100
+    MiB), inputs read through `parseInbound`, room names limited to `[\\w-]{1,64}` (1008
+    otherwise), `maxClientsPerRoom` (64, 1013 otherwise), and the command binding 127.0.0.1
+    unless told otherwise. Writing the oversized-message test found a denial of service older
+    than this item: `ws` emits `error` on the socket for an oversized or malformed frame, and
+    with no listener that ended the process. Transport-level TLS stays a reverse proxy's job,
+    documented where the command is. Integration tests cover each limit and a hostile
+    `__proto__` input; `package:smoke` starts and stops the server from an installed tarball.

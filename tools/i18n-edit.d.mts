@@ -1,5 +1,5 @@
-import type { Catalog } from '../src/i18n/index.ts';
-import type { MarkdownSpan } from '../src/two-d/ui/markdown.ts';
+import type { Catalog } from '@datamoc/mw_games/i18n';
+import type { MarkdownSpan } from '@datamoc/mw_games/two-d/ui';
 
 export interface LoadedCatalogFile {
 	catalog: Catalog;

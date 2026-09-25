@@ -180,6 +180,8 @@ try {
 					vite: devDependencies.vite,
 					//for `mwg-smoke`, whose browser driver is an optional peer
 					'playwright-core': devDependencies['playwright-core'],
+					//for the reference lockstep server, another optional peer
+					ws: devDependencies.ws,
 				},
 				//npm 12 refuses lifecycle scripts unless a project allows them by name; esbuild is
 				//the one dependency in this tree that installs a platform binary
@@ -233,6 +235,21 @@ try {
 	if (!shipped.includes('pixi.js') || !shipped.includes('@datamoc/mw_games') || shipped.includes('vite'))
 		throw new Error(`the artifact SBOM does not describe the bundle: ${shipped.join(', ')}`);
 	console.log(`artifact SBOM: ${shipped.join(', ')} + ${bom.components.length - shipped.length} files`);
+	// the translation editor's CI mode, from the installed package: it must load `dist`, since
+	// the package ships no `src`
+	writeFileSync(join(npmApp, 'en.ftl'), 'greeting = Hello, { $name }!\n');
+	writeFileSync(join(npmApp, 'fr.ftl'), 'greeting = Bonjour, { $name } !\n');
+	run('npx', ['mwg-i18n', 'en.ftl', 'fr.ftl', '--check'], npmApp);
+
+	// the reference lockstep server, loaded from the package (so from `dist`), started and stopped
+	writeFileSync(
+		join(npmApp, 'server-smoke.mjs'),
+		"import { createLockstepServer } from '@datamoc/mw_games/tools/multiplayer-server';\n" +
+			'const server = createLockstepServer({ port: 0 });\nawait server.ready;\n' +
+			"console.log('lockstep server listened on', server.address().port);\nawait server.close();\n",
+	);
+	run('node', ['server-smoke.mjs'], npmApp);
+
 	// the lockfile SBOM, through the shipped command
 	run('npx', ['mwg-sbom', '.', '--out=lock.cdx.json'], npmApp);
 

@@ -59,17 +59,6 @@ Deliberately not proposed: `api-report`, `project-stats`, `ci-status`, `roadmap-
 the webpage and diagram builders, `package-smoke` and `npm-audit` (a workaround for this
 repository's own npm policy), which describe this project rather than a game.
 
-384. [Medium] Ship the translation editor `tools/i18n-edit.mjs`: split-screen terminal editor
-    for `i18n` catalogs, JSON/FTL auto-detected, placeholder-drift warnings, and a `--check`
-    mode a game's CI can run on every translation. It already has a `.d.mts`, but imports
-    `../src/i18n/index.ts` and `../src/two-d/ui/markdown.ts`, which are not in the package, so
-    it needs to import from `dist/` first. A game translated into several languages (right-to-left
-    ones included, which `i18n.direction()` already supports) gains the most.
-385. [Medium] Ship the reference lockstep server `tools/multiplayer-server.mjs`. Its own doc
-    comment says "a game using this either runs it as-is or replaces it", but it is not in
-    `files`, so a game cannot run it as-is. Ship as `@datamoc/mw_games/tools/multiplayer-server`
-    with `ws` an optional peer; it should pick up 372's message validation and 375's transport
-    rules at the same time, since a server is exactly where hostile input arrives.
 386. [Low] A bundle-size budget for a game: `tools/bundle-size.mjs` gates this repository's
     own global build and `dist` tree against a committed baseline with a tolerance. Taking
     the files to measure and the baseline path as arguments turns it into a CI gate a game can

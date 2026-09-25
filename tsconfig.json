@@ -17,7 +17,11 @@
 		"allowImportingTsExtensions": true,
 		"rewriteRelativeImportExtensions": true,
 		"noEmit": true,
-		"paths": { "mwg/*": ["./src/*"], "mwg": ["./src/index.ts"] }
+		"paths": {
+			"mwg/*": ["./src/*"],
+			"mwg": ["./src/index.ts"],
+			"@datamoc/mw_games/*": ["./src/*/index.ts"]
+		}
 	},
 	"include": ["src", "examples", "tools", "tests"]
 }
