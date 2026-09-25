@@ -43,6 +43,9 @@ There is no lint script. `npm run check`, `npm test`, then build and open an exa
 verification loop (see "Verifying" below): layout and rendering bugs don't show up in the
 typechecker.
 
+Releasing a new version is the agent's own job up through the GitHub release; the actual
+npm publish step is the user's, deliberately - see "Release process" below.
+
 Each `example:*:build` script runs vite build then `tools/emit-page.mjs`, which rewrites the
 `<script type="module">` entry tag to a classic deferred script and inlines compiled assets,
 required because the output must open via `file://` with no server.
@@ -51,6 +54,65 @@ The package's own tools ship as `mwg-*` bins (`mwg-emit`, `mwg-smoke`, `mwg-benc
 `mwg-sbom`, `mwg-i18n`, `mwg-mwl`, `mwg-lockstep-server`, `mwg-extract-rgssad`,
 `mwg-placeholder-assets`), `package.json`'s `bin` mapping each onto a `tools/*.mjs` file and
 `tools.md` describing what each is for.
+
+## Release process
+
+A release is a chain of steps split across two accounts' worth of authority: an agent can do
+everything through triggering CI, but only the user holds the npm 2FA that makes a version
+actually public. Don't skip straight to asking for that approval - do every step before it
+yourself first.
+
+1. **Version bump.** `package.json`'s `version` and `src/version.ts`'s `export const
+   version` must agree (`tests/version.test.ts` fails the build otherwise). A "minor
+   version" means the middle number (`0.4.3` -> `0.5.0`, not `0.4.4`) - ask if the user's
+   phrasing is ambiguous about which they mean.
+2. **`CHANGELOG.md`.** Move `## [Unreleased]` content into a new `## [x.y.z] - YYYY-MM-DD`
+   section (today's date), Keep a Changelog style throughout (`### Added`/`### Changed`/
+   `### Fixed`). Write the summary paragraph and bullets from what actually shipped this
+   session, not a restatement of commit messages.
+3. **Verify.** `npm run check`, `npm run format:check`, `npm test`, `npm run build`, then
+   `npm publish --dry-run` - read its file list, don't just check the exit code, since a
+   stray `files` glob in `package.json` has leaked build tooling into the tarball before
+   (see "Testing the getting-started page" below). `format:check` is easy to skip locally
+   (it's not part of the day-to-day `npm run check`/`npm test` loop) but is its own gate in
+   CI's `check` job, and finding out from a failed CI run after tagging means a follow-up
+   commit instead of one clean release (see the 0.9.1 and 0.10.0 release history for exactly
+   that). If `format:check` finds anything, `npx prettier --write <files>` and re-run
+   `npm run stats:write` before committing - reformatting shifts line counts, which
+   `stats:check` (also gated in CI) then flags as stale.
+4. **Commit.** One commit for the whole release (version bump, changelog, and whatever
+   feature/fix work is being released together), following the `release: x.y.z, <summary>`
+   subject style already in `git log`.
+5. **Push, tag, GitHub release.**
+   ```
+   git push origin main
+   git tag -a vX.Y.Z -m "vX.Y.Z"
+   git push origin vX.Y.Z
+   gh release create vX.Y.Z --title "vX.Y.Z - <summary>" --notes "<summary paragraph>
+
+   See [CHANGELOG.md](https://github.com/datamoc/mwg/blob/vX.Y.Z/CHANGELOG.md#xyz---YYYY-MM-DD) for the full list."
+   ```
+   Pushing to `main` also triggers `deploy-pages.yml` (any `webpage/**`/`src/**`/
+   `examples/**`/`tools/**` change), which rebuilds and deploys the website on its own -
+   nothing further to do for that.
+6. **GitHub Actions takes over from here.** Publishing the release (step 5's `gh release
+   create`, a `release: [published]` event) triggers `.github/workflows/publish-npm.yml`:
+   checkout, `npm ci`, the same `check`/`test`/`build` gate CI already runs, then
+   `npm stage publish --access public`. This authenticates via OIDC trusted publishing (no
+   `NPM_TOKEN`, no 2FA prompt a CI run could never answer) but the npmjs.org trusted-publisher
+   config for this repo permits only `npm stage publish`, never a direct `npm publish` - so a
+   compromised or buggy workflow run can stage a version but never make it public by itself.
+7. **The user approves the stage.** This is the one step that is never the agent's to run: it
+   needs an interactive 2FA/OTP a CI run cannot generate or intercept.
+   ```
+   npm stage list                  # shows the pending stage id for the version just pushed
+   npm stage approve <stage-id>    # prompts for 2FA, then actually publishes to npm
+   ```
+   Once the workflow run finishes, tell the user the release is staged and ready, and give
+   them the `npm stage list`/`npm stage approve` commands rather than asking them to run a
+   bare `npm publish` - that command still exists, but this repository's trusted-publisher
+   setup is what actually makes a CI-triggered publish possible at all, and running `npm
+   publish` locally instead would bypass the OIDC path this pipeline is built around.
 
 ## Architecture
 
@@ -171,8 +233,11 @@ screenshot.
 
 # Working notes for this repository
 
-`CLAUDE.md` beside this file is the local, `.git/info/exclude`-ignored copy a Claude-style agent
-reads; this `AGENTS.md` is committed and is the one that ships. A one-off analysis or review
+`CLAUDE.md` beside this file is the local, `.git/info/exclude`-ignored copy a Claude-style
+agent reads: this file with its first two lines addressed to Claude instead of Codex, and
+nothing else. Edit here, then copy over - the two drifted once, with the release process
+below living only in the local copy, which is why that section is now in both. This
+`AGENTS.md` is committed and is the one that ships. A one-off analysis or review
 document (a deep-dive report, a review's own findings, a record of a session rather than
 documentation someone would look for by name) belongs in `notes/` at the repo root, excluded
 the same way as `CLAUDE.md` itself, not left loose at the top level beside the real, permanent
