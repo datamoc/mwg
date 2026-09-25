@@ -4,8 +4,8 @@
 	"version": "0.16.0",
 	"releaseDate": "2026-09-19",
 	"source": {
-		"files": 293,
-		"lines": 49220,
+		"files": 294,
+		"lines": 49643,
 		"modules": 15,
 		"breakdown": [
 			{
@@ -16,12 +16,12 @@
 			{
 				"name": "mwl",
 				"files": 21,
-				"lines": 6451
+				"lines": 6572
 			},
 			{
 				"name": "core",
-				"files": 47,
-				"lines": 6024
+				"files": 48,
+				"lines": 6287
 			},
 			{
 				"name": "roguelike",
@@ -41,7 +41,7 @@
 			{
 				"name": "rpg",
 				"files": 14,
-				"lines": 2000
+				"lines": 2013
 			},
 			{
 				"name": "i18n",
@@ -51,7 +51,7 @@
 			{
 				"name": "ai",
 				"files": 5,
-				"lines": 1329
+				"lines": 1330
 			},
 			{
 				"name": "battle",
@@ -66,7 +66,7 @@
 			{
 				"name": "simulation",
 				"files": 8,
-				"lines": 879
+				"lines": 904
 			},
 			{
 				"name": "three-d",
@@ -86,13 +86,13 @@
 		]
 	},
 	"tests": {
-		"files": 251,
-		"lines": 32863,
-		"cases": 2370
+		"files": 258,
+		"lines": 33659,
+		"cases": 2398
 	},
 	"tools": {
-		"files": 39,
-		"lines": 7195
+		"files": 41,
+		"lines": 7645
 	},
 	"examples": {
 		"count": 22,
@@ -122,18 +122,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 370,
-		"completed": 370,
-		"open": 0,
-		"percent": 100
+		"items": 389,
+		"completed": 380,
+		"open": 9,
+		"percent": 98
 	},
 	"api": {
-		"declarationFiles": 292
+		"declarationFiles": 293
 	},
 	"bundle": {
-		"globalRaw": 1098668,
-		"globalGzip": 326407,
-		"distRaw": 3605510
+		"globalRaw": 1103887,
+		"globalGzip": 328216,
+		"distRaw": 3635017
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
