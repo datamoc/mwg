@@ -113,7 +113,7 @@ test('importSlot runs an older-versioned export through the same migrations load
 // ------------------------------------------------------------------- SaveSyncClient
 
 function fakeResponse(body: unknown, ok = true, status = 200): Response {
-	return { ok, status, json: async () => body } as unknown as Response;
+	return { ok, status, text: async () => JSON.stringify(body) } as unknown as Response;
 }
 
 test('SaveSyncClient.upload posts the payload as JSON to a slot-qualified URL and reports success', async () => {

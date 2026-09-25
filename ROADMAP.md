@@ -36,9 +36,6 @@ constraint shared by 372-378 is **secure by default: a game that changes nothing
 protection**, and an opt-out is explicit and named. Ordered by risk, not by when they were
 found.
 
-375. [Medium] Transport defaults: `HttpTransport` and `LockstepClient` refuse `http://`/`ws://`
-    to anything but `localhost` unless `allowInsecure: true`, and every response body is
-    size-capped before it is read in full.
 376. [Medium] Fuzz the decoders inside `npm test`: seeded random and mutated inputs against
     `decodeMarshal`, `loadTiledMap`, the MWL grammar, save import, `deserializeReplay` and
     `parseTwee`, asserting only "a named `Error`, never a hang, a stack overflow or a

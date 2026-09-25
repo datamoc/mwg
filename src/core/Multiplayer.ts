@@ -1,3 +1,4 @@
+import { assertSecureUrl } from './HttpTransport.ts';
 import { parseInbound } from './Sanitize.ts';
 import { Signal } from './Signal.ts';
 
@@ -22,6 +23,8 @@ export interface LockstepClientOptions {
 	validateInput?: (payload: unknown) => boolean | string;
 	/** largest server message accepted, in bytes; defaults to 1 MB */
 	maxMessageBytes?: number;
+	/** accept `ws://` to a host other than this machine; off by default */
+	allowInsecure?: boolean;
 }
 
 export interface LockstepWelcome {
@@ -89,6 +92,7 @@ export class LockstepClient {
 
 	constructor(options: LockstepClientOptions) {
 		if (!options.url) throw new Error('lockstep client url is required');
+		assertSecureUrl(options.url, 'lockstep client', options.allowInsecure);
 		this.url = options.url;
 		this.createSocket = options.create ?? ((url) => new WebSocket(url) as unknown as WebSocketLike);
 		this.validateInput = options.validateInput;

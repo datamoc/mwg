@@ -33,14 +33,14 @@ test('LockstepClient requires a url', () => {
 
 test('connect() throws if already connected', () => {
 	const socket = new FakeSocket();
-	const client = new LockstepClient({ url: 'ws://x', create: () => socket });
+	const client = new LockstepClient({ url: 'wss://x', create: () => socket });
 	client.connect();
 	assert.throws(() => client.connect(), /already connected/);
 });
 
 test('a welcome message sets id and fires onWelcome', () => {
 	const socket = new FakeSocket();
-	const client = new LockstepClient({ url: 'ws://x', create: () => socket });
+	const client = new LockstepClient({ url: 'wss://x', create: () => socket });
 	client.connect();
 
 	let seen: { id: string } | null = null;
@@ -55,7 +55,7 @@ test('a welcome message sets id and fires onWelcome', () => {
 
 test('a tick message fires onTick with tick and inputs', () => {
 	const socket = new FakeSocket();
-	const client = new LockstepClient({ url: 'ws://x', create: () => socket });
+	const client = new LockstepClient({ url: 'wss://x', create: () => socket });
 	client.connect();
 
 	let seen: { tick: number; inputs: Record<string, unknown> } | null = null;
@@ -69,7 +69,7 @@ test('a tick message fires onTick with tick and inputs', () => {
 
 test('submitInput sends an input message while connected', () => {
 	const socket = new FakeSocket();
-	const client = new LockstepClient({ url: 'ws://x', create: () => socket });
+	const client = new LockstepClient({ url: 'wss://x', create: () => socket });
 	client.connect();
 
 	client.submitInput('jump');
@@ -80,7 +80,7 @@ test('submitInput validates locally and can carry a state checksum', () => {
 	const socket = new FakeSocket();
 	const rejected: string[] = [];
 	const client = new LockstepClient({
-		url: 'ws://x',
+		url: 'wss://x',
 		create: () => socket,
 		validateInput: (payload) => (payload === 'jump' ? true : 'unknown command'),
 	});
@@ -96,7 +96,7 @@ test('submitInput validates locally and can carry a state checksum', () => {
 
 test('welcome and ticks carry deterministic session metadata and report checksum divergence', () => {
 	const socket = new FakeSocket();
-	const client = new LockstepClient({ url: 'ws://x', create: () => socket });
+	const client = new LockstepClient({ url: 'wss://x', create: () => socket });
 	let welcome: unknown;
 	let desync: unknown;
 	client.onWelcome.add((event) => {
@@ -115,7 +115,7 @@ test('welcome and ticks carry deterministic session metadata and report checksum
 test('submitInput is a no-op before the socket is open', () => {
 	const socket = new FakeSocket();
 	socket.readyState = 0; //CONNECTING
-	const client = new LockstepClient({ url: 'ws://x', create: () => socket });
+	const client = new LockstepClient({ url: 'wss://x', create: () => socket });
 	client.connect();
 
 	client.submitInput('jump');
@@ -124,7 +124,7 @@ test('submitInput is a no-op before the socket is open', () => {
 
 test('close() closes the socket, and the server closing resets id and fires onClose', () => {
 	const socket = new FakeSocket();
-	const client = new LockstepClient({ url: 'ws://x', create: () => socket });
+	const client = new LockstepClient({ url: 'wss://x', create: () => socket });
 	client.connect();
 	socket.receive({ type: 'welcome', id: 'p1' });
 

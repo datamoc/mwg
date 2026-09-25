@@ -194,6 +194,10 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   wrapper's own rating-prompt timing; never prompts itself.
 - `FeedbackClient`/`HttpTransportOptions` - an injectable HTTPS JSON transport for
   player-submitted feedback; the game owns the endpoint, consent flow, and server-side storage.
+  Every `HttpTransportOptions` client (`FeedbackClient`, `NewsClient`, `SaveSyncClient`,
+  `TelemetryClient`) and `LockstepClient` refuses an `http:`/`ws:` url to anything but
+  `localhost`/`127.0.0.1`/`[::1]` unless `allowInsecure: true`, and a response body is read up
+  to `maxResponseBytes` (10 MB), refused as soon as it passes the limit.
 - `Spawner` - a `dt`-driven, timed, escalating wave spawner (a horde mode, a survival
   minigame), distinct from `roguelike.Scheduler`'s turn-order primitive.
 - `hexNeighbors`/`hexDistance`/`hexLine`/`hexRange`/`hexToPixel`/`pixelToHex` with

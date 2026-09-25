@@ -5595,8 +5595,7 @@ capability this framework was missing.
     back, because every `file://` page shares one `localStorage`. `load` returns `null` and
     `list` skips a tampered slot (a corrupt slot used to make `list` throw). `LockstepClient`
     gained `maxMessageBytes` (1 MB) and `onProtocolError`, and validates the three server
-    messages' field types. `SaveSync.download` still returns raw text by design: `importSlot` is
-    where it is parsed. `tests/inbound.test.ts` covers each reader; REFERENCE.md and CHANGELOG
+    messages' field types. `SaveSync.download`/`list` were left on a bare `response.json()` here by mistake (this note first said they returned raw text); item 375 moved them onto the same pipeline. `tests/inbound.test.ts` covers each reader; REFERENCE.md and CHANGELOG
     carry the entry.
 
 373. ~~[High] A memory bound for the Lua host.~~ Landed as
@@ -5654,3 +5653,13 @@ capability this framework was missing.
     the same engine; Firefox and iOS WKWebView were not available here and are the remaining
     check. `tests/emit-page.test.ts` pins the hashes, the connect list, the `eval` switch, the
     replacement of an earlier policy and `csp: false`.
+
+375. ~~[Medium] Transport defaults.~~ Landed as `core.assertSecureUrl` (used by
+    `HttpTransport`'s constructor and `LockstepClient`'s: `https:`/`wss:` always, `http:`/`ws:`
+    only to `localhost`, `127.0.0.1` or `[::1]`, a relative url as is, `allowInsecure: true` to
+    override) and `HttpTransport.readText`/`readJson`: `content-length` checked first, then the
+    body streamed through `maxResponseBytes` (10 MB) with the reader cancelled as soon as it
+    passes, then `parseInbound`. `NewsClient` and `SaveSyncClient` read through it; the latter
+    had been parsing its envelope with a bare `response.json()`, which item 372's note wrongly
+    described as raw text. `tests/transport.test.ts` covers the url rule on each client, the
+    streaming cut-off and its cancellation, the declared length and the save-sync envelope.

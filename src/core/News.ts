@@ -1,5 +1,4 @@
 import { defaultStorage, type SaveStorage } from './Save.ts';
-import { parseInbound } from './Sanitize.ts';
 import { StoredValue } from './StoredValue.ts';
 import { HttpTransport, type HttpTransportOptions } from './HttpTransport.ts';
 
@@ -44,7 +43,7 @@ export class NewsClient extends HttpTransport {
 		return this.withTimeout(async (signal) => {
 			const response = await this.fetchFn(this.endpoint, { signal });
 			if (!response.ok) throw new Error(`news request failed with HTTP ${response.status}`);
-			const data = parseInbound(await response.text(), { label: 'news response' });
+			const data = await this.readJson(response, 'response');
 			if (!Array.isArray(data)) throw new Error('news response was not an array');
 			return data.map((raw, index) => normalizeItem(raw, index));
 		});

@@ -60,8 +60,8 @@ export class SaveSyncClient extends HttpTransport {
 		return this.withTimeout(async (signal) => {
 			const response = await this.fetchFn(this.slotUrl(slot), { signal });
 			if (!response.ok) throw new Error(`save download failed with HTTP ${response.status}`);
-			const data = (await response.json()) as { payload?: unknown };
-			if (typeof data.payload !== 'string') throw new Error('save download response missing a string payload');
+			const data = (await this.readJson(response, 'download')) as { payload?: unknown } | null;
+			if (typeof data?.payload !== 'string') throw new Error('save download response missing a string payload');
 			return data.payload;
 		});
 	}
@@ -71,8 +71,8 @@ export class SaveSyncClient extends HttpTransport {
 		return this.withTimeout(async (signal) => {
 			const response = await this.fetchFn(this.endpoint, { signal });
 			if (!response.ok) throw new Error(`save slot list failed with HTTP ${response.status}`);
-			const data = (await response.json()) as { slots?: unknown };
-			if (!Array.isArray(data.slots) || !data.slots.every((slot) => typeof slot === 'string')) {
+			const data = (await this.readJson(response, 'slot list')) as { slots?: unknown } | null;
+			if (!Array.isArray(data?.slots) || !data.slots.every((slot) => typeof slot === 'string')) {
 				throw new Error('save slot list response missing a string array of slots');
 			}
 			return data.slots as string[];

@@ -38,6 +38,12 @@ the public API may still change between minor versions.
   and both standalone variants still start. `'unsafe-eval'` stays allowed, because Pixi 8
   refuses to start without it unless the game imports `pixi.js/unsafe-eval` (`eval: false`
   then drops it). `csp: false` leaves the policy out.
+- Transport defaults (item 375): `FeedbackClient`, `NewsClient`, `SaveSyncClient`,
+  `TelemetryClient` and `LockstepClient` throw at construction for an `http:`/`ws:` url to
+  anything but this machine, unless `allowInsecure: true`. Response bodies stream through
+  `maxResponseBytes` (10 MB), checked against `content-length` first and cancelled as soon as
+  they pass it. `SaveSyncClient.download`/`list` parsed their JSON envelope with a bare
+  `response.json()`; they now go through `parseInbound` like every other reader.
 
 ### Added
 
