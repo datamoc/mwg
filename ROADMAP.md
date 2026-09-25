@@ -5,49 +5,20 @@ among what is still open is reevaluated periodically, not just appended to. Entr
 mention "the capability spec" and other [README.md](README.md) sections by name; that's
 where those live.
 
-The shipped, numbered build history (everything through item 371) has moved to
+The shipped, numbered build history (everything through item 389) has moved to
 [CLOSED.md](CLOSED.md), so this file stays to what is actually open: new numbered items,
 parked decisions, and the 1.0 exit checklist. Item numbers are never reassigned, so a new
 item continues the sequence in CLOSED.md rather than restarting at 1.
 
-Items 372-389 are open: the security review of 2026-09-25 (372-379), the consumer-side
-SBOM it led to (380), and the repository-only tools worth shipping to a game (381-389). Before them, no numbered item was open: items 357 (the mobile consumer
-recipe), 358 and 359 (the two the Pixel Dungeon study raised as P19 and P20), 360 (the renderer resolution bound),
-361 (grid indexing, from the Wesnoth port's own MWG backlog), 362 (declarative MWL
-cross-table reference checks, Pixel Dungeon study proposal P21), 363 (persisted player
-settings: music/sfx levels, mute, zoom, bindings, and a game-defined custom bag), 364
-(a ready-made settings screen over those values), 365 (auto-pause and auto-mute on
-page hide), 366 (frame-time quality scaling over the static fit), 367 (audio ducking
-for dialogue and menus), 368 (a discrete meter widget: hearts, stars, pips), 369
-(skip animation work for off-screen sprites), 370 (the first-class autotile layer) and
-371 (the simulation journal's plain-data contract, from a port's boss-fight crash) all
-closed, and the shipped history continues in [CLOSED.md](CLOSED.md). What's left
-before 1.0 is the exit checklist below.
-
-### Open items
-
-Security review, 2026-09-25. The framework already has real defences: `core/Sanitize.ts` (size
-cap, control characters, `validateSchema`, `assertNoForbiddenKeys`) guards `importSlot`,
-`NewsClient`, MWL saves and replays. `src/` holds no `innerHTML`, `eval` or `new Function`, and
-text is drawn on the canvas. The Lua host strips `os`/`io`/`debug`/`package`/`require`/`load` and
-limits instruction counts. Telemetry defaults to off, and publishing uses OIDC trusted
-publishing. What these items fix is that the defences are opt-in and uneven. The design
-constraint shared by 372-378 is **secure by default: a game that changes nothing gets the
-protection**, and an opt-out is explicit and named. Ordered by risk, not by when they were
-found.
-
-
-Repository-only tools a game would use, reviewed 2026-09-25. The package already ships
-`compile-resources`, `classic-html`, `single-file`, `compress-dist`, `webp-convert`,
-`extract-html` and `mwl` under `tools/`. The pieces below were built for this repository's
-own examples and CI, and solve problems every game built on the framework has too. The rule
-for each: ship it only once it takes the consumer's project root as an argument, imports
-from `dist/` rather than `src/*.ts`, and keeps any heavy dependency (Playwright, `ws`) an
-optional peer, so shipping a tool never adds weight to a game that does not use it.
-Deliberately not proposed: `api-report`, `project-stats`, `ci-status`, `roadmap-progress`,
-the webpage and diagram builders, `package-smoke` and `npm-audit` (a workaround for this
-repository's own npm policy), which describe this project rather than a game.
-
+No numbered item is open. Items 372-389, opened and closed on 2026-09-25, were the security
+review (372-379: one inbound pipeline, a Lua memory bound, a default Content-Security-Policy,
+transport defaults, decoder fuzzing, the `file://` saves rule, telemetry bounds, CI
+hardening), the consumer-side CycloneDX SBOM (380) and the repository tools worth shipping to a
+game (381-389: the `mwgPage()` Vite plugin and `emitPage`, `bin` entries, `mwg-smoke`,
+`mwg-i18n`, `mwg-lockstep-server`, `mwg-size`, `mwg-bench`, the `testing` subpath,
+`mwg-extract-rgssad` and `mwg-placeholder-assets`). Their records are in
+[CLOSED.md](CLOSED.md), as are items 357 to 371 before them. What's left before 1.0 is the exit
+checklist below.
 
 ### Parked decisions
 
@@ -98,7 +69,7 @@ standing intentions.
 ### 1.0 exit checklist
 
 The definition of done for 1.0. Each line is a check to run, not a feature to build. Every numbered
-item through 371 is closed (see [CLOSED.md](CLOSED.md)); item 347 is external project work, not
+item through 389 is closed (see [CLOSED.md](CLOSED.md)); item 347 is external project work, not
 an MWG deliverable.
 Items 339-340 were planning entries regrouped into 341-342 and 346, and items 338,
 341-345 and 346 were implemented or verified against existing APIs. The
@@ -262,6 +233,17 @@ here because the settings screen, 364, and the meter widget, 368, changed `two-d
 last look): `pageErrors: []`, `gameReady: true`, WebGL, and the screenshot looked at, with
 nothing clipped or off-screen and no text over text. Both needed `CHROME_PATH` pointed at a
 Chromium then; item 383 made the Chrome lookup find Playwright's own browsers, so they no longer do.
+
+**After items 372-389, the same day.** `npm run check`, `format:check`, `npm test` (2403
+passing, the fuzzing included), `coverage:check`, `build`, `api:check`, `stats:check` (regenerated),
+`size:check` (global bundle +0.5 %, `dist` +1.0 %) and `sbom:check` all pass. `npm pack --dry-run
+--json`: 1231 files, 1.55 MB packed, 5.79 MB unpacked, still no `tools/docs`, `node_modules`,
+`notes/`, `examples/`, `src/` or `tests/`; the growth is the shipped tools (47 files under
+`tools/`, the 42 KB rgssad decoder among them). `package:smoke` reached a working `file://`
+page on all four paths (by hand, `mwgPage()`, `mwg-emit`, the global script) and ran
+`mwg-smoke`, `mwg-i18n --check`, `mwg-sbom` and the lockstep server from the installed
+tarball. All 22 examples start under the new Content-Security-Policy. The 1.0 checklist line on
+the ports is unchanged by any of this.
 
 What is deliberately *not* re-run: the full tutorial from a clean machine along each of its
 three paths, since steps 01-10 are unchanged (only an optional step 11 was added, and its own

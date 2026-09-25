@@ -91,9 +91,9 @@
 		]
 	},
 	"tests": {
-		"files": 261,
-		"lines": 33546,
-		"cases": 2405
+		"files": 262,
+		"lines": 33635,
+		"cases": 2408
 	},
 	"tools": {
 		"files": 41,
