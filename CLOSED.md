@@ -5744,3 +5744,11 @@ capability this framework was missing.
     `allowedProperties` (every other name dropped). Cutting rather than refusing, because
     telemetry is best-effort and an event that fails is an event lost, while a fragment of a
     path is still a fragment. `tests/telemetry.test.ts` checks the sent body for each bound.
+
+379. ~~[Low] CI hardening.~~ Landed as proposed: every `uses:` in the four workflows pinned to
+    the commit its tag pointed at on 2026-09-25 (resolved with `git ls-remote`, the tag kept as
+    a trailing comment), `permissions: contents: read` at the top of `ci.yml` and
+    `benchmark-browser.yml` (neither writes to the repository; `deploy-pages` and `publish-npm`
+    already declared theirs), and `.github/dependabot.yml` for `github-actions` (grouped) and
+    `npm`, weekly. `tests/workflows.test.ts` holds both rules. Provenance needed nothing: npm
+    attaches it on its own to a trusted-publishing release from a public repository.

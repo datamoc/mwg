@@ -36,10 +36,6 @@ constraint shared by 372-378 is **secure by default: a game that changes nothing
 protection**, and an opt-out is explicit and named. Ordered by risk, not by when they were
 found.
 
-379. [Low] CI hardening: `permissions: contents: read` at the top of `ci.yml` and
-    `benchmark-browser.yml` (they inherit the repository default today), actions pinned by
-    commit SHA instead of tag, and Dependabot for both npm and Actions to keep those pins
-    moving.
 
 Repository-only tools a game would use, reviewed 2026-09-25. The package already ships
 `compile-resources`, `classic-html`, `single-file`, `compress-dist`, `webp-convert`,

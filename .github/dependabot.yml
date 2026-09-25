@@ -1,0 +1,16 @@
+# Keeps the commit-pinned actions and the npm dependencies moving (item 379): a pin by SHA
+# cannot be silently repointed, and this is what stops it from going stale instead.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
