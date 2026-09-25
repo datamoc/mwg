@@ -95,7 +95,13 @@ test('every bin entry is a shipped file with a node shebang', () => {
 	assert.ok(Object.keys(pkg.bin).length > 0);
 	for (const [name, file] of Object.entries(pkg.bin)) {
 		assert.ok(pkg.files.includes(file), `${name} -> ${file} is not in files`);
-		assert.match(readFileSync(new URL(`../${file}`, import.meta.url), 'utf8'), /^#!\/usr\/bin\/env node\n/, name);
+		//\r?\n, not \n: a checkout with core.autocrlf=true hands the file over with CRLF endings,
+		//which say nothing about whether it is a runnable script
+		assert.match(
+			readFileSync(new URL(`../${file}`, import.meta.url), 'utf8'),
+			/^#!\/usr\/bin\/env node\r?\n/,
+			name,
+		);
 	}
 });
 

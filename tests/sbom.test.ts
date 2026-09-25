@@ -105,7 +105,9 @@ test('the artifact SBOM lists only the packages whose modules reached the bundle
 	const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
 	const { tmpdir } = await import('node:os');
 	const { join } = await import('node:path');
-	const root = mkdtempSync(join(tmpdir(), 'mwg-sbom-'));
+	//forward slashes throughout, since packageOfModule normalizes to them on every platform and
+	//mkdtempSync on Windows hands back backslashes
+	const root = mkdtempSync(join(tmpdir(), 'mwg-sbom-')).replaceAll('\\', '/');
 	try {
 		for (const [name, version, license] of [
 			['pixi.js', '8.1.0', 'MIT'],
