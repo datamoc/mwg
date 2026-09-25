@@ -179,7 +179,14 @@ function measureBundle() {
 	const global = readFileSync(globalPath);
 	let distRaw = 0;
 	for (const path of walk(join(root, 'dist'))) {
-		if (!path.endsWith('.map')) distRaw += statSync(path).size;
+		if (path.endsWith('.map')) continue;
+		//tsc copies comments out of the source as they are written there, so a checkout with
+		//core.autocrlf=true (every Windows clone) emits CRLF lines into the build that an LF
+		//checkout does not, and this number then says who generated it rather than what ships.
+		//Count the text files tsc writes as they would read either way: latin1 gives one
+		//character per byte, so the result is still a byte count.
+		if (/\.(?:js|ts|json|txt)$/.test(path)) distRaw += readFileSync(path, 'latin1').replace(/\r\n/g, '\n').length;
+		else distRaw += statSync(path).size;
 	}
 	return { globalRaw: global.length, globalGzip: gzipSync(global).length, distRaw };
 }
