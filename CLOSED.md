@@ -5598,3 +5598,20 @@ capability this framework was missing.
     messages' field types. `SaveSync.download` still returns raw text by design: `importSlot` is
     where it is parsed. `tests/inbound.test.ts` covers each reader; REFERENCE.md and CHANGELOG
     carry the entry.
+
+373. ~~[High] A memory bound for the Lua host.~~ Landed as
+    `FengariScriptHostOptions.memoryLimit` (32 MB by default, passed through by `LuaAI`).
+    Fengari builds every Lua string and buffer with `new Uint8Array` through the global name, so
+    for the length of one protected call the host installs a counting subclass under that name
+    (`Symbol.hasInstance` keeps fengari's own `instanceof` checks true for native arrays,
+    `Symbol.species` keeps views uncharged) and restores the real one afterwards, including
+    around a game's `mwg_emit` callback. This one point covers `..`, `string.rep`,
+    `table.concat` and `gsub`, which wrapping library functions would not: a doubling
+    concatenation is a VM instruction. Measured before and after: `#string.rep("x", 2^28)` went
+    from 614 MB and 4 s to an error in 8 ms, and forty doublings fail in 33 ms. A script-level
+    `pcall` cannot swallow it, since every further allocation fails too. `getmetatable("")`
+    returns `false`. The item's other suggestion, protecting library tables from a script that
+    rewrites them for the next one, was not done: globals persist between calls on one host by
+    design, so the documented rule is one host per mutually untrusted script.
+    `tests/lua-sandbox.test.ts` covers the limit, reuse after it, the emit path and the
+    metatable.

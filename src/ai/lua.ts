@@ -48,6 +48,7 @@ export class LuaAI {
 			options.host ??
 			createFengariScriptHost({
 				instructionLimit: options.maxSteps ?? options.instructionLimit,
+				memoryLimit: options.memoryLimit,
 				seed: options.seed,
 			});
 	}

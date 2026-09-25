@@ -6,13 +6,74 @@ import type { ScriptContext, ScriptEmit, ScriptHost, ScriptValue } from './scrip
 
 export interface FengariScriptHostOptions {
 	readonly instructionLimit?: number;
+	/** bytes of string and buffer data one call may allocate; defaults to 32 MB */
+	readonly memoryLimit?: number;
 	readonly seed?: number;
 }
 
 const DEFAULT_INSTRUCTION_LIMIT = 100_000;
+const DEFAULT_MEMORY_LIMIT = 32 * 1024 * 1024;
+const NativeUint8Array = Uint8Array;
+
+/**
+ * Runs `work` with every `new Uint8Array` charged against `budget` bytes. Fengari stores every
+ * Lua string and buffer in a `Uint8Array` it constructs through the global name, so this is
+ * the one place a concatenation (`s = s .. s` doubles in one instruction), `string.rep`,
+ * `table.concat` or `string.gsub` can be bounded: the instruction limit alone let
+ * `string.rep("x", 2^28)` allocate 268 MB in a single instruction. Views (`subarray`) are
+ * not charged, since they allocate nothing.
+ */
+function withMemoryBudget<T>(budget: number, work: () => T): { result: T; exceeded: boolean } {
+	let remaining = budget;
+	let exceeded = false;
+	class Counted extends NativeUint8Array {
+		static get [Symbol.species]() {
+			return NativeUint8Array;
+		}
+		//fengari's own `instanceof Uint8Array` checks resolve to this class while it is installed
+		static override [Symbol.hasInstance](value: unknown) {
+			return value instanceof NativeUint8Array;
+		}
+		constructor(...args: unknown[]) {
+			super(...(args as []));
+			remaining -= this.byteLength;
+			if (remaining < 0) {
+				exceeded = true;
+				throw new Error('Lua memory limit exceeded');
+			}
+		}
+	}
+	const previous = globalThis.Uint8Array;
+	globalThis.Uint8Array = Counted as Uint8ArrayConstructor;
+	try {
+		return { result: work(), exceeded };
+	} catch (error) {
+		if (exceeded) return { result: undefined as T, exceeded };
+		throw error;
+	} finally {
+		globalThis.Uint8Array = previous;
+	}
+}
+
+/** runs host-side code (a game's `emit` callback) outside the budget and with the real constructor */
+function outsideBudget<T>(work: () => T): T {
+	const previous = globalThis.Uint8Array;
+	globalThis.Uint8Array = NativeUint8Array;
+	try {
+		return work();
+	} finally {
+		globalThis.Uint8Array = previous;
+	}
+}
 
 /**
  * Optional Lua 5.3 host. Fengari is loaded only by this subpath, never by `mwg/mwl`.
+ *
+ * Sandboxed for untrusted scripts: `os`, `io`, `debug`, `package`, `require`, `load`, `dofile`
+ * and `loadfile` are removed, `math.random` is the host's seeded stream, and every call is
+ * bounded by `instructionLimit` and by `memoryLimit` (bytes of string data allocated during the
+ * call). Globals persist between calls on one host, so scripts that must not influence each
+ * other need a host each.
  *
  * @example
  * ```ts
@@ -28,6 +89,9 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 	lualib.luaL_openlibs(state);
 	const limit = options.instructionLimit ?? DEFAULT_INSTRUCTION_LIMIT;
 	if (!Number.isInteger(limit) || limit < 1) throw new RangeError('instructionLimit must be a positive integer');
+	const memoryLimit = options.memoryLimit ?? DEFAULT_MEMORY_LIMIT;
+	if (!Number.isInteger(memoryLimit) || memoryLimit < 1)
+		throw new RangeError('memoryLimit must be a positive integer');
 	let randomState = (options.seed ?? 0x6d7767) >>> 0;
 	let emit: ScriptEmit | undefined;
 
@@ -98,8 +162,14 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 			lua.LUA_MASKCOUNT,
 			limit > 1000 ? 1000 : 1,
 		);
-		const status = lua.lua_pcall(state, args, results, 0);
+		const { result: status, exceeded } = withMemoryBudget(memoryLimit, () =>
+			lua.lua_pcall(state, args, results, 0),
+		);
 		lua.lua_sethook(state, null, 0, 0);
+		if (exceeded) {
+			lua.lua_settop(state, 0);
+			throw new Error('Lua memory limit exceeded');
+		}
 		if (status !== lua.LUA_OK) throw new Error(lua.lua_tojsstring(state, -1) ?? 'Lua execution error');
 		return results === 0 ? null : read(-1);
 	};
@@ -117,7 +187,7 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 		lua.lua_pushjsfunction(state, (currentState: unknown) => {
 			const name = lua.lua_tojsstring(currentState, 1) ?? '';
 			const payload = lua.lua_gettop(currentState) > 1 ? read(2) : undefined;
-			emit?.(name, payload);
+			outsideBudget(() => emit?.(name, payload));
 			return 0;
 		});
 		lua.lua_setglobal(state, to_luastring('mwg_emit'));
@@ -131,6 +201,8 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 			'os=nil; io=nil; debug=nil; package=nil; require=nil; dofile=nil; loadfile=nil; load=nil; math.random=__mwg_random; math.randomseed=function() end';
 		run(sandbox, 0);
 	};
+	//hides the string metatable (the `string` library itself) from `getmetatable("")`
+	run('getmetatable("").__metatable = false', 0);
 
 	return {
 		evaluate(source, context = {}) {

@@ -1291,7 +1291,11 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   It provides Lua 5.3 evaluation, chunks, named function calls, JSON-shaped context values, and
   `mwg_emit(name, payload)` events. The adapter removes filesystem, process, module-loading and
   debug globals, replaces `math.random` with seeded deterministic random, and enforces an
-  instruction budget. Lua VM state is not save data: reload scripts from the game's entry point.
+  instruction budget and a `memoryLimit` (bytes of string and buffer data one call may
+  allocate, 32 MB by default), since one `..` or `string.rep` instruction can allocate without
+  bound. `getmetatable("")` returns `false`. Globals persist between calls on one host, so
+  mutually untrusted scripts need a host each. Lua VM state is not save data: reload scripts
+  from the game's entry point.
 
 `MwlRuntime` exposes `fireEvent(id)` for named event execution. Event conditions compare
 numeric variables numerically, `set_variable` accepts the bounded MWL expression syntax,

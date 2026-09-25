@@ -6345,6 +6345,8 @@ build instead.
 
     export interface FengariScriptHostOptions {
         readonly instructionLimit?: number;
+
+        readonly memoryLimit?: number;
         readonly seed?: number;
     }
 

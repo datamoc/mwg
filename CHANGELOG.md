@@ -22,6 +22,12 @@ the public API may still change between minor versions.
   `tick`/`rejected`, and reports anything else on the new `onProtocolError` signal instead of
   throwing out of `onmessage`. An unknown message type, which was silently ignored, is
   reported there too.
+- The Lua host bounds memory, not only instructions (item 373): `memoryLimit` (32 MB by
+  default, also accepted by `LuaAI`) charges every string and buffer a call allocates, so
+  `string.rep("x", 2^28)` or a doubling `s = s .. s` loop fails with "Lua memory limit
+  exceeded" in milliseconds instead of allocating hundreds of megabytes and freezing the tab.
+  A script-level `pcall` cannot swallow it. `getmetatable("")` no longer exposes the string
+  library.
 
 ### Added
 
