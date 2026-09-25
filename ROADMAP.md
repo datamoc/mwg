@@ -278,7 +278,10 @@ no commits.
   untouched.
 - `mwg-wesnoth`: not re-run. `mwg-wesno` in this workspace is an empty directory (no files,
   no repository), so there was nothing to overlay onto, and the 2026-09-20 results above stand
-  as the last recorded run for that port.
+  as the last recorded run for that port. Nor could the repository itself be found on
+  2026-09-25: `datamoc/mwg-wesnoth` does not resolve on GitHub, and no wesnoth port appears
+  in that account's repository list, public or private. The port needs recreating rather than
+  re-running, so this line cannot be closed from this machine.
 
 Not re-run again: the full vite builds, the headless-browser `verify` passes, or playing the
 built games.
