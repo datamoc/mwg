@@ -6,6 +6,14 @@ benchmark-results
 .example-check
 .scratch-check
 .remember
+# local agent and tool state: a fresh clone has none of these, so without this rule
+# npm run format:check fails here on files CI never sees (green-local and green-CI
+# then mean different things). The same reasoning puts them in .git/info/exclude.
+.opencode
+.claude
+.coord-session
+Microsoft
+notes
 webpage
 android
 desktop
