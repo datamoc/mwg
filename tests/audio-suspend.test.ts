@@ -4,28 +4,7 @@ import assert from 'node:assert/strict';
 import { Sound } from '../src/audio/Sound.ts';
 import { Music } from '../src/audio/Music.ts';
 import { Orchestrator } from '../src/audio/Orchestrator.ts';
-import type { Playable } from '../src/audio/Playable.ts';
-
-/**
- * A fake `Playable` in place of a real `Audio` element, which nothing outside a browser can
- * create - the same seam tests/audio.test.ts uses.
- */
-function fakeAudio(): Playable & { playCount: number; paused: boolean } {
-	return {
-		playCount: 0,
-		paused: true,
-		volume: 1,
-		currentTime: 0,
-		loop: false,
-		play() {
-			this.playCount++;
-			this.paused = false;
-		},
-		pause() {
-			this.paused = true;
-		},
-	};
-}
+import { fakeAudio } from '../src/testing/index.ts';
 
 test('Music.suspend pauses the current track and freezes update until resume', () => {
 	const audio = fakeAudio();

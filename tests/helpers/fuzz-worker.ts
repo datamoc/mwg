@@ -21,18 +21,10 @@ import { deserializeReplay } from '../../src/core/Replay.ts';
 import { parseInbound } from '../../src/core/Sanitize.ts';
 import { parseFTL } from '../../src/i18n/Fluent.ts';
 import { parsePo } from '../../src/i18n/Po.ts';
-import { SaveSystem, type SaveStorage } from '../../src/core/Save.ts';
+import { SaveSystem } from '../../src/core/Save.ts';
+import { memoryStorage } from '../../src/testing/index.ts';
 
 const fixture = (name: string) => readFileSync(new URL(`../fixtures/${name}`, import.meta.url), 'utf8');
-const memory = (): SaveStorage => {
-	const data = new Map<string, string>();
-	return {
-		read: (key) => data.get(key) ?? null,
-		write: (key, value) => void data.set(key, value),
-		remove: (key) => void data.delete(key),
-		keys: () => [...data.keys()],
-	};
-};
 
 interface Target {
 	corpus: string[];
@@ -111,7 +103,8 @@ export const TARGETS: Record<string, Target> = {
 	saveImport: {
 		corpus: ['{"meta":{"version":1,"savedAt":1700000000000,"preview":"F3"},"state":{"gold":3,"bag":["key"]}}'],
 		syntax: '[]{}":,',
-		run: (input) => new SaveSystem({ namespace: 'fuzz', version: 2, storage: memory() }).importSlot('s', input),
+		run: (input) =>
+			new SaveSystem({ namespace: 'fuzz', version: 2, storage: memoryStorage() }).importSlot('s', input),
 	},
 };
 

@@ -2,25 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { Music } from '../src/audio/Music.ts';
-import type { Playable } from '../src/audio/Playable.ts';
-
-/** a fake `Playable` in place of a real `Audio` element, which nothing outside a browser can create */
-function fakeAudio(): Playable & { playCount: number; paused: boolean } {
-	return {
-		playCount: 0,
-		paused: true,
-		volume: 1,
-		currentTime: 0,
-		loop: false,
-		play() {
-			this.playCount++;
-			this.paused = false;
-		},
-		pause() {
-			this.paused = true;
-		},
-	};
-}
+import { fakeAudio } from '../src/testing/index.ts';
 
 test('duck glides the current track to the attenuated level and unduck restores it', () => {
 	const audio = fakeAudio();

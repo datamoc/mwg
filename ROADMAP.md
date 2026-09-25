@@ -48,12 +48,6 @@ Deliberately not proposed: `api-report`, `project-stats`, `ci-status`, `roadmap-
 the webpage and diagram builders, `package-smoke` and `npm-audit` (a workaround for this
 repository's own npm policy), which describe this project rather than a game.
 
-388. [Low] A `@datamoc/mw_games/testing` subpath with the doubles the framework's own tests keep
-    rewriting: `fakeAudio` is defined separately in six test files, next to `fakeFetch`/
-    `fakeResponse`, `FakeSocket`, fake gamepads and an in-memory `SaveStorage`. Games test
-    against the same injectable seams (`Sound.create`, `HttpTransport.fetch`,
-    `LockstepClient.create`), and the repository's own tests lose the duplication. Stays
-    dependency-free like the rest of the test path.
 389. [Low] Two developer-side tools with narrower audiences. `extract-rgssad` (the vendored
     `rgssad-wasm` decoder, MIT) for someone porting a game whose archive they own; it adds the
     `.wasm` to the package, so perhaps a separate package. And the procedural placeholder

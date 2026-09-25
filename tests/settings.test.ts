@@ -3,22 +3,12 @@ import assert from 'node:assert/strict';
 
 import { Settings, defaultSettings, effectiveMusicVolume, effectiveSfxVolume } from '../src/core/Settings.ts';
 import { exportBindings, importBindings, keysFor } from '../src/core/Input.ts';
-import type { SaveStorage } from '../src/core/Save.ts';
-
-function memory(): SaveStorage {
-	const data = new Map<string, string>();
-	return {
-		read: (key) => data.get(key) ?? null,
-		write: (key, value) => void data.set(key, value),
-		remove: (key) => void data.delete(key),
-		keys: () => [...data.keys()],
-	};
-}
+import { memoryStorage } from '../src/testing/index.ts';
 
 test('a fresh settings starts at full volume, unmuted, zoom 1, default bindings', () => {
 	const restore = exportBindings();
 	try {
-		const settings = new Settings({ storage: memory() });
+		const settings = new Settings({ storage: memoryStorage() });
 		assert.deepEqual(settings.current, defaultSettings());
 	} finally {
 		importBindings(restore);
@@ -28,7 +18,7 @@ test('a fresh settings starts at full volume, unmuted, zoom 1, default bindings'
 test('music volume, sfx volume, mute and zoom persist across instances on the same storage', () => {
 	const restore = exportBindings();
 	try {
-		const storage = memory();
+		const storage = memoryStorage();
 		const first = new Settings({ storage });
 		first.update({ musicVolume: 0.7, sfxVolume: 0.3, muted: true, zoom: 2.5 });
 		const second = new Settings({ storage });
@@ -44,7 +34,7 @@ test('music volume, sfx volume, mute and zoom persist across instances on the sa
 test('volumes clamp to 0..1 and zoom never drops below 0.01', () => {
 	const restore = exportBindings();
 	try {
-		const settings = new Settings({ storage: memory() });
+		const settings = new Settings({ storage: memoryStorage() });
 		settings.update({ musicVolume: 2, sfxVolume: -1, zoom: 0 });
 		assert.equal(settings.current.musicVolume, 1);
 		assert.equal(settings.current.sfxVolume, 0);
@@ -57,7 +47,7 @@ test('volumes clamp to 0..1 and zoom never drops below 0.01', () => {
 test('a non-finite volume or zoom falls back to its default, not NaN', () => {
 	const restore = exportBindings();
 	try {
-		const settings = new Settings({ storage: memory() });
+		const settings = new Settings({ storage: memoryStorage() });
 		settings.update({ musicVolume: NaN, zoom: Number.POSITIVE_INFINITY });
 		assert.equal(settings.current.musicVolume, 1);
 		assert.equal(settings.current.zoom, 1);
@@ -76,7 +66,7 @@ test('muted zeroes both effective volumes while keeping the stored levels', () =
 test('corrupt stored JSON reads as defaults instead of throwing', () => {
 	const restore = exportBindings();
 	try {
-		const storage = memory();
+		const storage = memoryStorage();
 		storage.write('mwg-settings:default', '{not json');
 		const settings = new Settings({ storage });
 		assert.deepEqual(settings.current, defaultSettings());
@@ -88,7 +78,7 @@ test('corrupt stored JSON reads as defaults instead of throwing', () => {
 test('namespaces keep two games sharing storage from reading each other’s settings', () => {
 	const restore = exportBindings();
 	try {
-		const storage = memory();
+		const storage = memoryStorage();
 		new Settings({ storage, namespace: 'game-a' }).setMusicVolume(0.2);
 		const other = new Settings({ storage, namespace: 'game-b' });
 		assert.equal(other.current.musicVolume, 1);
@@ -101,7 +91,7 @@ test('namespaces keep two games sharing storage from reading each other’s sett
 test('stored bindings are applied to Input on load, so a rebind survives a restart', () => {
 	const restore = exportBindings();
 	try {
-		const storage = memory();
+		const storage = memoryStorage();
 		new Settings({ storage }).setBindings({ confirm: ['KeyJ'] });
 		assert.deepEqual(keysFor('confirm'), ['KeyJ']);
 		const reloaded = new Settings({ storage });
@@ -115,7 +105,7 @@ test('stored bindings are applied to Input on load, so a rebind survives a resta
 test('game-defined values like hints or a violence level persist across instances', () => {
 	const restore = exportBindings();
 	try {
-		const storage = memory();
+		const storage = memoryStorage();
 		const first = new Settings({ storage });
 		assert.equal(first.getCustom('hints', false), false);
 		first.setCustom('hints', true);
@@ -132,7 +122,7 @@ test('game-defined values like hints or a violence level persist across instance
 test('non-flat custom values in stored JSON are dropped while flat ones survive', () => {
 	const restore = exportBindings();
 	try {
-		const storage = memory();
+		const storage = memoryStorage();
 		storage.write(
 			'mwg-settings:default',
 			JSON.stringify({ custom: { hints: true, nested: { on: true }, list: [1], gone: null } }),
@@ -147,7 +137,7 @@ test('non-flat custom values in stored JSON are dropped while flat ones survive'
 test('reset returns to defaults and persists them', () => {
 	const restore = exportBindings();
 	try {
-		const storage = memory();
+		const storage = memoryStorage();
 		const settings = new Settings({ storage });
 		settings.update({ musicVolume: 0.1, muted: true, zoom: 3 });
 		settings.setBindings({ confirm: ['KeyJ'] });

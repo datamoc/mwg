@@ -2,21 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { RunHistory } from '../src/core/RunHistory.ts';
-import type { SaveStorage } from '../src/core/Save.ts';
+import { memoryStorage } from '../src/testing/index.ts';
 
 interface RunSummary {
 	score: number;
 	cause: string;
-}
-
-function memoryStorage(): SaveStorage {
-	const data = new Map<string, string>();
-	return {
-		read: (key) => data.get(key) ?? null,
-		write: (key, value) => void data.set(key, value),
-		remove: (key) => void data.delete(key),
-		keys: () => [...data.keys()],
-	};
 }
 
 test('all() is empty before any run is recorded', () => {

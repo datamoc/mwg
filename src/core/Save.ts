@@ -61,7 +61,7 @@ export interface SaveStorage {
 }
 
 /** an in-memory fallback, so saving still works where `localStorage` is unavailable */
-class MemoryStorage implements SaveStorage {
+export class MemoryStorage implements SaveStorage {
 	private data = new Map<string, string>();
 
 	read(key: string): string | null {

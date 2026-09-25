@@ -1,31 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { LockstepClient, type WebSocketLike } from '../src/core/Multiplayer.ts';
+import { LockstepClient } from '../src/core/Multiplayer.ts';
 import { createLockstepServer } from '../tools/multiplayer-server.mjs';
+import { FakeSocket } from '../src/testing/index.ts';
 
 // ---------------------------------------------------------------- LockstepClient (unit)
-
-class FakeSocket implements WebSocketLike {
-	readyState = 1; //OPEN
-	sent: string[] = [];
-	onopen: ((event: unknown) => void) | null = null;
-	onclose: ((event: unknown) => void) | null = null;
-	onerror: ((event: unknown) => void) | null = null;
-	onmessage: ((event: { data: string }) => void) | null = null;
-
-	send(data: string): void {
-		this.sent.push(data);
-	}
-
-	close(): void {
-		this.onclose?.(undefined);
-	}
-
-	receive(message: unknown): void {
-		this.onmessage?.({ data: JSON.stringify(message) });
-	}
-}
 
 test('LockstepClient requires a url', () => {
 	assert.throws(() => new LockstepClient({ url: '' }), /url is required/);

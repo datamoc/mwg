@@ -86,6 +86,11 @@ the public API may still change between minor versions.
   387): a game's own frame-rate gate in headless Chrome, with mean fps, 95th-percentile frame
   time, an optional history compared against its best run, and the software-WebGL switch for a
   runner with no GPU.
+- `@datamoc/mw_games/testing` (item 388): `memoryStorage`, `fakeAudio`/`fakeAudioWithEnded`,
+  `FakeSocket` and `fakeFetch`, the doubles for the seams mwg takes by injection. Off the root
+  barrel, renderer-free. This repository's own tests now use them, which removed twelve copies
+  of the same in-memory storage, six of the same fake audio element and two fake sockets.
+  `core.MemoryStorage`, the fallback `defaultStorage()` already used, is exported.
 - The translation editor ships (item 384): `npx mwg-i18n <base> <target> [--check]`
   (`@datamoc/mw_games/tools/i18n-edit`) runs from an installed package, loading `dist` there
   and the TypeScript sources inside this repository, so a game's CI can gate its translations

@@ -22,18 +22,8 @@ if (typeof (globalThis as { document?: unknown }).document === 'undefined') {
 
 import { Settings } from '../src/core/Settings.ts';
 import { exportBindings, importBindings, bind } from '../src/core/Input.ts';
-import type { SaveStorage } from '../src/core/Save.ts';
 import { SettingsScreen } from '../src/two-d/ui/SettingsScreen.ts';
-
-function memory(): SaveStorage {
-	const data = new Map<string, string>();
-	return {
-		read: (key) => data.get(key) ?? null,
-		write: (key, value) => void data.set(key, value),
-		remove: (key) => void data.delete(key),
-		keys: () => [...data.keys()],
-	};
-}
+import { memoryStorage } from '../src/testing/index.ts';
 
 function guarded<T>(run: () => T): T {
 	const restore = exportBindings();
@@ -57,7 +47,7 @@ function rowIds(screen: SettingsScreen, count: number): string[] {
 test('rows arrive in order: music, sfx, muted, zoom, custom rows, controls, reset', () => {
 	guarded(() => {
 		const screen = new SettingsScreen({
-			settings: new Settings({ storage: memory() }),
+			settings: new Settings({ storage: memoryStorage() }),
 			custom: [
 				{ kind: 'boolean', key: 'hints', label: 'Hints' },
 				{ kind: 'choice', key: 'violence', label: 'Violence', options: ['full', 'reduced'] },
@@ -78,7 +68,7 @@ test('rows arrive in order: music, sfx, muted, zoom, custom rows, controls, rese
 
 test('left and right on the music row move the persisted volume in the pressed direction', () => {
 	guarded(() => {
-		const storage = memory();
+		const storage = memoryStorage();
 		const screen = new SettingsScreen({ settings: new Settings({ storage }) });
 		assert.equal(screen.selectedRow, 'music');
 
@@ -92,7 +82,7 @@ test('left and right on the music row move the persisted volume in the pressed d
 
 test('confirm on the mute row flips the persisted flag', () => {
 	guarded(() => {
-		const storage = memory();
+		const storage = memoryStorage();
 		const screen = new SettingsScreen({ settings: new Settings({ storage }) });
 		screen.handleAction('down');
 		screen.handleAction('down');
@@ -107,7 +97,7 @@ test('confirm on the mute row flips the persisted flag', () => {
 
 test('the zoom slider respects its configured bounds', () => {
 	guarded(() => {
-		const storage = memory();
+		const storage = memoryStorage();
 		const screen = new SettingsScreen({
 			settings: new Settings({ storage }),
 			zoomMin: 1,
@@ -126,7 +116,7 @@ test('the zoom slider respects its configured bounds', () => {
 
 test('custom rows persist: toggle, number, and a choice that cycles with wrap', () => {
 	guarded(() => {
-		const storage = memory();
+		const storage = memoryStorage();
 		const screen = new SettingsScreen({
 			settings: new Settings({ storage }),
 			custom: [
@@ -155,7 +145,7 @@ test('custom rows persist: toggle, number, and a choice that cycles with wrap', 
 
 test('confirm on the reset row restores persisted defaults', () => {
 	guarded(() => {
-		const storage = memory();
+		const storage = memoryStorage();
 		const settings = new Settings({ storage });
 		settings.update({ musicVolume: 0.2, muted: true, zoom: 3 });
 		const screen = new SettingsScreen({ settings });
@@ -172,7 +162,7 @@ test('confirm on the reset row restores persisted defaults', () => {
 
 test('the controls page opens, and leaving it persists rebinds made through Input', () => {
 	guarded(() => {
-		const storage = memory();
+		const storage = memoryStorage();
 		const screen = new SettingsScreen({ settings: new Settings({ storage }), actions: ['confirm'] });
 		for (let i = 0; i < 4; i++) screen.handleAction('down');
 		assert.equal(screen.selectedRow, 'controls');
@@ -189,7 +179,7 @@ test('the controls page opens, and leaving it persists rebinds made through Inpu
 
 test('cancel on the main page is left to the caller, and selection wraps both ends', () => {
 	guarded(() => {
-		const screen = new SettingsScreen({ settings: new Settings({ storage: memory() }) });
+		const screen = new SettingsScreen({ settings: new Settings({ storage: memoryStorage() }) });
 		assert.equal(screen.handleAction('cancel'), false);
 
 		screen.handleAction('up');
@@ -201,7 +191,7 @@ test('cancel on the main page is left to the caller, and selection wraps both en
 
 test('refresh re-reads values changed behind the screen’s back', () => {
 	guarded(() => {
-		const settings = new Settings({ storage: memory() });
+		const settings = new Settings({ storage: memoryStorage() });
 		const screen = new SettingsScreen({ settings });
 
 		settings.setMusicVolume(0.3);

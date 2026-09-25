@@ -2,17 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { NewsClient, NewsSeenTracker } from '../src/core/News.ts';
-import type { SaveStorage } from '../src/core/Save.ts';
-
-function memoryStorage(): SaveStorage {
-	const data = new Map<string, string>();
-	return {
-		read: (key) => data.get(key) ?? null,
-		write: (key, value) => void data.set(key, value),
-		remove: (key) => void data.delete(key),
-		keys: () => [...data.keys()],
-	};
-}
+import { memoryStorage } from '../src/testing/index.ts';
 
 function fakeResponse(body: unknown, ok = true, status = 200): Response {
 	return { ok, status, text: async () => JSON.stringify(body) } as unknown as Response;

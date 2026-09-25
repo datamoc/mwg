@@ -2,18 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { scramble, unscramble } from '../src/core/Scramble.ts';
-import { SaveSystem, type SaveStorage } from '../src/core/Save.ts';
+import { SaveSystem } from '../src/core/Save.ts';
 import { SaveSyncClient } from '../src/core/SaveSync.ts';
-
-function memoryStorage(): SaveStorage {
-	const data = new Map<string, string>();
-	return {
-		read: (key) => data.get(key) ?? null,
-		write: (key, value) => void data.set(key, value),
-		remove: (key) => void data.delete(key),
-		keys: () => [...data.keys()],
-	};
-}
+import { memoryStorage } from '../src/testing/index.ts';
 
 // ------------------------------------------------------------------- scramble/unscramble
 

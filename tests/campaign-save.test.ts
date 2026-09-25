@@ -7,7 +7,7 @@ import { SimulationRuntime } from '../src/simulation/Runtime.ts';
 import type { SimulationSnapshot } from '../src/simulation/Runtime.ts';
 import { Scheduler } from '../src/roguelike/Scheduler.ts';
 import { Generator } from '../src/core/Random.ts';
-import type { SaveStorage } from '../src/core/Save.ts';
+import { memoryStorage } from '../src/testing/index.ts';
 
 type CampaignState = { gold: number };
 type World = { terrain: string; turn: number };
@@ -17,16 +17,6 @@ type Event = { kind: string };
 interface Fighter {
 	id: string;
 	speed?: number;
-}
-
-function memoryStorage(): SaveStorage {
-	const data = new Map<string, string>();
-	return {
-		read: (key) => data.get(key) ?? null,
-		write: (key, value) => void data.set(key, value),
-		remove: (key) => void data.delete(key),
-		keys: () => [...data.keys()],
-	};
 }
 
 function campaign(): Campaign<CampaignState, number> {

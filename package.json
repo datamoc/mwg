@@ -167,6 +167,10 @@
 			"types": "./dist/ai/lua.d.ts",
 			"import": "./dist/ai/lua.js"
 		},
+		"./testing": {
+			"types": "./dist/testing/index.d.ts",
+			"import": "./dist/testing/index.js"
+		},
 		"./tools/benchmark-browser": "./tools/benchmark-browser.mjs",
 		"./tools/benchmark-history": "./tools/benchmark-history.mjs",
 		"./tools/browser-smoke": "./tools/browser-smoke.mjs",

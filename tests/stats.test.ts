@@ -2,22 +2,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { PlayerStats } from '../src/core/Stats.ts';
-import type { SaveStorage } from '../src/core/Save.ts';
+import { memoryStorage } from '../src/testing/index.ts';
 
 interface Totals {
 	runs: number;
 	kills: number;
 	bestFloor: number;
-}
-
-function memoryStorage(): SaveStorage {
-	const data = new Map<string, string>();
-	return {
-		read: (key) => data.get(key) ?? null,
-		write: (key, value) => void data.set(key, value),
-		remove: (key) => void data.delete(key),
-		keys: () => [...data.keys()],
-	};
 }
 
 function combine(total: Totals, summary: { kills: number; floor: number }): Totals {

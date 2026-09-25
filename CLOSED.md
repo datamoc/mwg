@@ -5770,3 +5770,13 @@ capability this framework was missing.
     run became a function that throws with the measured result attached. The readiness wait it
     duplicated with `browser-smoke.mjs` is now one `waitForGame` both use. Checked on the
     dungeon example: 25 fps under software WebGL, exit 1 when `--min-fps` is set above it.
+
+388. ~~[Low] A `@datamoc/mw_games/testing` subpath.~~ Landed as `src/testing/index.ts`:
+    `memoryStorage` (the `MemoryStorage` class `core` already fell back to, now exported, rather
+    than a thirteenth copy), `fakeAudio` (usable as `create: fakeAudio` directly) and
+    `fakeAudioWithEnded`, `FakeSocket` (`sent`, `receive`, `receiveRaw`, `close`) and
+    `fakeFetch` (a `Response` or a JSON value per request, `calls` recorded). Off the root
+    barrel and on the renderer-free list the isolation test enforces. The repository's tests
+    adopted it: twelve identical storage doubles, six fake audio elements and two fake sockets
+    removed. The fake gamepads from the proposal stayed in their tests, since the two copies
+    differ in what they model.

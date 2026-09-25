@@ -7313,6 +7313,56 @@ build instead.
     export declare function validateSimulationReplay<State, Command, Event, A extends Actor>(initial: SimulationSnapshot<State>, entries: readonly ActionJournalEntry<Command, Event>[], options: {
         rule: SimulationRuntimeRule<State, Command, Event, A>;
 
+## `./testing`
+
+### `fakeAudio` (function)
+
+    export declare function fakeAudio(): FakePlayable;
+
+### `fakeAudioWithEnded` (function)
+
+    export declare function fakeAudioWithEnded(): FakePlayable;
+
+### `fakeFetch` (function)
+
+    export declare function fakeFetch(respond: (url: string, init?: RequestInit) => unknown): typeof globalThis.fetch & {
+        calls: FakeFetchCall[];
+
+### `FakeFetchCall` (interface)
+
+    export interface FakeFetchCall {
+        url: string;
+        init?: RequestInit;
+    }
+
+### `FakePlayable` (interface)
+
+    export interface FakePlayable extends Playable {
+        playCount: number;
+        paused: boolean;
+    }
+
+### `FakeSocket` (class)
+
+    export declare class FakeSocket implements WebSocketLike {
+        readyState: number;
+        readonly sent: string[];
+        onopen: ((event: unknown) => void) | null;
+        onclose: ((event: unknown) => void) | null;
+        onerror: ((event: unknown) => void) | null;
+        onmessage: ((event: {
+            data: string;
+        }) => void) | null;
+        send(data: string): void;
+        close(): void;
+        receive(message: unknown): void;
+        receiveRaw(data: string): void;
+    }
+
+### `memoryStorage` (function)
+
+    export declare function memoryStorage(): SaveStorage;
+
 ## `./two-d`
 
 ### `ActorAnimator` (class)

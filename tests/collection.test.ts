@@ -3,23 +3,14 @@ import assert from 'node:assert/strict';
 
 import { Collection } from '../src/core/Collection.ts';
 import type { SaveStorage } from '../src/core/Save.ts';
-
-function memory(): SaveStorage {
-	const data = new Map<string, string>();
-	return {
-		read: (key) => data.get(key) ?? null,
-		write: (key, value) => void data.set(key, value),
-		remove: (key) => void data.delete(key),
-		keys: () => [...data.keys()],
-	};
-}
+import { memoryStorage } from '../src/testing/index.ts';
 
 function quests(storage?: SaveStorage) {
 	return new Collection('quests', { namespace: 'test', storage });
 }
 
 test('put stores a record and get reads it back', () => {
-	const db = quests(memory());
+	const db = quests(memoryStorage());
 	db.put({ id: 'rats', done: false, slain: 3 });
 
 	assert.deepEqual(db.get('rats'), { id: 'rats', done: false, slain: 3 });
@@ -27,7 +18,7 @@ test('put stores a record and get reads it back', () => {
 });
 
 test('putting the same id twice replaces, and nothing else moves', () => {
-	const db = quests(memory());
+	const db = quests(memoryStorage());
 	db.put({ id: 'rats', done: false });
 	db.put({ id: 'amulet', done: false });
 	db.put({ id: 'rats', done: true });
@@ -37,7 +28,7 @@ test('putting the same id twice replaces, and nothing else moves', () => {
 });
 
 test('all returns records in insertion order, and remove deletes', () => {
-	const db = quests(memory());
+	const db = quests(memoryStorage());
 	db.put({ id: 'b', n: 2 });
 	db.put({ id: 'a', n: 1 });
 	db.put({ id: 'c', n: 3 });
@@ -51,7 +42,7 @@ test('all returns records in insertion order, and remove deletes', () => {
 });
 
 test('where answers the query the save system cannot ask', () => {
-	const db = quests(memory());
+	const db = quests(memoryStorage());
 	db.put({ id: 'rats', done: true });
 	db.put({ id: 'amulet', done: false });
 	db.put({ id: 'escort', done: false });
@@ -63,7 +54,7 @@ test('where answers the query the save system cannot ask', () => {
 });
 
 test('collections sharing one storage never see each other, and clear stays inside its own', () => {
-	const storage = memory();
+	const storage = memoryStorage();
 	const questsDb = new Collection('quests', { namespace: 'test', storage });
 	const bestiary = new Collection('bestiary', { namespace: 'test', storage });
 	questsDb.put({ id: 'rats', done: false });
@@ -75,7 +66,7 @@ test('collections sharing one storage never see each other, and clear stays insi
 });
 
 test('a record without a usable id is refused', () => {
-	const db = quests(memory());
+	const db = quests(memoryStorage());
 	assert.throws(() => db.put({} as never), /string id/);
 	assert.throws(() => db.put({ id: '' }), /string id/);
 	assert.throws(() => db.put(null as never), /string id/);

@@ -55,7 +55,8 @@ Three rules the whole API follows, so a name means one thing everywhere:
 [core](#core) · [two-d](#two-d) · [render](#two-drender) · [ui](#two-dui) · [stage](#two-dstage) ·
 [assets](#assets) · [audio](#audio) · [battle](#battle) · [board](#board) ·
 [actors](#actors) · [roguelike](#roguelike) · [rpg](#rpg) · [simulation](#simulation) ·
-[three-d](#three-d-optional) · [world](#world) · [i18n](#i18n) · [mwl](#mwl) · [ai](#ai)
+[three-d](#three-d-optional) · [world](#world) · [i18n](#i18n) · [mwl](#mwl) · [ai](#ai) ·
+[testing](#testing)
 
 ## `core`
 
@@ -1017,6 +1018,23 @@ live game loop.
   `SimulationRuntime` snapshot together, `load` reads them back migrated, and `list`/`delete` are
   `SaveSystem`'s. The world is opaque, so an `MwlWorld`, a `Level` or a game's own scenario object
   all fit.
+
+## `testing`
+
+Test doubles for the seams mwg takes by injection (item 388), so a game's tests and this
+repository's own share one copy of each. Renderer-free, dependency-free, and off the root barrel:
+nothing here reaches a shipped game unless a test imports it.
+
+- `memoryStorage` - a `SaveStorage` held in memory, for `SaveSystem`, `Settings`, `Collection`,
+  `PlayerStats` and the other stored values; the same class `core` falls back to where
+  `localStorage` is missing.
+- `fakeAudio`/`fakeAudioWithEnded`/`FakePlayable` - a `Playable` for `Sound`/`Music`'s `create`
+  that counts its plays; the second also has the `onended` slot a backend reporting track ends
+  has.
+- `FakeSocket` - a `WebSocketLike` for `LockstepClient`'s `create`: `sent`, `receive(message)`,
+  `receiveRaw(text)`, `close()`.
+- `fakeFetch`/`FakeFetchCall` - a `fetch` for every `HttpTransport` client, answering with a
+  `Response` or a value sent as JSON, recording each call.
 
 ## `three-d` (optional)
 

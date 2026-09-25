@@ -1,21 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseInbound } from '../src/core/Sanitize.ts';
-import { SaveSystem, type SaveStorage } from '../src/core/Save.ts';
+import { SaveSystem } from '../src/core/Save.ts';
 import { Collection } from '../src/core/Collection.ts';
 import { StoredValue } from '../src/core/StoredValue.ts';
-import { LockstepClient, type WebSocketLike } from '../src/core/Multiplayer.ts';
-
-function memoryStorage(): SaveStorage & { data: Map<string, string> } {
-	const data = new Map<string, string>();
-	return {
-		data,
-		read: (key) => data.get(key) ?? null,
-		write: (key, value) => void data.set(key, value),
-		remove: (key) => void data.delete(key),
-		keys: () => [...data.keys()],
-	};
-}
+import { LockstepClient } from '../src/core/Multiplayer.ts';
+import { FakeSocket, memoryStorage } from '../src/testing/index.ts';
 
 test('parseInbound refuses forbidden keys at any depth, oversize text and control characters', () => {
 	assert.deepEqual(parseInbound('{"a":[1,{"b":2}]}'), { a: [1, { b: 2 }] });
@@ -34,12 +24,9 @@ test('SaveSystem.load and list treat a tampered local slot as unusable instead o
 	const storage = memoryStorage();
 	const saves = new SaveSystem<{ gold: number }>({ namespace: 'tamper', version: 1, storage });
 	saves.save('good', { gold: 3 });
-	storage.data.set(
-		'mwg-save:tamper:proto',
-		'{"meta":{"version":1,"savedAt":1},"state":{"__proto__":{"admin":true}}}',
-	);
-	storage.data.set('mwg-save:tamper:shape', '{"state":{"gold":1}}');
-	storage.data.set('mwg-save:tamper:junk', '{not json');
+	storage.write('mwg-save:tamper:proto', '{"meta":{"version":1,"savedAt":1},"state":{"__proto__":{"admin":true}}}');
+	storage.write('mwg-save:tamper:shape', '{"state":{"gold":1}}');
+	storage.write('mwg-save:tamper:junk', '{not json');
 	assert.equal(saves.load('proto'), null);
 	assert.equal(saves.load('shape'), null);
 	assert.equal(saves.load('junk'), null);
@@ -59,29 +46,19 @@ test('SaveSystem.importSlot names what is wrong and writes nothing', () => {
 		() => saves.importSlot('a', '{"meta":{"version":1,"savedAt":1},"state":{"constructor":{}}}'),
 		/forbidden key "constructor"/,
 	);
-	assert.equal(storage.data.size, 0);
+	assert.deepEqual(storage.keys(), []);
 });
 
 test('Collection and StoredValue refuse a forbidden key with a label naming the key', () => {
 	const storage = memoryStorage();
-	storage.data.set('mwg-db:default:quests:q1', '{"id":"q1","__proto__":{}}');
+	storage.write('mwg-db:default:quests:q1', '{"id":"q1","__proto__":{}}');
 	assert.throws(
 		() => new Collection('quests', { storage }).get('q1'),
 		/record "mwg-db:default:quests:q1" contains a forbidden key/,
 	);
-	storage.data.set('stats', '{"prototype":1}');
+	storage.write('stats', '{"prototype":1}');
 	assert.throws(() => new StoredValue(storage, 'stats').read({}), /stored value "stats" contains a forbidden key/);
 });
-
-class FakeSocket implements WebSocketLike {
-	readyState = 1;
-	onopen = null;
-	onclose: ((event: unknown) => void) | null = null;
-	onerror = null;
-	onmessage: ((event: { data: string }) => void) | null = null;
-	send(): void {}
-	close(): void {}
-}
 
 test('LockstepClient drops malformed server messages through onProtocolError instead of throwing', () => {
 	const socket = new FakeSocket();
@@ -91,7 +68,7 @@ test('LockstepClient drops malformed server messages through onProtocolError ins
 	client.onProtocolError.add(({ reason }) => void errors.push(reason));
 	client.onTick.add(({ tick }) => void ticks.push(tick));
 	client.connect();
-	const send = (data: string) => socket.onmessage?.({ data });
+	const send = (data: string) => socket.receiveRaw(data);
 	send('{not json');
 	send(JSON.stringify({ type: 'tick', tick: 'one', inputs: {} }));
 	send(JSON.stringify({ type: 'tick', tick: 1, inputs: {}, checksums: { a: 'x' } }));

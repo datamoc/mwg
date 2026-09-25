@@ -86,9 +86,9 @@
 		]
 	},
 	"tests": {
-		"files": 260,
-		"lines": 33790,
-		"cases": 2404
+		"files": 261,
+		"lines": 33560,
+		"cases": 2405
 	},
 	"tools": {
 		"files": 41,
@@ -123,17 +123,17 @@
 	},
 	"roadmap": {
 		"items": 389,
-		"completed": 387,
-		"open": 2,
-		"percent": 99
+		"completed": 388,
+		"open": 1,
+		"percent": 100
 	},
 	"api": {
-		"declarationFiles": 293
+		"declarationFiles": 294
 	},
 	"bundle": {
 		"globalRaw": 1104374,
 		"globalGzip": 328385,
-		"distRaw": 3638102
+		"distRaw": 3646168
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

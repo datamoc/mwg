@@ -118,6 +118,7 @@ const RENDERER_FREE = [
 	'rpg',
 	'ai',
 	'mwl',
+	'testing',
 	'three-d',
 ];
 

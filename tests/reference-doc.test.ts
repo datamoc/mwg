@@ -21,6 +21,7 @@ import * as mwl from '../src/mwl/index.ts';
 import * as mwlFengari from '../src/mwl/fengari.ts';
 import * as ai from '../src/ai/index.ts';
 import * as aiLua from '../src/ai/lua.ts';
+import * as testing from '../src/testing/index.ts';
 
 /**
  * REFERENCE.md is hand-written and nothing generates it, so it drifts silently the moment an
@@ -53,6 +54,7 @@ const MODULES: Record<string, Record<string, unknown>> = {
 	'mwl/fengari': mwlFengari,
 	ai,
 	'ai/lua': aiLua,
+	testing,
 };
 
 /** every identifier appearing inside a backticked span anywhere in the document */

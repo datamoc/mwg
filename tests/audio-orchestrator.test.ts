@@ -4,28 +4,7 @@ import assert from 'node:assert/strict';
 import { Orchestrator } from '../src/audio/Orchestrator.ts';
 import { Music } from '../src/audio/Music.ts';
 import { Sound } from '../src/audio/Sound.ts';
-import type { Playable } from '../src/audio/Playable.ts';
-
-/**
- * A fake `Playable` in place of a real `Audio` element, which nothing outside a browser can
- * create. Both Sound and Music accept a `create` override for exactly this reason.
- */
-function fakeAudio(): Playable & { playCount: number; paused: boolean } {
-	return {
-		playCount: 0,
-		paused: true,
-		volume: 1,
-		currentTime: 0,
-		loop: false,
-		play() {
-			this.playCount++;
-			this.paused = false;
-		},
-		pause() {
-			this.paused = true;
-		},
-	};
-}
+import { fakeAudio } from '../src/testing/index.ts';
 
 test('entering a state plays its track', () => {
 	const tracks: ReturnType<typeof fakeAudio>[] = [];
