@@ -5663,3 +5663,17 @@ capability this framework was missing.
     had been parsing its envelope with a bare `response.json()`, which item 372's note wrongly
     described as raw text. `tests/transport.test.ts` covers the url rule on each client, the
     streaming cut-off and its cancellation, the declared length and the save-sync envelope.
+
+383. ~~[Medium] A `file://` smoke check for a game's own build.~~ Landed as
+    `tools/browser-smoke.mjs` + `tools/find-chrome.mjs` in the package
+    (`@datamoc/mw_games/tools/browser-smoke`, `/tools/find-chrome`) and the `mwg-smoke <page |
+    dist> [--screenshot=] [--key=]` command, which exits non-zero when the page did not render.
+    `playwright-core` became an optional peer, imported on first use with an install hint when
+    it is missing. The lookup gained what made `CHROME_PATH` necessary in the 2026-09-25
+    container: `playwright-core` 1.62 expects Chromium revision 1243 while the image carries
+    1194, so the newest `chromium-*` under `PLAYWRIGHT_BROWSERS_PATH` (or Playwright's default
+    cache) is taken, whatever its revision; the macOS paths were missing too. A page that never
+    becomes ready now fails with that sentence instead of a raw Playwright timeout.
+    `package:smoke` runs `npx mwg-smoke` from an installed tarball, and the whole smoke ran with
+    no `CHROME_PATH`. `visual-smoke.mjs` stays repo-only: it is this repository's wrapper
+    choosing its own example and output folder.

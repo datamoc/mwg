@@ -1,5 +1,8 @@
+#!/usr/bin/env node
+import { realpathSync, statSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { launchChrome } from './find-chrome.mjs';
 
 /**
@@ -46,17 +49,24 @@ export async function smokePage({
 		});
 
 		await page.goto(url, { waitUntil: 'load' });
-		await page.waitForFunction(
-			() => {
-				const canvas = document.querySelector('canvas');
-				return (
-					Boolean(window.__MWG__ || window.__MWG_3D__) &&
-					Boolean(canvas && canvas.width > 0 && canvas.height > 0)
-				);
-			},
-			undefined,
-			{ timeout: 5000 },
-		);
+		try {
+			await page.waitForFunction(
+				() => {
+					const canvas = document.querySelector('canvas');
+					return (
+						Boolean(window.__MWG__ || window.__MWG_3D__) &&
+						Boolean(canvas && canvas.width > 0 && canvas.height > 0)
+					);
+				},
+				undefined,
+				{ timeout: 5000 },
+			);
+		} catch {
+			const errors = pageErrors.length ? `; page errors: ${pageErrors.join('; ')}` : '';
+			throw new Error(
+				`no mwg game became ready within 5 s on ${url} (window.__MWG__ and a sized canvas)${errors}`,
+			);
+		}
 
 		//let the scene finish its first frames before reading pixels back
 		await page.waitForTimeout(250);
@@ -117,3 +127,34 @@ export async function smokePage({
 		await browser.close();
 	}
 }
+
+/**
+ * `mwg-smoke <page.html | dist folder> [--screenshot=<file.png>] [--key=<key>]`: the same check
+ * from a game's own CI. Prints the result as JSON and exits non-zero when the page did not
+ * render, so `vite build && mwg-smoke dist` proves a build still opens by double-clicking.
+ * Needs `playwright-core` and a Chrome or Chromium (`CHROME_PATH` to name one).
+ */
+async function main(argv) {
+	const target = argv.find((arg) => !arg.startsWith('--'));
+	if (!target) {
+		console.error('usage: mwg-smoke <page.html | dist folder> [--screenshot=<file.png>] [--key=<key>]');
+		process.exit(1);
+	}
+	const value = (name) => argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
+	const page = statSync(target).isDirectory() ? join(target, 'index.html') : target;
+	try {
+		const result = await smokePage({
+			url: pathToFileURL(resolve(page)).href,
+			screenshot: resolve(value('screenshot') ?? join(dirname(page), 'smoke.png')),
+			keyToPress: value('key') ?? null,
+		});
+		console.log(JSON.stringify(result, null, 2));
+	} catch (error) {
+		console.error(error instanceof Error ? error.message : error);
+		process.exitCode = 1;
+	}
+}
+
+//realpath, since an npm `bin` shim reaches this file through a symlink
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url))
+	await main(process.argv.slice(2));

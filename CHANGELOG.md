@@ -54,6 +54,12 @@ the public API may still change between minor versions.
   `@datamoc/mw_games/tools/emit-page` exports the underlying `emitPage(options)`, which every
   example here still uses through its command line. The getting-started page's step 10 is
   now that one plugin line; it used to tell users to make the edit by hand.
+- `mwg-smoke <page | dist>` and `@datamoc/mw_games/tools/browser-smoke`'s `smokePage` (item
+  383): a game's CI can prove its build still opens from `file://` (no page error, a ready game
+  on a WebGL/WebGPU canvas, non-blank pixels, a screenshot), exiting non-zero otherwise.
+  `playwright-core` is an optional peer. The Chrome lookup now also finds the newest Chromium
+  Playwright installed, whatever its revision, and knows the macOS install paths, so a
+  container or CI image no longer needs `CHROME_PATH`.
 - `bin` entries (item 382): `mwg-emit <folder> [--dist=] [--assets=]` and `mwg-mwl`, so `npx`
   runs them instead of a `node node_modules/...` path.
 - `core.cloneData`/`core.uncloneablePath` - `structuredClone` whose failure names the first

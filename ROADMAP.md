@@ -76,14 +76,6 @@ Deliberately not proposed: `api-report`, `project-stats`, `ci-status`, `roadmap-
 the webpage and diagram builders, `package-smoke` and `npm-audit` (a workaround for this
 repository's own npm policy), which describe this project rather than a game.
 
-383. [Medium] A `file://` smoke check for a game's own build: `browser-smoke.mjs` +
-    `find-chrome.mjs` + `visual-smoke.mjs` open a built page from `file://` in headless
-    Chromium and assert no page error, a WebGL/WebGPU canvas and non-flat pixels, then write
-    a screenshot. That is the one check that proves a game still opens by double-clicking,
-    the promise the whole framework is built around. Ship as
-    `@datamoc/mw_games/tools/browser-smoke` with `playwright-core` an optional peer, and let
-    `CHROME_PATH` keep overriding the executable (needed in containers, see the 2026-09-25
-    reevaluation above).
 384. [Medium] Ship the translation editor `tools/i18n-edit.mjs`: split-screen terminal editor
     for `i18n` catalogs, JSON/FTL auto-detected, placeholder-drift warnings, and a `--check`
     mode a game's CI can run on every translation. It already has a `.d.mts`, but imports
@@ -325,8 +317,8 @@ vulnerabilities, `npm run api:check` passing, and `npm pack --dry-run --json` at
 published-package paths reached a working `file://` page. `npm run visual:smoke:ui` (needed
 here because the settings screen, 364, and the meter widget, 368, changed `two-d/ui` since the
 last look): `pageErrors: []`, `gameReady: true`, WebGL, and the screenshot looked at, with
-nothing clipped or off-screen and no text over text. Both need `CHROME_PATH` pointed at a
-Chromium when no system Chrome is installed.
+nothing clipped or off-screen and no text over text. Both needed `CHROME_PATH` pointed at a
+Chromium then; item 383 made the Chrome lookup find Playwright's own browsers, so they no longer do.
 
 What is deliberately *not* re-run: the full tutorial from a clean machine along each of its
 three paths, since steps 01-10 are unchanged (only an optional step 11 was added, and its own

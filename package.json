@@ -35,7 +35,8 @@
 	],
 	"bin": {
 		"mwg-emit": "tools/emit-page.mjs",
-		"mwg-mwl": "tools/mwl.mjs"
+		"mwg-mwl": "tools/mwl.mjs",
+		"mwg-smoke": "tools/browser-smoke.mjs"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -55,10 +56,14 @@
 		"tools/single-file.mjs",
 		"tools/single-file.d.mts",
 		"tools/mwl.mjs",
+		"tools/browser-smoke.mjs",
+		"tools/browser-smoke.d.mts",
 		"tools/csp.mjs",
 		"tools/csp.d.mts",
 		"tools/emit-page.mjs",
 		"tools/emit-page.d.mts",
+		"tools/find-chrome.mjs",
+		"tools/find-chrome.d.mts",
 		"tools/vite.mjs",
 		"tools/vite.d.mts",
 		"LICENSE",
@@ -144,12 +149,14 @@
 			"types": "./dist/ai/lua.d.ts",
 			"import": "./dist/ai/lua.js"
 		},
+		"./tools/browser-smoke": "./tools/browser-smoke.mjs",
 		"./tools/classic-html": "./tools/classic-html.mjs",
 		"./tools/compile-resources": "./tools/compile-resources.mjs",
 		"./tools/compress-dist": "./tools/compress-dist.mjs",
 		"./tools/csp": "./tools/csp.mjs",
 		"./tools/emit-page": "./tools/emit-page.mjs",
 		"./tools/extract-html": "./tools/extract-html.mjs",
+		"./tools/find-chrome": "./tools/find-chrome.mjs",
 		"./tools/single-file": "./tools/single-file.mjs",
 		"./tools/vite": "./tools/vite.mjs",
 		"./tools/webp-convert": "./tools/webp-convert.mjs",
@@ -284,7 +291,8 @@
 		"@babylonjs/core": "^9.25.0",
 		"@babylonjs/loaders": "^9.25.0",
 		"@capacitor/core": "^7.4.4",
-		"pixi.js": "^8.20.1"
+		"pixi.js": "^8.20.1",
+		"playwright-core": "^1.62.1"
 	},
 	"peerDependenciesMeta": {
 		"@babylonjs/core": {
@@ -297,6 +305,9 @@
 			"optional": true
 		},
 		"pixi.js": {
+			"optional": true
+		},
+		"playwright-core": {
 			"optional": true
 		}
 	},

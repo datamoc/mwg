@@ -178,6 +178,8 @@ try {
 					'@datamoc/mw_games': `file:${join(scratch, tarball).replace(/\\/g, '/')}`,
 					'pixi.js': devDependencies['pixi.js'],
 					vite: devDependencies.vite,
+					//for `mwg-smoke`, whose browser driver is an optional peer
+					'playwright-core': devDependencies['playwright-core'],
 				},
 				//npm 12 refuses lifecycle scripts unless a project allows them by name; esbuild is
 				//the one dependency in this tree that installs a platform binary
@@ -225,6 +227,8 @@ try {
 	if (!pluginResult.probe?.includes('smoke.txt'))
 		throw new Error(`the plugin build did not ship its compiled assets: ${JSON.stringify(pluginResult.probe)}`);
 	console.log(JSON.stringify({ path: 'plugin-app', ...pluginResult }, null, 2));
+	// the shipped check, run the way a game's own CI would: exit status is the verdict
+	run('npx', ['mwg-smoke', 'dist-plugin', '--screenshot=smoke.png'], npmApp);
 
 	// the command: the by-hand vite config again, finished by the `mwg-emit` bin instead of the edit
 	run('npx', ['vite', 'build', '--outDir', 'dist-cli'], npmApp);
