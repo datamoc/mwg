@@ -61,6 +61,13 @@ the public API may still change between minor versions.
   `@datamoc/mw_games/tools/emit-page` exports the underlying `emitPage(options)`, which every
   example here still uses through its command line. The getting-started page's step 10 is
   now that one plugin line; it used to tell users to make the edit by hand.
+- CycloneDX SBOMs for a game (item 380): `mwgPage()` writes `dist/sbom.cdx.json`, the SBOM
+  of what the build ships (the packages vite's module graph put in the bundle, with versions
+  and licences, and every shipped file with its SHA-256; `sbom: false` skips it). For a small
+  consumer project, 8 packages and 3 files, where its lockfile lists 60 components.
+  `mwg-sbom [folder]` (`@datamoc/mw_games/tools/sbom`) writes the lockfile SBOM of any
+  project, an `application` when the project is `private`. The framework's own
+  `sbom.cdx.json` now ships in the package.
 - `mwg-smoke <page | dist>` and `@datamoc/mw_games/tools/browser-smoke`'s `smokePage` (item
   383): a game's CI can prove its build still opens from `file://` (no page error, a ready game
   on a WebGL/WebGPU canvas, non-blank pixels, a screenshot), exiting non-zero otherwise.

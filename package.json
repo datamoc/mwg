@@ -36,6 +36,7 @@
 	"bin": {
 		"mwg-emit": "tools/emit-page.mjs",
 		"mwg-mwl": "tools/mwl.mjs",
+		"mwg-sbom": "tools/sbom.mjs",
 		"mwg-smoke": "tools/browser-smoke.mjs"
 	},
 	"publishConfig": {
@@ -53,6 +54,9 @@
 		"tools/compress-dist.d.mts",
 		"tools/classic-html.mjs",
 		"tools/classic-html.d.mts",
+		"tools/sbom.mjs",
+		"tools/sbom.d.mts",
+		"sbom.cdx.json",
 		"tools/single-file.mjs",
 		"tools/single-file.d.mts",
 		"tools/mwl.mjs",
@@ -157,6 +161,7 @@
 		"./tools/emit-page": "./tools/emit-page.mjs",
 		"./tools/extract-html": "./tools/extract-html.mjs",
 		"./tools/find-chrome": "./tools/find-chrome.mjs",
+		"./tools/sbom": "./tools/sbom.mjs",
 		"./tools/single-file": "./tools/single-file.mjs",
 		"./tools/vite": "./tools/vite.mjs",
 		"./tools/webp-convert": "./tools/webp-convert.mjs",

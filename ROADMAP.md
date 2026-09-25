@@ -47,19 +47,6 @@ found.
     `benchmark-browser.yml` (they inherit the repository default today), actions pinned by
     commit SHA instead of tag, and Dependabot for both npm and Actions to keep those pins
     moving.
-380. [Medium] A CycloneDX SBOM for a *consuming* project. Item 315's `tools/sbom.mjs` builds this
-    repository's own SBOM and gates it in CI, but a game cannot use it: the tool is not in
-    the package's `files` and has no `./tools/sbom` export, its `ROOT` is hard-coded, and
-    `sbom.cdx.json` itself is not shipped. `npm sbom --sbom-format cyclonedx` already works in
-    a game project (CycloneDX 1.5 from its lockfile), so the gap is narrower and more specific
-    than "no SBOM". (a) Ship `sbom.cdx.json` in the package so a game's SBOM can reference the
-    framework's own dependency tree. (b) Export `buildSbom` as `@datamoc/mw_games/tools/sbom`
-    with a project root argument. (c) The real gap, which neither tool covers: an SBOM of the
-    **shipped artifact** rather than of `node_modules`. A game is one tree-shaken IIFE in one
-    HTML page, so the lockfile lists dev tooling (vite, TypeScript) that never ships and cannot
-    list what was actually bundled. `emit-page` can write `<page>.cdx.json` from vite's module
-    graph (the packages whose modules reached the bundle, with their versions and licences)
-    plus the compiled assets as `data` components with their hashes.
 
 Repository-only tools a game would use, reviewed 2026-09-25. The package already ships
 `compile-resources`, `classic-html`, `single-file`, `compress-dist`, `webp-convert`,

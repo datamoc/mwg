@@ -1,6 +1,8 @@
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { writeFile } from 'node:fs/promises';
+import { basename, join, resolve } from 'node:path';
 import { emitPage } from './emit-page.mjs';
+import { buildArtifactSbom, serialize, shippedFiles } from './sbom.mjs';
 
 /**
  * The vite side of a `file://` game in one plugin: `plugins: [mwgPage()]` and `vite build` alone
@@ -12,6 +14,12 @@ import { emitPage } from './emit-page.mjs';
  * build. At the end of the build it runs `emitPage` over the output folder with the same
  * options. A setting the game's own config gives explicitly still wins, since vite merges a
  * plugin's `config` result under the user's.
+ *
+ * It also writes `sbom.cdx.json` into the output folder (`sbom: false` to skip it): a CycloneDX
+ * SBOM of what this build ships, the npm packages whose modules reached the bundle, from vite's
+ * own module graph, and every shipped file with its SHA-256. That is the inventory a player's
+ * copy actually contains, which a lockfile SBOM (`mwg-sbom`) cannot give: the lockfile lists
+ * vite and TypeScript, and cannot tell which dependencies tree-shaking kept.
  *
  * @example
  * ```ts
@@ -27,6 +35,7 @@ export function mwgPage(options = {}) {
 	let root = process.cwd();
 	let outDir = 'dist';
 	let building = false;
+	const modules = new Set();
 	return {
 		name: 'mwg-page',
 		config() {
@@ -45,6 +54,10 @@ export function mwgPage(options = {}) {
 				},
 			};
 		},
+		generateBundle(_options, bundle) {
+			for (const chunk of Object.values(bundle))
+				if (chunk.type === 'chunk') for (const id of Object.keys(chunk.modules)) modules.add(id);
+		},
 		configResolved(config) {
 			root = config.root;
 			outDir = config.build.outDir;
@@ -53,13 +66,18 @@ export function mwgPage(options = {}) {
 		async closeBundle() {
 			//vite also closes the bundle when a dev server stops; only a real build is finished
 			if (!building || this.meta?.watchMode) return;
-			const { assets: _assets, ...emitOptions } = options;
+			const { assets: _assets, sbom = true, ...emitOptions } = options;
 			const source = assets ? resolve(root, assets) : undefined;
-			await emitPage({
-				...emitOptions,
-				dist: resolve(root, outDir),
-				assets: source && existsSync(source) ? source : undefined,
-			});
+			const dist = resolve(root, outDir);
+			await emitPage({ ...emitOptions, dist, assets: source && existsSync(source) ? source : undefined });
+			if (sbom) {
+				const manifest = join(root, 'package.json');
+				const packageJson = existsSync(manifest)
+					? JSON.parse(readFileSync(manifest, 'utf8'))
+					: { name: basename(root), version: '0.0.0' };
+				const bom = buildArtifactSbom({ packageJson, modules: [...modules], files: await shippedFiles(dist) });
+				await writeFile(join(dist, 'sbom.cdx.json'), serialize(bom), 'utf8');
+			}
 		},
 	};
 }

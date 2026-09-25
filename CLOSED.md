@@ -5693,3 +5693,17 @@ capability this framework was missing.
     backtracking trim in `parseMapFile`, `Math.max(...rows)` and an unbounded grid in
     `parseTerrain`, and unbounded recursion in `decodeMarshal`, the last found by a hand-built
     input, since mutations cannot get past its version header.
+
+380. ~~[Medium] A CycloneDX SBOM for a *consuming* project.~~ Landed in three parts, as
+    proposed. (a) `sbom.cdx.json` is in `files`. (b) `tools/sbom.mjs` ships as
+    `@datamoc/mw_games/tools/sbom` and `mwg-sbom [folder] [--out=] [--check]`: the hard-coded
+    root became an argument, `private` projects are typed `application`, and `metadata.tools`
+    names mwg's own version rather than the described project's. This repository's committed
+    SBOM is byte-identical. (c) `buildArtifactSbom` + `shippedFiles`: `mwgPage()` collects
+    module ids in `generateBundle` and writes `dist/sbom.cdx.json`, where each package whose
+    modules reached the bundle is a `required` library with the version and licence of its own
+    `package.json`, and every shipped file is a `file` component with its SHA-256 (precompressed
+    siblings left out). `package:smoke` checks it on a real consumer build: `@datamoc/mw_games`,
+    `pixi.js` and six of Pixi's own dependencies, no `vite`, against 60 components in the same
+    project's lockfile SBOM. `mwg-emit` alone writes no artifact SBOM, since without the bundler
+    it has no module graph.

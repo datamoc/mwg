@@ -99,3 +99,54 @@ test('the committed sbom.cdx.json matches the current package.json and package-l
 
 	assert.equal(committed, expected, 'run "npm run sbom" and commit the result');
 });
+
+test('the artifact SBOM lists only the packages whose modules reached the bundle, and the shipped files', async () => {
+	const { buildArtifactSbom, packageOfModule } = await import('../tools/sbom.mjs');
+	const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
+	const { tmpdir } = await import('node:os');
+	const { join } = await import('node:path');
+	const root = mkdtempSync(join(tmpdir(), 'mwg-sbom-'));
+	try {
+		for (const [name, version, license] of [
+			['pixi.js', '8.1.0', 'MIT'],
+			['@datamoc/mw_games', '0.16.0', 'MPL-2.0'],
+		]) {
+			mkdirSync(join(root, 'node_modules', name), { recursive: true });
+			writeFileSync(join(root, 'node_modules', name, 'package.json'), JSON.stringify({ name, version, license }));
+		}
+		assert.deepEqual(packageOfModule(`${root}/node_modules/@datamoc/mw_games/dist/core/index.js`), {
+			name: '@datamoc/mw_games',
+			dir: `${root}/node_modules/@datamoc/mw_games`,
+		});
+		assert.equal(packageOfModule(`${root}/src/main.ts`), null);
+		const bom = buildArtifactSbom({
+			packageJson: { name: 'my-game', version: '1.0.0', private: true },
+			modules: [
+				`${root}/src/main.ts`,
+				`${root}/node_modules/pixi.js/lib/index.mjs`,
+				`${root}/node_modules/pixi.js/lib/app/Application.mjs`,
+				`${root}/node_modules/@datamoc/mw_games/dist/two-d/Game.js`,
+				'\0vite/preload-helper',
+			],
+			files: [
+				{ path: 'index.html', sha256: 'aa' },
+				{ path: 'game.js', sha256: 'bb' },
+			],
+		});
+		assert.equal(bom.metadata.component.type, 'application');
+		assert.deepEqual(
+			bom.components.map((component) => component['bom-ref']),
+			['pkg:npm/%40datamoc/mw_games@0.16.0', 'pkg:npm/pixi.js@8.1.0', 'file:game.js', 'file:index.html'],
+		);
+		assert.deepEqual(bom.components[1].licenses, [{ license: { id: 'MIT' } }]);
+		assert.deepEqual(bom.components[2].hashes, [{ alg: 'SHA-256', content: 'bb' }]);
+		assert.deepEqual(bom.dependencies, [
+			{
+				ref: 'pkg:npm/my-game@1.0.0',
+				dependsOn: ['pkg:npm/%40datamoc/mw_games@0.16.0', 'pkg:npm/pixi.js@8.1.0'],
+			},
+		]);
+	} finally {
+		rmSync(root, { recursive: true, force: true });
+	}
+});

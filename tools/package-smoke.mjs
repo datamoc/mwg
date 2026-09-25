@@ -227,6 +227,15 @@ try {
 	if (!pluginResult.probe?.includes('smoke.txt'))
 		throw new Error(`the plugin build did not ship its compiled assets: ${JSON.stringify(pluginResult.probe)}`);
 	console.log(JSON.stringify({ path: 'plugin-app', ...pluginResult }, null, 2));
+	// the plugin's artifact SBOM: what the page ships, not what the lockfile holds
+	const bom = JSON.parse(readFileSync(join(npmApp, 'dist-plugin', 'sbom.cdx.json'), 'utf8'));
+	const shipped = bom.components.filter((c) => c.type === 'library').map((c) => c.name);
+	if (!shipped.includes('pixi.js') || !shipped.includes('@datamoc/mw_games') || shipped.includes('vite'))
+		throw new Error(`the artifact SBOM does not describe the bundle: ${shipped.join(', ')}`);
+	console.log(`artifact SBOM: ${shipped.join(', ')} + ${bom.components.length - shipped.length} files`);
+	// the lockfile SBOM, through the shipped command
+	run('npx', ['mwg-sbom', '.', '--out=lock.cdx.json'], npmApp);
+
 	// the shipped check, run the way a game's own CI would: exit status is the verdict
 	run('npx', ['mwg-smoke', 'dist-plugin', '--screenshot=smoke.png'], npmApp);
 
