@@ -4265,6 +4265,10 @@ build instead.
         private clearNodes;
     }
 
+### `collectSoundFontUsage` (function)
+
+    export declare function collectSoundFontUsage(files: readonly MidiFile[]): SoundFontProgram[];
+
 ### `createAudio` (function)
 
     export declare function createAudio(path: string): Playable;
@@ -4412,6 +4416,10 @@ build instead.
 
         playFor(listener: AudioPoint): number;
     }
+
+### `subsetSoundFont` (function)
+
+    export declare function subsetSoundFont(data: ArrayBuffer | ArrayBufferView, usage: readonly SoundFontProgram[]): ArrayBuffer;
 
 ### `synthesizeTone` (function)
 

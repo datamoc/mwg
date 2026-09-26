@@ -5,6 +5,14 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
+## [Unreleased]
+
+### Added
+
+- `audio.collectSoundFontUsage` lists the (bank, program) pairs scheduled notes actually
+  request across MIDI files, and `audio.subsetSoundFont` writes a smaller valid SoundFont 2
+  file carrying only those programs, so a compiled game ships just the samples it plays.
+
 ## [0.18.0] - 2026-09-25
 
 ### Added

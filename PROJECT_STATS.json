@@ -5,7 +5,7 @@
 	"releaseDate": "2026-09-25",
 	"source": {
 		"files": 298,
-		"lines": 51206,
+		"lines": 51630,
 		"modules": 16,
 		"breakdown": [
 			{
@@ -29,14 +29,14 @@
 				"lines": 3520
 			},
 			{
+				"name": "audio",
+				"files": 12,
+				"lines": 2888
+			},
+			{
 				"name": "board",
 				"files": 8,
 				"lines": 2746
-			},
-			{
-				"name": "audio",
-				"files": 12,
-				"lines": 2464
 			},
 			{
 				"name": "actors",
@@ -92,8 +92,8 @@
 	},
 	"tests": {
 		"files": 265,
-		"lines": 34566,
-		"cases": 2453
+		"lines": 34809,
+		"cases": 2459
 	},
 	"tools": {
 		"files": 41,
@@ -136,9 +136,9 @@
 		"declarationFiles": 297
 	},
 	"bundle": {
-		"globalRaw": 1120130,
-		"globalGzip": 333457,
-		"distRaw": 3719850
+		"globalRaw": 1125065,
+		"globalGzip": 334987,
+		"distRaw": 3740951
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

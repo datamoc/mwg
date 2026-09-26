@@ -694,6 +694,11 @@ reach the compiled asset map without it.
 - `parseSoundFont` - reads SoundFont 2 bytes into layered preset voices (key and velocity
   ranges, tuning, loops, envelopes, pan, attenuation); the font file itself stays the
   game's to ship and to license.
+- `collectSoundFontUsage` - lists the (bank, program) pairs scheduled notes actually
+  request across MIDI files, drums as bank 128, for the compile step to keep.
+- `subsetSoundFont` - writes a smaller valid SoundFont 2 file carrying only the used
+  programs, zones and samples copied verbatim and indexes remapped, so a game ships
+  megabytes instead of tens of megabytes with identical voices.
 - `Channel`/`AudioBus` - buffered WebAudio music: a `Channel` plays one looping track with
   volume, pitch, pan, a loop region and a seekable playhead, and an `AudioBus` wires two of
   them into independent BGM/BGS loops, ME jingles that suspend and resume the BGM,

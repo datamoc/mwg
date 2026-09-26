@@ -25,8 +25,8 @@ export type {
 } from './Midi.ts';
 export { renderMidiToBuffer } from './MidiRender.ts';
 export type { RenderMidiOptions, RenderedMidi } from './MidiRender.ts';
-export { parseSoundFont } from './SoundFont.ts';
-export type { SoundFont, SoundFontSample, SoundFontVoice } from './SoundFont.ts';
+export { collectSoundFontUsage, parseSoundFont, subsetSoundFont } from './SoundFont.ts';
+export type { SoundFont, SoundFontProgram, SoundFontSample, SoundFontVoice } from './SoundFont.ts';
 export { Channel, AudioBus } from './Channels.ts';
 export type { LoopRegion, ChannelPlayOptions, ChannelState } from './Channels.ts';
 export type {
