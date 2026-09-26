@@ -5,13 +5,18 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
-## [Unreleased]
+## [0.19.0] - 2026-09-26
+
+A game that plays five instruments no longer ships all 128: the audio module learns which
+programs its MIDI files actually use and writes a smaller SoundFont carrying only those.
 
 ### Added
 
-- `audio.collectSoundFontUsage` lists the (bank, program) pairs scheduled notes actually
-  request across MIDI files, and `audio.subsetSoundFont` writes a smaller valid SoundFont 2
-  file carrying only those programs, so a compiled game ships just the samples it plays.
+- `audio.collectSoundFontUsage` lists the (bank, program) pairs scheduled notes request
+  across MIDI files, with drums mapped to bank 128 the way the renderer maps them.
+- `audio.subsetSoundFont` writes a smaller, valid SoundFont 2 file carrying only the used
+  programs, with zones, ranges, tuning, envelopes and sample loops copied verbatim and
+  every index remapped, so a compiled game ships just the samples it plays.
 
 ## [0.18.0] - 2026-09-25
 
