@@ -5,6 +5,53 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
+## [Unreleased]
+
+## [0.21.0] - 2026-09-27
+
+A tournament chess engine beside the small deterministic one, a playable options
+panel around it, and the missing standard form controls: radio groups, multiline
+text, and multi-select lists.
+
+### Added
+
+- `board` bitboards: the chess rules on twelve 64-bit boards (`startingBitboard`,
+  `bitboardFromChess`, `bitboardMoves`, `makeMove`/`unmakeMove`, `perft`), the mutable
+  board the tournament engine will search. Differential tests keep it in agreement
+  with `chess.ts`, and perft matches the published node counts.
+- `board.probeBook`/`parseUciMove` look a position up in a compiled opening book (ECO,
+  name and UCI continuations) and read UCI moves back; `tools/compile-openings`
+  (`mwg-openings`) builds the book from vendored CC0 tables, so the framework ships
+  the probe and no table.
+- `board` tournament search: `searchTourney`/`searchTourneyAsync` over one
+  self-contained `tourneyThink` task (negamax alpha-beta with PVS, null-move pruning,
+  late-move reductions, iterative deepening with aspiration windows, a bounded Zobrist
+  table, quiescence, hash/MVV-LVA/killer/history ordering, in-house piece-square
+  evaluation), beside the small deterministic `board/Engine`, which the minigame path
+  keeps.
+- `board` tablebases: `probeTablebase`/`loadTablebaseEnding`/`tablebaseId` plus the
+  `huffEncode`/`huffDecode` codec, with WDL-plus-distance 3-piece endings compiled
+  under `data/tablebases`; `tools/build-tablebases` (`mwg-tablebases`) generates and
+  verifies 3-to-4-piece endings in parallel over `threads.spawn`.
+- `tools/play-uci` (`mwg-uci`): a UCI adapter over book, tablebase and tournament
+  search for GUIs and rating runs, a Node tool never in the browser bundle.
+- `two-d/ui` form controls: `RadioGroup` (exactly one choice among several, arrows
+  select at once), multiline `TextModel` (real newlines with row navigation and a
+  sticky goal column; single-line fields strip them), and multi-select `ListView`
+  (`multiple` checks rows instead of picking one).
+
+### Changed
+
+- The chess example plays through the tournament engine (`board.searchTourneyAsync`,
+  worker-parallel with a bounded synchronous fallback), with a thinking indicator,
+  play-as-black, engine depth choice, a promotion picker, an in-check highlight, and
+  arrow keys that move the cursor the way the board points.
+- The chess example gains an options panel: checkboxes for play-black, fuzzy moves,
+  pondering, blitz clock, opening book and WDL tables, a FIDE time-control slider, a
+  live search readout (depth reached, score, nodes, best line, opening name, clocks,
+  workers and memory), a concede button, and a new-game offer at game over. The
+  webpage Examples page shows the stronger game with its keys documented.
+
 ## [0.20.0] - 2026-09-27
 
 Long synchronous work leaves the main thread: a new worker runtime runs self-contained

@@ -1,6 +1,7 @@
 export {
 	startingChess,
 	parseFen,
+	positionKey,
 	cloneChess,
 	legalMoves,
 	applyMove,
@@ -22,6 +23,15 @@ export type {
 } from './chess.ts';
 export { chessGame, chooseMove, search, searchAsync } from './Engine.ts';
 export type { ChessEngineAsyncOptions, ChessEngineOptions, ChessSearchResult } from './Engine.ts';
+export { probeBook, parseUciMove } from './openings.ts';
+export type { OpeningBook, OpeningBookEntry } from './openings.ts';
+
+export { bitboardFromChess, bitboardMoves, makeMove, perft, startingBitboard, unmakeMove } from './bitboard.ts';
+export type { BitboardMove, BitboardState, BitboardUndo } from './bitboard.ts';
+export { searchTourney, searchTourneyAsync, tourneyThink } from './tourney.ts';
+export type { TourneyAsyncOptions, TourneyOptions, TourneyResult } from './tourney.ts';
+export { huffDecode, huffEncode, loadTablebaseEnding, probeTablebase, tablebaseId } from './tablebase.ts';
+export type { LoadedEnding, TablebaseEnding, TablebaseExtra, TablebaseProbe } from './tablebase.ts';
 export {
 	BoardGrid,
 	startingCheckers,

@@ -10,7 +10,7 @@ The shipped, numbered build history (everything through item 389) has moved to
 parked decisions, and the 1.0 exit checklist. Item numbers are never reassigned, so a new
 item continues the sequence in CLOSED.md rather than restarting at 1.
 
-No numbered item is open. Items 372-389, opened and closed on 2026-09-25, were the security
+Item 390 is open, scoped below. Items 372-389, opened and closed on 2026-09-25, were the security
 review (372-379: one inbound pipeline, a Lua memory bound, a default Content-Security-Policy,
 transport defaults, decoder fuzzing, the `file://` saves rule, telemetry bounds, CI
 hardening), the consumer-side CycloneDX SBOM (380) and the repository tools worth shipping to a
@@ -19,6 +19,59 @@ game (381-389: the `mwgPage()` Vite plugin and `emitPage`, `bin` entries, `mwg-s
 `mwg-extract-rgssad` and `mwg-placeholder-assets`). Their records are in
 [CLOSED.md](CLOSED.md), as are items 357 to 371 before them. What's left before 1.0 is the exit
 checklist below.
+
+### Open items
+
+390. **A tournament-capable chess engine, Garbochess-shaped but framework-owned.** The
+shipped `board/Engine` stays a small deterministic rules engine by design; this item
+builds the stronger engine beside it as a separate module, so the minigame path never
+pays for what it does not use. Garbochess-JS (BSD-3-clause, in
+`C:\Users\miche\dev\Garbochess-JS-master` on this machine) is the technique reference;
+inspiration only, no code and no tuned tables cross over. Phased, each phase shippable
+on its own:
+
+- **Phase 1, engine core (dependency-free, renderer-free, worker-safe).** Bitboard
+  board with make/unmake move generation, verified by perft counts on the standard
+  positions; negamax alpha-beta; iterative deepening with aspiration windows and
+  AbortSignal/node-budget time management; Zobrist hashing with a bounded
+  transposition table; quiescence over captures and promotions; ordering (hash move,
+  MVV-LVA captures, killers, history); PVS; null-move pruning; LMR; classical
+  evaluation with in-house piece-square values. Positions stay structured-cloneable so
+  worker root splitting keeps working.
+- **Phase 2, data and protocol.** An opening book compiled from the vendored CC0
+  tables (`data/openings/`, lichess-org/chess-openings) by `tools/compile-openings.mjs`
+  into a game-side artifact, probed with `board.probeBook`; WDL50 3-to-4-piece
+  tablebases generated and verified by a local Node tool and shipped compiled
+  (5-piece is already very big: an order of magnitude more positions for rare
+  endgames); a UCI adapter as a Node tool over stdin/stdout, never part of the
+  browser bundle.
+- **Not in scope:** Syzygy 6-7-piece support and NNUE (see the parked entries below).
+
+Status: Phase 1 shipped as `board/tourney.ts` (`searchTourney`/`searchTourneyAsync`
+over one self-contained `tourneyThink` task, so the worker side cannot diverge).
+Phase 2 shipped the UCI adapter (`tools/play-uci.mjs`, book then tablebase then
+search) and the tablebase generator (`tools/build-tablebases.mjs`, one `spawn` task
+per ending) with 3-piece tables compiled under `data/tablebases` (`KQK KRK KBK KNK`).
+4-piece endings generate and verify the same way (`KBNK KBBK` proven this session)
+but stay a tool run away: full 4-piece tables are tens of megabytes each, the same
+size argument that already excludes 5-piece. Residual before this item closes:
+either accept that split, or check 4-piece artifacts in anyway.
+
+391. **Standard form controls in `two-d/ui`: radio groups, multiline text,
+multi-select.** `Checkbox`, `Dropdown` (single select), `Button` and the single-line
+`TextModel` already cover their HTML counterparts; the gaps are an exclusive-choice
+radio group (`<input type="radio" name="...">`), a multiline text area (`<textarea>`)
+beyond `TextModel`'s single line, and a multi-select list (`<select multiple>`)
+beyond `ListView`'s single highlight. Canvas-drawn like the rest of `ui` (no DOM
+dependency, theme-aware, keyboard driven, announced through `a11y.ts`), each with
+committed tests.
+
+Status: shipped as `ui/RadioGroup.ts` (one choice among several, arrows select at
+once), multiline `TextModel` (newlines kept with `lineCount`/`caretLine`/`lineRange`/
+`moveCaretLine` holding a sticky goal column; single-line fields strip them on every
+edit), and `ListView` `multiple` mode (confirm and tap toggle checks read back
+through `checkedIndexes`). New tests: `radio-group`, `text-model` multiline rows,
+`list-view` multi-select rows.
 
 ### Parked decisions
 
@@ -43,6 +96,16 @@ standing intentions.
 - **Item 41: board-game semantics beyond the generic piece.** `BoardGrid`/`BoardPiece`
   shipped the primitive shape. What "owned", "captured" and "promoted" should mean is
   tied to whichever board game item 30 eventually picks, so it un-parks together with 28/30.
+- **Syzygy 6-7-piece support: blocked on shipping, not on engineering.** Probing needs
+  hundreds of megabytes of table files with random access, which a shipped game can
+  neither fetch (assets are generated, never downloaded) nor read (`fetch` is blocked
+  from `file://`). Un-parks for a Node-only consumer willing to point at its own local
+  table directory, never for the browser bundle.
+- **NNUE evaluation: blocked on weights and budget.** The weights are tens of megabytes
+  that must come from somewhere (training needs datasets this project cannot fetch,
+  third-party weights bring third-party terms), and dependency-free JS inference costs
+  frame time the rendering policy weighs. Classical evaluation is the target; un-parks
+  with in-house weights and a measured inference budget.
 - **The Wesnoth port's non-adoption review (2026-09-12).** The counterpart to the reports that
   became items 316-321 and 327: a walk of the surfaces MWG offers, naming the ones the port
   deliberately keeps local and why. Nothing in it is a request, and the reasons live here so a

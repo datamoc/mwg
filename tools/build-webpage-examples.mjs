@@ -1,7 +1,8 @@
-import { execFileSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { cp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { promisify } from 'node:util';
 
 /**
  * Builds the example games and copies each one's `dist/` into
@@ -15,9 +16,16 @@ import { dirname, join } from 'node:path';
  * like dungeon's `combat.ts`) is written as `source.js`: a plain `window.MWG_EXAMPLE_SOURCE =
  * "..."` assignment, loaded the same way the compiled `game.js` is, so `view.html` can show
  * "the code below the example" without a `fetch()` that `file://` would block.
+ *
+ * Builds run concurrently down a capped lane queue (vite builds are CPU-heavy, so lanes
+ * default to the machine's parallelism capped at 4): process-level parallelism for the
+ * build farm, beside the `threads.spawn` parallelism the chess example itself uses
+ * in the page. Pass example names to rebuild only those (`node
+ * tools/build-webpage-examples.mjs chess`), and `--jobs=N` to resize the lanes.
  */
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const run = promisify(execFile);
 
 const scripts = {
 	'colour-transform': 'example:build',
@@ -44,9 +52,42 @@ const scripts = {
 	'mwl-content': 'example:mwl-content:build',
 };
 
-for (const [name, script] of Object.entries(scripts)) {
+function defaultJobs() {
+	try {
+		const parallelism = globalThis.process?.getBuiltinModule?.('node:os')?.availableParallelism?.();
+		if (typeof parallelism === 'number' && Number.isInteger(parallelism) && parallelism > 0) {
+			return Math.min(parallelism, 4);
+		}
+	} catch {
+		//a build farm must never fail for lack of a hint about its own host
+	}
+	return 2;
+}
+
+const args = process.argv.slice(2);
+const jobsArg = args.find((arg) => arg.startsWith('--jobs='));
+const jobs = jobsArg ? Math.max(1, Math.floor(Number(jobsArg.slice(7)))) : defaultJobs();
+if (!Number.isInteger(jobs)) {
+	console.error('jobs must be a positive integer, e.g. --jobs=4');
+	process.exit(1);
+}
+const wanted = args.filter((arg) => !arg.startsWith('--'));
+const names = wanted.length ? wanted : Object.keys(scripts);
+for (const name of names) {
+	if (!scripts[name]) {
+		console.error(`unknown example: "${name}" (known: ${Object.keys(scripts).join(', ')})`);
+		process.exit(1);
+	}
+}
+
+async function buildOne(name) {
+	const started = Date.now();
 	console.log(`building ${name}...`);
-	execFileSync('npm', ['run', script], { cwd: root, stdio: 'inherit', shell: true });
+	try {
+		await run('npm', ['run', scripts[name]], { cwd: root, shell: process.platform === 'win32' });
+	} catch (error) {
+		return { name, ok: false, output: [error.stdout, error.stderr].filter(Boolean).join('\n') };
+	}
 
 	const from = join(root, 'examples', name, 'dist');
 	const to = join(root, 'webpage', 'examples', name);
@@ -67,6 +108,27 @@ for (const [name, script] of Object.entries(scripts)) {
 		)
 	).join('\n');
 	await writeFile(join(to, 'source.js'), `window.MWG_EXAMPLE_SOURCE = ${JSON.stringify(source)};\n`);
+	console.log(`built ${name} in ${((Date.now() - started) / 1000).toFixed(1)}s`);
+	return { name, ok: true, output: '' };
 }
+
+let next = 0;
+const width = Math.max(1, Math.min(jobs, names.length));
+const results = [];
+await Promise.all(
+	Array.from({ length: width }, async () => {
+		for (;;) {
+			const index = next++;
+			if (index >= names.length) return;
+			results.push(await buildOne(names[index]));
+		}
+	}),
+);
+
+const failures = results.filter((result) => !result.ok);
+for (const failure of failures) {
+	console.error(`\n${failure.name} failed:\n${failure.output.slice(-4000)}`);
+}
+if (failures.length) process.exit(1);
 
 console.log('\nwebpage/examples/*/ now hold playable builds. Open webpage/examples/index.html to see them.');

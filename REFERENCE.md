@@ -513,7 +513,8 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
 - `MessageBox.blocker` - whether a click under the box reaches the map behind it; on by default,
   and since the box is not closable that can only ever swallow clicks rather than dismiss it.
   `blocker: false` is for a box the player is meant to click past.
-- `ListView` - a scrollable, keyboard- and pointer-navigable row list (click, wheel-scroll).
+- `ListView` - a scrollable, keyboard- and pointer-navigable row list (click, wheel-scroll);
+  `multiple` checks rows instead of picking one, read back through `checkedIndexes`.
 - `IconGrid` - a multi-column icon-grid inventory view; tap-then-tap "drag and drop",
   frame-driven long-press for a quickslot.
 - `TabbedList`/`ListTab`/`TabbedListOptions` - a renderer-free model for an inventory, journal,
@@ -525,12 +526,16 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   range), so a game routing its own input snaps the same way.
 - `Checkbox`/`CheckboxOptions` - a ticked-or-not box; a caption is a `Label` the game places beside
   it, and `onChange` fires only when the state moves.
+- `RadioGroup`/`RadioOption`/`RadioGroupOptions` - exactly one choice among several: arrows
+  move the selection and select at once, a tap selects directly, disabled options are skipped.
 - `Spinner`/`SpinnerOptions` + `spinValue` - an up/down numeric stepper; `spinValue` is the rule
   (snap to the step, then clamp at the ends or wrap past them).
 - `Dropdown`/`DropdownOption`/`DropdownOptions` - a renderer-free option button: a selected entry,
   an open list, a highlight that starts on the selection and skips disabled options.
 - `TextModel`/`TextModelOptions` - the editing state behind a text field, fed by `core.Input`'s
   `onText`: caret, anchor, selection-replacing edits, a length cap and a mask. Renderer-free.
+  `multiline` keeps real newlines with row navigation (`lineCount`, `caretLine`, `lineRange`,
+  `moveCaretLine` holding a sticky goal column); single-line fields strip them on every edit.
 - `DataTable`/`TableColumn`/`DataTableOptions` - a renderer-free columned table: sort by a column
   (toggling direction), a highlight that skips disabled rows, and a page derived from the
   highlight.
@@ -750,14 +755,41 @@ No move, formula, or number belongs here - only the shape.
 Board/card/dice games and generic tactics - traditional public-domain rules, no formula
 borrowed from any licensed game.
 
-- **chess** (`chess.ts`): `startingChess`/`parseFen`/`cloneChess`/`legalMoves`/`applyMove`/
-  `inCheck`/`gameResult`/`sq`/`squareName` - full rules: legality, check/mate/stalemate,
-  castling, en passant, promotion, FEN.
+- **chess** (`chess.ts`): `startingChess`/`parseFen`/`positionKey`/`cloneChess`/`legalMoves`/
+  `applyMove`/`inCheck`/`gameResult`/`sq`/`squareName` - full rules: legality, check/mate/
+  stalemate, castling, en passant, promotion, FEN in both directions (positions keyed
+  without clocks).
 - **engine** (`Engine.ts`): `chessGame`/`chooseMove`/`search` - the chess rules adapter and
   convenience wrapper over the shared `ai.alphaBetaSearch`, with material evaluation and
   depth/node limits. `searchAsync` scores each root move on a worker thread and combines
   the scores first-wins, so a depth-3 search stops dropping frames; inside the node
-  budget it chooses exactly the move `search` would. The chess example calls the shared AI primitive directly.
+  budget it chooses exactly the move `search` would. The minigame path keeps this small search and never pays for the tournament module below. `searchAsync` combines root-move scores first-wins.
+
+- **bitboards** (`bitboard.ts`): the same rules on twelve 64-bit boards
+  (`startingBitboard`, `bitboardFromChess`, `bitboardMoves`, `makeMove`/`unmakeMove`,
+  `perft`), the mutable board the tournament engine searches. `bitboardFromChess`
+  bridges from a `chess.ts` position; the differential tests keep both rule sets in
+  agreement.
+- **openings** (`openings.ts`): `probeBook` looks a position up in a compiled opening
+  book (ECO, name where a known line ends, UCI continuations), `parseUciMove` reads a
+  UCI move back. The book is a game-side artifact built by `tools/compile-openings`
+  from vendored CC0 tables, so no table ships with the framework.
+- **tourney** (`tourney.ts`): `searchTourney`/`searchTourneyAsync` over one
+  self-contained `tourneyThink` task, so the worker side cannot diverge from the
+  main-thread side: negamax alpha-beta with principal variation search, null-move
+  pruning, late-move reductions, iterative deepening with aspiration windows, a bounded
+  Zobrist transposition table, quiescence over captures and promotions, hash/MVV-LVA/
+  killer/history ordering, and classical material plus in-house piece-square evaluation.
+  Positions are plain bitboard data and structured-clone straight into workers. The
+  chess example plays its reply through `searchTourneyAsync`, with a thinking indicator,
+  a per-move time cap, side and depth choice, a promotion picker and an in-check
+  highlight.
+- **tablebase** (`tablebase.ts`): `probeTablebase`/`loadTablebaseEnding`/`tablebaseId`
+  plus the `huffEncode`/`huffDecode` codec - WDL outcomes with distance-to-mate for
+  pawnless white-extras-against-lone-king endings, fifty-move-adjudicated against an
+  explicit halfmove clock, generated and verified by `tools/build-tablebases` and
+  shipped compiled under `data/tablebases` (3-piece; 4-piece stays a tool run away,
+  full 4-piece tables are tens of megabytes each).
 - **classics** (`Classics.ts`): `BoardGrid`; checkers
   (`startingCheckers`/`checkersMoves`/`applyCheckersMove`, forced multi-jump captures); go
   (`startingGo`/`playGo`/`passGo`/`goResult`/`goScore`, ko and area scoring); backgammon

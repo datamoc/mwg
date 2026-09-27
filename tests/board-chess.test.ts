@@ -11,6 +11,7 @@ import {
 	gameResult,
 	chooseMove,
 	search,
+	positionKey,
 	sq,
 	type ChessState,
 } from '../src/board/index.ts';
@@ -137,6 +138,15 @@ test('FEN reads rights and en passant, and refuses nonsense', () => {
 	assert.throws(() => parseFen('not a fen'), /not a FEN/);
 	assert.throws(() => parseFen('8/8/8/8/8/8/8/8 w - e4'), /en passant/);
 	assert.throws(() => sq('i9'), /not a square/);
+});
+
+test('positionKey is the clockless FEN half: placement, turn, rights, en passant', () => {
+	assert.equal(positionKey(startingChess()), 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -');
+	const state = startingChess();
+	applyMove(state, { from: sq('e2'), to: sq('e4') });
+	assert.equal(positionKey(state), 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3');
+	const noQueenside = parseFen('r3k2r/8/8/8/8/8/8/R3K2R w Kq - 0 1');
+	assert.ok(positionKey(noQueenside).includes(' w Kq -'));
 });
 
 test('the small alpha-beta engine finds a mate in one', () => {

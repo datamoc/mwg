@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.20.0",
+	"version": "0.21.0",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -40,10 +40,13 @@
 		"mwg-i18n": "tools/i18n-edit.mjs",
 		"mwg-lockstep-server": "tools/multiplayer-server.mjs",
 		"mwg-mwl": "tools/mwl.mjs",
+		"mwg-openings": "tools/compile-openings.mjs",
 		"mwg-placeholder-assets": "tools/make-example-assets.mjs",
 		"mwg-sbom": "tools/sbom.mjs",
 		"mwg-size": "tools/bundle-size.mjs",
-		"mwg-smoke": "tools/browser-smoke.mjs"
+		"mwg-smoke": "tools/browser-smoke.mjs",
+		"mwg-tablebases": "tools/build-tablebases.mjs",
+		"mwg-uci": "tools/play-uci.mjs"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -58,6 +61,12 @@
 		"tools/extract-html.d.mts",
 		"tools/compress-dist.mjs",
 		"tools/compress-dist.d.mts",
+		"tools/compile-openings.mjs",
+		"tools/compile-openings.d.mts",
+		"tools/build-tablebases.mjs",
+		"tools/build-tablebases.d.mts",
+		"tools/play-uci.mjs",
+		"tools/play-uci.d.mts",
 		"tools/classic-html.mjs",
 		"tools/classic-html.d.mts",
 		"tools/sbom.mjs",
@@ -188,6 +197,9 @@
 		"./tools/bundle-size": "./tools/bundle-size.mjs",
 		"./tools/classic-html": "./tools/classic-html.mjs",
 		"./tools/compile-resources": "./tools/compile-resources.mjs",
+		"./tools/compile-openings": "./tools/compile-openings.mjs",
+		"./tools/build-tablebases": "./tools/build-tablebases.mjs",
+		"./tools/play-uci": "./tools/play-uci.mjs",
 		"./tools/compress-dist": "./tools/compress-dist.mjs",
 		"./tools/csp": "./tools/csp.mjs",
 		"./tools/emit-page": "./tools/emit-page.mjs",

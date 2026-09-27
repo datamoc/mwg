@@ -154,9 +154,9 @@ window.MWG_EXAMPLES = [
 		diagram: '02_chess.svg',
 		title: 'Chess',
 		description:
-			'Chess against a small deterministic alpha-beta computer player, with legal moves, check, checkmate, stalemate, castling, en passant, and promotion.',
+			'Chess against the tournament engine (negamax alpha-beta with PVS, null-move pruning, late-move reductions and quiescence, thinking on worker threads), with legal moves, check, checkmate, stalemate, castling, en passant, and promotion. An options panel adds play-black, fuzzy moves, ponder, blitz clock, opening book and WDL tables, a live search readout, and resignation.',
 		controls:
-			'click a square, or hold an arrow key to move the cursor and <kbd>Enter</kbd> to select/move &nbsp;&middot;&nbsp; <kbd>Esc</kbd> reset',
+			'click a square, or hold an arrow key to move the cursor and <kbd>Enter</kbd> to select/move &nbsp;&middot;&nbsp; <kbd>B</kbd> side &nbsp;&middot;&nbsp; <kbd>E</kbd> depth &nbsp;&middot;&nbsp; <kbd>T</kbd> time &nbsp;&middot;&nbsp; <kbd>P</kbd> promote &nbsp;&middot;&nbsp; <kbd>Esc</kbd> reset',
 	},
 	{
 		id: 'tower-defense',

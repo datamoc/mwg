@@ -82,6 +82,50 @@ export function squareName(sq: ChessSquare): string {
 }
 
 /**
+ * The position half of FEN: placement, side to move, castling rights and en passant
+ * square, without either move clock. Two positions share a key exactly when the same
+ * moves are legal from both, which is what makes it the lookup key for an opening
+ * book (`board/openings.ts` builds and probes keys with this function on both sides,
+ * so the en passant square is taken as stored rather than re-derived).
+ *
+ * @example
+ * ```ts
+ * import { positionKey, startingChess } from '@datamoc/mw_games/board';
+ *
+ * console.log(positionKey(startingChess()));
+ * // 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -'
+ * ```
+ */
+export function positionKey(state: ChessState): string {
+	const rows: string[] = [];
+	for (let rank = 7; rank >= 0; rank--) {
+		let row = '';
+		let empty = 0;
+		for (let file = 0; file < 8; file++) {
+			const piece = state.board[rank * 8 + file];
+			if (!piece) {
+				empty++;
+				continue;
+			}
+			if (empty > 0) {
+				row += String(empty);
+				empty = 0;
+			}
+			const letter = { pawn: 'p', knight: 'n', bishop: 'b', rook: 'r', queen: 'q', king: 'k' }[piece.kind];
+			row += piece.side === 'white' ? letter.toUpperCase() : letter;
+		}
+		if (empty > 0) row += String(empty);
+		rows.push(row);
+	}
+	const rights =
+		(state.castling.whiteKingside ? 'K' : '') +
+		(state.castling.whiteQueenside ? 'Q' : '') +
+		(state.castling.blackKingside ? 'k' : '') +
+		(state.castling.blackQueenside ? 'q' : '');
+	return `${rows.join('/')} ${state.turn === 'white' ? 'w' : 'b'} ${rights || '-'} ${state.enPassant === null ? '-' : squareName(state.enPassant)}`;
+}
+
+/**
  * Reads a position in Forsyth-Edwards Notation - the shape puzzles come in.
  *
  * Placement, side to move, castling rights and the en passant square are read;

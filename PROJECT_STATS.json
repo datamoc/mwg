@@ -4,14 +4,14 @@
 	"version": "0.20.0",
 	"releaseDate": "2026-09-27",
 	"source": {
-		"files": 301,
-		"lines": 52592,
+		"files": 306,
+		"lines": 55101,
 		"modules": 17,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 86,
-				"lines": 17695
+				"files": 87,
+				"lines": 18084
 			},
 			{
 				"name": "mwl",
@@ -24,14 +24,14 @@
 				"lines": 6326
 			},
 			{
+				"name": "board",
+				"files": 12,
+				"lines": 5347
+			},
+			{
 				"name": "roguelike",
 				"files": 22,
 				"lines": 3520
-			},
-			{
-				"name": "board",
-				"files": 8,
-				"lines": 3227
 			},
 			{
 				"name": "audio",
@@ -96,13 +96,13 @@
 		]
 	},
 	"tests": {
-		"files": 267,
-		"lines": 35137,
-		"cases": 2484
+		"files": 274,
+		"lines": 35878,
+		"cases": 2541
 	},
 	"tools": {
-		"files": 41,
-		"lines": 7973
+		"files": 44,
+		"lines": 8908
 	},
 	"examples": {
 		"count": 22,
@@ -132,18 +132,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 389,
+		"items": 391,
 		"completed": 389,
-		"open": 0,
-		"percent": 100
+		"open": 2,
+		"percent": 99
 	},
 	"api": {
-		"declarationFiles": 300
+		"declarationFiles": 305
 	},
 	"bundle": {
-		"globalRaw": 1134771,
-		"globalGzip": 337375,
-		"distRaw": 3795470
+		"globalRaw": 1163860,
+		"globalGzip": 346557,
+		"distRaw": 3934947
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

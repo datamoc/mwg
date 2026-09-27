@@ -6,6 +6,12 @@ export interface TextModelOptions {
 	mask?: boolean;
 	/** the character `maskedValue` repeats; a bullet when omitted */
 	maskCharacter?: string;
+	/**
+	 * a multiline field: Enter inserts a real newline and the line helpers below
+	 * navigate rows. Off by default, in which case newlines never survive an edit -
+	 * a single-line name entry cannot grow a second row no matter what is pasted.
+	 */
+	multiline?: boolean;
 }
 
 /**
@@ -34,9 +40,12 @@ export class TextModel {
 	private readonly maxLength?: number;
 	private readonly mask: boolean;
 	private readonly maskCharacter: string;
+	private readonly multiline: boolean;
+	private goalColumn: number | null = null;
 
 	constructor(options: TextModelOptions = {}) {
-		this.text = options.value ?? '';
+		this.multiline = options.multiline ?? false;
+		this.text = this.limit(this.shape(options.value ?? ''));
 		this.maxLength = options.maxLength;
 		this.mask = options.mask ?? false;
 		this.maskCharacter = options.maskCharacter ?? '\u2022';
@@ -48,9 +57,16 @@ export class TextModel {
 		return this.text;
 	}
 
-	/** what to draw for a password field: every character replaced by the mask */
+	/**
+	 * what to draw for a password field: every character replaced by the mask, except
+	 * newlines, which stay newlines so a masked multiline value keeps its rows
+	 */
 	get maskedValue(): string {
-		return this.mask ? this.maskCharacter.repeat(this.text.length) : this.text;
+		if (!this.mask) return this.text;
+		return this.text
+			.split('')
+			.map((char) => (char === '\n' ? '\n' : this.maskCharacter))
+			.join('');
 	}
 
 	get length(): number {
@@ -79,13 +95,15 @@ export class TextModel {
 
 	/** replaces everything; the caret goes to the end and a new string is never longer than `maxLength` */
 	setValue(value: string): void {
-		this.text = this.limit(value);
+		this.text = this.limit(this.shape(value));
 		this.caretIndex = this.text.length;
 		this.anchor = this.caretIndex;
+		this.goalColumn = null;
 	}
 
 	setCaret(index: number, extend = false): void {
 		this.caretIndex = Math.max(0, Math.min(this.text.length, index));
+		this.goalColumn = null;
 		if (!extend) this.anchor = this.caretIndex;
 	}
 
@@ -133,6 +151,7 @@ export class TextModel {
 	selectAll(): void {
 		this.anchor = 0;
 		this.caretIndex = this.text.length;
+		this.goalColumn = null;
 	}
 
 	clearSelection(): void {
@@ -144,13 +163,52 @@ export class TextModel {
 		const start = this.selectionStart;
 		const end = this.selectionEnd;
 		const base = this.text.slice(0, start) + this.text.slice(end);
+		const shaped = this.shape(text);
 		//a paste into a field with little room left stops at the cap rather than being rejected whole
 		const inserted =
-			this.maxLength !== undefined && base.length + text.length > this.maxLength
-				? text.slice(0, Math.max(0, this.maxLength - base.length))
-				: text;
+			this.maxLength !== undefined && base.length + shaped.length > this.maxLength
+				? shaped.slice(0, Math.max(0, this.maxLength - base.length))
+				: shaped;
 		this.text = this.text.slice(0, start) + inserted + this.text.slice(end);
 		this.setCaret(start + inserted.length);
+	}
+
+	/** newlines as the field keeps them: rows in a multiline field, stripped away otherwise */
+	private shape(text: string): string {
+		return text.replace(/\r\n|\r|\n/g, this.multiline ? '\n' : '');
+	}
+
+	/** rows in a multiline field; always 1 for a single-line one, even when empty */
+	get lineCount(): number {
+		if (!this.multiline) return 1;
+		return this.text.split('\n').length;
+	}
+
+	/** the 0-based row the caret sits on */
+	get caretLine(): number {
+		return this.text.slice(0, this.caretIndex).split('\n').length - 1;
+	}
+
+	/** [start, end) of a row, the end stopping before its newline; out-of-range rows clamp */
+	lineRange(line: number): readonly [number, number] {
+		const clamped = Math.max(0, Math.min(this.lineCount - 1, line));
+		let start = 0;
+		for (let i = 0; i < clamped; i++) start = this.text.indexOf('\n', start) + 1;
+		const end = this.text.indexOf('\n', start);
+		return [start, end === -1 ? this.text.length : end];
+	}
+
+	/**
+	 * Up/down between rows, holding the column: the caret lands as far along the new
+	 * row as it goes, the way a `<textarea>` moves. Rows here are newline-delimited,
+	 * since only the renderer knows where a long row wraps on screen.
+	 */
+	moveCaretLine(delta: number, extend = false): void {
+		const [start] = this.lineRange(this.caretLine);
+		const column = this.goalColumn ?? this.caretIndex - start;
+		const [nextStart, nextEnd] = this.lineRange(this.caretLine + delta);
+		this.setCaret(nextStart + Math.min(column, nextEnd - nextStart), extend);
+		this.goalColumn = column;
 	}
 
 	private limit(value: string): string {

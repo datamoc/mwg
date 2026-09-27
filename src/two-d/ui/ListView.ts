@@ -29,6 +29,14 @@ export interface ListViewOptions {
 
 	onSelect?: (item: ListItem, index: number) => void;
 	onHighlight?: (item: ListItem, index: number) => void;
+
+	/**
+	 * check-rather-than-pick rows: arrows move the highlight, confirm and tap toggle
+	 * a check instead of choosing, and the game reads `checkedIndexes` when it is done.
+	 * Off by default, which keeps the pick-one menu this list has always been.
+	 */
+	multiple?: boolean;
+	onToggle?: (item: ListItem, index: number, checked: boolean) => void;
 }
 
 /**
@@ -83,6 +91,10 @@ export class ListView extends Container {
 
 	onSelect: ((item: ListItem, index: number) => void) | null;
 	onHighlight: ((item: ListItem, index: number) => void) | null;
+	onToggle: ((item: ListItem, index: number, checked: boolean) => void) | null;
+	private multiple: boolean;
+	private checked = new Set<number>();
+	private ticks: Graphics[] = [];
 
 	constructor(options: ListViewOptions) {
 		super();
@@ -94,6 +106,8 @@ export class ListView extends Container {
 		this.rowHeight = options.rowHeight ?? Math.ceil(t.font.size * t.font.lineHeight) + t.spacing;
 		this.onSelect = options.onSelect ?? null;
 		this.onHighlight = options.onHighlight ?? null;
+		this.onToggle = options.onToggle ?? null;
+		this.multiple = options.multiple ?? false;
 
 		this.addChild(this.highlight);
 		this.addChild(this.rowsLayer);
@@ -137,15 +151,18 @@ export class ListView extends Container {
 			const label = row.children.find((child): child is Label => child instanceof Label);
 			if (label) {
 				label.setColor(item.disabled ? t.color.textDim : t.color.text);
-				const textStart = t.spacing + (item.icon ? this.rowHeight : 0);
+				const textStart = t.spacing + this.checkAdvance() + (item.icon ? this.rowHeight : 0);
 				label.x = rtl ? this.viewWidth - textStart - label.width : textStart;
 				label.y = Math.round((this.rowHeight - label.height) / 2);
 			}
 			if (item.icon) {
-				item.icon.x = rtl ? this.viewWidth - t.spacing - this.rowHeight : t.spacing;
+				item.icon.x = rtl
+					? this.viewWidth - t.spacing - this.checkAdvance() - this.rowHeight
+					: t.spacing + this.checkAdvance();
 			}
 		});
 
+		this.updateTicks();
 		this.refresh();
 	}
 
@@ -195,7 +212,9 @@ export class ListView extends Container {
 			row.on('pointerdown', () => this.tapRow(i));
 
 			if (item.icon) {
-				item.icon.x = rtl ? this.viewWidth - t.spacing - this.rowHeight : t.spacing;
+				item.icon.x = rtl
+					? this.viewWidth - t.spacing - this.checkAdvance() - this.rowHeight
+					: t.spacing + this.checkAdvance();
 				row.addChild(item.icon);
 			}
 
@@ -203,7 +222,7 @@ export class ListView extends Container {
 				text: item.text,
 				color: item.disabled ? t.color.textDim : t.color.text,
 			});
-			const textStart = t.spacing + (item.icon ? this.rowHeight : 0);
+			const textStart = t.spacing + this.checkAdvance() + (item.icon ? this.rowHeight : 0);
 			label.x = rtl ? this.viewWidth - textStart - label.width : textStart;
 			//centre the text in its row rather than sitting it on the top edge
 			label.y = Math.round((this.rowHeight - label.height) / 2);
@@ -214,6 +233,8 @@ export class ListView extends Container {
 		});
 
 		this.selection.reset(items);
+		this.checked.clear();
+		this.rebuildTicks();
 		this.scroll = 0;
 		this.refresh();
 	}
@@ -240,6 +261,7 @@ export class ListView extends Container {
 	}
 
 	confirm(): boolean {
+		if (this.multiple) return this.toggleChecked(this.selection.selectedIndex);
 		return this.selection.confirm(this.onSelect);
 	}
 
@@ -270,6 +292,88 @@ export class ListView extends Container {
 			default:
 				return false;
 		}
+	}
+
+	get checkedIndexes(): number[] {
+		return [...this.checked].sort((a, b) => a - b);
+	}
+
+	isChecked(index: number): boolean {
+		return this.checked.has(index);
+	}
+
+	/** checks or unchecks a row, firing `onToggle` only when the mark actually moves */
+	setChecked(index: number, checked: boolean): void {
+		const item = this.selection.items[index];
+		if (!item || item.disabled) return;
+		if (this.checked.has(index) === checked) return;
+		if (checked) this.checked.add(index);
+		else this.checked.delete(index);
+		this.updateTicks();
+		this.onToggle?.(item, index, checked);
+	}
+
+	/** flips a row’s check; false for out-of-range and disabled rows */
+	toggleChecked(index: number): boolean {
+		const item = this.selection.items[index];
+		if (!item || item.disabled) return false;
+		this.setChecked(index, !this.checked.has(index));
+		return true;
+	}
+
+	/** unchecks everything silently, the way `setItems` starts unchecked */
+	clearChecked(): void {
+		if (this.checked.size === 0) return;
+		this.checked.clear();
+		this.updateTicks();
+	}
+
+	/** the check box side, so text and icons indent past it in multiple mode */
+	private checkAdvance(): number {
+		return this.multiple ? this.checkBox() + theme().spacing : 0;
+	}
+
+	private checkBox(): number {
+		return Math.max(12, this.rowHeight - 8);
+	}
+
+	private rebuildTicks(): void {
+		this.ticks = [];
+		if (!this.multiple) return;
+		for (const row of this.rows) {
+			const tick = new Graphics();
+			row.addChildAt(tick, 0);
+			this.ticks.push(tick);
+		}
+		this.updateTicks();
+	}
+
+	private updateTicks(): void {
+		const t = theme();
+		const rtl = t.direction === 'rtl';
+		const box = this.checkBox();
+		const y = Math.round((this.rowHeight - box) / 2);
+		this.ticks.forEach((tick, i) => {
+			const dim = this.selection.items[i]?.disabled ?? true;
+			tick.clear()
+				.rect(0, 0, box, box)
+				.fill({ color: t.color.panelFill })
+				.stroke({ color: dim ? t.color.textDim : t.color.panelBorder, width: 2 });
+			if (this.checked.has(i)) {
+				const inset = box * 0.25;
+				tick.moveTo(inset, box * 0.55)
+					.lineTo(box * 0.45, box - inset)
+					.lineTo(box - inset, inset)
+					.stroke({
+						color: dim ? t.color.textDim : t.color.textHighlight,
+						width: Math.max(2, box * 0.12),
+						cap: 'round',
+						join: 'round',
+					});
+			}
+			tick.x = rtl ? this.viewWidth - t.spacing - box : t.spacing;
+			tick.y = y;
+		});
 	}
 
 	private refresh(): void {

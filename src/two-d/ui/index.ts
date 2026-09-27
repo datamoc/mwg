@@ -65,7 +65,9 @@ export { Slider, sliderFraction, sliderValueAt } from './Slider.ts';
 export type { SliderOptions } from './Slider.ts';
 
 export { Checkbox } from './Checkbox.ts';
+export { RadioGroup } from './RadioGroup.ts';
 export type { CheckboxOptions } from './Checkbox.ts';
+export type { RadioGroupOptions, RadioOption } from './RadioGroup.ts';
 
 export { Spinner, spinValue } from './Spinner.ts';
 export type { SpinnerOptions } from './Spinner.ts';

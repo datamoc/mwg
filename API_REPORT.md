@@ -1169,6 +1169,10 @@ build instead.
         private readonly themeListener;
         onSelect: ((item: ListItem, index: number) => void) | null;
         onHighlight: ((item: ListItem, index: number) => void) | null;
+        onToggle: ((item: ListItem, index: number, checked: boolean) => void) | null;
+        private multiple;
+        private checked;
+        private ticks;
         constructor(options: ListViewOptions);
 
         private restyle;
@@ -1188,6 +1192,19 @@ build instead.
         tapRow(index: number): void;
 
         handleAction(action: Action): boolean;
+        get checkedIndexes(): number[];
+        isChecked(index: number): boolean;
+
+        setChecked(index: number, checked: boolean): void;
+
+        toggleChecked(index: number): boolean;
+
+        clearChecked(): void;
+
+        private checkAdvance;
+        private checkBox;
+        private rebuildTicks;
+        private updateTicks;
         private refresh;
     }
 
@@ -1761,6 +1778,37 @@ build instead.
         observe(frameSeconds: number): number;
 
         reset(): void;
+    }
+
+### `RadioGroup` (class)
+
+    export declare class RadioGroup extends Container {
+        readonly onChange: Signal<number>;
+        private options_;
+        private rows;
+        private circles;
+        private size_;
+        private gap_;
+        private selected_;
+        private readonly themeListener;
+        constructor(options?: RadioGroupOptions);
+        get selected(): number;
+        get selectedOption(): RadioOption | null;
+        get length(): number;
+        get rowHeight(): number;
+        setOptions(options: RadioOption[], selected?: number): void;
+
+        select(index: number): void;
+
+        move(delta: number): boolean;
+
+        handleAction(action: Action): boolean;
+
+        tapRow(index: number): void;
+        private defaultSelection;
+        private buildRows;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
 ### `Random` (namespace)
@@ -2796,6 +2844,8 @@ build instead.
         private readonly maxLength?;
         private readonly mask;
         private readonly maskCharacter;
+        private readonly multiline;
+        private goalColumn;
         constructor(options?: TextModelOptions);
         get value(): string;
 
@@ -2823,6 +2873,16 @@ build instead.
         clearSelection(): void;
 
         replaceSelection(text: string): void;
+
+        private shape;
+
+        get lineCount(): number;
+
+        get caretLine(): number;
+
+        lineRange(line: number): readonly [number, number];
+
+        moveCaretLine(delta: number, extend?: boolean): void;
         private limit;
     }
 
@@ -3109,7 +3169,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.20.0";
+    export declare const version = "0.21.0";
 
 ### `VerticalLabel` (class)
 
@@ -4707,6 +4767,14 @@ build instead.
 
     export declare function bankUnit(army: ArmyState, board: TacticalState, unitId: string): boolean;
 
+### `bitboardFromChess` (function)
+
+    export declare function bitboardFromChess(state: ChessState): BitboardState;
+
+### `bitboardMoves` (function)
+
+    export declare function bitboardMoves(board: BitboardState): BitboardMove[];
+
 ### `BoardGrid` (class)
 
     export declare class BoardGrid<P> {
@@ -4830,6 +4898,14 @@ build instead.
     export declare function goScore(state: GoState): {
         black: number;
 
+### `huffDecode` (function)
+
+    export declare function huffDecode(code: string): Uint8Array;
+
+### `huffEncode` (function)
+
+    export declare function huffEncode(raw: Uint8Array): string;
+
 ### `inCheck` (function)
 
     export declare function inCheck(state: ChessState, side: ChessSide): boolean;
@@ -4837,6 +4913,14 @@ build instead.
 ### `legalMoves` (function)
 
     export declare function legalMoves(state: ChessState): ChessMove[];
+
+### `loadTablebaseEnding` (function)
+
+    export declare function loadTablebaseEnding(file: TablebaseEnding): LoadedEnding;
+
+### `makeMove` (function)
+
+    export declare function makeMove(board: BitboardState, move: BitboardMove): BitboardUndo;
 
 ### `moveSkirmishUnit` (function)
 
@@ -4858,13 +4942,33 @@ build instead.
 
     export declare function parseFen(fen: string): ChessState;
 
+### `parseUciMove` (function)
+
+    export declare function parseUciMove(uci: string): ChessMove;
+
 ### `passGo` (function)
 
     export declare function passGo(state: GoState): void;
 
+### `perft` (function)
+
+    export declare function perft(board: BitboardState, depth: number): number;
+
 ### `playGo` (function)
 
     export declare function playGo(state: GoState, x: number, y: number): void;
+
+### `positionKey` (function)
+
+    export declare function positionKey(state: ChessState): string;
+
+### `probeBook` (function)
+
+    export declare function probeBook(book: OpeningBook, state: ChessState): OpeningBookEntry | null;
+
+### `probeTablebase` (function)
+
+    export declare function probeTablebase(loaded: Record<string, LoadedEnding>, state: ChessState | BitboardState, halfmove?: number): TablebaseProbe | null;
 
 ### `recall` (function)
 
@@ -4897,6 +5001,14 @@ build instead.
 ### `searchAsync` (function)
 
     export declare function searchAsync(state: ChessState, options?: ChessEngineAsyncOptions): Promise<ChessSearchResult>;
+
+### `searchTourney` (function)
+
+    export declare function searchTourney(state: ChessState | BitboardState, options?: TourneyOptions): TourneyResult;
+
+### `searchTourneyAsync` (function)
+
+    export declare function searchTourneyAsync(state: ChessState | BitboardState, options?: TourneyAsyncOptions): Promise<TourneyResult>;
 
 ### `setSkirmishTerrain` (function)
 
@@ -4942,6 +5054,10 @@ build instead.
 
     export declare function startingBackgammon(): BackgammonState;
 
+### `startingBitboard` (function)
+
+    export declare function startingBitboard(): BitboardState;
+
 ### `startingCheckers` (function)
 
     export declare function startingCheckers(): CheckersState;
@@ -4962,6 +5078,10 @@ build instead.
 
     export declare function startingTactics(width: number, height: number, shape?: TacticalShape): TacticalState;
 
+### `tablebaseId` (function)
+
+    export declare function tablebaseId(white: TablebaseExtra[]): string;
+
 ### `tacticalAttack` (function)
 
     export declare function tacticalAttack(state: TacticalState, attackerId: string, defenderId: string, damage: number): TacticalAttack;
@@ -4970,6 +5090,11 @@ build instead.
 
     export declare function tacticalMoves(state: TacticalState, unitId: string): TacticalMove[];
 
+### `tourneyThink` (function)
+
+    export declare function tourneyThink(position: BitboardState, options?: {
+        depth?: number;
+
 ### `trickWinner` (function)
 
     export declare function trickWinner<O = string>(plays: TrickPlay<O>[], trumpSuit?: CardSuit): O;
@@ -4977,6 +5102,10 @@ build instead.
 ### `triggerTacticalOverwatch` (function)
 
     export declare function triggerTacticalOverwatch(state: TacticalState, movingUnitId: string, damage: number): TacticalAttack[];
+
+### `unmakeMove` (function)
+
+    export declare function unmakeMove(board: BitboardState, move: BitboardMove, undo: BitboardUndo): void;
 
 ## `./core`
 
@@ -8355,6 +8484,10 @@ build instead.
         private readonly themeListener;
         onSelect: ((item: ListItem, index: number) => void) | null;
         onHighlight: ((item: ListItem, index: number) => void) | null;
+        onToggle: ((item: ListItem, index: number, checked: boolean) => void) | null;
+        private multiple;
+        private checked;
+        private ticks;
         constructor(options: ListViewOptions);
 
         private restyle;
@@ -8374,6 +8507,19 @@ build instead.
         tapRow(index: number): void;
 
         handleAction(action: Action): boolean;
+        get checkedIndexes(): number[];
+        isChecked(index: number): boolean;
+
+        setChecked(index: number, checked: boolean): void;
+
+        toggleChecked(index: number): boolean;
+
+        clearChecked(): void;
+
+        private checkAdvance;
+        private checkBox;
+        private rebuildTicks;
+        private updateTicks;
         private refresh;
     }
 
@@ -8721,6 +8867,37 @@ build instead.
         observe(frameSeconds: number): number;
 
         reset(): void;
+    }
+
+### `RadioGroup` (class)
+
+    export declare class RadioGroup extends Container {
+        readonly onChange: Signal<number>;
+        private options_;
+        private rows;
+        private circles;
+        private size_;
+        private gap_;
+        private selected_;
+        private readonly themeListener;
+        constructor(options?: RadioGroupOptions);
+        get selected(): number;
+        get selectedOption(): RadioOption | null;
+        get length(): number;
+        get rowHeight(): number;
+        setOptions(options: RadioOption[], selected?: number): void;
+
+        select(index: number): void;
+
+        move(delta: number): boolean;
+
+        handleAction(action: Action): boolean;
+
+        tapRow(index: number): void;
+        private defaultSelection;
+        private buildRows;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
 ### `RebindScreen` (class)
@@ -9403,6 +9580,8 @@ build instead.
         private readonly maxLength?;
         private readonly mask;
         private readonly maskCharacter;
+        private readonly multiline;
+        private goalColumn;
         constructor(options?: TextModelOptions);
         get value(): string;
 
@@ -9430,6 +9609,16 @@ build instead.
         clearSelection(): void;
 
         replaceSelection(text: string): void;
+
+        private shape;
+
+        get lineCount(): number;
+
+        get caretLine(): number;
+
+        lineRange(line: number): readonly [number, number];
+
+        moveCaretLine(delta: number, extend?: boolean): void;
         private limit;
     }
 
@@ -11277,6 +11466,10 @@ build instead.
         private readonly themeListener;
         onSelect: ((item: ListItem, index: number) => void) | null;
         onHighlight: ((item: ListItem, index: number) => void) | null;
+        onToggle: ((item: ListItem, index: number, checked: boolean) => void) | null;
+        private multiple;
+        private checked;
+        private ticks;
         constructor(options: ListViewOptions);
 
         private restyle;
@@ -11296,6 +11489,19 @@ build instead.
         tapRow(index: number): void;
 
         handleAction(action: Action): boolean;
+        get checkedIndexes(): number[];
+        isChecked(index: number): boolean;
+
+        setChecked(index: number, checked: boolean): void;
+
+        toggleChecked(index: number): boolean;
+
+        clearChecked(): void;
+
+        private checkAdvance;
+        private checkBox;
+        private rebuildTicks;
+        private updateTicks;
         private refresh;
     }
 
@@ -11464,6 +11670,37 @@ build instead.
 ### `positionMarkupLines` (function)
 
     export declare function positionMarkupLines(lines: readonly MarkupLine[], layout: MarkupLayout): PositionedMarkupSpan[];
+
+### `RadioGroup` (class)
+
+    export declare class RadioGroup extends Container {
+        readonly onChange: Signal<number>;
+        private options_;
+        private rows;
+        private circles;
+        private size_;
+        private gap_;
+        private selected_;
+        private readonly themeListener;
+        constructor(options?: RadioGroupOptions);
+        get selected(): number;
+        get selectedOption(): RadioOption | null;
+        get length(): number;
+        get rowHeight(): number;
+        setOptions(options: RadioOption[], selected?: number): void;
+
+        select(index: number): void;
+
+        move(delta: number): boolean;
+
+        handleAction(action: Action): boolean;
+
+        tapRow(index: number): void;
+        private defaultSelection;
+        private buildRows;
+        private draw;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
 
 ### `RebindScreen` (class)
 
@@ -11816,6 +12053,8 @@ build instead.
         private readonly maxLength?;
         private readonly mask;
         private readonly maskCharacter;
+        private readonly multiline;
+        private goalColumn;
         constructor(options?: TextModelOptions);
         get value(): string;
 
@@ -11843,6 +12082,16 @@ build instead.
         clearSelection(): void;
 
         replaceSelection(text: string): void;
+
+        private shape;
+
+        get lineCount(): number;
+
+        get caretLine(): number;
+
+        lineRange(line: number): readonly [number, number];
+
+        moveCaretLine(delta: number, extend?: boolean): void;
         private limit;
     }
 
