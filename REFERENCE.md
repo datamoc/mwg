@@ -56,7 +56,7 @@ Three rules the whole API follows, so a name means one thing everywhere:
 [assets](#assets) · [audio](#audio) · [battle](#battle) · [board](#board) ·
 [actors](#actors) · [roguelike](#roguelike) · [rpg](#rpg) · [simulation](#simulation) ·
 [three-d](#three-d-optional) · [world](#world) · [i18n](#i18n) · [mwl](#mwl) · [ai](#ai) ·
-[testing](#testing)
+[testing](#testing) · [threads](#threads)
 
 ## `core`
 
@@ -691,6 +691,11 @@ reach the compiled asset map without it.
   deterministic: browsers cannot decode MIDI, so the file is synthesized once and plays
   back like any decoded track, with its controller-111 loop region. An optional game-supplied
   `SoundFont` voices real samples; without one the built-in waveform synth plays.
+- `renderMidiToBufferAsync` - the same render as raw MIDI bytes, run on a worker thread so
+  the seconds a real track costs (2 to 11.8) do not freeze the loading screen. Parse,
+  schedule and voice lookup stay on the caller's thread; the stereo buffers come back
+  transferred rather than copied, and the result is bit-identical to the synchronous
+  render because both call the same function. `soundFontBytes` takes raw SoundFont 2 data.
 - `parseSoundFont` - reads SoundFont 2 bytes into layered preset voices (key and velocity
   ranges, tuning, loops, envelopes, pan, attenuation); the font file itself stays the
   game's to ship and to license.
@@ -750,7 +755,9 @@ borrowed from any licensed game.
   castling, en passant, promotion, FEN.
 - **engine** (`Engine.ts`): `chessGame`/`chooseMove`/`search` - the chess rules adapter and
   convenience wrapper over the shared `ai.alphaBetaSearch`, with material evaluation and
-  depth/node limits. The chess example calls the shared AI primitive directly.
+  depth/node limits. `searchAsync` scores each root move on a worker thread and combines
+  the scores first-wins, so a depth-3 search stops dropping frames; inside the node
+  budget it chooses exactly the move `search` would. The chess example calls the shared AI primitive directly.
 - **classics** (`Classics.ts`): `BoardGrid`; checkers
   (`startingCheckers`/`checkersMoves`/`applyCheckersMove`, forced multi-jump captures); go
   (`startingGo`/`playGo`/`passGo`/`goResult`/`goScore`, ko and area scoring); backgammon
@@ -1055,6 +1062,30 @@ nothing here reaches a shipped game unless a test imports it.
   `Response` or a value sent as JSON, recording each call.
 - `fakeGamepad` - a `Gamepad` from button values (pressed above 0.5) and axes, for `Input` and
   `PlayerInput`.
+
+## `threads`
+
+Runs a self-contained function on a worker thread, so a blocking computation costs a
+background thread instead of a dropped frame. mwg's own runtime rather than a dependency:
+a classic blob worker in the browser, because that is the one shape a double-clicked
+`file://` page accepts (the shipped CSP allows `worker-src blob:` and `new Function`, and
+a module worker loaded from `file://` fails CORS whatever the policy says), and
+`node:worker_threads` in Node. Off the root barrel like `testing`: a game that never
+spawns a worker pays nothing for it, and imports `@datamoc/mw_games/threads` when it
+wants one.
+
+- `spawn(fn, args?, options?)` - runs `fn` on a worker and resolves with its value. The
+  task is serialized with `Function.prototype.toString`, so it must be self-contained:
+  no closures over module scope, no imports, no bound or native functions - everything it
+  needs arrives as `args`, structured-cloned in. `options.transfer` moves listed buffers
+  instead, detaching them from the caller's thread. The result returns structured-cloned
+  with every `ArrayBuffer` inside it transferred rather than copied, since the worker is
+  finished with them. A task that throws, closes over something the worker cannot see, or
+  kills its worker without answering rejects the promise instead of hanging it;
+  `options.timeout` abandons a task that never returns, and `options.signal` (an
+  `AbortSignal`) cancels one on demand. One worker per task, terminated the moment it
+  settles. In Node an unsettled task keeps the process alive, so settle or cancel every
+  task before exit.
 
 ## `three-d` (optional)
 
@@ -1402,6 +1433,9 @@ actions, serialisable state, diagnostics and budgets.
   detection, current player and evaluation from the root player's perspective. `depth`,
   `maxNodes`, cancellation and node diagnostics bound the search; the same primitive works
   for a local actor and for a top-level controller such as a chess master.
+  `rootSplits`/`firstWins` are the root-split halves of an off-thread search: the split
+  pairs each root move with its child in game order, and first-wins reduces scored moves
+  so ties keep the earlier move.
 - `personalScoreView`/`sideScoreView`/`scoreWith` over `ScoreSubject`/`ScoreView`/
   `ScorePersonality` - the numbers a mind that weighs outcomes needs, for the case where a search
   is the wrong tool. The game owns what anything is worth (`scoreOf`), the framework owns how a

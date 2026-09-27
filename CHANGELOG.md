@@ -5,6 +5,34 @@ All notable changes to `mwg` are documented here. Format follows
 [Semantic Versioning](https://semver.org/) as of this first release - a 0.y.z version means
 the public API may still change between minor versions.
 
+## [0.20.0] - 2026-09-27
+
+Long synchronous work leaves the main thread: a new worker runtime runs self-contained
+functions on a blob worker in the browser and on worker threads in Node, the offline
+MIDI render and the chess search each gain an async twin on top of it, and the
+build-time compressor works files in parallel.
+
+### Added
+
+- `threads.spawn` runs a self-contained function on a worker thread: a blob worker under
+  the shipped `file://` CSP in the browser, `node:worker_threads` in Node, one worker per
+  task with transferable results, a failure that rejects instead of hanging, and `timeout`
+  / `AbortSignal` cancellation. Off the root barrel: `@datamoc/mw_games/threads`.
+- `audio.renderMidiToBufferAsync` renders raw MIDI bytes (and optional raw SoundFont bytes)
+  on a worker thread, so the seconds a real track costs no longer freeze the caller's
+  thread; the result is bit-identical to `renderMidiToBuffer`, because both paths call the
+  same render function.
+- `tools/compress-dist` compresses files in parallel over async `zlib`, with the lane
+  count from `MWG_COMPRESS_JOBS` (else the machine's thread count, else 4) or the new
+  `jobs` option; rows keep walk order, so the report is identical at any lane count.
+- `ai.rootSplits`/`ai.firstWins` are the root-split halves of an off-thread search: the
+  split pairs each root move with its child in game order, first-wins reduces scored
+  moves keeping the earlier move on ties.
+- `board.searchAsync` scores each chess root move on a worker thread and combines the
+  scores first-wins, so the 90 ms a depth-3 search costs no longer drops the caller's
+  frames; inside the node budget it chooses exactly the move `search` returns, past it
+  (or when cancelled) it resolves `{ move: null }` the same way.
+
 ## [0.19.0] - 2026-09-26
 
 A game that plays five instruments no longer ships all 128: the audio module learns which

@@ -3109,7 +3109,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.19.0";
+    export declare const version = "0.20.0";
 
 ### `VerticalLabel` (class)
 
@@ -3880,6 +3880,11 @@ build instead.
         aspectsFor(id: string): Aspects;
     }
 
+### `firstWins` (function)
+
+    export declare function firstWins<Move>(scored: readonly {
+        readonly move: Move;
+
 ### `Goals` (class)
 
     export declare class Goals {
@@ -3950,6 +3955,10 @@ build instead.
 
         next(after: string | null): string | null;
     }
+
+### `rootSplits` (function)
+
+    export declare function rootSplits<State, Move>(game: AlphaBetaGame<State, Move>, state: State): RootSplit<State, Move>[];
 
 ### `scoreWith` (function)
 
@@ -4376,6 +4385,10 @@ build instead.
 ### `renderMidiToBuffer` (function)
 
     export declare function renderMidiToBuffer(file: MidiFile, options?: RenderMidiOptions): RenderedMidi;
+
+### `renderMidiToBufferAsync` (function)
+
+    export declare function renderMidiToBufferAsync(midi: ArrayBuffer | ArrayBufferView, options?: RenderMidiAsyncOptions): Promise<RenderedMidi>;
 
 ### `scheduleMidi` (function)
 
@@ -4880,6 +4893,10 @@ build instead.
 ### `search` (function)
 
     export declare function search(state: ChessState, options?: ChessEngineOptions): ChessSearchResult;
+
+### `searchAsync` (function)
+
+    export declare function searchAsync(state: ChessState, options?: ChessEngineAsyncOptions): Promise<ChessSearchResult>;
 
 ### `setSkirmishTerrain` (function)
 
@@ -7474,6 +7491,12 @@ build instead.
 ### `memoryStorage` (function)
 
     export declare function memoryStorage(): SaveStorage;
+
+## `./threads`
+
+### `spawn` (function)
+
+    export declare function spawn<Args extends readonly unknown[], Result>(fn: (...args: Args) => Result, args?: Args, options?: SpawnOptions): Promise<Awaited<Result>>;
 
 ## `./two-d`
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { JavaScriptAI, type AIAction } from '../src/ai/index.ts';
+import { JavaScriptAI, firstWins, rootSplits, type AIAction } from '../src/ai/index.ts';
 import { LuaAI } from '../src/ai/lua.ts';
 
 test('JavaScriptAI selects a behaviour, uses seeded randomness, and persists state', () => {
@@ -76,6 +76,62 @@ test('alphaBetaSearch chooses the minimax move and reports pruning', () => {
 	assert.equal(result.status, 'complete');
 	assert.equal(result.move, 'a');
 	assert.ok(result.cutoffs > 0);
+});
+
+test('rootSplits pairs every root move with its child in game order', () => {
+	type State = { id: string; player: number };
+	const game = {
+		currentPlayer: (state: State) => state.player,
+		moves: (state: State) => (state.id === 'root' ? ['a', 'b'] : []),
+		apply: (state: State, move: string) => ({ id: `${state.id}${move}`, player: 2 }),
+		isTerminal: (state: State) => state.id !== 'root',
+		evaluate: () => 0,
+	};
+	const splits = rootSplits(game, { id: 'root', player: 1 });
+	assert.deepEqual(
+		splits.map((split) => split.move),
+		['a', 'b'],
+	);
+	assert.deepEqual(
+		splits.map((split) => split.child.id),
+		['roota', 'rootb'],
+	);
+});
+
+test('firstWins keeps the earliest move on tied scores, on both sides', () => {
+	assert.equal(
+		firstWins(
+			[
+				{ move: 'a', score: 1 },
+				{ move: 'b', score: 1 },
+			],
+			true,
+		),
+		'a',
+	);
+	assert.equal(
+		firstWins(
+			[
+				{ move: 'a', score: 1 },
+				{ move: 'b', score: 2 },
+			],
+			true,
+		),
+		'b',
+		'maximizing takes the strictly better score',
+	);
+	assert.equal(
+		firstWins(
+			[
+				{ move: 'a', score: 1 },
+				{ move: 'b', score: 0 },
+			],
+			false,
+		),
+		'b',
+		'minimizing takes the strictly worse score',
+	);
+	assert.equal(firstWins([], true), null);
 });
 
 test('LuaAI runs the shared decision contract and keeps state explicit', () => {

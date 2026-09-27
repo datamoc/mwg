@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { parseMidi } from '../src/audio/Midi.ts';
-import { renderMidiToBuffer } from '../src/audio/MidiRender.ts';
+import { renderMidiToBuffer, renderMidiToBufferAsync } from '../src/audio/MidiRender.ts';
 import type { SoundFont } from '../src/audio/SoundFont.ts';
 
 /** builds a minimal, valid Standard MIDI File (format 0, one track) from a list of track bytes */
@@ -184,6 +184,67 @@ test('maxDuration caps the render instead of allocating the whole tail', () => {
 	const rendered = renderMidiToBuffer(parseMidi(oneNote()), { maxDuration: 0.2, sampleRate: 8000 });
 	assert.equal(rendered.duration, 0.2);
 	assert.equal(rendered.left.length, Math.ceil(0.2 * 8000));
+});
+
+// ------------------------------------------------------- renderMidiToBufferAsync
+
+/** several channels in one file: two synth recipes, the drum kit, a pan and a volume change */
+function mixedTrack(): Uint8Array {
+	return buildMidi(96, [
+		...vlq(0),
+		...programChange(0, 48),
+		...vlq(0),
+		...programChange(1, 80),
+		...vlq(0),
+		...controlChange(1, 10, 127), // pan hard right
+		...vlq(0),
+		...noteOn(0, 60, 100),
+		...vlq(0),
+		...noteOn(1, 64, 80),
+		...vlq(0),
+		...noteOn(9, 36, 100), // kick
+		...vlq(48),
+		...noteOff(0, 60),
+		...vlq(0),
+		...noteOff(1, 64),
+		...vlq(0),
+		...noteOff(9, 36),
+		...vlq(0),
+		...noteOn(9, 38, 90), // snare
+		...vlq(32),
+		...noteOff(9, 38),
+		...vlq(0),
+		...endOfTrack(),
+	]);
+}
+
+test('the async render matches the synchronous render bit for bit', async () => {
+	const bytes = mixedTrack();
+	const synchronous = renderMidiToBuffer(parseMidi(bytes));
+	const asynchronous = await renderMidiToBufferAsync(bytes);
+	//guard the comparison against two identical renders of silence
+	assert.ok(peak(synchronous.left) > 0.01, 'the fixture must actually produce audio');
+	assert.deepEqual(asynchronous, synchronous);
+});
+
+test('the async render rejects with the message the synchronous render throws', async () => {
+	const empty = buildMidi(96, [...vlq(0), ...endOfTrack()]);
+	assert.throws(() => renderMidiToBuffer(parseMidi(empty)), /no notes/);
+	await assert.rejects(renderMidiToBufferAsync(empty), /no notes/);
+
+	const bytes = oneNote();
+	assert.throws(() => renderMidiToBuffer(parseMidi(bytes), { sampleRate: 0 }), /sample rate must be positive/);
+	await assert.rejects(renderMidiToBufferAsync(bytes, { sampleRate: 0 }), /sample rate must be positive/);
+});
+
+test('the async render cuts at maxDuration exactly like the synchronous one', async () => {
+	const bytes = oneNote();
+	const synchronous = renderMidiToBuffer(parseMidi(bytes), { maxDuration: 0.2, sampleRate: 8000 });
+	const asynchronous = await renderMidiToBufferAsync(bytes, { maxDuration: 0.2, sampleRate: 8000 });
+	//the boundary: the tail is longer than the cap, so duration lands exactly on it
+	assert.equal(asynchronous.duration, 0.2);
+	assert.equal(asynchronous.left.length, Math.ceil(0.2 * 8000));
+	assert.deepEqual(asynchronous, synchronous);
 });
 
 // ------------------------------------------------------------------- soundfont voicing

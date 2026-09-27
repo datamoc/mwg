@@ -1,13 +1,14 @@
 import { alphaBetaSearch } from './search.ts';
 import type { AlphaBetaGame, AlphaBetaOptions, AlphaBetaResult } from './search.ts';
 
-export { alphaBetaSearch } from './search.ts';
+export { alphaBetaSearch, firstWins, rootSplits } from './search.ts';
 export type {
 	AlphaBetaGame,
 	AlphaBetaOptions,
 	AlphaBetaResult,
 	LuaAlphaBetaFunctions,
 	LuaSearchValueAdapter,
+	RootSplit,
 } from './search.ts';
 
 export { personalScoreView, scoreWith, sideScoreView, subjectsWhere } from './score.ts';

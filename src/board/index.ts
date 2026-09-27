@@ -20,8 +20,8 @@ export type {
 	ChessState,
 	ChessResult,
 } from './chess.ts';
-export { chessGame, chooseMove, search } from './Engine.ts';
-export type { ChessEngineOptions, ChessSearchResult } from './Engine.ts';
+export { chessGame, chooseMove, search, searchAsync } from './Engine.ts';
+export type { ChessEngineAsyncOptions, ChessEngineOptions, ChessSearchResult } from './Engine.ts';
 export {
 	BoardGrid,
 	startingCheckers,

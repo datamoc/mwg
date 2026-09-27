@@ -1,6 +1,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { relative, extname, basename } from 'node:path';
-import { gzipSync, brotliCompressSync, constants } from 'node:zlib';
+import { gzip, brotliCompress, constants } from 'node:zlib';
+import { promisify } from 'node:util';
+import { availableParallelism } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { walk } from './compile-resources.mjs';
 
@@ -21,6 +23,11 @@ import { walk } from './compile-resources.mjs';
  * a server can negotiate: `gz` stays the fallback.
  *
  * usage: node tools/compress-dist.mjs <dist folder> [--xz] [--no-gzip] [--no-brotli]
+ *
+ * Files compress in parallel over async `zlib` (the libuv threadpool, not worker
+ * threads): one chain per job over a shared queue, defaulting to MWG_COMPRESS_JOBS
+ * when it names a positive integer, else the machine's thread count, else 4. Rows
+ * land by index, so the report keeps walk order no matter who finishes first.
  */
 
 const TEXT_EXTENSIONS = new Set(['.js', '.html', '.css', '.svg', '.json', '.txt', '.map']);
@@ -40,6 +47,26 @@ const ALREADY_COMPRESSED = new Set([
 	'.woff2',
 ]);
 const MIN_BYTES = 1024;
+
+const gzipAsync = promisify(gzip);
+const brotliAsync = promisify(brotliCompress);
+
+/**
+ * How many files `compressDist` works on at once: `MWG_COMPRESS_JOBS` when it names
+ * a positive integer, else the machine's own thread count, else 4. An env knob rather
+ * than a constant so a loaded CI host can turn one build down without editing anything.
+ */
+export function compressJobs() {
+	const raw = Number(process.env.MWG_COMPRESS_JOBS);
+	if (Number.isInteger(raw) && raw > 0) return raw;
+	try {
+		const parallel = availableParallelism();
+		if (Number.isInteger(parallel) && parallel > 0) return parallel;
+	} catch {
+		//a build tool must never fail for lack of a hint about its own host
+	}
+	return 4;
+}
 
 /** true when the system `xz` binary (LZMA2) is available for the opt-in archive pass */
 export function hasXz() {
@@ -67,44 +94,63 @@ function compressXz(data) {
  * @param options.gzip write `.gz` siblings (default true)
  * @param options.brotli write `.br` siblings (default true)
  * @param options.xz also write `.xz` siblings where smaller (default false, needs `xz`)
- * @returns one row per file considered, with the sizes actually written
+ * @param options.jobs files to compress at once (default `compressJobs()`)
+ * @returns one row per file considered, with the sizes actually written, in walk order
  */
-export async function compressDist(dir, { gzip = true, brotli = true, xz = false } = {}) {
-	const rows = [];
-	const wantXz = xz && hasXz();
+export async function compressDist(dir, { gzip = true, brotli = true, xz = false, jobs = compressJobs() } = {}) {
+	const candidates = [];
 	for await (const file of walk(dir)) {
 		const ext = extname(file).toLowerCase();
 		if (!TEXT_EXTENSIONS.has(ext) || ALREADY_COMPRESSED.has(ext)) continue;
-		const data = await readFile(file);
-		if (data.length < MIN_BYTES) continue;
-		const name = relative(dir, file);
-		const row = { file: name, raw: data.length, gzip: 0, brotli: 0, xz: 0 };
-		if (gzip) {
-			const zipped = gzipSync(data, { level: 9 });
-			if (zipped.length < data.length) {
-				await writeFile(file + '.gz', zipped);
-				row.gzip = zipped.length;
-			}
-		}
-		if (brotli) {
-			const squeezed = brotliCompressSync(data, {
-				params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
-			});
-			if (squeezed.length < data.length) {
-				await writeFile(file + '.br', squeezed);
-				row.brotli = squeezed.length;
-			}
-		}
-		if (wantXz) {
-			const archived = compressXz(data);
-			if (archived && archived.length < data.length) {
-				await writeFile(file + '.xz', archived);
-				row.xz = archived.length;
-			}
-		}
-		rows.push(row);
+		candidates.push(file);
 	}
-	return rows;
+	const wantXz = xz && hasXz();
+	const lanes = Math.max(1, Math.min(Math.floor(jobs) || 1, Math.max(candidates.length, 1)));
+	const rows = new Array(candidates.length);
+	let next = 0;
+	await Promise.all(
+		Array.from({ length: lanes }, async () => {
+			for (;;) {
+				const index = next++;
+				if (index >= candidates.length) return;
+				rows[index] = await compressOne(dir, candidates[index], { gzip, brotli, wantXz });
+			}
+		}),
+	);
+	return rows.filter((row) => row !== undefined);
+}
+
+/** gzip and brotli of one file, or undefined when it is too small to bother with */
+async function compressOne(dir, file, { gzip, brotli, wantXz }) {
+	const data = await readFile(file);
+	if (data.length < MIN_BYTES) return undefined;
+	const row = { file: relative(dir, file), raw: data.length, gzip: 0, brotli: 0, xz: 0 };
+	if (gzip) {
+		const zipped = await gzipAsync(data, { level: 9 });
+		if (zipped.length < data.length) {
+			await writeFile(file + '.gz', zipped);
+			row.gzip = zipped.length;
+		}
+	}
+	if (brotli) {
+		const squeezed = await brotliAsync(data, {
+			params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
+		});
+		if (squeezed.length < data.length) {
+			await writeFile(file + '.br', squeezed);
+			row.brotli = squeezed.length;
+		}
+	}
+	if (wantXz) {
+		//the opt-in archive pass stays synchronous: xz is a child process either way, and
+		//it sits outside the measured gzip/brotli path this parallelizes
+		const archived = compressXz(data);
+		if (archived && archived.length < data.length) {
+			await writeFile(file + '.xz', archived);
+			row.xz = archived.length;
+		}
+	}
+	return row;
 }
 
 const isMain = process.argv[1] && import.meta.url.endsWith(basename(process.argv[1]));

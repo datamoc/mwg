@@ -126,6 +126,70 @@ export function alphaBetaSearch<State, Move>(
 	};
 }
 
+/**
+ * One root move paired with the position it reaches: the unit of work a root-split
+ * search hands out. The split itself is synchronous and cheap (legal moves plus one
+ * apply each); the expensive part is scoring each child, which is what leaves the
+ * caller's thread.
+ */
+export interface RootSplit<State, Move> {
+	readonly move: Move;
+	readonly child: State;
+}
+
+/**
+ * Splits a search at the root: every legal move paired with the position it reaches,
+ * in the game's own stable order. A child must be plain structured-cloneable data to
+ * cross to a worker; a game whose states hold closures or class instances cannot
+ * split this way.
+ *
+ * @example
+ * ```ts
+ * import { rootSplits } from '@datamoc/mw_games/ai';
+ *
+ * const game = {
+ *   currentPlayer: () => 1,
+ *   moves: (state: number) => state < 2 ? [1] : [],
+ *   apply: (state: number, move: number) => state + move,
+ *   isTerminal: (state: number) => state >= 2,
+ *   evaluate: (state: number) => state,
+ * };
+ * const splits = rootSplits(game, 0);
+ * console.log(splits.length, splits[0].child); // 1 1
+ * ```
+ */
+export function rootSplits<State, Move>(game: AlphaBetaGame<State, Move>, state: State): RootSplit<State, Move>[] {
+	return game.moves(state).map((move) => ({ move, child: game.apply(state, move) }));
+}
+
+/**
+ * First-wins reduction over scored root moves: a strictly better score replaces the
+ * leader, a tie keeps the earlier move, so the same scores in the same order always
+ * choose the same move - the property that keeps a parallel root split deterministic.
+ *
+ * @example
+ * ```ts
+ * import { firstWins } from '@datamoc/mw_games/ai';
+ *
+ * console.log(firstWins([{ move: 'a', score: 1 }, { move: 'b', score: 1 }], true)); // 'a'
+ * console.log(firstWins([{ move: 'a', score: 1 }, { move: 'b', score: 2 }], true)); // 'b'
+ * ```
+ */
+export function firstWins<Move>(
+	scored: readonly { readonly move: Move; readonly score: number }[],
+	maximizing: boolean,
+): Move | null {
+	let chosen: Move | null = null;
+	let best = maximizing ? -Infinity : Infinity;
+	for (const { move, score } of scored) {
+		if (chosen === null || (maximizing ? score > best : score < best)) {
+			chosen = move;
+			best = score;
+		}
+	}
+	return chosen;
+}
+
 export interface LuaAlphaBetaFunctions {
 	readonly player?: string;
 	readonly moves?: string;

@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.19.0",
+	"version": "0.20.0",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -177,6 +177,10 @@
 		"./testing": {
 			"types": "./dist/testing/index.d.ts",
 			"import": "./dist/testing/index.js"
+		},
+		"./threads": {
+			"types": "./dist/threads/index.d.ts",
+			"import": "./dist/threads/index.js"
 		},
 		"./tools/benchmark-browser": "./tools/benchmark-browser.mjs",
 		"./tools/benchmark-history": "./tools/benchmark-history.mjs",
@@ -361,6 +365,7 @@
 		"@capacitor/ios": "^7.4.4",
 		"@types/node": "^26.4.1",
 		"@types/ws": "^8.18.1",
+		"multithreading": "^0.3.52",
 		"pixi.js": "^8.20.1",
 		"playwright-core": "^1.62.1",
 		"prettier": "^3.9.6",

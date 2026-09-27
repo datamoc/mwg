@@ -167,7 +167,9 @@ for it, and `ui` and `stage` live under `two-d` rather than at the root:
   distinct from `Scheduler`'s continuous time), `checkEvolution`.
 - **`audio`** - `Sound` (pooled, round-robin), `Music` (crossfade via `update(dt)`). Both
   take an injectable `create()` in place of `new Audio()`, since nothing outside a browser
-  can construct one, tests always supply a fake.
+  can construct one, tests always supply a fake. The offline MIDI render (`renderMidiToBuffer`)
+  shares one self-contained `renderNotes` with `renderMidiToBufferAsync`, which ships it to
+  a `threads.spawn` worker, so the synchronous and worker paths cannot diverge.
 - **`simulation`** - `SimulationRuntime`/`SimulationContext`: a transactional, renderer-free
   simulation loop where a command produces its complete result before presentation plays, with
   seeded randomness and a `Campaign` runner for chained levels.
@@ -180,6 +182,10 @@ for it, and `ui` and `stage` live under `two-d` rather than at the root:
   target, never a copy of a reference game's content.
 - **`ai`** - renderer-free decision runners: `JavaScriptAI` behaviours, `alphaBetaSearch`, the
   score views, the `HeuristicAI` candidate pipeline, and an optional `ai/lua` provider.
+- **`threads`** - `spawn` runs a self-contained function on a worker thread: a blob worker
+  under the shipped `file://` CSP in the browser, `node:worker_threads` in Node, one worker
+  per task, transferable results, failures that reject instead of hanging. Off the root
+  barrel: `@datamoc/mw_games/threads`.
 - **`three-d`** - the optional Babylon.js path, kept off the root barrel so a 2D game never
   pays for it.
 - **`core`** also has `SaveSystem` - named, versioned save slots over `localStorage` (with
@@ -348,6 +354,18 @@ list.
   graph, so it cannot describe a layout the code does not have. The hand-drawn originals were
   wrong for months before anyone noticed, which is the whole reason for this rule; they are
   kept under `webpage/assets/archive/` for reference only.
+- **`webpage/design/architecture-explorer.html` is the interactive module map** behind
+  `webpage/design/index.html`'s "Explore the module graph interactively" link, and the
+  pattern to reach for when a page needs an explorable diagram: it is built with the
+  `archify` skill (installed per machine, not a repo dependency) from a typed JSON spec,
+  accepted via `node bin/archify.mjs validate <type> <spec>.json --quality showcase`, then
+  `deliver`, then `visual-check` - the three receipts together are what a delivered diagram
+  means, not an HTML file appearing. The delivered artifact carries its generator tag and
+  its frozen spec bytes, so it can be redelivered byte-for-byte. It is a snapshot read from
+  repo evidence rather than something `npm run webpage:diagrams` refreshes: rerun the skill
+  when modules are added, split or renamed (the committed copy still predates `threads`),
+  the same way a stale generated report is regenerated with its cause, and leave the
+  `webpage/assets/` figures to the generators above.
 - **Assets are generated, never downloaded.** `tools/make-example-assets.mjs`. Borrowed art
   brings borrowed licence terms, and this project has to stay redistributable.
 - **No code or media from the reference games; their file formats are fair game.** They are

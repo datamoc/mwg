@@ -1,12 +1,12 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.19.0",
-	"releaseDate": "2026-09-26",
+	"version": "0.20.0",
+	"releaseDate": "2026-09-27",
 	"source": {
-		"files": 298,
-		"lines": 51630,
-		"modules": 16,
+		"files": 301,
+		"lines": 52592,
+		"modules": 17,
 		"breakdown": [
 			{
 				"name": "two-d",
@@ -29,14 +29,14 @@
 				"lines": 3520
 			},
 			{
-				"name": "audio",
-				"files": 12,
-				"lines": 2888
-			},
-			{
 				"name": "board",
 				"files": 8,
-				"lines": 2746
+				"lines": 3227
+			},
+			{
+				"name": "audio",
+				"files": 12,
+				"lines": 3007
 			},
 			{
 				"name": "actors",
@@ -56,7 +56,7 @@
 			{
 				"name": "ai",
 				"files": 5,
-				"lines": 1330
+				"lines": 1395
 			},
 			{
 				"name": "battle",
@@ -84,6 +84,11 @@
 				"lines": 593
 			},
 			{
+				"name": "threads",
+				"files": 3,
+				"lines": 297
+			},
+			{
 				"name": "testing",
 				"files": 1,
 				"lines": 157
@@ -91,13 +96,13 @@
 		]
 	},
 	"tests": {
-		"files": 265,
-		"lines": 34809,
-		"cases": 2459
+		"files": 267,
+		"lines": 35137,
+		"cases": 2484
 	},
 	"tools": {
 		"files": 41,
-		"lines": 7927
+		"lines": 7973
 	},
 	"examples": {
 		"count": 22,
@@ -133,12 +138,12 @@
 		"percent": 100
 	},
 	"api": {
-		"declarationFiles": 297
+		"declarationFiles": 300
 	},
 	"bundle": {
-		"globalRaw": 1125065,
-		"globalGzip": 334987,
-		"distRaw": 3740951
+		"globalRaw": 1134771,
+		"globalGzip": 337375,
+		"distRaw": 3795470
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

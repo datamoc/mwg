@@ -16,8 +16,8 @@
 <text x="70" y="168" fill="#aab2bf" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18">Generated from src/: every module below was classified by walking its real import graph.</text>
 
 <g filter="url(#shadow)">
-  <rect x="70" y="210" width="470" height="720" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
-  <rect x="70" y="210" width="8" height="720" rx="4" fill="#4caf50"/>
+  <rect x="70" y="210" width="470" height="820" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
+  <rect x="70" y="210" width="8" height="820" rx="4" fill="#4caf50"/>
 </g>
 
 <text x="94" y="252" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">No renderer</text>
@@ -37,7 +37,7 @@
 <g>
   <rect x="94" y="410" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
 <text x="110" y="430" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">audio</text>
-<text x="110" y="441" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">11 files</text>
+<text x="110" y="441" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">14 files</text>
 </g>
 <g>
   <rect x="94" y="460" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
@@ -47,12 +47,12 @@
 <g>
   <rect x="94" y="510" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
 <text x="110" y="530" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">board</text>
-<text x="110" y="541" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">14 files</text>
+<text x="110" y="541" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">15 files</text>
 </g>
 <g>
   <rect x="94" y="560" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
 <text x="110" y="580" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">core</text>
-<text x="110" y="591" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">43 files</text>
+<text x="110" y="591" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">48 files</text>
 </g>
 <g>
   <rect x="94" y="610" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
@@ -62,27 +62,37 @@
 <g>
   <rect x="94" y="660" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
 <text x="110" y="680" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">mwl</text>
-<text x="110" y="691" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">28 files</text>
+<text x="110" y="691" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">29 files</text>
 </g>
 <g>
   <rect x="94" y="710" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
 <text x="110" y="730" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">roguelike</text>
-<text x="110" y="741" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">26 files</text>
+<text x="110" y="741" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">27 files</text>
 </g>
 <g>
   <rect x="94" y="760" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
 <text x="110" y="780" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">rpg</text>
-<text x="110" y="791" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">13 files</text>
+<text x="110" y="791" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">28 files</text>
 </g>
 <g>
   <rect x="94" y="810" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
 <text x="110" y="830" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">simulation</text>
-<text x="110" y="841" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">18 files</text>
+<text x="110" y="841" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">19 files</text>
 </g>
 <g>
   <rect x="94" y="860" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
-<text x="110" y="880" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">world</text>
+<text x="110" y="880" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">testing</text>
 <text x="110" y="891" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">9 files</text>
+</g>
+<g>
+  <rect x="94" y="910" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="930" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">threads</text>
+<text x="110" y="941" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">3 files</text>
+</g>
+<g>
+  <rect x="94" y="960" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
+<text x="110" y="980" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">world</text>
+<text x="110" y="991" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">9 files</text>
 </g>
 <g filter="url(#shadow)">
   <rect x="564" y="210" width="470" height="220" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>
@@ -101,7 +111,7 @@
 <g>
   <rect x="588" y="360" width="422" height="38" rx="10" fill="#1d222c" stroke="#333c4a"/>
 <text x="604" y="380" fill="#f3f4f6" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="600">two-d</text>
-<text x="604" y="391" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">108 files</text>
+<text x="604" y="391" fill="#7f8899" text-anchor="start" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">121 files</text>
 </g>
 <g filter="url(#shadow)">
   <rect x="1058" y="210" width="470" height="170" rx="18" fill="#151922" stroke="#2a3240" stroke-width="2"/>

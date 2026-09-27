@@ -285,3 +285,17 @@ no commits.
 
 Not re-run again: the full vite builds, the headless-browser `verify` passes, or playing the
 built games.
+
+**2026-09-27: the checkout was found after all; "needs recreating" above was wrong.** The
+port is `C:\Users\miche\dev\wesnoth-1.19.27\mwg` on this machine - the `mwg` directory inside
+the Wesnoth 1.19.27 sources at `C:\Users\miche\dev\wesnoth-1.19.27`, which is the same
+`wesnoth-1.19.27/mwg/` location the 2026-09-15 note above already recorded: package
+`mwg-wesnoth` (0.0.1) pinning mwg `^0.9.0-alpha`, 51 source files and 41 test files, its own
+FIDELITY.md, notes and tools - the checkout those earlier notes tested, found, not recreated.
+`mwg-wesno` in this workspace is a different directory that was never the port (still 0
+entries), and `datamoc/mwg-wesnoth` being absent from GitHub never said anything about the
+local copy. Two facts from the notes above still hold on re-inspection: the port is work in
+progress (its own Status section still says not feature-complete), and its git history is
+empty (branch `master` has no commits, so the work remains loose files on this disk). So the
+2026-09-20 and 2026-09-15 results stand as the last recorded run, this box stays open, and
+what this machine owed the line was the location - now recorded here.

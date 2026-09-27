@@ -6,6 +6,8 @@ export interface CompressOptions {
 	brotli?: boolean;
 	/** Also write `.xz` siblings where smaller (default false, needs the system `xz`). */
 	xz?: boolean;
+	/** Files to compress at once (default `compressJobs()`). */
+	jobs?: number;
 }
 
 /**
@@ -24,6 +26,12 @@ export interface CompressRow {
 
 /** True when the system `xz` binary (LZMA2) is available for the opt-in archive pass. */
 export function hasXz(): boolean;
+
+/**
+ * How many files `compressDist` works on at once: `MWG_COMPRESS_JOBS` when it names
+ * a positive integer, else the machine's own thread count, else 4.
+ */
+export function compressJobs(): number;
 
 /**
  * Writes compressed siblings for the large files in `dir`, *into that same folder*: the

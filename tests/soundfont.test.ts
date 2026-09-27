@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { parseMidi } from '../src/audio/Midi.ts';
-import { renderMidiToBuffer } from '../src/audio/MidiRender.ts';
+import { renderMidiToBuffer, renderMidiToBufferAsync } from '../src/audio/MidiRender.ts';
 import { collectSoundFontUsage, parseSoundFont, subsetSoundFont } from '../src/audio/SoundFont.ts';
 import type { SoundFont, SoundFontVoice } from '../src/audio/SoundFont.ts';
 
@@ -130,23 +130,34 @@ test('names the required chunk a truncated file is missing', () => {
 	assert.throws(() => parseSoundFont(buildFont('shdr')), /missing "shdr"/);
 });
 
+/** a one-note track selecting preset 5, the only program buildFont() voices */
+function presetFiveTrack(): Uint8Array {
+	//program change to 5, middle C for a quarter, end of track
+	return buildMidiFile(
+		96,
+		[0x00, 0xc0, 0x05, 0x00, 0x90, 0x3c, 0x64, 0x60, 0x80, 0x3c, 0x00, 0x00, 0xff, 0x2f, 0x00],
+	);
+}
+
 test('a parsed font voices a rendered note with its own samples', () => {
 	const font = parseSoundFont(buildFont());
-	const track = [0x00, 0xc0, 0x05, 0x00, 0x90, 0x3c, 0x64, 0x60, 0x80, 0x3c, 0x00, 0x00, 0xff, 0x2f, 0x00];
-	const header = [...ascii('MThd'), 0, 0, 0, 6, 0, 0, 0, 1, 0, 96];
-	const bytes = new Uint8Array([
-		...header,
-		...ascii('MTrk'),
-		(track.length >> 24) & 0xff,
-		(track.length >> 16) & 0xff,
-		(track.length >> 8) & 0xff,
-		track.length & 0xff,
-		...track,
-	]);
+	const bytes = presetFiveTrack();
 	const rendered = renderMidiToBuffer(parseMidi(bytes), { soundfont: font });
 	let peak = 0;
 	for (const value of rendered.left) peak = Math.max(peak, Math.abs(value));
 	assert.ok(peak > 0.02);
+});
+
+test('the async render takes raw SoundFont bytes and still matches the synchronous render', async () => {
+	const bytes = presetFiveTrack();
+	const synchronous = renderMidiToBuffer(parseMidi(bytes), { soundfont: parseSoundFont(buildFont()) });
+	const asynchronous = await renderMidiToBufferAsync(bytes, { soundFontBytes: buildFont() });
+	//the worker received structured-cloned voices (sample Float32Arrays included), so this
+	//compares the clone path, not just the synth path
+	let peak = 0;
+	for (const value of asynchronous.left) peak = Math.max(peak, Math.abs(value));
+	assert.ok(peak > 0.02, 'the font path must produce audio, not a silent fallback');
+	assert.deepEqual(asynchronous, synchronous);
 });
 // ------------------------------------------------------- collectSoundFontUsage
 
