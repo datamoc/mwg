@@ -1,7 +1,7 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
-  "serialNumber": "urn:uuid:9bc77dae-657b-5147-a5e0-6a63c31a5eb2",
+  "serialNumber": "urn:uuid:1a714b9b-4421-5897-84d0-e0701383947d",
   "version": 1,
   "metadata": {
     "tools": {
@@ -1356,15 +1356,15 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40types/node@26.5.1",
+      "bom-ref": "pkg:npm/%40types/node@26.6.2",
       "name": "@types/node",
-      "version": "26.5.1",
-      "purl": "pkg:npm/%40types/node@26.5.1",
+      "version": "26.6.2",
+      "purl": "pkg:npm/%40types/node@26.6.2",
       "scope": "excluded",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "0b3366d857b35b8551fcb8c6eb251d88480b13fac043d4a58f9802bbf0b656b75c5bb2346a1359f0345b1d3ef3399eabdce36077f6ec4087926a80c6addd42ea"
+          "content": "5f53f6d6c70cbf8cc628b62a8dd1a368a6bb08e6b444a55861964dfcd7ef2d0d497a0c4585d869646fcbca7f005f1e820d46af280775d6fe81bdfa640c1c8af2"
         }
       ],
       "licenses": [
@@ -4461,7 +4461,7 @@
         "pkg:npm/%40capacitor/cli@7.6.9",
         "pkg:npm/%40capacitor/core@7.6.9",
         "pkg:npm/%40capacitor/ios@7.6.9",
-        "pkg:npm/%40types/node@26.5.1",
+        "pkg:npm/%40types/node@26.6.2",
         "pkg:npm/%40types/ws@8.18.1",
         "pkg:npm/fengari@0.1.5",
         "pkg:npm/json5@2.2.3",
@@ -4776,11 +4776,11 @@
     {
       "ref": "pkg:npm/%40types/fs-extra@8.1.5",
       "dependsOn": [
-        "pkg:npm/%40types/node@26.5.1"
+        "pkg:npm/%40types/node@26.6.2"
       ]
     },
     {
-      "ref": "pkg:npm/%40types/node@26.5.1",
+      "ref": "pkg:npm/%40types/node@26.6.2",
       "dependsOn": [
         "pkg:npm/undici-types@8.9.0"
       ]
@@ -4792,7 +4792,7 @@
     {
       "ref": "pkg:npm/%40types/ws@8.18.1",
       "dependsOn": [
-        "pkg:npm/%40types/node@26.5.1"
+        "pkg:npm/%40types/node@26.6.2"
       ]
     },
     {
@@ -5532,7 +5532,7 @@
     {
       "ref": "pkg:npm/vite@8.3.0",
       "dependsOn": [
-        "pkg:npm/%40types/node@26.5.1",
+        "pkg:npm/%40types/node@26.6.2",
         "pkg:npm/fsevents@2.3.3",
         "pkg:npm/lightningcss@1.33.0",
         "pkg:npm/picomatch@4.0.7",
