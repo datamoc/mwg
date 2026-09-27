@@ -1,7 +1,7 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
-  "serialNumber": "urn:uuid:316ac220-52bf-5102-b492-e3d49b6d5244",
+  "serialNumber": "urn:uuid:0746723c-3f36-55a9-aaf0-6e8a22b1cd0f",
   "version": 1,
   "metadata": {
     "tools": {
@@ -54,15 +54,15 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40babylonjs/loaders@9.26.0",
+      "bom-ref": "pkg:npm/%40babylonjs/loaders@9.27.1",
       "name": "@babylonjs/loaders",
-      "version": "9.26.0",
-      "purl": "pkg:npm/%40babylonjs/loaders@9.26.0",
+      "version": "9.27.1",
+      "purl": "pkg:npm/%40babylonjs/loaders@9.27.1",
       "scope": "excluded",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "2207e634db293eeec2c421b40bcbef377d8cd1f737c1eda697047360c758ad380d1454113be09d3f71c5ebcb1295a6743f9855f604b8d87057fb79145c001fad"
+          "content": "042b671f83ae0a2abb5cf34436c38fc8d05118e0519556e5778f58c0c21a95b3638e070030cb64fb0c7c933135ff2c0a1771dfae3af5edb30b4f7aa0989678da"
         }
       ],
       "licenses": [
@@ -4406,7 +4406,7 @@
       "dependsOn": []
     },
     {
-      "ref": "pkg:npm/%40babylonjs/loaders@9.26.0",
+      "ref": "pkg:npm/%40babylonjs/loaders@9.27.1",
       "dependsOn": [
         "pkg:npm/%40babylonjs/core@9.26.0",
         "pkg:npm/babylonjs-gltf2interface@9.26.0"
@@ -4456,7 +4456,7 @@
       "ref": "pkg:npm/%40datamoc/mw_games@0.19.0",
       "dependsOn": [
         "pkg:npm/%40babylonjs/core@9.26.0",
-        "pkg:npm/%40babylonjs/loaders@9.26.0",
+        "pkg:npm/%40babylonjs/loaders@9.27.1",
         "pkg:npm/%40capacitor/android@7.6.9",
         "pkg:npm/%40capacitor/cli@7.6.9",
         "pkg:npm/%40capacitor/core@7.6.9",
