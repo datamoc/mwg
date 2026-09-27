@@ -21,6 +21,12 @@ if (invisible.length > 0) {
 	console.error('`git add` them first, then re-run.');
 	if (check) process.exit(1);
 }
+const unbuilt = staleBuild();
+if (unbuilt) {
+	console.error(unbuilt);
+	console.error('Run `npm run build` first, then re-run: these numbers describe what dist/ contains.');
+	process.exit(1);
+}
 const outputs = {
 	json: JSON.stringify(stats, null, '\t') + '\n',
 	markdown: renderMarkdown(stats),
@@ -34,7 +40,12 @@ const files = [
 ];
 
 if (check) {
-	const stale = files.filter(([path, content]) => !existsSync(path) || readFileSync(path, 'utf8') !== content);
+	//generated content is LF, a Windows checkout hands these files over with CRLF: normalise
+	//both sides, or every generated file reads as stale on a fresh Windows clone
+	const stale = files.filter(
+		([path, content]) =>
+			!existsSync(path) || readFileSync(path, 'utf8').replace(/\r\n/g, '\n') !== content.replace(/\r\n/g, '\n'),
+	);
 	if (stale.length > 0) {
 		console.error(`project statistics are out of date: ${stale.map(([path]) => relative(root, path)).join(', ')}`);
 		console.error('Run `npm run stats:write` and include the generated files in the release commit.');
@@ -168,13 +179,41 @@ function measureRoadmap(source) {
 	return { items: items.length, completed, open: items.length - completed };
 }
 
+/**
+ * `dist/` is where the bundle and declaration numbers come from, so a build older than the
+ * sources describes the previous release rather than this one. That is not hypothetical: the
+ * 0.17.1 bump recorded 0.17.0's gzip, because `stats:write` ran before `npm run build` and the
+ * version string changed two bytes with an identical raw size. Refuse instead of recording it.
+ *
+ * @returns {string | null} an explanation to print, or null when the build is current
+ */
+function staleBuild() {
+	const bundle = join(root, 'dist', 'mw_games.global.js');
+	if (!existsSync(bundle)) return null; //no build at all is a different, self-describing state
+	const builtAt = statSync(bundle).mtimeMs;
+	let newestSource = 0;
+	for (const path of walk(join(root, 'src'))) {
+		const mtime = statSync(path).mtimeMs;
+		if (mtime > newestSource) newestSource = mtime;
+	}
+	if (newestSource <= builtAt) return null;
+	return 'dist/mw_games.global.js is older than src/, so these numbers would describe the previous build.';
+}
+
 function measureBundle() {
 	const globalPath = join(root, 'dist', 'mw_games.global.js');
 	if (!existsSync(globalPath)) return { globalRaw: null, globalGzip: null, distRaw: null };
 	const global = readFileSync(globalPath);
 	let distRaw = 0;
 	for (const path of walk(join(root, 'dist'))) {
-		if (!path.endsWith('.map')) distRaw += statSync(path).size;
+		if (path.endsWith('.map')) continue;
+		//tsc copies comments out of the source as they are written there, so a checkout with
+		//core.autocrlf=true (every Windows clone) emits CRLF lines into the build that an LF
+		//checkout does not, and this number then says who generated it rather than what ships.
+		//Count the text files tsc writes as they would read either way: latin1 gives one
+		//character per byte, so the result is still a byte count.
+		if (/\.(?:js|ts|json|txt)$/.test(path)) distRaw += readFileSync(path, 'latin1').replace(/\r\n/g, '\n').length;
+		else distRaw += statSync(path).size;
 	}
 	return { globalRaw: global.length, globalGzip: gzipSync(global).length, distRaw };
 }
