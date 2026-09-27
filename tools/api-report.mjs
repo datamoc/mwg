@@ -336,8 +336,11 @@ function main() {
 		return;
 	}
 
-	const committed = readFileSync(reportPath, 'utf8');
-	if (committed === rendered) {
+	//line endings belong to the checkout, not to the report: a Windows clone reads this file
+	//with CRLF where the repository stores LF, and tsc's own emit picks up the platform
+	//newline, so compare the text each side would diff as rather than raw bytes
+	const committed = readFileSync(reportPath, 'utf8').replace(/\r\n/g, '\n');
+	if (committed === rendered.replace(/\r\n/g, '\n')) {
 		console.log('API_REPORT.md matches the current declarations.');
 		return;
 	}

@@ -21,7 +21,16 @@ import { createHash } from 'node:crypto';
  *   extra script texts to allow by hash (a single-file loader's unpacked scripts)
  */
 export function contentSecurityPolicy(html, { connect = [], eval: allowEval = true, scripts = [] } = {}) {
-	const inline = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map((match) => match[1]);
+	//The HTML parser normalises newlines before it hashes an inline script: CRLF and lone CR
+	//become LF. A checkout with core.autocrlf=true (every Windows clone) hands the source page
+	//over with CRLF, so hashing the bytes on disk here would emit a policy Chrome computes
+	//differently from the file it just parsed, and the page refuses its own script while
+	//`file://` on Linux stays quiet. Hash the text the browser will see.
+	const inline = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map((match) =>
+		match[1].replace(/\r\n?/g, '\n'),
+	);
+	//`scripts` are texts the standalone page's unpacker sets on a script element at runtime
+	//(`s.text = code`), where no parser runs: those are hashed exactly as they are written.
 	const hashes = [...new Set([...inline, ...scripts].map((text) => `'sha256-${sha256(text)}'`))];
 	const directives = {
 		'default-src': ["'none'"],

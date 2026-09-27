@@ -313,7 +313,9 @@ async function main(argv) {
 
 	if (argv.includes('--check')) {
 		const committed = await readFile(out, 'utf8').catch(() => undefined);
-		if (committed !== json) {
+		//CRLF is a Windows checkout's doing, not a difference in the BOM itself (and a missing
+		//file still reads as out of date: '' never equals the serialized BOM)
+		if ((committed ?? '').replace(/\r\n/g, '\n') !== json.replace(/\r\n/g, '\n')) {
 			console.error(`${name} is out of date with package-lock.json. Run "npm run sbom" and commit the result.`);
 			process.exitCode = 1;
 		} else {
