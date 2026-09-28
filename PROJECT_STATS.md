@@ -1,31 +1,31 @@
 # Project statistics
 
-Generated for **mwg 0.20.0** on 2026-09-27.
+Generated for **mwg 0.22.0** on 2026-09-29.
 
 | Area | Statistics |
 | --- | ---: |
-| Source | 306 TypeScript files, 55,101 lines, 17 modules |
-| Tests | 274 files, 2,541 test cases, 35,878 lines |
+| Source | 312 TypeScript files, 55,902 lines, 17 modules |
+| Tests | 279 files, 2,569 test cases, 36,353 lines |
 | Tools | 44 files, 8,908 lines |
 | Examples | 22 runnable examples |
-| Roadmap | 389/391 items complete, 2 open |
-| API | 305 declaration files |
-| Bundle | 1136.6 kB raw, 338.4 kB gzip |
-| Published dist | 3842.7 kB excluding source maps |
+| Roadmap | 389/392 items complete, 3 open |
+| API | 311 declaration files |
+| Bundle | 1144.1 kB raw, 341.2 kB gzip |
+| Published dist | 3889.6 kB excluding source maps |
 | Test-to-source ratio | 0.7x by line count |
 
 ## Source modules
 
 | Module | Files | Lines |
 | --- | ---: | ---: |
-| two-d | 87 | 18,084 |
+| two-d | 91 | 18,593 |
 | mwl | 21 | 6,572 |
-| core | 48 | 6,326 |
+| core | 49 | 6,431 |
 | board | 12 | 5,347 |
 | roguelike | 22 | 3,520 |
-| audio | 12 | 3,007 |
+| audio | 13 | 3,180 |
 | actors | 24 | 2,456 |
-| rpg | 14 | 2,013 |
+| rpg | 14 | 2,027 |
 | i18n | 10 | 1,879 |
 | ai | 5 | 1,395 |
 | battle | 15 | 1,156 |

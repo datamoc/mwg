@@ -7,6 +7,12 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-09-29
+
+Audio and event-runner asks from the MWGP player, plus the small widgets the Pixel
+Dungeon port was carrying (roadmap item 392): a message log, liquid and fog layers, a
+window zoom fit, a Java-compatible random generator, and native A4 autotiles.
+
 ### Added
 
 - Item 392, the small widgets the Pixel Dungeon port and the MWGP player were carrying:

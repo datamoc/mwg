@@ -1,17 +1,17 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.20.0",
-	"releaseDate": "2026-09-27",
+	"version": "0.22.0",
+	"releaseDate": "2026-09-29",
 	"source": {
-		"files": 306,
-		"lines": 55101,
+		"files": 312,
+		"lines": 55902,
 		"modules": 17,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 87,
-				"lines": 18084
+				"files": 91,
+				"lines": 18593
 			},
 			{
 				"name": "mwl",
@@ -20,8 +20,8 @@
 			},
 			{
 				"name": "core",
-				"files": 48,
-				"lines": 6326
+				"files": 49,
+				"lines": 6431
 			},
 			{
 				"name": "board",
@@ -35,8 +35,8 @@
 			},
 			{
 				"name": "audio",
-				"files": 12,
-				"lines": 3007
+				"files": 13,
+				"lines": 3180
 			},
 			{
 				"name": "actors",
@@ -46,7 +46,7 @@
 			{
 				"name": "rpg",
 				"files": 14,
-				"lines": 2013
+				"lines": 2027
 			},
 			{
 				"name": "i18n",
@@ -96,9 +96,9 @@
 		]
 	},
 	"tests": {
-		"files": 274,
-		"lines": 35878,
-		"cases": 2541
+		"files": 279,
+		"lines": 36353,
+		"cases": 2569
 	},
 	"tools": {
 		"files": 44,
@@ -132,18 +132,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 391,
+		"items": 392,
 		"completed": 389,
-		"open": 2,
+		"open": 3,
 		"percent": 99
 	},
 	"api": {
-		"declarationFiles": 305
+		"declarationFiles": 311
 	},
 	"bundle": {
-		"globalRaw": 1163860,
-		"globalGzip": 346557,
-		"distRaw": 3934947
+		"globalRaw": 1171510,
+		"globalGzip": 349351,
+		"distRaw": 3983001
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
