@@ -126,6 +126,10 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
 - `Random` (namespace) - seeded RNG: `int`, `float`, `weighted`, `element`, `shuffle` and the
   rest; every "pick one" returns `null` when there is nothing to pick.
 - `Generator` - the seeded RNG class `Random` wraps directly, for a game that wants its own instance.
+- `JavaRandom`/`JavaRandomDraw`/`JavaRandomOptions` - `java.util.Random`'s 48-bit generator bit for bit
+  (`nextInt`, `nextInt(bound)`, `nextLong`, `nextDouble`, `nextFloat`, `nextBoolean`), so a
+  game ported from the JVM replays the same seed; `onDraw` logs every underlying draw for a
+  parity diff against a JVM run. Not for general use, that is `Generator`.
 - `MersenneTwister`/`MersenneTwisterState` - MT19937 with `mt_rng`'s `seed`/`discard`/
   `discardCount` bookkeeping, for a port that consumes the reference's raw 32-bit stream; the
   engine matches the standard test vector, while the int mapping is MWG's own unbiased
@@ -371,6 +375,16 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   an offset, and an optional `duration` makes `update(dt)` report `done` once it elapses, so a
   permanent shadow and a temporary status icon are the same class with different options.
   Renderer-neutral like `Projectile`/`LightningArc`; z-order and parenting stay the caller's.
+- `LiquidLayer`/`LiquidLayerOptions` - an animated liquid surface under a map: one scrolling
+  tiling quad per liquid cell with its own visibility tint (`setCellColor`), and `ripple` rings
+  that grow and fade; pure decoration, every child opts out of pointer events.
+- `FogLayer`/`paintFogPixels`/`FogCell`/`FogColor`/`FogLayerOptions` - a smooth fog-of-war
+  overlay: a small linear-filtered canvas with `resolution` pixels per tile, so fog edges blur
+  across cells and one cell can be shaded in parts; `paintFogPixels` is the same shading as a
+  pure function over an RGBA buffer.
+- `TileMap.stampRect` copies a block of frames into a layer at a tile position and throws when
+  it does not fit; `AutotileSet.mode: 'mixed'` reads the MV A4 sheet's alternating rows with the
+  floor table (wall tops) and the wall table (wall faces).
 - `Halo`/`HALO_ANIMATION` - the glow around a unit, an aura, a shrine's light: an `AnimatedSprite`
   drawn additively (Wesnoth's `[halo] blend_mode=add`) whose `follow(x, y)` applies the halo's own
   offset once instead of in every game that draws one. Z-order stays the caller's, because a halo
@@ -575,6 +589,12 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   `floatingTextStackLift`/`floatingTextStackMoves`/`floatingTextStackLifePenalty` and
   `FLOATING_TEXT_STACK_GAP` stacks simultaneous pop-ups at one world point without overlap, lifting
   the lines already there the way Java's `FloatingText.push()` does.
+- `MessageLog`/`linesToDrop`/`MessageLevel`/`MessageLogOptions` - a player-facing message pane:
+  one coloured block per message (info, positive, negative, warning, highlight) that drops the
+  oldest blocks once the wrapped lines pass a cap; `linesToDrop` is that budget as a pure function.
+- `fitWindowZoom`/`sharpenText` - step a window stack's integer zoom down until its content fits
+  the viewport, and re-rasterise every `Text` under a zoomed container at device ratio times its
+  on-screen scale so it is not magnified 1x text.
 - `Toast` - a queued, timed pop-up notification (fade in, hold, fade out).
 - `Tooltip` - a hover explanation over a themed `Window`: a frame-driven hover delay, and
   edge-aware placement that flips rather than letting the panel run off screen.
@@ -713,6 +733,11 @@ reach the compiled asset map without it.
   volume, pitch, pan, a loop region and a seekable playhead, and an `AudioBus` wires two of
   them into independent BGM/BGS loops, ME jingles that suspend and resume the BGM,
   overlapping SE one-shots, save and replay with playheads, and plain-data snapshots.
+  `AudioBus.setMixer(kind, { volume, muted })` scales a whole kind on top of each track's
+  own volume, without changing what snapshots report.
+- `parseVorbisLoopTags`/`loopRegionFromTags` - read the `LOOPSTART`/`LOOPLENGTH` comments an
+  Ogg Vorbis file carries (a bounded walk of the first pages, null on anything malformed) and
+  turn them into the seconds-based `LoopRegion` a `Channel` or the bus loader hands back.
 
 ## `battle`
 
@@ -1004,6 +1029,9 @@ the classic top-down RPG half.
   passage graph the same way `StageScript.runStory`/`StoryScript` do - a `goto` command, or a
   choice's own `goto`, jumps to a different passage; a plain `run()` refuses a stray `goto`
   rather than silently ignoring it, the same guard `StageScript.run` applies.
+  `EventRunnerOptions.onUnknownCommand` hears every command the runner has no handler for (and a
+  `goto` in a straight `run()`, which then ends the list instead of throwing), so a game converting
+  foreign event data can make every dropped command loud.
 - `importTwee`/`EventTwineStory` - imports Twee-notation Twine stories into `EventStoryScript`,
   a thin wrapper around `core.parseTwee` (the same engine `two-d/stage.importTwee` wraps for
   `StageCommand`/`StoryScript` instead) naming the `EventStoryScript` return type, so a

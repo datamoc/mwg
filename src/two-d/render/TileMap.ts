@@ -154,8 +154,13 @@ export interface AutotileSet {
 	format?: AutotileFormat;
 	/** MV only, required: which A-family (0-3) this sheet is */
 	slot?: RpgmAutotileSlot;
-	/** MV only: which shape table to sample; floor for slots 0-1, wall for 2-3 */
-	mode?: 'floor' | 'wall';
+	/**
+	 * MV only: which shape table to sample; floor for slots 0-1, wall for 2-3.
+	 * `'mixed'` is the A4 sheet's own layout, where kind rows alternate between the
+	 * floor table (wall tops) and the wall table (wall faces); on slots 0-2 it is the
+	 * same as their default.
+	 */
+	mode?: 'floor' | 'wall' | 'mixed';
 	/** MV only: a custom shape table, overriding mode for non-standard sheets */
 	table?: RpgmAutotileShapeTable;
 	/** XP only: which autotile image this sheet is, 0-7 */
@@ -549,17 +554,29 @@ export class TileMap extends Container {
 
 	private resolveRpgmSet(where: string, entry: AutotileSet): ResolvedAutotileSet {
 		if (entry.slot === undefined) throw new Error(`${where} needs a slot (0-3) for its MV sheet`);
-		if (entry.mode !== undefined && entry.mode !== 'floor' && entry.mode !== 'wall') {
+		if (entry.mode !== undefined && entry.mode !== 'floor' && entry.mode !== 'wall' && entry.mode !== 'mixed') {
 			throw new Error(`${where} has an unknown mode "${entry.mode}"`);
 		}
 		if (entry.animation !== undefined && !Array.isArray(entry.animation)) {
 			throw new Error(`${where} animation must list kind runs, got ${typeof entry.animation}`);
 		}
 		const mode = entry.mode ?? (entry.slot < 2 ? 'floor' : 'wall');
+		//kind rows of eight: even rows are wall tops (floor shapes), odd rows wall faces
+		const mixedA4 = mode === 'mixed' && entry.slot === 3 && entry.table === undefined;
 		const layout: AutotileLayout = {
 			format: 'rpgm-mv',
 			slot: entry.slot,
-			table: entry.table ?? (mode === 'floor' ? RPGM_FLOOR_AUTOTILE_TABLE : RPGM_WALL_AUTOTILE_TABLE),
+			table:
+				entry.table ??
+				(mode === 'floor' || (mode === 'mixed' && entry.slot < 2)
+					? RPGM_FLOOR_AUTOTILE_TABLE
+					: RPGM_WALL_AUTOTILE_TABLE),
+			...(mixedA4
+				? {
+						tableFor: (kind: number) =>
+							Math.floor(kind / 8) % 2 === 0 ? RPGM_FLOOR_AUTOTILE_TABLE : RPGM_WALL_AUTOTILE_TABLE,
+					}
+				: {}),
 			cycles: entry.animation ?? [],
 		};
 		assertAutotileLayout(layout);
@@ -828,6 +845,36 @@ export class TileMap extends Container {
 		for (let y = 0; y < this.heightInTiles; y++) {
 			for (let x = 0; x < this.widthInTiles; x++) {
 				this.setTile(layer, x, y, data[this.index(x, y)] ?? EMPTY);
+			}
+		}
+	}
+
+	/**
+	 * Copies a `width` by `height` block of frames (row-major, `EMPTY` for a blank cell)
+	 * into a layer with its top-left corner at tile (`x`, `y`), leaving every other cell
+	 * alone. The block must fit inside the map: one that overflows would otherwise wrap
+	 * into the next row, so it throws instead.
+	 */
+	stampRect(
+		layer: string | number,
+		x: number,
+		y: number,
+		width: number,
+		height: number,
+		frames: ArrayLike<number>,
+	): void {
+		this.layerAt(layer);
+		if (frames.length !== width * height) {
+			throw new Error(`a ${width}x${height} stamp needs ${width * height} frames, got ${frames.length}`);
+		}
+		if (x < 0 || y < 0 || x + width > this.widthInTiles || y + height > this.heightInTiles) {
+			throw new Error(
+				`a ${width}x${height} stamp at (${x},${y}) does not fit the ${this.widthInTiles}x${this.heightInTiles} map`,
+			);
+		}
+		for (let row = 0; row < height; row++) {
+			for (let column = 0; column < width; column++) {
+				this.setTile(layer, x + column, y + row, frames[row * width + column]);
 			}
 		}
 	}

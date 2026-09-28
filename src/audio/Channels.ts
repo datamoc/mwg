@@ -269,6 +269,13 @@ export interface BusSnapshot {
 	savedBgs: SavedBusTrack | null;
 }
 
+/** the level a whole kind plays at, on top of each track's own volume */
+export interface BusMixerLevel {
+	/** 0 to 1 */
+	volume: number;
+	muted: boolean;
+}
+
 export interface AudioBusOptions {
 	destination?: AudioNode;
 	load?: BusLoader;
@@ -309,13 +316,43 @@ export class AudioBus {
 	private meToken = 0;
 	private suspendedBgm: SavedBusTrack | null = null;
 	private readonly seNodes = new Set<{ source: AudioBufferSourceNode }>();
+	private readonly mixerLevels: Record<BusKind, BusMixerLevel> = {
+		bgm: { volume: 1, muted: false },
+		bgs: { volume: 1, muted: false },
+		me: { volume: 1, muted: false },
+		se: { volume: 1, muted: false },
+	};
+	private readonly kindGains: Record<BusKind, GainNode>;
 
 	constructor(context: AudioContext, options: AudioBusOptions = {}) {
 		this.context = context;
 		this.destination = options.destination ?? context.destination;
 		this.load = options.load ?? (async () => null);
-		this.bgmChannel = new Channel(context, this.destination);
-		this.bgsChannel = new Channel(context, this.destination);
+		const kindGain = (): GainNode => {
+			const gain = context.createGain();
+			gain.connect(this.destination);
+			return gain;
+		};
+		this.kindGains = { bgm: kindGain(), bgs: kindGain(), me: kindGain(), se: kindGain() };
+		this.bgmChannel = new Channel(context, this.kindGains.bgm);
+		this.bgsChannel = new Channel(context, this.kindGains.bgs);
+	}
+
+	/**
+	 * Sets a kind's own volume (0 to 1) and mute, applied on top of every track's volume
+	 * and to sounds already playing. Tracks keep the level the game asked for, so
+	 * `snapshot()` never reports the mixer's scaling.
+	 */
+	setMixer(kind: BusKind, level: { volume?: number; muted?: boolean }): void {
+		const current = this.mixerLevels[kind];
+		if (level.volume !== undefined) current.volume = clampBus(level.volume, 0, 1, 1);
+		if (level.muted !== undefined) current.muted = level.muted;
+		this.kindGains[kind].gain.value = current.muted ? 0 : current.volume;
+	}
+
+	/** a kind's current mixer level */
+	mixer(kind: BusKind): BusMixerLevel {
+		return { ...this.mixerLevels[kind] };
 	}
 
 	/** loops this BGM, or retunes it when it already loops */
@@ -406,7 +443,7 @@ export class AudioBus {
 		}
 		const { source } = wireVoice(
 			this.context,
-			this.destination,
+			this.kindGains.me,
 			loaded.buffer,
 			me.volume / 100,
 			me.pitch / 100,
@@ -433,7 +470,7 @@ export class AudioBus {
 		if (!loaded) return;
 		const { source } = wireVoice(
 			this.context,
-			this.destination,
+			this.kindGains.se,
 			loaded.buffer,
 			se.volume / 100,
 			se.pitch / 100,

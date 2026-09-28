@@ -83,6 +83,14 @@ export interface EventRunnerOptions {
 
 	/** carries out a move command; the runner itself does not know what "moving" means */
 	move?: (target: string, steps: readonly MoveStep[]) => Promise<void>;
+
+	/**
+	 * Called for a command the runner does not know (a converter's `transfer`, `picture`,
+	 * `sound`, ...), and for a `goto` in a straight `run()`, which ends that list. Without
+	 * it an unknown command is skipped silently; a game that converts foreign event data
+	 * passes one to make every dropped command loud.
+	 */
+	onUnknownCommand?: (command: EventCommand) => void;
 }
 
 /**
@@ -116,6 +124,10 @@ export class EventRunner {
 	async run(commands: readonly EventCommand[]): Promise<EventRunnerState> {
 		const jump = await this.runList(commands);
 		if (jump !== undefined) {
+			if (this.options.onUnknownCommand) {
+				this.options.onUnknownCommand({ goto: jump });
+				return this.state;
+			}
 			throw new Error(`a "goto ${jump}" only runs inside runStory, not a straight run`);
 		}
 		return this.state;
@@ -208,7 +220,9 @@ export class EventRunner {
 
 		if ('call' in command) {
 			await command.call(this.state);
+			return undefined;
 		}
+		this.options.onUnknownCommand?.(command);
 		return undefined;
 	}
 

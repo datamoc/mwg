@@ -15,8 +15,9 @@ import { spawn } from '../threads/index.ts';
  * family maps to a waveform and envelope recipe and channel 10 is a noise and sine
  * drum kit. Both honour channel volume, expression and pan per note; the synth keeps
  * melody, rhythm and structure while its timbre stays approximate, which is why a
- * SoundFont makes such a difference. Pitch bend is parsed and exposed on the file's
- * events but voiced unbent here.
+ * SoundFont makes such a difference. Pitch bend is voiced as the bend in effect
+ * when each note starts (two semitones either way); a bend that moves while a note
+ * holds does not glide it.
  */
 
 export interface RenderMidiOptions {
@@ -217,7 +218,7 @@ function renderNotes(task: MidiRenderTask): RenderedMidi {
 	): void {
 		const data = voice.sample.data;
 		if (data.length === 0) return;
-		const ratio = 2 ** (((note.note - voice.rootKey) * 100 + voice.cents) / 1200);
+		const ratio = 2 ** (((note.note - voice.rootKey) * 100 + voice.cents + (note.bend ?? 0) * 100) / 1200);
 		const step = (ratio * voice.sample.rate) / sampleRate;
 		if (!(step > 0)) return;
 
@@ -381,7 +382,7 @@ function renderNotes(task: MidiRenderTask): RenderedMidi {
 			return;
 		}
 		const recipe = recipeFor(note.program);
-		const frequency = note.frequency * 2 ** (recipe.detune / 1200);
+		const frequency = note.frequency * 2 ** ((recipe.detune + (note.bend ?? 0) * 100) / 1200);
 		const held = Math.max(note.duration, recipe.attack + 0.01);
 		const release = Math.max(0.02, recipe.release);
 		const lastFrame = Math.min(frameCount, startFrame + Math.ceil((held + release + 0.02) * sampleRate));

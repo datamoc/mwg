@@ -791,6 +791,11 @@ export type AutotileLayout =
 			format: 'rpgm-mv';
 			slot: RpgmAutotileSlot;
 			table: RpgmAutotileShapeTable;
+			/**
+			 * Picks the shape table per autotile kind (the A4 sheet mixes floor and wall
+			 * rows); when set it overrides `table` for every cell.
+			 */
+			tableFor?: (kind: number) => RpgmAutotileShapeTable;
 			/** kind runs that advance together; a cell whose kind is in no run ignores the frame */
 			cycles: ReadonlyArray<ReadonlyArray<number>>;
 	  }
@@ -915,10 +920,11 @@ function rpgmCellParts(
 		throw new Error(`tile ${tile} is outside slot ${layout.slot}'s ids ${base}-${base + count - 1}`);
 	}
 	const offset = tile - base;
+	let kind = SLOT_BASE_KINDS[layout.slot] + Math.floor(offset / 48);
+	const table = layout.tableFor ? layout.tableFor(kind) : layout.table;
 	//shorter tables cycle the same way the player's own indexing does
 	//(`table[shape % table.length]` over `shape = offset % 48`)
-	const shape = (offset % 48) % layout.table.length;
-	let kind = SLOT_BASE_KINDS[layout.slot] + Math.floor(offset / 48);
+	const shape = (offset % 48) % table.length;
 	for (const cycle of layout.cycles) {
 		const at = cycle.indexOf(kind);
 		if (at >= 0) {
@@ -932,7 +938,7 @@ function rpgmCellParts(
 		(kind - SLOT_BASE_KINDS[layout.slot]) * 48 + (offset % 48),
 		layout.slot,
 		shape,
-		layout.table,
+		table,
 	);
 	return described.quadrants.map((quadrant, index) => ({
 		sourceX: quadrant.sourceX,

@@ -66,6 +66,11 @@ export interface MidiVoice {
 	gain: number;
 	/** channel pan (CC10), -1 (left) to 1 (right), 0 centered */
 	pan: number;
+	/**
+	 * pitch bend in semitones in effect when the note starts (the General MIDI default
+	 * range of two semitones either way); absent when the channel is centered
+	 */
+	bend?: number;
 }
 
 export type MidiEvent = MidiNoteEvent | MidiTempoEvent | MidiProgramEvent | MidiControlEvent | MidiPitchBendEvent;
@@ -212,6 +217,9 @@ export function parseMidi(data: ArrayBuffer | ArrayBufferView): MidiFile {
 	return { ticksPerQuarter, events, loopStartTick };
 }
 
+/** semitones a full pitch bend moves a note, the General MIDI default */
+const BEND_RANGE_SEMITONES = 2;
+
 export interface ScheduledNote extends MidiVoice {
 	/** seconds from the start of playback */
 	time: number;
@@ -289,6 +297,7 @@ export function scheduleMidi(file: MidiFile): ScheduledNote[] {
 		volume: 100,
 		expression: 127,
 		pan: 64,
+		bend: 0,
 	}));
 	const voiceOf = (channel: number): MidiVoice => {
 		const state = channels[channel] ?? channels[0];
@@ -297,6 +306,7 @@ export function scheduleMidi(file: MidiFile): ScheduledNote[] {
 			bank: state.bank,
 			gain: (state.volume / 127) * (state.expression / 127),
 			pan: (state.pan - 64) / 64,
+			...(state.bend ? { bend: state.bend } : {}),
 		};
 	};
 
@@ -304,7 +314,11 @@ export function scheduleMidi(file: MidiFile): ScheduledNote[] {
 	const active = new Map<string, { time: number; velocity: number; voice: MidiVoice }>();
 
 	for (const event of file.events) {
-		if (event.type === 'tempo' || event.type === 'pitchBend') continue;
+		if (event.type === 'tempo') continue;
+		if (event.type === 'pitchBend') {
+			(channels[event.channel] ?? channels[0]).bend = (event.value / 8192) * BEND_RANGE_SEMITONES;
+			continue;
+		}
 		if (event.type === 'program') {
 			(channels[event.channel] ?? channels[0]).program = event.program;
 			continue;

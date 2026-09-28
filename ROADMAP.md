@@ -73,6 +73,18 @@ edit), and `ListView` `multiple` mode (confirm and tap toggle checks read back
 through `checkedIndexes`). New tests: `radio-group`, `text-model` multiline rows,
 `list-view` multi-select rows.
 
+392. **Small generic widgets found in the Pixel Dungeon port, and RPG-runner gaps from the MWGP player.**
+Surveyed 2026-09-28 from `mwg-pixel-dungeon` and the MWGP player's `4MWG` notes: a
+player-facing message log, an animated liquid layer with ripples, a sub-tile smoothed fog
+overlay, a text-sharpening helper plus window-zoom fit, a bit-exact `java.util.Random`, a
+`TileMap` rectangle stamp, and per-kind autotile table selection for the MV A4 sheet.
+
+Status: all shipped, with tests: `ui/MessageLog.ts`, `ui/TextSharpness.ts`,
+`render/LiquidLayer.ts`, `render/FogLayer.ts`, `TileMap.stampRect`,
+`AutotileSet.mode: 'mixed'`, `core/JavaRandom.ts`. Each is game-agnostic; the games keep their
+palettes, rules and art. What the port and player still owe is adoption, and A4's table-edge
+and shadow quads remain adapter-side.
+
 ### Parked decisions
 
 Not open work, and not forgotten: these are decisions this project has deliberately

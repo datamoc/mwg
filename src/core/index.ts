@@ -16,6 +16,8 @@ export { PlayerInput } from './PlayerInput.ts';
 export type { PlayerInputOptions } from './PlayerInput.ts';
 export { Generator, MersenneTwister, RandomStreams } from './Random.ts';
 export type { MersenneTwisterState } from './Random.ts';
+export { JavaRandom } from './JavaRandom.ts';
+export type { JavaRandomDraw, JavaRandomOptions } from './JavaRandom.ts';
 export { SaveSystem } from './Save.ts';
 export type { SaveMeta, SaveData, SaveStorage, SaveSystemOptions } from './Save.ts';
 export { CanonicalState, StateRegistry } from './State.ts';

@@ -7,6 +7,36 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- Item 392, the small widgets the Pixel Dungeon port and the MWGP player were carrying:
+  `two-d/ui.MessageLog` (coloured, line-capped message pane, with `linesToDrop`),
+  `fitWindowZoom`/`sharpenText` (window zoom fit and crisp text under a zoomed container),
+  `two-d/render.LiquidLayer` (scrolling liquid cells with ripples), `FogLayer`/`paintFogPixels`
+  (smooth sub-tile fog), `TileMap.stampRect`, `AutotileSet.mode: 'mixed'` (the MV A4 sheet's
+  floor and wall rows on one native autotile layer; the default for A4 stays the wall table),
+  and `core.JavaRandom` (`java.util.Random` bit for bit, with a draw trace).
+- `rpg.EventRunnerOptions.onUnknownCommand`: called for any command the runner has no
+  handler for, and for a `goto` in a straight `run()` (which then ends the list rather
+  than throwing), so a converter's dropped commands can be made loud instead of silent.
+- `audio.parseVorbisLoopTags`/`loopRegionFromTags`: read the `LOOPSTART`/`LOOPLENGTH`
+  comments of an Ogg Vorbis file (a bounded page walk, null on malformed input) and turn
+  them into the `LoopRegion` a bus loader returns.
+- `audio.AudioBus.setMixer`/`mixer`: a per-kind (BGM, BGS, ME, SE) volume and mute on top
+  of each track's own volume; snapshots keep reporting the level the game asked for.
+
+### Changed
+
+- MIDI rendering voices pitch bend: each note is bent by the amount in effect when it
+  starts (two semitones either way). `ScheduledNote.bend` carries it and is absent when the
+  channel is centered, so files without bends render bit-identically.
+
+### Fixed
+
+- `Label` ignores `setText`, `setColor` and the reveal calls after `destroy()`, which
+  used to throw from Pixi's text update on the released texture (the confirm-spam
+  `_getFinalPadding` error seen on a choice loop).
+
 ## [0.21.0] - 2026-09-27
 
 A tournament chess engine beside the small deterministic one, a playable options

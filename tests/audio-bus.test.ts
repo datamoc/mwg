@@ -208,7 +208,8 @@ test('playBgm loads the named track and plays it with scaled parameters', async 
 	await bus.playBgm({ name: 'town', volume: 90, pitch: 100, pan: -50 });
 
 	assert.equal(fake.sources.length, 1);
-	assert.equal(fake.gains[0].gain.value, 0.9);
+	//the bus's four per-kind mixer gains come first; the BGM voice's own gain follows
+	assert.equal(fake.gains[4].gain.value, 0.9);
 	assert.equal(fake.sources[0].playbackRate.value, 1);
 	assert.equal(fake.panners[0].pan.value, -0.5);
 });
@@ -220,7 +221,7 @@ test('replaying the same BGM retunes it instead of restarting it', async () => {
 	await bus.playBgm({ name: 'town', volume: 40 });
 
 	assert.equal(fake.sources.length, 1);
-	assert.equal(fake.gains[0].gain.value, 0.4);
+	assert.equal(fake.gains[4].gain.value, 0.4);
 });
 
 test('a different BGM stops the old voice and starts over', async () => {

@@ -759,6 +759,10 @@ build instead.
         submit(request: FeedbackRequest): Promise<FeedbackResponse>;
     }
 
+### `fitWindowZoom` (function)
+
+    export declare function fitWindowZoom(base: number, contentHeight: number, viewportHeight: number): number;
+
 ### `FLOATING_TEXT_STACK_GAP` (const)
 
     export declare const FLOATING_TEXT_STACK_GAP = 4;
@@ -821,6 +825,23 @@ build instead.
 ### `floatingTextStackMoves` (function)
 
     export declare function floatingTextStackMoves(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry, gap?: number): FloatingTextStackMove[];
+
+### `FogLayer` (class)
+
+    export declare class FogLayer extends Sprite {
+        private readonly context;
+        private readonly image;
+        private readonly columns;
+        private readonly rows;
+        private readonly cellResolution;
+        private palette;
+        constructor(options: FogLayerOptions);
+
+        setPalette(palette: readonly FogColor[]): void;
+        refresh(state: (x: number, y: number) => FogCell): void;
+
+        destroy(): void;
+    }
 
 ### `Game` (class)
 
@@ -1082,6 +1103,27 @@ build instead.
 
     export declare function isOnScreen(camera: Camera, x: number, y: number, margin?: number): boolean;
 
+### `JavaRandom` (class)
+
+    export declare class JavaRandom {
+        private state;
+        private readonly onDraw?;
+        constructor(seed?: number | bigint, options?: JavaRandomOptions);
+
+        setSeed(seed: number | bigint): void;
+
+        next(bits: number): number;
+
+        nextInt(bound?: number): number;
+
+        nextLong(): bigint;
+
+        nextDouble(): number;
+
+        nextFloat(): number;
+        nextBoolean(): boolean;
+    }
+
 ### `Label` (class)
 
     export declare class Label extends Text {
@@ -1151,6 +1193,31 @@ build instead.
 
         update(dt: number): boolean;
         private reroll;
+    }
+
+### `linesToDrop` (function)
+
+    export declare function linesToDrop(lineCounts: readonly number[], maxLines: number): number;
+
+### `LiquidLayer` (class)
+
+    export declare class LiquidLayer extends Container {
+        private readonly cells;
+        private readonly ripples;
+        private readonly columns;
+        private readonly tileSize;
+        private readonly speed;
+        private readonly rippleTexture?;
+        private readonly rippleDuration;
+        private offset;
+        constructor(options: LiquidLayerOptions);
+
+        setCellColor(x: number, y: number, tint: number): void;
+
+        ripple(x: number, y: number): void;
+
+        get rippleCount(): number;
+        update(dt: number): void;
     }
 
 ### `ListView` (class)
@@ -1422,6 +1489,26 @@ build instead.
 
     export declare function messageBoxPresenter(windows: WindowStack, options?: MessageBoxPresenterOptions): DialoguePresenter;
 
+### `MessageLog` (class)
+
+    export declare class MessageLog extends Container {
+        private readonly blocks;
+        private readonly options;
+        private maxLines;
+        constructor(options: MessageLogOptions);
+        get entryCount(): number;
+
+        get contentHeight(): number;
+        add(text: string, level?: MessageLevel): void;
+        setMaxLines(lines: number): void;
+        setWrapWidth(width: number): void;
+        clear(): void;
+        private colorOf;
+        private linesOf;
+        private trim;
+        private layout;
+    }
+
 ### `Meter` (class)
 
     export declare class Meter extends Container {
@@ -1548,6 +1635,10 @@ build instead.
 ### `packTintAdd` (function)
 
     export declare function packTintAdd(color: number, strength: number): number;
+
+### `paintFogPixels` (function)
+
+    export declare function paintFogPixels(pixels: Uint8ClampedArray | Uint8Array, width: number, height: number, resolution: number, state: (x: number, y: number) => FogCell, palette: readonly FogColor[]): void;
 
 ### `paletteRangeMapping` (function)
 
@@ -2365,6 +2456,10 @@ build instead.
     export declare class Shape2D extends Graphics {
     }
 
+### `sharpenText` (function)
+
+    export declare function sharpenText(root: Container, devicePixelRatio: number): void;
+
 ### `Signal` (class)
 
     export declare class Signal<T> {
@@ -2977,6 +3072,8 @@ build instead.
         setTile(layer: string | number, x: number, y: number, frame: number): void;
 
         setLayerData(layer: string | number, data: ArrayLike<number>): void;
+
+        stampRect(layer: string | number, x: number, y: number, width: number, height: number, frames: ArrayLike<number>): void;
 
         setCellColor(x: number, y: number, tint: number, add?: number): void;
         getCellTint(x: number, y: number): number;
@@ -4236,7 +4333,16 @@ build instead.
         private meToken;
         private suspendedBgm;
         private readonly seNodes;
+        private readonly mixerLevels;
+        private readonly kindGains;
         constructor(context: AudioContext, options?: AudioBusOptions);
+
+        setMixer(kind: BusKind, level: {
+            volume?: number;
+            muted?: boolean;
+        }): void;
+
+        mixer(kind: BusKind): BusMixerLevel;
 
         playBgm(track: BusTrack): Promise<void>;
 
@@ -4342,6 +4448,10 @@ build instead.
 
     export declare function createAudio(path: string): Playable;
 
+### `loopRegionFromTags` (function)
+
+    export declare function loopRegionFromTags(tags: VorbisLoopTags | null, sampleRate: number, duration: number): LoopRegion | null;
+
 ### `midiLoopStart` (function)
 
     export declare function midiLoopStart(file: MidiFile): number | null;
@@ -4437,6 +4547,10 @@ build instead.
 ### `parseSoundFont` (function)
 
     export declare function parseSoundFont(data: ArrayBuffer | ArrayBufferView): SoundFont;
+
+### `parseVorbisLoopTags` (function)
+
+    export declare function parseVorbisLoopTags(bytes: Uint8Array): VorbisLoopTags | null;
 
 ### `playTone` (function)
 
@@ -5392,6 +5506,27 @@ build instead.
 ### `Input` (namespace)
 
     export * as Input from './Input.ts'
+
+### `JavaRandom` (class)
+
+    export declare class JavaRandom {
+        private state;
+        private readonly onDraw?;
+        constructor(seed?: number | bigint, options?: JavaRandomOptions);
+
+        setSeed(seed: number | bigint): void;
+
+        next(bits: number): number;
+
+        nextInt(bound?: number): number;
+
+        nextLong(): bigint;
+
+        nextDouble(): number;
+
+        nextFloat(): number;
+        nextBoolean(): boolean;
+    }
 
 ### `LoadQueue` (class)
 
@@ -8139,6 +8274,10 @@ build instead.
     export declare function extractDialogueCatalog(commands: readonly StageCommand[] | StoryScript, options?: {
         locale?: string;
 
+### `fitWindowZoom` (function)
+
+    export declare function fitWindowZoom(base: number, contentHeight: number, viewportHeight: number): number;
+
 ### `FLOATING_TEXT_STACK_GAP` (const)
 
     export declare const FLOATING_TEXT_STACK_GAP = 4;
@@ -8201,6 +8340,23 @@ build instead.
 ### `floatingTextStackMoves` (function)
 
     export declare function floatingTextStackMoves(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry, gap?: number): FloatingTextStackMove[];
+
+### `FogLayer` (class)
+
+    export declare class FogLayer extends Sprite {
+        private readonly context;
+        private readonly image;
+        private readonly columns;
+        private readonly rows;
+        private readonly cellResolution;
+        private palette;
+        constructor(options: FogLayerOptions);
+
+        setPalette(palette: readonly FogColor[]): void;
+        refresh(state: (x: number, y: number) => FogCell): void;
+
+        destroy(): void;
+    }
 
 ### `Game` (class)
 
@@ -8468,6 +8624,31 @@ build instead.
         private reroll;
     }
 
+### `linesToDrop` (function)
+
+    export declare function linesToDrop(lineCounts: readonly number[], maxLines: number): number;
+
+### `LiquidLayer` (class)
+
+    export declare class LiquidLayer extends Container {
+        private readonly cells;
+        private readonly ripples;
+        private readonly columns;
+        private readonly tileSize;
+        private readonly speed;
+        private readonly rippleTexture?;
+        private readonly rippleDuration;
+        private offset;
+        constructor(options: LiquidLayerOptions);
+
+        setCellColor(x: number, y: number, tint: number): void;
+
+        ripple(x: number, y: number): void;
+
+        get rippleCount(): number;
+        update(dt: number): void;
+    }
+
 ### `ListView` (class)
 
     export declare class ListView extends Container {
@@ -8640,6 +8821,26 @@ build instead.
 
     export declare function messageBoxPresenter(windows: WindowStack, options?: MessageBoxPresenterOptions): DialoguePresenter;
 
+### `MessageLog` (class)
+
+    export declare class MessageLog extends Container {
+        private readonly blocks;
+        private readonly options;
+        private maxLines;
+        constructor(options: MessageLogOptions);
+        get entryCount(): number;
+
+        get contentHeight(): number;
+        add(text: string, level?: MessageLevel): void;
+        setMaxLines(lines: number): void;
+        setWrapWidth(width: number): void;
+        clear(): void;
+        private colorOf;
+        private linesOf;
+        private trim;
+        private layout;
+    }
+
 ### `Meter` (class)
 
     export declare class Meter extends Container {
@@ -8738,6 +8939,10 @@ build instead.
 ### `packTintAdd` (function)
 
     export declare function packTintAdd(color: number, strength: number): number;
+
+### `paintFogPixels` (function)
+
+    export declare function paintFogPixels(pixels: Uint8ClampedArray | Uint8Array, width: number, height: number, resolution: number, state: (x: number, y: number) => FogCell, palette: readonly FogColor[]): void;
 
 ### `paletteRangeMapping` (function)
 
@@ -9186,6 +9391,10 @@ build instead.
 
     export declare class Shape2D extends Graphics {
     }
+
+### `sharpenText` (function)
+
+    export declare function sharpenText(root: Container, devicePixelRatio: number): void;
 
 ### `Skins` (class)
 
@@ -9713,6 +9922,8 @@ build instead.
         setTile(layer: string | number, x: number, y: number, frame: number): void;
 
         setLayerData(layer: string | number, data: ArrayLike<number>): void;
+
+        stampRect(layer: string | number, x: number, y: number, width: number, height: number, frames: ArrayLike<number>): void;
 
         setCellColor(x: number, y: number, tint: number, add?: number): void;
         getCellTint(x: number, y: number): number;
@@ -10296,6 +10507,23 @@ build instead.
 
     export declare const EMPTY = -1;
 
+### `FogLayer` (class)
+
+    export declare class FogLayer extends Sprite {
+        private readonly context;
+        private readonly image;
+        private readonly columns;
+        private readonly rows;
+        private readonly cellResolution;
+        private palette;
+        constructor(options: FogLayerOptions);
+
+        setPalette(palette: readonly FogColor[]): void;
+        refresh(state: (x: number, y: number) => FogCell): void;
+
+        destroy(): void;
+    }
+
 ### `Gradient` (const)
 
     export declare const Gradient: typeof FillGradient;
@@ -10370,6 +10598,27 @@ build instead.
         private reroll;
     }
 
+### `LiquidLayer` (class)
+
+    export declare class LiquidLayer extends Container {
+        private readonly cells;
+        private readonly ripples;
+        private readonly columns;
+        private readonly tileSize;
+        private readonly speed;
+        private readonly rippleTexture?;
+        private readonly rippleDuration;
+        private offset;
+        constructor(options: LiquidLayerOptions);
+
+        setCellColor(x: number, y: number, tint: number): void;
+
+        ripple(x: number, y: number): void;
+
+        get rippleCount(): number;
+        update(dt: number): void;
+    }
+
 ### `loadTiledMap` (function)
 
     export declare function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSheet[]): LoadedTiledMap;
@@ -10431,6 +10680,10 @@ build instead.
 ### `packTintAdd` (function)
 
     export declare function packTintAdd(color: number, strength: number): number;
+
+### `paintFogPixels` (function)
+
+    export declare function paintFogPixels(pixels: Uint8ClampedArray | Uint8Array, width: number, height: number, resolution: number, state: (x: number, y: number) => FogCell, palette: readonly FogColor[]): void;
 
 ### `paletteRangeMapping` (function)
 
@@ -10848,6 +11101,8 @@ build instead.
 
         setLayerData(layer: string | number, data: ArrayLike<number>): void;
 
+        stampRect(layer: string | number, x: number, y: number, width: number, height: number, frames: ArrayLike<number>): void;
+
         setCellColor(x: number, y: number, tint: number, add?: number): void;
         getCellTint(x: number, y: number): number;
 
@@ -11263,6 +11518,10 @@ build instead.
 
     export declare function escapeHtml(text: string): string;
 
+### `fitWindowZoom` (function)
+
+    export declare function fitWindowZoom(base: number, contentHeight: number, viewportHeight: number): number;
+
 ### `FLOATING_TEXT_STACK_GAP` (const)
 
     export declare const FLOATING_TEXT_STACK_GAP = 4;
@@ -11450,6 +11709,10 @@ build instead.
 
     export declare function layoutVertical(text: string, options: VerticalLayoutOptions): GlyphLayout[];
 
+### `linesToDrop` (function)
+
+    export declare function linesToDrop(lineCounts: readonly number[], maxLines: number): number;
+
 ### `ListView` (class)
 
     export declare class ListView extends Container {
@@ -11609,6 +11872,26 @@ build instead.
 ### `messageBoxPresenter` (function)
 
     export declare function messageBoxPresenter(windows: WindowStack, options?: MessageBoxPresenterOptions): DialoguePresenter;
+
+### `MessageLog` (class)
+
+    export declare class MessageLog extends Container {
+        private readonly blocks;
+        private readonly options;
+        private maxLines;
+        constructor(options: MessageLogOptions);
+        get entryCount(): number;
+
+        get contentHeight(): number;
+        add(text: string, level?: MessageLevel): void;
+        setMaxLines(lines: number): void;
+        setWrapWidth(width: number): void;
+        clear(): void;
+        private colorOf;
+        private linesOf;
+        private trim;
+        private layout;
+    }
 
 ### `Meter` (class)
 
@@ -11864,6 +12147,10 @@ build instead.
         private closeRebind;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
+
+### `sharpenText` (function)
+
+    export declare function sharpenText(root: Container, devicePixelRatio: number): void;
 
 ### `Skins` (class)
 

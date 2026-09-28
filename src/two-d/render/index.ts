@@ -52,6 +52,10 @@ export { LightningArc } from './LightningArc.ts';
 export type { LightningArcOptions, LightningArcPoint } from './LightningArc.ts';
 export { SpriteAttachment } from './SpriteAttachment.ts';
 export type { AttachmentPoint, SpriteAttachmentOptions } from './SpriteAttachment.ts';
+export { LiquidLayer } from './LiquidLayer.ts';
+export type { LiquidLayerOptions } from './LiquidLayer.ts';
+export { FogLayer, paintFogPixels } from './FogLayer.ts';
+export type { FogCell, FogColor, FogLayerOptions } from './FogLayer.ts';
 export { Halo, HALO_ANIMATION } from './Halo.ts';
 export type { HaloOptions } from './Halo.ts';
 

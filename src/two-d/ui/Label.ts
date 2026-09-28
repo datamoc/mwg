@@ -64,11 +64,14 @@ export class Label extends Text {
 
 	/** changes the colour without rebuilding the style object */
 	setColor(color: number): void {
+		if (this.destroyed) return;
 		this.style.fill = color;
 	}
 
 	/** avoids the re-render when the text has not actually changed */
 	setText(value: string): void {
+		//Pixi's text update on a destroyed label reads its released texture and throws
+		if (this.destroyed) return;
 		//an instant set cancels any reveal in progress - the two never interleave
 		this.revealSource = null;
 		this.reveal = null;
@@ -82,6 +85,7 @@ export class Label extends Text {
 	 * end, for a confirm press mid-reveal.
 	 */
 	showProgressive(value: string, speed?: number): void {
+		if (this.destroyed) return;
 		this.revealSource = value;
 		this.reveal = startReveal(value.length, speed);
 		this.renderRevealed();
@@ -89,7 +93,7 @@ export class Label extends Text {
 
 	/** advances an in-progress reveal; returns true when nothing is left to show */
 	updateReveal(dt: number): boolean {
-		if (!this.reveal) return true;
+		if (this.destroyed || !this.reveal) return true;
 		const done = advanceReveal(this.reveal, dt);
 		this.renderRevealed();
 		return done;
@@ -97,7 +101,7 @@ export class Label extends Text {
 
 	/** shows the whole in-progress text at once */
 	completeReveal(): void {
-		if (!this.reveal) return;
+		if (this.destroyed || !this.reveal) return;
 		completeReveal(this.reveal);
 		this.renderRevealed();
 	}
@@ -115,6 +119,7 @@ export class Label extends Text {
 	 * anything left to the theme's own defaults picks up the new one.
 	 */
 	private restyle(t: Theme): void {
+		if (this.destroyed) return;
 		this.style.fontFamily = t.font.family;
 		if (this.opts.color === undefined) this.style.fill = t.color.text;
 		if (this.opts.size === undefined) {

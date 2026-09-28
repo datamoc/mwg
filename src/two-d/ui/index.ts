@@ -4,6 +4,11 @@ export type { Theme } from './theme.ts';
 export { Label } from './Label.ts';
 export type { LabelOptions } from './Label.ts';
 
+export { MessageLog, linesToDrop } from './MessageLog.ts';
+export type { MessageLevel, MessageLogOptions } from './MessageLog.ts';
+
+export { fitWindowZoom, sharpenText } from './TextSharpness.ts';
+
 export { RichLabel } from './RichLabel.ts';
 export type { RichLabelOptions } from './RichLabel.ts';
 

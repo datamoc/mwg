@@ -28,7 +28,9 @@ export type { RenderMidiOptions, RenderMidiAsyncOptions, RenderedMidi } from './
 export { collectSoundFontUsage, parseSoundFont, subsetSoundFont } from './SoundFont.ts';
 export type { SoundFont, SoundFontProgram, SoundFontSample, SoundFontVoice } from './SoundFont.ts';
 export { Channel, AudioBus } from './Channels.ts';
-export type { LoopRegion, ChannelPlayOptions, ChannelState } from './Channels.ts';
+export { parseVorbisLoopTags, loopRegionFromTags } from './LoopTags.ts';
+export type { VorbisLoopTags } from './LoopTags.ts';
+export type { LoopRegion, ChannelPlayOptions, ChannelState, BusMixerLevel } from './Channels.ts';
 export type {
 	BusKind,
 	BusTrack,
