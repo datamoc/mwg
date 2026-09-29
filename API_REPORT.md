@@ -2122,6 +2122,10 @@ build instead.
 
     export declare function rpgmAutotileSlot(tile: number): RpgmAutotileSlot | null;
 
+### `rpgmTableEdgeCells` (function)
+
+    export declare function rpgmTableEdgeCells(map: RpgmTableEdgeMap): Int32Array;
+
 ### `RunHistory` (class)
 
     export declare class RunHistory<T> {
@@ -3045,6 +3049,10 @@ build instead.
         addAutotileLayer(name: string, cells: ArrayLike<number>, set: AutotileSet | readonly AutotileSet[]): this;
 
         setAutotileFrame(layer: string | number, frame: number): void;
+
+        addShadowLayer(name: string, bits: ArrayLike<number>, options?: ShadowLayerOptions): this;
+        private buildShadowSprites;
+        private setShadowCell;
 
         getAutotileFrame(layer: string | number): number;
         private resolveAutotileSet;
@@ -7464,6 +7472,9 @@ build instead.
 
         private runStep;
         private resolveDirection;
+        private resolveTurn;
+
+        private resolveAim;
         private attempt;
         private pickDirection;
     }
@@ -9230,6 +9241,10 @@ build instead.
 
     export declare function rpgmAutotileSlot(tile: number): RpgmAutotileSlot | null;
 
+### `rpgmTableEdgeCells` (function)
+
+    export declare function rpgmTableEdgeCells(map: RpgmTableEdgeMap): Int32Array;
+
 ### `Scene2D` (class)
 
     export declare abstract class Scene2D extends Scene {
@@ -9895,6 +9910,10 @@ build instead.
         addAutotileLayer(name: string, cells: ArrayLike<number>, set: AutotileSet | readonly AutotileSet[]): this;
 
         setAutotileFrame(layer: string | number, frame: number): void;
+
+        addShadowLayer(name: string, bits: ArrayLike<number>, options?: ShadowLayerOptions): this;
+        private buildShadowSprites;
+        private setShadowCell;
 
         getAutotileFrame(layer: string | number): number;
         private resolveAutotileSet;
@@ -10842,6 +10861,10 @@ build instead.
 
     export declare function rpgmAutotileSlot(tile: number): RpgmAutotileSlot | null;
 
+### `rpgmTableEdgeCells` (function)
+
+    export declare function rpgmTableEdgeCells(map: RpgmTableEdgeMap): Int32Array;
+
 ### `ScreenEffects` (class)
 
     export declare class ScreenEffects extends Container {
@@ -11073,6 +11096,10 @@ build instead.
         addAutotileLayer(name: string, cells: ArrayLike<number>, set: AutotileSet | readonly AutotileSet[]): this;
 
         setAutotileFrame(layer: string | number, frame: number): void;
+
+        addShadowLayer(name: string, bits: ArrayLike<number>, options?: ShadowLayerOptions): this;
+        private buildShadowSprites;
+        private setShadowCell;
 
         getAutotileFrame(layer: string | number): number;
         private resolveAutotileSet;

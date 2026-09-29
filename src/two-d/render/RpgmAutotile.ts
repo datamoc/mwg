@@ -498,7 +498,7 @@ export const RPGM_FLOOR_AUTOTILE_TABLE: RpgmAutotileShapeTable = [
 	[
 		[0, 2],
 		[3, 2],
-		[0, 3],
+		[0, 5],
 		[3, 5],
 	],
 	[
@@ -796,6 +796,11 @@ export type AutotileLayout =
 			 * rows); when set it overrides `table` for every cell.
 			 */
 			tableFor?: (kind: number) => RpgmAutotileShapeTable;
+			/**
+			 * Slot 1 only: a cell holds the A2 table tile standing above it, and draws just that
+			 * tile's front-edge strip (two 24 by 12 pieces along the cell's top), not a tile.
+			 */
+			tableEdge?: boolean;
 			/** kind runs that advance together; a cell whose kind is in no run ignores the frame */
 			cycles: ReadonlyArray<ReadonlyArray<number>>;
 	  }
@@ -833,6 +838,9 @@ export function assertAutotileLayout(layout: AutotileLayout): void {
 	if (layout.format === 'rpgm-mv') {
 		assertSlot(layout.slot);
 		validateShapeTable(layout.table);
+		if (layout.tableEdge && layout.slot !== 1) {
+			throw new Error(`a table-edge layout needs slot 1 (A2), got slot ${layout.slot}`);
+		}
 		const kinds = RPGM_AUTOTILE_KIND_COUNTS[layout.slot];
 		const firstKind = SLOT_BASE_KINDS[layout.slot];
 		for (const cycle of layout.cycles) {
@@ -909,6 +917,34 @@ export function autotileCellParts(layout: AutotileLayout, tile: number, frame: n
 	return xpCellParts(layout, tile, frame);
 }
 
+/**
+ * The engine's `_drawTableEdge`: a table tile's bottom two quadrants, cut to their
+ * upper half (12 of 24 source pixels) and laid along the top of the cell below it.
+ */
+function rpgmTableEdgeParts(
+	layout: Extract<AutotileLayout, { format: 'rpgm-mv' }>,
+	offset: number,
+): AutotileCellPart[] {
+	const kind = SLOT_BASE_KINDS[layout.slot] + Math.floor(offset / 48);
+	const shape = (offset % 48) % layout.table.length;
+	const baseX = (kind % 8) * 2;
+	const baseY = (Math.floor(kind / 8) - 2) * 3;
+	const half = RPGM_QUADRANT_SIZE / 2;
+	return [2, 3].map((quadrant, index) => {
+		const [qx, qy] = layout.table[shape][quadrant];
+		return {
+			sourceX: (baseX * 2 + qx) * RPGM_QUADRANT_SIZE,
+			sourceY: (baseY * 2 + qy) * RPGM_QUADRANT_SIZE + half,
+			sourceWidth: RPGM_QUADRANT_SIZE,
+			sourceHeight: half,
+			destX: index / 2,
+			destY: 0,
+			destWidth: 1 / 2,
+			destHeight: 1 / 4,
+		};
+	});
+}
+
 function rpgmCellParts(
 	layout: Extract<AutotileLayout, { format: 'rpgm-mv' }>,
 	tile: number,
@@ -920,6 +956,7 @@ function rpgmCellParts(
 		throw new Error(`tile ${tile} is outside slot ${layout.slot}'s ids ${base}-${base + count - 1}`);
 	}
 	const offset = tile - base;
+	if (layout.tableEdge) return rpgmTableEdgeParts(layout, offset);
 	let kind = SLOT_BASE_KINDS[layout.slot] + Math.floor(offset / 48);
 	const table = layout.tableFor ? layout.tableFor(kind) : layout.table;
 	//shorter tables cycle the same way the player's own indexing does
@@ -989,4 +1026,53 @@ function xpCellParts(
 		destWidth: 1 / 2,
 		destHeight: 1 / 2,
 	}));
+}
+
+/** the passage-flag bit RPG Maker sets on an A2 tile that is a table */
+const RPGM_TABLE_FLAG = 0x80;
+
+/** what `rpgmTableEdgeCells` needs from an MV map and its tileset */
+export interface RpgmTableEdgeMap {
+	width: number;
+	height: number;
+	/** map layer 0 (row-major, one tile id per cell), whose A3/A4 tiles suppress an edge */
+	ground: ArrayLike<number>;
+	/** map layer 1, where tables are placed */
+	objects: ArrayLike<number>;
+	/** the tileset's passage flags, indexed by tile id (an array or a sparse record) */
+	flags: { readonly [tile: number]: number | undefined };
+}
+
+/**
+ * The cells that get a table's front-edge strip, in the engine's own rule
+ * (`Tilemap._paintTiles`): a cell whose layer-1 neighbour above is an A2 table
+ * tile, while its own layer-1 tile is not a table, and whose layer-0 tile is not an
+ * A3/A4 wall. Each such cell holds the table tile above it (a raw MV id), every
+ * other cell 0, ready for an `addAutotileLayer` set with `tableEdge: true`.
+ *
+ * @example
+ * ```ts
+ * import { rpgmTableEdgeCells } from '@datamoc/mw_games/two-d/render';
+ *
+ * const table = 2816 + 48 * 0 + 47; // an A2 kind with the table flag
+ * const flags = { [table]: 0x80 };
+ * const cells = rpgmTableEdgeCells({ width: 1, height: 2, ground: [0, 0], objects: [table, 0], flags });
+ * console.log(cells[1]); // the table tile above cell 1
+ * console.log(cells[0]); // 0 - nothing above the top row
+ * ```
+ */
+export function rpgmTableEdgeCells(map: RpgmTableEdgeMap): Int32Array {
+	const out = new Int32Array(map.width * map.height);
+	const isTable = (tile: number) => rpgmAutotileSlot(tile) === 1 && ((map.flags[tile] ?? 0) & RPGM_TABLE_FLAG) !== 0;
+	for (let y = 1; y < map.height; y++) {
+		for (let x = 0; x < map.width; x++) {
+			const at = y * map.width + x;
+			const upper = map.objects[at - map.width] ?? 0;
+			if (!isTable(upper) || isTable(map.objects[at] ?? 0)) continue;
+			const ground = rpgmAutotileSlot(map.ground[at] ?? 0);
+			if (ground === 2 || ground === 3) continue;
+			out[at] = upper;
+		}
+	}
+	return out;
 }

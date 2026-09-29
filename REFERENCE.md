@@ -430,6 +430,11 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   template and neighbourhood tables, `xpAutotileRef`/`xpAutotilePattern` decode and
   compute XP cells, and `autotileCellParts`/`assertAutotileLayout` resolve and validate
   one cell's pieces renderer-free.
+- `AutotileSet.tableEdge` with `rpgmTableEdgeCells` over `RpgmTableEdgeMap` - the front-edge strip
+  the engine draws under an A2 table: `rpgmTableEdgeCells` finds the cells that get one (table
+  above, none here, no A3/A4 wall on the ground layer) and the set draws its two half-height
+  pieces. `TileMap` `addShadowLayer` over `ShadowLayerOptions` adds the engine's shadow bits
+  (map layer 4) as translucent quarter-tile quads.
 - `resolveTerrainGraphics`/`matchTerrainRule`/`squareRotate`/`hexRotate` over `TerrainRule`/
   `TerrainCondition`/`TerrainImage`/`TerrainPlacement`/`TerrainFlagsAt` - a rule-driven
   `[terrain_graphics]`-style transition pass for what `Autotile`'s fixed 47-shape table cannot

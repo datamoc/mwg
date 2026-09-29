@@ -89,6 +89,14 @@ export function tileFrameIndex(packed: number): number {
 	return packed & ((1 << 20) - 1);
 }
 
+/** how `TileMap.addShadowLayer` paints its quarter-tile quads */
+export interface ShadowLayerOptions {
+	/** the quad colour; black unless told otherwise */
+	color?: number;
+	/** the quad opacity, 0-1; RPG Maker's shadow is half-transparent */
+	alpha?: number;
+}
+
 export interface TileMapOptions {
 	/** in tiles */
 	width: number;
@@ -167,6 +175,12 @@ export interface AutotileSet {
 	index?: number;
 	/** XP only: animation stripes in the image; counted from the sheet width when omitted */
 	frames?: number;
+	/**
+	 * MV slot 1 (A2) only: the layer's cells hold the table tile standing above each cell, and
+	 * this set draws just that table's front-edge strip along the cell's top, as the engine
+	 * does under a table. `rpgmTableEdgeCells` computes those cells from the map.
+	 */
+	tableEdge?: boolean;
 	/** MV only: kind runs advancing together when the frame changes (water, waterfalls) */
 	animation?: ReadonlyArray<ReadonlyArray<number>>;
 	/** the layer's initial animation frame */
@@ -197,7 +211,17 @@ interface AutotileLayer {
 	frame: number;
 }
 
-type Layer = TileLayer | AutotileLayer;
+interface ShadowLayer {
+	kind: 'shadow';
+	name: string;
+	data: Int32Array;
+	sprites: Array<TintedSprite[] | null>;
+	container: Container;
+	color: number;
+	alpha: number;
+}
+
+type Layer = TileLayer | AutotileLayer | ShadowLayer;
 
 interface ResolvedAutotileSet {
 	sheet: SpriteSheet;
@@ -535,6 +559,87 @@ export class TileMap extends Container {
 		}
 	}
 
+	/**
+	 * Adds a shadow layer: RPG Maker's per-cell shadow bits, drawn as translucent quarter-tile
+	 * quads. Bit 0 is the top-left quadrant, 1 top-right, 2 bottom-left, 3 bottom-right (the
+	 * engine's map layer 4). A cell holding 0 (or EMPTY) is clear. Shadow quads keep their own
+	 * colour whatever `setCellColor` does to the cell under them.
+	 *
+	 * @param bits one bit set (0-15) per cell, row-major.
+	 * @param options `color` (default black) and `alpha` (default 0.5, the engine's shadow).
+	 *
+	 * @example
+	 * ```ts
+	 * import { TileMap, SpriteSheet } from '@datamoc/mw_games/two-d/render';
+	 *
+	 * declare const sheet: SpriteSheet;
+	 *
+	 * const map = new TileMap({ width: 2, height: 1, sheet });
+	 * map.addShadowLayer('shadow', [0b0101, 0]); // the left cell's two left quadrants
+	 * console.log(map.getTile('shadow', 0, 0)); // 5
+	 * ```
+	 */
+	addShadowLayer(name: string, bits: ArrayLike<number>, options: ShadowLayerOptions = {}): this {
+		const { cells: total, container, chunks } = this.beginLayer(name, bits.length);
+		const color = options.color ?? 0x000000;
+		const alpha = options.alpha ?? 0.5;
+		if (!Number.isFinite(alpha) || alpha < 0 || alpha > 1) {
+			throw new Error(`shadow layer "${name}" alpha must be between 0 and 1, got ${options.alpha}`);
+		}
+		const data = Int32Array.from(bits, (value) => (value > 0 ? value & 0x0f : 0));
+		const layer: ShadowLayer = {
+			kind: 'shadow',
+			name,
+			data,
+			sprites: new Array(total).fill(null),
+			container,
+			color,
+			alpha,
+		};
+		this.layers.push(layer);
+		this.layersByName.set(name, layer);
+		this.chunks.push(chunks);
+		this.addChild(container);
+
+		for (let y = 0; y < this.heightInTiles; y++) {
+			for (let x = 0; x < this.widthInTiles; x++) {
+				if (data[this.index(x, y)] > 0) this.buildShadowSprites(layer, x, y);
+			}
+		}
+		return this;
+	}
+
+	private buildShadowSprites(layer: ShadowLayer, x: number, y: number): void {
+		const cell = this.index(x, y);
+		const origin = this.cellOrigin(x, y);
+		const lift = this.cellHeight[cell] * this.heightStep;
+		const width = this.tileWidth / 2;
+		const height = this.tileHeight / 2;
+		const chunk = this.chunks[this.layers.indexOf(layer)][this.chunkIndex(x, y)];
+		const made: TintedSprite[] = [];
+		for (let quadrant = 0; quadrant < 4; quadrant++) {
+			if (!(layer.data[cell] & (1 << quadrant))) continue;
+			const sprite = new TintedSprite(Texture.WHITE);
+			sprite.x = origin.x + (quadrant % 2) * width;
+			sprite.y = origin.y - lift + Math.floor(quadrant / 2) * height;
+			sprite.width = width;
+			sprite.height = height;
+			sprite.tint = layer.color;
+			sprite.alpha = layer.alpha;
+			chunk.addChild(sprite);
+			made.push(sprite);
+		}
+		layer.sprites[cell] = made;
+	}
+
+	private setShadowCell(layer: ShadowLayer, x: number, y: number, bits: number): void {
+		const cell = this.index(x, y);
+		layer.data[cell] = bits > 0 ? bits & 0x0f : 0;
+		for (const sprite of layer.sprites[cell] ?? []) sprite.destroy();
+		layer.sprites[cell] = null;
+		if (layer.data[cell] > 0) this.buildShadowSprites(layer, x, y);
+	}
+
 	/** the animation frame an autotile layer currently shows */
 	getAutotileFrame(layer: string | number): number {
 		const target = this.layerAt(layer);
@@ -568,7 +673,7 @@ export class TileMap extends Container {
 			slot: entry.slot,
 			table:
 				entry.table ??
-				(mode === 'floor' || (mode === 'mixed' && entry.slot < 2)
+				(mode === 'floor' || entry.tableEdge || (mode === 'mixed' && entry.slot < 2)
 					? RPGM_FLOOR_AUTOTILE_TABLE
 					: RPGM_WALL_AUTOTILE_TABLE),
 			...(mixedA4
@@ -577,6 +682,7 @@ export class TileMap extends Container {
 							Math.floor(kind / 8) % 2 === 0 ? RPGM_FLOOR_AUTOTILE_TABLE : RPGM_WALL_AUTOTILE_TABLE,
 					}
 				: {}),
+			...(entry.tableEdge ? { tableEdge: true } : {}),
 			cycles: entry.animation ?? [],
 		};
 		assertAutotileLayout(layout);
@@ -819,6 +925,8 @@ export class TileMap extends Container {
 
 		if (target.kind === 'autotile') {
 			this.setAutotileCell(target, x, y, frame);
+		} else if (target.kind === 'shadow') {
+			this.setShadowCell(target, x, y, frame);
 		} else {
 			target.data[cell] = frame;
 
@@ -897,6 +1005,8 @@ export class TileMap extends Container {
 		this.cellAdd[cell] = add;
 
 		for (const layer of this.layers) {
+			//a shadow keeps its own colour; the cell's light already shows through it
+			if (layer.kind === 'shadow') continue;
 			this.eachCellSprite(layer, cell, (sprite) => {
 				sprite.tint = tint;
 				sprite.colorAdd = add;

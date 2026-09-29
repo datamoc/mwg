@@ -157,3 +157,70 @@ test('skippable moves past a blocked step instead of waiting on it', () => {
 	assert.deepEqual([m.x, m.y], [0, 1], 'the down step ran next');
 	assert.equal(runner.done, true);
 });
+
+test('step moves diagonally and asks canMove with the whole offset', () => {
+	const m = mover();
+	const asked: Array<[number, number]> = [];
+	const runner = new MoveRouteRunner(
+		m,
+		{ steps: [{ step: { dx: 1, dy: 1 } }] },
+		{
+			canMove: (dx, dy) => {
+				asked.push([dx, dy]);
+				return true;
+			},
+		},
+	);
+	runner.update(1);
+	m.update(1);
+	assert.deepEqual([m.x, m.y], [1, 1]);
+	assert.deepEqual(asked, [[1, 1]]);
+});
+
+test('forward and backward follow the way the mover faces when the step is reached', () => {
+	const m = mover(2, 2);
+	m.turnTo(-1, 0);
+	const runner = new MoveRouteRunner(m, { steps: [{ dir: 'forward' }, { dir: 'backward' }, { dir: 'backward' }] });
+	for (let i = 0; i < 3; i++) {
+		runner.update(1);
+		m.update(1);
+	}
+	//forward (left) to 1, backward (right) to 2, backward again but now facing right, so back to 1
+	assert.deepEqual([m.x, m.y], [1, 2]);
+});
+
+test('a target function is asked when the step is reached, so a moving target is followed', () => {
+	const m = mover(0, 0);
+	const target = { x: 0, y: 5 };
+	const runner = new MoveRouteRunner(m, {
+		steps: [
+			{ dir: 'toward', target: () => target },
+			{ dir: 'toward', target: () => target },
+		],
+	});
+	runner.update(1);
+	m.update(1);
+	assert.deepEqual([m.x, m.y], [0, 1]);
+	//the target moves before the second step
+	target.x = 9;
+	target.y = 1;
+	runner.update(1);
+	m.update(1);
+	assert.deepEqual([m.x, m.y], [1, 1]);
+});
+
+test('relative turns and turns toward a target only change the facing', () => {
+	const m = mover(0, 0);
+	m.turnTo(0, 1);
+	const runner = new MoveRouteRunner(m, {
+		steps: [{ turn: 'left90' }, { turn: 'around' }, { turn: 'right90' }, { turn: 'toward', x: 5, y: 0 }],
+	});
+	const seen: string[] = [];
+	for (let i = 0; i < 4; i++) {
+		runner.update(1);
+		seen.push(m.facing);
+	}
+	//facing down: left90 is right, around is left, right90 from left is up, then toward (5, 0) is right
+	assert.deepEqual(seen, ['right', 'left', 'up', 'right']);
+	assert.deepEqual([m.x, m.y], [0, 0]);
+});

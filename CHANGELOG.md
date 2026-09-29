@@ -7,6 +7,25 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `TileMap.addShadowLayer`: RPG Maker's per-cell shadow bits (map layer 4) as translucent
+  quarter-tile quads, editable with `setTile` and left alone by `setCellColor`.
+- `AutotileSet.tableEdge` (MV slot 1) and `rpgmTableEdgeCells`: the front-edge strip the engine
+  draws under an A2 table (`Tilemap._drawTableEdge`), with the engine's rule for which cells
+  get one (a table tile above, none here, no A3/A4 wall on the ground layer).
+
+- `MoveRouteStep` covers what RPG Maker routes use beyond the four directions: `{ step: { dx, dy } }`
+  (diagonals), `{ dir: 'forward' | 'backward' }` (from the mover's facing), `{ turn: 'around' | 'left90' | 'right90' }`,
+  `{ turn: 'toward' | 'away' }`, and a `target: () => { x, y }` on `toward`/`away` steps for a target
+  that keeps moving (`RouteTarget`).
+
+### Fixed
+
+- `RPGM_FLOOR_AUTOTILE_TABLE[46]` had the wrong bottom-left quadrant (`[0, 3]`, the engine has
+  `[0, 5]`), so shape 46 of every floor-table kind, A4 `mixed` wall tops included, drew a stray
+  corner.
+
 ## [0.22.0] - 2026-09-29
 
 Audio and event-runner asks from the MWGP player, plus the small widgets the Pixel

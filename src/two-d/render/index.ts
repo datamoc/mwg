@@ -44,7 +44,7 @@ export type { ColorBlindnessType } from './ColorBlindness.ts';
 export { Minimap, newlyRevealed, minimapCellCenter } from './Minimap.ts';
 export type { MinimapMarker, MinimapOptions } from './Minimap.ts';
 export { TileMap, EMPTY, tileFrame, tileFrameSheet, tileFrameIndex } from './TileMap.ts';
-export type { TileMapOptions, AutotileSet, AutotileCell, AutotileFormat } from './TileMap.ts';
+export type { TileMapOptions, AutotileSet, AutotileCell, AutotileFormat, ShadowLayerOptions } from './TileMap.ts';
 export { LayeredSprite } from './LayeredSprite.ts';
 export { Projectile } from './Projectile.ts';
 export type { ProjectilePoint, ProjectileOptions } from './Projectile.ts';
@@ -81,6 +81,7 @@ export {
 	xpAutotilePattern,
 	assertAutotileLayout,
 	autotileCellParts,
+	rpgmTableEdgeCells,
 	RPGM_AUTOTILE_SLOT_BASES,
 	RPGM_AUTOTILE_SLOT_COUNTS,
 	RPGM_FLOOR_AUTOTILE_TABLE,
@@ -98,6 +99,7 @@ export type {
 	XpAutotileRef,
 	AutotileCellPart,
 	AutotileLayout,
+	RpgmTableEdgeMap,
 } from './RpgmAutotile.ts';
 
 export { hexRotate, matchTerrainRule, resolveTerrainGraphics, squareRotate } from './TerrainGraphics.ts';

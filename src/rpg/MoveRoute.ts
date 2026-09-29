@@ -9,6 +9,14 @@ const DELTA: Record<Direction4, { dx: number; dy: number }> = {
 	right: { dx: 1, dy: 0 },
 };
 
+/** what a quarter or half turn from each facing lands on */
+const TURNED: Record<Direction4, { around: Direction4; left90: Direction4; right90: Direction4 }> = {
+	up: { around: 'down', left90: 'left', right90: 'right' },
+	down: { around: 'up', left90: 'right', right90: 'left' },
+	left: { around: 'right', left90: 'down', right90: 'up' },
+	right: { around: 'left', left90: 'up', right90: 'down' },
+};
+
 /**
  * One step of a `MoveRoute`, run in order against a `GridMover`. Unlike `GridMover.moveBy`
  * itself, a route step does not always know its own `dx`/`dy` up front - `random`, `toward`
@@ -18,10 +26,23 @@ const DELTA: Record<Direction4, { dx: number; dy: number }> = {
 export type MoveRouteStep =
 	| { dir: Direction4 }
 	| { dir: 'random' }
-	| { dir: 'toward' | 'away'; x: number; y: number }
+	/** one tile along (or against) the way the mover currently faces */
+	| { dir: 'forward' | 'backward' }
+	| ({ dir: 'toward' | 'away' } & RouteTarget)
+	/** a step of any size and direction, diagonals included; `canMove` is asked with the same `dx`/`dy` */
+	| { step: { dx: number; dy: number } }
 	| { turn: Direction4 | 'random' }
+	/** a quarter or half turn from the way the mover currently faces */
+	| { turn: 'around' | 'left90' | 'right90' }
+	| ({ turn: 'toward' | 'away' } & RouteTarget)
 	| { jump: { dx: number; dy: number } }
 	| { wait: number };
+
+/**
+ * Where a `toward`/`away` step aims: fixed tile coordinates, or a function asked when the step
+ * is reached, for a target that keeps moving (a player, another event).
+ */
+export type RouteTarget = { x: number; y: number } | { target: () => { x: number; y: number } };
 
 export interface MoveRoute {
 	steps: readonly MoveRouteStep[];
@@ -111,8 +132,7 @@ export class MoveRouteRunner {
 	/** @returns whether the step actually moved/turned/waited, so the runner can decide to skip it */
 	private runStep(step: MoveRouteStep): boolean {
 		if ('turn' in step) {
-			const direction = step.turn === 'random' ? this.pickDirection() : step.turn;
-			const { dx, dy } = DELTA[direction];
+			const { dx, dy } = this.resolveTurn(step);
 			this.mover.turnTo(dx, dy);
 			return true;
 		}
@@ -126,25 +146,50 @@ export class MoveRouteRunner {
 			return this.attempt(step.jump.dx, step.jump.dy, (dx, dy) => this.mover.jumpBy(dx, dy));
 		}
 
+		if ('step' in step) {
+			return this.attempt(step.step.dx, step.step.dy, (dx, dy) => this.mover.moveBy(dx, dy));
+		}
+
 		const { dx, dy } = this.resolveDirection(step);
 		return this.attempt(dx, dy, (dx, dy) => this.mover.moveBy(dx, dy));
 	}
 
-	private resolveDirection(step: { dir: Direction4 | 'random' | 'toward' | 'away'; x?: number; y?: number }): {
-		dx: number;
-		dy: number;
-	} {
+	private resolveDirection(
+		step: { dir: Direction4 | 'random' | 'forward' | 'backward' } | ({ dir: 'toward' | 'away' } & RouteTarget),
+	): { dx: number; dy: number } {
 		if (step.dir === 'random') return DELTA[this.pickDirection()];
-		if (step.dir === 'toward' || step.dir === 'away') {
-			const sign = step.dir === 'toward' ? 1 : -1;
-			const ddx = step.x! - this.mover.x;
-			const ddy = step.y! - this.mover.y;
-			//the larger axis first, matching the direction a step would actually close (or open)
-			return Math.abs(ddx) >= Math.abs(ddy)
-				? { dx: sign * Math.sign(ddx) || 0, dy: 0 }
-				: { dx: 0, dy: sign * Math.sign(ddy) || 0 };
-		}
+		if (step.dir === 'forward') return DELTA[this.mover.facing];
+		if (step.dir === 'backward') return DELTA[TURNED[this.mover.facing].around];
+		if (step.dir === 'toward' || step.dir === 'away') return this.resolveAim(step.dir, step as RouteTarget);
 		return DELTA[step.dir];
+	}
+
+	private resolveTurn(
+		step:
+			| { turn: Direction4 | 'random' | 'around' | 'left90' | 'right90' }
+			| ({ turn: 'toward' | 'away' } & RouteTarget),
+	): { dx: number; dy: number } {
+		if (step.turn === 'random') return DELTA[this.pickDirection()];
+		if (step.turn === 'around' || step.turn === 'left90' || step.turn === 'right90') {
+			return DELTA[TURNED[this.mover.facing][step.turn]];
+		}
+		if (step.turn === 'toward' || step.turn === 'away') {
+			const aim = this.resolveAim(step.turn, step as RouteTarget);
+			return aim.dx === 0 && aim.dy === 0 ? DELTA[this.mover.facing] : aim;
+		}
+		return DELTA[step.turn];
+	}
+
+	/** one tile along the larger axis towards (or away from) a target, from where the mover stands now */
+	private resolveAim(way: 'toward' | 'away', aim: RouteTarget): { dx: number; dy: number } {
+		const at = 'target' in aim ? aim.target() : aim;
+		const sign = way === 'toward' ? 1 : -1;
+		const ddx = at.x - this.mover.x;
+		const ddy = at.y - this.mover.y;
+		//the larger axis first, matching the direction a step would actually close (or open)
+		return Math.abs(ddx) >= Math.abs(ddy)
+			? { dx: sign * Math.sign(ddx) || 0, dy: 0 }
+			: { dx: 0, dy: sign * Math.sign(ddy) || 0 };
 	}
 
 	private attempt(dx: number, dy: number, move: (dx: number, dy: number) => boolean): boolean {
