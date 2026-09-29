@@ -4,8 +4,8 @@
 	"version": "0.22.0",
 	"releaseDate": "2026-09-29",
 	"source": {
-		"files": 312,
-		"lines": 56145,
+		"files": 320,
+		"lines": 57665,
 		"modules": 17,
 		"breakdown": [
 			{
@@ -29,14 +29,14 @@
 				"lines": 5347
 			},
 			{
+				"name": "audio",
+				"files": 21,
+				"lines": 4700
+			},
+			{
 				"name": "roguelike",
 				"files": 22,
 				"lines": 3520
-			},
-			{
-				"name": "audio",
-				"files": 13,
-				"lines": 3180
 			},
 			{
 				"name": "actors",
@@ -96,9 +96,9 @@
 		]
 	},
 	"tests": {
-		"files": 280,
-		"lines": 36574,
-		"cases": 2581
+		"files": 281,
+		"lines": 37253,
+		"cases": 2607
 	},
 	"tools": {
 		"files": 44,
@@ -138,14 +138,14 @@
 		"percent": 99
 	},
 	"api": {
-		"declarationFiles": 311
+		"declarationFiles": 319
 	},
 	"bundle": {
-		"globalRaw": 1174244,
-		"globalGzip": 350144,
-		"distRaw": 3997821
+		"globalRaw": 1191608,
+		"globalGzip": 356504,
+		"distRaw": 4091738
 	},
 	"quality": {
-		"testToSourceRatio": 0.7
+		"testToSourceRatio": 0.6
 	}
 }

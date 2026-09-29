@@ -1,5 +1,6 @@
 import { playTone, type ToneOptions, type Waveform } from './Synth.ts';
 import type { Playable } from './Playable.ts';
+import { humanizeMidi, type HumanizeRequest } from './humanize/HumanizerFactory.ts';
 
 /**
  * A Standard MIDI File (SMF) reader plus a player that voices each note through
@@ -371,6 +372,11 @@ export interface MidiPlayerOptions {
 	volume?: number;
 	/** voices one scheduled note; defaults to `audio.playTone` */
 	play?: (options: ToneOptions) => Playable;
+	/**
+	 * humanizes the file before it is scheduled; omitted, the performance plays exactly as
+	 * written. Use `MidiPlayer.create` to have this applied, or call `humanizeMidi` first.
+	 */
+	humanize?: HumanizeRequest;
 }
 
 /** Plays a parsed `MidiFile` back through `mwg/audio`'s waveform synth, one tone per note, driven by `update(dt)` like every other dt-driven piece of `mwg/core`. */
@@ -389,6 +395,27 @@ export class MidiPlayer {
 		this.playFn = options.play ?? playTone;
 		this.waveform = options.waveform ?? 'square';
 		this.volume = options.volume ?? 0.2;
+	}
+
+	/**
+	 * Humanizes first, then schedules: the one call a game needs when a file should sound
+	 * played rather than played back. The constructor stays synchronous, so the async work
+	 * of resolving an engine happens here instead of inside frame-time code.
+	 *
+	 * @example
+	 * ```ts
+	 * import { MidiPlayer, parseMidi } from '@datamoc/mw_games/audio';
+	 *
+	 * declare const midiBytes: ArrayBuffer;
+	 *
+	 * const player = await MidiPlayer.create(parseMidi(midiBytes), {
+	 *   humanize: { intensity: 0.5, seed: 3, style: 'jazz' },
+	 * });
+	 * player.play();
+	 * ```
+	 */
+	static async create(file: MidiFile, options: MidiPlayerOptions = {}): Promise<MidiPlayer> {
+		return new MidiPlayer(options.humanize ? await humanizeMidi(file, options.humanize) : file, options);
 	}
 
 	play(): void {

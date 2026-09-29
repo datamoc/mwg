@@ -42,3 +42,14 @@ export type {
 } from './Channels.ts';
 export { AudioListener, SoundSource, audioGain, audioPan } from './Positional.ts';
 export type { AudioPoint, AudioFalloff, SoundSourceOptions } from './Positional.ts';
+export { subdivisionCount, assertGrooveTemplate } from './humanize/Groove.ts';
+export type { GridSubdivision, GrooveOffset, GrooveTemplate } from './humanize/Groove.ts';
+export { LiteHumanizer } from './humanize/LiteHumanizer.ts';
+export { GrooveHumanizer } from './humanize/GrooveHumanizer.ts';
+export { GrooveExtractor } from './humanize/GrooveExtractor.ts';
+export type { GrooveExtractorEngine } from './humanize/GrooveExtractor.ts';
+export { GrooveConverter } from './humanize/GrooveConverter.ts';
+export type { GrooveConverterEngine, GrooveFormat } from './humanize/GrooveConverter.ts';
+export { HumanizerFactory, humanizeMidi } from './humanize/HumanizerFactory.ts';
+export type { HumanizeRequest } from './humanize/HumanizerFactory.ts';
+export type { HumanizationOptions, HumanizeStyle, HumanizerTier, MidiHumanizerEngine } from './humanize/Humanize.ts';

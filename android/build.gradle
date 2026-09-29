@@ -22,6 +22,12 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    configurations.configureEach {
+        // Kotlin 1.8+ includes the jdk7/jdk8 stdlib classes in kotlin-stdlib. Older
+        // AndroidX transitives still request the split 1.6 artifacts, which duplicate them.
+        resolutionStrategy.force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22', 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+    }
 }
 
 task clean(type: Delete) {

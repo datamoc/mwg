@@ -1,7 +1,7 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
-  "serialNumber": "urn:uuid:c469a256-ecb3-5c57-af21-4a4fa43cfef7",
+  "serialNumber": "urn:uuid:10fbd005-fcdb-5e6b-9e20-60e498861dc5",
   "version": 1,
   "metadata": {
     "tools": {
@@ -75,15 +75,15 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40capacitor/android@7.6.9",
+      "bom-ref": "pkg:npm/%40capacitor/android@8.5.2",
       "name": "@capacitor/android",
-      "version": "7.6.9",
-      "purl": "pkg:npm/%40capacitor/android@7.6.9",
+      "version": "8.5.2",
+      "purl": "pkg:npm/%40capacitor/android@8.5.2",
       "scope": "excluded",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "8ef7d4e3668eba3f76fca26a46c71f0e6fb9eb5d96cc96a29c52f4f718c9803f6823738c5cde0f05f71c9fc220f62f31edb915a99bff5cdc05b2188846a9a082"
+          "content": "aed89acfbf1e802712fafb36f7091608bdc2f9185acca312ca05dc8eeb7058ff0d98eeabe540713af19fdd68f3e7e6a1a1bc90ef6ded9fd80278fc11c1c34365"
         }
       ],
       "licenses": [
@@ -96,15 +96,15 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40capacitor/cli@7.6.9",
+      "bom-ref": "pkg:npm/%40capacitor/cli@8.5.2",
       "name": "@capacitor/cli",
-      "version": "7.6.9",
-      "purl": "pkg:npm/%40capacitor/cli@7.6.9",
+      "version": "8.5.2",
+      "purl": "pkg:npm/%40capacitor/cli@8.5.2",
       "scope": "excluded",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "4010c47f7f3204015325e85b8b916f026843595d48fdeed9af767a5d7d018fef53fbf398e449066f0e7fd5efb7a08cb279ea6add6b5d4a42d61ecdd5347da008"
+          "content": "3b692903964f2540269620c2726a4c7fcc6727031ecf19453d4ae5c8e0236cbdd4f4c14d6379786693c8fd45f0bf23e647c11371517da45afe55d5aaeb5aea4d"
         }
       ],
       "licenses": [
@@ -117,15 +117,15 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40capacitor/core@7.6.9",
+      "bom-ref": "pkg:npm/%40capacitor/core@8.5.2",
       "name": "@capacitor/core",
-      "version": "7.6.9",
-      "purl": "pkg:npm/%40capacitor/core@7.6.9",
+      "version": "8.5.2",
+      "purl": "pkg:npm/%40capacitor/core@8.5.2",
       "scope": "excluded",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "e033a1ff1c920bd4b9af285422aa4ea696ac2328b65a24dd17426e67fd8312cfaf7f97ae9d1cc70dd358069d6c9c0ddf6877224f0ff74951977d1f96918c6c30"
+          "content": "6a09d06c67611b0fca645b8b7fb1fd498da8fa813bba992bfd63d0b186a89173fa7fd721684f225666ca91f37a495978c37a66cfba19dd4af585b926cb5871fb"
         }
       ],
       "licenses": [
@@ -138,15 +138,15 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40capacitor/ios@7.6.9",
+      "bom-ref": "pkg:npm/%40capacitor/ios@8.5.2",
       "name": "@capacitor/ios",
-      "version": "7.6.9",
-      "purl": "pkg:npm/%40capacitor/ios@7.6.9",
+      "version": "8.5.2",
+      "purl": "pkg:npm/%40capacitor/ios@8.5.2",
       "scope": "excluded",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "2c034ff354dfc2e264d73abd12e17e2790092bbd6b2838170795c3f951494070bb071487e03b266ba0d2332ae3153d378eda9cff42533047d230113b828dd98c"
+          "content": "78e4f64baec07d3146eca3744f7a31c006a3ac9cf8ad2c9ef8e0dfbc2862c2b93417ffa45ae7c5335a94e9c0e318950e7f0740a1eb84a59c961d2c1996ee0616"
         }
       ],
       "licenses": [
@@ -2070,6 +2070,48 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:npm/bplist-creator@0.1.0",
+      "name": "bplist-creator",
+      "version": "0.1.0",
+      "purl": "pkg:npm/bplist-creator@0.1.0",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "b17687662732104998f3a5b2b9e2d341eb1b7a81ff9aabaf6ab25a40d6e3b8e40efbb81b15c0c45aa2a671603870e4cbcc595f82f922571a259359396c12299a"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/bplist-parser@0.3.1",
+      "name": "bplist-parser",
+      "version": "0.3.1",
+      "purl": "pkg:npm/bplist-parser@0.3.1",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "3f227188db40e53d8f94b21e068b7895ba7bae3e0e69dce39cc643fc6e73b8136df1e8bfc8253bfb05b48766da83dbebf1cfbf5ae456992c5ba8097d84bd6b04"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:npm/bplist-parser@0.3.2",
       "name": "bplist-parser",
       "version": "0.3.2",
@@ -3813,6 +3855,27 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:npm/simple-plist@1.3.1",
+      "name": "simple-plist",
+      "version": "1.3.1",
+      "purl": "pkg:npm/simple-plist@1.3.1",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "88c4b0e62d17b1e327ae1b48cd16fb5e94045dea5af71856c465288c704be37488a50b834248775a9cbaed96c3cd956be842b1bf0542867569765f211152c38b"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:npm/sisteransi@1.0.5",
       "name": "sisteransi",
       "version": "1.0.5",
@@ -3912,6 +3975,27 @@
         {
           "license": {
             "id": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/stream-buffers@2.2.0",
+      "name": "stream-buffers",
+      "version": "2.2.0",
+      "purl": "pkg:npm/stream-buffers@2.2.0",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "bb240afe6c794231ee9fcd052c94df69613b26dc1f44c2812e43277bab9d60e9af1f409ac28b556bb4df8181f3027a69867e3e4f0788c7540a3274486e2a6652"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Unlicense"
           }
         }
       ]
@@ -4233,6 +4317,27 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:npm/uuid@7.0.3",
+      "name": "uuid",
+      "version": "7.0.3",
+      "purl": "pkg:npm/uuid@7.0.3",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0cf4a47b4a57853660a05fddf964add9068a3021527f1ed07a0c44593f893ae1c5e5a5ab2849f41beced8ee260fe01bcfc8b4afab6cf083ff236ff32ca287a0a"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:npm/vite@8.3.0",
       "name": "vite",
       "version": "8.3.0",
@@ -4311,6 +4416,27 @@
         {
           "license": {
             "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/xcode@3.0.1",
+      "name": "xcode",
+      "version": "3.0.1",
+      "purl": "pkg:npm/xcode@3.0.1",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "902cf993b27b5db26d8c004ebe47399499a488387c5618d5086362a9d282b1c995a5d554a440325efd719822e4409e5db07ab1dc83cee175be3530e153f7dab4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
           }
         }
       ]
@@ -4434,13 +4560,13 @@
       ]
     },
     {
-      "ref": "pkg:npm/%40capacitor/android@7.6.9",
+      "ref": "pkg:npm/%40capacitor/android@8.5.2",
       "dependsOn": [
-        "pkg:npm/%40capacitor/core@7.6.9"
+        "pkg:npm/%40capacitor/core@8.5.2"
       ]
     },
     {
-      "ref": "pkg:npm/%40capacitor/cli@7.6.9",
+      "ref": "pkg:npm/%40capacitor/cli@8.5.2",
       "dependsOn": [
         "pkg:npm/%40ionic/cli-framework-output@2.2.8",
         "pkg:npm/%40ionic/utils-subprocess@3.0.1",
@@ -4458,19 +4584,20 @@
         "pkg:npm/semver@7.8.5",
         "pkg:npm/tar@7.5.22",
         "pkg:npm/tslib@2.8.1",
+        "pkg:npm/xcode@3.0.1",
         "pkg:npm/xml2js@0.6.2"
       ]
     },
     {
-      "ref": "pkg:npm/%40capacitor/core@7.6.9",
+      "ref": "pkg:npm/%40capacitor/core@8.5.2",
       "dependsOn": [
         "pkg:npm/tslib@2.8.1"
       ]
     },
     {
-      "ref": "pkg:npm/%40capacitor/ios@7.6.9",
+      "ref": "pkg:npm/%40capacitor/ios@8.5.2",
       "dependsOn": [
-        "pkg:npm/%40capacitor/core@7.6.9"
+        "pkg:npm/%40capacitor/core@8.5.2"
       ]
     },
     {
@@ -4478,10 +4605,10 @@
       "dependsOn": [
         "pkg:npm/%40babylonjs/core@9.27.1",
         "pkg:npm/%40babylonjs/loaders@9.27.1",
-        "pkg:npm/%40capacitor/android@7.6.9",
-        "pkg:npm/%40capacitor/cli@7.6.9",
-        "pkg:npm/%40capacitor/core@7.6.9",
-        "pkg:npm/%40capacitor/ios@7.6.9",
+        "pkg:npm/%40capacitor/android@8.5.2",
+        "pkg:npm/%40capacitor/cli@8.5.2",
+        "pkg:npm/%40capacitor/core@8.5.2",
+        "pkg:npm/%40capacitor/ios@8.5.2",
         "pkg:npm/%40types/node@26.6.2",
         "pkg:npm/%40types/ws@8.18.1",
         "pkg:npm/fengari@0.1.5",
@@ -4942,6 +5069,18 @@
     {
       "ref": "pkg:npm/big-integer@1.6.52",
       "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/bplist-creator@0.1.0",
+      "dependsOn": [
+        "pkg:npm/stream-buffers@2.2.0"
+      ]
+    },
+    {
+      "ref": "pkg:npm/bplist-parser@0.3.1",
+      "dependsOn": [
+        "pkg:npm/big-integer@1.6.52"
+      ]
     },
     {
       "ref": "pkg:npm/bplist-parser@0.3.2",
@@ -5432,6 +5571,14 @@
       "dependsOn": []
     },
     {
+      "ref": "pkg:npm/simple-plist@1.3.1",
+      "dependsOn": [
+        "pkg:npm/bplist-creator@0.1.0",
+        "pkg:npm/bplist-parser@0.3.1",
+        "pkg:npm/plist@3.1.1"
+      ]
+    },
+    {
       "ref": "pkg:npm/sisteransi@1.0.5",
       "dependsOn": []
     },
@@ -5453,6 +5600,10 @@
     },
     {
       "ref": "pkg:npm/sprintf-js@1.1.3",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/stream-buffers@2.2.0",
       "dependsOn": []
     },
     {
@@ -5556,6 +5707,10 @@
       "dependsOn": []
     },
     {
+      "ref": "pkg:npm/uuid@7.0.3",
+      "dependsOn": []
+    },
+    {
       "ref": "pkg:npm/vite@8.3.0",
       "dependsOn": [
         "pkg:npm/%40types/node@26.6.2",
@@ -5584,6 +5739,13 @@
     {
       "ref": "pkg:npm/ws@8.21.3",
       "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/xcode@3.0.1",
+      "dependsOn": [
+        "pkg:npm/simple-plist@1.3.1",
+        "pkg:npm/uuid@7.0.3"
+      ]
     },
     {
       "ref": "pkg:npm/xml2js@0.6.2",

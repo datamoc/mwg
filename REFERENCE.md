@@ -716,7 +716,8 @@ reach the compiled asset map without it.
 - `parseMidi`/`scheduleMidi`/`midiLoopStart`/`noteToFrequency`/`MidiPlayer` - a small `.mid` file player
   built on `synthesizeTone` rather than a licensed instrument library: program, bank,
   controller and pitch-bend events plus the controller-111 loop start, with each
-  scheduled note carrying its channel voice.
+  scheduled note carrying its channel voice. `MidiPlayer.create(file, { humanize })`
+  humanizes first and then schedules, for the same player with a performance behind it.
 - `renderMidiToBuffer` - renders a parsed `.mid` file to stereo PCM frames, offline and
   deterministic: browsers cannot decode MIDI, so the file is synthesized once and plays
   back like any decoded track, with its controller-111 loop region. An optional game-supplied
@@ -743,6 +744,45 @@ reach the compiled asset map without it.
 - `parseVorbisLoopTags`/`loopRegionFromTags` - read the `LOOPSTART`/`LOOPLENGTH` comments an
   Ogg Vorbis file carries (a bounded walk of the first pages, null on anything malformed) and
   turn them into the seconds-based `LoopRegion` a `Channel` or the bus loader hands back.
+- `humanizeMidi`/`HumanizerFactory`/`HumanizeRequest`/`MidiHumanizerEngine` - the entry point
+  for a performance that sounds played rather than played back. `humanizeMidi(file, options)`
+  resolves the tier from the request (a `GrooveTemplate` in it means the groove tier, anything
+  else the lite one) and returns a new file; `HumanizerFactory.create(tier)` is for holding one
+  engine across several files. The pass never mutates its input: `intensity: 0` reproduces the
+  file exactly, a `seed` reproduces a run, note durations and every tempo, program, controller
+  and meta event survive, events come back sorted by tick with ties in file order, and nothing
+  lands before tick 0 (a shift that would cross it stops there instead). `create('magenta')`
+  throws naming what is missing rather than loading: `@magenta/music` and a PerformanceRNN
+  checkpoint cannot be fetched from a `file://` build.
+- `LiteHumanizer`/`GrooveHumanizer`/`HumanizationOptions`/`HumanizeStyle`/`HumanizerTier` - the
+  two shipped engines and their options. Tier 1 moves timing and velocity by gaussian noise
+  over a seeded gradient drift, scaled by `intensity` and by `style` (jazz wide, classical
+  tight), and holds the kick and the lowest notes to a few milliseconds of their slot; tier 2
+  applies a template's per-slot offsets and velocities instead, converted through the file's
+  own tempo map when the template was recorded at another tempo (which says so through
+  `onWarn` rather than staying quiet), plus contextual rules - an accent on a local melody
+  peak, restraint on the beat. `initialize()` is idempotent on both.
+- `subdivisionCount`/`assertGrooveTemplate`/`GrooveTemplate`/`GridSubdivision`/`GrooveOffset` -
+  the units everything else is measured in: how many slots a bar of a signature holds at a
+  grid (`subdivisionCount([4, 4], '16n')` is 16, `[6, 8]` at `8n` is 6, and a grid that does
+  not tile the bar throws), and the validator for a template's invariants - dense offsets in
+  subdivision order, whole ticks, a power-of-two denominator, a velocity factor between 0 and
+  1 - run when one is built and when one is imported.
+- `GrooveExtractor` - a reusable template out of three kinds of evidence, each reduced to the
+  same thing: the median of each slot's deviations, so one flubbed note cannot drag it and a
+  slot nobody played stays on the grid. Mode A matches a played pass against a straight one,
+  note-on to nearest note-on of the same channel and pitch within half a slot; mode B projects
+  a single file onto its own implied grid, which is exactly the residual a quantization would
+  discard; mode C takes an `AudioBuffer`, detecting attacks by spectral flux (hand-rolled FFT,
+  no analysis dependency) and taking the tempo as an argument because timing means nothing
+  without one, with velocity left at the neutral 1 since a recording carries none.
+- `GrooveConverter` - a template to and from the two formats that can carry one. JSON is
+  exact; the MIDI encoding is one note per slot behind an anchor a subdivision ahead, with
+  velocity at 1/64 per unit of `velocityFactor`, so the writer enforces `|offset|` below the
+  slot and a factor of 1/64 to 127/64 instead of rounding past them, and the file gets its own
+  reader because the round trip needs the tempo, time-signature and name metas that `parseMidi`
+  deliberately drops. `GrooveFormat` also names `ableton-agr` and `reaper-groove`, both of
+  which throw saying they are not shipped rather than returning a file that resembles one.
 
 ## `battle`
 

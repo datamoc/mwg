@@ -4326,6 +4326,10 @@ build instead.
 
 ## `./audio`
 
+### `assertGrooveTemplate` (function)
+
+    export declare function assertGrooveTemplate(template: GrooveTemplate): void;
+
 ### `AudioBus` (class)
 
     export declare class AudioBus {
@@ -4456,6 +4460,52 @@ build instead.
 
     export declare function createAudio(path: string): Playable;
 
+### `GrooveConverter` (class)
+
+    export declare class GrooveConverter implements GrooveConverterEngine {
+        exportFormat(template: GrooveTemplate, format: GrooveFormat): Promise<Uint8Array | string>;
+        importFormat(data: Uint8Array | string, format: GrooveFormat): Promise<GrooveTemplate>;
+    }
+
+### `GrooveExtractor` (class)
+
+    export declare class GrooveExtractor implements GrooveExtractorEngine {
+        extractFromMidiPair(quantizedMidi: MidiFile, recordedMidi: MidiFile, gridSubdivision?: GridSubdivision): Promise<GrooveTemplate>;
+        extractFromSingleMidi(recordedMidi: MidiFile, gridSubdivision?: GridSubdivision): Promise<GrooveTemplate>;
+        extractFromAudioBuffer(audioBuffer: AudioBuffer, gridSubdivision?: '8n' | '16n', tempoBpm?: number): Promise<GrooveTemplate>;
+    }
+
+### `GrooveHumanizer` (class)
+
+    export declare class GrooveHumanizer implements MidiHumanizerEngine {
+        readonly tierName = "groove";
+        readonly approximateSizeMb = 0.5;
+        initialize(): Promise<void>;
+        process(midi: MidiFile, options: HumanizationOptions): Promise<MidiFile>;
+    }
+
+### `humanizeMidi` (function)
+
+    export declare function humanizeMidi(midi: MidiFile, request: HumanizeRequest): Promise<MidiFile>;
+
+### `HumanizerFactory` (class)
+
+    export declare class HumanizerFactory {
+
+        static create(tier: HumanizerTier): Promise<MidiHumanizerEngine>;
+        private static load;
+    }
+
+### `LiteHumanizer` (class)
+
+    export declare class LiteHumanizer implements MidiHumanizerEngine {
+        readonly tierName = "lite";
+        readonly approximateSizeMb = 0.05;
+
+        initialize(): Promise<void>;
+        process(midi: MidiFile, options: HumanizationOptions): Promise<MidiFile>;
+    }
+
 ### `loopRegionFromTags` (function)
 
     export declare function loopRegionFromTags(tags: VorbisLoopTags | null, sampleRate: number, duration: number): LoopRegion | null;
@@ -4475,6 +4525,8 @@ build instead.
         private index;
         private playing;
         constructor(file: MidiFile, options?: MidiPlayerOptions);
+
+        static create(file: MidiFile, options?: MidiPlayerOptions): Promise<MidiPlayer>;
         play(): void;
         pause(): void;
 
@@ -4611,6 +4663,10 @@ build instead.
 
         playFor(listener: AudioPoint): number;
     }
+
+### `subdivisionCount` (function)
+
+    export declare function subdivisionCount(timeSignature: [number, number], subdivision: GridSubdivision): number;
 
 ### `subsetSoundFont` (function)
 

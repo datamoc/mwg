@@ -19,6 +19,27 @@ the public API may still change between minor versions.
   (diagonals), `{ dir: 'forward' | 'backward' }` (from the mover's facing), `{ turn: 'around' | 'left90' | 'right90' }`,
   `{ turn: 'toward' | 'away' }`, and a `target: () => { x, y }` on `toward`/`away` steps for a target
   that keeps moving (`RouteTarget`).
+- MIDI humanization: `humanizeMidi` and `HumanizerFactory` run one shared pass that moves note
+  events and nothing else (tempo, program, controller and meta events pass through untouched,
+  note durations survive, `intensity: 0` reproduces the input exactly, a `seed` reproduces a
+  run, and nothing lands before tick 0) under either shipped engine. `LiteHumanizer` shakes
+  timing and velocity with gaussian noise over a seeded gradient drift, scaled by `style`, and
+  holds the kick and the lowest notes near their slots; `GrooveHumanizer` applies a
+  `GrooveTemplate`'s per-slot offsets and velocities instead, converted through the file's own
+  tempo map (a mismatch reports itself through `onWarn`) and accenting local melody peaks. The
+  `'magenta'` tier stays in the API and throws naming what it needs, since neither
+  `@magenta/music` nor a PerformanceRNN checkpoint can be fetched from a `file://` build, and
+  `MidiPlayer.create(file, { humanize })` humanizes before it schedules.
+- `GrooveExtractor` builds a `GrooveTemplate` three ways, each reduced to the median of each
+  slot's deviations: a played pass against a straight one (matching within half a slot), a
+  single file projected onto its own implied grid, or an `AudioBuffer` (hand-rolled spectral
+  flux onset detection, no analysis dependency, tempo as an argument because a recording
+  carries none). `GrooveConverter` round-trips a template through JSON exactly and through a
+  Standard MIDI File within a tick and a hundredth, with the MIDI path enforcing its anchor
+  and velocity bounds rather than rounding past them and reading back with a dedicated parser
+  for the metas `parseMidi` drops; `ableton-agr` and `reaper-groove` are named in the format
+  union and throw as not shipped. `subdivisionCount`/`assertGrooveTemplate` are the invariants
+  both the extractor and the converter run on.
 
 ### Fixed
 

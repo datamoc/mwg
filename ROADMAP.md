@@ -85,6 +85,18 @@ Status: all shipped, with tests: `ui/MessageLog.ts`, `ui/TextSharpness.ts`,
 palettes, rules and art. What the port and player still owe is adoption, and A4's table-edge
 and shadow quads remain adapter-side.
 
+393. **Ableton `.agr` and Reaper groove formats for `GrooveConverter`.**
+Both formats are proprietary and undocumented, so the converter throws a named error for them
+today. They are to be written against real files exported from Live and Reaper, kept as test
+fixtures, never against a description of the format. Blocked on getting such files; best effort
+on round-trip, and a failed round-trip is reported rather than tolerated silently.
+
+394. **`MagentaAIHumanizer`, the third humanizer tier.**
+`HumanizerFactory` refuses `'magenta'` by name. A real tier needs `@magenta/music` (about 18 MB)
+as an optional peer, and its `PerformanceRNN` checkpoint compiled into `window.__MWG_ASSETS__`,
+since `fetch()` is blocked from `file://`. Low priority: it costs the small-dependency policy
+and the two shipped tiers already cover the game use case.
+
 ### Parked decisions
 
 Not open work, and not forgotten: these are decisions this project has deliberately

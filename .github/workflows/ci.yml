@@ -58,6 +58,34 @@ jobs:
       # cannot land without the supply-chain document moving with it
       - run: npm run sbom:check
 
+  # Open built file:// pages on both runner operating systems. The Linux visual smoke below
+  # checks interaction and motion; this matrix catches browser/page startup regressions that
+  # would otherwise be invisible on the Windows checkout.
+  file-page-smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '26'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run assets
+      - run: npm run example:build
+      - run: npm run example:ui:build
+      - name: Smoke both built pages from file://
+        env:
+          MWG_VISUAL_CHROME_ARGS: '--use-gl=angle --use-angle=swiftshader --disable-dev-shm-usage'
+        run: |
+          node tools/browser-smoke.mjs examples/colour-transform/dist
+          node tools/browser-smoke.mjs examples/interface/dist
+
   # The check no typechecker can make: one layout-heavy example is built, opened from
   # file:// in a real Chrome, and screenshotted, so a canvas that paints nothing (or a page
   # that throws on load) fails the pull request instead of shipping. It is a coarse smoke,
