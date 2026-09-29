@@ -7,6 +7,11 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-09-30
+
+MIDI humanization and groove tooling (`audio`), plus RPG Maker map details from the MWGP
+player: shadow layers, A2 table-edge strips and richer move routes.
+
 ### Added
 
 - `TileMap.addShadowLayer`: RPG Maker's per-cell shadow bits (map layer 4) as translucent
