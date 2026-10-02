@@ -22,6 +22,10 @@ checklist below.
 
 ### Open items
 
+Priority review, 2026-10-02: keep the existing order. Small neural inference and
+worker batching (395) are useful additions, but need a concrete game workload and
+frame-time measurements before taking priority over the existing work.
+
 390. **A tournament-capable chess engine, Garbochess-shaped but framework-owned.** The
 shipped `board/Engine` stays a small deterministic rules engine by design; this item
 builds the stronger engine beside it as a separate module, so the minigame path never
@@ -96,6 +100,53 @@ on round-trip, and a failed round-trip is reported rather than tolerated silentl
 as an optional peer, and its `PerformanceRNN` checkpoint compiled into `window.__MWG_ASSETS__`,
 since `fetch()` is blocked from `file://`. Low priority: it costs the small-dependency policy
 and the two shipped tiers already cover the game use case.
+
+395. **Small neural policies, headless training integration and worker batching.** Add a dependency-free,
+renderer-free dense-network inference path under `ai`, with shared model weights
+for many agents and game-owned observation vectors and action mappings. Start with
+ReLU hidden layers and linear output scores; validate layer dimensions, input
+lengths and finite weights, biases and observations. Use a versioned plain-data
+model format that can be bundled into a `file://` game, with explicit size limits
+and reusable numeric buffers to bound allocation during inference. Game-specific
+perception, rewards and training algorithms belong to the game or trainer; the
+framework provides the simulation interface and rollout execution they need.
+
+Integrate action selection with the existing AI decision shapes rather than adding
+a parallel controller API. Support legal-action masks, deterministic ties, seeded
+sampling when requested and an explicit idle result when every action is masked.
+One shared policy can serve independent agents; a controller may also consume a
+global observation and return several agents' actions. Local grid/CNN perception
+and external inference providers can follow when a game supplies a measured need.
+
+Training must run against the same game rules as play, with no UI, DOM, renderer,
+audio or frame-loop dependency. Build a seeded environment adapter over the existing
+`simulation` rules with `reset(seed)` and `step(actions)` returning observations,
+legal-action masks, rewards, episode termination and a separate truncation flag
+for step limits. Actions are chosen from each new observation, rather than supplied
+as a fixed command list. Turn-based games advance logical turns; real-time games
+advance fixed simulation ticks. Neither waits for animations or wall-clock time.
+
+Run rollouts as fast as the simulation permits in Node, with bounded parallel
+environments on workers, isolated state and RNG per environment, batched inference,
+and bounded trajectory storage. Keep models loaded across rollout batches where
+measurements justify it, and avoid retaining presentation events or full journals
+unless requested for debugging. Checkpoints must retain model and observation-schema
+versions, environment/RNG state and trainer state so runs can resume. Export trained
+weights in the same model format used by the browser inference path. Record steps
+and episodes per second, memory use and serial versus parallel throughput on a named
+workload; a worker per tiny prediction is not an acceptable training strategy.
+
+Provide an optional async batch path over the same inference implementation,
+reusing `threads` with bounded concurrency, cancellation and stale-result handling.
+Measure synchronous batches against worker batches, including startup, model copying
+and result transfer, before deciding whether reusable workers are needed. Keep
+single small predictions synchronous when they fit the frame budget; workers must
+earn their overhead. Acceptance: numerical fixtures, invalid-model and action-mask
+tests, agreement between synchronous and worker results, seeded rollout replay and
+isolation, matching simulation outcomes with and without presentation, checkpoint
+resume, and a headless training example whose exported policy runs in a generated
+multi-agent `file://` example. Measure training throughput as well as the playable
+example's input latency and frame time. No trained model weights from reference games.
 
 ### Parked decisions
 
