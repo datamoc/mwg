@@ -37,6 +37,7 @@ const scripts = {
 	minigame: 'example:minigame:build',
 	'multi-turn-beam': 'example:multi-turn-beam:build',
 	chess: 'example:chess:build',
+	pacman: 'example:pacman:build',
 	'tower-defense': 'example:tower-defense:build',
 	'three-d': 'example:3d:build',
 	loading: 'example:loading:build',

@@ -6,7 +6,7 @@ Generated for **mwg 0.24.0** on 2026-10-02.
 | --- | ---: |
 | Source | 322 TypeScript files, 58,291 lines, 17 modules |
 | Tests | 284 files, 2,631 test cases, 37,765 lines |
-| Tools | 46 files, 9,116 lines |
+| Tools | 46 files, 9,117 lines |
 | Examples | 24 runnable examples |
 | Roadmap | 389/395 items complete, 6 open |
 | API | 321 declaration files |

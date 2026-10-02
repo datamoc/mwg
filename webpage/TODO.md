@@ -13,7 +13,7 @@
   site (`webpage/assets/typedoc-theme.css` for the API half, `site.css` for the guide).
   Covers every shipped module: the guide is hand-maintained as `REFERENCE.md`, the API
   half stays accurate as the source grows.
-- **Examples**: twenty-two example builds, organized as a curriculum
+- **Examples**: twenty-three example builds, organized as a curriculum
   (Level 1 Fundamentals, Level 2 Framework systems, Level 3 Complete
   reference games, Technical demos - see `examples/README.md` for the full
   breakdown and `examples-data.js`'s own `level` field). `movement` covers
@@ -23,7 +23,7 @@
   real item) - two pairs that started as four separate, thinner examples
   and were merged once a second pass judged them too weak standing alone.
   `index.html` lists them as cards grouped under a heading per level, with
-  no live iframe - twenty-two simultaneous WebGL contexts is more than a
+  no live iframe - twenty-three simultaneous WebGL contexts is more than a
   phone (and plenty of laptops) can hold at once - and each one actually
   plays on its own
   `view.html?ex=<id>` page, one iframe at a time, with prev/next links
@@ -73,7 +73,7 @@
 
 This is at least the scope of the reference site this was benchmarked
 against (rastating's pixel.js docs: overview, 2 examples, getting-started,
-one API page per class, 6 FAQ entries). mwg's version has 22 examples (a
+one API page per class, 6 FAQ entries). mwg's version has 23 examples (a
 tutorial curriculum, not just a feature list - see the Examples section
 above) plus a "Design choices" page, a generated (so exhaustive and always
 current) API reference, and 8 FAQ
@@ -82,7 +82,7 @@ entries.
 ## Generated content, not committed
 
 `webpage/examples/<name>/` (one per entry in `tools/build-webpage-examples.mjs`'s own
-`scripts` map, 22 as of this writing) and `webpage/documentation/` are **build output**,
+`scripts` map, 23 as of this writing) and `webpage/documentation/` are **build output**,
 gitignored (the former the same way `examples/*/dist` already is). Regenerate both with:
 
 ```

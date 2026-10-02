@@ -1,6 +1,6 @@
 /**
  * One entry per built example. Shared between index.html (a card grid, no iframes - a phone
- * cannot afford twenty-two live WebGL contexts on one page) and view.html (exactly one
+ * cannot afford twenty-three live WebGL contexts on one page) and view.html (exactly one
  * iframe at a time). No build step: plain data, opened straight from disk like the rest of
  * this site.
  *
@@ -157,6 +157,15 @@ window.MWG_EXAMPLES = [
 			'Chess against the tournament engine (negamax alpha-beta with PVS, null-move pruning, late-move reductions and quiescence, thinking on worker threads), with legal moves, check, checkmate, stalemate, castling, en passant, and promotion. An options panel adds play-black, fuzzy moves, ponder, blitz clock, opening book and WDL tables, a live search readout, and resignation.',
 		controls:
 			'click a square, or hold an arrow key to move the cursor and <kbd>Enter</kbd> to select/move &nbsp;&middot;&nbsp; <kbd>B</kbd> side &nbsp;&middot;&nbsp; <kbd>E</kbd> depth &nbsp;&middot;&nbsp; <kbd>T</kbd> time &nbsp;&middot;&nbsp; <kbd>P</kbd> promote &nbsp;&middot;&nbsp; <kbd>Esc</kbd> reset',
+	},
+	{
+		id: 'pacman',
+		level: 3,
+		title: 'Pac-Man-style AI lab',
+		description:
+			'An original Pac-Man-style maze chase game with independent player and ghost selectors: human, random, path heuristic or an offline-trained neural policy for the player; random, direct chase rules, path heuristic or neural policy for the ghosts. Switch controllers during a game and compare their decisions in the same maze.',
+		controls:
+			'arrow keys or WASD to steer &nbsp;&middot;&nbsp; <kbd>P</kbd>/<kbd>G</kbd> cycle player/ghost AI &nbsp;&middot;&nbsp; <kbd>Space</kbd> pause &nbsp;&middot;&nbsp; <kbd>R</kbd> restart',
 	},
 	{
 		id: 'tower-defense',

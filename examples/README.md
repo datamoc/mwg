@@ -78,6 +78,9 @@ npm run example:dungeon:build   # dungeon crawl, then open its dist/index.html
 npm run example:chess          # chess against the built-in engine, dev server
 npm run example:chess:build    # chess, then open its dist/index.html
 
+npm run example:pacman          # maze chase with switchable player and ghost AI, dev server
+npm run example:pacman:build    # maze chase, then open its dist/index.html
+
 npm run example:tower-defense          # tower defense reference, dev server
 npm run example:tower-defense:build    # tower defense, then open its dist/index.html
 ```
@@ -137,6 +140,7 @@ npm run cap:open:android
 | `string-editor` | 2 | the string editor as a page: a reference English string beside an editable French translation, with an inline sound marker and a live `{HP_loose}` variable, a `RichLabel` preview re-rendering as you type, placeholder-drift flagging against the reference, and a Play button revealing the line while firing its `{sound:path}` cue. The same split screen `tools/i18n-edit` shows in a terminal |
 | `dungeon` | 3 | an SPD-shaped mockup: generated floors, three-state fog of war, bump-to-attack, monsters with their own wander/hunt/flee AI (each judges the hero by its own sight, not the hero's), a secret door hiding a small vault and a hidden trap that springs underfoot (`mwg/roguelike`'s `Secrets`), a flask of oil thrown at the nearest visible monster in range (`mwg/roguelike`'s targeting helpers picking the target, `mwg/render`'s `Projectile` flying the sprite there), stairs down, plus `mwg/actors` wired in: a `StatBlock` (attack/defense/max HP derived from strength/armor/vitality), items on the floor, and a dense icon-grid inventory screen (`Tab`, `mwg/ui`'s `IconGrid`) where equipping a weapon or armor applies its modifiers. Autosaves on every descend and offers to continue on reload, via `mwg/core`'s `SaveSystem` for permadeath: the save is deleted the moment the hero dies, so there is nothing to continue. Arrow keys or the numpad to move, `.` to descend, `F` to search for secrets, `T` to throw |
 | `chess` | 3 | `mwg/board`: chess against a small deterministic alpha-beta computer player, with legal moves, check, checkmate, stalemate, castling, en passant, and promotion. Click a square or move a held/repeating arrow-key cursor and press Enter |
+| `pacman` | 3 | an original Pac-Man-style maze chase game with switchable player and ghost AI: human, random, direct-chase, heuristic and offline-trained neural policies. Press P/G to change controllers while the game runs |
 | `tower-defense` | 3 | `mwg/core.Spawner` driving timed overlapping waves, with a simple 2D path, tower targeting, damage, rewards, and lives |
 | `colour-transform` | tech | per-sprite multiply **and** add, the thing Pixi's tint cannot do, with 4000 individually tinted sprites |
 | `three-d` | tech | optional Babylon.js WebGL scene, orbit camera, thin-instanced square and hex terrain with elevation, a continuous heightmap hill, plus mesh and billboard characters |
