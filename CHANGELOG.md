@@ -7,6 +7,17 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.24.1] - 2026-10-02
+
+Dependency refresh: Babylon.js 9.29, `@capacitor/cli` held at 8.5.2 so it matches the other Capacitor
+packages, and the SBOM and bundle-size baseline regenerated. The global bundle grew 2.5% gzipped
+(356504 to 365318 B) from the newer Pixi and Babylon releases, which is accepted.
+
+### Changed
+
+- Updated npm dependencies; `cap:sync` verified against Capacitor 8.5.2 on Android.
+- Refreshed `sbom.cdx.json` and `tools/bundle-size.json`.
+
 ## [0.24.0] - 2026-10-02
 
 Small neural policies and renderer-free training now share game simulation rules,
