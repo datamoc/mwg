@@ -98,8 +98,8 @@ function uci(move: { from: number; to: number; promotion?: Board.PromotionKind }
 }
 
 /**
- * Worker lanes for the example: half the detected cores, rounded down, so the UI
- * thread keeps breathing room (a quarter of the machine stays out of the search).
+ * Worker lanes for the example: half the detected cores, capped at four, so the UI
+ * thread keeps breathing room even on machines reporting many logical cores.
  * Unknown hardware falls back to two lanes rather than the library default.
  */
 function workerSpecs(): { cores: number | null; jobs: number } {
@@ -109,7 +109,7 @@ function workerSpecs(): { cores: number | null; jobs: number } {
 		globalThis.navigator.hardwareConcurrency > 0
 			? globalThis.navigator.hardwareConcurrency
 			: null;
-	return { cores, jobs: cores === null ? 2 : Math.max(1, Math.floor(cores / 2)) };
+	return { cores, jobs: cores === null ? 2 : Math.max(1, Math.min(4, Math.floor(cores / 2))) };
 }
 
 /** heap megabytes where the browser reports them (Chromium), otherwise null */
@@ -143,6 +143,7 @@ class ChessScene extends Scene2D {
 	private cores: number | null = null;
 	private jobs = 2;
 	private lastTechLine = '';
+	private techElapsed = 0;
 	private blackBox!: Checkbox;
 	private fuzzyBox!: Checkbox;
 	private bookBox!: Checkbox;
@@ -372,10 +373,14 @@ class ChessScene extends Scene2D {
 		if (Input.justPressed('tables')) this.toggleBox('wdl');
 		this.tickClock(dt);
 		//memory drifts while clocks do not run: refresh the tech line when it moves
-		const tech = this.techLine();
-		if (tech !== this.lastTechLine) {
-			this.lastTechLine = tech;
-			this.refresh();
+		this.techElapsed += dt;
+		if (this.techElapsed >= 0.25) {
+			this.techElapsed = 0;
+			const tech = this.techLine();
+			if (tech !== this.lastTechLine) {
+				this.lastTechLine = tech;
+				this.refreshText();
+			}
 		}
 	}
 
@@ -404,7 +409,7 @@ class ChessScene extends Scene2D {
 		const line = this.clockLine();
 		if (line !== this.lastClockLine) {
 			this.lastClockLine = line;
-			this.refresh();
+			this.refreshText();
 		}
 	}
 
@@ -549,41 +554,6 @@ class ChessScene extends Scene2D {
 	}
 
 	/**
-	 * Fuzziness as agreed: score every root move with a capped search one ply
-	 * shallower, then draw uniformly among the moves within 25cp of the best, so
-	 * two games rarely walk the same line. The top five make the info zone.
-	 */
-	private fuzzyPick(
-		depth: number,
-		signal: AbortSignal,
-	): { move: Board.ChessMove; top: string[]; reached: number } | null {
-		const moves = Board.legalMoves(this.state);
-		if (!moves.length) return null;
-		const scored: Array<{ move: Board.ChessMove; score: number }> = [];
-		let reached = 0;
-		for (const move of moves) {
-			if (signal.aborted) break;
-			const child = Board.cloneChess(this.state);
-			Board.applyMove(child, move);
-			const result = Board.searchTourney(child, { depth: Math.max(1, depth - 1), maxNodes: 12000, signal });
-			reached = Math.max(reached, result.depth);
-			scored.push({ move, score: -result.score });
-		}
-		if (!scored.length) {
-			const result = Board.searchTourney(this.state, { depth: 1 });
-			return result.move ? { move: result.move, top: [], reached: result.depth } : null;
-		}
-		const best = Math.max(...scored.map((entry) => entry.score));
-		const near = scored.filter((entry) => entry.score >= best - 25);
-		const pick = near[Math.floor(Math.random() * near.length)];
-		const top = [...scored]
-			.sort((a, b) => b.score - a.score)
-			.slice(0, 5)
-			.map((entry) => `${uci(entry.move)} ${fmtScore(entry.score)}`);
-		return { move: pick.move, top, reached };
-	}
-
-	/**
 	 * The engine reply, off the main thread: `searchTourneyAsync` scores root moves on
 	 * workers, so the frames between the human's move and the answer keep rendering and
 	 * the status line can say the engine is thinking. The clock aborts the search when
@@ -621,24 +591,25 @@ class ChessScene extends Scene2D {
 					return;
 				}
 			}
-			if (this.useFuzzy) {
-				const fuzzy = this.fuzzyPick(depth, abort.signal);
-				if (id !== this.thinkId) return;
-				if (fuzzy) {
-					this.reachedDepth = fuzzy.reached;
-					this.lastReport = [`fuzzy d${depth} ${uci(fuzzy.move)}`, ...fuzzy.top];
-					this.applyTracked(fuzzy.move);
-					return;
-				}
-			}
 			const result = await Board.searchTourneyAsync(this.state, {
 				depth,
 				signal: abort.signal,
 				jobs: this.jobs,
 				timeMs: budget,
+				...(this.useFuzzy ? { maxNodes: 12000 } : {}),
 			});
 			if (id !== this.thinkId) return;
-			if (result.move) {
+			if (this.useFuzzy && result.rootScores?.length) {
+				const ranked = [...result.rootScores].sort((a, b) => b.score - a.score);
+				const near = ranked.filter((entry) => entry.score >= ranked[0].score - 25);
+				const pick = near[Math.floor(Math.random() * near.length)];
+				this.reachedDepth = result.depth;
+				this.lastReport = [
+					`fuzzy d${result.depth} ${uci(pick.move)}`,
+					...ranked.slice(0, 5).map((entry) => `${uci(entry.move)} ${fmtScore(entry.score)}`),
+				];
+				this.applyTracked(pick.move);
+			} else if (result.move) {
 				this.reachedDepth = result.depth;
 				this.lastReport = [
 					`search d${result.depth} ${fmtScore(result.score)} n${result.nodes} ${uci(result.move)}`,
@@ -647,7 +618,7 @@ class ChessScene extends Scene2D {
 			} else this.fallbackMove();
 		} catch {
 			//aborted by the clock or by a reset: a reset already moved on (see the id
-			//check), so only the clock path falls back to a bounded synchronous reply
+			//check), so only a still-current position receives a legal fallback
 			if (id !== this.thinkId) return;
 			this.fallbackMove();
 		} finally {
@@ -661,19 +632,14 @@ class ChessScene extends Scene2D {
 		}
 	}
 
-	/**
-	 * The answer of last resort: a shallow synchronous search, so a timed-out or
-	 * over-budget engine still moves and the game can never soft-lock on its turn.
-	 */
+	/** A legal reply after a timeout or worker failure, without another blocking search. */
 	private fallbackMove(): void {
-		if (Board.gameResult(this.state) !== 'ongoing') return;
-		const result = Board.searchTourney(this.state, { depth: 2 });
-		if (result.move) {
-			this.reachedDepth = result.depth;
-			this.lastReport = [
-				`search d${result.depth} ${fmtScore(result.score)} n${result.nodes} ${uci(result.move)}`,
-			];
-			this.applyTracked(result.move);
+		if (this.isOver()) return;
+		const move = Board.legalMoves(this.state)[0];
+		if (move) {
+			this.reachedDepth = null;
+			this.lastReport = [`fallback ${uci(move)}`];
+			this.applyTracked(move);
 		}
 	}
 
@@ -795,6 +761,11 @@ class ChessScene extends Scene2D {
 			}
 			this.board.addChild(tileSquare);
 		}
+		this.refreshText();
+	}
+
+	private refreshText(): void {
+		if (!this.status) return;
 		this.status.text = this.statusText();
 		this.info?.setText(this.infoText());
 		if (this.newGameBtn) this.newGameBtn.visible = this.isOver();

@@ -850,7 +850,10 @@ borrowed from any licensed game.
   pruning, late-move reductions, iterative deepening with aspiration windows, a bounded
   Zobrist transposition table, quiescence over captures and promotions, hash/MVV-LVA/
   killer/history ordering, and classical material plus in-house piece-square evaluation.
-  Positions are plain bitboard data and structured-clone straight into workers. The
+  Positions are plain bitboard data and structured-clone straight into workers.
+  `TourneyResult.rootScores` is populated by an async search with legal root moves and
+  scores from the mover's view, in root order, for near-best selection without a
+  second search. The
   chess example plays its reply through `searchTourneyAsync`, with a thinking indicator,
   a per-move time cap, side and depth choice, a promotion picker and an in-check
   highlight.

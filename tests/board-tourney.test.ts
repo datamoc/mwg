@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseFen } from '../src/board/chess.ts';
+import { parseFen, legalMoves, cloneChess, applyMove } from '../src/board/chess.ts';
 import { bitboardFromChess } from '../src/board/bitboard.ts';
 import { searchTourney, searchTourneyAsync, tourneyThink } from '../src/board/tourney.ts';
 import { spawn } from '../src/threads/index.ts';
@@ -63,6 +63,29 @@ test('tourney async rejects an aborted signal and refuses zero jobs', async () =
 	controller.abort(new Error('stop'));
 	await assert.rejects(searchTourneyAsync(parseFen(START), { depth: 2, signal: controller.signal }));
 	await assert.rejects(searchTourneyAsync(parseFen(START), { depth: 2, jobs: 0 }), RangeError);
+});
+
+test('tourney async exposes every root score in the mover view without changing the position', async () => {
+	const state = parseFen(START);
+	const original = cloneChess(state);
+	const result = await searchTourneyAsync(state, { depth: 2, jobs: 2 });
+	assert.deepEqual(state, original);
+	assert.equal(result.rootScores?.length, legalMoves(state).length);
+	for (const entry of result.rootScores!) {
+		assert.ok(legalMoves(state).some((move) => move.from === entry.move.from && move.to === entry.move.to));
+		const child = cloneChess(state);
+		applyMove(child, entry.move);
+		assert.equal(entry.score, -searchTourney(child, { depth: 1 }).score);
+	}
+	const best = result.rootScores!.reduce((a, b) => (b.score > a.score ? b : a));
+	assert.deepEqual(result.move, best.move);
+	assert.equal(result.score, best.score);
+});
+
+test('tourney async returns no candidates for stalemate', async () => {
+	const result = await searchTourneyAsync(parseFen(STALEMATE));
+	assert.equal(result.move, null);
+	assert.deepEqual(result.rootScores, []);
 });
 
 test('tourney sync answers nothing completed when already aborted', () => {

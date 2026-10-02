@@ -7,6 +7,18 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `searchTourneyAsync` returns `rootScores` for choosing among near-best moves using
+  the same worker search.
+
+### Fixed
+
+- Chess example fuzzy moves now search on workers, with cancellation on reset and
+  timeout. Clock and memory updates refresh text without rebuilding the board;
+  worker lanes are capped at four and timeout fallback selects a legal move without
+  blocking on another search.
+
 ## [0.23.0] - 2026-09-30
 
 MIDI humanization and groove tooling (`audio`), plus RPG Maker map details from the MWGP
@@ -2350,5 +2362,4 @@ in it is new as of the tag, only now given a version number to refer to.
   bounds-check), writing distances into the wrong cell once a search looked at the
   step's origin rather than only its destination. Steps now refuse either end off
   the map before any index is touched.
-
 

@@ -28,6 +28,8 @@ export interface TourneyResult {
 	nodes: number;
 	/** the deepest fully completed iteration */
 	depth: number;
+	/** async search only: every legal root move and its score from the side to move's view, in root order */
+	rootScores?: Array<{ move: BitboardMove; score: number }>;
 }
 
 /**
@@ -957,7 +959,9 @@ function defaultTourneyJobs(): number {
  * is a self-contained `tourneyThink` task over a structured-cloned bitboard, scored
  * concurrently down a capped lane queue; the best child score from the opponent's
  * view is the worst for us, so the root plays the move whose child scored lowest,
- * with ties going to the earlier root move. An aborting signal rejects through
+ * with ties going to the earlier root move. `rootScores` exposes every candidate so
+ * games can choose near-best moves without repeating the search on the UI thread.
+ * An aborting signal rejects through
  * `threads.spawn` and terminates the workers.
  *
  * @example
@@ -979,7 +983,7 @@ export async function searchTourneyAsync(
 	if (options.signal?.aborted) throw options.signal.reason;
 	const root = toBitboard(state);
 	const moves = bitboardMoves(root);
-	if (!moves.length) return tourneyThink(root, { depth, maxNodes });
+	if (!moves.length) return { ...tourneyThink(root, { depth, maxNodes }), rootScores: [] };
 	//one chain per lane over the shared move queue, the tools/compress-dist.mjs shape:
 	//scores land by index, so ties break in root order no matter who finishes first
 	const lanes = Math.max(1, Math.min(jobs, moves.length));
@@ -1017,5 +1021,9 @@ export async function searchTourneyAsync(
 		score: scores[bestIndex] ?? 0,
 		nodes,
 		depth,
+		rootScores: moves.map((move, index) => ({
+			move: { from: move.from, to: move.to, ...(move.promotion ? { promotion: move.promotion } : {}) },
+			score: scores[index] ?? 0,
+		})),
 	};
 }

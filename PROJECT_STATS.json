@@ -5,7 +5,7 @@
 	"releaseDate": "2026-09-30",
 	"source": {
 		"files": 320,
-		"lines": 57665,
+		"lines": 57673,
 		"modules": 17,
 		"breakdown": [
 			{
@@ -26,7 +26,7 @@
 			{
 				"name": "board",
 				"files": 12,
-				"lines": 5347
+				"lines": 5355
 			},
 			{
 				"name": "audio",
@@ -97,8 +97,8 @@
 	},
 	"tests": {
 		"files": 281,
-		"lines": 37253,
-		"cases": 2607
+		"lines": 37276,
+		"cases": 2609
 	},
 	"tools": {
 		"files": 44,
@@ -141,9 +141,9 @@
 		"declarationFiles": 319
 	},
 	"bundle": {
-		"globalRaw": 1191608,
-		"globalGzip": 356504,
-		"distRaw": 4091738
+		"globalRaw": 1191738,
+		"globalGzip": 356540,
+		"distRaw": 4092549
 	},
 	"quality": {
 		"testToSourceRatio": 0.6
