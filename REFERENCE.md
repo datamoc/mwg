@@ -1116,6 +1116,42 @@ the classic top-down RPG half.
 
 ## `simulation`
 
+`TrainingEnvironment` adapts game-owned `TrainingRules` around the existing
+`SimulationRule`, with no renderer, DOM, audio or animation loop. `reset(seed)`
+returns a `TrainingFrame` with per-agent observations, rewards, `terminated` and
+`truncated`. `step(actions)` takes one action index per agent (or `null` only for
+an all-masked idle agent), invokes the same rule used during play and returns the
+next frame. Rewards inspect a cloned pre-transition state, so mutable rules work.
+The agent roster stays fixed within an episode. `maxSteps` is required and capped
+at one million; reaching it truncates an unfinished episode, while rule completion
+terminates it. Real-time games advance fixed simulation ticks inside their rules;
+turn-based games advance turns. Neither waits for wall-clock time. A throwing
+rule can mutate its state, as with `runScenario`; reset or restore before continuing.
+
+`snapshot()`/`restore()` use `TrainingSnapshot`: versioned environment state, schema,
+step limit, completion flags, seed and RNG state. `TrainingCheckpoint<State, TrainerState>`
+combines that snapshot with the `NeuralModel` and game-owned optimizer/exploration
+state. Persist every random stream the trainer uses in `trainerState`. Train with
+the same observation schema and action ordering used by the playable game.
+
+`runRollouts(environment, model, RolloutOptions)` chooses actions from each new
+observation until completion. Options provide episode seeds, optional seeded
+softmax sampling and `trajectoryLimit` (first transitions per episode, zero by
+default). `RolloutEpisode` reports steps, cumulative per-agent rewards, completion
+flags and a bounded array of `TrainingTransition`s. No command journal or presentation
+events are retained. Batches accept at most 10000 episodes and 10000 stored transitions.
+
+`runRolloutsAsync(TrainingFactory, config, model, options)` shards episodes across
+workers (default four, configurable `jobs` in 1..64). Each worker keeps its model,
+environment and inference buffers for the whole shard. Results stay in seed order;
+`signal` and per-worker `timeout` terminate work, and any failure terminates sibling
+workers. The factory must be self-contained, like `threads.spawn`, accepting the
+supplied `TrainingEnvironment` constructor and structured-cloneable configuration;
+it cannot close over module imports. Both paths run the same classes and inference
+code, including in a compiled `file://` page. Training algorithms and rewards are
+game-owned; `tools/train-neural.ts` shows a seeded evolution optimizer, resumable
+checkpoint and model export, and `examples/neural` loads its trained weights.
+
 Headless, deterministic turn/scenario running - for testing and benchmarking without a
 live game loop.
 
@@ -1530,6 +1566,22 @@ before invoking this build step.
 Renderer-free decision runners. The game owns perception, navigation, combat rules and
 goals; these modules provide the execution boundary, deterministic choice support, explicit
 actions, serialisable state, diagnostics and budgets.
+
+- `NeuralPolicy` over `NeuralModel`/`DenseLayer`: dependency-free dense inference,
+  ReLU hidden layers and linear output scores, with flat row-major weights and an
+  explicit `observationVersion`. Construction validates dimensions and finite values
+  before copying the weights; limits are 32 layers, 4096 neurons per layer and one
+  million parameters. `predict(input, output?)` reuses activation buffers and can
+  write into a caller-owned `Float64Array`. `exportModel()` returns a plain-data copy
+  suitable for bundling in a local-file game.
+  `selectAction(NeuralObservation, random?)` masks illegal actions, chooses the first
+  best score on ties and returns `null` when all actions are masked. A seeded random
+  callback enables stable-softmax sampling. `behavior(id, actions, observe, sample?)`
+  maps the same policy into `JavaScriptAI`, using its seeded random callback when
+  sampling. `predictBatchAsync(inputs, { signal?, timeout? })` runs a whole inference
+  batch on one worker. The caller owns stale-result rejection if a scene or position
+  changes while awaiting it. Tiny predictions are usually cheaper synchronously;
+  measure batches before offloading them.
 
 - `JavaScriptAI` - registers named behaviours, checks them in declaration order, and returns
   a JSON-shaped action or an idle decision. A behaviour receives perception, mutable plain

@@ -1,6 +1,9 @@
 import { alphaBetaSearch } from './search.ts';
 import type { AlphaBetaGame, AlphaBetaOptions, AlphaBetaResult } from './search.ts';
 
+export { NeuralPolicy } from './Neural.ts';
+export type { DenseLayer, NeuralModel, NeuralObservation } from './Neural.ts';
+
 export { alphaBetaSearch, firstWins, rootSplits } from './search.ts';
 export type {
 	AlphaBetaGame,

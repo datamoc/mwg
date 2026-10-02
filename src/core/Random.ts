@@ -25,18 +25,6 @@
  * ```
  */
 
-/** splitmix32, used to expand a single seed into the four words of generator state */
-function splitmix32(seed: number): () => number {
-	let a = seed >>> 0;
-	return () => {
-		a = (a + 0x9e3779b9) >>> 0;
-		let t = a;
-		t = Math.imul(t ^ (t >>> 16), 0x21f0aaad);
-		t = Math.imul(t ^ (t >>> 15), 0x735a2d97);
-		return (t ^ (t >>> 15)) >>> 0;
-	};
-}
-
 /**
  * The seeded generator class `Random`'s free functions wrap directly, for a game that wants
  * its own independent stream rather than sharing the ambient one.
@@ -63,7 +51,15 @@ export class Generator {
 		//is drawn once and kept, rather than the state being seeded from entropy directly
 		this.seed = seed === undefined ? (Math.random() * 0x100000000) >>> 0 : seed >>> 0;
 
-		const next = splitmix32(this.seed);
+		//Keep the generator self-contained so worker rollouts use this same class.
+		let a = this.seed;
+		const next = (): number => {
+			a = (a + 0x9e3779b9) >>> 0;
+			let t = a;
+			t = Math.imul(t ^ (t >>> 16), 0x21f0aaad);
+			t = Math.imul(t ^ (t >>> 15), 0x735a2d97);
+			return (t ^ (t >>> 15)) >>> 0;
+		};
 		this.s0 = next();
 		this.s1 = next();
 		this.s2 = next();
@@ -76,7 +72,7 @@ export class Generator {
 
 	/** the raw generator: a uniformly distributed unsigned 32-bit integer */
 	nextUint32(): number {
-		const result = (Math.imul(rotl(Math.imul(this.s1, 5), 7), 9) >>> 0) >>> 0;
+		const result = (Math.imul(this.rotl(Math.imul(this.s1, 5), 7), 9) >>> 0) >>> 0;
 
 		const t = (this.s1 << 9) >>> 0;
 
@@ -85,7 +81,7 @@ export class Generator {
 		this.s1 ^= this.s2;
 		this.s0 ^= this.s3;
 		this.s2 ^= t;
-		this.s3 = rotl(this.s3, 11);
+		this.s3 = this.rotl(this.s3, 11);
 
 		return result;
 	}
@@ -120,10 +116,10 @@ export class Generator {
 	setState(state: readonly [number, number, number, number]): void {
 		[this.s0, this.s1, this.s2, this.s3] = state;
 	}
-}
 
-function rotl(x: number, k: number): number {
-	return ((x << k) | (x >>> (32 - k))) >>> 0;
+	private rotl(x: number, k: number): number {
+		return ((x << k) | (x >>> (32 - k))) >>> 0;
+	}
 }
 
 const stack: Generator[] = [new Generator()];

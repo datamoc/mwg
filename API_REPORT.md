@@ -925,6 +925,7 @@ build instead.
 
         getState(): [number, number, number, number];
         setState(state: readonly [number, number, number, number]): void;
+        private rotl;
     }
 
 ### `Gradient` (const)
@@ -3274,7 +3275,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.23.0";
+    export declare const version = "0.24.0";
 
 ### `VerticalLabel` (class)
 
@@ -4103,6 +4104,23 @@ build instead.
 ### `keepAwayScore` (function)
 
     export declare function keepAwayScore(distance: number, keepAway: number): number;
+
+### `NeuralPolicy` (class)
+
+    export declare class NeuralPolicy {
+        private readonly model;
+        private readonly evaluator;
+        constructor(model: NeuralModel);
+        predict(input: readonly number[], output?: Float64Array): Float64Array;
+        selectAction(observation: NeuralObservation, random?: () => number): number | null;
+        exportModel(): NeuralModel;
+        behavior(id: string, actions: readonly AIAction[], observe: (perception: AIValue) => NeuralObservation, sample?: boolean): AIBehavior;
+
+        predictBatchAsync(inputs: readonly (readonly number[])[], options?: {
+            signal?: AbortSignal;
+            timeout?: number;
+        }): Promise<Float64Array[]>;
+    }
 
 ### `personalScoreView` (function)
 
@@ -5528,6 +5546,7 @@ build instead.
 
         getState(): [number, number, number, number];
         setState(state: readonly [number, number, number, number]): void;
+        private rotl;
     }
 
 ### `hexDistance` (function)
@@ -7689,6 +7708,15 @@ build instead.
 
     export declare function runHeadlessScenario<State, Command, Event>(scenario: HeadlessScenario<State, Command, Event>): HeadlessScenarioResult<State, Event>;
 
+### `runRollouts` (function)
+
+    export declare function runRollouts<State, Command, Event>(environment: TrainingEnvironment<State, Command, Event>, model: NeuralModel, options: RolloutOptions): RolloutEpisode[];
+
+### `runRolloutsAsync` (function)
+
+    export declare function runRolloutsAsync<Config, State, Command, Event>(factory: TrainingFactory<Config, State, Command, Event>, config: Config, model: NeuralModel, options: RolloutOptions & {
+        jobs?: number;
+
 ### `runScenario` (function)
 
     export declare function runScenario<State, Command, Event, Random>(scenario: Scenario<State, Command, Event, Random>): ScenarioResult<State, Event>;
@@ -7762,6 +7790,30 @@ build instead.
 
         private historySnapshot;
         private restoreCheckpoint;
+    }
+
+### `TrainingEnvironment` (class)
+
+    export declare class TrainingEnvironment<State, Command, Event> {
+        private state;
+        private random;
+        private steps;
+        private terminated;
+        private ready;
+        private agentCount;
+        readonly maxSteps: number;
+        readonly observationVersion: string;
+        private readonly rules;
+        private readonly Random;
+        private get truncated();
+        constructor(rules: TrainingRules<State, Command, Event>, options: {
+            maxSteps: number;
+        }, Random?: typeof Generator);
+        reset(seed: number): TrainingFrame;
+        step(actions: readonly (number | null)[]): TrainingFrame;
+        snapshot(): TrainingSnapshot<State>;
+        restore(snapshot: TrainingSnapshot<State>): TrainingFrame;
+        private observations;
     }
 
 ### `validateSimulationReplay` (function)

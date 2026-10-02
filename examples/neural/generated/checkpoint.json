@@ -1,0 +1,94 @@
+{
+	"version": 1,
+	"model": {
+		"version": 1,
+		"observationVersion": "courier-v1",
+		"layers": [
+			{
+				"inputSize": 2,
+				"outputSize": 4,
+				"weights": [
+					-0.5428059012410421, -1.0500691143483738, 0.40280039225287656, -1.3619513496940225,
+					1.6374263225860837, -1.9456110645755549, -0.7904968129545951, 1.599237734726139
+				],
+				"biases": [0.05725467912866611, -0.01868109126116289, 0.29369826052816245, -0.026243721205287868]
+			}
+		]
+	},
+	"environment": {
+		"version": 1,
+		"observationVersion": "courier-v1",
+		"state": {
+			"tick": 64,
+			"agents": [
+				{
+					"x": 2,
+					"y": 3,
+					"targetX": 3,
+					"targetY": 4,
+					"deliveries": 2
+				},
+				{
+					"x": 2,
+					"y": 3,
+					"targetX": 5,
+					"targetY": 5,
+					"deliveries": 4
+				},
+				{
+					"x": 0,
+					"y": 0,
+					"targetX": 7,
+					"targetY": 4,
+					"deliveries": 0
+				},
+				{
+					"x": 0,
+					"y": 2,
+					"targetX": 4,
+					"targetY": 6,
+					"deliveries": 2
+				},
+				{
+					"x": 0,
+					"y": 1,
+					"targetX": 3,
+					"targetY": 2,
+					"deliveries": 0
+				},
+				{
+					"x": 5,
+					"y": 0,
+					"targetX": 6,
+					"targetY": 1,
+					"deliveries": 2
+				},
+				{
+					"x": 1,
+					"y": 1,
+					"targetX": 3,
+					"targetY": 4,
+					"deliveries": 2
+				},
+				{
+					"x": 2,
+					"y": 1,
+					"targetX": 6,
+					"targetY": 4,
+					"deliveries": 4
+				}
+			]
+		},
+		"seed": 1032,
+		"random": [3968884867, 1692980960, 2747403746, 3400685196],
+		"steps": 64,
+		"maxSteps": 64,
+		"terminated": true,
+		"truncated": false
+	},
+	"trainerState": {
+		"iteration": 120,
+		"random": [-1270844455, 930164738, 1244915781, 3511384805],
+		"score": 10.6875
+	}
+}

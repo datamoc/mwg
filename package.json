@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.23.0",
+	"version": "0.24.0",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -306,6 +306,15 @@
 		"example:event-system": "vite --config examples/event-system/vite.config.ts",
 		"example:event-system:build": "vite build --config examples/event-system/vite.config.ts && node tools/emit-page.mjs examples/event-system --assets=examples/assets",
 		"example:headless": "vite --config examples/headless/vite.config.ts",
+		"train:neural": "node tools/train-neural.ts",
+		"train:pacman": "node tools/train-pacman.ts",
+		"example:pacman": "vite --config examples/pacman/vite.config.ts",
+		"example:pacman:build": "vite build --config examples/pacman/vite.config.ts && node tools/emit-page.mjs examples/pacman --assets=examples/assets",
+		"pacman:browser:check": "npm run example:pacman:build && node tools/check-pacman-browser.mjs",
+		"benchmark:neural": "node tools/benchmark-neural.ts",
+		"example:neural": "vite --config examples/neural/vite.config.ts",
+		"example:neural:build": "vite build --config examples/neural/vite.config.ts && node tools/emit-page.mjs examples/neural --assets=examples/assets",
+		"neural:browser:check": "npm run example:neural:build && node tools/check-neural-browser.mjs",
 		"example:headless:build": "vite build --config examples/headless/vite.config.ts && node tools/emit-page.mjs examples/headless --assets=examples/assets",
 		"example:mwl-content": "vite --config examples/mwl-content/vite.config.ts",
 		"example:mwl-content:build": "npm run mwl -- build examples/mwl-content/content -o examples/mwl-content/generated && vite build --config examples/mwl-content/vite.config.ts && node tools/emit-page.mjs examples/mwl-content --assets=examples/assets",

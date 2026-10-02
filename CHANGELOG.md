@@ -7,8 +7,29 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.24.0] - 2026-10-02
+
+Small neural policies and renderer-free training now share game simulation rules,
+with worker batches for larger workloads. A playable maze chase AI lab demonstrates
+live controller switching, and chess search keeps the interface responsive.
+
 ### Added
 
+- A playable maze chase example with independent player and ghost AI selectors,
+  random turns, chase rules, path heuristics and a small neural policy trained
+  without a UI on the same original simulation rules. Includes keyboard and touch
+  steering, live mode switching, power dots and local-file browser checks.
+
+- `ai.NeuralPolicy`: validated, dependency-free dense-model inference with shared
+  weights, legal-action masks, seeded softmax sampling, existing `JavaScriptAI`
+  behaviour integration and cancellable worker inference batches.
+- `simulation.TrainingEnvironment`, `runRollouts` and `runRolloutsAsync`: seeded,
+  UI-free episodes over game-owned simulation rules, distinct termination and
+  truncation, bounded trajectories, resumable environment snapshots and worker
+  batches that reuse a model throughout each episode shard.
+- A generated courier example with headless evolution training, resumable trainer
+  checkpoints, exported browser weights, serial/parallel benchmarks and a `file://`
+  regression check for frame time, input latency and cancellation of stale results.
 - `searchTourneyAsync` returns `rootScores` for choosing among near-best moves using
   the same worker search.
 
@@ -2362,4 +2383,3 @@ in it is new as of the tag, only now given a version number to refer to.
   bounds-check), writing distances into the wrong cell once a search looked at the
   step's origin rather than only its destination. Steps now refuse either end off
   the map before any index is touched.
-

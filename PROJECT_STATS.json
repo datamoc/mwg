@@ -1,11 +1,11 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.23.0",
-	"releaseDate": "2026-09-30",
+	"version": "0.24.0",
+	"releaseDate": "2026-10-02",
 	"source": {
-		"files": 320,
-		"lines": 57673,
+		"files": 322,
+		"lines": 58291,
 		"modules": 17,
 		"breakdown": [
 			{
@@ -21,7 +21,7 @@
 			{
 				"name": "core",
 				"files": 49,
-				"lines": 6431
+				"lines": 6427
 			},
 			{
 				"name": "board",
@@ -55,18 +55,18 @@
 			},
 			{
 				"name": "ai",
-				"files": 5,
-				"lines": 1395
+				"files": 6,
+				"lines": 1607
+			},
+			{
+				"name": "simulation",
+				"files": 9,
+				"lines": 1314
 			},
 			{
 				"name": "battle",
 				"files": 15,
 				"lines": 1156
-			},
-			{
-				"name": "simulation",
-				"files": 8,
-				"lines": 904
 			},
 			{
 				"name": "three-d",
@@ -96,16 +96,16 @@
 		]
 	},
 	"tests": {
-		"files": 281,
-		"lines": 37276,
-		"cases": 2609
+		"files": 284,
+		"lines": 37765,
+		"cases": 2631
 	},
 	"tools": {
-		"files": 44,
-		"lines": 8908
+		"files": 46,
+		"lines": 9116
 	},
 	"examples": {
-		"count": 22,
+		"count": 24,
 		"names": [
 			"audio",
 			"battle",
@@ -123,6 +123,8 @@
 			"movement",
 			"multi-turn-beam",
 			"mwl-content",
+			"neural",
+			"pacman",
 			"save-load",
 			"string-editor",
 			"three-d",
@@ -132,18 +134,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 394,
+		"items": 395,
 		"completed": 389,
-		"open": 5,
-		"percent": 99
+		"open": 6,
+		"percent": 98
 	},
 	"api": {
-		"declarationFiles": 319
+		"declarationFiles": 321
 	},
 	"bundle": {
-		"globalRaw": 1191738,
-		"globalGzip": 356540,
-		"distRaw": 4092549
+		"globalRaw": 1201271,
+		"globalGzip": 359105,
+		"distRaw": 4133768
 	},
 	"quality": {
 		"testToSourceRatio": 0.6

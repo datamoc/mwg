@@ -22,9 +22,10 @@ checklist below.
 
 ### Open items
 
-Priority review, 2026-10-02: keep the existing order. Small neural inference and
-worker batching (395) are useful additions, but need a concrete game workload and
-frame-time measurements before taking priority over the existing work.
+Priority review, 2026-10-02: keep the existing order. Item 395 now has courier and
+maze chase workloads with headless training and browser frame-time checks. These
+meet its initial scope; further neural work needs measured demand before taking
+priority over the existing work.
 
 390. **A tournament-capable chess engine, Garbochess-shaped but framework-owned.** The
 shipped `board/Engine` stays a small deterministic rules engine by design; this item
@@ -147,6 +148,22 @@ isolation, matching simulation outcomes with and without presentation, checkpoin
 resume, and a headless training example whose exported policy runs in a generated
 multi-agent `file://` example. Measure training throughput as well as the playable
 example's input latency and frame time. No trained model weights from reference games.
+
+Status: shipped as `ai/Neural.ts` and `simulation/Training.ts`, with a headless
+courier evolution optimizer (`npm run train:neural`), checkpoint resume and exported
+weights used by `examples/neural`. `benchmark:neural` compares full-episode worker
+shards against serial rollouts and includes inference startup/transfer costs;
+`neural:browser:check` verifies the WebGL local-file example stays responsive during
+worker execution and drops stale reports after reset. The
+maze chase example also uses the same renderer-free rules for gameplay and
+imitation training (`train:pacman`), with independent live AI selectors and its own
+local-file frame-time check (`pacman:browser:check`). On this machine, the initial
+256-episode benchmark measured about 40000 serial versus 99000 parallel simulation
+steps/s; tiny standalone inference was faster synchronously. Reusable workers across
+separate batches remain measurement-driven, with one worker per shard sufficient
+for this workload. Priority review: retain the existing order; this item addresses
+the new training requirement without unblocking 393's missing format fixtures or
+justifying 394's optional dependency cost.
 
 ### Parked decisions
 

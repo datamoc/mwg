@@ -420,6 +420,48 @@ Frame-based `core.Recorder`/`Player` remains available for UI replay; command sc
 not need a frame loop. Callers must bound automatic work inside each rule, for example
 with `advanceToInput`.
 
+## Neural policies and UI-free training
+
+`ai.NeuralPolicy` runs small dense models without a runtime dependency. Policies
+share weights across agents, mask illegal actions and integrate with `JavaScriptAI`.
+`simulation.TrainingEnvironment` exposes seeded `reset`/`step` episodes over the same
+rules a game uses during play. Training runs at simulation speed in Node, with no
+canvas, DOM, audio or frame loop. `runRolloutsAsync` batches whole episodes across
+workers; model files bundle into the playable `file://` output.
+
+Try the generated courier task, whose optimizer belongs to the example:
+
+```sh
+npm run train:neural                         # train without any UI, export model and checkpoint
+npm run train:neural -- --resume --iterations 40
+npm run benchmark:neural                     # serial/parallel throughput and inference overhead
+npm run example:neural:build                 # open examples/neural/dist/index.html directly
+npm run neural:browser:check                 # workers, input latency and reset cancellation
+```
+
+Training checkpoints include environment state and randomness, model/schema
+versions and trainer state. Use small predictions directly when they fit the frame
+budget; worker startup and transfer costs pay off on larger simulation batches.
+
+## Maze chase AI example
+
+`examples/pacman` is a playable Pac-Man-style game with an original maze and drawn
+shapes. Switch the player between keyboard control, random turns, a path-and-risk
+heuristic and a trained neural policy. Ghosts independently select random turns,
+direct chase rules (`JavaScriptAI`), path heuristics (`HeuristicAI`) or `NeuralPolicy`.
+Selections take effect during the current game, preserving score and lives.
+
+Arrows or WASD steer; P and G cycle the player and ghost controllers; Space pauses;
+R starts a new game. Large dots make ghosts edible. The neural model uses UI-free
+imitation training from the heuristic, sharing the playable simulation rules.
+
+```sh
+npm run example:pacman                       # development server
+npm run example:pacman:build                 # open examples/pacman/dist/index.html directly
+npm run train:pacman                         # retrain and export weights without rendering
+npm run pacman:browser:check                 # selectors, WebGL, frame time and responsive layouts
+```
+
 ## Roadmap
 
 See [ROADMAP.md](https://github.com/datamoc/mwg/blob/main/ROADMAP.md) for open work and
