@@ -79,6 +79,10 @@ other `mwg` module and no renderer at all.
   `list`, throwing on a duplicate or missing name by that name. The dispatch primitive
   underneath a catalog of factories or handlers (`SceneComponentHost` uses one internally) -
   a game still imports and registers each entry itself, no auto-discovery.
+- `createHandles`/`Handles` - numeric leases for values a plain-data command cannot carry
+  (callbacks, RNG streams, query closures): `put` stores a value and returns its id, `get`
+  resolves it, `drop`/`clear` end leases, and `with` scopes a lease so the drop runs even
+  when the body throws. Ids start at 1 and are never reused.
 - `Logger` - categories, four severity levels, a filter, and a sink tests can capture,
   instead of bare `console.log`/`console.error`.
 Three shapes cover what "an event" means here, kept deliberately distinct rather than folded
@@ -1416,7 +1420,11 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 - MWL tables use `[table] columns=name:type|...` with typed `[row]` attributes. The compiler
   validates column shape and values, and `contentCatalog(game).tables` exposes typed rows.
   Supported column types match `core.parseCSV`: `string`, `number`, `boolean`, `list`, and
-  `map`, with configurable list and map delimiters.
+  `map`, with configurable list and map delimiters. `typedRows`/`MwlTypedRow`/
+  `MwlColumnValueType` read rows through the declared columns (every field optional, an
+  absent cell omits the key), and `emitTableTypes` emits one named row interface plus one
+  typed accessor per table for a game's build script to write and import, so a changed
+  column type or a removed column fails type-checking at every use.
 - `MwlValidationOptions.tableReferences`/`MwlTableReference` (item 362) - declarative
   cross-table checks, so no game hand-rolls one validator per table: a column declares
   `references: { table, column }` or `oneOf: [...]`, and `validateCatalog` checks every cell
@@ -1451,10 +1459,11 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 - Public MWL exports - `MwlRuntime`, `MwlSyntaxError`, `collectHookReferences`, `compileNodes`,
   `compileSources`, `compileAndEmitSources`, `emitArtifacts`, `coerceTableValue`, `decodeSaveEnvelope`,
   `parseTableColumns`, `contentCatalog`, `createWorld`, `decodeSave`, `effectToModifier`,
-  `emitHooksDeclaration`, `emitModule`, `encodeSave`, `evaluateExpression`, `execute`,
+  `emitHooksDeclaration`, `emitModule`, `emitTableTypes`, `encodeSave`, `evaluateExpression`,
+  `execute`,
   `extractCatalog`, `hookTypes`, `inventoryItem`, `isGettext`, `isMwlId`, `itemDefinition`,
   `parseExpression`, `parseHookReference`, `parseMapFile`, `parseTerrain`, `parseValue`, `preprocess`,
-  `schema01`, `validateCatalogNodes`, `validateHookReferences`, `loadContent`, and `validateWorld`.
+  `schema01`, `typedRows`, `validateCatalogNodes`, `validateHookReferences`, `loadContent`, and `validateWorld`.
 - `parseMapFile`/`MwlMapFile` (item 284) - reads a Wesnoth-shaped `.map`: the `key=value` header
   is split off and kept, and the comma-separated rows go through the same `parseTerrain` an inline
   `[map] terrain=` uses, overlays (`Gg^Vh`) and `<side> <code>` starts included. Header keys are

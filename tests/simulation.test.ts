@@ -12,7 +12,7 @@ import {
 	type SimulationSnapshot,
 } from '../src/simulation/index.ts';
 import { Scheduler, type Actor } from '../src/roguelike/Scheduler.ts';
-import { Generator } from '../src/core/Random.ts';
+import { Generator, active, int, pop, push } from '../src/core/Random.ts';
 import { SaveSystem } from '../src/core/Save.ts';
 import { PresentationQueue } from '../src/core/Presentation.ts';
 
@@ -487,4 +487,60 @@ test('presentation independence: changing how long an event takes to play change
 	//and every run still presented the same events, just paced differently
 	assert.deepEqual(instant.presented, slow.presented);
 	assert.deepEqual(instant.presented, stillSlower.presented);
+});
+
+test('a runtime sharing the global generator replays interleaved draws after snapshot/restore', () => {
+	push(20260704);
+	try {
+		const { hero, rat, scheduler } = makeFight();
+		const runtime = new SimulationRuntime<FightState, 'attack', number, Fighter>({
+			state: { hero, rat },
+			scheduler,
+			random: active(),
+			rule: fightRule,
+			actorId: (fighter) => fighter.id,
+		});
+		int(100);
+		runtime.dispatch('attack');
+		int(100);
+		const snapshot = runtime.snapshot();
+		const first = [int(100), runtime.dispatch('attack').events, int(100)];
+		//rewind the shared stream, then restore adopting that same object, so scene
+		//draws and command draws stay in lockstep on both sides of the restore
+		active().setState(snapshot.random);
+		const byId = new Map([
+			[snapshot.state.hero.id, { ...snapshot.state.hero }],
+			[snapshot.state.rat.id, { ...snapshot.state.rat }],
+		]);
+		const restored = SimulationRuntime.restore<FightState, 'attack', number, Fighter>(snapshot, {
+			rule: fightRule,
+			actorOf: (id) => byId.get(id)!,
+			actorId: (fighter) => fighter.id,
+			random: active(),
+		});
+		const second = [int(100), restored.dispatch('attack').events, int(100)];
+		assert.deepEqual(second, first);
+		assert.deepEqual(restored.journal.all, runtime.journal.all);
+	} finally {
+		pop();
+	}
+});
+
+test('journal: null dispatches without recording and snapshots an empty journal', () => {
+	const { hero, rat, scheduler } = makeFight();
+	const runtime = new SimulationRuntime<FightState, 'attack', number, Fighter>({
+		state: { hero, rat },
+		scheduler,
+		random: new Generator(5),
+		rule: fightRule,
+		actorId: (fighter) => fighter.id,
+		journal: null,
+	});
+	const outcome = runtime.dispatch('attack');
+	assert.equal(outcome.events.length, 1);
+	assert.equal(runtime.state.rat.hp, rat.hp - outcome.events[0]);
+	assert.equal(runtime.journal.size, 0);
+	runtime.dispatch('attack');
+	assert.equal(runtime.journal.size, 0);
+	assert.deepEqual(runtime.snapshot().journal, []);
 });

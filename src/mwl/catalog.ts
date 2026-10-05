@@ -6,7 +6,9 @@ import { flattenNodes } from './utils.ts';
 
 /**
  * One declarative cross-table reference: a column of one `[table]` whose every cell must
- * resolve, either against a column of another `[table]` or against a closed value set.
+ * resolve: against a column of another `[table]`, against an authored node-id
+ * namespace (`references: { node: 'monster' }` checks every cell names an
+ * authored `[monster]` id), or against a closed value set.
  * The declaration names the shape; the *contents* (which column points where, which set is
  * legal) stay game data in the consuming repository.
  *
@@ -37,6 +39,14 @@ export type MwlTableReference =
 			readonly column: string;
 			/** the exact closed set the column's cells must belong to */
 			readonly oneOf: readonly string[];
+	  }
+	| {
+			/** id of the `[table]` holding the referencing column */
+			readonly table: string;
+			/** column whose cells must resolve */
+			readonly column: string;
+			/** the authored node-id namespace (a node tag) the column's cells must belong to */
+			readonly references: { readonly node: string };
 	  };
 
 export interface MwlValidationOptions {
@@ -54,7 +64,7 @@ export interface MwlValidationOptions {
 	readonly mapBounds?: { readonly width: number; readonly height: number };
 	/**
 	 * Declarative cross-table references (item 362): each entry names a `[table]` column whose
-	 * cells must resolve against another table's column or a closed value set. A failure reports
+	 * cells must resolve against another table's column, a node-id namespace, or a closed value set. A failure reports
 	 * the table, the row, and the offending value. Purely additive and optional: saves, replays
 	 * and every existing check are untouched when it is absent.
 	 */
@@ -204,7 +214,7 @@ function validateAliasCycles(nodes: readonly MwlCompiledNode[], diagnostics: Mwl
 
 /**
  * Checks every declared cross-table reference: each cell of the source column must resolve
- * against the target table's column or the closed set. A failure reports the table, the row
+ * against the target table's column, the node-id namespace, or the closed set. A failure reports the table, the row
  * and the offending value. Absent or empty cells are skipped (a missing column's shape stays
  * the schema's `MWL_TABLE` job), and a `list` cell checks each entry the way `coerceTableValue`
  * splits one. A declaration naming a table or column that is not there is itself a diagnostic,
@@ -257,16 +267,23 @@ function validateTableReferences(
 		if ('oneOf' in declaration) {
 			allowed = new Set(declaration.oneOf);
 			expectation = 'one of the declared values';
+		} else if ('node' in declaration.references) {
+			const namespaced = new Set<string>();
+			for (const node of nodes)
+				if (node.tag === declaration.references.node && node.attributes.id) namespaced.add(node.attributes.id);
+			allowed = namespaced;
+			expectation = `node "${declaration.references.node}"`;
 		} else {
-			const target = tables.get(declaration.references.table);
+			const reference = declaration.references;
+			const target = tables.get(reference.table);
 			const targetColumn = target
-				? columnsOf(target)?.find((column) => column.name === declaration.references.column)
+				? columnsOf(target)?.find((column) => column.name === reference.column)
 				: undefined;
 			if (!target || !targetColumn) {
 				diagnostics.push(
 					diagnostic(
 						'MWL_TABLE_REFERENCE',
-						`unknown reference target "${declaration.references.table}.${declaration.references.column}" for table "${declaration.table}" column "${declaration.column}"`,
+						`unknown reference target "${reference.table}.${reference.column}" for table "${declaration.table}" column "${declaration.column}"`,
 						source.location,
 					),
 				);
@@ -276,7 +293,7 @@ function validateTableReferences(
 			for (const row of rowsOf(target))
 				for (const value of cellsOf(row, targetColumn, target.attributes.list_delimiter)) values.add(value);
 			allowed = values;
-			expectation = `${declaration.references.table}.${declaration.references.column}`;
+			expectation = `${reference.table}.${reference.column}`;
 		}
 		const delimiter = source.attributes.list_delimiter;
 		rowsOf(source).forEach((row, index) => {

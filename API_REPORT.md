@@ -575,6 +575,10 @@ build instead.
 
     export declare function createColorBlindnessFilter(type: ColorBlindnessType): ColorMatrixFilter;
 
+### `createHandles` (function)
+
+    export declare function createHandles<T>(): Handles<T>;
+
 ### `createLayers` (function)
 
     export declare function createLayers(parent: Container, names: readonly string[]): Record<string, Node2D>;
@@ -3275,7 +3279,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.24.1";
+    export declare const version = "0.25.0";
 
 ### `VerticalLabel` (class)
 
@@ -5485,6 +5489,10 @@ build instead.
         private parse;
     }
 
+### `createHandles` (function)
+
+    export declare function createHandles<T>(): Handles<T>;
+
 ### `defaultSettings` (function)
 
     export declare function defaultSettings(): GameSettings;
@@ -6523,6 +6531,10 @@ build instead.
 
     export declare function emitModule(game: MwlCompiledGame, variable?: string): string;
 
+### `emitTableTypes` (function)
+
+    export declare function emitTableTypes(tables: readonly MwlTableDefinition[], options?: EmitTableTypesOptions): string;
+
 ### `encodeSave` (function)
 
     export declare function encodeSave(world: MwlWorld, options: MwlPersistenceOptions, hookState?: Readonly<Record<string, unknown>>, journal?: readonly ActionJournalEntry<unknown, unknown>[]): string;
@@ -6788,6 +6800,11 @@ build instead.
 ### `tableKey` (function)
 
     export declare function tableKey(...parts: MwlTableKeyPart[]): string;
+
+### `typedRows` (function)
+
+    export declare function typedRows<const Columns extends readonly MwlTableColumn[]>(table: {
+        readonly columns: Columns;
 
 ### `validate` (function)
 
@@ -7757,6 +7774,7 @@ build instead.
         private _scheduler;
         readonly random: Generator;
         readonly journal: ActionJournal<Command, Event>;
+        private readonly recordJournal;
         private readonly rule;
         private readonly actorId;
         private readonly history;
@@ -7767,7 +7785,8 @@ build instead.
             random: Generator;
             rule: SimulationRuntimeRule<State, Command, Event, A>;
             actorId: (actor: A) => string;
-            journal?: ActionJournal<Command, Event>;
+
+            journal?: ActionJournal<Command, Event> | null;
             history?: SimulationRuntimeHistoryOptions<A>;
         });
         get scheduler(): Scheduler<A>;
@@ -7786,6 +7805,8 @@ build instead.
             rule: SimulationRuntimeRule<State, Command, Event, A>;
             actorOf: (id: string) => A;
             actorId: (actor: A) => string;
+
+            random?: Generator;
         }): SimulationRuntime<State, Command, Event, A>;
 
         private historySnapshot;

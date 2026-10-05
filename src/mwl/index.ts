@@ -82,6 +82,8 @@ export type { MwlCarryover, MwlEndLevel, MwlSideRef } from './carryover.ts';
 export { campaignChain } from './campaign.ts';
 export type { MwlCampaignChain, MwlScenarioRunner } from './campaign.ts';
 export { contentCatalog } from './content.ts';
+export { emitTableTypes, typedRows } from './tables.ts';
+export type { EmitTableTypesOptions, MwlColumnValueType, MwlTypedRow } from './tables.ts';
 export type { MwlCampaignDefinition, MwlScenarioLink } from './content.ts';
 export type {
 	MwlContentCatalog,

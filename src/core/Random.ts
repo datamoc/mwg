@@ -126,6 +126,27 @@ const stack: Generator[] = [new Generator()];
 
 const current = (): Generator => stack[stack.length - 1];
 
+/**
+ * The generator the free functions (`int`, `float`, `chance`, ...) draw from.
+ *
+ * This is the handle a `SimulationRuntime` needs to share the ambient stream:
+ * pass the returned object as the runtime's `random` and both sides draw from
+ * (and snapshot) one sequence, so a journal replay reproduces scene draws.
+ *
+ * @example
+ * ```ts
+ * import { Random } from '@datamoc/mw_games/core';
+ *
+ * Random.push(12345);
+ * const shared = Random.active();
+ * const roll = shared.int(20);
+ * Random.pop();
+ * ```
+ */
+export function active(): Generator {
+	return current();
+}
+
 /** starts a reproducible stream; pair every call with `pop()` */
 export function push(seed?: number): Generator {
 	const generator = new Generator(seed);

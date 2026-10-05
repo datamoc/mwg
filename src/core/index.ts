@@ -2,6 +2,8 @@ export { Scene } from './Scene.ts';
 export type { SceneClass } from './Scene.ts';
 export { SceneStack } from './SceneStack.ts';
 export { Registry } from './Registry.ts';
+export { createHandles } from './Handles.ts';
+export type { Handles } from './Handles.ts';
 export { SceneComponentHost } from './SceneComponents.ts';
 export type { SceneComponent } from './SceneComponents.ts';
 export { Logger } from './Log.ts';

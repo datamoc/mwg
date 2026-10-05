@@ -11,6 +11,9 @@ import {
 	element,
 	shuffle,
 	reset,
+	active,
+	push,
+	pop,
 } from '../src/core/Random.ts';
 
 test('the same seed produces the same stream', () => {
@@ -203,5 +206,33 @@ test('shuffle sends every value to every position equally often', () => {
 				`a value landed in one position ${((count / expected) * 100).toFixed(0)}% of the expected rate`,
 			);
 		}
+	}
+});
+
+test('active() exposes the pushed generator, tracking the same draws as the free functions', () => {
+	push(777);
+	try {
+		const generator = active();
+		assert.equal(generator, active());
+		const state = generator.getState();
+		const viaFree = int(1000);
+		generator.setState(state);
+		assert.equal(generator.int(1000), viaFree);
+	} finally {
+		pop();
+	}
+});
+
+test('getState/setState on the active generator replays the identical continuation', () => {
+	push(4242);
+	try {
+		int(100);
+		int(100);
+		const saved = active().getState();
+		const first = [int(100), int(100), int(100)];
+		active().setState(saved);
+		assert.deepEqual([int(100), int(100), int(100)], first);
+	} finally {
+		pop();
 	}
 });

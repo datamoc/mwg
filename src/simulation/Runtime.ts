@@ -156,7 +156,9 @@ export function validateSimulationReplay<State, Command, Event, A extends Actor>
  * automatic-actor loop and fixed-command replay respectively; a game composes both against
  * the same `scheduler` rather than choosing one over the other.
  *
- * Every command and event batch is journalled, and with `history` every committed state is
+ * Every command and event batch is journalled (pass `journal: null` to disable the journal
+ * entirely: `dispatch` then skips the append, `snapshot()` exposes an empty journal, and
+ * replay/undo have nothing to replay), and with `history` every committed state is
  * checkpointed, all through `structuredClone`: `Command`, `Event` and `State` must be plain data.
  * A command naming its target as a live actor object (one that owns a `ReactionTable`, or any
  * other callback) cannot be copied, so carry the actor's id and resolve it in the rule. A
@@ -205,6 +207,7 @@ export class SimulationRuntime<State, Command, Event, A extends Actor> {
 	private _scheduler: Scheduler<A>;
 	readonly random: Generator;
 	readonly journal: ActionJournal<Command, Event>;
+	private readonly recordJournal: boolean;
 	private readonly rule: SimulationRuntimeRule<State, Command, Event, A>;
 	private readonly actorId: (actor: A) => string;
 	private readonly history: UndoHistory<SimulationSnapshot<State>> | null;
@@ -216,7 +219,14 @@ export class SimulationRuntime<State, Command, Event, A extends Actor> {
 		random: Generator;
 		rule: SimulationRuntimeRule<State, Command, Event, A>;
 		actorId: (actor: A) => string;
-		journal?: ActionJournal<Command, Event>;
+		/**
+		 * Where committed commands are recorded. Pass `null` for a journal-free
+		 * dispatch facade: no append (and no `structuredClone` cost),
+		 * `snapshot()` carries an empty journal, and replay/undo have nothing
+		 * to replay. `restore()` always resumes with recording enabled from
+		 * the snapshot's journal.
+		 */
+		journal?: ActionJournal<Command, Event> | null;
 		history?: SimulationRuntimeHistoryOptions<A>;
 	}) {
 		this._state = options.state;
@@ -224,6 +234,7 @@ export class SimulationRuntime<State, Command, Event, A extends Actor> {
 		this.random = options.random;
 		this.rule = options.rule;
 		this.actorId = options.actorId;
+		this.recordJournal = options.journal !== null;
 		this.journal = options.journal ?? new ActionJournal<Command, Event>();
 		this.actorOf = options.history?.actorOf ?? null;
 		this.history = options.history ? new UndoHistory<SimulationSnapshot<State>>(options.history) : null;
@@ -247,7 +258,7 @@ export class SimulationRuntime<State, Command, Event, A extends Actor> {
 		try {
 			checkpoint = this.history ? cloneData(outcome.state, 'state') : null;
 			// Last fallible step, so a refused command or event batch leaves the journal unchanged.
-			this.journal.append(command, outcome.events);
+			if (this.recordJournal) this.journal.append(command, outcome.events);
 		} catch (error) {
 			this.random.setState(random);
 			throw error;
@@ -305,9 +316,15 @@ export class SimulationRuntime<State, Command, Event, A extends Actor> {
 			rule: SimulationRuntimeRule<State, Command, Event, A>;
 			actorOf: (id: string) => A;
 			actorId: (actor: A) => string;
+			/**
+			 * Adopt this generator instead of creating one: its state is set from
+			 * the snapshot, so passing the ambient global generator reconciles the
+			 * two streams and later draws stay in lockstep. Defaults to a new generator.
+			 */
+			random?: Generator;
 		},
 	): SimulationRuntime<State, Command, Event, A> {
-		const random = new Generator();
+		const random = options.random ?? new Generator();
 		random.setState(snapshot.random);
 		const scheduler = Scheduler.restore<A>(snapshot.scheduler, options.actorOf);
 		return new SimulationRuntime<State, Command, Event, A>({

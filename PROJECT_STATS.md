@@ -1,26 +1,26 @@
 # Project statistics
 
-Generated for **mwg 0.24.1** on 2026-10-02.
+Generated for **mwg 0.25.0** on 2026-10-05.
 
 | Area | Statistics |
 | --- | ---: |
-| Source | 322 TypeScript files, 58,291 lines, 17 modules |
-| Tests | 284 files, 2,631 test cases, 37,765 lines |
+| Source | 324 TypeScript files, 58,588 lines, 17 modules |
+| Tests | 286 files, 2,654 test cases, 38,182 lines |
 | Tools | 46 files, 9,117 lines |
 | Examples | 24 runnable examples |
 | Roadmap | 389/395 items complete, 6 open |
-| API | 321 declaration files |
-| Bundle | 1195.2 kB raw, 356.8 kB gzip |
-| Published dist | 4058.9 kB excluding source maps |
-| Test-to-source ratio | 0.6x by line count |
+| API | 323 declaration files |
+| Bundle | 1197.1 kB raw, 357.5 kB gzip |
+| Published dist | 4074.7 kB excluding source maps |
+| Test-to-source ratio | 0.7x by line count |
 
 ## Source modules
 
 | Module | Files | Lines |
 | --- | ---: | ---: |
 | two-d | 91 | 18,791 |
-| mwl | 21 | 6,572 |
-| core | 49 | 6,427 |
+| mwl | 22 | 6,754 |
+| core | 50 | 6,525 |
 | board | 12 | 5,355 |
 | audio | 21 | 4,700 |
 | roguelike | 22 | 3,520 |
@@ -28,7 +28,7 @@ Generated for **mwg 0.24.1** on 2026-10-02.
 | rpg | 14 | 2,072 |
 | i18n | 10 | 1,879 |
 | ai | 6 | 1,607 |
-| simulation | 9 | 1,314 |
+| simulation | 9 | 1,331 |
 | battle | 15 | 1,156 |
 | three-d | 9 | 756 |
 | world | 7 | 603 |

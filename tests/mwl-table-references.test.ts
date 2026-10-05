@@ -132,3 +132,54 @@ test('table references also run over parsed nodes without a compiled game', () =
 		'MWL_TABLE_REFERENCE',
 	);
 });
+
+test('a node-namespace reference passes when every cell names an authored node id', () => {
+	const game = compileSources([
+		{
+			file: 'content.mwl',
+			source: `[{ tag: 'monster', id: 'goblin' }, { tag: 'monster', id: 'orc' }, { tag: 'table', id: 'roster', columns: 'kind:string', children: [
+				{ tag: 'row', kind: 'goblin' },
+				{ tag: 'row', kind: 'orc' },
+			] }]`,
+		},
+	]);
+	const declarations: MwlTableReference[] = [{ table: 'roster', column: 'kind', references: { node: 'monster' } }];
+	assert.deepEqual(validateCatalog(game, { tableReferences: declarations }), []);
+});
+
+test('an unknown node id reports the table, the row, and the offending value', () => {
+	const game = compileSources([
+		{
+			file: 'content.mwl',
+			source: `[{ tag: 'monster', id: 'goblin' }, { tag: 'table', id: 'roster', columns: 'kind:string', children: [
+				{ tag: 'row', kind: 'goblin' },
+				{ tag: 'row', kind: 'dragon' },
+			] }]`,
+		},
+	]);
+	const declarations: MwlTableReference[] = [{ table: 'roster', column: 'kind', references: { node: 'monster' } }];
+	const diagnostics = validateCatalog(game, { tableReferences: declarations });
+	assert.equal(diagnostics.length, 1);
+	assert.equal(diagnostics[0].code, 'MWL_TABLE_REFERENCE');
+	assert.equal(
+		diagnostics[0].message,
+		'table "roster" row 2 column "kind": unknown value "dragon" (expected node "monster")',
+	);
+});
+
+test('a node-namespace reference checks each list entry and skips empty cells', () => {
+	const game = compileSources([
+		{
+			file: 'content.mwl',
+			source: `[{ tag: 'monster', id: 'goblin' }, { tag: 'monster', id: 'orc' }, { tag: 'table', id: 'packs', columns: 'members:list', list_delimiter: ',', children: [
+				{ tag: 'row', members: 'goblin,orc' },
+				{ tag: 'row', members: 'goblin,dragon' },
+				{ tag: 'row', members: '' },
+			] }]`,
+		},
+	]);
+	const declarations: MwlTableReference[] = [{ table: 'packs', column: 'members', references: { node: 'monster' } }];
+	const diagnostics = validateCatalog(game, { tableReferences: declarations });
+	assert.equal(diagnostics.length, 1);
+	assert.match(diagnostics[0].message, /table "packs" row 2 column "members": unknown value "dragon"/);
+});

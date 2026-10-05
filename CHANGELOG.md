@@ -7,6 +7,31 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-10-05
+
+Framework support for the Pixel Dungeon port's simulation and content proposals: numeric
+handle leases for clone-safe commands, journal-free dispatch, one shared random stream for
+scene and simulation draws, MWL node-namespace references, and type-safe table rows with a
+type-emission helper for game build scripts.
+
+### Added
+
+- `core.Random.active()` returns the ambient generator the free functions draw from, so a
+  `SimulationRuntime` constructed with it shares one stream with scene code; `snapshot`/
+  `restore` of that generator replay identical continuations.
+- `SimulationRuntime.restore()` accepts `random` to adopt an externally-owned generator
+  (such as the global one), keeping scene and command draws in lockstep across restore.
+- `core.createHandles()`/`Handles` - numeric leases for values a plain-data command cannot
+  carry, with a scoped `with(value, body)` lease that drops even when the body throws.
+- `SimulationRuntime` accepts `journal: null` for a journal-free dispatch facade: no append
+  cost, an empty journal in `snapshot()`, and plainly documented replay/undo semantics.
+- `mwl.MwlTableReference` accepts a node-id namespace target (`references: { node: 'monster' }`),
+  checking table cells against authored node ids with the same table/row/value report.
+- `mwl.typedRows()`/`MwlTypedRow`/`MwlColumnValueType` read table rows through their declared
+  columns (every field optional, an absent cell omits the key), and `mwl.emitTableTypes()`
+  emits one named row interface plus one typed accessor per table for a game's build script,
+  so a changed column type or a removed column fails type-checking at every use.
+
 ## [0.24.1] - 2026-10-02
 
 Dependency refresh: Babylon.js 9.29, `@capacitor/cli` held at 8.5.2 so it matches the other Capacitor
