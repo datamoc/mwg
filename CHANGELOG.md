@@ -7,6 +7,13 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `core.NEIGHBOURS4`/`NEIGHBOURS8`/`CIRCLE8` share one frozen square-grid offset table
+  instead of each module keeping its own: axial, row-major eight, and the clockwise ring
+  (`roguelike`'s `neighbourOffsets` returns these now); `core.euclidean` is the
+  straight-line ruler beside `roguelike`'s `chebyshevDistance`.
+
 ## [0.25.0] - 2026-10-05
 
 Framework support for the Pixel Dungeon port's simulation and content proposals: numeric

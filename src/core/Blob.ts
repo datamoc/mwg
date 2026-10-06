@@ -1,3 +1,5 @@
+import { NEIGHBOURS4 } from './Grid.ts';
+
 /**
  * A spreading volume field over a grid: a number per cell that creeps into its open
  * neighbours and thins out over time. Fire, gas, caustic ooze, flood water - anything
@@ -29,14 +31,6 @@
  * fire.clear(5, 5); // someone douses that one tile
  * ```
  */
-
-/** the four axial neighbours of a cell, same order as `roguelike`'s square topology */
-const OFFSET_4: ReadonlyArray<readonly [number, number]> = [
-	[0, -1],
-	[1, 0],
-	[0, 1],
-	[-1, 0],
-];
 
 export class Blob {
 	readonly width: number;
@@ -102,7 +96,7 @@ export class Blob {
 				if (amount <= 0) continue;
 
 				const neighbours: number[] = [];
-				for (const [dx, dy] of OFFSET_4) {
+				for (const [dx, dy] of NEIGHBOURS4) {
 					const nx = x + dx;
 					const ny = y + dy;
 					const i = this.index(nx, ny);

@@ -496,6 +496,10 @@ build instead.
 
     export declare function checkSize(data: string | Uint8Array, options?: SizeLimitOptions): void;
 
+### `CIRCLE8` (const)
+
+    export declare const CIRCLE8: ReadonlyArray<readonly [number, number]>;
+
 ### `clamp` (function)
 
     export declare function clamp(value: number, min: number, max: number): number;
@@ -750,6 +754,11 @@ build instead.
 ### `escapeHtml` (function)
 
     export declare function escapeHtml(text: string): string;
+
+### `euclidean` (function)
+
+    export declare function euclidean(a: {
+        readonly x: number;
 
 ### `extractDialogueCatalog` (function)
 
@@ -1584,6 +1593,14 @@ build instead.
 ### `Mwl` (namespace)
 
     export * as Mwl from './mwl/index.ts'
+
+### `NEIGHBOURS4` (const)
+
+    export declare const NEIGHBOURS4: ReadonlyArray<readonly [number, number]>;
+
+### `NEIGHBOURS8` (const)
+
+    export declare const NEIGHBOURS8: ReadonlyArray<readonly [number, number]>;
 
 ### `newlyRevealed` (function)
 
@@ -5458,6 +5475,10 @@ build instead.
 
     export declare function checkSize(data: string | Uint8Array, options?: SizeLimitOptions): void;
 
+### `CIRCLE8` (const)
+
+    export declare const CIRCLE8: ReadonlyArray<readonly [number, number]>;
+
 ### `clamp` (function)
 
     export declare function clamp(value: number, min: number, max: number): number;
@@ -5528,6 +5549,11 @@ build instead.
         remove(id: EntityId): boolean;
         get size(): number;
     }
+
+### `euclidean` (function)
+
+    export declare function euclidean(a: {
+        readonly x: number;
 
 ### `FeedbackClient` (class)
 
@@ -5719,6 +5745,14 @@ build instead.
 ### `motionDuration` (function)
 
     export declare function motionDuration(duration: number, intent?: MotionIntent): number;
+
+### `NEIGHBOURS4` (const)
+
+    export declare const NEIGHBOURS4: ReadonlyArray<readonly [number, number]>;
+
+### `NEIGHBOURS8` (const)
+
+    export declare const NEIGHBOURS8: ReadonlyArray<readonly [number, number]>;
 
 ### `NewsClient` (class)
 

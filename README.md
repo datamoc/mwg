@@ -336,6 +336,21 @@ edited in a proper editor, without any of those options requiring changes to the
 It also keeps the content out of the bundle: `tools/compile-resources` treats a map file
 exactly like a sprite sheet, so adding a hundred maps does not touch the build at all.
 
+### Objects for behavior, data for content
+
+Content is data (above), but a game's *behavior* belongs in classes. A monster kept as
+loose scene fields works for one tutorial room and collapses for a dungeon: give it a
+class holding its state and the methods that change it, built on the framework's own
+bricks (`core.Scene` scenes, `actors.StatBlock` stats, `battle.Creature` opponents,
+`roguelike.Level` maps, `rpg.GridMover` movement, `core.EntityRegistry` identity).
+Subclass the brick that already owns the concern instead of reimplementing it beside an
+interface; no new base class is needed for ordinary actors.
+
+The boundary is where serialization starts. `simulation` commands survive
+`structuredClone`, `core.SaveSystem` stores JSON-serialisable state, and MWL rows are
+records by design, so classes stop where those begin: flatten at the boundary the way
+`rpg.GameState` does, and rebuild objects on load rather than storing them.
+
 ### On writing direction
 
 Supporting more than one language is mostly bookkeeping. Supporting more than one writing

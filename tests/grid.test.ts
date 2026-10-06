@@ -1,7 +1,19 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { cellFromKey, cellIndex, cellInside, cellKey, cellX, cellY } from '../src/core/Grid.ts';
+import {
+	CIRCLE8,
+	NEIGHBOURS4,
+	NEIGHBOURS8,
+	cellFromKey,
+	cellIndex,
+	cellInside,
+	cellKey,
+	cellX,
+	cellY,
+	euclidean,
+} from '../src/core/Grid.ts';
+import { neighbourOffsets } from '../src/roguelike/Level.ts';
 
 /**
  * The port-requested primitive, tested the way its exit criterion asks: bounds are checked at
@@ -73,4 +85,56 @@ test('keys are stable strings, so two systems agree on membership', () => {
 	assert.equal(seen.has('1,1'), true);
 	assert.equal(seen.has(cellKey(2, 0)), true);
 	assert.equal(seen.has(cellKey(0, 2)), false, 'order matters: (2,0) is not (0,2)');
+});
+
+test('NEIGHBOURS8 lists the eight surrounding cells in row-major order, centre skipped', () => {
+	assert.deepEqual(NEIGHBOURS8, [
+		[-1, -1],
+		[0, -1],
+		[1, -1],
+		[-1, 0],
+		[1, 0],
+		[-1, 1],
+		[0, 1],
+		[1, 1],
+	]);
+});
+
+test('CIRCLE8 walks the same ring clockwise from north', () => {
+	assert.deepEqual(CIRCLE8, [
+		[0, -1],
+		[1, -1],
+		[1, 0],
+		[1, 1],
+		[0, 1],
+		[-1, 1],
+		[-1, 0],
+		[-1, -1],
+	]);
+	//same eight cells as NEIGHBOURS8: only the visit order differs
+	assert.deepEqual([...CIRCLE8].sort(), [...NEIGHBOURS8].sort());
+});
+
+test('NEIGHBOURS4 lists the axial neighbours north, east, south, west', () => {
+	assert.deepEqual(NEIGHBOURS4, [
+		[0, -1],
+		[1, 0],
+		[0, 1],
+		[-1, 0],
+	]);
+});
+
+test('neighbourOffsets returns the shared core tables, not copies', () => {
+	//one table, two doors: flood fills and diffusion must visit one identical sequence,
+	//and returning the frozen table itself (rather than a copy) keeps the hot loops free
+	assert.equal(neighbourOffsets(4), NEIGHBOURS4);
+	assert.equal(neighbourOffsets(8), CIRCLE8);
+});
+
+test('euclidean measures straight-line distance in cells', () => {
+	const from = { x: 0, y: 0 };
+	assert.equal(euclidean(from, from), 0);
+	assert.equal(euclidean(from, { x: 3, y: 4 }), 5);
+	assert.equal(euclidean(from, { x: 1, y: 1 }), Math.SQRT2);
+	assert.equal(euclidean({ x: 1, y: 1 }, from), euclidean(from, { x: 1, y: 1 }), 'symmetric in its arguments');
 });

@@ -5,7 +5,7 @@
 	"releaseDate": "2026-10-05",
 	"source": {
 		"files": 324,
-		"lines": 58588,
+		"lines": 58648,
 		"modules": 17,
 		"breakdown": [
 			{
@@ -21,7 +21,7 @@
 			{
 				"name": "core",
 				"files": 50,
-				"lines": 6525
+				"lines": 6605
 			},
 			{
 				"name": "board",
@@ -36,7 +36,7 @@
 			{
 				"name": "roguelike",
 				"files": 22,
-				"lines": 3520
+				"lines": 3500
 			},
 			{
 				"name": "actors",
@@ -97,8 +97,8 @@
 	},
 	"tests": {
 		"files": 286,
-		"lines": 38182,
-		"cases": 2654
+		"lines": 38246,
+		"cases": 2659
 	},
 	"tools": {
 		"files": 46,
@@ -143,9 +143,9 @@
 		"declarationFiles": 323
 	},
 	"bundle": {
-		"globalRaw": 1225837,
-		"globalGzip": 366029,
-		"distRaw": 4172474
+		"globalRaw": 1225983,
+		"globalGzip": 366084,
+		"distRaw": 4176222
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

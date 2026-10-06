@@ -16,6 +16,7 @@
  * @example
  * ```ts
  * import { cellInside, cellIndex, cellX, cellY, cellKey, cellFromKey } from '@datamoc/mw_games/core';
+ * import { NEIGHBOURS4, NEIGHBOURS8, CIRCLE8, euclidean } from '@datamoc/mw_games/core';
  *
  * // a 4x3 board, row-major: y * width + x
  * cellInside(4, 3, 3, 2);        // true, the far corner
@@ -26,6 +27,11 @@
  *
  * const seen = new Set([cellKey(2, 1)]);   // '2,1', for a Map or a Set
  * cellFromKey('2,1');                      // { x: 2, y: 1 }
+ *
+ * NEIGHBOURS8.length; // 8, the surrounding cells in row-major order
+ * CIRCLE8[0];         // [0, -1], the same ring clockwise from north
+ * NEIGHBOURS4.length; // 4, north/east/south/west
+ * euclidean({ x: 0, y: 0 }, { x: 3, y: 4 }); // 5
  * ```
  */
 
@@ -77,4 +83,73 @@ export function cellFromKey(key: string): { x: number; y: number } | null {
 	const match = /^(-?\d+),(-?\d+)$/.exec(key);
 	if (!match) return null;
 	return { x: Number(match[1]), y: Number(match[2]) };
+}
+
+/**
+ * The four axial neighbours of a cell: north, east, south, west, in that order.
+ *
+ * One frozen table shared by every square-grid algorithm, so a flood fill and a
+ * diffusion field visit neighbours in the same sequence without each keeping its
+ * own copy: `roguelike`'s `neighbourOffsets(4)` returns this same table.
+ */
+export const NEIGHBOURS4: ReadonlyArray<readonly [number, number]> = [
+	[0, -1],
+	[1, 0],
+	[0, 1],
+	[-1, 0],
+];
+
+/**
+ * The eight cells surrounding a cell, in row-major (reading) order, centre skipped.
+ *
+ * The same eight cells `CIRCLE8` carries, only the visit order differs: reading order
+ * suits first-found-wins scans, the ring suits directional work like knockback cursors.
+ */
+export const NEIGHBOURS8: ReadonlyArray<readonly [number, number]> = [
+	[-1, -1],
+	[0, -1],
+	[1, -1],
+	[-1, 0],
+	[1, 0],
+	[-1, 1],
+	[0, 1],
+	[1, 1],
+];
+
+/**
+ * The eight cells surrounding a cell as a clockwise ring starting north.
+ *
+ * The same sequence `roguelike`'s `neighbourOffsets(8)` has always returned, now shared
+ * from here instead of copied there.
+ */
+export const CIRCLE8: ReadonlyArray<readonly [number, number]> = [
+	[0, -1],
+	[1, -1],
+	[1, 0],
+	[1, 1],
+	[0, 1],
+	[-1, 1],
+	[-1, 0],
+	[-1, -1],
+];
+
+/**
+ * Euclidean ruler distance between two cells.
+ *
+ * The counterpart to `roguelike`'s `chebyshevDistance`, which charges a diagonal the
+ * same as a step: use this one when the true straight-line distance matters (blast
+ * falloff, census radius) and that one for roguelike range and movement.
+ *
+ * @example
+ * ```ts
+ * import { euclidean } from '@datamoc/mw_games/core';
+ *
+ * euclidean({ x: 0, y: 0 }, { x: 3, y: 4 }); // 5
+ * ```
+ */
+export function euclidean(
+	a: { readonly x: number; readonly y: number },
+	b: { readonly x: number; readonly y: number },
+): number {
+	return Math.hypot(a.x - b.x, a.y - b.y);
 }

@@ -224,6 +224,12 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   deliberately *unchecked* arithmetic, so a loop that has already proved its coordinates pays
   nothing while a module that wants a throw or a `-1` keeps that policy in its own method;
   `cellKey`/`cellFromKey` are the `'x,y'` spelling for `Map`/`Set` membership.
+- `NEIGHBOURS4`/`NEIGHBOURS8`/`CIRCLE8`/`euclidean` - one frozen offset table per square
+  neighbourhood, shared instead of copied: axial north/east/south/west, the eight
+  surrounding cells in row-major order, and the same ring clockwise from north (the
+  sequence `roguelike`'s `neighbourOffsets(8)` always returned, now returned as-is from
+  here). `euclidean` is the straight-line ruler; `roguelike`'s `chebyshevDistance` stays
+  the diagonal-costs-a-step one.
 - `Blob` - a spreading volume field over a grid: a per-cell number that `spread` diffuses a
   share of into its open 4-neighbours and decays the rest (`decay: 1` conserves and only
   moves volume around). `seed` adds to a cell, `clear` zeroes one cell and leaves its

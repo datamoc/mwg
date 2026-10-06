@@ -1,5 +1,5 @@
 import { hexNeighbors } from '../core/Hex.ts';
-import { cellIndex, cellInside, cellX, cellY } from '../core/Grid.ts';
+import { cellIndex, cellInside, cellX, cellY, CIRCLE8, NEIGHBOURS4 } from '../core/Grid.ts';
 
 /**
  * The map a roguelike reasons about.
@@ -12,26 +12,6 @@ import { cellIndex, cellInside, cellX, cellY } from '../core/Grid.ts';
 
 /** the grid a `Level` reasons over - a parameter, not a forked class, per the roadmap */
 export type LevelShape = 'square' | 'hex';
-
-//one frozen table per topology, shared by every caller: these sit inside the hottest loops
-//here (a flood fill calls `neighbors` per cell), so a fresh array per call was pure GC churn
-const OFFSET_4: ReadonlyArray<readonly [number, number]> = [
-	[0, -1],
-	[1, 0],
-	[0, 1],
-	[-1, 0],
-];
-
-const OFFSET_8: ReadonlyArray<readonly [number, number]> = [
-	[0, -1],
-	[1, -1],
-	[1, 0],
-	[1, 1],
-	[0, 1],
-	[-1, 1],
-	[-1, 0],
-	[-1, -1],
-];
 
 /**
  * The six hex offsets, split by column parity: the odd-q scheme pushes odd columns half a
@@ -59,9 +39,9 @@ const HEX_OFFSETS_ODD: ReadonlyArray<readonly [number, number]> = [
 	[0, 1],
 ];
 
-/** the four or eight cell offsets around a point, shared by every square-grid algorithm here */
+/** the four or eight cell offsets around a point: the shared `core` tables, returned as-is */
 export function neighbourOffsets(topology: 4 | 8): ReadonlyArray<readonly [number, number]> {
-	return topology === 4 ? OFFSET_4 : OFFSET_8;
+	return topology === 4 ? NEIGHBOURS4 : CIRCLE8;
 }
 
 export interface TerrainKind {
