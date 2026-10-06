@@ -21,6 +21,11 @@
  * bundler and tree-shaking configuration the *consumer* uses, not a universal one, and the
  * port whose build tree-shook a pipe away is exactly the case this function is for.
  *
+ * Facade-gap accounting (P31): every primitive below already has a facade family, so no new
+ * facade coverage was needed - what stays interop-only is the Pixi-typed seam each note
+ * names, and a consumer budget justifies a use by pointing at the note instead of merely
+ * counting the import.
+ *
  * @example
  * ```ts
  * import { registerBuiltinPipes, TilingSprite } from '@datamoc/mw_games/two-d/pixi-interop';
@@ -31,18 +36,26 @@
  * const backdrop = new TilingSprite({ texture: undefined as never, width: 100, height: 100 });
  * ```
  */
-export {
-	Container,
-	Sprite,
-	Texture,
-	Graphics,
-	Rectangle,
-	Text,
-	FillGradient,
-	TilingSprite,
-	TilingSpritePipe,
-	NineSliceSpritePipe,
-} from 'pixi.js';
+
+/** Interop-only: the unadorned scene-graph node behind facade `Container2D`/`Node2D`. The facade subclasses it rather than wrapping it, so a value that never needed the subclass - or a Pixi API typed against the base - still names this. */
+export { Container } from 'pixi.js';
+/** Interop-only: the textured quad behind facade `Sprite2D`/`TintedSprite`/`AnimatedSprite`. Same subclass relationship: reach for this for Pixi sprite behaviour the facade subclasses do not model, not for an ordinary positioned image. */
+export { Sprite } from 'pixi.js';
+/** Interop-only: the GPU image behind facade `Texture2D`/`TextureRegion`. `TextureRegion` still carries one in its `texture` slot, and Pixi constructors (sprites, tilings, nine-slices, render textures) take one - that slot is the seam. */
+export { Texture } from 'pixi.js';
+/** Interop-only: the vector canvas behind facade `Shape2D`. `Shape2D` extends this with the game's fill/stroke vocabulary; a `Graphics` program outside that vocabulary stays here. */
+export { Graphics } from 'pixi.js';
+/** Interop-only: the Pixi rect behind facade `Rect`. Atlas frames, bounds and hit areas arrive as one; `render.rectOf` converts it to a plain `Rect` at the boundary, and code that hands a rect straight back to Pixi keeps this. */
+export { Rectangle } from 'pixi.js';
+/** Interop-only: the text node behind facade `Text2D`. Same subclass relationship as `Sprite`: ordinary labels are `Text2D`; Pixi text behaviour the facade does not model stays here. */
+export { Text } from 'pixi.js';
+/** Interop-only: the gradient behind facade `Gradient` (which is this, aliased). `Shape2D.fill`/`.stroke` accept it directly, so most gradient work never imports it; direct construction of a gradient object does. */
+export { FillGradient } from 'pixi.js';
+/** Interop-only: the repeating texture behind facade `TiledSprite`. `TiledSprite` extends this; tiling behaviour outside the facade's repeat/offset surface stays here (and needs `registerBuiltinPipes` in a tree-shaken build, below). */
+export { TilingSprite } from 'pixi.js';
+/** Interop-only: renderer pipes, not scene content. Only needed when a consumer bundler tree-shook them away; see `registerBuiltinPipes`. */
+export { TilingSpritePipe, NineSliceSpritePipe } from 'pixi.js';
+/** The Pixi sprite construction options, for the rare hand-built interop sprite above. */
 export type { SpriteOptions } from 'pixi.js';
 
 import { extensions, TilingSpritePipe, NineSliceSpritePipe } from 'pixi.js';

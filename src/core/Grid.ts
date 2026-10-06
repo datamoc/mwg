@@ -153,3 +153,80 @@ export function euclidean(
 ): number {
 	return Math.hypot(a.x - b.x, a.y - b.y);
 }
+
+/**
+ * Chebyshev ruler distance between two cells: the king-move count, a diagonal costing one step.
+ *
+ * The counterpart to `euclidean` above for grid movement and range, where a diagonal is a
+ * single step rather than 1.41 cells; `roguelike`
+ * `chebyshevDistance` is this same arithmetic through its own `Step` type.
+ *
+ * @example
+ * ```ts
+ * import { chebyshev } from '@datamoc/mw_games/core';
+ *
+ * chebyshev({ x: 0, y: 0 }, { x: 3, y: 4 }); // 4
+ * ```
+ */
+export function chebyshev(
+	a: { readonly x: number; readonly y: number },
+	b: { readonly x: number; readonly y: number },
+): number {
+	return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+}
+
+/**
+ * Manhattan ruler distance between two cells: the orthogonal-step count, no diagonals.
+ *
+ * The counterpart to `euclidean` and `chebyshev` for four-way movement and range, where
+ * every step is axis-aligned.
+ *
+ * @example
+ * ```ts
+ * import { manhattan } from '@datamoc/mw_games/core';
+ *
+ * manhattan({ x: 0, y: 0 }, { x: 3, y: 4 }); // 7
+ * ```
+ */
+export function manhattan(
+	a: { readonly x: number; readonly y: number },
+	b: { readonly x: number; readonly y: number },
+): number {
+	return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+
+/**
+ * The ruler a rule measures with, chosen by name where the choice itself is data: a
+ * movement rule walks `chebyshev`, a blast falls off with `euclidean`, a four-way maze
+ * counts `manhattan`.
+ */
+export type DistanceMetric = 'euclidean' | 'manhattan' | 'chebyshev';
+
+/**
+ * Measures `a` to `b` with the named ruler, so a rule authored as data (a table row, a
+ * authored profile) can pick its geometry without importing each ruler by name.
+ *
+ * @example
+ * ```ts
+ * import { distance } from '@datamoc/mw_games/core';
+ *
+ * distance('chebyshev', { x: 0, y: 0 }, { x: 3, y: 4 }); // 4
+ * distance('euclidean', { x: 0, y: 0 }, { x: 3, y: 4 }); // 5
+ * ```
+ */
+export function distance(
+	metric: DistanceMetric,
+	a: { readonly x: number; readonly y: number },
+	b: { readonly x: number; readonly y: number },
+): number {
+	switch (metric) {
+		case 'euclidean':
+			return euclidean(a, b);
+		case 'manhattan':
+			return manhattan(a, b);
+		case 'chebyshev':
+			return chebyshev(a, b);
+		default:
+			throw new RangeError(`unknown distance metric: ${metric as string}`);
+	}
+}

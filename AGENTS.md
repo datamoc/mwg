@@ -157,7 +157,7 @@ for it, and `ui` and `stage` live under `two-d` rather than at the root:
 - **`world`** - `World` (many maps, each created once and kept alive), `Overworld`
   (location lookup), `TurnClock` (hunger/poison-style timed effects, distinct from
   `Scheduler`), `rollEncounter`.
-- **`rpg`** - `loadTiledMap` (orthogonal, single-tileset, uncompressed CSV layers only,
+- **`rpg`** - `loadTiledMap` (orthogonal, isometric and staggered orientations, multi-tileset with a single-sheet compatibility path, uncompressed CSV layers only,
   each unsupported case throws by name), `GameState` (switches/variables),
   `MapEvent`/`activePage` (last matching page wins), `EventRunner` (a `StageScript`-shaped
   interpreter for map events instead of dialogue), `GridMover` (tweened tile movement +

@@ -13,9 +13,11 @@ import { fileURLToPath } from 'node:url';
  * regenerates it from a fresh build.
  *
  * Modes:
- *   node tools/api-report.mjs                           write API_REPORT.md from dist/
- *   node tools/api-report.mjs --check                   fail if dist/ disagrees with API_REPORT.md
+ *   node tools/api-report.mjs                           write API_REPORT.md and api-surface.json from dist/
+ *   node tools/api-report.mjs --check                   fail if dist/ disagrees with either committed file
  *   node tools/api-report.mjs --check --declarations D  fail if declarations under D disagree
+ *   node tools/api-report.mjs --diff OLD NEW            list added/removed/kind-changed
+ *                                                       exports between two api-surface.json files
  *
  * The last mode exists for the test suite, which emits declarations into a temp dir with
  * `tsc --emitDeclarationOnly` and checks those, so `npm test` needs no prior build.
@@ -23,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const reportPath = join(root, 'API_REPORT.md');
+const manifestPath = join(root, 'api-surface.json');
 
 /** public subpath -> declaration file path (relative to the declarations dir) */
 function publicModules() {
@@ -33,7 +36,7 @@ function publicModules() {
 		if (subpath.startsWith('./tools')) continue;
 		const types = typeof target === 'string' ? null : (target.types ?? target.import);
 		const distPath = typeof target === 'string' ? target : types;
-		if (!distPath) continue;
+		if (!distPath || !distPath.startsWith('./dist/')) continue;
 		const rel = distPath.replace(/^\.\/dist\//, '').replace(/\\/g, '/');
 		modules.push({ subpath, rel });
 	}
@@ -150,7 +153,7 @@ function parseFile(text) {
 		}
 
 		const listMatch = line.match(/^export (type\s+)?\{([^}]*)\}\s*(?:from\s+'([^']+)')?;?/);
-		if (listMatch && line.startsWith('export {')) {
+		if (listMatch && (line.startsWith('export {') || line.startsWith('export type {'))) {
 			const typeOnly = Boolean(listMatch[1]);
 			const list = splitNameList(listMatch[2]).map((entry) => ({ ...entry, type: typeOnly || entry.type }));
 			statements.push({ kind: 'list', type: typeOnly, list, source: listMatch[3] ?? null });
@@ -211,11 +214,11 @@ function resolveModule(file, files, cache) {
 	const parsed = parseFile(text);
 	const exports = new Map();
 
-	function add(name, kind, declaration) {
-		if (!exports.has(name)) exports.set(name, { kind, text: declaration });
+	function add(name, kind, declaration, declaring = file) {
+		if (!exports.has(name)) exports.set(name, { kind, text: declaration, file: declaring });
 	}
 
-	for (const [name, decl] of parsed.declarations) add(name, decl.kind, decl.text);
+	for (const [name, decl] of parsed.declarations) add(name, decl.kind, decl.text, file);
 
 	for (const statement of parsed.statements) {
 		if (statement.kind === 'starAs') {
@@ -226,7 +229,7 @@ function resolveModule(file, files, cache) {
 		if (statement.kind === 'star') {
 			const target = resolveSpecifier(file, statement.source);
 			if (target === null || !files.has(target)) continue;
-			for (const [name, decl] of resolveModule(target, files, cache)) add(name, decl.kind, decl.text);
+			for (const [name, decl] of resolveModule(target, files, cache)) add(name, decl.kind, decl.text, decl.file);
 			continue;
 		}
 
@@ -243,7 +246,7 @@ function resolveModule(file, files, cache) {
 					continue;
 				}
 				const resolved = resolveModule(target, files, cache).get(entry.local);
-				if (resolved) add(entry.exported, resolved.kind, resolved.text);
+				if (resolved) add(entry.exported, resolved.kind, resolved.text, resolved.file);
 				else
 					add(
 						entry.exported,
@@ -260,7 +263,7 @@ function resolveModule(file, files, cache) {
 				if (target !== null && files.has(target)) {
 					const resolved = resolveModule(target, files, cache).get(imported.local);
 					if (resolved) {
-						add(entry.exported, resolved.kind, resolved.text);
+						add(entry.exported, resolved.kind, resolved.text, resolved.file);
 						continue;
 					}
 				}
@@ -319,20 +322,131 @@ function renderReport(modules, files) {
 	return lines.join('\n');
 }
 
+/**
+ * The P28 machine-readable surface: one entry per export per subpath, sorted by
+ * `(subpath, name)`, as `{ name, kind, subpath, declaringModule }`.
+ *
+ * - `name`/`kind` are the export's name and declaration kind (`class`, `interface`,
+ *   `type`, `function`, `const`, `enum`, `namespace`, or a re-export spelling the
+ *   report could not resolve further). For a `tools/*` subpath, which ships no
+ *   declarations, `name` is the subpath itself and `kind` is `'tool'` (or `'data'`
+ *   for the manifest itself, the one shipped JSON file).
+ * - `subpath` is the `package.json` exports key a consumer imports (`'.'`, `'./core'`,
+ *   `'./tools/browser-smoke'`, ...), including the bare-string `tools/*` entries an
+ *   export-object `types` filter never sees.
+ * - `declaringModule` is the declaration file that declares the name, relative to the
+ *   declarations dir (`core/Random.d.ts`), or the shipped tool script for tools
+ *   entries (`tools/browser-smoke.mjs`); a name only re-exported from an external
+ *   package (Pixi's `Container` via `two-d/pixi-interop`) names the barrel that
+ *   surfaces it instead.
+ *
+ * A version bump then yields a one-command surface diff:
+ * `node tools/api-report.mjs --diff <old api-surface.json> <new api-surface.json>`.
+ */
+function toolEntries() {
+	const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+	const tools = [];
+
+	for (const [subpath, target] of Object.entries(pkg.exports)) {
+		if (typeof target !== 'string' || target.startsWith('./dist/')) continue;
+		const targetPath = typeof target === 'string' ? target : (target.import ?? target.types);
+		if (!targetPath) continue;
+		tools.push({
+			subpath,
+			target: targetPath.replace(/^\.\//, '').replace(/\\/g, '/'),
+			kind: targetPath.endsWith('.json') ? 'data' : 'tool',
+		});
+	}
+
+	tools.sort((a, b) => a.subpath.localeCompare(b.subpath));
+	return tools;
+}
+
+function emitManifest(modules, files) {
+	const cache = new Map();
+	const entries = [];
+
+	for (const { subpath, rel } of modules) {
+		for (const [name, decl] of resolveModule(rel, files, cache)) {
+			entries.push({
+				name,
+				kind: decl.kind,
+				subpath,
+				declaringModule: (decl.file ?? rel).replace(/\\/g, '/'),
+			});
+		}
+	}
+
+	for (const { subpath, target, kind } of toolEntries()) {
+		entries.push({ name: subpath, kind, subpath, declaringModule: target });
+	}
+
+	entries.sort((a, b) => a.subpath.localeCompare(b.subpath) || a.name.localeCompare(b.name));
+	return entries;
+}
+
+/**
+ * Tab-indented: prettier formats this repo's JSON with tabs (`useTabs`), and the
+ * committed manifest must already be in that style for `format:check` to pass.
+ */
+function renderManifest(manifest) {
+	return `${JSON.stringify(manifest, null, '\t')}\n`;
+}
+
+/** added/removed/changed-kind lines between two manifests, for the one-command diff */
+function diffManifests(oldEntries, newEntries) {
+	const keyOf = (entry) => `${entry.subpath} :: ${entry.name}`;
+	const oldByKey = new Map(oldEntries.map((entry) => [keyOf(entry), entry]));
+	const newByKey = new Map(newEntries.map((entry) => [keyOf(entry), entry]));
+	const lines = [];
+
+	for (const [key, entry] of oldByKey) {
+		if (!newByKey.has(key)) lines.push(`- ${key} (${entry.kind}, ${entry.subpath})`);
+	}
+
+	for (const [key, entry] of newByKey) {
+		const old = oldByKey.get(key);
+		if (!old) lines.push(`+ ${key} (${entry.kind}, ${entry.subpath})`);
+		else if (old.kind !== entry.kind) lines.push(`~ ${key}: ${old.kind} -> ${entry.kind}`);
+	}
+
+	return lines;
+}
+
 function main() {
 	const args = process.argv.slice(2);
 	const check = args.includes('--check');
 	const declarationsFlag = args.indexOf('--declarations');
 	const declarationsDir = declarationsFlag === -1 ? null : args[declarationsFlag + 1];
+	const diffFlag = args.indexOf('--diff');
+	if (diffFlag !== -1) {
+		const [oldFile, newFile] = args.slice(diffFlag + 1);
+		if (!oldFile || !newFile) {
+			console.error('usage: node tools/api-report.mjs --diff <old api-surface.json> <new api-surface.json>');
+			process.exitCode = 1;
+			return;
+		}
+		const lines = diffManifests(
+			JSON.parse(readFileSync(oldFile, 'utf8')),
+			JSON.parse(readFileSync(newFile, 'utf8')),
+		);
+		for (const line of lines) console.log(line);
+		console.log(`${lines.length} surface difference(s)`);
+		if (lines.length > 0) process.exitCode = 1;
+		return;
+	}
 
 	const dir = declarationsDir ?? join(root, 'dist');
 	const files = readDeclarations(dir);
 	const modules = publicModules();
 	const rendered = renderReport(modules, files);
+	const manifest = renderManifest(emitManifest(modules, files));
 
 	if (!check) {
 		writeFileSync(reportPath, rendered);
+		writeFileSync(manifestPath, manifest);
 		console.log(`wrote ${relative(root, reportPath)} (${files.size} declaration files)`);
+		console.log(`wrote ${relative(root, manifestPath)} (${JSON.parse(manifest).length} exports)`);
 		return;
 	}
 
@@ -342,6 +456,13 @@ function main() {
 	const committed = readFileSync(reportPath, 'utf8').replace(/\r\n/g, '\n');
 	if (committed === rendered.replace(/\r\n/g, '\n')) {
 		console.log('API_REPORT.md matches the current declarations.');
+		const committedManifest = readFileSync(manifestPath, 'utf8').replace(/\r\n/g, '\n');
+		if (committedManifest !== manifest.replace(/\r\n/g, '\n')) {
+			console.error('api-surface.json is out of date. Run `npm run api:report` and commit the result.');
+			process.exitCode = 1;
+			return;
+		}
+		console.log('api-surface.json matches the current declarations.');
 		return;
 	}
 

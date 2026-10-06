@@ -6,6 +6,29 @@ build instead.
 
 ## root (`@datamoc/mw_games`)
 
+### `AchievementCriterion` (interface)
+
+    export interface AchievementCriterion {
+
+        counter: string;
+
+        target: number;
+    }
+
+### `AchievementDef` (interface)
+
+    export interface AchievementDef {
+        id: string;
+
+        counter?: string;
+
+        target?: number;
+
+        criteria?: AchievementCriterion[];
+
+        description?: string;
+    }
+
 ### `Achievements` (class)
 
     export declare class Achievements {
@@ -62,6 +85,18 @@ build instead.
         static fromJSON<Action, Event>(entries: readonly ActionJournalEntry<Action, Event>[]): ActionJournal<Action, Event>;
     }
 
+### `ActionJournalEntry` (interface)
+
+    export interface ActionJournalEntry<Action, Event> {
+        readonly sequence: number;
+        readonly action: Action;
+        readonly events: readonly Event[];
+    }
+
+### `ActorAnimationState` (type)
+
+    export type ActorAnimationState = 'idle' | 'move' | 'action';
+
 ### `ActorAnimator` (class)
 
     export declare class ActorAnimator {
@@ -82,6 +117,15 @@ build instead.
         private apply;
     }
 
+### `ActorAnimatorOptions` (interface)
+
+    export interface ActorAnimatorOptions {
+
+        animationName: (state: ActorAnimationState, variant: string) => string;
+
+        variant?: string;
+    }
+
 ### `Actors` (namespace)
 
     export * as Actors from './actors/index.ts'
@@ -94,10 +138,32 @@ build instead.
 
     export * as AI from './ai/index.ts'
 
+### `Anchor` (type)
+
+    export type Anchor = 'top-left' | 'top' | 'top-right' | 'left' | 'center' | 'right' | 'bottom-left' | 'bottom' | 'bottom-right' | 'fill';
+
 ### `anchorAlign` (function)
 
     export declare function anchorAlign(anchor: Anchor): {
         x: number;
+
+### `AnchorSpec` (interface)
+
+    export interface AnchorSpec {
+
+        anchor?: Anchor;
+
+        offsetX?: number;
+        offsetY?: number;
+
+        alignX?: number;
+        alignY?: number;
+
+        width?: number;
+        height?: number;
+
+        margin?: number;
+    }
 
 ### `AnimatedSprite` (class)
 
@@ -148,6 +214,32 @@ build instead.
         frameIndexAt(seconds: number): number;
     }
 
+### `AnimationFrame` (interface)
+
+    export interface AnimationFrame {
+        readonly texture: Texture2D;
+
+        readonly duration?: number;
+
+        readonly offsetX?: number;
+        readonly offsetY?: number;
+    }
+
+### `AnimationFrameInput` (type)
+
+    export type AnimationFrameInput = Texture2D | AnimationFrame;
+
+### `AnimationOptions` (interface)
+
+    export interface AnimationOptions {
+
+        fps?: number;
+
+        loop?: boolean;
+
+        startTime?: number;
+    }
+
 ### `applyAllImageModifiers` (function)
 
     export declare function applyAllImageModifiers(sprite: Sprite, parsed: ParsedImagePath, probe?: ImageTextureProbe, scale?: number): void;
@@ -164,17 +256,82 @@ build instead.
 
     export declare function assertAutotileLayout(layout: AutotileLayout): void;
 
+### `AttachmentPoint` (interface)
+
+    export interface AttachmentPoint {
+        x: number;
+        y: number;
+    }
+
 ### `Audio` (namespace)
 
     export * as Audio from './audio/index.ts'
+
+### `AudioSuspendRig` (interface)
+
+    export interface AudioSuspendRig {
+        suspend(): void;
+        resume(): void;
+    }
+
+### `AutotileCell` (type)
+
+    export type AutotileCell = number;
+
+### `AutotileCellPart` (interface)
+
+    export interface AutotileCellPart {
+        sourceX: number;
+        sourceY: number;
+        sourceWidth: number;
+        sourceHeight: number;
+        destX: number;
+        destY: number;
+        destWidth: number;
+        destHeight: number;
+    }
 
 ### `autotileCellParts` (function)
 
     export declare function autotileCellParts(layout: AutotileLayout, tile: number, frame: number): AutotileCellPart[] | null;
 
+### `AutotileFormat` (type)
+
+    export type AutotileFormat = 'rpgm-mv' | 'rpgm-xp';
+
 ### `autotileFrames` (function)
 
     export declare function autotileFrames(width: number, height: number, sameTerrain: (x: number, y: number) => boolean, frames: readonly number[]): Int32Array;
+
+### `AutotileLayout` (type)
+
+    export type AutotileLayout = {
+        format: 'rpgm-mv';
+
+### `AutotileSet` (interface)
+
+    export interface AutotileSet {
+
+        sheet: SpriteSheet;
+
+        format?: AutotileFormat;
+
+        slot?: RpgmAutotileSlot;
+
+        mode?: 'floor' | 'wall' | 'mixed';
+
+        table?: RpgmAutotileShapeTable;
+
+        index?: number;
+
+        frames?: number;
+
+        tableEdge?: boolean;
+
+        animation?: ReadonlyArray<ReadonlyArray<number>>;
+
+        animationFrame?: number;
+    }
 
 ### `Bar` (class)
 
@@ -206,6 +363,26 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `BarOptions` (interface)
+
+    export interface BarOptions {
+        width: number;
+        height: number;
+
+        color?: number;
+
+        value?: number;
+        max?: number;
+
+        fillTexture?: Texture2D;
+
+        background?: number;
+
+        backgroundTexture?: Texture2D;
+
+        roundUpToPixel?: boolean;
+    }
+
 ### `Battle` (namespace)
 
     export * as Battle from './battle/index.ts'
@@ -222,6 +399,10 @@ build instead.
         private restyle;
         destroy(options?: Parameters<BitmapText['destroy']>[0]): void;
     }
+
+### `BitmapLabelOptions` (type)
+
+    export type BitmapLabelOptions = ThemedTextOptions;
 
 ### `bitmapLabelStyle` (function)
 
@@ -318,6 +499,40 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `ButtonOptions` (interface)
+
+    export interface ButtonOptions {
+        width: number;
+        height: number;
+
+        text?: string;
+
+        icon?: Container2D;
+
+        skin?: ButtonSkin;
+
+        label?: Omit<LabelOptions, 'text'>;
+        disabled?: boolean;
+        onClick?: () => void;
+
+        onPress?: () => void;
+
+        onRelease?: () => void;
+    }
+
+### `ButtonSkin` (interface)
+
+    export interface ButtonSkin {
+        texture: Texture2D;
+        border: NinePatchOptions['border'];
+
+        tints?: Partial<Record<ButtonState, number>>;
+    }
+
+### `ButtonState` (type)
+
+    export type ButtonState = 'idle' | 'hover' | 'pressed' | 'disabled';
+
 ### `Camera` (class)
 
     export declare class Camera {
@@ -412,6 +627,19 @@ build instead.
         private apply;
     }
 
+### `CameraOptions` (interface)
+
+    export interface CameraOptions {
+
+        zoom?: number;
+
+        grid?: 'square' | 'hex';
+
+        deadzone?: number;
+
+        pixelPerfectTileSize?: number;
+    }
+
 ### `CanonicalState` (class)
 
     export declare class CanonicalState<State extends StateValue> {
@@ -430,6 +658,15 @@ build instead.
         snapshot(): CanonicalStateSnapshot<State>;
         restore(snapshot: CanonicalStateSnapshot<State>, options?: Parameters<StateRegistry['restore']>[1]): readonly StateRestoreDiagnostic[];
         transaction<T>(work: (state: CanonicalState<State>) => T): T;
+    }
+
+### `CanonicalStateSnapshot` (interface)
+
+    export interface CanonicalStateSnapshot<State extends StateValue = StateValue> {
+        readonly version: number;
+        readonly state: State;
+        readonly extensions: Readonly<Record<string, StateValue>>;
+        readonly extensionVersions?: Readonly<Record<string, number>>;
     }
 
 ### `cellFromKey` (function)
@@ -462,9 +699,30 @@ build instead.
     export declare function channelScaleMatrix(scale: {
         red?: number;
 
+### `ChannelSource` (type)
+
+    export type ChannelSource = 'R' | 'G' | 'B' | 'A' | '0' | '1';
+
 ### `channelSwapMatrix` (function)
 
     export declare function channelSwapMatrix(sources: readonly ChannelSource[]): ColorMatrixFilter['matrix'];
+
+### `CharacterDefinition` (interface)
+
+    export interface CharacterDefinition {
+        sheet: SpriteSheet;
+
+        expressions: Record<string, number>;
+
+        height?: number;
+
+        baseline?: number;
+    }
+
+### `chebyshev` (function)
+
+    export declare function chebyshev(a: {
+        readonly x: number;
 
 ### `Checkbox` (class)
 
@@ -488,6 +746,17 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `CheckboxOptions` (interface)
+
+    export interface CheckboxOptions {
+
+        size?: number;
+        checked?: boolean;
+        disabled?: boolean;
+
+        color?: number;
+    }
+
 ### `checkNoControlCharacters` (function)
 
     export declare function checkNoControlCharacters(text: string): void;
@@ -495,6 +764,14 @@ build instead.
 ### `checkSize` (function)
 
     export declare function checkSize(data: string | Uint8Array, options?: SizeLimitOptions): void;
+
+### `Choice` (interface)
+
+    export interface Choice {
+        text: string;
+        value?: unknown;
+        disabled?: boolean;
+    }
 
 ### `CIRCLE8` (const)
 
@@ -531,9 +808,22 @@ build instead.
         private parse;
     }
 
+### `CollectionOptions` (interface)
+
+    export interface CollectionOptions {
+
+        namespace?: string;
+
+        storage?: SaveStorage;
+    }
+
 ### `COLOR_BLINDNESS_MATRICES` (const)
 
     export declare const COLOR_BLINDNESS_MATRICES: Record<ColorBlindnessType, ColorMatrix>;
+
+### `ColorBlindnessType` (type)
+
+    export type ColorBlindnessType = 'protanopia' | 'deuteranopia' | 'tritanopia';
 
 ### `colorShiftMatrix` (function)
 
@@ -567,6 +857,10 @@ build instead.
 
     export { Container2D }
 
+### `ContrastLevel` (type)
+
+    export type ContrastLevel = 'AA' | 'AAA';
+
 ### `contrastRatio` (function)
 
     export declare function contrastRatio(a: number, b: number): number;
@@ -590,6 +884,25 @@ build instead.
 ### `croppedTexture` (function)
 
     export declare function croppedTexture(texture: Texture, parsed: ParsedImagePath): Texture;
+
+### `CsvColumnType` (type)
+
+    export type CsvColumnType = 'string' | 'number' | 'boolean' | 'list' | 'map';
+
+### `CsvOptions` (interface)
+
+    export interface CsvOptions {
+
+        columns?: Record<string, CsvColumnType>;
+
+        listDelimiter?: string;
+
+        mapDelimiter?: string;
+    }
+
+### `CustomSettingValue` (type)
+
+    export type CustomSettingValue = string | number | boolean;
 
 ### `DataTable` (class)
 
@@ -629,6 +942,24 @@ build instead.
         private firstEnabled;
     }
 
+### `DataTableOptions` (interface)
+
+    export interface DataTableOptions<T> {
+        columns: readonly TableColumn<T>[];
+        rows?: readonly T[];
+
+        pageSize?: number;
+
+        disabled?: (row: T) => boolean;
+    }
+
+### `DbRecord` (interface)
+
+    export interface DbRecord {
+        id: string;
+        [field: string]: unknown;
+    }
+
 ### `defaultSettings` (function)
 
     export declare function defaultSettings(): GameSettings;
@@ -644,6 +975,13 @@ build instead.
 ### `detectWebGpu` (function)
 
     export declare function detectWebGpu(): Promise<WebGpuDetection>;
+
+### `DialogueLine` (interface)
+
+    export interface DialogueLine {
+        text: string;
+        speaker?: string;
+    }
 
 ### `DialogueStage` (class)
 
@@ -680,6 +1018,15 @@ build instead.
 
         get isBusy(): boolean;
     }
+
+### `distance` (function)
+
+    export declare function distance(metric: DistanceMetric, a: {
+        readonly x: number;
+
+### `DistanceMetric` (type)
+
+    export type DistanceMetric = 'euclidean' | 'manhattan' | 'chebyshev';
 
 ### `Dropdown` (class)
 
@@ -719,6 +1066,24 @@ build instead.
         private firstEnabled;
     }
 
+### `DropdownOption` (interface)
+
+    export interface DropdownOption {
+
+        id?: string;
+        label: string;
+        disabled?: boolean;
+    }
+
+### `DropdownOptions` (interface)
+
+    export interface DropdownOptions {
+        options: readonly DropdownOption[];
+
+        selectedIndex?: number;
+        disabled?: boolean;
+    }
+
 ### `Easing` (const)
 
     export declare const Easing: Record<'linear' | 'easeInQuad' | 'easeOutQuad' | 'easeInOutQuad' | 'easeInCubic' | 'easeOutCubic' | 'easeInOutCubic', Easing>;
@@ -734,6 +1099,10 @@ build instead.
 ### `EMPTY` (const)
 
     export declare const EMPTY = -1;
+
+### `EntityId` (type)
+
+    export type EntityId = string;
 
 ### `EntityRegistry` (class)
 
@@ -770,6 +1139,25 @@ build instead.
     export declare class FeedbackClient extends HttpTransport {
         constructor(options: FeedbackOptions);
         submit(request: FeedbackRequest): Promise<FeedbackResponse>;
+    }
+
+### `FeedbackOptions` (type)
+
+    export type FeedbackOptions = HttpTransportOptions;
+
+### `FeedbackRequest` (interface)
+
+    export interface FeedbackRequest {
+        message: string;
+        contact?: string;
+        context?: Record<string, string | number | boolean>;
+    }
+
+### `FeedbackResponse` (interface)
+
+    export interface FeedbackResponse {
+        ok: boolean;
+        status: number;
     }
 
 ### `fitWindowZoom` (function)
@@ -809,6 +1197,32 @@ build instead.
 
     export declare function floatingTextAlpha(t: number, hold: number): number;
 
+### `FloatingTextOptions` (interface)
+
+    export interface FloatingTextOptions {
+        text: string;
+        color?: number;
+        size?: number;
+
+        duration?: number;
+
+        rise?: number;
+
+        hold?: number;
+    }
+
+### `FloatingTextPush` (interface)
+
+    export interface FloatingTextPush extends FloatingTextOptions {
+
+        x: number;
+        y: number;
+
+        key?: string | number;
+
+        scale?: number;
+    }
+
 ### `floatingTextRise` (function)
 
     export declare function floatingTextRise(t: number, rise: number, reduce?: boolean): number;
@@ -827,6 +1241,18 @@ build instead.
         clear(): void;
     }
 
+### `FloatingTextStackEntry` (interface)
+
+    export interface FloatingTextStackEntry {
+
+        key?: string | number;
+
+        x: number;
+        y: number;
+
+        height: number;
+    }
+
 ### `floatingTextStackLifePenalty` (function)
 
     export declare function floatingTextStackLifePenalty(linesBelow: number): number;
@@ -835,9 +1261,28 @@ build instead.
 
     export declare function floatingTextStackLift(older: FloatingTextStackEntry, below: FloatingTextStackEntry, gap?: number): number;
 
+### `FloatingTextStackMove` (interface)
+
+    export interface FloatingTextStackMove {
+
+        readonly index: number;
+
+        readonly y: number;
+
+        readonly ageAtLeast: number;
+    }
+
 ### `floatingTextStackMoves` (function)
 
     export declare function floatingTextStackMoves(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry, gap?: number): FloatingTextStackMove[];
+
+### `FogCell` (type)
+
+    export type FogCell = number | ArrayLike<number>;
+
+### `FogColor` (type)
+
+    export type FogColor = readonly [number, number, number, number];
 
 ### `FogLayer` (class)
 
@@ -854,6 +1299,20 @@ build instead.
         refresh(state: (x: number, y: number) => FogCell): void;
 
         destroy(): void;
+    }
+
+### `FogLayerOptions` (interface)
+
+    export interface FogLayerOptions {
+
+        width: number;
+        height: number;
+
+        tileSize?: number;
+
+        resolution?: number;
+
+        palette: readonly FogColor[];
     }
 
 ### `Game` (class)
@@ -920,6 +1379,46 @@ build instead.
         destroy(): void;
     }
 
+### `GameOptions` (interface)
+
+    export interface GameOptions {
+
+        canvas?: HTMLCanvasElement;
+
+        background?: number;
+
+        maxDelta?: number;
+
+        pixelArt?: boolean;
+
+        resizeTo?: HTMLElement | Window;
+
+        extensions?: readonly (() => void)[];
+
+        autoPause?: boolean;
+
+        audio?: AudioSuspendRig | null;
+
+        qualityScaling?: Omit<QualityScalerOptions, 'ceiling'> | null;
+    }
+
+### `GameSettings` (interface)
+
+    export interface GameSettings {
+
+        musicVolume: number;
+
+        sfxVolume: number;
+
+        muted: boolean;
+
+        zoom: number;
+
+        bindings: Record<Action, string[]>;
+
+        custom: Record<string, CustomSettingValue>;
+    }
+
 ### `Generator` (class)
 
     export declare class Generator {
@@ -941,9 +1440,43 @@ build instead.
         private rotl;
     }
 
+### `GlyphLayout` (interface)
+
+    export interface GlyphLayout {
+        char: string;
+        x: number;
+        y: number;
+        rotate: boolean;
+    }
+
 ### `Gradient` (const)
 
     export declare const Gradient: typeof FillGradient;
+
+### `GraphicsCapabilities` (interface)
+
+    export interface GraphicsCapabilities {
+        webgl1: boolean;
+        webgl2: boolean;
+        webgpu: boolean;
+
+        wgsl: boolean;
+    }
+
+### `GraphicsProbe` (interface)
+
+    export interface GraphicsProbe {
+        createCanvas?(): {
+            getContext(kind: string): unknown;
+        } | null;
+        webgpu?: boolean;
+
+        wgsl?: boolean;
+    }
+
+### `GraphicsWorkload` (type)
+
+    export type GraphicsWorkload = 'sprites' | 'ui' | 'custom-shaders' | 'particles' | 'instanced-terrain' | 'voxels' | 'animated-models' | 'large-3d-worlds';
 
 ### `Grid` (class)
 
@@ -964,6 +1497,24 @@ build instead.
         private get gap();
     }
 
+### `GridSpec` (interface)
+
+    export interface GridSpec {
+        columns: readonly GridTrack[];
+        rows: readonly GridTrack[];
+
+        gap?: number;
+    }
+
+### `GridTrack` (interface)
+
+    export interface GridTrack {
+
+        size?: number;
+
+        grow?: number;
+    }
+
 ### `Halo` (class)
 
     export declare class Halo extends AnimatedSprite {
@@ -978,6 +1529,44 @@ build instead.
 
     export declare const HALO_ANIMATION = "halo";
 
+### `HaloOptions` (interface)
+
+    export interface HaloOptions {
+
+        readonly frames: readonly AnimationFrameInput[];
+
+        readonly animation?: AnimationOptions;
+
+        readonly offsetX?: number;
+        readonly offsetY?: number;
+
+        readonly blendMode?: 'add' | 'normal' | 'multiply' | 'screen';
+    }
+
+### `Handles` (interface)
+
+    export interface Handles<T> {
+
+        readonly size: number;
+
+        put(value: T): number;
+
+        get(id: number): T;
+
+        drop(id: number): void;
+
+        clear(): void;
+
+        with<R>(value: T, body: (id: number) => R): R;
+    }
+
+### `HasColorAdd` (interface)
+
+    export interface HasColorAdd {
+
+        colorAdd?: number;
+    }
+
 ### `HelpScreen` (class)
 
     export declare class HelpScreen extends Container {
@@ -988,6 +1577,30 @@ build instead.
         private showBody;
 
         handleAction(action: Action): boolean;
+    }
+
+### `HelpScreenOptions` (interface)
+
+    export interface HelpScreenOptions {
+        width: number;
+        height: number;
+        topics: readonly HelpTopic[];
+
+        listWidth?: number;
+    }
+
+### `HelpTopic` (interface)
+
+    export interface HelpTopic {
+        title: string;
+        body: string;
+    }
+
+### `HexCoord` (interface)
+
+    export interface HexCoord {
+        x: number;
+        y: number;
     }
 
 ### `hexDistance` (function)
@@ -1002,6 +1615,14 @@ build instead.
 
     export declare function hexNeighbors(x: number, y: number): HexCoord[];
 
+### `HexOffset` (type)
+
+    export type HexOffset = 'odd' | 'even';
+
+### `HexOrientation` (type)
+
+    export type HexOrientation = 'flat-top' | 'pointy-top';
+
 ### `hexRange` (function)
 
     export declare function hexRange(center: HexCoord, radius: number): HexCoord[];
@@ -1011,6 +1632,13 @@ build instead.
     export declare function hexRotate(dx: number, dy: number, rotationIndex: number, rotations: number): {
         dx: number;
 
+### `HexShape` (interface)
+
+    export interface HexShape {
+        readonly orientation?: HexOrientation;
+        readonly offset?: HexOffset;
+    }
+
 ### `hexToPixel` (function)
 
     export declare function hexToPixel(x: number, y: number, tileWidth: number, tileHeight: number, shape?: HexShape): {
@@ -1019,6 +1647,24 @@ build instead.
 ### `highContrastTheme` (const)
 
     export declare const highContrastTheme: Theme;
+
+### `HistoryEntry` (interface)
+
+    export interface HistoryEntry {
+        text: string;
+        speaker?: string;
+
+        chosen?: unknown;
+    }
+
+### `Hook` (interface)
+
+    export interface Hook<TArgs extends unknown[]> {
+        event: string;
+        handler: (...args: TArgs) => void;
+
+        source?: unknown;
+    }
 
 ### `HookRegistry` (class)
 
@@ -1034,6 +1680,34 @@ build instead.
 
         get size(): number;
         clear(): void;
+    }
+
+### `HttpTransport` (class)
+
+    export declare abstract class HttpTransport {
+        protected readonly endpoint: string;
+        protected readonly timeoutMs: number;
+        protected readonly fetchFn: typeof globalThis.fetch;
+        protected readonly maxResponseBytes: number;
+        private readonly label;
+        constructor(options: HttpTransportOptions, label: string);
+        protected withTimeout<T>(run: (signal: AbortSignal) => Promise<T>): Promise<T>;
+
+        protected readText(response: Response): Promise<string>;
+
+        protected readJson(response: Response, what: string): Promise<unknown>;
+    }
+
+### `HttpTransportOptions` (interface)
+
+    export interface HttpTransportOptions {
+        endpoint: string;
+        timeoutMs?: number;
+        fetch?: typeof globalThis.fetch;
+
+        maxResponseBytes?: number;
+
+        allowInsecure?: boolean;
     }
 
 ### `I18n` (namespace)
@@ -1097,9 +1771,56 @@ build instead.
         private refresh;
     }
 
+### `IconGridItem` (interface)
+
+    export interface IconGridItem {
+
+        icon: Container2D;
+
+        disabled?: boolean;
+
+        value?: unknown;
+
+        quantity?: number;
+    }
+
+### `IconGridOptions` (interface)
+
+    export interface IconGridOptions {
+        width: number;
+        height: number;
+
+        columns: number;
+        items?: IconGridItem[];
+
+        cellSize?: number;
+
+        longPressDuration?: number;
+        onSelect?: (item: IconGridItem, index: number) => void;
+        onHighlight?: (item: IconGridItem, index: number) => void;
+
+        onQuickslot?: (item: IconGridItem, index: number) => void;
+
+        onReorder?: (fromIndex: number, toIndex: number) => void;
+    }
+
 ### `imageModifier` (function)
 
     export declare function imageModifier(path: ParsedImagePath, name: string): ImageModifier | undefined;
+
+### `ImageModifier` (interface)
+
+    export interface ImageModifier {
+        readonly name: string;
+        readonly args: readonly string[];
+    }
+
+### `ImageTextureProbe` (interface)
+
+    export interface ImageTextureProbe extends RecolorProbe {
+        resolveTexture?(pathWithModifiers: string): Texture2D | undefined;
+        resolveColor?(name: string): number | undefined;
+    }
 
 ### `importTwee` (function)
 
@@ -1138,6 +1859,22 @@ build instead.
         nextBoolean(): boolean;
     }
 
+### `JavaRandomDraw` (interface)
+
+    export interface JavaRandomDraw {
+
+        bits: number;
+
+        value: number;
+    }
+
+### `JavaRandomOptions` (interface)
+
+    export interface JavaRandomOptions {
+
+        onDraw?: (draw: JavaRandomDraw) => void;
+    }
+
 ### `Label` (class)
 
     export declare class Label extends Text {
@@ -1162,6 +1899,19 @@ build instead.
         destroy(options?: Parameters<Text['destroy']>[0]): void;
     }
 
+### `LabelOptions` (interface)
+
+    export interface LabelOptions extends ThemedTextOptions {
+
+        stroke?: {
+            color: number;
+            width: number;
+        };
+
+        resolution?: number;
+        roundPixels?: boolean;
+    }
+
 ### `LayeredSprite` (class)
 
     export declare class LayeredSprite extends Container {
@@ -1179,6 +1929,15 @@ build instead.
 ### `layoutMarkupLines` (function)
 
     export declare function layoutMarkupLines(spans: readonly MarkupSpan[], measure: MarkupMeasure, maxWidth: number): MarkupLine[];
+
+### `LayoutRect` (interface)
+
+    export interface LayoutRect {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }
 
 ### `layoutVertical` (function)
 
@@ -1209,6 +1968,28 @@ build instead.
         private reroll;
     }
 
+### `LightningArcOptions` (interface)
+
+    export interface LightningArcOptions {
+
+        duration?: number;
+
+        segments?: number;
+
+        jitter?: number;
+
+        flickerInterval?: number;
+
+        random?: () => number;
+    }
+
+### `LightningArcPoint` (interface)
+
+    export interface LightningArcPoint {
+        x: number;
+        y: number;
+    }
+
 ### `linesToDrop` (function)
 
     export declare function linesToDrop(lineCounts: readonly number[], maxLines: number): number;
@@ -1232,6 +2013,48 @@ build instead.
 
         get rippleCount(): number;
         update(dt: number): void;
+    }
+
+### `LiquidLayerOptions` (interface)
+
+    export interface LiquidLayerOptions {
+
+        texture: Texture2D;
+
+        width: number;
+        height: number;
+
+        tileSize?: number;
+
+        isLiquid: (x: number, y: number) => boolean;
+
+        speed?: number;
+
+        rippleTexture?: Texture2D;
+
+        rippleDuration?: number;
+    }
+
+### `ListItem` (interface)
+
+    export interface ListItem {
+
+        text: string;
+
+        disabled?: boolean;
+
+        value?: unknown;
+
+        icon?: Container2D;
+    }
+
+### `ListTab` (interface)
+
+    export interface ListTab {
+        id: string;
+        label: string;
+
+        disabled?: boolean;
     }
 
 ### `ListView` (class)
@@ -1289,6 +2112,32 @@ build instead.
         private refresh;
     }
 
+### `ListViewOptions` (interface)
+
+    export interface ListViewOptions {
+        width: number;
+        height: number;
+        items?: ListItem[];
+
+        rowHeight?: number;
+        onSelect?: (item: ListItem, index: number) => void;
+        onHighlight?: (item: ListItem, index: number) => void;
+
+        multiple?: boolean;
+        onToggle?: (item: ListItem, index: number, checked: boolean) => void;
+    }
+
+### `LoadedTiledMap` (interface)
+
+    export interface LoadedTiledMap {
+        map: TileMap;
+
+        objects: Array<TiledObject & {
+            tileX: number;
+            tileY: number;
+        }>;
+    }
+
 ### `LoadingScreen` (class)
 
     export declare class LoadingScreen extends Container {
@@ -1312,6 +2161,16 @@ build instead.
         private layout;
     }
 
+### `LoadingScreenOptions` (interface)
+
+    export interface LoadingScreenOptions {
+        width: number;
+        height: number;
+        title?: string;
+        onRetry?: () => void;
+        onCancel?: () => void;
+    }
+
 ### `LoadQueue` (class)
 
     export declare class LoadQueue {
@@ -1332,6 +2191,37 @@ build instead.
         retry(): void;
         private report;
         private emit;
+    }
+
+### `LoadSnapshot` (interface)
+
+    export interface LoadSnapshot {
+        status: LoadStatus;
+        completed: number;
+        total: number;
+        current: string | null;
+        error: unknown | null;
+    }
+
+### `LoadStatus` (type)
+
+    export type LoadStatus = 'idle' | 'loading' | 'ready' | 'failed' | 'cancelled';
+
+### `LoadTask` (interface)
+
+    export interface LoadTask {
+        id: string;
+        weight?: number;
+        run(context: LoadTaskContext): Promise<void> | void;
+    }
+
+### `LoadTaskContext` (interface)
+
+    export interface LoadTaskContext {
+
+        report(fraction: number): void;
+
+        readonly cancelled: boolean;
     }
 
 ### `loadTiledMap` (function)
@@ -1372,6 +2262,40 @@ build instead.
         private handleMessage;
     }
 
+### `LockstepClientOptions` (interface)
+
+    export interface LockstepClientOptions {
+        url: string;
+
+        create?: (url: string) => WebSocketLike;
+
+        validateInput?: (payload: unknown) => boolean | string;
+
+        maxMessageBytes?: number;
+
+        allowInsecure?: boolean;
+    }
+
+### `LockstepWelcome` (interface)
+
+    export interface LockstepWelcome {
+        id: string;
+
+        seed?: number;
+
+        initialState?: unknown;
+    }
+
+### `LogEntry` (interface)
+
+    export interface LogEntry {
+        level: LogLevel;
+        category: string;
+        message: string;
+        data?: unknown;
+        time: number;
+    }
+
 ### `Logger` (class)
 
     export declare class Logger {
@@ -1388,10 +2312,92 @@ build instead.
         private write;
     }
 
+### `LoggerOptions` (interface)
+
+    export interface LoggerOptions {
+
+        level?: LogLevel;
+
+        sink?: (entry: LogEntry) => void;
+    }
+
+### `LogLevel` (type)
+
+    export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+### `manhattan` (function)
+
+    export declare function manhattan(a: {
+        readonly x: number;
+
+### `MarkdownSpan` (interface)
+
+    export interface MarkdownSpan {
+        text: string;
+        bold: boolean;
+        italic: boolean;
+    }
+
 ### `markupAccessibilityText` (function)
 
     export declare function markupAccessibilityText(spans: readonly MarkupSpan[], options?: {
         describeImage?: (path: string) => string;
+
+### `MarkupAlign` (type)
+
+    export type MarkupAlign = 'left' | 'center' | 'right';
+
+### `MarkupDirection` (type)
+
+    export type MarkupDirection = 'ltr' | 'rtl';
+
+### `MarkupLayout` (interface)
+
+    export interface MarkupLayout {
+
+        readonly measure: MarkupMeasure;
+
+        readonly maxWidth: number;
+
+        readonly lineHeight: number;
+
+        readonly direction?: MarkupDirection;
+
+        readonly align?: MarkupAlign;
+    }
+
+### `MarkupLine` (interface)
+
+    export interface MarkupLine {
+        readonly spans: readonly MarkupSpan[];
+        readonly width: number;
+    }
+
+### `MarkupMeasure` (type)
+
+    export type MarkupMeasure = (piece: Pick<MarkupSpan, 'text' | 'bold' | 'italic' | 'size' | 'image' | 'tag'>) => number;
+
+### `MarkupOptions` (interface)
+
+    export interface MarkupOptions {
+
+        readonly variables?: Readonly<Record<string, string>>;
+
+        readonly tags?: ReadonlySet<string>;
+    }
+
+### `MarkupSpan` (interface)
+
+    export interface MarkupSpan extends MarkdownSpan {
+
+        color?: string;
+
+        size?: number;
+
+        image?: string;
+
+        tag?: string;
+    }
 
 ### `MarkupText` (class)
 
@@ -1411,6 +2417,27 @@ build instead.
         private textFor;
         private spriteFor;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `MarkupTextOptions` (interface)
+
+    export interface MarkupTextOptions {
+        text?: string;
+
+        maxWidth?: number;
+
+        lineHeight?: number;
+        align?: MarkupAlign;
+
+        direction?: MarkupDirection;
+
+        resolution?: number;
+
+        resolveImage?: (path: string) => Texture2D;
+
+        variables?: Readonly<Record<string, string>>;
+
+        tagStyles?: Readonly<Record<string, TextStyleOptions>>;
     }
 
 ### `markupToHtml` (function)
@@ -1452,6 +2479,19 @@ build instead.
         get discardCount(): number;
         getState(): MersenneTwisterState;
         setState(state: MersenneTwisterState): void;
+    }
+
+### `MersenneTwisterState` (interface)
+
+    export interface MersenneTwisterState {
+
+        seed: number;
+
+        state: number[];
+
+        index: number;
+
+        discard: number;
     }
 
 ### `MessageBox` (class)
@@ -1499,9 +2539,51 @@ build instead.
         private finish;
     }
 
+### `MessageBoxOptions` (interface)
+
+    export interface MessageBoxOptions {
+        width: number;
+        height: number;
+        pages: Array<MessagePage | string>;
+
+        speed?: number;
+
+        choices?: Choice[];
+
+        onDone?: (chosen: unknown) => void;
+
+        onSound?: (path: string) => void;
+
+        dims?: boolean;
+
+        blocker?: boolean;
+
+        anchor?: 'center' | 'bottom' | 'top';
+
+        announce?: boolean;
+
+        mode?: 'adv' | 'nvl';
+
+        autoAdvance?: number;
+    }
+
 ### `messageBoxPresenter` (function)
 
     export declare function messageBoxPresenter(windows: WindowStack, options?: MessageBoxPresenterOptions): DialoguePresenter;
+
+### `MessageBoxPresenterOptions` (interface)
+
+    export interface MessageBoxPresenterOptions {
+
+        width?: number;
+        height?: number;
+        speed?: number;
+        anchor?: 'center' | 'bottom' | 'top';
+    }
+
+### `MessageLevel` (type)
+
+    export type MessageLevel = 'info' | 'positive' | 'negative' | 'warning' | 'highlight';
 
 ### `MessageLog` (class)
 
@@ -1521,6 +2603,31 @@ build instead.
         private linesOf;
         private trim;
         private layout;
+    }
+
+### `MessageLogOptions` (interface)
+
+    export interface MessageLogOptions {
+
+        wrapWidth: number;
+
+        maxLines?: number;
+
+        size?: number;
+
+        colors?: Partial<Record<MessageLevel, number>>;
+
+        resolution?: number;
+    }
+
+### `MessagePage` (interface)
+
+    export interface MessagePage {
+        text: string;
+
+        speaker?: string;
+
+        portrait?: Texture2D;
     }
 
 ### `Meter` (class)
@@ -1557,6 +2664,27 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `MeterOptions` (interface)
+
+    export interface MeterOptions {
+
+        count: number;
+
+        value?: number;
+
+        size?: number;
+
+        gap?: number;
+
+        filledTexture?: Texture2D;
+
+        emptyTexture?: Texture2D;
+
+        color?: number;
+
+        emptyColor?: number;
+    }
+
 ### `Minimap` (class)
 
     export declare class Minimap extends Container {
@@ -1586,13 +2714,51 @@ build instead.
     export declare function minimapCellCenter(x: number, y: number, cellSize: number, shape?: 'square' | 'hex'): {
         x: number;
 
+### `MinimapMarker` (interface)
+
+    export interface MinimapMarker {
+        x: number;
+        y: number;
+        facing?: number;
+        color?: number;
+    }
+
+### `MinimapOptions` (interface)
+
+    export interface MinimapOptions {
+
+        widthInCells: number;
+        heightInCells: number;
+
+        cellSize?: number;
+
+        shape?: 'square' | 'hex';
+    }
+
 ### `motionDuration` (function)
 
     export declare function motionDuration(duration: number, intent?: MotionIntent): number;
 
+### `MotionIntent` (type)
+
+    export type MotionIntent = 'decorative' | 'meaningful';
+
 ### `Mwl` (namespace)
 
     export * as Mwl from './mwl/index.ts'
+
+### `NeighborMask` (interface)
+
+    export interface NeighborMask {
+        n: boolean;
+        e: boolean;
+        s: boolean;
+        w: boolean;
+        ne: boolean;
+        se: boolean;
+        sw: boolean;
+        nw: boolean;
+    }
 
 ### `NEIGHBOURS4` (const)
 
@@ -1612,6 +2778,26 @@ build instead.
         constructor(options: NewsOptions);
 
         fetchItems(): Promise<NewsItem[]>;
+    }
+
+### `NewsItem` (interface)
+
+    export interface NewsItem {
+        id: string;
+        title: string;
+        body: string;
+        publishedAt?: number;
+    }
+
+### `NewsOptions` (type)
+
+    export type NewsOptions = HttpTransportOptions;
+
+### `NewsSeenOptions` (interface)
+
+    export interface NewsSeenOptions {
+        namespace: string;
+        storage?: SaveStorage;
     }
 
 ### `NewsSeenTracker` (class)
@@ -1641,6 +2827,18 @@ build instead.
         resize(width: number, height: number): void;
     }
 
+### `NinePatchOptions` (interface)
+
+    export interface NinePatchOptions {
+
+        border: number | {
+            left: number;
+            top: number;
+            right: number;
+            bottom: number;
+        };
+    }
+
 ### `NO_COLOR_ADD` (const)
 
     export declare const NO_COLOR_ADD = 0;
@@ -1662,9 +2860,28 @@ build instead.
 
     export declare function paintFogPixels(pixels: Uint8ClampedArray | Uint8Array, width: number, height: number, resolution: number, state: (x: number, y: number) => FogCell, palette: readonly FogColor[]): void;
 
+### `PaletteMapping` (interface)
+
+    export interface PaletteMapping {
+        readonly from: readonly number[];
+        readonly to: readonly number[];
+    }
+
+### `PaletteRange` (interface)
+
+    export interface PaletteRange {
+        readonly min: number;
+        readonly mid: number;
+        readonly max: number;
+    }
+
 ### `paletteRangeMapping` (function)
 
     export declare function paletteRangeMapping(reference: readonly number[], range: PaletteRange): PaletteMapping;
+
+### `PaletteRemapMode` (type)
+
+    export type PaletteRemapMode = 'exact' | 'nearest';
 
 ### `parseColorPairs` (function)
 
@@ -1681,6 +2898,13 @@ build instead.
 ### `parseDialogueText` (function)
 
     export declare function parseDialogueText(source: string): StageCommand[];
+
+### `ParsedImagePath` (interface)
+
+    export interface ParsedImagePath {
+        readonly path: string;
+        readonly modifiers: readonly ImageModifier[];
+    }
 
 ### `parseImagePath` (function)
 
@@ -1710,6 +2934,34 @@ build instead.
 ### `parseTwee` (function)
 
     export declare function parseTwee(source: string): TweeStory;
+
+### `Particle` (interface)
+
+    export interface Particle {
+        x: number;
+        y: number;
+        vx: number;
+        vy: number;
+
+        age: number;
+
+        life: number;
+        rotation: number;
+        spin: number;
+
+        scale: number;
+        alpha: number;
+
+        tint: number;
+
+        frame: number;
+
+        active: boolean;
+    }
+
+### `ParticleCurve` (type)
+
+    export type ParticleCurve = (t: number) => number;
 
 ### `ParticleEmitter` (class)
 
@@ -1758,6 +3010,56 @@ build instead.
         clear(): void;
     }
 
+### `ParticleEmitterOptions` (interface)
+
+    export interface ParticleEmitterOptions {
+
+        texture?: Texture2D;
+
+        frames?: readonly Texture2D[];
+
+        max?: number;
+
+        rate?: number;
+
+        life?: ParticleRange;
+
+        speed?: ParticleRange;
+
+        angle?: ParticleRange;
+
+        gravity?: {
+            x: number;
+            y: number;
+        };
+
+        scale?: readonly [number, number] | ParticleCurve;
+
+        alpha?: readonly [number, number] | ParticleCurve;
+
+        flicker?: number;
+
+        spin?: ParticleRange;
+
+        spawn?: ParticleSpawnArea;
+
+        tint?: ParticleRange;
+    }
+
+### `ParticleRange` (type)
+
+    export type ParticleRange = number | readonly [number, number];
+
+### `ParticleSpawnArea` (interface)
+
+    export interface ParticleSpawnArea {
+        shape: 'rect' | 'ellipse';
+
+        width: number;
+
+        height?: number;
+    }
+
 ### `pixelToHex` (function)
 
     export declare function pixelToHex(px: number, py: number, tileWidth: number, tileHeight: number, shape?: HexShape): HexCoord;
@@ -1804,6 +3106,13 @@ build instead.
         keysFor(action: Action): string[];
     }
 
+### `PlayerInputOptions` (interface)
+
+    export interface PlayerInputOptions {
+
+        padIndex?: number;
+    }
+
 ### `PlayerStats` (class)
 
     export declare class PlayerStats<T, S = T> {
@@ -1817,6 +3126,31 @@ build instead.
         record(summary: S): T;
 
         reset(): void;
+    }
+
+### `PlayerStatsOptions` (interface)
+
+    export interface PlayerStatsOptions<T, S = T> {
+
+        namespace: string;
+        storage?: SaveStorage;
+
+        initial: T;
+
+        combine: (total: T, summary: S) => T;
+    }
+
+### `PositionedMarkupSpan` (interface)
+
+    export interface PositionedMarkupSpan {
+
+        readonly span: MarkupSpan;
+
+        readonly x: number;
+
+        readonly y: number;
+
+        readonly width: number;
     }
 
 ### `positionMarkupLines` (function)
@@ -1846,6 +3180,13 @@ build instead.
         private advance;
     }
 
+### `PresentationQueueOptions` (interface)
+
+    export interface PresentationQueueOptions<Event> {
+
+        play: (event: Event) => number | void;
+    }
+
 ### `Projectile` (class)
 
     export declare class Projectile {
@@ -1870,6 +3211,24 @@ build instead.
         update(dt: number): boolean;
     }
 
+### `ProjectileOptions` (interface)
+
+    export interface ProjectileOptions {
+
+        speed?: number;
+
+        duration?: number;
+
+        animation?: Animation;
+    }
+
+### `ProjectilePoint` (interface)
+
+    export interface ProjectilePoint {
+        x: number;
+        y: number;
+    }
+
 ### `QualityScaler` (class)
 
     export declare class QualityScaler {
@@ -1891,6 +3250,23 @@ build instead.
         observe(frameSeconds: number): number;
 
         reset(): void;
+    }
+
+### `QualityScalerOptions` (interface)
+
+    export interface QualityScalerOptions {
+
+        ceiling: number;
+
+        minRatio?: number;
+
+        targetFps?: number;
+
+        overBudgetFrames?: number;
+
+        underBudgetFrames?: number;
+
+        step?: number;
     }
 
 ### `RadioGroup` (class)
@@ -1924,9 +3300,41 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `RadioGroupOptions` (interface)
+
+    export interface RadioGroupOptions {
+        options?: RadioOption[];
+
+        selected?: number;
+
+        size?: number;
+
+        gap?: number;
+    }
+
+### `RadioOption` (interface)
+
+    export interface RadioOption {
+
+        text: string;
+
+        disabled?: boolean;
+
+        value?: unknown;
+    }
+
 ### `Random` (namespace)
 
     export * as Random from './Random.ts'
+
+### `RandomSource` (interface)
+
+    export interface RandomSource {
+
+        float(): number;
+
+        int(bound: number): number;
+    }
 
 ### `RandomStreams` (class)
 
@@ -1945,6 +3353,16 @@ build instead.
         getState(): Record<string, MersenneTwisterState>;
 
         setState(state: Readonly<Record<string, MersenneTwisterState>>): void;
+    }
+
+### `ReactionRule` (interface)
+
+    export interface ReactionRule<TState> {
+        id: string;
+        when: (state: Readonly<TState>) => boolean;
+        action: (state: Readonly<TState>) => void;
+
+        once?: boolean;
     }
 
 ### `ReactionTable` (class)
@@ -1997,6 +3415,26 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `RebindScreenOptions` (interface)
+
+    export interface RebindScreenOptions {
+        width: number;
+        height: number;
+
+        actions: readonly Action[];
+
+        label?: (action: Action) => string;
+        rowHeight?: number;
+
+        onConflict?: (key: string, action: Action, previousOwners: readonly Action[]) => boolean;
+    }
+
+### `RecolorProbe` (interface)
+
+    export interface RecolorProbe {
+        createCanvas?(width: number, height: number): RemapCanvas | null;
+    }
+
 ### `recolorTexture` (function)
 
     export declare function recolorTexture(texture: Texture, mapping: PaletteMapping, probe?: RecolorProbe, mode?: PaletteRemapMode): Texture;
@@ -2016,6 +3454,15 @@ build instead.
         toJSON(): ReplayEvent[];
 
         stop(): void;
+    }
+
+### `Rect` (interface)
+
+    export interface Rect {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
     }
 
 ### `Rectangle2D` (export)
@@ -2050,6 +3497,28 @@ build instead.
 
     export declare function relativeLuminance(color: number): number;
 
+### `RemapCanvas` (interface)
+
+    export interface RemapCanvas {
+        width: number;
+        height: number;
+        getContext(kind: '2d'): RemapCanvasContext | null;
+    }
+
+### `RemapCanvasContext` (interface)
+
+    export interface RemapCanvasContext {
+        drawImage(image: unknown, dx: number, dy: number): void;
+        getImageData(sx: number, sy: number, sw: number, sh: number): {
+            data: Uint8ClampedArray;
+        };
+        putImageData(imageData: {
+            data: Uint8ClampedArray;
+            width: number;
+            height: number;
+        }, dx: number, dy: number): void;
+    }
+
 ### `remapPixels` (function)
 
     export declare function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping, mode?: PaletteRemapMode): Uint8ClampedArray;
@@ -2057,6 +3526,22 @@ build instead.
 ### `RENDERING_DECISIONS` (const)
 
     export declare const RENDERING_DECISIONS: readonly RenderingDecision[];
+
+### `RenderingDecision` (interface)
+
+    export interface RenderingDecision {
+        workload: GraphicsWorkload;
+        preferred: string;
+        fallback: string;
+        reason: string;
+    }
+
+### `ReplayEvent` (interface)
+
+    export interface ReplayEvent {
+        frame: number;
+        action: string;
+    }
 
 ### `resolveAnchor` (function)
 
@@ -2067,6 +3552,14 @@ build instead.
 
     export declare function resolveTerrainGraphics(width: number, height: number, rules: readonly TerrainRule[], flagsAt: TerrainFlagsAt, options?: ResolveTerrainGraphicsOptions): TerrainPlacement[];
 
+### `ResolveTerrainGraphicsOptions` (interface)
+
+    export interface ResolveTerrainGraphicsOptions {
+        rotate?: TerrainRotate;
+
+        random?: Generator;
+    }
+
 ### `Resources` (namespace)
 
     export * as Resources from './assets/index.ts'
@@ -2074,6 +3567,17 @@ build instead.
 ### `revealComplete` (function)
 
     export declare function revealComplete(state: RevealState): boolean;
+
+### `RevealState` (interface)
+
+    export interface RevealState {
+
+        total: number;
+
+        speed: number;
+
+        revealed: number;
+    }
 
 ### `RichLabel` (class)
 
@@ -2098,9 +3602,30 @@ build instead.
         destroy(options?: Parameters<HTMLText['destroy']>[0]): void;
     }
 
+### `RichLabelOptions` (interface)
+
+    export interface RichLabelOptions extends ThemedTextOptions {
+
+        resolution?: number;
+
+        tagStyles?: Record<string, HTMLTextStyleOptions>;
+    }
+
 ### `Roguelike` (namespace)
 
     export * as Roguelike from './roguelike/index.ts'
+
+### `RotatedPixels` (interface)
+
+    export interface RotatedPixels {
+        readonly data: Uint8ClampedArray;
+        readonly width: number;
+        readonly height: number;
+    }
+
+### `RotateMode` (type)
+
+    export type RotateMode = 'nearest' | 'linear';
 
 ### `rotatePixels` (function)
 
@@ -2140,13 +3665,65 @@ build instead.
 
     export declare function rpgmAutotileFrame(tileId: number, slot: RpgmAutotileSlot, shape: number, table: RpgmAutotileShapeTable): RpgmAutotileFrame;
 
+### `RpgmAutotileFrame` (interface)
+
+    export interface RpgmAutotileFrame {
+        tileId: number;
+        slot: RpgmAutotileSlot;
+        shape: number;
+        destinationX: number;
+        destinationY: number;
+        quadrants: readonly [RpgmAutotileQuadrant, RpgmAutotileQuadrant, RpgmAutotileQuadrant, RpgmAutotileQuadrant];
+    }
+
+### `RpgmAutotileQuadrant` (interface)
+
+    export interface RpgmAutotileQuadrant {
+        sourceX: number;
+        sourceY: number;
+        destinationX: number;
+        destinationY: number;
+    }
+
+### `RpgmAutotileShape` (type)
+
+    export type RpgmAutotileShape = readonly [
+        readonly [number, number],
+        readonly [number, number],
+        readonly [number, number],
+        readonly [number, number]
+    ];
+
+### `RpgmAutotileShapeTable` (type)
+
+    export type RpgmAutotileShapeTable = readonly RpgmAutotileShape[];
+
 ### `rpgmAutotileSlot` (function)
 
     export declare function rpgmAutotileSlot(tile: number): RpgmAutotileSlot | null;
 
+### `RpgmAutotileSlot` (type)
+
+    export type RpgmAutotileSlot = 0 | 1 | 2 | 3;
+
 ### `rpgmTableEdgeCells` (function)
 
     export declare function rpgmTableEdgeCells(map: RpgmTableEdgeMap): Int32Array;
+
+### `RpgmTableEdgeMap` (interface)
+
+    export interface RpgmTableEdgeMap {
+        width: number;
+        height: number;
+
+        ground: ArrayLike<number>;
+
+        objects: ArrayLike<number>;
+
+        flags: {
+            readonly [tile: number]: number | undefined;
+        };
+    }
 
 ### `RunHistory` (class)
 
@@ -2165,9 +3742,52 @@ build instead.
         clear(): void;
     }
 
+### `RunHistoryEntry` (interface)
+
+    export interface RunHistoryEntry<T> {
+        id: string;
+        endedAt: number;
+        summary: T;
+    }
+
+### `RunHistoryOptions` (interface)
+
+    export interface RunHistoryOptions {
+
+        namespace: string;
+        storage?: SaveStorage;
+
+        limit?: number;
+    }
+
 ### `sanitizeInboundText` (function)
 
     export declare function sanitizeInboundText(text: string, options?: SizeLimitOptions): string;
+
+### `SaveData` (interface)
+
+    export interface SaveData<T> {
+        meta: SaveMeta;
+        state: T;
+    }
+
+### `SaveMeta` (interface)
+
+    export interface SaveMeta {
+        version: number;
+        savedAt: number;
+
+        preview?: unknown;
+    }
+
+### `SaveStorage` (interface)
+
+    export interface SaveStorage {
+        read(key: string): string | null;
+        write(key: string, value: string): void;
+        remove(key: string): void;
+        keys(): string[];
+    }
 
 ### `SaveSyncClient` (class)
 
@@ -2180,6 +3800,17 @@ build instead.
 
         list(): Promise<string[]>;
         private slotUrl;
+    }
+
+### `SaveSyncOptions` (type)
+
+    export type SaveSyncOptions = HttpTransportOptions;
+
+### `SaveSyncResponse` (interface)
+
+    export interface SaveSyncResponse {
+        ok: boolean;
+        status: number;
     }
 
 ### `SaveSystem` (class)
@@ -2206,6 +3837,17 @@ build instead.
             slot: string;
             meta: SaveMeta;
         }>;
+    }
+
+### `SaveSystemOptions` (interface)
+
+    export interface SaveSystemOptions {
+
+        namespace: string;
+        version: number;
+
+        migrations?: Record<number, (state: unknown) => unknown>;
+        storage?: SaveStorage;
     }
 
 ### `Scene` (class)
@@ -2236,6 +3878,26 @@ build instead.
 
         readonly stage: Container2D;
         protected teardown(): void;
+    }
+
+### `Scene2DClass` (type)
+
+    export type Scene2DClass = new () => Scene2D;
+
+### `SceneClass` (type)
+
+    export type SceneClass<T extends Scene = Scene> = new () => T;
+
+### `SceneComponent` (interface)
+
+    export interface SceneComponent<TScene extends Scene = Scene> {
+        readonly name: string;
+        create?(scene: TScene): void;
+        update?(scene: TScene, dt: number): void;
+        resize?(scene: TScene, width: number, height: number): void;
+        onSuspend?(scene: TScene): void;
+        onResume?(scene: TScene, result: unknown): void;
+        destroy?(scene: TScene): void;
     }
 
 ### `SceneComponentHost` (class)
@@ -2276,9 +3938,18 @@ build instead.
         destroy(): void;
     }
 
+### `Schema` (type)
+
+    export type Schema = {
+        type: 'string';
+
 ### `scramble` (function)
 
     export declare function scramble(text: string, key: string): string;
+
+### `ScreenEffectPhase` (type)
+
+    export type ScreenEffectPhase = 'idle' | 'fadeOut' | 'fadeIn' | 'flash' | 'hold';
 
 ### `ScreenEffects` (class)
 
@@ -2325,6 +3996,26 @@ build instead.
         update(dt: number): boolean;
     }
 
+### `ScreenEffectsOptions` (interface)
+
+    export interface ScreenEffectsOptions {
+        width?: number;
+        height?: number;
+
+        color?: number;
+    }
+
+### `ScreenEffectStep` (interface)
+
+    export interface ScreenEffectStep {
+        kind: 'fadeOut' | 'fadeIn' | 'flash' | 'hold';
+        duration: number;
+
+        color?: number;
+
+        peak?: number;
+    }
+
 ### `screenReader` (const)
 
     export declare const screenReader: ScreenReader;
@@ -2343,6 +4034,31 @@ build instead.
         clear(): void;
 
         destroy(): void;
+    }
+
+### `ScriptOptions` (interface)
+
+    export interface ScriptOptions {
+        stage: DialogueStage;
+        windows: WindowStack;
+
+        backdrop: (name: string) => Texture;
+
+        displayName?: (id: string) => string;
+
+        boxWidth?: number;
+        boxHeight?: number;
+
+        speed?: number;
+
+        mode?: 'adv' | 'nvl';
+    }
+
+### `ScriptState` (interface)
+
+    export interface ScriptState {
+
+        answers: Record<string, unknown>;
     }
 
 ### `ScrollBox` (class)
@@ -2378,6 +4094,16 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `ScrollBoxOptions` (interface)
+
+    export interface ScrollBoxOptions {
+        width: number;
+        height: number;
+
+        contentHeight?: number;
+        offset?: number;
+    }
+
 ### `scrollOffset` (function)
 
     export declare function scrollOffset(offset: number, contentSize: number, viewportSize: number): number;
@@ -2392,6 +4118,14 @@ build instead.
 
         readonly launches: number;
         constructor(options?: SessionOptions);
+    }
+
+### `SessionOptions` (interface)
+
+    export interface SessionOptions {
+
+        namespace?: string;
+        storage?: SaveStorage;
     }
 
 ### `setReducedMotion` (function)
@@ -2432,6 +4166,19 @@ build instead.
         applyBindings(): void;
 
         reset(): void;
+    }
+
+### `SettingsCustomRow` (type)
+
+    export type SettingsCustomRow = {
+        kind: 'boolean';
+
+### `SettingsOptions` (interface)
+
+    export interface SettingsOptions {
+
+        namespace?: string;
+        storage?: SaveStorage;
     }
 
 ### `SettingsScreen` (class)
@@ -2477,6 +4224,42 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `SettingsScreenOptions` (interface)
+
+    export interface SettingsScreenOptions {
+        settings: Settings;
+        width?: number;
+        rowHeight?: number;
+
+        labels?: {
+            music?: string;
+            sfx?: string;
+            muted?: string;
+            zoom?: string;
+            controls?: string;
+            reset?: string;
+            rebindHint?: string;
+        };
+        zoomMin?: number;
+        zoomMax?: number;
+        zoomStep?: number;
+
+        custom?: readonly SettingsCustomRow[];
+
+        actions?: readonly Action[];
+
+        onConflict?: (key: string, action: Action, previousOwners: readonly Action[]) => boolean;
+    }
+
+### `ShadowLayerOptions` (interface)
+
+    export interface ShadowLayerOptions {
+
+        color?: number;
+
+        alpha?: number;
+    }
+
 ### `Shape2D` (class)
 
     export declare class Shape2D extends Graphics {
@@ -2485,6 +4268,15 @@ build instead.
 ### `sharpenText` (function)
 
     export declare function sharpenText(root: Container, devicePixelRatio: number): void;
+
+### `ShowOptions` (interface)
+
+    export interface ShowOptions {
+        at?: SlotName | number;
+        expression?: string;
+
+        fade?: number;
+    }
 
 ### `Signal` (class)
 
@@ -2501,9 +4293,37 @@ build instead.
         dispatch(value: T): boolean;
     }
 
+### `SignalListener` (type)
+
+    export type SignalListener<T> = (value: T) => boolean | void;
+
 ### `Simulation` (namespace)
 
     export * as Simulation from './simulation/index.ts'
+
+### `SizeLimitOptions` (interface)
+
+    export interface SizeLimitOptions {
+
+        maxBytes?: number;
+    }
+
+### `Skin` (interface)
+
+    export interface Skin {
+        background?: number;
+        border?: number;
+        borderWidth?: number;
+        text?: number;
+        padding?: number;
+        texture?: Texture2D;
+
+        borderInset?: number;
+    }
+
+### `SkinData` (type)
+
+    export type SkinData = Skin | SkinStates;
 
 ### `Skins` (class)
 
@@ -2521,6 +4341,10 @@ build instead.
 
         static from(data: Readonly<Record<string, SkinData>>): Skins;
     }
+
+### `SkinStates` (type)
+
+    export type SkinStates = Partial<Record<WidgetState, Skin>>;
 
 ### `sliceSpans` (function)
 
@@ -2568,9 +4392,28 @@ build instead.
 
     export declare function sliderFraction(value: number, min?: number, max?: number): number;
 
+### `SliderOptions` (interface)
+
+    export interface SliderOptions {
+        width: number;
+        height?: number;
+        min?: number;
+        max?: number;
+
+        step?: number;
+        value?: number;
+
+        knobSize?: number;
+        disabled?: boolean;
+    }
+
 ### `sliderValueAt` (function)
 
     export declare function sliderValueAt(fraction: number, min?: number, max?: number, step?: number): number;
+
+### `SlotName` (type)
+
+    export type SlotName = 'left' | 'center' | 'right' | 'farLeft' | 'farRight';
 
 ### `snapZoom` (function)
 
@@ -2591,6 +4434,17 @@ build instead.
         update(dt: number): void;
 
         get isComplete(): boolean;
+    }
+
+### `SpawnerOptions` (interface)
+
+    export interface SpawnerOptions<T> {
+        waves: readonly Wave<T>[];
+        onSpawn: (kind: T) => void;
+
+        onWaveStart?: (waveIndex: number) => void;
+
+        onComplete?: () => void;
     }
 
 ### `Spinner` (class)
@@ -2619,6 +4473,20 @@ build instead.
         private readonly handleTap;
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `SpinnerOptions` (interface)
+
+    export interface SpinnerOptions {
+        width?: number;
+        height?: number;
+        min?: number;
+        max?: number;
+        step?: number;
+        value?: number;
+
+        wrap?: boolean;
+        disabled?: boolean;
     }
 
 ### `spinValue` (function)
@@ -2652,6 +4520,16 @@ build instead.
         update(dt: number): boolean;
     }
 
+### `SpriteAttachmentOptions` (interface)
+
+    export interface SpriteAttachmentOptions {
+
+        offsetX?: number;
+        offsetY?: number;
+
+        duration?: number;
+    }
+
 ### `spriteColorMatrix` (function)
 
     export declare function spriteColorMatrix(sprite: Sprite, matrix: ColorMatrixFilter['matrix']): void;
@@ -2670,6 +4548,14 @@ build instead.
         clear(): void;
 
         update(camera: Camera, dt: number, margin?: number): void;
+    }
+
+### `SpriteGroupMember` (interface)
+
+    export interface SpriteGroupMember {
+        x: number;
+        y: number;
+        update(dt: number): void;
     }
 
 ### `SpriteSheet` (class)
@@ -2708,6 +4594,17 @@ build instead.
     export declare function squareRotate(dx: number, dy: number, rotationIndex: number, rotations: number): {
         dx: number;
 
+### `StageChoice` (type)
+
+    export type StageChoice = Choice & {
+
+        goto?: string;
+
+### `StageCommand` (type)
+
+    export type StageCommand = {
+        backdrop: string;
+
 ### `StageScript` (class)
 
     export declare class StageScript {
@@ -2742,6 +4639,25 @@ build instead.
 
     export declare function stateChecksum(value: unknown): number;
 
+### `StateExtension` (interface)
+
+    export interface StateExtension<T extends StateValue = StateValue> {
+
+        readonly id: string;
+
+        readonly capture: () => T;
+
+        readonly restore: (state: T) => void;
+
+        readonly version?: number;
+
+        readonly migrations?: Readonly<Record<number, (state: StateValue) => T>>;
+
+        readonly reset?: () => void;
+
+        readonly remove?: () => void;
+    }
+
 ### `StateRegistry` (class)
 
     export declare class StateRegistry {
@@ -2755,6 +4671,34 @@ build instead.
         transaction<T>(work: () => T): T;
     }
 
+### `StateRestoreDiagnostic` (interface)
+
+    export interface StateRestoreDiagnostic {
+        readonly extension: string;
+        readonly from: number;
+        readonly to: number;
+        readonly status: 'migrated' | 'unchanged' | 'reset' | 'removed';
+    }
+
+### `StateSnapshot` (interface)
+
+    export interface StateSnapshot {
+        readonly extensions: Readonly<Record<string, StateValue>>;
+        readonly versions?: Readonly<Record<string, number>>;
+    }
+
+### `StateValue` (type)
+
+    export type StateValue = null | boolean | number | string | StateValue[] | {
+        readonly [key: string]: StateValue;
+
+### `StatRow` (interface)
+
+    export interface StatRow {
+        label: string;
+        value: string;
+    }
+
 ### `StatsScreen` (class)
 
     export declare class StatsScreen extends Container {
@@ -2763,6 +4707,13 @@ build instead.
 
         setStats(stats: readonly StatRow[], width?: number): void;
         private static format;
+    }
+
+### `StatsScreenOptions` (interface)
+
+    export interface StatsScreenOptions {
+        width: number;
+        stats: readonly StatRow[];
     }
 
 ### `StatusVisuals` (class)
@@ -2784,6 +4735,35 @@ build instead.
         flash(color: number, strength: number, duration: number): void;
 
         update(dt: number): void;
+    }
+
+### `StatusVisualsOptions` (interface)
+
+    export interface StatusVisualsOptions {
+
+        styles: Record<string, StatusVisualStyle>;
+    }
+
+### `StatusVisualStyle` (interface)
+
+    export interface StatusVisualStyle {
+
+        color: number;
+
+        strength?: number;
+
+        pulseRate?: number;
+    }
+
+### `StoryBeat` (interface)
+
+    export interface StoryBeat {
+        text: string;
+        title?: string;
+
+        image?: string;
+
+        music?: string;
     }
 
 ### `StoryScreen` (class)
@@ -2810,6 +4790,22 @@ build instead.
         private applyBeat;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
+
+### `StoryScreenOptions` (interface)
+
+    export interface StoryScreenOptions {
+        sequence: StorySequence;
+        width: number;
+        height: number;
+
+        textureFor?: (path: string) => Texture | null;
+
+        playMusic?: (track: string | null) => void;
+    }
+
+### `StoryScript` (type)
+
+    export type StoryScript = Record<string, readonly StageCommand[]>;
 
 ### `StorySequence` (class)
 
@@ -2921,6 +4917,36 @@ build instead.
         private emit;
     }
 
+### `TabbedListOptions` (interface)
+
+    export interface TabbedListOptions<T> {
+
+        tabs: readonly ListTab[];
+
+        rowsFor: (tabId: string) => readonly T[];
+
+        pageSize?: number;
+
+        label?: (row: T) => string;
+
+        filter?: (row: T, query: string) => boolean;
+
+        disabled?: (row: T) => boolean;
+    }
+
+### `TableColumn` (interface)
+
+    export interface TableColumn<T> {
+
+        key: string;
+
+        label?: string;
+        width?: number;
+        align?: 'left' | 'right' | 'center';
+
+        compare?: (a: T, b: T) => number;
+    }
+
 ### `TelemetryClient` (class)
 
     export declare class TelemetryClient extends HttpTransport {
@@ -2939,6 +4965,45 @@ build instead.
         private bounded;
     }
 
+### `TelemetryEvent` (interface)
+
+    export interface TelemetryEvent {
+        name: string;
+        properties?: Record<string, string | number | boolean | null>;
+    }
+
+### `TelemetryOptions` (interface)
+
+    export interface TelemetryOptions extends HttpTransportOptions {
+
+        maxStringLength?: number;
+
+        maxProperties?: number;
+
+        allowedProperties?: readonly string[];
+    }
+
+### `TelemetryResponse` (interface)
+
+    export interface TelemetryResponse {
+        ok: boolean;
+        status: number;
+    }
+
+### `TerrainCondition` (interface)
+
+    export interface TerrainCondition {
+        readonly dx: number;
+        readonly dy: number;
+        readonly hasAll?: readonly string[];
+        readonly hasAny?: readonly string[];
+        readonly hasNone?: readonly string[];
+    }
+
+### `TerrainFlagsAt` (type)
+
+    export type TerrainFlagsAt = (x: number, y: number) => ReadonlySet<string> | undefined;
+
 ### `TerrainGraphicsLayer` (class)
 
     export declare class TerrainGraphicsLayer extends Node2D {
@@ -2949,6 +5014,60 @@ build instead.
 
         setPlacements(placements: readonly TerrainPlacement[]): void;
         private rebuild;
+    }
+
+### `TerrainGraphicsLayerOptions` (interface)
+
+    export interface TerrainGraphicsLayerOptions {
+
+        readonly placements: readonly TerrainPlacement[];
+
+        readonly project: (x: number, y: number, dx: number, dy: number) => {
+            x: number;
+            y: number;
+        };
+
+        readonly resolveImage?: (path: string) => Texture2D;
+    }
+
+### `TerrainImage` (interface)
+
+    export interface TerrainImage {
+        readonly image: string;
+
+        readonly dx?: number;
+        readonly dy?: number;
+
+        readonly layer?: number;
+    }
+
+### `TerrainPlacement` (interface)
+
+    export interface TerrainPlacement {
+        readonly x: number;
+        readonly y: number;
+        readonly ruleId: string;
+        readonly image: string;
+        readonly dx: number;
+        readonly dy: number;
+        readonly layer: number;
+    }
+
+### `TerrainRotate` (type)
+
+    export type TerrainRotate = (dx: number, dy: number, rotationIndex: number, rotations: number) => {
+        dx: number;
+
+### `TerrainRule` (interface)
+
+    export interface TerrainRule {
+        readonly id: string;
+        readonly conditions: readonly TerrainCondition[];
+        readonly images: readonly TerrainImage[];
+
+        readonly probability?: number;
+
+        readonly rotations?: number;
     }
 
 ### `Text2D` (class)
@@ -3007,21 +5126,137 @@ build instead.
         private limit;
     }
 
+### `TextModelOptions` (interface)
+
+    export interface TextModelOptions {
+        value?: string;
+
+        maxLength?: number;
+
+        mask?: boolean;
+
+        maskCharacter?: string;
+
+        multiline?: boolean;
+    }
+
 ### `Texture2D` (export)
 
     export { Texture2D }
+
+### `TextureRegion` (interface)
+
+    export interface TextureRegion {
+        texture: Texture;
+        frame: Rect;
+    }
 
 ### `theme` (function)
 
     export declare function theme(): Theme;
 
+### `Theme` (interface)
+
+    export interface Theme {
+
+        panel?: Texture2D;
+
+        panelBorder: number;
+
+        padding: number;
+
+        spacing: number;
+        font: {
+            family: string;
+            size: number;
+
+            lineHeight: number;
+        };
+        color: {
+            text: number;
+            textDim: number;
+            textHighlight: number;
+
+            panelFill: number;
+            panelBorder: number;
+            selection: number;
+
+            overlay: number;
+        };
+
+        overlayAlpha: number;
+
+        direction: Direction;
+    }
+
 ### `themeChanged` (const)
 
     export declare const themeChanged: Signal<Theme>;
 
+### `TickEvent` (interface)
+
+    export interface TickEvent {
+        tick: number;
+
+        inputs: Record<string, unknown>;
+
+        checksums?: Record<string, number>;
+    }
+
+### `TiledLayer` (interface)
+
+    export interface TiledLayer {
+        type: string;
+        name: string;
+        data?: number[];
+        encoding?: string;
+        objects?: TiledObject[];
+    }
+
+### `TiledMapData` (interface)
+
+    export interface TiledMapData {
+        width: number;
+        height: number;
+        tilewidth: number;
+        tileheight: number;
+        orientation?: string;
+
+        staggeraxis?: string;
+        staggerindex?: string;
+        tilesets: Array<{
+            firstgid: number;
+            source?: string;
+        }>;
+        layers: TiledLayer[];
+    }
+
+### `TiledObject` (interface)
+
+    export interface TiledObject {
+        id: number;
+        name?: string;
+        type?: string;
+        x: number;
+        y: number;
+        gid?: number;
+        properties?: Array<{
+            name: string;
+            value: unknown;
+        }>;
+    }
+
 ### `TiledSprite` (class)
 
     export declare class TiledSprite extends TilingSprite {
+    }
+
+### `TiledTilesetData` (interface)
+
+    export interface TiledTilesetData {
+        tilewidth: number;
+        tileheight: number;
+        image: string;
     }
 
 ### `tileFrame` (function)
@@ -3135,6 +5370,32 @@ build instead.
         get visibleChunks(): number;
     }
 
+### `TileMapOptions` (interface)
+
+    export interface TileMapOptions {
+
+        width: number;
+        height: number;
+
+        sheet: SpriteSheet | readonly SpriteSheet[];
+
+        tileWidth?: number;
+        tileHeight?: number;
+
+        shape?: 'square' | 'hex' | 'isometric' | 'staggered';
+
+        chunkSize?: number;
+
+        heightStep?: number;
+    }
+
+### `TilesetSheet` (interface)
+
+    export interface TilesetSheet {
+        firstgid: number;
+        sheet: SpriteSheet;
+    }
+
 ### `TintedSprite` (class)
 
     export declare class TintedSprite extends Sprite {
@@ -3151,6 +5412,13 @@ build instead.
         silhouette(color: number): void;
 
         resetColor(): void;
+    }
+
+### `TintTarget` (interface)
+
+    export interface TintTarget {
+
+        colorAdd: number;
     }
 
 ### `Toast` (class)
@@ -3173,6 +5441,19 @@ build instead.
         update(dt: number): void;
         private advance;
         private finish;
+    }
+
+### `ToastOptions` (interface)
+
+    export interface ToastOptions {
+
+        fadeIn?: number;
+
+        hold?: number;
+
+        fadeOut?: number;
+
+        scaleFrom?: number;
     }
 
 ### `Tooltip` (class)
@@ -3222,6 +5503,42 @@ build instead.
         private place;
     }
 
+### `TooltipOptions` (interface)
+
+    export interface TooltipOptions {
+
+        delay?: number;
+
+        maxWidth?: number;
+
+        offset?: {
+            x: number;
+            y: number;
+        };
+
+        margin?: number;
+    }
+
+### `TreeNode` (interface)
+
+    export interface TreeNode<T = unknown> {
+
+        id: string;
+        label: string;
+        children?: readonly TreeNode<T>[];
+        disabled?: boolean;
+        data?: T;
+    }
+
+### `TreeRow` (interface)
+
+    export interface TreeRow<T> {
+        node: TreeNode<T>;
+        depth: number;
+        expanded: boolean;
+        hasChildren: boolean;
+    }
+
 ### `TreeView` (class)
 
     export declare class TreeView<T = unknown> {
@@ -3248,6 +5565,28 @@ build instead.
         private firstEnabled;
     }
 
+### `TreeViewOptions` (interface)
+
+    export interface TreeViewOptions<T> {
+        roots: readonly TreeNode<T>[];
+
+        expanded?: readonly string[];
+
+        disabled?: (node: TreeNode<T>) => boolean;
+    }
+
+### `TweeChoice` (interface)
+
+    export interface TweeChoice {
+        text: string;
+        goto?: string;
+    }
+
+### `TweeCommand` (type)
+
+    export type TweeCommand = {
+        say: string;
+
 ### `Tweener` (class)
 
     export declare class Tweener {
@@ -3259,6 +5598,37 @@ build instead.
         get isBusy(): boolean;
 
         clear(): void;
+    }
+
+### `TweenOptions` (interface)
+
+    export interface TweenOptions {
+
+        ease?: Easing;
+
+        intent?: MotionIntent;
+
+        alternate?: (t: number) => void;
+    }
+
+### `TweeStory` (interface)
+
+    export interface TweeStory {
+        story: Record<string, TweeCommand[]>;
+
+        start: string;
+
+        title?: string;
+    }
+
+### `TwineStory` (interface)
+
+    export interface TwineStory {
+        story: StoryScript;
+
+        start: string;
+
+        title?: string;
     }
 
 ### `uncloneablePath` (function)
@@ -3286,6 +5656,13 @@ build instead.
         clear(): void;
     }
 
+### `UndoHistoryOptions` (interface)
+
+    export interface UndoHistoryOptions {
+
+        limit?: number;
+    }
+
 ### `unscramble` (function)
 
     export declare function unscramble(payload: string, key: string): string;
@@ -3309,6 +5686,26 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `VerticalLabelOptions` (interface)
+
+    export interface VerticalLabelOptions {
+        text: string;
+        color?: number;
+        size?: number;
+        columnHeight: number;
+        rotate?: RegExp;
+    }
+
+### `VerticalLayoutOptions` (interface)
+
+    export interface VerticalLayoutOptions {
+        lineHeight: number;
+
+        columnHeight: number;
+
+        rotate?: RegExp;
+    }
+
 ### `Viewport` (class)
 
     export declare class Viewport {
@@ -3322,13 +5719,84 @@ build instead.
         update(dt: number): void;
     }
 
+### `ViewportOptions` (interface)
+
+    export interface ViewportOptions extends CameraOptions {
+
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }
+
 ### `watchReducedMotion` (function)
 
     export declare function watchReducedMotion(listener: (reduced: boolean) => void): () => void;
 
+### `Wave` (interface)
+
+    export interface Wave<T> {
+        delay: number;
+        entries: readonly {
+            kind: T;
+            count: number;
+        }[];
+
+        duration?: number;
+    }
+
+### `WebGpuDetection` (interface)
+
+    export interface WebGpuDetection {
+        webgpu: boolean;
+        wgsl: boolean;
+    }
+
+### `WebSocketLike` (interface)
+
+    export interface WebSocketLike {
+        readyState: number;
+        send(data: string): void;
+        close(): void;
+        onopen: ((event: unknown) => void) | null;
+        onclose: ((event: unknown) => void) | null;
+        onerror: ((event: unknown) => void) | null;
+        onmessage: ((event: {
+            data: string;
+        }) => void) | null;
+    }
+
+### `WeightedCell` (interface)
+
+    export interface WeightedCell<T> {
+        readonly cell: T;
+        readonly cost: number;
+    }
+
 ### `weightedFlood` (function)
 
     export declare function weightedFlood<T, K>(start: T, options: WeightedFloodOptions<T, K>): Map<K, WeightedCell<T>>;
+
+### `WeightedFloodOptions` (interface)
+
+    export interface WeightedFloodOptions<T, K> {
+
+        key: (cell: T) => K;
+
+        neighbors: (cell: T) => Iterable<T>;
+
+        cost: (from: T, to: T) => number;
+
+        maxCost: number;
+
+        canEnter?: (cell: T, from: T, cost: number) => boolean;
+
+        stop?: (cell: T, cost: number) => boolean;
+    }
+
+### `WidgetState` (type)
+
+    export type WidgetState = 'idle' | 'hover' | 'pressed' | 'disabled' | 'selected' | 'focused';
 
 ### `Window` (class)
 
@@ -3377,6 +5845,24 @@ build instead.
 
         handleOutsideClick(x: number, y: number): boolean;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `WindowOptions` (interface)
+
+    export interface WindowOptions {
+        width: number;
+        height: number;
+        title?: string;
+
+        modal?: boolean;
+
+        closable?: boolean;
+
+        dims?: boolean;
+
+        anchor?: 'center' | 'bottom' | 'top';
+
+        blocker?: boolean;
     }
 
 ### `WindowStack` (class)
@@ -3429,15 +5915,59 @@ build instead.
 
     export declare function xpAutotilePattern(sameTerrain: (dx: number, dy: number) => boolean): number;
 
+### `XpAutotilePattern` (type)
+
+    export type XpAutotilePattern = readonly [number, number, number, number];
+
 ### `xpAutotileRef` (function)
 
     export declare function xpAutotileRef(tile: number): XpAutotileRef | null;
 
+### `XpAutotileRef` (interface)
+
+    export interface XpAutotileRef {
+
+        index: number;
+
+        pattern: number;
+    }
+
 ## `./3d`
+
+### `Billboard3DOptions` (interface)
+
+    export interface Billboard3DOptions {
+
+        texture: string;
+        width?: number;
+        height?: number;
+    }
 
 ### `buildHeightIndex` (function)
 
     export declare function buildHeightIndex(cells: readonly GridCell3D[]): Map<string, number>;
+
+### `CapsuleGridMoveOptions` (interface)
+
+    export interface CapsuleGridMoveOptions {
+        shape: GridShape3D;
+
+        heights: ReadonlyMap<string, number>;
+        tileSize?: number;
+
+        maxStepUp?: number;
+
+        steps?: number;
+    }
+
+### `CapsuleGridMoveResult` (interface)
+
+    export interface CapsuleGridMoveResult {
+        x: number;
+        z: number;
+
+        blocked: boolean;
+    }
 
 ### `cellAt` (function)
 
@@ -3470,6 +6000,11 @@ build instead.
         static billboard(scene: Scene, options: Billboard3DOptions): Character3D;
     }
 
+### `CollideXZ` (type)
+
+    export type CollideXZ = (from: {
+        x: number;
+
 ### `createHeightmapTerrain3D` (function)
 
     export declare function createHeightmapTerrain3D(scene: Scene, source: HeightmapSource, options?: HeightmapTerrain3DOptions): GroundMesh;
@@ -3497,22 +6032,120 @@ build instead.
         dispose(): void;
     }
 
+### `Engine3DOptions` (interface)
+
+    export interface Engine3DOptions {
+        canvas: HTMLCanvasElement;
+        antialias?: boolean;
+        clearColor?: readonly [number, number, number, number?];
+    }
+
+### `Frame3D` (type)
+
+    export type Frame3D = (deltaSeconds: number) => void;
+
+### `GridCell3D` (interface)
+
+    export interface GridCell3D {
+        x: number;
+        y: number;
+        height?: number;
+    }
+
 ### `gridPoint3D` (function)
 
     export declare function gridPoint3D(shape: GridShape3D, x: number, y: number, tileSize?: number, height?: number, heightStep?: number): Point3D;
+
+### `GridShape3D` (type)
+
+    export type GridShape3D = 'square' | 'hex';
 
 ### `heightAt` (function)
 
     export declare function heightAt(index: ReadonlyMap<string, number>, shape: GridShape3D, x: number, z: number, tileSize?: number): number | null;
 
+### `HeightmapSource` (interface)
+
+    export interface HeightmapSource {
+        data: Uint8Array;
+        width: number;
+        height: number;
+    }
+
+### `HeightmapTerrain3DOptions` (interface)
+
+    export interface HeightmapTerrain3DOptions {
+
+        width?: number;
+
+        depth?: number;
+
+        subdivisions?: number;
+        minHeight?: number;
+        maxHeight?: number;
+    }
+
 ### `parseVox` (function)
 
     export declare function parseVox(data: ArrayBuffer | ArrayBufferView): VoxModel;
+
+### `Point3D` (interface)
+
+    export interface Point3D {
+        x: number;
+        y: number;
+        z: number;
+    }
 
 ### `resolveCapsuleAgainstGrid` (function)
 
     export declare function resolveCapsuleAgainstGrid(from: {
         x: number;
+
+### `TileGrid3DMeshes` (interface)
+
+    export interface TileGrid3DMeshes {
+        tiles: Mesh;
+        columns: Mesh | null;
+        dispose(): void;
+    }
+
+### `TileGrid3DOptions` (interface)
+
+    export interface TileGrid3DOptions {
+        shape: GridShape3D;
+        tileSize?: number;
+        heightStep?: number;
+        tileThickness?: number;
+        tileColor?: number;
+        columnColor?: number;
+        origin?: readonly [number, number, number];
+    }
+
+### `Voxel` (interface)
+
+    export interface Voxel {
+        x: number;
+        y: number;
+        z: number;
+        color: number;
+    }
+
+### `VoxModel` (interface)
+
+    export interface VoxModel {
+        size: VoxSize;
+        voxels: readonly Voxel[];
+        palette: Uint32Array;
+    }
+
+### `VoxSize` (interface)
+
+    export interface VoxSize {
+        x: number;
+        y: number;
+        z: number;
+    }
 
 ## `./3d/models`
 
@@ -3572,9 +6205,75 @@ build instead.
         }): Advancement;
     }
 
+### `AdvancementOption` (interface)
+
+    export interface AdvancementOption {
+        id: string;
+
+        description?: string;
+    }
+
+### `AdvancementTier` (interface)
+
+    export interface AdvancementTier {
+
+        threshold: number;
+        kind: AdvancementTierKind;
+
+        points?: number;
+
+        options?: readonly AdvancementOption[];
+    }
+
+### `AdvancementTierKind` (type)
+
+    export type AdvancementTierKind = 'points' | 'branch' | 'capstone';
+
+### `AdvancementTrack` (interface)
+
+    export interface AdvancementTrack {
+        tiers: readonly AdvancementTier[];
+    }
+
+### `AffixContext` (interface)
+
+    export interface AffixContext {
+        trigger: AffixTrigger;
+        kind?: AttackKind;
+    }
+
+### `AffixDef` (interface)
+
+    export interface AffixDef {
+        id: string;
+        trigger: AffixTrigger;
+
+        kinds?: readonly AttackKind[];
+
+        weight: number;
+
+        curse?: boolean;
+
+        description?: string;
+    }
+
 ### `affixOf` (function)
 
     export declare function affixOf(item: InventoryItem): string | undefined;
+
+### `AffixTable` (interface)
+
+    export interface AffixTable {
+        entries: readonly AffixDef[];
+    }
+
+### `AffixTrigger` (type)
+
+    export type AffixTrigger = 'strike' | 'defend' | 'passive';
+
+### `AffixUpgradePolicy` (type)
+
+    export type AffixUpgradePolicy = 'keep' | 'remove';
 
 ### `Appearances` (class)
 
@@ -3593,6 +6292,15 @@ build instead.
         }): Appearances;
     }
 
+### `AppearanceTable` (interface)
+
+    export interface AppearanceTable {
+
+        kinds: readonly string[];
+
+        labels: readonly string[];
+    }
+
 ### `applyAffix` (function)
 
     export declare function applyAffix(item: InventoryItem, affix: AffixDef): void;
@@ -3609,15 +6317,40 @@ build instead.
 
     export declare function assignAppearances(table: AppearanceTable): Map<string, string>;
 
+### `AssignedTrait` (interface)
+
+    export interface AssignedTrait {
+        trait: TraitDef;
+        source: symbol;
+    }
+
 ### `assignTraits` (function)
 
     export declare function assignTraits(stats: StatBlock, pool: readonly TraitDef[], count: number): AssignedTrait[];
+
+### `AttackKind` (type)
+
+    export type AttackKind = 'melee' | 'thrown' | 'bow' | 'ability' | string;
+
+### `AuraDef` (interface)
+
+    export interface AuraDef {
+        name: string;
+        modifiers: readonly Omit<Modifier, 'source'>[];
+    }
 
 ### `AuraField` (class)
 
     export declare class AuraField {
         private affected;
         update(participants: readonly AuraParticipant[], isAdjacent: (a: AuraParticipant, b: AuraParticipant) => boolean): void;
+    }
+
+### `AuraParticipant` (interface)
+
+    export interface AuraParticipant {
+        stats: StatBlock;
+        aura?: AuraDef | null;
     }
 
 ### `Barrier` (class)
@@ -3644,6 +6377,14 @@ build instead.
         }): Barrier;
     }
 
+### `BarrierLayer` (interface)
+
+    export interface BarrierLayer {
+        amount: number;
+
+        decayPerTick?: number;
+    }
+
 ### `buildEntities` (function)
 
     export declare function buildEntities(rows: readonly EntityTemplateRow[], catalog?: EntityTemplateCatalog, onLowHp?: (entity: BuiltEntity) => void): BuiltEntity[];
@@ -3651,6 +6392,19 @@ build instead.
 ### `buildEntity` (function)
 
     export declare function buildEntity(row: EntityTemplateRow, catalog?: EntityTemplateCatalog, onLowHp?: (entity: BuiltEntity) => void): BuiltEntity;
+
+### `BuiltEntity` (interface)
+
+    export interface BuiltEntity {
+        id: string;
+        stats: StatBlock;
+        progression?: Progression;
+        item?: InventoryItem;
+        reactions: ReactionTable<{
+            hp: number;
+            maxHp: number;
+        }>;
+    }
 
 ### `buy` (function)
 
@@ -3687,6 +6441,17 @@ build instead.
         }): Charges;
     }
 
+### `ChargesOptions` (interface)
+
+    export interface ChargesOptions {
+
+        max: number;
+
+        current?: number;
+
+        regenRate: number;
+    }
+
 ### `composeModifiers` (function)
 
     export declare function composeModifiers(base: number, modifiers: readonly Modifier[]): number;
@@ -3707,9 +6472,70 @@ build instead.
 
     export declare function damageItem(item: InventoryItem, amount: number): boolean;
 
+### `DerivedStat` (interface)
+
+    export interface DerivedStat {
+        name: string;
+
+        from: (stats: Readonly<Stats>) => number;
+    }
+
+### `EffectClock` (interface)
+
+    export interface EffectClock {
+        add(effect: {
+            tick: (turn: number) => void;
+            duration?: number;
+            onExpire?: () => void;
+        }): symbol;
+        remove(id: symbol): void;
+    }
+
 ### `enchant` (function)
 
     export declare function enchant(item: InventoryItem, delta: number, affixPolicy?: AffixUpgradePolicy): number;
+
+### `EntitySaveState` (interface)
+
+    export interface EntitySaveState {
+        stats: {
+            base: Stats;
+        };
+        progression?: {
+            level: number;
+            experience: number;
+        };
+        item?: InventoryItem;
+    }
+
+### `EntityTemplateCatalog` (interface)
+
+    export interface EntityTemplateCatalog {
+        growthCurves?: Record<string, GrowthCurve>;
+        affixes?: Record<string, AffixDef>;
+
+        items?: Record<string, () => InventoryItem>;
+    }
+
+### `EntityTemplateRow` (interface)
+
+    export interface EntityTemplateRow {
+        id: string;
+        growth?: string;
+        level?: number;
+        startingAffix?: string;
+        startingItem?: string;
+        lowHpReaction?: number;
+
+        [stat: string]: unknown;
+    }
+
+### `EquipmentOptions` (interface)
+
+    export interface EquipmentOptions<Slot extends string, Item extends EquippableItem> {
+
+        locked?: (slot: Slot, item: Item) => boolean;
+    }
 
 ### `EquipmentSlots` (class)
 
@@ -3742,13 +6568,42 @@ build instead.
         }, data: SavedEquipment<Slot>): EquipmentSlots<Slot, Item>;
     }
 
+### `EquippableItem` (interface)
+
+    export interface EquippableItem {
+
+        modifiers?: Modifier[];
+    }
+
 ### `fromEntitySaveState` (function)
 
     export declare function fromEntitySaveState(row: EntityTemplateRow, catalog: EntityTemplateCatalog, data: EntitySaveState, onLowHp?: (entity: BuiltEntity) => void): BuiltEntity;
 
+### `GrowthCurve` (interface)
+
+    export interface GrowthCurve {
+
+        experienceFor(level: number): number;
+
+        maxLevel: number;
+    }
+
 ### `identify` (function)
 
     export declare function identify(item: InventoryItem): void;
+
+### `Ingredient` (interface)
+
+    export interface Ingredient {
+
+        readonly id?: string | readonly string[];
+
+        readonly category?: string;
+
+        readonly matches?: (item: InventoryItem) => boolean;
+
+        readonly quantity: number;
+    }
 
 ### `Inventory` (class)
 
@@ -3773,13 +6628,121 @@ build instead.
         static fromJSON(defs: ReadonlyMap<string, ItemDefinition>, data: SavedInventory): Inventory;
     }
 
+### `InventoryItem` (interface)
+
+    export interface InventoryItem {
+
+        id: string;
+        quantity: number;
+        stackable?: boolean;
+        weight?: number;
+
+        category?: string;
+
+        instanceId?: string;
+
+        identified?: boolean;
+        cursed?: boolean;
+        blessed?: boolean;
+
+        level?: number;
+
+        affix?: string;
+
+        durability?: number;
+        maxDurability?: number;
+
+        contents?: Inventory;
+    }
+
+### `InventoryOptions` (interface)
+
+    export interface InventoryOptions {
+
+        capacity?: number;
+    }
+
+### `ItemDefinition` (type)
+
+    export type ItemDefinition = Pick<InventoryItem, 'stackable' | 'weight' | 'category'>;
+
+### `ItemStatusEffectHandle` (interface)
+
+    export interface ItemStatusEffectHandle {
+        cancel(): void;
+    }
+
+### `ItemStatusEffectOptions` (interface)
+
+    export interface ItemStatusEffectOptions<T> {
+
+        fields: Partial<T>;
+
+        duration: number;
+
+        tick?: (turn: number) => void;
+    }
+
+### `LevelScale` (interface)
+
+    export interface LevelScale {
+        stat: string;
+        op: ModifierOp;
+
+        base: number;
+
+        perLevel: number;
+    }
+
+### `LootEntry` (interface)
+
+    export interface LootEntry {
+        id: string;
+        weight: number;
+
+        quantity?: number;
+    }
+
+### `LootTable` (interface)
+
+    export interface LootTable {
+        entries: readonly LootEntry[];
+
+        chance?: number;
+    }
+
 ### `matchesContext` (function)
 
     export declare function matchesContext(affix: AffixDef, context: AffixContext): boolean;
 
+### `Modifier` (interface)
+
+    export interface Modifier {
+        stat: string;
+        op: ModifierOp;
+        value: number;
+
+        order?: number;
+
+        source?: unknown;
+    }
+
+### `ModifierOp` (type)
+
+    export type ModifierOp = 'add' | 'multiply' | 'set';
+
 ### `powerCurve` (function)
 
     export declare function powerCurve(base: number, power: number, maxLevel: number): GrowthCurve;
+
+### `Price` (interface)
+
+    export interface Price {
+
+        buy: number;
+
+        sell: number;
+    }
 
 ### `Progression` (class)
 
@@ -3806,6 +6769,15 @@ build instead.
         }): Progression;
     }
 
+### `Recipe` (interface)
+
+    export interface Recipe {
+
+        ingredients: Ingredient[];
+
+        result: InventoryItem;
+    }
+
 ### `refund` (function)
 
     export declare function refund(stats: StatBlock, cost: ResourceCost | readonly ResourceCost[], fraction?: number): void;
@@ -3818,14 +6790,59 @@ build instead.
 
     export declare function repairItem(item: InventoryItem, amount: number): void;
 
+### `ResourceCost` (interface)
+
+    export interface ResourceCost {
+        stat: string;
+        amount: number;
+    }
+
 ### `rollAffix` (function)
 
     export declare function rollAffix(table: AffixTable, options?: RollAffixOptions): AffixDef | null;
+
+### `RollAffixOptions` (interface)
+
+    export interface RollAffixOptions {
+
+        readonly curse?: boolean;
+
+        readonly predicate?: (entry: AffixDef) => boolean;
+    }
 
 ### `rollLoot` (function)
 
     export declare function rollLoot(table: LootTable): {
         id: string;
+
+### `SavedEquipment` (interface)
+
+    export interface SavedEquipment<Slot extends string> {
+        worn: [Slot, string][];
+    }
+
+### `SavedInventory` (interface)
+
+    export interface SavedInventory {
+        capacity?: number;
+        slots: SavedInventoryItem[];
+    }
+
+### `SavedInventoryItem` (interface)
+
+    export interface SavedInventoryItem {
+        id: string;
+        quantity: number;
+        instanceId?: string;
+        identified?: boolean;
+        cursed?: boolean;
+        blessed?: boolean;
+        level?: number;
+        affix?: string;
+        durability?: number;
+        maxDurability?: number;
+        contents?: SavedInventory;
+    }
 
 ### `scaledModifiers` (function)
 
@@ -3834,6 +6851,14 @@ build instead.
 ### `sell` (function)
 
     export declare function sell(wallet: StatBlock, stock: Inventory, bag: Inventory, id: string, quantity: number, options: ShopOptions): boolean;
+
+### `ShopOptions` (interface)
+
+    export interface ShopOptions {
+
+        currency: string;
+        prices: ReadonlyMap<string, Price>;
+    }
 
 ### `skillCheck` (function)
 
@@ -3864,6 +6889,15 @@ build instead.
         static fromJSON(stats: StatBlock, options: SkillPointsOptions, data: {
             points: number;
         }): SkillPoints;
+    }
+
+### `SkillPointsOptions` (interface)
+
+    export interface SkillPointsOptions {
+
+        cap?: (stat: string) => number;
+
+        cost?: (stat: string, rank: number) => number;
     }
 
 ### `spend` (function)
@@ -3898,6 +6932,44 @@ build instead.
         }): StatBlock;
     }
 
+### `StatBlockOptions` (interface)
+
+    export interface StatBlockOptions {
+        base: Stats;
+        derived?: DerivedStat[];
+    }
+
+### `Stats` (type)
+
+    export type Stats = Record<string, number>;
+
+### `StatusEffectHandle` (interface)
+
+    export interface StatusEffectHandle {
+        cancel(): void;
+    }
+
+### `StatusEffectOptions` (interface)
+
+    export interface StatusEffectOptions {
+
+        modifiers: readonly Omit<Modifier, 'source'>[];
+
+        duration: number;
+
+        tick?: (turn: number) => void;
+    }
+
+### `SupportChange` (interface)
+
+    export interface SupportChange {
+        a: string;
+        b: string;
+        points: number;
+        previousLevel: SupportLevel | null;
+        level: SupportLevel | null;
+    }
+
 ### `SupportLedger` (class)
 
     export declare class SupportLedger {
@@ -3911,9 +6983,33 @@ build instead.
         static fromJSON(levels: readonly SupportLevel[], data: SupportSave): SupportLedger;
     }
 
+### `SupportLevel` (interface)
+
+    export interface SupportLevel {
+        id: string;
+        threshold: number;
+
+        bonus?: string;
+    }
+
+### `SupportSave` (interface)
+
+    export interface SupportSave {
+        pairs: Array<[string, string, number]>;
+    }
+
 ### `toEntitySaveState` (function)
 
     export declare function toEntitySaveState(entity: BuiltEntity): EntitySaveState;
+
+### `TraitDef` (interface)
+
+    export interface TraitDef {
+        name: string;
+        modifiers: readonly Omit<Modifier, 'source'>[];
+
+        description?: string;
+    }
 
 ## `./ai`
 
@@ -4027,6 +7123,41 @@ build instead.
     export type AIValue = null | boolean | number | string | AIValue[] | {
         readonly [key: string]: AIValue;
 
+### `AlphaBetaGame` (interface)
+
+    export interface AlphaBetaGame<State, Move> {
+
+        readonly currentPlayer: (state: State) => number;
+
+        readonly moves: (state: State) => readonly Move[];
+
+        readonly apply: (state: State, move: Move) => State;
+        readonly isTerminal: (state: State) => boolean;
+
+        readonly evaluate: (state: State, rootPlayer: number) => number;
+    }
+
+### `AlphaBetaOptions` (interface)
+
+    export interface AlphaBetaOptions {
+        readonly depth: number;
+        readonly maxNodes?: number;
+        readonly signal?: AbortSignal;
+        readonly onNode?: (depth: number, maximizing: boolean) => void;
+    }
+
+### `AlphaBetaResult` (interface)
+
+    export interface AlphaBetaResult<State, Move> {
+        readonly move: Move | null;
+        readonly score: number;
+        readonly depth: number;
+        readonly nodes: number;
+        readonly cutoffs: number;
+        readonly status: 'complete' | 'cancelled' | 'budget-exceeded';
+        readonly state: State;
+    }
+
 ### `alphaBetaSearch` (function)
 
     export declare function alphaBetaSearch<State, Move>(game: AlphaBetaGame<State, Move>, state: State, options: AlphaBetaOptions): AlphaBetaResult<State, Move>;
@@ -4051,9 +7182,28 @@ build instead.
         static fromJSON(values: Readonly<Record<string, AspectValue>>): Aspects;
     }
 
+### `AspectValue` (type)
+
+    export type AspectValue = number | string | boolean | readonly string[];
+
+### `AspectValues` (interface)
+
+    export interface AspectValues {
+        readonly [name: string]: AspectValue | undefined;
+    }
+
 ### `defaultWeigh` (function)
 
     export declare function defaultWeigh<A>(candidate: HeuristicCandidate<A>, context: HeuristicContext): number;
+
+### `DenseLayer` (interface)
+
+    export interface DenseLayer {
+        inputSize: number;
+        outputSize: number;
+        weights: readonly number[];
+        biases: readonly number[];
+    }
 
 ### `Difficulty` (class)
 
@@ -4067,10 +7217,34 @@ build instead.
         aspectsFor(id: string): Aspects;
     }
 
+### `DifficultyLevel` (interface)
+
+    export interface DifficultyLevel {
+        id: string;
+        name?: string;
+
+        aspects?: AspectValues;
+    }
+
 ### `firstWins` (function)
 
     export declare function firstWins<Move>(scored: readonly {
         readonly move: Move;
+
+### `Goal` (interface)
+
+    export interface Goal {
+        unit: string;
+        kind: GoalKind;
+
+        target?: string;
+
+        priority?: number;
+    }
+
+### `GoalKind` (type)
+
+    export type GoalKind = 'attack' | 'defend' | 'retreat' | 'capture' | 'scout';
 
 ### `Goals` (class)
 
@@ -4096,6 +7270,52 @@ build instead.
         });
 
         decide(candidates: readonly HeuristicCandidate<A>[], context: HeuristicContext): HeuristicDecision<A> | null;
+    }
+
+### `HeuristicCandidate` (interface)
+
+    export interface HeuristicCandidate<A = unknown> {
+
+        id: string;
+        action: A;
+
+        unit?: string;
+
+        factors?: Readonly<Record<string, number>>;
+
+        type?: string;
+
+        role?: string;
+
+        can_recruit?: boolean;
+
+        name?: string;
+    }
+
+### `HeuristicContext` (interface)
+
+    export interface HeuristicContext {
+        aspects: Aspects;
+        goals?: Goals;
+        turn?: number;
+    }
+
+### `HeuristicDecision` (interface)
+
+    export interface HeuristicDecision<A = unknown> {
+        candidate: HeuristicCandidate<A>;
+        stage: string;
+        score: number;
+    }
+
+### `HeuristicStage` (interface)
+
+    export interface HeuristicStage<A = unknown> {
+        id: string;
+
+        when?: (context: HeuristicContext) => boolean;
+
+        weigh?: (candidate: HeuristicCandidate<A>, context: HeuristicContext) => number;
     }
 
 ### `JavaScriptAI` (class)
@@ -4125,6 +7345,41 @@ build instead.
 ### `keepAwayScore` (function)
 
     export declare function keepAwayScore(distance: number, keepAway: number): number;
+
+### `LuaAlphaBetaFunctions` (interface)
+
+    export interface LuaAlphaBetaFunctions {
+        readonly player?: string;
+        readonly moves?: string;
+        readonly apply?: string;
+        readonly terminal?: string;
+        readonly evaluate?: string;
+    }
+
+### `LuaSearchValueAdapter` (interface)
+
+    export interface LuaSearchValueAdapter {
+        readonly toMoves: (value: AIValue) => readonly AIValue[];
+        readonly toBoolean: (value: AIValue) => boolean;
+        readonly toNumber: (value: AIValue) => number;
+        readonly toPlayer: (value: AIValue) => number;
+    }
+
+### `NeuralModel` (interface)
+
+    export interface NeuralModel {
+        version: 1;
+        observationVersion: string;
+        layers: readonly DenseLayer[];
+    }
+
+### `NeuralObservation` (interface)
+
+    export interface NeuralObservation {
+        input: readonly number[];
+
+        mask?: readonly boolean[];
+    }
 
 ### `NeuralPolicy` (class)
 
@@ -4160,9 +7415,65 @@ build instead.
         next(after: string | null): string | null;
     }
 
+### `RootSplit` (interface)
+
+    export interface RootSplit<State, Move> {
+        readonly move: Move;
+        readonly child: State;
+    }
+
 ### `rootSplits` (function)
 
     export declare function rootSplits<State, Move>(game: AlphaBetaGame<State, Move>, state: State): RootSplit<State, Move>[];
+
+### `ScorePersonality` (interface)
+
+    export interface ScorePersonality {
+        readonly own: number;
+        readonly allies: number;
+        readonly enemies: number;
+    }
+
+### `ScoreSubject` (interface)
+
+    export interface ScoreSubject<T> {
+        readonly id: T;
+
+        readonly side: string;
+        readonly x: number;
+        readonly y: number;
+
+        readonly type?: string;
+
+        readonly role?: string;
+
+        readonly can_recruit?: boolean;
+
+        readonly name?: string;
+    }
+
+### `ScoreSubjectFilter` (interface)
+
+    export interface ScoreSubjectFilter {
+        readonly side?: string;
+        readonly type?: string;
+        readonly role?: string;
+        readonly can_recruit?: boolean;
+        readonly name?: string;
+    }
+
+### `ScoreView` (interface)
+
+    export interface ScoreView {
+
+        readonly own: number;
+
+        readonly allies: number;
+
+        readonly enemies: number;
+
+        readonly seen: number;
+    }
 
 ### `scoreWith` (function)
 
@@ -4177,6 +7488,47 @@ build instead.
     export declare function subjectsWhere<T>(world: readonly ScoreSubject<T>[], filter: ScoreSubjectFilter): ScoreSubject<T>[];
 
 ## `./ai/lua`
+
+### `AIAgentDefinition` (interface)
+
+    export interface AIAgentDefinition {
+        readonly id: string;
+        readonly behaviors: readonly AIBehavior[];
+        readonly scope?: 'actor' | 'controller';
+        readonly algorithm?: 'rules' | 'alpha_beta';
+        readonly depth?: number;
+        readonly maxNodes?: number;
+    }
+
+### `AIDecision` (interface)
+
+    export interface AIDecision {
+        readonly agent: string;
+        readonly action: AIAction | null;
+        readonly state: AIState;
+        readonly behavior?: string;
+        readonly status: 'action' | 'idle' | 'cancelled' | 'budget-exceeded';
+        readonly steps: number;
+        readonly events: readonly AIEvent[];
+    }
+
+### `AIDecisionInput` (interface)
+
+    export interface AIDecisionInput {
+        readonly perception: AIValue;
+        readonly state?: AIState;
+        readonly signal?: AbortSignal;
+        readonly seed?: number;
+        readonly maxSteps?: number;
+        readonly maxMilliseconds?: number;
+    }
+
+### `AIStateEnvelope` (interface)
+
+    export interface AIStateEnvelope {
+        readonly version: 1;
+        readonly agents: Readonly<Record<string, AIState>>;
+    }
 
 ### `createLuaAI` (function)
 
@@ -4221,6 +7573,20 @@ build instead.
 
 ## `./assets`
 
+### `AssetBundle` (interface)
+
+    export interface AssetBundle {
+        id: string;
+        paths: readonly string[];
+        priority?: number;
+
+        estimatedBytes?: number;
+    }
+
+### `AssetProgress` (type)
+
+    export type AssetProgress = (fraction: number) => void;
+
 ### `AssetStream` (class)
 
     export declare class AssetStream {
@@ -4242,6 +7608,22 @@ build instead.
         get estimatedBytes(): number;
         private enforceBudget;
         private isRetained;
+    }
+
+### `AssetStreamOptions` (interface)
+
+    export interface AssetStreamOptions {
+        budgetBytes?: number;
+        load?: (paths: string[], onProgress?: AssetProgress) => Promise<void>;
+        release?: (paths: string[]) => Promise<void>;
+    }
+
+### `ByteProgress` (interface)
+
+    export interface ByteProgress {
+        loaded: number;
+
+        total: number | null;
     }
 
 ### `fetchWithByteProgress` (function)
@@ -4276,9 +7658,33 @@ build instead.
 
     export declare function load(paths: string[], options?: AssetProgress | LoadAssetsOptions): Promise<void>;
 
+### `LoadAssetsOptions` (interface)
+
+    export interface LoadAssetsOptions {
+
+        onProgress?: AssetProgress;
+
+        resolution?: number;
+
+        optional?: readonly string[];
+
+        onMissing?: (path: string, error: unknown) => void;
+    }
+
 ### `loadBinary` (function)
 
     export declare function loadBinary(paths: string[], onProgress?: AssetProgress, options?: LoadBinaryOptions): Promise<void>;
+
+### `LoadBinaryOptions` (interface)
+
+    export interface LoadBinaryOptions {
+
+        fetch?: typeof globalThis.fetch;
+    }
+
+### `OnByteProgress` (type)
+
+    export type OnByteProgress = (progress: ByteProgress) => void;
 
 ### `paths` (function)
 
@@ -4428,6 +7834,24 @@ build instead.
         private finishMe;
     }
 
+### `AudioBusOptions` (interface)
+
+    export interface AudioBusOptions {
+        destination?: AudioNode;
+        load?: BusLoader;
+    }
+
+### `AudioFalloff` (interface)
+
+    export interface AudioFalloff {
+
+        refDistance?: number;
+
+        maxDistance?: number;
+
+        rolloff?: number;
+    }
+
 ### `audioGain` (function)
 
     export declare function audioGain(distance: number, falloff?: AudioFalloff): number;
@@ -4452,6 +7876,55 @@ build instead.
 
     export declare function audioPan(listener: AudioPoint & {
         facing: number;
+
+### `AudioPoint` (interface)
+
+    export interface AudioPoint {
+        x: number;
+        y: number;
+    }
+
+### `BusKind` (type)
+
+    export type BusKind = 'bgm' | 'bgs' | 'me' | 'se';
+
+### `BusLoader` (type)
+
+    export type BusLoader = (kind: BusKind, name: string) => Promise<LoadedTrack | null>;
+
+### `BusMixerLevel` (interface)
+
+    export interface BusMixerLevel {
+
+        volume: number;
+        muted: boolean;
+    }
+
+### `BusSnapshot` (interface)
+
+    export interface BusSnapshot {
+        bgm: SavedBusTrack | null;
+        bgs: SavedBusTrack | null;
+        savedBgm: SavedBusTrack | null;
+        savedBgs: SavedBusTrack | null;
+    }
+
+### `BusTrack` (interface)
+
+    export interface BusTrack {
+        name: string;
+        volume?: number;
+        pitch?: number;
+        pan?: number;
+        pos?: number;
+    }
+
+### `CaptionEvent` (interface)
+
+    export interface CaptionEvent {
+
+        text: string;
+    }
 
 ### `Channel` (class)
 
@@ -4491,6 +7964,32 @@ build instead.
         private clearNodes;
     }
 
+### `ChannelPlayOptions` (interface)
+
+    export interface ChannelPlayOptions {
+
+        volume?: number;
+
+        pitch?: number;
+
+        pan?: number;
+
+        pos?: number;
+
+        loop?: LoopRegion | null;
+
+        repeat?: boolean;
+    }
+
+### `ChannelState` (interface)
+
+    export interface ChannelState {
+        volume: number;
+        pitch: number;
+        pan: number;
+        pos: number;
+    }
+
 ### `collectSoundFontUsage` (function)
 
     export declare function collectSoundFontUsage(files: readonly MidiFile[]): SoundFontProgram[];
@@ -4499,9 +7998,21 @@ build instead.
 
     export declare function createAudio(path: string): Playable;
 
+### `GridSubdivision` (type)
+
+    export type GridSubdivision = '8n' | '16n' | '32n';
+
 ### `GrooveConverter` (class)
 
     export declare class GrooveConverter implements GrooveConverterEngine {
+        exportFormat(template: GrooveTemplate, format: GrooveFormat): Promise<Uint8Array | string>;
+        importFormat(data: Uint8Array | string, format: GrooveFormat): Promise<GrooveTemplate>;
+    }
+
+### `GrooveConverterEngine` (interface)
+
+    export interface GrooveConverterEngine {
+
         exportFormat(template: GrooveTemplate, format: GrooveFormat): Promise<Uint8Array | string>;
         importFormat(data: Uint8Array | string, format: GrooveFormat): Promise<GrooveTemplate>;
     }
@@ -4514,6 +8025,21 @@ build instead.
         extractFromAudioBuffer(audioBuffer: AudioBuffer, gridSubdivision?: '8n' | '16n', tempoBpm?: number): Promise<GrooveTemplate>;
     }
 
+### `GrooveExtractorEngine` (interface)
+
+    export interface GrooveExtractorEngine {
+
+        extractFromMidiPair(quantizedMidi: MidiFile, recordedMidi: MidiFile, gridSubdivision?: GridSubdivision): Promise<GrooveTemplate>;
+
+        extractFromSingleMidi(recordedMidi: MidiFile, gridSubdivision?: GridSubdivision): Promise<GrooveTemplate>;
+
+        extractFromAudioBuffer(audioBuffer: AudioBuffer, gridSubdivision?: '8n' | '16n', tempoBpm?: number): Promise<GrooveTemplate>;
+    }
+
+### `GrooveFormat` (type)
+
+    export type GrooveFormat = 'json' | 'midi' | 'ableton-agr' | 'reaper-groove';
+
 ### `GrooveHumanizer` (class)
 
     export declare class GrooveHumanizer implements MidiHumanizerEngine {
@@ -4523,9 +8049,62 @@ build instead.
         process(midi: MidiFile, options: HumanizationOptions): Promise<MidiFile>;
     }
 
+### `GrooveOffset` (interface)
+
+    export interface GrooveOffset {
+
+        subdivisionIndex: number;
+
+        timeOffsetTicks: number;
+
+        velocityFactor: number;
+    }
+
+### `GrooveTemplate` (interface)
+
+    export interface GrooveTemplate {
+
+        name: string;
+
+        timeSignature: [number, number];
+
+        ppq: number;
+
+        tempoBpm: number;
+        subdivision: GridSubdivision;
+
+        offsets: GrooveOffset[];
+    }
+
+### `HumanizationOptions` (interface)
+
+    export interface HumanizationOptions {
+
+        intensity: number;
+
+        timingVarianceMs?: number;
+
+        velocityVariance?: number;
+
+        grooveTemplate?: GrooveTemplate;
+
+        style?: HumanizeStyle;
+
+        seed?: number;
+
+        onWarn?: (message: string) => void;
+    }
+
 ### `humanizeMidi` (function)
 
     export declare function humanizeMidi(midi: MidiFile, request: HumanizeRequest): Promise<MidiFile>;
+
+### `HumanizeRequest` (interface)
+
+    export interface HumanizeRequest extends HumanizationOptions {
+
+        tier?: HumanizerTier;
+    }
 
 ### `HumanizerFactory` (class)
 
@@ -4534,6 +8113,14 @@ build instead.
         static create(tier: HumanizerTier): Promise<MidiHumanizerEngine>;
         private static load;
     }
+
+### `HumanizerTier` (type)
+
+    export type HumanizerTier = 'lite' | 'groove' | 'magenta';
+
+### `HumanizeStyle` (type)
+
+    export type HumanizeStyle = 'jazz' | 'rock' | 'classical' | 'funk';
 
 ### `LiteHumanizer` (class)
 
@@ -4545,13 +8132,86 @@ build instead.
         process(midi: MidiFile, options: HumanizationOptions): Promise<MidiFile>;
     }
 
+### `LoadedTrack` (interface)
+
+    export interface LoadedTrack {
+        buffer: AudioBuffer;
+        loop?: LoopRegion | null;
+    }
+
+### `LoopRegion` (interface)
+
+    export interface LoopRegion {
+        start: number;
+        end: number;
+    }
+
 ### `loopRegionFromTags` (function)
 
     export declare function loopRegionFromTags(tags: VorbisLoopTags | null, sampleRate: number, duration: number): LoopRegion | null;
 
+### `MidiControlEvent` (interface)
+
+    export interface MidiControlEvent {
+        tick: number;
+        type: 'control';
+        channel: number;
+
+        controller: number;
+
+        value: number;
+    }
+
+### `MidiEvent` (type)
+
+    export type MidiEvent = MidiNoteEvent | MidiTempoEvent | MidiProgramEvent | MidiControlEvent | MidiPitchBendEvent;
+
+### `MidiFile` (interface)
+
+    export interface MidiFile {
+        ticksPerQuarter: number;
+
+        events: readonly MidiEvent[];
+
+        loopStartTick: number | null;
+    }
+
+### `MidiHumanizerEngine` (interface)
+
+    export interface MidiHumanizerEngine {
+
+        readonly tierName: string;
+
+        readonly approximateSizeMb: number;
+
+        initialize(): Promise<void>;
+
+        process(midi: MidiFile, options: HumanizationOptions): Promise<MidiFile>;
+    }
+
 ### `midiLoopStart` (function)
 
     export declare function midiLoopStart(file: MidiFile): number | null;
+
+### `MidiNoteEvent` (interface)
+
+    export interface MidiNoteEvent {
+        tick: number;
+        type: 'noteOn' | 'noteOff';
+        note: number;
+        velocity: number;
+        channel: number;
+    }
+
+### `MidiPitchBendEvent` (interface)
+
+    export interface MidiPitchBendEvent {
+        tick: number;
+        type: 'pitchBend';
+        channel: number;
+
+        value: number;
+    }
 
 ### `MidiPlayer` (class)
 
@@ -4574,6 +8234,52 @@ build instead.
         get isPlaying(): boolean;
 
         get duration(): number;
+    }
+
+### `MidiPlayerOptions` (interface)
+
+    export interface MidiPlayerOptions {
+        waveform?: Waveform;
+
+        volume?: number;
+
+        play?: (options: ToneOptions) => Playable;
+
+        humanize?: HumanizeRequest;
+    }
+
+### `MidiProgramEvent` (interface)
+
+    export interface MidiProgramEvent {
+        tick: number;
+        type: 'program';
+        channel: number;
+
+        program: number;
+    }
+
+### `MidiTempoEvent` (interface)
+
+    export interface MidiTempoEvent {
+        tick: number;
+        type: 'tempo';
+
+        microsecondsPerQuarter: number;
+    }
+
+### `MidiVoice` (interface)
+
+    export interface MidiVoice {
+
+        program: number;
+
+        bank: number;
+
+        gain: number;
+
+        pan: number;
+
+        bend?: number;
     }
 
 ### `Music` (class)
@@ -4609,6 +8315,13 @@ build instead.
         update(dt: number): void;
     }
 
+### `MusicOptions` (interface)
+
+    export interface MusicOptions {
+        volume?: number;
+        create?: (path: string) => Playable;
+    }
+
 ### `noteToFrequency` (function)
 
     export declare function noteToFrequency(note: number): number;
@@ -4639,6 +8352,13 @@ build instead.
         resume(): void;
     }
 
+### `OrchestratorState` (interface)
+
+    export interface OrchestratorState {
+        track: string;
+        fadeDuration?: number;
+    }
+
 ### `parseMidi` (function)
 
     export declare function parseMidi(data: ArrayBuffer | ArrayBufferView): MidiFile;
@@ -4651,9 +8371,63 @@ build instead.
 
     export declare function parseVorbisLoopTags(bytes: Uint8Array): VorbisLoopTags | null;
 
+### `Playable` (interface)
+
+    export interface Playable {
+        play(): void | Promise<void>;
+        pause(): void;
+        currentTime: number;
+        volume: number;
+        loop: boolean;
+
+        playbackRate?: number;
+
+        onended?: ((event: Event) => unknown) | null;
+    }
+
 ### `playTone` (function)
 
     export declare function playTone(options?: ToneOptions, create?: (dataUri: string) => Playable): Playable;
+
+### `RenderedMidi` (interface)
+
+    export interface RenderedMidi {
+        sampleRate: number;
+        left: Float32Array;
+        right: Float32Array;
+
+        loopStart: number;
+
+        loopEnd: number;
+
+        duration: number;
+    }
+
+### `RenderMidiAsyncOptions` (interface)
+
+    export interface RenderMidiAsyncOptions {
+
+        soundFontBytes?: ArrayBuffer | ArrayBufferView;
+
+        sampleRate?: number;
+
+        gain?: number;
+
+        maxDuration?: number;
+    }
+
+### `RenderMidiOptions` (interface)
+
+    export interface RenderMidiOptions {
+
+        soundfont?: SoundFont | null;
+
+        sampleRate?: number;
+
+        gain?: number;
+
+        maxDuration?: number;
+    }
 
 ### `renderMidiToBuffer` (function)
 
@@ -4662,6 +8436,27 @@ build instead.
 ### `renderMidiToBufferAsync` (function)
 
     export declare function renderMidiToBufferAsync(midi: ArrayBuffer | ArrayBufferView, options?: RenderMidiAsyncOptions): Promise<RenderedMidi>;
+
+### `SavedBusTrack` (interface)
+
+    export interface SavedBusTrack {
+        name: string;
+        volume: number;
+        pitch: number;
+        pan: number;
+        pos: number;
+    }
+
+### `ScheduledNote` (interface)
+
+    export interface ScheduledNote extends MidiVoice {
+
+        time: number;
+        duration: number;
+        note: number;
+        velocity: number;
+        channel: number;
+    }
 
 ### `scheduleMidi` (function)
 
@@ -4686,6 +8481,62 @@ build instead.
         get isSuspended(): boolean;
     }
 
+### `SoundFont` (interface)
+
+    export interface SoundFont {
+        voices(bank: number, program: number, key: number, velocity: number): SoundFontVoice[];
+        hasPreset(bank: number, program: number): boolean;
+        readonly presetCount: number;
+    }
+
+### `SoundFontProgram` (interface)
+
+    export interface SoundFontProgram {
+        bank: number;
+        program: number;
+    }
+
+### `SoundFontSample` (interface)
+
+    export interface SoundFontSample {
+        data: Float32Array;
+        rate: number;
+        loopStart: number;
+        loopEnd: number;
+    }
+
+### `SoundFontVoice` (interface)
+
+    export interface SoundFontVoice {
+        sample: SoundFontSample;
+        rootKey: number;
+
+        cents: number;
+        loop: boolean;
+
+        gain: number;
+
+        pan: number;
+
+        attack: number;
+        hold: number;
+        decay: number;
+        sustain: number;
+        release: number;
+    }
+
+### `SoundOptions` (interface)
+
+    export interface SoundOptions {
+
+        poolSize?: number;
+        volume?: number;
+
+        create?: (path: string) => Playable;
+
+        caption?: string;
+    }
+
 ### `SoundSource` (class)
 
     export declare class SoundSource implements AudioPoint {
@@ -4703,6 +8554,13 @@ build instead.
         playFor(listener: AudioPoint): number;
     }
 
+### `SoundSourceOptions` (interface)
+
+    export interface SoundSourceOptions extends AudioFalloff {
+        x?: number;
+        y?: number;
+    }
+
 ### `subdivisionCount` (function)
 
     export declare function subdivisionCount(timeSignature: [number, number], subdivision: GridSubdivision): number;
@@ -4714,6 +8572,35 @@ build instead.
 ### `synthesizeTone` (function)
 
     export declare function synthesizeTone(options?: ToneOptions): string;
+
+### `ToneOptions` (interface)
+
+    export interface ToneOptions {
+        waveform?: Waveform;
+
+        frequency?: number;
+
+        duration?: number;
+
+        volume?: number;
+
+        decay?: number;
+        sampleRate?: number;
+
+        seed?: number;
+    }
+
+### `VorbisLoopTags` (interface)
+
+    export interface VorbisLoopTags {
+        loopStart: number;
+
+        loopLength: number | null;
+    }
+
+### `Waveform` (type)
+
+    export type Waveform = 'square' | 'triangle' | 'sine' | 'noise';
 
 ## `./battle`
 
@@ -4749,6 +8636,30 @@ build instead.
         private readonly handleSelectorChange;
     }
 
+### `AttackDialogOptions` (interface)
+
+    export interface AttackDialogOptions {
+        units: readonly SelectableUnit[];
+        side?: string;
+        disabled?: (unit: SelectableUnit) => boolean;
+        canTarget?: (attacker: SelectableUnit, target: SelectableUnit) => boolean;
+
+        damageFor: (attacker: SelectableUnit, target: SelectableUnit) => StrikeNumbers;
+
+        strikeDuration?: number;
+    }
+
+### `AttackFrame` (interface)
+
+    export interface AttackFrame {
+        strike: number;
+        time: number;
+        attackerHp: number;
+        defenderHp: number;
+
+        defenderDamage: number;
+    }
+
 ### `AttackPreview` (class)
 
     export declare class AttackPreview {
@@ -4767,6 +8678,40 @@ build instead.
         sampleAt(time: number): AttackFrame;
     }
 
+### `AttackPreviewOptions` (interface)
+
+    export interface AttackPreviewOptions {
+        attacker: PreviewCombatant;
+        defender: PreviewCombatant;
+
+        damage: number;
+        strikes: number;
+
+        chanceToHit?: number;
+
+        hits?: readonly boolean[];
+
+        strikeDuration?: number;
+    }
+
+### `BattleAction` (interface)
+
+    export interface BattleAction<C = unknown> {
+        actor: C;
+        speed: number;
+
+        priority?: number;
+    }
+
+### `BattleHook` (interface)
+
+    export interface Hook<TArgs extends unknown[]> {
+        event: string;
+        handler: (...args: TArgs) => void;
+
+        source?: unknown;
+    }
+
 ### `BattleHooks` (class)
 
     export declare class BattleHooks<C> extends HookRegistry<[creature: C, context?: unknown]> {
@@ -4776,6 +8721,10 @@ build instead.
 
     export declare function battleOrder<A extends {
         speed: number;
+
+### `BattleStatCategory` (type)
+
+    export type BattleStatCategory = 'recruits' | 'recalls' | 'advances' | 'kills' | 'deaths' | 'damageDealt' | 'damageTaken';
 
 ### `BattleStats` (class)
 
@@ -4827,6 +8776,22 @@ build instead.
         private computeBase;
     }
 
+### `CreatureOptions` (interface)
+
+    export interface CreatureOptions {
+        species: Species;
+        level?: number;
+
+        deriveStats?: (base: Readonly<Record<string, number>>, level: number) => Record<string, number>;
+    }
+
+### `EvolutionRule` (interface)
+
+    export interface EvolutionRule<S> {
+        at: (level: number) => boolean;
+        into: S;
+    }
+
 ### `Field` (class)
 
     export declare class Field {
@@ -4838,6 +8803,26 @@ build instead.
         get active(): readonly FieldCondition[];
 
         advance(rounds?: number): void;
+    }
+
+### `FieldCondition` (interface)
+
+    export interface FieldCondition {
+        id: string;
+
+        duration?: number;
+    }
+
+### `Move` (interface)
+
+    export interface Move<TEffect = unknown> {
+        id: string;
+        type: string;
+
+        cost?: number;
+
+        target: string;
+        effects?: TEffect;
     }
 
 ### `Party` (class)
@@ -4858,6 +8843,38 @@ build instead.
         get activeMembers(): C[];
     }
 
+### `PreviewCombatant` (interface)
+
+    export interface PreviewCombatant {
+        hp: number;
+        maxHp?: number;
+        name?: string;
+    }
+
+### `SelectableUnit` (interface)
+
+    export interface SelectableUnit {
+        id: string;
+        side?: string;
+
+        hp?: number;
+        disabled?: boolean;
+    }
+
+### `SelectorStage` (type)
+
+    export type SelectorStage = 'attacker' | 'target';
+
+### `Species` (interface)
+
+    export interface Species {
+        id: string;
+        types: readonly string[];
+
+        baseStats: Record<string, number>;
+        growth?: GrowthCurve;
+    }
+
 ### `StatStages` (class)
 
     export declare class StatStages {
@@ -4874,6 +8891,24 @@ build instead.
         private applyModifier;
 
         resetAll(): void;
+    }
+
+### `StatStagesOptions` (interface)
+
+    export interface StatStagesOptions {
+
+        max: number;
+
+        multiplier: (stage: number) => number;
+    }
+
+### `StrikeNumbers` (interface)
+
+    export interface StrikeNumbers {
+        damage: number;
+        strikes: number;
+        chanceToHit?: number;
+        hits?: readonly boolean[];
     }
 
 ### `TypeMatrix` (class)
@@ -4922,6 +8957,18 @@ build instead.
         private active;
     }
 
+### `UnitSelectorOptions` (interface)
+
+    export interface UnitSelectorOptions {
+        units: readonly SelectableUnit[];
+
+        side?: string;
+
+        disabled?: (unit: SelectableUnit) => boolean;
+
+        canTarget?: (attacker: SelectableUnit, target: SelectableUnit) => boolean;
+    }
+
 ### `Whiteboard` (class)
 
     export declare class Whiteboard<T extends WhiteboardEntry = WhiteboardEntry> {
@@ -4944,6 +8991,13 @@ build instead.
         clear(): void;
 
         commit(): T[];
+    }
+
+### `WhiteboardEntry` (interface)
+
+    export interface WhiteboardEntry {
+
+        unit: string;
     }
 
 ## `./board`
@@ -4976,9 +9030,39 @@ build instead.
 
     export declare function armyIncome(board: TacticalState, owner: string, rates: UpkeepRates): number;
 
+### `ArmyState` (interface)
+
+    export interface ArmyState {
+        currency: number;
+        pool: UnitTemplate[];
+    }
+
+### `BackgammonMove` (interface)
+
+    export interface BackgammonMove {
+        from: number | 'bar';
+        to: number | 'off';
+        die: number;
+    }
+
 ### `backgammonMoves` (function)
 
     export declare function backgammonMoves(state: BackgammonState, dice: readonly number[]): BackgammonMove[];
+
+### `BackgammonState` (interface)
+
+    export interface BackgammonState {
+        points: number[];
+        bar: {
+            white: number;
+            black: number;
+        };
+        off: {
+            white: number;
+            black: number;
+        };
+        turn: 'white' | 'black';
+    }
 
 ### `bankUnit` (function)
 
@@ -4988,9 +9072,45 @@ build instead.
 
     export declare function bitboardFromChess(state: ChessState): BitboardState;
 
+### `BitboardMove` (interface)
+
+    export interface BitboardMove {
+        from: number;
+        to: number;
+        promotion?: PromotionKind;
+    }
+
 ### `bitboardMoves` (function)
 
     export declare function bitboardMoves(board: BitboardState): BitboardMove[];
+
+### `BitboardState` (interface)
+
+    export interface BitboardState {
+
+        pieces: bigint[];
+        turn: ChessSide;
+
+        castling: number;
+
+        enPassant: number | null;
+        halfmove: number;
+
+        kings: [number, number];
+    }
+
+### `BitboardUndo` (interface)
+
+    export interface BitboardUndo {
+        captured: {
+            color: 0 | 1;
+            kind: number;
+        } | null;
+        castling: number;
+        enPassant: number | null;
+        halfmove: number;
+        kingSquare: number;
+    }
 
 ### `BoardGrid` (class)
 
@@ -5012,6 +9132,19 @@ build instead.
         }): P;
     }
 
+### `BoardOwner` (type)
+
+    export type BoardOwner = string;
+
+### `BoardPiece` (interface)
+
+    export interface BoardPiece<K = string> {
+        id: string;
+        owner: BoardOwner;
+        kind: K;
+        count?: number;
+    }
+
 ### `canPlaceSkirmishUnit` (function)
 
     export declare function canPlaceSkirmishUnit(state: SkirmishState, x: number, y: number): boolean;
@@ -5020,13 +9153,135 @@ build instead.
 
     export declare function canPlaceTacticalUnit(state: TacticalState, x: number, y: number): boolean;
 
+### `Card` (interface)
+
+    export interface Card {
+        suit: CardSuit;
+        rank: CardRank;
+    }
+
+### `CardRank` (type)
+
+    export type CardRank = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
+
+### `CardSuit` (type)
+
+    export type CardSuit = 'clubs' | 'diamonds' | 'hearts' | 'spades';
+
+### `CheckersMove` (interface)
+
+    export interface CheckersMove {
+        from: number;
+        to: number;
+        captures: number[];
+    }
+
 ### `checkersMoves` (function)
 
     export declare function checkersMoves(state: CheckersState): CheckersMove[];
 
+### `CheckersPiece` (interface)
+
+    export interface CheckersPiece {
+        side: CheckersSide;
+        king: boolean;
+    }
+
+### `CheckersSide` (type)
+
+    export type CheckersSide = 'red' | 'black';
+
+### `CheckersState` (interface)
+
+    export interface CheckersState {
+        board: Array<CheckersPiece | null>;
+        turn: CheckersSide;
+        forcedFrom: number | null;
+    }
+
+### `ChessCastling` (interface)
+
+    export interface ChessCastling {
+        whiteKingside: boolean;
+        whiteQueenside: boolean;
+        blackKingside: boolean;
+        blackQueenside: boolean;
+    }
+
+### `ChessEngineAsyncOptions` (interface)
+
+    export interface ChessEngineAsyncOptions {
+
+        depth?: number;
+
+        maxNodes?: number;
+
+        signal?: AbortSignal;
+
+        jobs?: number;
+    }
+
+### `ChessEngineOptions` (interface)
+
+    export interface ChessEngineOptions {
+
+        depth?: number;
+
+        maxNodes?: number;
+    }
+
 ### `chessGame` (const)
 
     export declare const chessGame: AlphaBetaGame<ChessState, ChessMove>;
+
+### `ChessKind` (type)
+
+    export type ChessKind = 'pawn' | 'knight' | 'bishop' | 'rook' | 'queen' | 'king';
+
+### `ChessMove` (interface)
+
+    export interface ChessMove {
+        from: ChessSquare;
+        to: ChessSquare;
+        promotion?: PromotionKind;
+    }
+
+### `ChessPiece` (interface)
+
+    export interface ChessPiece {
+        side: ChessSide;
+        kind: ChessKind;
+    }
+
+### `ChessResult` (type)
+
+    export type ChessResult = 'ongoing' | 'white-wins' | 'black-wins' | 'stalemate';
+
+### `ChessSearchResult` (interface)
+
+    export interface ChessSearchResult {
+        move: ChessMove | null;
+        score: number;
+        nodes: number;
+    }
+
+### `ChessSide` (type)
+
+    export type ChessSide = 'white' | 'black';
+
+### `ChessSquare` (type)
+
+    export type ChessSquare = number;
+
+### `ChessState` (interface)
+
+    export interface ChessState {
+        board: Array<ChessPiece | null>;
+        turn: ChessSide;
+        castling: ChessCastling;
+
+        enPassant: ChessSquare | null;
+    }
 
 ### `chooseMove` (function)
 
@@ -5047,6 +9302,10 @@ build instead.
 ### `dealSolitaire` (function)
 
     export declare function dealSolitaire(seed?: number): SolitaireState;
+
+### `DiceCategory` (type)
+
+    export type DiceCategory = 'ones' | 'twos' | 'threes' | 'fours' | 'fives' | 'sixes' | 'threeKind' | 'fourKind' | 'fullHouse' | 'smallStraight' | 'largeStraight' | 'yahtzee' | 'chance';
 
 ### `DiceCup` (class)
 
@@ -5115,6 +9374,20 @@ build instead.
     export declare function goScore(state: GoState): {
         black: number;
 
+### `GoState` (interface)
+
+    export interface GoState {
+        size: number;
+        board: Array<GoStone | null>;
+        turn: GoStone;
+        ko: number | null;
+        passes: number;
+    }
+
+### `GoStone` (type)
+
+    export type GoStone = 'black' | 'white';
+
 ### `huffDecode` (function)
 
     export declare function huffDecode(code: string): Uint8Array;
@@ -5130,6 +9403,17 @@ build instead.
 ### `legalMoves` (function)
 
     export declare function legalMoves(state: ChessState): ChessMove[];
+
+### `LoadedEnding` (interface)
+
+    export interface LoadedEnding {
+        id: string;
+
+        extras: number[];
+        positions: number;
+        wdl: Uint8Array;
+        dtm: Uint16Array;
+    }
 
 ### `loadTablebaseEnding` (function)
 
@@ -5154,6 +9438,23 @@ build instead.
 ### `moveTacticalUnit` (function)
 
     export declare function moveTacticalUnit(state: TacticalState, move: TacticalMove): void;
+
+### `OpeningBook` (interface)
+
+    export interface OpeningBook {
+        readonly version: 1;
+        readonly positions: Record<string, OpeningBookEntry>;
+    }
+
+### `OpeningBookEntry` (interface)
+
+    export interface OpeningBookEntry {
+
+        readonly eco?: string;
+
+        readonly name?: string;
+        readonly moves: readonly string[];
+    }
 
 ### `parseFen` (function)
 
@@ -5186,6 +9487,10 @@ build instead.
 ### `probeTablebase` (function)
 
     export declare function probeTablebase(loaded: Record<string, LoadedEnding>, state: ChessState | BitboardState, halfmove?: number): TablebaseProbe | null;
+
+### `PromotionKind` (type)
+
+    export type PromotionKind = 'knight' | 'bishop' | 'rook' | 'queen';
 
 ### `recall` (function)
 
@@ -5243,13 +9548,97 @@ build instead.
 
     export declare function skirmishAttack(state: SkirmishState, attackerId: string, defenderId: string): SkirmishExchange;
 
+### `SkirmishCell` (interface)
+
+    export interface SkirmishCell {
+        terrain: string;
+
+        village?: boolean;
+        owner?: string;
+    }
+
+### `SkirmishExchange` (interface)
+
+    export interface SkirmishExchange {
+        strikes: SkirmishStrike[];
+    }
+
 ### `skirmishIncome` (function)
 
     export declare function skirmishIncome(state: SkirmishState, owner: string, baseIncome: number, perVillage: number): number;
 
+### `SkirmishMove` (interface)
+
+    export interface SkirmishMove {
+        unit: string;
+        x: number;
+        y: number;
+        cost: number;
+    }
+
 ### `skirmishMoves` (function)
 
     export declare function skirmishMoves(state: SkirmishState, unitId: string): SkirmishMove[];
+
+### `SkirmishState` (interface)
+
+    export interface SkirmishState {
+        width: number;
+        height: number;
+        terrainTable: Record<string, SkirmishTerrain>;
+        cells: SkirmishCell[];
+        units: SkirmishUnit[];
+        turn: string;
+        round: number;
+    }
+
+### `SkirmishStrike` (interface)
+
+    export interface SkirmishStrike {
+        attacker: string;
+        defender: string;
+        hit: boolean;
+        damage: number;
+        killed: boolean;
+    }
+
+### `SkirmishTerrain` (interface)
+
+    export interface SkirmishTerrain {
+
+        moveCost: number;
+
+        defense: number;
+    }
+
+### `SkirmishUnit` (interface)
+
+    export interface SkirmishUnit {
+        id: string;
+        owner: string;
+        x: number;
+        y: number;
+        hp: number;
+        maxHp: number;
+
+        moves: number;
+        remainingMoves?: number;
+        attack: number;
+
+        hitChance: number;
+    }
+
+### `SolitaireState` (interface)
+
+    export interface SolitaireState {
+        stock: Card[];
+        waste: Card[];
+        tableau: Array<{
+            down: Card[];
+            up: Card[];
+        }>;
+        foundations: Card[][];
+    }
 
 ### `solitaireWon` (function)
 
@@ -5295,22 +9684,152 @@ build instead.
 
     export declare function startingTactics(width: number, height: number, shape?: TacticalShape): TacticalState;
 
+### `TablebaseEnding` (interface)
+
+    export interface TablebaseEnding {
+        version: 1;
+
+        id: string;
+        white: TablebaseExtra[];
+
+        positions: number;
+
+        wdl: string;
+
+        dtm: string;
+    }
+
+### `TablebaseExtra` (type)
+
+    export type TablebaseExtra = 'queen' | 'rook' | 'bishop' | 'knight';
+
 ### `tablebaseId` (function)
 
     export declare function tablebaseId(white: TablebaseExtra[]): string;
+
+### `TablebaseProbe` (interface)
+
+    export interface TablebaseProbe {
+        outcome: 'win' | 'loss' | 'draw';
+
+        dtm: number;
+    }
 
 ### `tacticalAttack` (function)
 
     export declare function tacticalAttack(state: TacticalState, attackerId: string, defenderId: string, damage: number): TacticalAttack;
 
+### `TacticalAttack` (interface)
+
+    export interface TacticalAttack {
+        attacker: string;
+        defender: string;
+        damage: number;
+        cover: number;
+        killed: boolean;
+    }
+
+### `TacticalCell` (interface)
+
+    export interface TacticalCell {
+        passable: boolean;
+        cover?: number;
+    }
+
+### `TacticalMove` (interface)
+
+    export interface TacticalMove {
+        unit: string;
+        x: number;
+        y: number;
+        cost: number;
+    }
+
 ### `tacticalMoves` (function)
 
     export declare function tacticalMoves(state: TacticalState, unitId: string): TacticalMove[];
+
+### `TacticalShape` (type)
+
+    export type TacticalShape = 'square' | 'hex';
+
+### `TacticalState` (interface)
+
+    export interface TacticalState {
+        width: number;
+        height: number;
+        shape: TacticalShape;
+        cells: TacticalCell[];
+        units: TacticalUnit[];
+        turn: string;
+        round: number;
+    }
+
+### `TacticalUnit` (interface)
+
+    export interface TacticalUnit {
+        id: string;
+        owner: string;
+        x: number;
+        y: number;
+        hp: number;
+        maxHp: number;
+
+        actions: number;
+
+        maxActions?: number;
+        overwatch?: boolean;
+    }
+
+### `TourneyAsyncOptions` (interface)
+
+    export interface TourneyAsyncOptions extends TourneyOptions {
+
+        jobs?: number;
+    }
+
+### `TourneyOptions` (interface)
+
+    export interface TourneyOptions {
+
+        depth?: number;
+
+        maxNodes?: number;
+
+        timeMs?: number;
+
+        signal?: AbortSignal;
+    }
+
+### `TourneyResult` (interface)
+
+    export interface TourneyResult {
+
+        move: BitboardMove | null;
+
+        score: number;
+
+        nodes: number;
+
+        depth: number;
+
+        rootScores?: Array<{
+            move: BitboardMove;
+            score: number;
+        }>;
+    }
 
 ### `tourneyThink` (function)
 
     export declare function tourneyThink(position: BitboardState, options?: {
         depth?: number;
+
+### `TrickPlay` (interface)
+
+    export interface TrickPlay<O = string> {
+        owner: O;
+        card: Card;
+    }
 
 ### `trickWinner` (function)
 
@@ -5320,11 +9839,52 @@ build instead.
 
     export declare function triggerTacticalOverwatch(state: TacticalState, movingUnitId: string, damage: number): TacticalAttack[];
 
+### `UnitTemplate` (type)
+
+    export type UnitTemplate = Omit<TacticalUnit, 'x' | 'y'>;
+
 ### `unmakeMove` (function)
 
     export declare function unmakeMove(board: BitboardState, move: BitboardMove, undo: BitboardUndo): void;
 
+### `UpkeepRates` (interface)
+
+    export interface UpkeepRates {
+        incomePerUnit: number;
+        upkeepPerUnit: number;
+    }
+
+### `VisionCell` (interface)
+
+    export interface VisionCell {
+        x: number;
+        y: number;
+    }
+
 ## `./core`
+
+### `AchievementCriterion` (interface)
+
+    export interface AchievementCriterion {
+
+        counter: string;
+
+        target: number;
+    }
+
+### `AchievementDef` (interface)
+
+    export interface AchievementDef {
+        id: string;
+
+        counter?: string;
+
+        target?: number;
+
+        criteria?: AchievementCriterion[];
+
+        description?: string;
+    }
 
 ### `Achievements` (class)
 
@@ -5380,6 +9940,14 @@ build instead.
 
         replace(entries: readonly ActionJournalEntry<Action, Event>[]): void;
         static fromJSON<Action, Event>(entries: readonly ActionJournalEntry<Action, Event>[]): ActionJournal<Action, Event>;
+    }
+
+### `ActionJournalEntry` (interface)
+
+    export interface ActionJournalEntry<Action, Event> {
+        readonly sequence: number;
+        readonly action: Action;
+        readonly events: readonly Event[];
     }
 
 ### `Blob` (class)
@@ -5442,6 +10010,15 @@ build instead.
         transaction<T>(work: (state: CanonicalState<State>) => T): T;
     }
 
+### `CanonicalStateSnapshot` (interface)
+
+    export interface CanonicalStateSnapshot<State extends StateValue = StateValue> {
+        readonly version: number;
+        readonly state: State;
+        readonly extensions: Readonly<Record<string, StateValue>>;
+        readonly extensionVersions?: Readonly<Record<string, number>>;
+    }
+
 ### `cellFromKey` (function)
 
     export declare function cellFromKey(key: string): {
@@ -5466,6 +10043,11 @@ build instead.
 ### `cellY` (function)
 
     export declare function cellY(width: number, index: number): number;
+
+### `chebyshev` (function)
+
+    export declare function chebyshev(a: {
+        readonly x: number;
 
 ### `checkNoControlCharacters` (function)
 
@@ -5510,9 +10092,44 @@ build instead.
         private parse;
     }
 
+### `CollectionOptions` (interface)
+
+    export interface CollectionOptions {
+
+        namespace?: string;
+
+        storage?: SaveStorage;
+    }
+
 ### `createHandles` (function)
 
     export declare function createHandles<T>(): Handles<T>;
+
+### `CsvColumnType` (type)
+
+    export type CsvColumnType = 'string' | 'number' | 'boolean' | 'list' | 'map';
+
+### `CsvOptions` (interface)
+
+    export interface CsvOptions {
+
+        columns?: Record<string, CsvColumnType>;
+
+        listDelimiter?: string;
+
+        mapDelimiter?: string;
+    }
+
+### `CustomSettingValue` (type)
+
+    export type CustomSettingValue = string | number | boolean;
+
+### `DbRecord` (interface)
+
+    export interface DbRecord {
+        id: string;
+        [field: string]: unknown;
+    }
 
 ### `defaultSettings` (function)
 
@@ -5521,6 +10138,22 @@ build instead.
 ### `deserializeReplay` (function)
 
     export declare function deserializeReplay(json: string): ReplayEvent[];
+
+### `DialogueLine` (interface)
+
+    export interface DialogueLine {
+        text: string;
+        speaker?: string;
+    }
+
+### `distance` (function)
+
+    export declare function distance(metric: DistanceMetric, a: {
+        readonly x: number;
+
+### `DistanceMetric` (type)
+
+    export type DistanceMetric = 'euclidean' | 'manhattan' | 'chebyshev';
 
 ### `Easing` (const)
 
@@ -5533,6 +10166,10 @@ build instead.
 ### `effectiveSfxVolume` (function)
 
     export declare function effectiveSfxVolume(settings: Pick<GameSettings, 'sfxVolume' | 'muted'>): number;
+
+### `EntityId` (type)
+
+    export type EntityId = string;
 
 ### `EntityRegistry` (class)
 
@@ -5562,6 +10199,42 @@ build instead.
         submit(request: FeedbackRequest): Promise<FeedbackResponse>;
     }
 
+### `FeedbackOptions` (type)
+
+    export type FeedbackOptions = HttpTransportOptions;
+
+### `FeedbackRequest` (interface)
+
+    export interface FeedbackRequest {
+        message: string;
+        contact?: string;
+        context?: Record<string, string | number | boolean>;
+    }
+
+### `FeedbackResponse` (interface)
+
+    export interface FeedbackResponse {
+        ok: boolean;
+        status: number;
+    }
+
+### `GameSettings` (interface)
+
+    export interface GameSettings {
+
+        musicVolume: number;
+
+        sfxVolume: number;
+
+        muted: boolean;
+
+        zoom: number;
+
+        bindings: Record<Action, string[]>;
+
+        custom: Record<string, CustomSettingValue>;
+    }
+
 ### `Generator` (class)
 
     export declare class Generator {
@@ -5583,6 +10256,30 @@ build instead.
         private rotl;
     }
 
+### `Handles` (interface)
+
+    export interface Handles<T> {
+
+        readonly size: number;
+
+        put(value: T): number;
+
+        get(id: number): T;
+
+        drop(id: number): void;
+
+        clear(): void;
+
+        with<R>(value: T, body: (id: number) => R): R;
+    }
+
+### `HexCoord` (interface)
+
+    export interface HexCoord {
+        x: number;
+        y: number;
+    }
+
 ### `hexDistance` (function)
 
     export declare function hexDistance(a: HexCoord, b: HexCoord): number;
@@ -5595,14 +10292,38 @@ build instead.
 
     export declare function hexNeighbors(x: number, y: number): HexCoord[];
 
+### `HexOffset` (type)
+
+    export type HexOffset = 'odd' | 'even';
+
+### `HexOrientation` (type)
+
+    export type HexOrientation = 'flat-top' | 'pointy-top';
+
 ### `hexRange` (function)
 
     export declare function hexRange(center: HexCoord, radius: number): HexCoord[];
+
+### `HexShape` (interface)
+
+    export interface HexShape {
+        readonly orientation?: HexOrientation;
+        readonly offset?: HexOffset;
+    }
 
 ### `hexToPixel` (function)
 
     export declare function hexToPixel(x: number, y: number, tileWidth: number, tileHeight: number, shape?: HexShape): {
         x: number;
+
+### `Hook` (interface)
+
+    export interface Hook<TArgs extends unknown[]> {
+        event: string;
+        handler: (...args: TArgs) => void;
+
+        source?: unknown;
+    }
 
 ### `HookRegistry` (class)
 
@@ -5618,6 +10339,34 @@ build instead.
 
         get size(): number;
         clear(): void;
+    }
+
+### `HttpTransport` (class)
+
+    export declare abstract class HttpTransport {
+        protected readonly endpoint: string;
+        protected readonly timeoutMs: number;
+        protected readonly fetchFn: typeof globalThis.fetch;
+        protected readonly maxResponseBytes: number;
+        private readonly label;
+        constructor(options: HttpTransportOptions, label: string);
+        protected withTimeout<T>(run: (signal: AbortSignal) => Promise<T>): Promise<T>;
+
+        protected readText(response: Response): Promise<string>;
+
+        protected readJson(response: Response, what: string): Promise<unknown>;
+    }
+
+### `HttpTransportOptions` (interface)
+
+    export interface HttpTransportOptions {
+        endpoint: string;
+        timeoutMs?: number;
+        fetch?: typeof globalThis.fetch;
+
+        maxResponseBytes?: number;
+
+        allowInsecure?: boolean;
     }
 
 ### `Input` (namespace)
@@ -5645,6 +10394,22 @@ build instead.
         nextBoolean(): boolean;
     }
 
+### `JavaRandomDraw` (interface)
+
+    export interface JavaRandomDraw {
+
+        bits: number;
+
+        value: number;
+    }
+
+### `JavaRandomOptions` (interface)
+
+    export interface JavaRandomOptions {
+
+        onDraw?: (draw: JavaRandomDraw) => void;
+    }
+
 ### `LoadQueue` (class)
 
     export declare class LoadQueue {
@@ -5665,6 +10430,37 @@ build instead.
         retry(): void;
         private report;
         private emit;
+    }
+
+### `LoadSnapshot` (interface)
+
+    export interface LoadSnapshot {
+        status: LoadStatus;
+        completed: number;
+        total: number;
+        current: string | null;
+        error: unknown | null;
+    }
+
+### `LoadStatus` (type)
+
+    export type LoadStatus = 'idle' | 'loading' | 'ready' | 'failed' | 'cancelled';
+
+### `LoadTask` (interface)
+
+    export interface LoadTask {
+        id: string;
+        weight?: number;
+        run(context: LoadTaskContext): Promise<void> | void;
+    }
+
+### `LoadTaskContext` (interface)
+
+    export interface LoadTaskContext {
+
+        report(fraction: number): void;
+
+        readonly cancelled: boolean;
     }
 
 ### `LockstepClient` (class)
@@ -5701,6 +10497,40 @@ build instead.
         private handleMessage;
     }
 
+### `LockstepClientOptions` (interface)
+
+    export interface LockstepClientOptions {
+        url: string;
+
+        create?: (url: string) => WebSocketLike;
+
+        validateInput?: (payload: unknown) => boolean | string;
+
+        maxMessageBytes?: number;
+
+        allowInsecure?: boolean;
+    }
+
+### `LockstepWelcome` (interface)
+
+    export interface LockstepWelcome {
+        id: string;
+
+        seed?: number;
+
+        initialState?: unknown;
+    }
+
+### `LogEntry` (interface)
+
+    export interface LogEntry {
+        level: LogLevel;
+        category: string;
+        message: string;
+        data?: unknown;
+        time: number;
+    }
+
 ### `Logger` (class)
 
     export declare class Logger {
@@ -5716,6 +10546,24 @@ build instead.
         error(message: string, data?: unknown): void;
         private write;
     }
+
+### `LoggerOptions` (interface)
+
+    export interface LoggerOptions {
+
+        level?: LogLevel;
+
+        sink?: (entry: LogEntry) => void;
+    }
+
+### `LogLevel` (type)
+
+    export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+### `manhattan` (function)
+
+    export declare function manhattan(a: {
+        readonly x: number;
 
 ### `MersenneTwister` (class)
 
@@ -5742,9 +10590,26 @@ build instead.
         setState(state: MersenneTwisterState): void;
     }
 
+### `MersenneTwisterState` (interface)
+
+    export interface MersenneTwisterState {
+
+        seed: number;
+
+        state: number[];
+
+        index: number;
+
+        discard: number;
+    }
+
 ### `motionDuration` (function)
 
     export declare function motionDuration(duration: number, intent?: MotionIntent): number;
+
+### `MotionIntent` (type)
+
+    export type MotionIntent = 'decorative' | 'meaningful';
 
 ### `NEIGHBOURS4` (const)
 
@@ -5760,6 +10625,26 @@ build instead.
         constructor(options: NewsOptions);
 
         fetchItems(): Promise<NewsItem[]>;
+    }
+
+### `NewsItem` (interface)
+
+    export interface NewsItem {
+        id: string;
+        title: string;
+        body: string;
+        publishedAt?: number;
+    }
+
+### `NewsOptions` (type)
+
+    export type NewsOptions = HttpTransportOptions;
+
+### `NewsSeenOptions` (interface)
+
+    export interface NewsSeenOptions {
+        namespace: string;
+        storage?: SaveStorage;
     }
 
 ### `NewsSeenTracker` (class)
@@ -5837,6 +10722,13 @@ build instead.
         keysFor(action: Action): string[];
     }
 
+### `PlayerInputOptions` (interface)
+
+    export interface PlayerInputOptions {
+
+        padIndex?: number;
+    }
+
 ### `PlayerStats` (class)
 
     export declare class PlayerStats<T, S = T> {
@@ -5850,6 +10742,18 @@ build instead.
         record(summary: S): T;
 
         reset(): void;
+    }
+
+### `PlayerStatsOptions` (interface)
+
+    export interface PlayerStatsOptions<T, S = T> {
+
+        namespace: string;
+        storage?: SaveStorage;
+
+        initial: T;
+
+        combine: (total: T, summary: S) => T;
     }
 
 ### `prefersReducedMotion` (function)
@@ -5875,9 +10779,25 @@ build instead.
         private advance;
     }
 
+### `PresentationQueueOptions` (interface)
+
+    export interface PresentationQueueOptions<Event> {
+
+        play: (event: Event) => number | void;
+    }
+
 ### `Random` (namespace)
 
     export * as Random from './Random.ts'
+
+### `RandomSource` (interface)
+
+    export interface RandomSource {
+
+        float(): number;
+
+        int(bound: number): number;
+    }
 
 ### `RandomStreams` (class)
 
@@ -5896,6 +10816,16 @@ build instead.
         getState(): Record<string, MersenneTwisterState>;
 
         setState(state: Readonly<Record<string, MersenneTwisterState>>): void;
+    }
+
+### `ReactionRule` (interface)
+
+    export interface ReactionRule<TState> {
+        id: string;
+        when: (state: Readonly<TState>) => boolean;
+        action: (state: Readonly<TState>) => void;
+
+        once?: boolean;
     }
 
 ### `ReactionTable` (class)
@@ -5958,6 +10888,13 @@ build instead.
         list(): string[];
     }
 
+### `ReplayEvent` (interface)
+
+    export interface ReplayEvent {
+        frame: number;
+        action: string;
+    }
+
 ### `RunHistory` (class)
 
     export declare class RunHistory<T> {
@@ -5975,9 +10912,52 @@ build instead.
         clear(): void;
     }
 
+### `RunHistoryEntry` (interface)
+
+    export interface RunHistoryEntry<T> {
+        id: string;
+        endedAt: number;
+        summary: T;
+    }
+
+### `RunHistoryOptions` (interface)
+
+    export interface RunHistoryOptions {
+
+        namespace: string;
+        storage?: SaveStorage;
+
+        limit?: number;
+    }
+
 ### `sanitizeInboundText` (function)
 
     export declare function sanitizeInboundText(text: string, options?: SizeLimitOptions): string;
+
+### `SaveData` (interface)
+
+    export interface SaveData<T> {
+        meta: SaveMeta;
+        state: T;
+    }
+
+### `SaveMeta` (interface)
+
+    export interface SaveMeta {
+        version: number;
+        savedAt: number;
+
+        preview?: unknown;
+    }
+
+### `SaveStorage` (interface)
+
+    export interface SaveStorage {
+        read(key: string): string | null;
+        write(key: string, value: string): void;
+        remove(key: string): void;
+        keys(): string[];
+    }
 
 ### `SaveSyncClient` (class)
 
@@ -5990,6 +10970,17 @@ build instead.
 
         list(): Promise<string[]>;
         private slotUrl;
+    }
+
+### `SaveSyncOptions` (type)
+
+    export type SaveSyncOptions = HttpTransportOptions;
+
+### `SaveSyncResponse` (interface)
+
+    export interface SaveSyncResponse {
+        ok: boolean;
+        status: number;
     }
 
 ### `SaveSystem` (class)
@@ -6018,6 +11009,17 @@ build instead.
         }>;
     }
 
+### `SaveSystemOptions` (interface)
+
+    export interface SaveSystemOptions {
+
+        namespace: string;
+        version: number;
+
+        migrations?: Record<number, (state: unknown) => unknown>;
+        storage?: SaveStorage;
+    }
+
 ### `Scene` (class)
 
     export declare abstract class Scene {
@@ -6038,6 +11040,22 @@ build instead.
 
         protected teardown(): void;
         get isDestroyed(): boolean;
+    }
+
+### `SceneClass` (type)
+
+    export type SceneClass<T extends Scene = Scene> = new () => T;
+
+### `SceneComponent` (interface)
+
+    export interface SceneComponent<TScene extends Scene = Scene> {
+        readonly name: string;
+        create?(scene: TScene): void;
+        update?(scene: TScene, dt: number): void;
+        resize?(scene: TScene, width: number, height: number): void;
+        onSuspend?(scene: TScene): void;
+        onResume?(scene: TScene, result: unknown): void;
+        destroy?(scene: TScene): void;
     }
 
 ### `SceneComponentHost` (class)
@@ -6078,6 +11096,11 @@ build instead.
         destroy(): void;
     }
 
+### `Schema` (type)
+
+    export type Schema = {
+        type: 'string';
+
 ### `scramble` (function)
 
     export declare function scramble(text: string, key: string): string;
@@ -6092,6 +11115,14 @@ build instead.
 
         readonly launches: number;
         constructor(options?: SessionOptions);
+    }
+
+### `SessionOptions` (interface)
+
+    export interface SessionOptions {
+
+        namespace?: string;
+        storage?: SaveStorage;
     }
 
 ### `setReducedMotion` (function)
@@ -6130,6 +11161,14 @@ build instead.
         reset(): void;
     }
 
+### `SettingsOptions` (interface)
+
+    export interface SettingsOptions {
+
+        namespace?: string;
+        storage?: SaveStorage;
+    }
+
 ### `Signal` (class)
 
     export declare class Signal<T> {
@@ -6143,6 +11182,17 @@ build instead.
         get size(): number;
 
         dispatch(value: T): boolean;
+    }
+
+### `SignalListener` (type)
+
+    export type SignalListener<T> = (value: T) => boolean | void;
+
+### `SizeLimitOptions` (interface)
+
+    export interface SizeLimitOptions {
+
+        maxBytes?: number;
     }
 
 ### `Spawner` (class)
@@ -6162,9 +11212,39 @@ build instead.
         get isComplete(): boolean;
     }
 
+### `SpawnerOptions` (interface)
+
+    export interface SpawnerOptions<T> {
+        waves: readonly Wave<T>[];
+        onSpawn: (kind: T) => void;
+
+        onWaveStart?: (waveIndex: number) => void;
+
+        onComplete?: () => void;
+    }
+
 ### `stateChecksum` (function)
 
     export declare function stateChecksum(value: unknown): number;
+
+### `StateExtension` (interface)
+
+    export interface StateExtension<T extends StateValue = StateValue> {
+
+        readonly id: string;
+
+        readonly capture: () => T;
+
+        readonly restore: (state: T) => void;
+
+        readonly version?: number;
+
+        readonly migrations?: Readonly<Record<number, (state: StateValue) => T>>;
+
+        readonly reset?: () => void;
+
+        readonly remove?: () => void;
+    }
 
 ### `StateRegistry` (class)
 
@@ -6178,6 +11258,27 @@ build instead.
         }): readonly StateRestoreDiagnostic[];
         transaction<T>(work: () => T): T;
     }
+
+### `StateRestoreDiagnostic` (interface)
+
+    export interface StateRestoreDiagnostic {
+        readonly extension: string;
+        readonly from: number;
+        readonly to: number;
+        readonly status: 'migrated' | 'unchanged' | 'reset' | 'removed';
+    }
+
+### `StateSnapshot` (interface)
+
+    export interface StateSnapshot {
+        readonly extensions: Readonly<Record<string, StateValue>>;
+        readonly versions?: Readonly<Record<string, number>>;
+    }
+
+### `StateValue` (type)
+
+    export type StateValue = null | boolean | number | string | StateValue[] | {
+        readonly [key: string]: StateValue;
 
 ### `SyncGuard` (class)
 
@@ -6212,6 +11313,53 @@ build instead.
         private bounded;
     }
 
+### `TelemetryEvent` (interface)
+
+    export interface TelemetryEvent {
+        name: string;
+        properties?: Record<string, string | number | boolean | null>;
+    }
+
+### `TelemetryOptions` (interface)
+
+    export interface TelemetryOptions extends HttpTransportOptions {
+
+        maxStringLength?: number;
+
+        maxProperties?: number;
+
+        allowedProperties?: readonly string[];
+    }
+
+### `TelemetryResponse` (interface)
+
+    export interface TelemetryResponse {
+        ok: boolean;
+        status: number;
+    }
+
+### `TickEvent` (interface)
+
+    export interface TickEvent {
+        tick: number;
+
+        inputs: Record<string, unknown>;
+
+        checksums?: Record<string, number>;
+    }
+
+### `TweeChoice` (interface)
+
+    export interface TweeChoice {
+        text: string;
+        goto?: string;
+    }
+
+### `TweeCommand` (type)
+
+    export type TweeCommand = {
+        say: string;
+
 ### `Tweener` (class)
 
     export declare class Tweener {
@@ -6223,6 +11371,27 @@ build instead.
         get isBusy(): boolean;
 
         clear(): void;
+    }
+
+### `TweenOptions` (interface)
+
+    export interface TweenOptions {
+
+        ease?: Easing;
+
+        intent?: MotionIntent;
+
+        alternate?: (t: number) => void;
+    }
+
+### `TweeStory` (interface)
+
+    export interface TweeStory {
+        story: Record<string, TweeCommand[]>;
+
+        start: string;
+
+        title?: string;
     }
 
 ### `uncloneablePath` (function)
@@ -6250,6 +11419,13 @@ build instead.
         clear(): void;
     }
 
+### `UndoHistoryOptions` (interface)
+
+    export interface UndoHistoryOptions {
+
+        limit?: number;
+    }
+
 ### `unscramble` (function)
 
     export declare function unscramble(payload: string, key: string): string;
@@ -6262,15 +11438,136 @@ build instead.
 
     export declare function watchReducedMotion(listener: (reduced: boolean) => void): () => void;
 
+### `Wave` (interface)
+
+    export interface Wave<T> {
+        delay: number;
+        entries: readonly {
+            kind: T;
+            count: number;
+        }[];
+
+        duration?: number;
+    }
+
+### `WebSocketLike` (interface)
+
+    export interface WebSocketLike {
+        readyState: number;
+        send(data: string): void;
+        close(): void;
+        onopen: ((event: unknown) => void) | null;
+        onclose: ((event: unknown) => void) | null;
+        onerror: ((event: unknown) => void) | null;
+        onmessage: ((event: {
+            data: string;
+        }) => void) | null;
+    }
+
+### `WeightedCell` (interface)
+
+    export interface WeightedCell<T> {
+        readonly cell: T;
+        readonly cost: number;
+    }
+
 ### `weightedFlood` (function)
 
     export declare function weightedFlood<T, K>(start: T, options: WeightedFloodOptions<T, K>): Map<K, WeightedCell<T>>;
+
+### `WeightedFloodOptions` (interface)
+
+    export interface WeightedFloodOptions<T, K> {
+
+        key: (cell: T) => K;
+
+        neighbors: (cell: T) => Iterable<T>;
+
+        cost: (from: T, to: T) => number;
+
+        maxCost: number;
+
+        canEnter?: (cell: T, from: T, cost: number) => boolean;
+
+        stop?: (cell: T, cost: number) => boolean;
+    }
+
+## `./headless`
+
+### `actors` (namespace)
+
+    export * as actors from '../actors/index.ts'
+
+### `ai` (namespace)
+
+    export * as ai from '../ai/index.ts'
+
+### `assetBinary` (namespace)
+
+    export * as assetBinary from '../assets/binary.ts'
+
+### `assetPaths` (namespace)
+
+    export * as assetPaths from '../assets/paths.ts'
+
+### `audio` (namespace)
+
+    export * as audio from '../audio/index.ts'
+
+### `battle` (namespace)
+
+    export * as battle from '../battle/index.ts'
+
+### `board` (namespace)
+
+    export * as board from '../board/index.ts'
+
+### `core` (namespace)
+
+    export * as core from '../core/index.ts'
+
+### `i18n` (namespace)
+
+    export * as i18n from '../i18n/index.ts'
+
+### `mwl` (namespace)
+
+    export * as mwl from '../mwl/index.ts'
+
+### `roguelike` (namespace)
+
+    export * as roguelike from '../roguelike/index.ts'
+
+### `rpg` (namespace)
+
+    export * as rpg from '../rpg/index.ts'
+
+### `simulation` (namespace)
+
+    export * as simulation from '../simulation/index.ts'
+
+### `testing` (namespace)
+
+    export * as testing from '../testing/index.ts'
+
+### `world` (namespace)
+
+    export * as world from '../world/index.ts'
 
 ## `./i18n`
 
 ### `AUDIO_SUFFIX` (const)
 
     export declare const AUDIO_SUFFIX = ".audio";
+
+### `AudioIssue` (interface)
+
+    export interface AudioIssue {
+
+        key: string;
+        kind: 'empty-audio-path' | 'audio-not-a-path';
+        detail: string;
+    }
 
 ### `Catalog` (interface)
 
@@ -6287,9 +11584,35 @@ build instead.
 
     export declare function catalogCompleteness(reference: Catalog, other: Catalog): number;
 
+### `CatalogIssue` (interface)
+
+    export interface CatalogIssue {
+        key: string;
+        kind: 'empty-message' | 'plural-missing-other';
+        detail: string;
+    }
+
+### `CatalogKeyDiff` (interface)
+
+    export interface CatalogKeyDiff {
+
+        missing: readonly string[];
+
+        extra: readonly string[];
+    }
+
 ### `catalogUsage` (function)
 
     export declare function catalogUsage(catalog: Catalog, referencedKeys: Iterable<string>): CatalogUsageStats;
+
+### `CatalogUsageStats` (interface)
+
+    export interface CatalogUsageStats {
+        totalKeys: number;
+        usedKeys: number;
+
+        unusedKeys: readonly string[];
+    }
 
 ### `copyFromBase` (function)
 
@@ -6327,6 +11650,33 @@ build instead.
 
     export type Direction = 'ltr' | 'rtl';
 
+### `EditRow` (interface)
+
+    export interface EditRow {
+        key: string;
+        baseText: string;
+
+        targetText: string;
+        status: 'ok' | 'missing' | 'extra';
+
+        sound?: string;
+
+        soundKey?: string;
+
+        soundInherited: boolean;
+    }
+
+### `EditSession` (interface)
+
+    export interface EditSession {
+        base: Catalog;
+        target: Catalog;
+    }
+
+### `EntityTextResolver` (type)
+
+    export type EntityTextResolver<Id = string> = (id: Id) => string;
+
 ### `findSimilarMessages` (function)
 
     export declare function findSimilarMessages(catalog: Catalog, minSimilarity?: number): SimilarMessagePair[];
@@ -6335,6 +11685,12 @@ build instead.
 
     export interface FluentMessage {
         format(params?: MessageParams): string;
+    }
+
+### `FluentOptions` (interface)
+
+    export interface FluentOptions {
+        direction?: Direction;
     }
 
 ### `formatDate` (function)
@@ -6353,9 +11709,28 @@ build instead.
 
     export declare function formatSpec(value: string | number, spec: string, language?: string): string | undefined;
 
+### `GrammaticalEntity` (interface)
+
+    export interface GrammaticalEntity {
+        gender?: 'masculine' | 'feminine' | 'neuter' | 'common';
+        plural?: boolean;
+        properNoun?: boolean;
+
+        forms?: Record<string, string>;
+    }
+
 ### `has` (function)
 
     export declare function has(key: string): boolean;
+
+### `InlineSoundCue` (interface)
+
+    export interface InlineSoundCue {
+
+        path: string;
+
+        index: number;
+    }
 
 ### `isAudioKey` (function)
 
@@ -6373,6 +11748,16 @@ build instead.
 
     export declare function mergeCatalogKeys(catalog: Catalog, survivingKey: string, mergedKey: string): Catalog;
 
+### `MessageChannel` (type)
+
+    export type MessageChannel = 'log' | 'compact' | 'accessibility' | 'debug' | 'audio';
+
+### `MessageFormatter` (interface)
+
+    export interface MessageFormatter {
+        format(message: SemanticMessage, channel: MessageChannel): string;
+    }
+
 ### `MessageParams` (interface)
 
     export interface MessageParams {
@@ -6381,6 +11766,10 @@ build instead.
 
         [token: string]: string | number | MessageParams | undefined;
     }
+
+### `MessagePart` (type)
+
+    export type MessagePart = string | Placeholder;
 
 ### `messageText` (function)
 
@@ -6394,6 +11783,13 @@ build instead.
 
     export declare function nonBreakingUnit(value: string | number, unit: string, language?: string): string;
 
+### `ParsedSoundText` (interface)
+
+    export interface ParsedSoundText {
+        text: string;
+        cues: InlineSoundCue[];
+    }
+
 ### `parseFTL` (function)
 
     export declare function parseFTL(locale: string, source: string, options?: FluentOptions): Catalog;
@@ -6406,6 +11802,41 @@ build instead.
 
     export declare function parseSoundMarkers(source: string): ParsedSoundText;
 
+### `Placeholder` (interface)
+
+    export interface Placeholder {
+
+        raw: string;
+        token: string;
+        debug: boolean;
+        conv: string | undefined;
+        spec: string | undefined;
+    }
+
+### `PlaceholderDiff` (interface)
+
+    export interface PlaceholderDiff {
+
+        missing: string[];
+
+        extra: string[];
+
+        changed: Array<{
+            token: string;
+            base: string;
+            target: string;
+        }>;
+    }
+
+### `PluralCoverage` (interface)
+
+    export interface PluralCoverage {
+
+        pluralKeys: number;
+
+        formsPresent: Partial<Record<Intl.LDMLPluralRule, number>>;
+    }
+
 ### `pluralFormCoverage` (function)
 
     export declare function pluralFormCoverage(catalog: Catalog): PluralCoverage;
@@ -6414,9 +11845,34 @@ build instead.
 
     export type PluralForms = Partial<Record<Intl.LDMLPluralRule, string>>;
 
+### `PoOptions` (interface)
+
+    export interface PoOptions {
+
+        direction?: Direction;
+
+        domain?: string;
+    }
+
 ### `reset` (function)
 
     export declare function reset(): void;
+
+### `RowFilter` (interface)
+
+    export interface RowFilter {
+
+        missingOnly?: boolean;
+
+        query?: string;
+    }
+
+### `SemanticMessage` (interface)
+
+    export interface SemanticMessage<TType extends string = string, TParams extends Record<string, unknown> = Record<string, unknown>> {
+        type: TType;
+        params: TParams;
+    }
 
 ### `sessionCompleteness` (function)
 
@@ -6449,6 +11905,16 @@ build instead.
 ### `setTargetText` (function)
 
     export declare function setTargetText(session: EditSession, key: string, text: string): EditSession;
+
+### `SimilarMessagePair` (interface)
+
+    export interface SimilarMessagePair {
+        a: string;
+        b: string;
+        distance: number;
+
+        similarity: number;
+    }
 
 ### `stripSoundMarkers` (function)
 
@@ -6484,9 +11950,17 @@ build instead.
 
 ## `./mwl`
 
+### `AiHook` (type)
+
+    export type AiHook = (world: HookWorld, emit: Emit, context: HookContext) => void;
+
 ### `attributeTypeDescription` (function)
 
     export declare function attributeTypeDescription(type: MwlAttributeType): string;
+
+### `BuiltinHookType` (type)
+
+    export type BuiltinHookType = 'predicate' | 'modifier' | 'generator' | 'command' | 'ai' | 'migration';
 
 ### `campaignChain` (function)
 
@@ -6504,6 +11978,10 @@ build instead.
 ### `collectHookReferences` (function)
 
     export declare function collectHookReferences(game: MwlCompiledGame, hookAttributeNames?: readonly string[]): HookReference[];
+
+### `CommandHook` (type)
+
+    export type CommandHook = (world: HookWorld, emit: Emit, context: HookContext) => void;
 
 ### `compile` (function)
 
@@ -6553,6 +12031,22 @@ build instead.
 
     export declare function effectToModifier(effect: MwlEffectDefinition, context?: MwlExpressionContext): Modifier;
 
+### `Emit` (interface)
+
+    export interface Emit {
+        move(unit: string, x: number, y: number): void;
+        attack(attacker: string, defender: string, weapon?: string): void;
+        spawn(type: string, side: string, x: number, y: number): void;
+        kill(unit: string): void;
+        gold(side: string, delta: number): void;
+
+        setVariable(name: string, value: MwlValue): void;
+        message(speaker: string, text: string): void;
+        endTurn(): void;
+        win(side: string): void;
+        lose(side: string): void;
+    }
+
 ### `emitArtifacts` (function)
 
     export declare function emitArtifacts(game: MwlCompiledGame, options?: MwlEmitOptions): readonly MwlArtifact[];
@@ -6568,6 +12062,13 @@ build instead.
 ### `emitTableTypes` (function)
 
     export declare function emitTableTypes(tables: readonly MwlTableDefinition[], options?: EmitTableTypesOptions): string;
+
+### `EmitTableTypesOptions` (interface)
+
+    export interface EmitTableTypesOptions {
+
+        readonly header?: string;
+    }
 
 ### `encodeSave` (function)
 
@@ -6593,9 +12094,73 @@ build instead.
 
     export declare function extractCatalog(game: MwlCompiledGame, options?: MwlCatalogOptions): MwlCatalog;
 
+### `GeneratorHook` (type)
+
+    export type GeneratorHook = (world: HookWorld, context: HookContext) => unknown;
+
+### `HookContext` (type)
+
+    export type HookContext = Readonly<Record<string, string>>;
+
+### `HookRandom` (interface)
+
+    export interface HookRandom {
+
+        float(): number;
+
+        int(bound: number): number;
+    }
+
+### `HookReference` (interface)
+
+    export interface HookReference {
+        readonly type: HookType;
+        readonly name: string;
+        readonly location?: MwlLocation;
+    }
+
+### `HookType` (type)
+
+    export type HookType = BuiltinHookType | (string & {});
+
+### `HookTypeMap` (interface)
+
+    export interface HookTypeMap {
+        predicate: PredicateHook;
+        modifier: ModifierHook;
+        generator: GeneratorHook;
+        command: CommandHook;
+        ai: AiHook;
+        migration: MigrationHook;
+    }
+
 ### `hookTypes` (const)
 
     export declare const hookTypes: readonly HookType[];
+
+### `HookWorld` (interface)
+
+    export interface HookWorld {
+        readonly variables: Readonly<Record<string, MwlValue>>;
+
+        variableAt(path: string): MwlValue | undefined;
+        readonly units: Readonly<Record<string, {
+            readonly hp: number;
+            readonly x: number;
+            readonly y: number;
+            readonly alive: boolean;
+            readonly type?: string;
+
+            readonly side?: string;
+        }>>;
+        readonly sides: Readonly<Record<string, {
+            readonly gold: number;
+            readonly income: number;
+        }>>;
+        readonly turn: number;
+
+        readonly random: HookRandom;
+    }
 
 ### `inventoryItem` (function)
 
@@ -6617,6 +12182,14 @@ build instead.
 
     export declare function loadContent(files: readonly MwlSourceFile[], options?: MwlCompileOptions): MwlContentLoadReport;
 
+### `MigrationHook` (type)
+
+    export type MigrationHook = (saved: unknown, context: HookContext) => unknown;
+
+### `ModifierHook` (type)
+
+    export type ModifierHook = (value: number, world: HookWorld, context: HookContext) => number;
+
 ### `MWL_DEFAULT_CARRYOVER_PERCENTAGE` (const)
 
     export declare const MWL_DEFAULT_CARRYOVER_PERCENTAGE = 80;
@@ -6628,6 +12201,479 @@ build instead.
 ### `MWL_SCHEMA_10` (const)
 
     export declare const MWL_SCHEMA_10 = "1.0";
+
+### `MwlActorItem` (interface)
+
+    export interface MwlActorItem extends ItemDefinition {
+        readonly id: string;
+        readonly slot?: string;
+        readonly modifiers?: Modifier[];
+    }
+
+### `MwlAiDefinition` (interface)
+
+    export interface MwlAiDefinition {
+        readonly id: string;
+        readonly strategy?: string;
+        readonly target?: string;
+        readonly difficulty?: number;
+        readonly scope?: 'actor' | 'controller';
+        readonly provider?: 'javascript' | 'lua';
+        readonly algorithm?: 'rules' | 'alpha_beta';
+        readonly depth?: number;
+        readonly maxNodes?: number;
+        readonly player?: string;
+        readonly moves?: string;
+        readonly apply?: string;
+        readonly terminal?: string;
+        readonly evaluate?: string;
+        readonly behaviors: readonly MwlBehaviorDefinition[];
+    }
+
+### `MwlArtifact` (interface)
+
+    export interface MwlArtifact {
+        readonly name: string;
+        readonly content: string;
+    }
+
+### `MwlAttributeType` (type)
+
+    export type MwlAttributeType = MwlValueType | readonly string[];
+
+### `MwlBehaviorDefinition` (interface)
+
+    export interface MwlBehaviorDefinition {
+        readonly id: string;
+        readonly when?: string;
+        readonly action?: string;
+        readonly hook?: string;
+    }
+
+### `MwlCampaignChain` (interface)
+
+    export interface MwlCampaignChain<State extends StateValue, Result extends StateValue = StateValue> {
+        readonly start: string;
+        readonly levels: readonly CampaignLevel<State, Result>[];
+    }
+
+### `MwlCampaignDefinition` (interface)
+
+    export interface MwlCampaignDefinition {
+        readonly id: string;
+        readonly name?: string;
+        readonly title?: string;
+        readonly description?: string;
+        readonly startScene?: string;
+
+        readonly firstScenario?: string;
+
+        readonly scenarios: readonly MwlScenarioLink[];
+    }
+
+### `MwlCarryover` (interface)
+
+    export interface MwlCarryover {
+        readonly result: 'victory' | 'defeat';
+
+        readonly gold: number;
+
+        readonly add: boolean;
+
+        readonly recall: readonly string[];
+
+        readonly nextScenario: string | null;
+    }
+
+### `MwlCatalog` (interface)
+
+    export interface MwlCatalog {
+        readonly locale: string;
+        readonly direction: 'ltr' | 'rtl';
+        readonly messages: Record<string, string>;
+    }
+
+### `MwlCatalogOptions` (interface)
+
+    export interface MwlCatalogOptions {
+
+        readonly locale?: string;
+        readonly direction?: 'ltr' | 'rtl';
+    }
+
+### `MwlColumnValueType` (type)
+
+    export type MwlColumnValueType<Type extends CsvColumnType> = Type extends 'number' ? number : Type extends 'boolean' ? boolean : Type extends 'list' ? string[] : Type extends 'map' ? Record<string, string> : string;
+
+### `MwlCommand` (type)
+
+    export type MwlCommand = {
+        readonly name: 'set_variable';
+
+### `MwlCompiledGame` (interface)
+
+    export interface MwlCompiledGame {
+        readonly schema: string;
+        readonly roots: readonly MwlCompiledNode[];
+        readonly assets: readonly string[];
+        readonly messages: readonly string[];
+    }
+
+### `MwlCompiledNode` (interface)
+
+    export interface MwlCompiledNode {
+        readonly tag: string;
+        readonly attributes: Readonly<Record<string, string>>;
+        readonly children: readonly MwlCompiledNode[];
+
+        readonly location?: MwlLocation;
+
+        readonly attributeLocations?: Readonly<Record<string, MwlLocation>>;
+        readonly valueLocations?: Readonly<Record<string, MwlLocation>>;
+
+        readonly gettext?: readonly string[];
+    }
+
+### `MwlCompileOptions` (interface)
+
+    export interface MwlCompileOptions extends MwlPreprocessOptions {
+        readonly schemas?: Readonly<Record<string, MwlTagSchema>>;
+    }
+
+### `MwlConditionContext` (type)
+
+    export type MwlConditionContext = Readonly<Record<string, MwlConditionValue>>;
+
+### `MwlConditionHelper` (type)
+
+    export type MwlConditionHelper = (...args: readonly MwlConditionValue[]) => MwlConditionValue;
+
+### `MwlConditionOptions` (interface)
+
+    export interface MwlConditionOptions {
+        readonly helpers?: Readonly<Record<string, MwlConditionHelper>>;
+    }
+
+### `MwlConditionValue` (type)
+
+    export type MwlConditionValue = string | number | boolean;
+
+### `MwlContentCatalog` (interface)
+
+    export interface MwlContentCatalog {
+        readonly campaigns: readonly MwlCampaignDefinition[];
+        readonly items: readonly MwlItemDefinition[];
+        readonly monsters: readonly MwlMonsterDefinition[];
+        readonly statuses: readonly MwlStatusDefinition[];
+        readonly loot: readonly MwlLootDefinition[];
+        readonly turnClocks: readonly MwlTurnClockDefinition[];
+        readonly ai: readonly MwlAiDefinition[];
+        readonly moves: readonly MwlMoveDefinition[];
+        readonly typeMatchups: readonly MwlTypeMatchupDefinition[];
+        readonly evolutions: readonly MwlEvolutionDefinition[];
+        readonly tables: readonly MwlTableDefinition[];
+    }
+
+### `MwlContentDiagnostic` (interface)
+
+    export interface MwlContentDiagnostic {
+        readonly severity: 'error' | 'warning';
+        readonly code: 'compile' | 'dangling-reference' | 'opaque-tag';
+        readonly message: string;
+        readonly file?: string;
+    }
+
+### `MwlContentLoadReport` (interface)
+
+    export interface MwlContentLoadReport {
+        readonly game?: MwlCompiledGame;
+        readonly resources: readonly string[];
+        readonly dependencies: readonly string[];
+        readonly ignored: readonly string[];
+        readonly diagnostics: readonly MwlContentDiagnostic[];
+    }
+
+### `MwlContentReport` (interface)
+
+    export interface MwlContentReport {
+        readonly tags: Readonly<Record<string, number>>;
+        readonly opaqueTags: readonly string[];
+        readonly references: readonly string[];
+        readonly danglingReferences: readonly string[];
+    }
+
+### `MwlDiagnostic` (interface)
+
+    export interface MwlDiagnostic {
+        readonly code: string;
+        readonly message: string;
+        readonly location: MwlLocation;
+        readonly lineText?: string;
+    }
+
+### `MwlDialogueChoice` (interface)
+
+    export interface MwlDialogueChoice {
+        readonly text: string;
+        readonly event?: string;
+
+        readonly branch?: readonly MwlCompiledNode[];
+    }
+
+### `MwlDomainHook` (type)
+
+    export type MwlDomainHook<Context = unknown, Input = unknown, Output = unknown> = (context: Context, input: Input) => Output;
+
+### `MwlDomainHookDeclaration` (interface)
+
+    export interface MwlDomainHookDeclaration<Context = unknown, Input = unknown, Output = unknown> {
+        readonly id: `${string}:${string}`;
+        readonly run: MwlDomainHook<Context, Input, Output>;
+    }
+
+### `MwlDomainHookRegistry` (type)
+
+    export type MwlDomainHookRegistry<Context = unknown, Input = unknown, Output = unknown> = Readonly<Record<string, MwlDomainHook<Context, Input, Output>>>;
+
+### `MwlEffectDefinition` (interface)
+
+    export interface MwlEffectDefinition {
+        readonly applyTo: string;
+        readonly operation?: string;
+        readonly value?: string;
+        readonly range?: string;
+    }
+
+### `MwlEmitOptions` (interface)
+
+    export interface MwlEmitOptions {
+        readonly variable?: string;
+
+        readonly artifacts?: Readonly<Record<string, string>>;
+        readonly onEmit?: (artifact: MwlArtifact) => void;
+    }
+
+### `MwlEndLevel` (interface)
+
+    export interface MwlEndLevel {
+        readonly result: 'victory' | 'defeat';
+
+        readonly bonus?: number;
+
+        readonly carryoverPercentage?: number;
+
+        readonly carryoverAdd?: boolean;
+
+        readonly nextScenario?: string | null;
+    }
+
+### `MwlEquipment` (type)
+
+    export type MwlEquipment<Slot extends string> = EquipmentSlots<Slot, MwlActorItem>;
+
+### `MwlEvolutionDefinition` (interface)
+
+    export interface MwlEvolutionDefinition {
+        readonly from: string;
+        readonly into: string;
+        readonly level: number;
+    }
+
+### `MwlExpression` (type)
+
+    export type MwlExpression = {
+        readonly kind: 'number';
+
+### `MwlExpressionContext` (type)
+
+    export type MwlExpressionContext = Readonly<Record<string, number>>;
+
+### `MwlFieldSpec` (interface)
+
+    export interface MwlFieldSpec {
+        readonly type: MwlReaderType;
+        readonly source?: string;
+        readonly required?: boolean;
+        readonly default?: unknown;
+    }
+
+### `MwlHookDeclaration` (interface)
+
+    export interface MwlHookDeclaration {
+
+        readonly id: string;
+
+        readonly attributes?: Readonly<Record<string, MwlAttributeType>>;
+
+        readonly openAttributes?: MwlValueType;
+    }
+
+### `MwlHookRegistry` (interface)
+
+    export interface MwlHookRegistry {
+        readonly predicate?: Readonly<Record<string, PredicateHook>>;
+        readonly modifier?: Readonly<Record<string, ModifierHook>>;
+        readonly generator?: Readonly<Record<string, GeneratorHook>>;
+        readonly command?: Readonly<Record<string, CommandHook>>;
+        readonly ai?: Readonly<Record<string, AiHook>>;
+        readonly migration?: Readonly<Record<string, MigrationHook>>;
+
+        readonly saveable?: Readonly<Record<string, MwlSaveableHookState>>;
+    }
+
+### `MwlItemDefinition` (interface)
+
+    export interface MwlItemDefinition {
+        readonly id: string;
+        readonly name: string;
+        readonly slot?: string;
+        readonly stackable?: boolean;
+        readonly weight?: number;
+
+        readonly image?: string;
+
+        readonly icon?: string;
+        readonly effects: readonly MwlEffectDefinition[];
+    }
+
+### `MwlLocation` (interface)
+
+    export interface MwlLocation {
+        readonly file: string;
+        readonly line: number;
+        readonly column: number;
+    }
+
+### `MwlLootDefinition` (interface)
+
+    export interface MwlLootDefinition {
+        readonly item: string;
+        readonly chance?: number;
+        readonly quantity?: number;
+        readonly weight?: number;
+    }
+
+### `MwlMap` (interface)
+
+    export interface MwlMap {
+        readonly id: string;
+        readonly width: number;
+        readonly height: number;
+
+        readonly codes: readonly string[];
+
+        readonly starts: Readonly<Record<string, readonly MwlMapStart[]>>;
+    }
+
+### `MwlMapFile` (interface)
+
+    export interface MwlMapFile {
+
+        readonly header: Readonly<Record<string, string>>;
+        readonly width: number;
+        readonly height: number;
+
+        readonly codes: string[];
+
+        readonly starts: Record<number, {
+            x: number;
+            y: number;
+        }[]>;
+    }
+
+### `MwlMapStart` (interface)
+
+    export interface MwlMapStart {
+        readonly x: number;
+        readonly y: number;
+    }
+
+### `MwlMessage` (interface)
+
+    export interface MwlMessage {
+        readonly text: string;
+        readonly speaker?: string;
+        readonly portrait?: string;
+        readonly side?: string;
+
+        readonly choices?: readonly MwlDialogueChoice[];
+
+        readonly dialogueId?: string;
+    }
+
+### `MwlMigration` (type)
+
+    export type MwlMigration = (world: MwlWorld) => MwlWorld;
+
+### `MwlMonsterDefinition` (interface)
+
+    export interface MwlMonsterDefinition {
+        readonly id: string;
+        readonly name?: string;
+        readonly hp: number;
+        readonly accuracy?: number;
+        readonly evasion?: number;
+        readonly damage?: readonly [number, number];
+        readonly armor?: readonly [number, number];
+        readonly experience?: number;
+        readonly maxLevel?: number;
+        readonly image?: string;
+        readonly types?: readonly string[];
+        readonly baseStats?: Readonly<Record<string, number>>;
+    }
+
+### `MwlMoveDefinition` (interface)
+
+    export interface MwlMoveDefinition {
+        readonly id: string;
+        readonly type: string;
+        readonly target: string;
+        readonly power?: number;
+        readonly cost?: number;
+    }
+
+### `MwlNode` (interface)
+
+    export interface MwlNode {
+        readonly tag: string;
+        readonly attributes: Readonly<Record<string, string>>;
+        readonly children: readonly MwlNode[];
+        readonly location: MwlLocation;
+
+        readonly attributeLocations?: Readonly<Record<string, MwlLocation>>;
+
+        readonly valueLocations?: Readonly<Record<string, MwlLocation>>;
+
+        readonly gettext?: readonly string[];
+    }
+
+### `MwlPersistenceOptions` (interface)
+
+    export interface MwlPersistenceOptions {
+        readonly version: number;
+        readonly migrations?: Readonly<Record<number, MwlMigration>>;
+    }
+
+### `MwlPreprocessOptions` (interface)
+
+    export interface MwlPreprocessOptions {
+        readonly file?: string;
+        readonly defines?: readonly string[];
+        readonly includes?: Readonly<Record<string, string>>;
+
+        readonly macroPolicy?: 'error' | 'ignore';
+    }
+
+### `MwlReaderType` (type)
+
+    export type MwlReaderType = 'string' | 'id' | 'number' | 'integer' | 'boolean' | 'id-list' | 'number-list';
+
+### `MwlReadResult` (interface)
+
+    export interface MwlReadResult<T> {
+        readonly value: T;
+        readonly diagnostics: readonly MwlDiagnostic[];
+    }
 
 ### `MwlRuntime` (class)
 
@@ -6762,11 +12808,300 @@ build instead.
         private nodes;
     }
 
+### `MwlRuntimeAction` (type)
+
+    export type MwlRuntimeAction = {
+        readonly type: 'run';
+
+### `MwlRuntimeOptions` (interface)
+
+    export interface MwlRuntimeOptions {
+        readonly world?: MwlWorld;
+
+        readonly onMessage?: (message: MwlMessage) => void;
+
+        readonly resolveMap?: (file: string) => string;
+        readonly hooks?: MwlHookRegistry;
+
+        readonly onTrace?: (event: MwlTraceEvent) => void;
+
+        readonly persistence?: MwlPersistenceOptions;
+
+        readonly random?: Generator;
+    }
+
+### `MwlSaveableHookState` (interface)
+
+    export interface MwlSaveableHookState {
+        readonly save: () => unknown;
+        readonly restore: (state: unknown) => void;
+    }
+
+### `MwlSaveEnvelope` (interface)
+
+    export interface MwlSaveEnvelope {
+        readonly format: 'mwl-save';
+        readonly version: number;
+        readonly world: MwlWorld;
+
+        readonly hookState?: Readonly<Record<string, unknown>>;
+
+        readonly journal?: readonly ActionJournalEntry<unknown, unknown>[];
+    }
+
+### `MwlScenarioLink` (interface)
+
+    export interface MwlScenarioLink {
+        readonly id: string;
+
+        readonly nextScenario?: string;
+    }
+
+### `MwlScenarioRunner` (type)
+
+    export type MwlScenarioRunner<State extends StateValue, Result extends StateValue = StateValue> = (scenario: MwlScenarioLink, state: State, context: {
+        readonly levelId: string;
+
+### `MwlSideRef` (interface)
+
+    export interface MwlSideRef {
+
+        readonly id: string;
+    }
+
+### `MwlSourceFile` (interface)
+
+    export interface MwlSourceFile {
+        readonly file: string;
+        readonly source: string;
+    }
+
+### `MwlStatusDefinition` (interface)
+
+    export interface MwlStatusDefinition {
+        readonly id: string;
+        readonly name?: string;
+        readonly duration?: number;
+        readonly tick?: string;
+        readonly modifiers?: string;
+    }
+
 ### `MwlSyntaxError` (class)
 
     export declare class MwlSyntaxError extends Error {
         readonly diagnostic: MwlDiagnostic;
         constructor(diagnostic: MwlDiagnostic);
+    }
+
+### `MwlTableColumn` (interface)
+
+    export interface MwlTableColumn {
+        readonly name: string;
+        readonly type: CsvColumnType;
+    }
+
+### `MwlTableDefinition` (interface)
+
+    export interface MwlTableDefinition {
+        readonly id: string;
+        readonly columns: readonly MwlTableColumn[];
+        readonly rows: readonly Readonly<Record<string, unknown>>[];
+    }
+
+### `MwlTableKey` (type)
+
+    export type MwlTableKey<Row extends Record<string, unknown>> = keyof Row | readonly (keyof Row)[] | ((row: Row) => MwlTableKeyPart | readonly MwlTableKeyPart[]);
+
+### `MwlTableKeyPart` (type)
+
+    export type MwlTableKeyPart = string | number | boolean | null;
+
+### `MwlTableMapOptions` (interface)
+
+    export interface MwlTableMapOptions<Row extends Record<string, unknown>, Value = Row> {
+
+        readonly key: MwlTableKey<Row>;
+
+        readonly value?: (row: Row) => Value;
+
+        readonly duplicate?: 'error' | 'last';
+    }
+
+### `MwlTableReference` (type)
+
+    export type MwlTableReference = {
+
+        readonly table: string;
+
+### `MwlTagSchema` (interface)
+
+    export interface MwlTagSchema {
+
+        readonly attributes?: Readonly<Record<string, MwlAttributeType>>;
+
+        readonly required?: readonly string[];
+
+        readonly openAttributes?: MwlValueType;
+
+        readonly children?: readonly string[];
+
+        readonly cardinality?: Readonly<Record<string, {
+            readonly min?: number;
+            readonly max?: number;
+        }>>;
+
+        readonly openChildren?: boolean;
+
+        readonly refTargets?: Readonly<Record<string, string>>;
+
+        readonly acyclicRefs?: readonly string[];
+    }
+
+### `MwlTraceEvent` (type)
+
+    export type MwlTraceEvent = {
+        readonly type: 'event';
+
+### `MwlTurnClockDefinition` (interface)
+
+    export interface MwlTurnClockDefinition {
+        readonly id: string;
+        readonly tick?: number;
+        readonly hunger?: number;
+    }
+
+### `MwlTypedRow` (type)
+
+    export type MwlTypedRow<Columns extends readonly MwlTableColumn[]> = {
+        [Column in Columns[number] as Column['name']]?: MwlColumnValueType<Column['type']>;
+
+### `MwlTypeMatchupDefinition` (interface)
+
+    export interface MwlTypeMatchupDefinition {
+        readonly attacker: string;
+        readonly defender: string;
+        readonly multiplier: number;
+    }
+
+### `MwlValidationOptions` (interface)
+
+    export interface MwlValidationOptions {
+
+        readonly slots?: readonly string[];
+
+        readonly hooks?: readonly (string | MwlHookDeclaration)[];
+
+        readonly hookAttributes?: readonly string[];
+
+        readonly mapBounds?: {
+            readonly width: number;
+            readonly height: number;
+        };
+
+        readonly tableReferences?: readonly MwlTableReference[];
+
+        readonly rowIdScope?: 'global' | 'file';
+    }
+
+### `MwlValue` (type)
+
+    export type MwlValue = string | number | boolean | MwlValue[] | {
+        [key: string]: MwlValue;
+
+### `MwlValueType` (type)
+
+    export type MwlValueType = 'string' | 'id' | 'number' | 'integer' | 'boolean' | 'ref' | 'coordinate';
+
+### `MwlWorld` (interface)
+
+    export interface MwlWorld {
+        readonly variables: Record<string, MwlValue>;
+        readonly units: Record<string, {
+            hp: number;
+            x: number;
+            y: number;
+            alive: boolean;
+            type?: string;
+            side?: string;
+            moves?: number;
+
+            name?: string;
+
+            role?: string;
+
+            can_recruit?: boolean;
+
+            leader?: boolean;
+        }>;
+        readonly sides: Record<string, {
+            gold: number;
+            income: number;
+            leader?: string;
+            controller?: string;
+            recruit?: string;
+
+            teamName?: string;
+
+            shareVision?: string;
+            villageGold?: number;
+            heal?: boolean;
+            fog?: boolean;
+            shroud?: boolean;
+            hidden?: boolean;
+            flag?: string;
+            userTeamName?: string;
+        }>;
+        readonly maps: Record<string, {
+            terrain: string;
+            file?: string;
+        }>;
+        gold: Record<string, number>;
+        turn: number;
+        status: 'playing' | 'won' | 'lost';
+
+        sideStatus?: Record<string, 'playing' | 'won' | 'lost'>;
+
+        carryover?: MwlCarryover;
+
+        map?: MwlMap | null;
+
+        timeOfDay?: string;
+        scheduleIndex?: number;
+
+        firedEvents?: string[];
+        pendingDialogue?: {
+            id: string;
+            choices: readonly MwlDialogueChoice[];
+        };
+
+        villages?: Record<string, {
+            x: number;
+            y: number;
+            side: string;
+            name?: string;
+        }>;
+
+        clearedShroud?: Record<string, string[]>;
+
+        roles?: Record<string, string[]>;
+
+        objects?: Array<{
+            x: number;
+            y: number;
+            id?: string;
+            name?: string;
+            image?: string;
+            side?: string;
+        }>;
+
+        story?: Array<{
+            text: string;
+            title?: string;
+            image?: string;
+            music?: string;
+        }>;
+
+        random?: readonly [number, number, number, number];
     }
 
 ### `parse` (function)
@@ -6799,6 +13134,10 @@ build instead.
 
     export declare function parseValue(raw: string, location: MwlLocation, lineText?: string): string;
 
+### `PredicateHook` (type)
+
+    export type PredicateHook = (world: HookWorld, context: HookContext) => boolean;
+
 ### `preprocess` (function)
 
     export declare function preprocess(source: string, options?: MwlPreprocessOptions): string;
@@ -6826,6 +13165,28 @@ build instead.
 ### `schema10` (const)
 
     export declare const schema10: Readonly<Record<string, MwlTagSchema>>;
+
+### `ScriptContext` (type)
+
+    export type ScriptContext = Readonly<Record<string, ScriptValue>>;
+
+### `ScriptEmit` (type)
+
+    export type ScriptEmit = (name: string, payload?: ScriptValue) => void;
+
+### `ScriptHost` (interface)
+
+    export interface ScriptHost {
+        evaluate(source: string, context?: ScriptContext): ScriptValue;
+        execute(source: string, context?: ScriptContext, emit?: ScriptEmit): void;
+        call(name: string, args?: readonly ScriptValue[], context?: ScriptContext, emit?: ScriptEmit): ScriptValue;
+        dispose(): void;
+    }
+
+### `ScriptValue` (type)
+
+    export type ScriptValue = null | boolean | number | string | ScriptValue[] | {
+        readonly [key: string]: ScriptValue;
 
 ### `sideVisionGroups` (function)
 
@@ -6905,13 +13266,94 @@ build instead.
         }): AbilityCycle;
     }
 
+### `AbilityStage` (interface)
+
+    export interface AbilityStage {
+        name: string;
+
+        duration: number;
+    }
+
+### `Actor` (interface)
+
+    export interface Actor {
+
+        speed?: number;
+
+        priority?: number;
+    }
+
+### `AIDecision` (interface)
+
+    export interface AIDecision {
+        state: AIState;
+
+        step: Step | null;
+    }
+
+### `AIState` (type)
+
+    export type AIState = 'wander' | 'hunt' | 'flee';
+
 ### `areaFalloffMultiplier` (function)
 
     export declare function areaFalloffMultiplier(index: number, steps: readonly number[]): number;
 
+### `AreaShape` (type)
+
+    export type AreaShape = {
+        kind: 'single';
+
 ### `ballistica` (function)
 
     export declare function ballistica(level: Level, from: Step, to: Step, options?: BallisticaOptions): BallisticaResult;
+
+### `BallisticaOptions` (interface)
+
+    export interface BallisticaOptions {
+
+        stop?: BallisticaStop;
+    }
+
+### `BallisticaResult` (interface)
+
+    export interface BallisticaResult {
+
+        cells: Step[];
+
+        stop: Step | null;
+    }
+
+### `BallisticaStop` (type)
+
+    export type BallisticaStop = 'opaque' | 'impassable' | 'outside' | 'none';
+
+### `BeamBlocker` (type)
+
+    export type BeamBlocker = 'terrain' | 'none' | ((cell: Step, context: BeamDamageContext) => boolean);
+
+### `BeamDamageContext` (interface)
+
+    export interface BeamDamageContext {
+        cell: Step;
+        step: number;
+
+        remaining: number;
+    }
+
+### `BeamStep` (interface)
+
+    export interface BeamStep<T> {
+        status: 'idle' | 'active' | 'done' | 'blocked' | 'cancelled';
+
+        cell: Step | null;
+
+        cells: readonly Step[];
+        step: number;
+        remaining: number;
+        targets: readonly T[];
+        damage: number;
+    }
 
 ### `BossPhases` (class)
 
@@ -6942,6 +13384,19 @@ build instead.
 
     export declare function canTarget(level: Level, origin: Step, target: Step, options: TargetingOptions): boolean;
 
+### `CellFeatureDef` (interface)
+
+    export interface CellFeatureDef<TContext = unknown> {
+
+        inspect?(cell: number, ctx: TContext): void;
+
+        interact?(cell: number, ctx: TContext): boolean | void;
+
+        consequence?(cell: number, ctx: TContext): void;
+
+        persistent?: boolean;
+    }
+
 ### `cellsNear` (function)
 
     export declare function cellsNear(level: Level, center: number, radius: number): number[];
@@ -6957,6 +13412,19 @@ build instead.
 ### `checkDeterminism` (function)
 
     export declare function checkDeterminism(generate: () => DungeonArtifacts, runs?: number): DungeonMismatch[];
+
+### `CombatEvent` (type)
+
+    export type CombatEvent = 'beforeAttack' | 'beforeDamage' | 'afterDamage' | 'onKill' | string;
+
+### `CombatHook` (interface)
+
+    export interface Hook<TArgs extends unknown[]> {
+        event: string;
+        handler: (...args: TArgs) => void;
+
+        source?: unknown;
+    }
 
 ### `CombatHooks` (class)
 
@@ -6977,9 +13445,41 @@ build instead.
 
     export declare function coneSector(level: Level, from: Step, to: Step, options: ConeSectorOptions): Step[];
 
+### `ConeSectorOptions` (interface)
+
+    export interface ConeSectorOptions {
+
+        degrees: number;
+
+        range: number;
+
+        stop?: BallisticaStop;
+    }
+
+### `ContentRollResult` (interface)
+
+    export interface ContentRollResult<T> {
+        roster: T[];
+        trace: RollTraceEntry[];
+    }
+
+### `DamageContext` (interface)
+
+    export interface DamageContext<C> {
+        attacker: C;
+        defender: C;
+        amount: number;
+        prevented: boolean;
+        [kind: string]: unknown;
+    }
+
 ### `decideMonsterAI` (function)
 
     export declare function decideMonsterAI(level: Level, pathfinder: Pathfinder, self: Step, hpFraction: number, target: Step, options?: MonsterAIOptions): AIDecision;
+
+### `Disposition` (type)
+
+    export type Disposition = 'hostile' | 'neutral' | 'peaceful';
 
 ### `Doors` (class)
 
@@ -7032,6 +13532,77 @@ build instead.
 ### `DUNGEON_KINDS` (const)
 
     export declare const DUNGEON_KINDS: TerrainKind[];
+
+### `DungeonArtifacts` (interface)
+
+    export interface DungeonArtifacts {
+        graph: readonly RoomEdge[];
+        retries: number;
+
+        roomBuilders: readonly string[];
+        width: number;
+        height: number;
+        terrain: ArrayLike<number>;
+        features: readonly [number, string][];
+        content: readonly unknown[];
+        rngDraws: number;
+    }
+
+### `DungeonGenerationHooks` (interface)
+
+    export interface DungeonGenerationHooks {
+
+        onRoomPlaced?(room: Rect, index: number): void;
+
+        onCorridorCarved?(edge: RoomEdge, from: Rect, to: Rect): void;
+    }
+
+### `DungeonMismatch` (interface)
+
+    export interface DungeonMismatch {
+        stage: DungeonParityStage;
+        field: string;
+        expected: unknown;
+        actual: unknown;
+    }
+
+### `DungeonOptions` (interface)
+
+    export interface DungeonOptions {
+        width: number;
+        height: number;
+
+        rooms?: number;
+        minRoomSize?: number;
+        maxRoomSize?: number;
+
+        extraCorridors?: number;
+
+        wall?: number;
+        floor?: number;
+
+        kinds?: TerrainKind[];
+
+        hooks?: DungeonGenerationHooks;
+
+        builders?: readonly RoomBuilder[];
+    }
+
+### `DungeonParityStage` (type)
+
+    export type DungeonParityStage = 'graph' | 'paint';
+
+### `DungeonResult` (interface)
+
+    export interface DungeonResult {
+        level: Level;
+
+        graph: RoomEdge[];
+
+        retries: number;
+
+        roomBuilders: string[];
+    }
 
 ### `Elevation` (class)
 
@@ -7134,6 +13705,13 @@ build instead.
 
     export declare function hasLineOfSight(level: Level, from: Step, to: Step): boolean;
 
+### `HeightSight` (interface)
+
+    export interface HeightSight {
+        heights: Elevation;
+        height?: number;
+    }
+
 ### `hexConeCells` (function)
 
     export declare function hexConeCells(origin: Step, target: Step, width: number): Step[];
@@ -7197,6 +13775,23 @@ build instead.
         }): Level;
     }
 
+### `LevelShape` (type)
+
+    export type LevelShape = 'square' | 'hex';
+
+### `MonsterAIOptions` (interface)
+
+    export interface MonsterAIOptions extends PathOptions {
+
+        sightRadius?: number;
+
+        fleeBelow?: number;
+
+        disposition?: Disposition;
+
+        provoked?: boolean;
+    }
+
 ### `MultiStageAbility` (class)
 
     export declare class MultiStageAbility {
@@ -7249,6 +13844,44 @@ build instead.
         private inactiveStep;
     }
 
+### `MultiTurnBeamOptions` (interface)
+
+    export interface MultiTurnBeamOptions<T> {
+        level: Level;
+        from: Step;
+        target: Step;
+        damage: number | ((target: T, context: BeamDamageContext) => number);
+
+        targetsAt?: (cell: Step) => readonly T[];
+
+        applyDamage?: (target: T, amount: number, context: BeamDamageContext) => void;
+
+        isBlocked?: (cell: Step, context: BeamDamageContext) => boolean;
+
+        blocker?: BeamBlocker;
+
+        stopAtOpaque?: boolean;
+
+        fronts?: (previous: readonly Step[], turn: number) => readonly Step[];
+
+        shape?: string;
+
+        onCell?: (cell: Step, context: BeamDamageContext) => void;
+    }
+
+### `MultiTurnBeamSave` (interface)
+
+    export interface MultiTurnBeamSave {
+        state: 'idle' | 'active' | 'done' | 'blocked' | 'cancelled';
+
+        fronts: Step[][];
+        index: number;
+
+        shape: string;
+
+        path?: Step[];
+    }
+
 ### `neighbourOffsets` (function)
 
     export declare function neighbourOffsets(topology: 4 | 8): ReadonlyArray<readonly [number, number]>;
@@ -7275,13 +13908,78 @@ build instead.
         private reconstruct;
     }
 
+### `PathOptions` (interface)
+
+    export interface PathOptions {
+
+        topology?: 4 | 8;
+
+        blocked?: ReadonlySet<number>;
+
+        heights?: Elevation;
+
+        climb?: number;
+    }
+
 ### `pickBuilder` (function)
 
     export declare function pickBuilder(builders: readonly RoomBuilder[], room: Rect): RoomBuilder | null;
 
+### `PlacementFilter` (interface)
+
+    export interface PlacementFilter {
+
+        terrain?: ReadonlySet<number>;
+
+        occupied?: ReadonlySet<number>;
+
+        within?: Iterable<number>;
+    }
+
+### `PlacementResult` (interface)
+
+    export interface PlacementResult {
+        cells: number[];
+        trace: PlacementTraceEntry;
+    }
+
+### `PlacementTraceEntry` (interface)
+
+    export interface PlacementTraceEntry {
+        requested: number;
+        available: number;
+        selected: number[];
+    }
+
+### `RangeBand` (interface)
+
+    export interface RangeBand {
+
+        max: number;
+        multiplier: number;
+    }
+
 ### `rangeMultiplier` (function)
 
     export declare function rangeMultiplier(distance: number, bands: readonly RangeBand[], beyond?: number): number;
+
+### `RareEntry` (interface)
+
+    export interface RareEntry<T> {
+        value: T;
+        chance: number;
+
+        enabled?: boolean;
+    }
+
+### `Rect` (interface)
+
+    export interface Rect {
+        left: number;
+        top: number;
+        right: number;
+        bottom: number;
+    }
 
 ### `rectCenter` (function)
 
@@ -7300,9 +13998,56 @@ build instead.
 
     export declare function resolveAreaOnLevel(level: Level, origin: Step, target: Step, shape: AreaShape): Step[];
 
+### `RollOutcome` (type)
+
+    export type RollOutcome = 'added' | 'skipped' | 'deferred' | 'swapped' | 'kept' | 'shuffled';
+
 ### `rollRoster` (function)
 
     export declare function rollRoster<T>(regular: readonly RosterEntry<T>[], rare?: readonly RareEntry<T>[], shuffleResult?: boolean): ContentRollResult<T>;
+
+### `RollTraceEntry` (interface)
+
+    export interface RollTraceEntry {
+        step: 'rare' | 'alternative' | 'shuffle';
+        index: number;
+        outcome: RollOutcome;
+    }
+
+### `RoomBuilder` (interface)
+
+    export interface RoomBuilder {
+
+        id: string;
+
+        weight?: number;
+
+        minSize?: number;
+
+        maxSize?: number;
+
+        paint(level: Level, room: Rect, floor: number): void;
+    }
+
+### `RoomEdge` (interface)
+
+    export interface RoomEdge {
+        a: number;
+        b: number;
+
+        extra: boolean;
+    }
+
+### `RosterEntry` (interface)
+
+    export interface RosterEntry<T> {
+        value: T;
+
+        alternative?: {
+            value: T;
+            chance: number;
+        };
+    }
 
 ### `Scheduler` (class)
 
@@ -7331,6 +14076,19 @@ build instead.
 
         static restore<A extends Actor>(snapshot: SchedulerSnapshot, actorOf: (id: string) => A): Scheduler<A>;
         private sort;
+    }
+
+### `SchedulerSnapshot` (interface)
+
+    export interface SchedulerSnapshot {
+        now: number;
+        sequence: number;
+        entries: Array<{
+            id: string;
+            time: number;
+            sequence: number;
+            priority?: number;
+        }>;
     }
 
 ### `Secrets` (class)
@@ -7375,6 +14133,20 @@ build instead.
         reset(): void;
     }
 
+### `StealthOptions` (interface)
+
+    export interface StealthOptions {
+
+        radius: number;
+    }
+
+### `Step` (interface)
+
+    export interface Step {
+        x: number;
+        y: number;
+    }
+
 ### `TargetingController` (class)
 
     export declare class TargetingController {
@@ -7409,6 +14181,55 @@ build instead.
         confirm(): TargetResult | null;
 
         cancel(): void;
+    }
+
+### `TargetingControllerOptions` (interface)
+
+    export interface TargetingControllerOptions {
+
+        origin: Step;
+
+        range: number;
+
+        requireLineOfSight?: boolean;
+
+        shape?: AreaShape;
+
+        cursor?: Step;
+
+        validate?: (target: Step) => boolean;
+    }
+
+### `TargetingOptions` (interface)
+
+    export interface TargetingOptions {
+
+        range: number;
+
+        requireLineOfSight?: boolean;
+    }
+
+### `TargetResult` (interface)
+
+    export interface TargetResult {
+        readonly origin: Step;
+        readonly target: Step;
+        readonly shape: AreaShape;
+
+        readonly cells: readonly Step[];
+    }
+
+### `TerrainKind` (interface)
+
+    export interface TerrainKind {
+
+        passable: boolean;
+
+        transparent: boolean;
+
+        flags?: number;
+
+        extras?: Readonly<Record<string, boolean>>;
     }
 
 ### `traceLine` (function)
@@ -7446,6 +14267,15 @@ build instead.
 
 ## `./rpg`
 
+### `AABB` (interface)
+
+    export interface AABB {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }
+
 ### `aabbOverlap` (function)
 
     export declare function aabbOverlap(a: AABB, b: AABB): boolean;
@@ -7461,6 +14291,48 @@ build instead.
 ### `AUTOMAP_EMPTY` (const)
 
     export declare const EMPTY = -1;
+
+### `AutomapOptions` (interface)
+
+    export interface AutomapOptions {
+
+        pick?: (variants: number) => number;
+    }
+
+### `AutomapRule` (interface)
+
+    export interface AutomapRule {
+
+        name?: string;
+
+        topology?: 'square' | 'hex';
+
+        width: number;
+        height: number;
+
+        input: Record<string, ArrayLike<number>>;
+
+        outputs: Array<Record<string, ArrayLike<number>>>;
+    }
+
+### `AutomapTarget` (interface)
+
+    export interface AutomapTarget {
+        readonly widthInTiles: number;
+        readonly heightInTiles: number;
+
+        readonly shape?: 'square' | 'hex' | 'isometric' | 'staggered';
+        getTile(layer: string | number, x: number, y: number): number;
+        setTile(layer: string | number, x: number, y: number, value: number): void;
+    }
+
+### `Circle` (interface)
+
+    export interface Circle {
+        x: number;
+        y: number;
+        radius: number;
+    }
 
 ### `circleAabbOverlap` (function)
 
@@ -7478,9 +14350,59 @@ build instead.
 
     export declare function decodeMarshal(bytes: Uint8Array): unknown;
 
+### `DialoguePresenter` (type)
+
+    export type DialoguePresenter = (request: DialogueRequest) => Promise<unknown>;
+
+### `DialogueRequest` (interface)
+
+    export interface DialogueRequest {
+        text: string;
+        speaker?: string;
+
+        portrait?: unknown;
+
+        choices?: EventChoice[];
+    }
+
+### `Direction4` (type)
+
+    export type Direction4 = 'up' | 'down' | 'left' | 'right';
+
 ### `encodeMarshal` (function)
 
     export declare function encodeMarshal(value: unknown): Uint8Array;
+
+### `EventChoice` (interface)
+
+    export interface EventChoice {
+        text: string;
+        value?: unknown;
+        disabled?: boolean;
+
+        goto?: string;
+    }
+
+### `EventCommand` (type)
+
+    export type EventCommand = {
+        say: string;
+
+### `EventCondition` (type)
+
+    export type EventCondition = {
+        switch: string;
+
+### `EventPage` (interface)
+
+    export interface EventPage {
+
+        conditions?: EventCondition[];
+        trigger: EventTrigger;
+        commands: EventCommand[];
+
+        frame?: number | string;
+    }
 
 ### `EventRunner` (class)
 
@@ -7498,6 +14420,44 @@ build instead.
 
         private step;
         private speak;
+    }
+
+### `EventRunnerOptions` (interface)
+
+    export interface EventRunnerOptions {
+
+        present: DialoguePresenter;
+        game: GameState;
+
+        move?: (target: string, steps: readonly MoveStep[]) => Promise<void>;
+
+        onUnknownCommand?: (command: EventCommand) => void;
+    }
+
+### `EventRunnerState` (interface)
+
+    export interface EventRunnerState {
+        game: GameState;
+
+        answers: Record<string, unknown>;
+    }
+
+### `EventStoryScript` (type)
+
+    export type EventStoryScript = Record<string, readonly EventCommand[]>;
+
+### `EventTrigger` (type)
+
+    export type EventTrigger = 'action' | 'touch' | 'autorun' | 'parallel';
+
+### `EventTwineStory` (interface)
+
+    export interface EventTwineStory {
+        story: EventStoryScript;
+
+        start: string;
+
+        title?: string;
     }
 
 ### `extractDialogueCatalog` (function)
@@ -7525,6 +14485,17 @@ build instead.
         private place;
         private playWalk;
         private playIdle;
+    }
+
+### `FreeMoverOptions` (interface)
+
+    export interface FreeMoverOptions {
+
+        speed?: number;
+
+        walkAnimation?: (facing: number) => string;
+
+        idleAnimation?: (facing: number) => string;
     }
 
 ### `GameState` (class)
@@ -7575,6 +14546,19 @@ build instead.
         private playIdle;
     }
 
+### `GridMoverOptions` (interface)
+
+    export interface GridMoverOptions {
+        tileWidth: number;
+        tileHeight: number;
+
+        speed?: number;
+
+        walkAnimation?: (direction: Direction4) => string;
+
+        idleAnimation?: (direction: Direction4) => string;
+    }
+
 ### `hashDefaultOf` (function)
 
     export declare function hashDefaultOf(hash: Map<unknown, unknown>): unknown;
@@ -7582,6 +14566,47 @@ build instead.
 ### `importTwee` (function)
 
     export declare function importTwee(source: string): EventTwineStory;
+
+### `MapEvent` (interface)
+
+    export interface MapEvent {
+        id: string;
+        x: number;
+        y: number;
+        pages: EventPage[];
+    }
+
+### `MovableSprite` (interface)
+
+    export interface MovableSprite {
+        x: number;
+        y: number;
+
+        update?(dt: number): void;
+
+        has?(animation: string): boolean;
+
+        play?(animation: string): void;
+    }
+
+### `MoveRoute` (interface)
+
+    export interface MoveRoute {
+        steps: readonly MoveRouteStep[];
+
+        repeat?: boolean;
+
+        skippable?: boolean;
+    }
+
+### `MoveRouteOptions` (interface)
+
+    export interface MoveRouteOptions {
+
+        canMove?: (dx: number, dy: number) => boolean;
+
+        random?: () => number;
+    }
 
 ### `MoveRouteRunner` (class)
 
@@ -7605,9 +14630,30 @@ build instead.
         private pickDirection;
     }
 
+### `MoveRouteStep` (type)
+
+    export type MoveRouteStep = {
+        dir: Direction4;
+
+### `MoveStep` (interface)
+
+    export interface MoveStep {
+        dx: number;
+        dy: number;
+    }
+
 ### `parseDialogueText` (function)
 
     export declare function parseDialogueText(source: string): EventCommand[];
+
+### `QuestDefinition` (interface)
+
+    export interface QuestDefinition {
+        id: string;
+        stages: QuestStage[];
+
+        requires?: string[];
+    }
 
 ### `QuestLog` (class)
 
@@ -7655,14 +14701,77 @@ build instead.
         }): QuestLog;
     }
 
+### `QuestMarker` (type)
+
+    export type QuestMarker = 'offer' | 'turnIn' | 'none';
+
 ### `questsFromRows` (function)
 
     export declare function questsFromRows(rows: readonly QuestStageRow[]): QuestDefinition[];
+
+### `QuestStage` (interface)
+
+    export interface QuestStage {
+        condition?: EventCondition;
+        counter?: {
+            variable: string;
+            target: number;
+        };
+
+        description?: string;
+
+        location?: {
+            map?: string;
+            x: number;
+            y: number;
+        };
+    }
+
+### `QuestStageRow` (interface)
+
+    export interface QuestStageRow {
+        questId: string;
+
+        requires?: string[];
+        conditionSwitch?: string;
+        conditionEquals?: boolean;
+        conditionVariable?: string;
+        conditionAtLeast?: number;
+        counterVariable?: string;
+        counterTarget?: number;
+        description?: string;
+        locationMap?: string;
+        locationX?: number;
+        locationY?: number;
+    }
+
+### `QuestStatus` (type)
+
+    export type QuestStatus = 'unavailable' | 'available' | 'active' | 'complete';
 
 ### `resolveAabbAgainstTiles` (function)
 
     export declare function resolveAabbAgainstTiles(box: AABB, dx: number, dy: number, options: ResolveTileMoveOptions): {
         x: number;
+
+### `ResolveTileMoveOptions` (interface)
+
+    export interface ResolveTileMoveOptions {
+        tileSize: number;
+        isSolid: SolidTile;
+    }
+
+### `RouteTarget` (type)
+
+    export type RouteTarget = {
+        x: number;
+
+### `RubyObject` (interface)
+
+    export interface RubyObject {
+        class: string;
+        ivars: Record<string, unknown>;
+    }
 
 ### `RubySymbol` (class)
 
@@ -7671,11 +14780,31 @@ build instead.
         constructor(name: string);
     }
 
+### `RubyUserDefined` (interface)
+
+    export interface RubyUserDefined {
+        class: string;
+        raw: Uint8Array;
+    }
+
+### `SolidTile` (type)
+
+    export type SolidTile = (tileX: number, tileY: number) => boolean;
+
 ### `withHashDefault` (function)
 
     export declare function withHashDefault(hash: Map<unknown, unknown>, defaultValue: unknown): Map<unknown, unknown>;
 
 ## `./simulation`
+
+### `Actor` (interface)
+
+    export interface Actor {
+
+        speed?: number;
+
+        priority?: number;
+    }
 
 ### `advanceToInput` (function)
 
@@ -7707,6 +14836,29 @@ build instead.
         }): Campaign<State, Result>;
     }
 
+### `CampaignLevel` (interface)
+
+    export interface CampaignLevel<State extends StateValue, Result extends StateValue = StateValue> {
+        readonly id: string;
+        readonly run: (state: State, context: {
+            readonly levelId: string;
+        }) => CampaignLevelResult<State, Result>;
+    }
+
+### `CampaignLevelResult` (interface)
+
+    export interface CampaignLevelResult<State extends StateValue, Result extends StateValue = StateValue> {
+        readonly outcome: CampaignOutcome;
+        readonly state: State;
+        readonly result?: Result;
+        readonly next?: string | null;
+        readonly reminders?: readonly string[];
+    }
+
+### `CampaignOutcome` (type)
+
+    export type CampaignOutcome = 'completed' | 'failed' | 'abandoned';
+
 ### `CampaignSave` (class)
 
     export declare class CampaignSave<CampaignState extends StateValue, Result extends StateValue, World, TurnState> {
@@ -7722,6 +14874,35 @@ build instead.
             meta: SaveMeta;
         }>;
         delete(slot: string): void;
+    }
+
+### `CampaignSaveParts` (interface)
+
+    export interface CampaignSaveParts<CampaignState extends StateValue, Result extends StateValue, World, TurnState> {
+        readonly campaign: {
+            snapshot(): CampaignSnapshot<CampaignState, Result>;
+        };
+        readonly world: World;
+        readonly simulation?: {
+            snapshot(): SimulationSnapshot<TurnState>;
+        } | null;
+    }
+
+### `CampaignSaveState` (interface)
+
+    export interface CampaignSaveState<CampaignState extends StateValue, Result extends StateValue, World, TurnState> {
+        readonly campaign: CampaignSnapshot<CampaignState, Result>;
+        readonly world: World;
+        readonly simulation: SimulationSnapshot<TurnState> | null;
+    }
+
+### `CampaignSnapshot` (interface)
+
+    export interface CampaignSnapshot<State extends StateValue, Result extends StateValue = StateValue> {
+        readonly currentLevel: string | null;
+        readonly state: State;
+        readonly reminders: readonly string[];
+        readonly results: Readonly<Record<string, Result>>;
     }
 
 ### `EventPresentation` (class)
@@ -7755,6 +14936,56 @@ build instead.
         private drainFollowUps;
     }
 
+### `EventPresentationOptions` (interface)
+
+    export interface EventPresentationOptions<State, Command, Event, A extends Actor> {
+
+        runtime: SimulationRuntime<State, Command, Event, A>;
+
+        play: (event: Event) => number | void;
+
+        followUp?: (outcome: SimulationOutcome<State, Event>) => readonly Command[];
+    }
+
+### `HeadlessScenario` (interface)
+
+    export interface HeadlessScenario<State, Command, Event> {
+        readonly seed: number;
+        readonly initialState: State;
+        readonly commands: readonly Command[];
+        readonly step: Scenario<State, Command, Event, Generator>['step'];
+        readonly status?: Scenario<State, Command, Event, Generator>['status'];
+    }
+
+### `HeadlessScenarioResult` (interface)
+
+    export interface HeadlessScenarioResult<State, Event> extends ScenarioResult<State, Event> {
+        readonly seed: number;
+        readonly random: readonly [number, number, number, number];
+    }
+
+### `RolloutEpisode` (interface)
+
+    export interface RolloutEpisode {
+        seed: number;
+        steps: number;
+        rewards: number[];
+        terminated: boolean;
+        truncated: boolean;
+        trajectory: TrainingTransition[];
+    }
+
+### `RolloutOptions` (interface)
+
+    export interface RolloutOptions {
+        seeds: readonly number[];
+
+        sample?: boolean;
+
+        trajectoryLimit?: number;
+        signal?: AbortSignal;
+    }
+
 ### `runHeadlessScenario` (function)
 
     export declare function runHeadlessScenario<State, Command, Event>(scenario: HeadlessScenario<State, Command, Event>): HeadlessScenarioResult<State, Event>;
@@ -7771,6 +15002,31 @@ build instead.
 ### `runScenario` (function)
 
     export declare function runScenario<State, Command, Event, Random>(scenario: Scenario<State, Command, Event, Random>): ScenarioResult<State, Event>;
+
+### `Scenario` (interface)
+
+    export interface Scenario<State, Command, Event, Random> {
+        state: State;
+
+        commands: readonly Command[];
+        random: Random;
+        step: SimulationRule<State, Command, Event, Random>;
+
+        status?: SimulationStatus;
+    }
+
+### `ScenarioResult` (interface)
+
+    export interface ScenarioResult<State, Event> extends SimulationStep<State, Event> {
+        processedCommands: number;
+    }
+
+### `ScheduledTurns` (interface)
+
+    export interface ScheduledTurns<Actor> {
+        peek(): Actor | null;
+        spend(cost: number): void;
+    }
 
 ### `Scheduler` (class)
 
@@ -7800,6 +15056,61 @@ build instead.
         static restore<A extends Actor>(snapshot: SchedulerSnapshot, actorOf: (id: string) => A): Scheduler<A>;
         private sort;
     }
+
+### `SchedulerSnapshot` (interface)
+
+    export interface SchedulerSnapshot {
+        now: number;
+        sequence: number;
+        entries: Array<{
+            id: string;
+            time: number;
+            sequence: number;
+            priority?: number;
+        }>;
+    }
+
+### `SimulationContext` (interface)
+
+    export interface SimulationContext<A extends Actor> {
+        readonly random: Generator;
+        readonly scheduler: Scheduler<A>;
+    }
+
+### `SimulationOutcome` (interface)
+
+    export interface SimulationOutcome<State, Event> {
+        state: State;
+        events: readonly Event[];
+        status: SimulationStatus;
+
+        cost?: number | null;
+    }
+
+### `SimulationReplayMismatch` (interface)
+
+    export interface SimulationReplayMismatch<Command, Event> {
+        readonly index: number;
+        readonly action: Command;
+        readonly expectedEvents: readonly Event[];
+        readonly actualEvents: readonly Event[];
+        readonly reason: 'sequence' | 'events' | 'execution' | 'final-state';
+        readonly error?: string;
+    }
+
+### `SimulationReplayResult` (interface)
+
+    export interface SimulationReplayResult<State, Command, Event> {
+        readonly valid: boolean;
+        readonly checked: number;
+        readonly state: State;
+        readonly journal: readonly ActionJournalEntry<Command, Event>[];
+        readonly mismatch?: SimulationReplayMismatch<Command, Event>;
+    }
+
+### `SimulationRule` (type)
+
+    export type SimulationRule<State, Command, Event, Random> = (state: State, command: Command, random: Random) => SimulationStep<State, Event>;
 
 ### `SimulationRuntime` (class)
 
@@ -7847,6 +15158,49 @@ build instead.
         private restoreCheckpoint;
     }
 
+### `SimulationRuntimeHistoryOptions` (interface)
+
+    export interface SimulationRuntimeHistoryOptions<A extends Actor = Actor> extends UndoHistoryOptions {
+
+        readonly actorOf: (id: string) => A;
+    }
+
+### `SimulationRuntimeRule` (type)
+
+    export type SimulationRuntimeRule<State, Command, Event, A extends Actor> = (state: State, command: Command, context: SimulationContext<A>) => SimulationOutcome<State, Event>;
+
+### `SimulationSnapshot` (interface)
+
+    export interface SimulationSnapshot<State> {
+        version: number;
+        state: State;
+        scheduler: SchedulerSnapshot;
+        random: readonly [number, number, number, number];
+
+        readonly journal?: readonly ActionJournalEntry<unknown, unknown>[];
+    }
+
+### `SimulationStatus` (type)
+
+    export type SimulationStatus = 'ready' | 'finished';
+
+### `SimulationStep` (interface)
+
+    export interface SimulationStep<State, Event> {
+        state: State;
+        events: readonly Event[];
+        status: SimulationStatus;
+    }
+
+### `TrainingCheckpoint` (interface)
+
+    export interface TrainingCheckpoint<State, TrainerState> {
+        version: 1;
+        model: NeuralModel;
+        environment: TrainingSnapshot<State>;
+        trainerState: TrainerState;
+    }
+
 ### `TrainingEnvironment` (class)
 
     export declare class TrainingEnvironment<State, Command, Event> {
@@ -7869,6 +15223,72 @@ build instead.
         snapshot(): TrainingSnapshot<State>;
         restore(snapshot: TrainingSnapshot<State>): TrainingFrame;
         private observations;
+    }
+
+### `TrainingFactory` (type)
+
+    export type TrainingFactory<Config, State, Command, Event> = (tools: {
+        TrainingEnvironment: typeof TrainingEnvironment;
+
+### `TrainingFrame` (interface)
+
+    export interface TrainingFrame {
+        observations: readonly NeuralObservation[];
+        rewards: readonly number[];
+        terminated: boolean;
+        truncated: boolean;
+    }
+
+### `TrainingRules` (interface)
+
+    export interface TrainingRules<State, Command, Event> {
+        observationVersion: string;
+        initial(random: Generator): State;
+
+        rule: SimulationRule<State, Command, Event, Generator>;
+        observe(state: State): readonly NeuralObservation[];
+        command(state: State, actions: readonly (number | null)[]): Command;
+
+        rewards(before: State, command: Command, outcome: SimulationStep<State, Event>): readonly number[];
+
+        finished?(state: State): boolean;
+    }
+
+### `TrainingSnapshot` (interface)
+
+    export interface TrainingSnapshot<State> {
+        version: 1;
+        observationVersion: string;
+        state: State;
+        seed: number;
+        random: readonly [number, number, number, number];
+        steps: number;
+        maxSteps: number;
+        terminated: boolean;
+        truncated: boolean;
+    }
+
+### `TrainingTransition` (interface)
+
+    export interface TrainingTransition {
+        before: TrainingFrame;
+        actions: readonly (number | null)[];
+        after: TrainingFrame;
+    }
+
+### `TurnResult` (type)
+
+    export type TurnResult<Actor> = {
+        status: 'input';
+
+### `TurnRules` (interface)
+
+    export interface TurnRules<Actor> {
+        scheduler: ScheduledTurns<Actor>;
+        finished(): boolean;
+        needsInput(actor: Actor): boolean;
+
+        act(actor: Actor): number | null;
     }
 
 ### `validateSimulationReplay` (function)
@@ -7936,7 +15356,22 @@ build instead.
 
     export declare function spawn<Args extends readonly unknown[], Result>(fn: (...args: Args) => Result, args?: Args, options?: SpawnOptions): Promise<Awaited<Result>>;
 
+### `SpawnOptions` (interface)
+
+    export interface SpawnOptions {
+
+        transfer?: Transferable[];
+
+        timeout?: number;
+
+        signal?: AbortSignal;
+    }
+
 ## `./two-d`
+
+### `ActorAnimationState` (type)
+
+    export type ActorAnimationState = 'idle' | 'move' | 'action';
 
 ### `ActorAnimator` (class)
 
@@ -7958,14 +15393,45 @@ build instead.
         private apply;
     }
 
+### `ActorAnimatorOptions` (interface)
+
+    export interface ActorAnimatorOptions {
+
+        animationName: (state: ActorAnimationState, variant: string) => string;
+
+        variant?: string;
+    }
+
 ### `advanceReveal` (function)
 
     export declare function advanceReveal(state: RevealState, dt: number): boolean;
+
+### `Anchor` (type)
+
+    export type Anchor = 'top-left' | 'top' | 'top-right' | 'left' | 'center' | 'right' | 'bottom-left' | 'bottom' | 'bottom-right' | 'fill';
 
 ### `anchorAlign` (function)
 
     export declare function anchorAlign(anchor: Anchor): {
         x: number;
+
+### `AnchorSpec` (interface)
+
+    export interface AnchorSpec {
+
+        anchor?: Anchor;
+
+        offsetX?: number;
+        offsetY?: number;
+
+        alignX?: number;
+        alignY?: number;
+
+        width?: number;
+        height?: number;
+
+        margin?: number;
+    }
 
 ### `AnimatedSprite` (class)
 
@@ -8016,6 +15482,32 @@ build instead.
         frameIndexAt(seconds: number): number;
     }
 
+### `AnimationFrame` (interface)
+
+    export interface AnimationFrame {
+        readonly texture: Texture2D;
+
+        readonly duration?: number;
+
+        readonly offsetX?: number;
+        readonly offsetY?: number;
+    }
+
+### `AnimationFrameInput` (type)
+
+    export type AnimationFrameInput = Texture2D | AnimationFrame;
+
+### `AnimationOptions` (interface)
+
+    export interface AnimationOptions {
+
+        fps?: number;
+
+        loop?: boolean;
+
+        startTime?: number;
+    }
+
 ### `applyAllImageModifiers` (function)
 
     export declare function applyAllImageModifiers(sprite: Sprite, parsed: ParsedImagePath, probe?: ImageTextureProbe, scale?: number): void;
@@ -8032,13 +15524,78 @@ build instead.
 
     export declare function assertAutotileLayout(layout: AutotileLayout): void;
 
+### `AttachmentPoint` (interface)
+
+    export interface AttachmentPoint {
+        x: number;
+        y: number;
+    }
+
+### `AudioSuspendRig` (interface)
+
+    export interface AudioSuspendRig {
+        suspend(): void;
+        resume(): void;
+    }
+
+### `AutotileCell` (type)
+
+    export type AutotileCell = number;
+
+### `AutotileCellPart` (interface)
+
+    export interface AutotileCellPart {
+        sourceX: number;
+        sourceY: number;
+        sourceWidth: number;
+        sourceHeight: number;
+        destX: number;
+        destY: number;
+        destWidth: number;
+        destHeight: number;
+    }
+
 ### `autotileCellParts` (function)
 
     export declare function autotileCellParts(layout: AutotileLayout, tile: number, frame: number): AutotileCellPart[] | null;
 
+### `AutotileFormat` (type)
+
+    export type AutotileFormat = 'rpgm-mv' | 'rpgm-xp';
+
 ### `autotileFrames` (function)
 
     export declare function autotileFrames(width: number, height: number, sameTerrain: (x: number, y: number) => boolean, frames: readonly number[]): Int32Array;
+
+### `AutotileLayout` (type)
+
+    export type AutotileLayout = {
+        format: 'rpgm-mv';
+
+### `AutotileSet` (interface)
+
+    export interface AutotileSet {
+
+        sheet: SpriteSheet;
+
+        format?: AutotileFormat;
+
+        slot?: RpgmAutotileSlot;
+
+        mode?: 'floor' | 'wall' | 'mixed';
+
+        table?: RpgmAutotileShapeTable;
+
+        index?: number;
+
+        frames?: number;
+
+        tableEdge?: boolean;
+
+        animation?: ReadonlyArray<ReadonlyArray<number>>;
+
+        animationFrame?: number;
+    }
 
 ### `Bar` (class)
 
@@ -8070,6 +15627,26 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `BarOptions` (interface)
+
+    export interface BarOptions {
+        width: number;
+        height: number;
+
+        color?: number;
+
+        value?: number;
+        max?: number;
+
+        fillTexture?: Texture2D;
+
+        background?: number;
+
+        backgroundTexture?: Texture2D;
+
+        roundUpToPixel?: boolean;
+    }
+
 ### `BitmapLabel` (class)
 
     export declare class BitmapLabel extends BitmapText {
@@ -8082,6 +15659,10 @@ build instead.
         private restyle;
         destroy(options?: Parameters<BitmapText['destroy']>[0]): void;
     }
+
+### `BitmapLabelOptions` (type)
+
+    export type BitmapLabelOptions = ThemedTextOptions;
 
 ### `bitmapLabelStyle` (function)
 
@@ -8133,6 +15714,40 @@ build instead.
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
+
+### `ButtonOptions` (interface)
+
+    export interface ButtonOptions {
+        width: number;
+        height: number;
+
+        text?: string;
+
+        icon?: Container2D;
+
+        skin?: ButtonSkin;
+
+        label?: Omit<LabelOptions, 'text'>;
+        disabled?: boolean;
+        onClick?: () => void;
+
+        onPress?: () => void;
+
+        onRelease?: () => void;
+    }
+
+### `ButtonSkin` (interface)
+
+    export interface ButtonSkin {
+        texture: Texture2D;
+        border: NinePatchOptions['border'];
+
+        tints?: Partial<Record<ButtonState, number>>;
+    }
+
+### `ButtonState` (type)
+
+    export type ButtonState = 'idle' | 'hover' | 'pressed' | 'disabled';
 
 ### `Camera` (class)
 
@@ -8228,14 +15843,43 @@ build instead.
         private apply;
     }
 
+### `CameraOptions` (interface)
+
+    export interface CameraOptions {
+
+        zoom?: number;
+
+        grid?: 'square' | 'hex';
+
+        deadzone?: number;
+
+        pixelPerfectTileSize?: number;
+    }
+
 ### `channelScaleMatrix` (function)
 
     export declare function channelScaleMatrix(scale: {
         red?: number;
 
+### `ChannelSource` (type)
+
+    export type ChannelSource = 'R' | 'G' | 'B' | 'A' | '0' | '1';
+
 ### `channelSwapMatrix` (function)
 
     export declare function channelSwapMatrix(sources: readonly ChannelSource[]): ColorMatrixFilter['matrix'];
+
+### `CharacterDefinition` (interface)
+
+    export interface CharacterDefinition {
+        sheet: SpriteSheet;
+
+        expressions: Record<string, number>;
+
+        height?: number;
+
+        baseline?: number;
+    }
 
 ### `Checkbox` (class)
 
@@ -8259,9 +15903,32 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `CheckboxOptions` (interface)
+
+    export interface CheckboxOptions {
+
+        size?: number;
+        checked?: boolean;
+        disabled?: boolean;
+
+        color?: number;
+    }
+
+### `Choice` (interface)
+
+    export interface Choice {
+        text: string;
+        value?: unknown;
+        disabled?: boolean;
+    }
+
 ### `COLOR_BLINDNESS_MATRICES` (const)
 
     export declare const COLOR_BLINDNESS_MATRICES: Record<ColorBlindnessType, ColorMatrix>;
+
+### `ColorBlindnessType` (type)
+
+    export type ColorBlindnessType = 'protanopia' | 'deuteranopia' | 'tritanopia';
 
 ### `colorShiftMatrix` (function)
 
@@ -8294,6 +15961,10 @@ build instead.
 ### `Container2D` (export)
 
     export { Container2D }
+
+### `ContrastLevel` (type)
+
+    export type ContrastLevel = 'AA' | 'AAA';
 
 ### `contrastRatio` (function)
 
@@ -8351,6 +16022,17 @@ build instead.
         setPage(page: number): void;
         nextPage(delta?: number): void;
         private firstEnabled;
+    }
+
+### `DataTableOptions` (interface)
+
+    export interface DataTableOptions<T> {
+        columns: readonly TableColumn<T>[];
+        rows?: readonly T[];
+
+        pageSize?: number;
+
+        disabled?: (row: T) => boolean;
     }
 
 ### `defaultTheme` (const)
@@ -8435,6 +16117,24 @@ build instead.
         private firstEnabled;
     }
 
+### `DropdownOption` (interface)
+
+    export interface DropdownOption {
+
+        id?: string;
+        label: string;
+        disabled?: boolean;
+    }
+
+### `DropdownOptions` (interface)
+
+    export interface DropdownOptions {
+        options: readonly DropdownOption[];
+
+        selectedIndex?: number;
+        disabled?: boolean;
+    }
+
 ### `EMPTY` (const)
 
     export declare const EMPTY = -1;
@@ -8485,6 +16185,32 @@ build instead.
 
     export declare function floatingTextAlpha(t: number, hold: number): number;
 
+### `FloatingTextOptions` (interface)
+
+    export interface FloatingTextOptions {
+        text: string;
+        color?: number;
+        size?: number;
+
+        duration?: number;
+
+        rise?: number;
+
+        hold?: number;
+    }
+
+### `FloatingTextPush` (interface)
+
+    export interface FloatingTextPush extends FloatingTextOptions {
+
+        x: number;
+        y: number;
+
+        key?: string | number;
+
+        scale?: number;
+    }
+
 ### `floatingTextRise` (function)
 
     export declare function floatingTextRise(t: number, rise: number, reduce?: boolean): number;
@@ -8503,6 +16229,18 @@ build instead.
         clear(): void;
     }
 
+### `FloatingTextStackEntry` (interface)
+
+    export interface FloatingTextStackEntry {
+
+        key?: string | number;
+
+        x: number;
+        y: number;
+
+        height: number;
+    }
+
 ### `floatingTextStackLifePenalty` (function)
 
     export declare function floatingTextStackLifePenalty(linesBelow: number): number;
@@ -8511,9 +16249,28 @@ build instead.
 
     export declare function floatingTextStackLift(older: FloatingTextStackEntry, below: FloatingTextStackEntry, gap?: number): number;
 
+### `FloatingTextStackMove` (interface)
+
+    export interface FloatingTextStackMove {
+
+        readonly index: number;
+
+        readonly y: number;
+
+        readonly ageAtLeast: number;
+    }
+
 ### `floatingTextStackMoves` (function)
 
     export declare function floatingTextStackMoves(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry, gap?: number): FloatingTextStackMove[];
+
+### `FogCell` (type)
+
+    export type FogCell = number | ArrayLike<number>;
+
+### `FogColor` (type)
+
+    export type FogColor = readonly [number, number, number, number];
 
 ### `FogLayer` (class)
 
@@ -8530,6 +16287,20 @@ build instead.
         refresh(state: (x: number, y: number) => FogCell): void;
 
         destroy(): void;
+    }
+
+### `FogLayerOptions` (interface)
+
+    export interface FogLayerOptions {
+
+        width: number;
+        height: number;
+
+        tileSize?: number;
+
+        resolution?: number;
+
+        palette: readonly FogColor[];
     }
 
 ### `Game` (class)
@@ -8596,9 +16367,66 @@ build instead.
         destroy(): void;
     }
 
+### `GameOptions` (interface)
+
+    export interface GameOptions {
+
+        canvas?: HTMLCanvasElement;
+
+        background?: number;
+
+        maxDelta?: number;
+
+        pixelArt?: boolean;
+
+        resizeTo?: HTMLElement | Window;
+
+        extensions?: readonly (() => void)[];
+
+        autoPause?: boolean;
+
+        audio?: AudioSuspendRig | null;
+
+        qualityScaling?: Omit<QualityScalerOptions, 'ceiling'> | null;
+    }
+
+### `GlyphLayout` (interface)
+
+    export interface GlyphLayout {
+        char: string;
+        x: number;
+        y: number;
+        rotate: boolean;
+    }
+
 ### `Gradient` (const)
 
     export declare const Gradient: typeof FillGradient;
+
+### `GraphicsCapabilities` (interface)
+
+    export interface GraphicsCapabilities {
+        webgl1: boolean;
+        webgl2: boolean;
+        webgpu: boolean;
+
+        wgsl: boolean;
+    }
+
+### `GraphicsProbe` (interface)
+
+    export interface GraphicsProbe {
+        createCanvas?(): {
+            getContext(kind: string): unknown;
+        } | null;
+        webgpu?: boolean;
+
+        wgsl?: boolean;
+    }
+
+### `GraphicsWorkload` (type)
+
+    export type GraphicsWorkload = 'sprites' | 'ui' | 'custom-shaders' | 'particles' | 'instanced-terrain' | 'voxels' | 'animated-models' | 'large-3d-worlds';
 
 ### `Grid` (class)
 
@@ -8619,6 +16447,24 @@ build instead.
         private get gap();
     }
 
+### `GridSpec` (interface)
+
+    export interface GridSpec {
+        columns: readonly GridTrack[];
+        rows: readonly GridTrack[];
+
+        gap?: number;
+    }
+
+### `GridTrack` (interface)
+
+    export interface GridTrack {
+
+        size?: number;
+
+        grow?: number;
+    }
+
 ### `Halo` (class)
 
     export declare class Halo extends AnimatedSprite {
@@ -8633,6 +16479,27 @@ build instead.
 
     export declare const HALO_ANIMATION = "halo";
 
+### `HaloOptions` (interface)
+
+    export interface HaloOptions {
+
+        readonly frames: readonly AnimationFrameInput[];
+
+        readonly animation?: AnimationOptions;
+
+        readonly offsetX?: number;
+        readonly offsetY?: number;
+
+        readonly blendMode?: 'add' | 'normal' | 'multiply' | 'screen';
+    }
+
+### `HasColorAdd` (interface)
+
+    export interface HasColorAdd {
+
+        colorAdd?: number;
+    }
+
 ### `HelpScreen` (class)
 
     export declare class HelpScreen extends Container {
@@ -8645,6 +16512,23 @@ build instead.
         handleAction(action: Action): boolean;
     }
 
+### `HelpScreenOptions` (interface)
+
+    export interface HelpScreenOptions {
+        width: number;
+        height: number;
+        topics: readonly HelpTopic[];
+
+        listWidth?: number;
+    }
+
+### `HelpTopic` (interface)
+
+    export interface HelpTopic {
+        title: string;
+        body: string;
+    }
+
 ### `hexRotate` (function)
 
     export declare function hexRotate(dx: number, dy: number, rotationIndex: number, rotations: number): {
@@ -8653,6 +16537,15 @@ build instead.
 ### `highContrastTheme` (const)
 
     export declare const highContrastTheme: Theme;
+
+### `HistoryEntry` (interface)
+
+    export interface HistoryEntry {
+        text: string;
+        speaker?: string;
+
+        chosen?: unknown;
+    }
 
 ### `IconGrid` (class)
 
@@ -8711,9 +16604,56 @@ build instead.
         private refresh;
     }
 
+### `IconGridItem` (interface)
+
+    export interface IconGridItem {
+
+        icon: Container2D;
+
+        disabled?: boolean;
+
+        value?: unknown;
+
+        quantity?: number;
+    }
+
+### `IconGridOptions` (interface)
+
+    export interface IconGridOptions {
+        width: number;
+        height: number;
+
+        columns: number;
+        items?: IconGridItem[];
+
+        cellSize?: number;
+
+        longPressDuration?: number;
+        onSelect?: (item: IconGridItem, index: number) => void;
+        onHighlight?: (item: IconGridItem, index: number) => void;
+
+        onQuickslot?: (item: IconGridItem, index: number) => void;
+
+        onReorder?: (fromIndex: number, toIndex: number) => void;
+    }
+
 ### `imageModifier` (function)
 
     export declare function imageModifier(path: ParsedImagePath, name: string): ImageModifier | undefined;
+
+### `ImageModifier` (interface)
+
+    export interface ImageModifier {
+        readonly name: string;
+        readonly args: readonly string[];
+    }
+
+### `ImageTextureProbe` (interface)
+
+    export interface ImageTextureProbe extends RecolorProbe {
+        resolveTexture?(pathWithModifiers: string): Texture2D | undefined;
+        resolveColor?(name: string): number | undefined;
+    }
 
 ### `importTwee` (function)
 
@@ -8751,6 +16691,19 @@ build instead.
         destroy(options?: Parameters<Text['destroy']>[0]): void;
     }
 
+### `LabelOptions` (interface)
+
+    export interface LabelOptions extends ThemedTextOptions {
+
+        stroke?: {
+            color: number;
+            width: number;
+        };
+
+        resolution?: number;
+        roundPixels?: boolean;
+    }
+
 ### `LayeredSprite` (class)
 
     export declare class LayeredSprite extends Container {
@@ -8768,6 +16721,15 @@ build instead.
 ### `layoutMarkupLines` (function)
 
     export declare function layoutMarkupLines(spans: readonly MarkupSpan[], measure: MarkupMeasure, maxWidth: number): MarkupLine[];
+
+### `LayoutRect` (interface)
+
+    export interface LayoutRect {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }
 
 ### `layoutVertical` (function)
 
@@ -8798,6 +16760,28 @@ build instead.
         private reroll;
     }
 
+### `LightningArcOptions` (interface)
+
+    export interface LightningArcOptions {
+
+        duration?: number;
+
+        segments?: number;
+
+        jitter?: number;
+
+        flickerInterval?: number;
+
+        random?: () => number;
+    }
+
+### `LightningArcPoint` (interface)
+
+    export interface LightningArcPoint {
+        x: number;
+        y: number;
+    }
+
 ### `linesToDrop` (function)
 
     export declare function linesToDrop(lineCounts: readonly number[], maxLines: number): number;
@@ -8821,6 +16805,48 @@ build instead.
 
         get rippleCount(): number;
         update(dt: number): void;
+    }
+
+### `LiquidLayerOptions` (interface)
+
+    export interface LiquidLayerOptions {
+
+        texture: Texture2D;
+
+        width: number;
+        height: number;
+
+        tileSize?: number;
+
+        isLiquid: (x: number, y: number) => boolean;
+
+        speed?: number;
+
+        rippleTexture?: Texture2D;
+
+        rippleDuration?: number;
+    }
+
+### `ListItem` (interface)
+
+    export interface ListItem {
+
+        text: string;
+
+        disabled?: boolean;
+
+        value?: unknown;
+
+        icon?: Container2D;
+    }
+
+### `ListTab` (interface)
+
+    export interface ListTab {
+        id: string;
+        label: string;
+
+        disabled?: boolean;
     }
 
 ### `ListView` (class)
@@ -8878,6 +16904,32 @@ build instead.
         private refresh;
     }
 
+### `ListViewOptions` (interface)
+
+    export interface ListViewOptions {
+        width: number;
+        height: number;
+        items?: ListItem[];
+
+        rowHeight?: number;
+        onSelect?: (item: ListItem, index: number) => void;
+        onHighlight?: (item: ListItem, index: number) => void;
+
+        multiple?: boolean;
+        onToggle?: (item: ListItem, index: number, checked: boolean) => void;
+    }
+
+### `LoadedTiledMap` (interface)
+
+    export interface LoadedTiledMap {
+        map: TileMap;
+
+        objects: Array<TiledObject & {
+            tileX: number;
+            tileY: number;
+        }>;
+    }
+
 ### `LoadingScreen` (class)
 
     export declare class LoadingScreen extends Container {
@@ -8901,14 +16953,88 @@ build instead.
         private layout;
     }
 
+### `LoadingScreenOptions` (interface)
+
+    export interface LoadingScreenOptions {
+        width: number;
+        height: number;
+        title?: string;
+        onRetry?: () => void;
+        onCancel?: () => void;
+    }
+
 ### `loadTiledMap` (function)
 
     export declare function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSheet[]): LoadedTiledMap;
+
+### `MarkdownSpan` (interface)
+
+    export interface MarkdownSpan {
+        text: string;
+        bold: boolean;
+        italic: boolean;
+    }
 
 ### `markupAccessibilityText` (function)
 
     export declare function markupAccessibilityText(spans: readonly MarkupSpan[], options?: {
         describeImage?: (path: string) => string;
+
+### `MarkupAlign` (type)
+
+    export type MarkupAlign = 'left' | 'center' | 'right';
+
+### `MarkupDirection` (type)
+
+    export type MarkupDirection = 'ltr' | 'rtl';
+
+### `MarkupLayout` (interface)
+
+    export interface MarkupLayout {
+
+        readonly measure: MarkupMeasure;
+
+        readonly maxWidth: number;
+
+        readonly lineHeight: number;
+
+        readonly direction?: MarkupDirection;
+
+        readonly align?: MarkupAlign;
+    }
+
+### `MarkupLine` (interface)
+
+    export interface MarkupLine {
+        readonly spans: readonly MarkupSpan[];
+        readonly width: number;
+    }
+
+### `MarkupMeasure` (type)
+
+    export type MarkupMeasure = (piece: Pick<MarkupSpan, 'text' | 'bold' | 'italic' | 'size' | 'image' | 'tag'>) => number;
+
+### `MarkupOptions` (interface)
+
+    export interface MarkupOptions {
+
+        readonly variables?: Readonly<Record<string, string>>;
+
+        readonly tags?: ReadonlySet<string>;
+    }
+
+### `MarkupSpan` (interface)
+
+    export interface MarkupSpan extends MarkdownSpan {
+
+        color?: string;
+
+        size?: number;
+
+        image?: string;
+
+        tag?: string;
+    }
 
 ### `MarkupText` (class)
 
@@ -8928,6 +17054,27 @@ build instead.
         private textFor;
         private spriteFor;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `MarkupTextOptions` (interface)
+
+    export interface MarkupTextOptions {
+        text?: string;
+
+        maxWidth?: number;
+
+        lineHeight?: number;
+        align?: MarkupAlign;
+
+        direction?: MarkupDirection;
+
+        resolution?: number;
+
+        resolveImage?: (path: string) => Texture2D;
+
+        variables?: Readonly<Record<string, string>>;
+
+        tagStyles?: Readonly<Record<string, TextStyleOptions>>;
     }
 
 ### `markupToHtml` (function)
@@ -8991,9 +17138,51 @@ build instead.
         private finish;
     }
 
+### `MessageBoxOptions` (interface)
+
+    export interface MessageBoxOptions {
+        width: number;
+        height: number;
+        pages: Array<MessagePage | string>;
+
+        speed?: number;
+
+        choices?: Choice[];
+
+        onDone?: (chosen: unknown) => void;
+
+        onSound?: (path: string) => void;
+
+        dims?: boolean;
+
+        blocker?: boolean;
+
+        anchor?: 'center' | 'bottom' | 'top';
+
+        announce?: boolean;
+
+        mode?: 'adv' | 'nvl';
+
+        autoAdvance?: number;
+    }
+
 ### `messageBoxPresenter` (function)
 
     export declare function messageBoxPresenter(windows: WindowStack, options?: MessageBoxPresenterOptions): DialoguePresenter;
+
+### `MessageBoxPresenterOptions` (interface)
+
+    export interface MessageBoxPresenterOptions {
+
+        width?: number;
+        height?: number;
+        speed?: number;
+        anchor?: 'center' | 'bottom' | 'top';
+    }
+
+### `MessageLevel` (type)
+
+    export type MessageLevel = 'info' | 'positive' | 'negative' | 'warning' | 'highlight';
 
 ### `MessageLog` (class)
 
@@ -9013,6 +17202,31 @@ build instead.
         private linesOf;
         private trim;
         private layout;
+    }
+
+### `MessageLogOptions` (interface)
+
+    export interface MessageLogOptions {
+
+        wrapWidth: number;
+
+        maxLines?: number;
+
+        size?: number;
+
+        colors?: Partial<Record<MessageLevel, number>>;
+
+        resolution?: number;
+    }
+
+### `MessagePage` (interface)
+
+    export interface MessagePage {
+        text: string;
+
+        speaker?: string;
+
+        portrait?: Texture2D;
     }
 
 ### `Meter` (class)
@@ -9049,6 +17263,27 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `MeterOptions` (interface)
+
+    export interface MeterOptions {
+
+        count: number;
+
+        value?: number;
+
+        size?: number;
+
+        gap?: number;
+
+        filledTexture?: Texture2D;
+
+        emptyTexture?: Texture2D;
+
+        color?: number;
+
+        emptyColor?: number;
+    }
+
 ### `Minimap` (class)
 
     export declare class Minimap extends Container {
@@ -9078,6 +17313,40 @@ build instead.
     export declare function minimapCellCenter(x: number, y: number, cellSize: number, shape?: 'square' | 'hex'): {
         x: number;
 
+### `MinimapMarker` (interface)
+
+    export interface MinimapMarker {
+        x: number;
+        y: number;
+        facing?: number;
+        color?: number;
+    }
+
+### `MinimapOptions` (interface)
+
+    export interface MinimapOptions {
+
+        widthInCells: number;
+        heightInCells: number;
+
+        cellSize?: number;
+
+        shape?: 'square' | 'hex';
+    }
+
+### `NeighborMask` (interface)
+
+    export interface NeighborMask {
+        n: boolean;
+        e: boolean;
+        s: boolean;
+        w: boolean;
+        ne: boolean;
+        se: boolean;
+        sw: boolean;
+        nw: boolean;
+    }
+
 ### `newlyRevealed` (function)
 
     export declare function newlyRevealed(explored: ReadonlySet<number>, alreadyDrawn: ReadonlySet<number>): number[];
@@ -9095,6 +17364,18 @@ build instead.
             bottom: number;
         };
         resize(width: number, height: number): void;
+    }
+
+### `NinePatchOptions` (interface)
+
+    export interface NinePatchOptions {
+
+        border: number | {
+            left: number;
+            top: number;
+            right: number;
+            bottom: number;
+        };
     }
 
 ### `NO_COLOR_ADD` (const)
@@ -9118,9 +17399,28 @@ build instead.
 
     export declare function paintFogPixels(pixels: Uint8ClampedArray | Uint8Array, width: number, height: number, resolution: number, state: (x: number, y: number) => FogCell, palette: readonly FogColor[]): void;
 
+### `PaletteMapping` (interface)
+
+    export interface PaletteMapping {
+        readonly from: readonly number[];
+        readonly to: readonly number[];
+    }
+
+### `PaletteRange` (interface)
+
+    export interface PaletteRange {
+        readonly min: number;
+        readonly mid: number;
+        readonly max: number;
+    }
+
 ### `paletteRangeMapping` (function)
 
     export declare function paletteRangeMapping(reference: readonly number[], range: PaletteRange): PaletteMapping;
+
+### `PaletteRemapMode` (type)
+
+    export type PaletteRemapMode = 'exact' | 'nearest';
 
 ### `parseColorPairs` (function)
 
@@ -9129,6 +17429,13 @@ build instead.
 ### `parseDialogueText` (function)
 
     export declare function parseDialogueText(source: string): StageCommand[];
+
+### `ParsedImagePath` (interface)
+
+    export interface ParsedImagePath {
+        readonly path: string;
+        readonly modifiers: readonly ImageModifier[];
+    }
 
 ### `parseImagePath` (function)
 
@@ -9149,6 +17456,34 @@ build instead.
 ### `parseRotateMode` (function)
 
     export declare function parseRotateMode(argument: string | undefined): RotateMode;
+
+### `Particle` (interface)
+
+    export interface Particle {
+        x: number;
+        y: number;
+        vx: number;
+        vy: number;
+
+        age: number;
+
+        life: number;
+        rotation: number;
+        spin: number;
+
+        scale: number;
+        alpha: number;
+
+        tint: number;
+
+        frame: number;
+
+        active: boolean;
+    }
+
+### `ParticleCurve` (type)
+
+    export type ParticleCurve = (t: number) => number;
 
 ### `ParticleEmitter` (class)
 
@@ -9197,6 +17532,69 @@ build instead.
         clear(): void;
     }
 
+### `ParticleEmitterOptions` (interface)
+
+    export interface ParticleEmitterOptions {
+
+        texture?: Texture2D;
+
+        frames?: readonly Texture2D[];
+
+        max?: number;
+
+        rate?: number;
+
+        life?: ParticleRange;
+
+        speed?: ParticleRange;
+
+        angle?: ParticleRange;
+
+        gravity?: {
+            x: number;
+            y: number;
+        };
+
+        scale?: readonly [number, number] | ParticleCurve;
+
+        alpha?: readonly [number, number] | ParticleCurve;
+
+        flicker?: number;
+
+        spin?: ParticleRange;
+
+        spawn?: ParticleSpawnArea;
+
+        tint?: ParticleRange;
+    }
+
+### `ParticleRange` (type)
+
+    export type ParticleRange = number | readonly [number, number];
+
+### `ParticleSpawnArea` (interface)
+
+    export interface ParticleSpawnArea {
+        shape: 'rect' | 'ellipse';
+
+        width: number;
+
+        height?: number;
+    }
+
+### `PositionedMarkupSpan` (interface)
+
+    export interface PositionedMarkupSpan {
+
+        readonly span: MarkupSpan;
+
+        readonly x: number;
+
+        readonly y: number;
+
+        readonly width: number;
+    }
+
 ### `positionMarkupLines` (function)
 
     export declare function positionMarkupLines(lines: readonly MarkupLine[], layout: MarkupLayout): PositionedMarkupSpan[];
@@ -9225,6 +17623,24 @@ build instead.
         update(dt: number): boolean;
     }
 
+### `ProjectileOptions` (interface)
+
+    export interface ProjectileOptions {
+
+        speed?: number;
+
+        duration?: number;
+
+        animation?: Animation;
+    }
+
+### `ProjectilePoint` (interface)
+
+    export interface ProjectilePoint {
+        x: number;
+        y: number;
+    }
+
 ### `QualityScaler` (class)
 
     export declare class QualityScaler {
@@ -9246,6 +17662,23 @@ build instead.
         observe(frameSeconds: number): number;
 
         reset(): void;
+    }
+
+### `QualityScalerOptions` (interface)
+
+    export interface QualityScalerOptions {
+
+        ceiling: number;
+
+        minRatio?: number;
+
+        targetFps?: number;
+
+        overBudgetFrames?: number;
+
+        underBudgetFrames?: number;
+
+        step?: number;
     }
 
 ### `RadioGroup` (class)
@@ -9279,6 +17712,29 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `RadioGroupOptions` (interface)
+
+    export interface RadioGroupOptions {
+        options?: RadioOption[];
+
+        selected?: number;
+
+        size?: number;
+
+        gap?: number;
+    }
+
+### `RadioOption` (interface)
+
+    export interface RadioOption {
+
+        text: string;
+
+        disabled?: boolean;
+
+        value?: unknown;
+    }
+
 ### `RebindScreen` (class)
 
     export declare class RebindScreen extends Container {
@@ -9302,9 +17758,38 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `RebindScreenOptions` (interface)
+
+    export interface RebindScreenOptions {
+        width: number;
+        height: number;
+
+        actions: readonly Action[];
+
+        label?: (action: Action) => string;
+        rowHeight?: number;
+
+        onConflict?: (key: string, action: Action, previousOwners: readonly Action[]) => boolean;
+    }
+
+### `RecolorProbe` (interface)
+
+    export interface RecolorProbe {
+        createCanvas?(width: number, height: number): RemapCanvas | null;
+    }
+
 ### `recolorTexture` (function)
 
     export declare function recolorTexture(texture: Texture, mapping: PaletteMapping, probe?: RecolorProbe, mode?: PaletteRemapMode): Texture;
+
+### `Rect` (interface)
+
+    export interface Rect {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }
 
 ### `Rectangle2D` (export)
 
@@ -9322,6 +17807,28 @@ build instead.
 
     export declare function relativeLuminance(color: number): number;
 
+### `RemapCanvas` (interface)
+
+    export interface RemapCanvas {
+        width: number;
+        height: number;
+        getContext(kind: '2d'): RemapCanvasContext | null;
+    }
+
+### `RemapCanvasContext` (interface)
+
+    export interface RemapCanvasContext {
+        drawImage(image: unknown, dx: number, dy: number): void;
+        getImageData(sx: number, sy: number, sw: number, sh: number): {
+            data: Uint8ClampedArray;
+        };
+        putImageData(imageData: {
+            data: Uint8ClampedArray;
+            width: number;
+            height: number;
+        }, dx: number, dy: number): void;
+    }
+
 ### `remapPixels` (function)
 
     export declare function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping, mode?: PaletteRemapMode): Uint8ClampedArray;
@@ -9329,6 +17836,15 @@ build instead.
 ### `RENDERING_DECISIONS` (const)
 
     export declare const RENDERING_DECISIONS: readonly RenderingDecision[];
+
+### `RenderingDecision` (interface)
+
+    export interface RenderingDecision {
+        workload: GraphicsWorkload;
+        preferred: string;
+        fallback: string;
+        reason: string;
+    }
 
 ### `resolveAnchor` (function)
 
@@ -9339,9 +17855,28 @@ build instead.
 
     export declare function resolveTerrainGraphics(width: number, height: number, rules: readonly TerrainRule[], flagsAt: TerrainFlagsAt, options?: ResolveTerrainGraphicsOptions): TerrainPlacement[];
 
+### `ResolveTerrainGraphicsOptions` (interface)
+
+    export interface ResolveTerrainGraphicsOptions {
+        rotate?: TerrainRotate;
+
+        random?: Generator;
+    }
+
 ### `revealComplete` (function)
 
     export declare function revealComplete(state: RevealState): boolean;
+
+### `RevealState` (interface)
+
+    export interface RevealState {
+
+        total: number;
+
+        speed: number;
+
+        revealed: number;
+    }
 
 ### `RichLabel` (class)
 
@@ -9365,6 +17900,27 @@ build instead.
         private restyle;
         destroy(options?: Parameters<HTMLText['destroy']>[0]): void;
     }
+
+### `RichLabelOptions` (interface)
+
+    export interface RichLabelOptions extends ThemedTextOptions {
+
+        resolution?: number;
+
+        tagStyles?: Record<string, HTMLTextStyleOptions>;
+    }
+
+### `RotatedPixels` (interface)
+
+    export interface RotatedPixels {
+        readonly data: Uint8ClampedArray;
+        readonly width: number;
+        readonly height: number;
+    }
+
+### `RotateMode` (type)
+
+    export type RotateMode = 'nearest' | 'linear';
 
 ### `rotatePixels` (function)
 
@@ -9400,13 +17956,65 @@ build instead.
 
     export declare function rpgmAutotileFrame(tileId: number, slot: RpgmAutotileSlot, shape: number, table: RpgmAutotileShapeTable): RpgmAutotileFrame;
 
+### `RpgmAutotileFrame` (interface)
+
+    export interface RpgmAutotileFrame {
+        tileId: number;
+        slot: RpgmAutotileSlot;
+        shape: number;
+        destinationX: number;
+        destinationY: number;
+        quadrants: readonly [RpgmAutotileQuadrant, RpgmAutotileQuadrant, RpgmAutotileQuadrant, RpgmAutotileQuadrant];
+    }
+
+### `RpgmAutotileQuadrant` (interface)
+
+    export interface RpgmAutotileQuadrant {
+        sourceX: number;
+        sourceY: number;
+        destinationX: number;
+        destinationY: number;
+    }
+
+### `RpgmAutotileShape` (type)
+
+    export type RpgmAutotileShape = readonly [
+        readonly [number, number],
+        readonly [number, number],
+        readonly [number, number],
+        readonly [number, number]
+    ];
+
+### `RpgmAutotileShapeTable` (type)
+
+    export type RpgmAutotileShapeTable = readonly RpgmAutotileShape[];
+
 ### `rpgmAutotileSlot` (function)
 
     export declare function rpgmAutotileSlot(tile: number): RpgmAutotileSlot | null;
 
+### `RpgmAutotileSlot` (type)
+
+    export type RpgmAutotileSlot = 0 | 1 | 2 | 3;
+
 ### `rpgmTableEdgeCells` (function)
 
     export declare function rpgmTableEdgeCells(map: RpgmTableEdgeMap): Int32Array;
+
+### `RpgmTableEdgeMap` (interface)
+
+    export interface RpgmTableEdgeMap {
+        width: number;
+        height: number;
+
+        ground: ArrayLike<number>;
+
+        objects: ArrayLike<number>;
+
+        flags: {
+            readonly [tile: number]: number | undefined;
+        };
+    }
 
 ### `Scene2D` (class)
 
@@ -9415,6 +18023,14 @@ build instead.
         readonly stage: Container2D;
         protected teardown(): void;
     }
+
+### `Scene2DClass` (type)
+
+    export type Scene2DClass = new () => Scene2D;
+
+### `ScreenEffectPhase` (type)
+
+    export type ScreenEffectPhase = 'idle' | 'fadeOut' | 'fadeIn' | 'flash' | 'hold';
 
 ### `ScreenEffects` (class)
 
@@ -9461,6 +18077,26 @@ build instead.
         update(dt: number): boolean;
     }
 
+### `ScreenEffectsOptions` (interface)
+
+    export interface ScreenEffectsOptions {
+        width?: number;
+        height?: number;
+
+        color?: number;
+    }
+
+### `ScreenEffectStep` (interface)
+
+    export interface ScreenEffectStep {
+        kind: 'fadeOut' | 'fadeIn' | 'flash' | 'hold';
+        duration: number;
+
+        color?: number;
+
+        peak?: number;
+    }
+
 ### `screenReader` (const)
 
     export declare const screenReader: ScreenReader;
@@ -9479,6 +18115,31 @@ build instead.
         clear(): void;
 
         destroy(): void;
+    }
+
+### `ScriptOptions` (interface)
+
+    export interface ScriptOptions {
+        stage: DialogueStage;
+        windows: WindowStack;
+
+        backdrop: (name: string) => Texture;
+
+        displayName?: (id: string) => string;
+
+        boxWidth?: number;
+        boxHeight?: number;
+
+        speed?: number;
+
+        mode?: 'adv' | 'nvl';
+    }
+
+### `ScriptState` (interface)
+
+    export interface ScriptState {
+
+        answers: Record<string, unknown>;
     }
 
 ### `ScrollBox` (class)
@@ -9514,6 +18175,16 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `ScrollBoxOptions` (interface)
+
+    export interface ScrollBoxOptions {
+        width: number;
+        height: number;
+
+        contentHeight?: number;
+        offset?: number;
+    }
+
 ### `scrollOffset` (function)
 
     export declare function scrollOffset(offset: number, contentSize: number, viewportSize: number): number;
@@ -9521,6 +18192,11 @@ build instead.
 ### `setTheme` (function)
 
     export declare function setTheme(next: Partial<Theme>): void;
+
+### `SettingsCustomRow` (type)
+
+    export type SettingsCustomRow = {
+        kind: 'boolean';
 
 ### `SettingsScreen` (class)
 
@@ -9565,6 +18241,42 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `SettingsScreenOptions` (interface)
+
+    export interface SettingsScreenOptions {
+        settings: Settings;
+        width?: number;
+        rowHeight?: number;
+
+        labels?: {
+            music?: string;
+            sfx?: string;
+            muted?: string;
+            zoom?: string;
+            controls?: string;
+            reset?: string;
+            rebindHint?: string;
+        };
+        zoomMin?: number;
+        zoomMax?: number;
+        zoomStep?: number;
+
+        custom?: readonly SettingsCustomRow[];
+
+        actions?: readonly Action[];
+
+        onConflict?: (key: string, action: Action, previousOwners: readonly Action[]) => boolean;
+    }
+
+### `ShadowLayerOptions` (interface)
+
+    export interface ShadowLayerOptions {
+
+        color?: number;
+
+        alpha?: number;
+    }
+
 ### `Shape2D` (class)
 
     export declare class Shape2D extends Graphics {
@@ -9573,6 +18285,32 @@ build instead.
 ### `sharpenText` (function)
 
     export declare function sharpenText(root: Container, devicePixelRatio: number): void;
+
+### `ShowOptions` (interface)
+
+    export interface ShowOptions {
+        at?: SlotName | number;
+        expression?: string;
+
+        fade?: number;
+    }
+
+### `Skin` (interface)
+
+    export interface Skin {
+        background?: number;
+        border?: number;
+        borderWidth?: number;
+        text?: number;
+        padding?: number;
+        texture?: Texture2D;
+
+        borderInset?: number;
+    }
+
+### `SkinData` (type)
+
+    export type SkinData = Skin | SkinStates;
 
 ### `Skins` (class)
 
@@ -9590,6 +18328,10 @@ build instead.
 
         static from(data: Readonly<Record<string, SkinData>>): Skins;
     }
+
+### `SkinStates` (type)
+
+    export type SkinStates = Partial<Record<WidgetState, Skin>>;
 
 ### `sliceSpans` (function)
 
@@ -9637,9 +18379,28 @@ build instead.
 
     export declare function sliderFraction(value: number, min?: number, max?: number): number;
 
+### `SliderOptions` (interface)
+
+    export interface SliderOptions {
+        width: number;
+        height?: number;
+        min?: number;
+        max?: number;
+
+        step?: number;
+        value?: number;
+
+        knobSize?: number;
+        disabled?: boolean;
+    }
+
 ### `sliderValueAt` (function)
 
     export declare function sliderValueAt(fraction: number, min?: number, max?: number, step?: number): number;
+
+### `SlotName` (type)
+
+    export type SlotName = 'left' | 'center' | 'right' | 'farLeft' | 'farRight';
 
 ### `snapZoom` (function)
 
@@ -9673,6 +18434,20 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `SpinnerOptions` (interface)
+
+    export interface SpinnerOptions {
+        width?: number;
+        height?: number;
+        min?: number;
+        max?: number;
+        step?: number;
+        value?: number;
+
+        wrap?: boolean;
+        disabled?: boolean;
+    }
+
 ### `spinValue` (function)
 
     export declare function spinValue(value: number, delta: number, min: number, max: number, step?: number, wrap?: boolean): number;
@@ -9704,6 +18479,16 @@ build instead.
         update(dt: number): boolean;
     }
 
+### `SpriteAttachmentOptions` (interface)
+
+    export interface SpriteAttachmentOptions {
+
+        offsetX?: number;
+        offsetY?: number;
+
+        duration?: number;
+    }
+
 ### `spriteColorMatrix` (function)
 
     export declare function spriteColorMatrix(sprite: Sprite, matrix: ColorMatrixFilter['matrix']): void;
@@ -9722,6 +18507,14 @@ build instead.
         clear(): void;
 
         update(camera: Camera, dt: number, margin?: number): void;
+    }
+
+### `SpriteGroupMember` (interface)
+
+    export interface SpriteGroupMember {
+        x: number;
+        y: number;
+        update(dt: number): void;
     }
 
 ### `SpriteSheet` (class)
@@ -9760,6 +18553,17 @@ build instead.
     export declare function squareRotate(dx: number, dy: number, rotationIndex: number, rotations: number): {
         dx: number;
 
+### `StageChoice` (type)
+
+    export type StageChoice = Choice & {
+
+        goto?: string;
+
+### `StageCommand` (type)
+
+    export type StageCommand = {
+        backdrop: string;
+
 ### `StageScript` (class)
 
     export declare class StageScript {
@@ -9790,6 +18594,13 @@ build instead.
 
     export declare function startReveal(total: number, speed?: number): RevealState;
 
+### `StatRow` (interface)
+
+    export interface StatRow {
+        label: string;
+        value: string;
+    }
+
 ### `StatsScreen` (class)
 
     export declare class StatsScreen extends Container {
@@ -9798,6 +18609,13 @@ build instead.
 
         setStats(stats: readonly StatRow[], width?: number): void;
         private static format;
+    }
+
+### `StatsScreenOptions` (interface)
+
+    export interface StatsScreenOptions {
+        width: number;
+        stats: readonly StatRow[];
     }
 
 ### `StatusVisuals` (class)
@@ -9819,6 +18637,35 @@ build instead.
         flash(color: number, strength: number, duration: number): void;
 
         update(dt: number): void;
+    }
+
+### `StatusVisualsOptions` (interface)
+
+    export interface StatusVisualsOptions {
+
+        styles: Record<string, StatusVisualStyle>;
+    }
+
+### `StatusVisualStyle` (interface)
+
+    export interface StatusVisualStyle {
+
+        color: number;
+
+        strength?: number;
+
+        pulseRate?: number;
+    }
+
+### `StoryBeat` (interface)
+
+    export interface StoryBeat {
+        text: string;
+        title?: string;
+
+        image?: string;
+
+        music?: string;
     }
 
 ### `StoryScreen` (class)
@@ -9845,6 +18692,22 @@ build instead.
         private applyBeat;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
+
+### `StoryScreenOptions` (interface)
+
+    export interface StoryScreenOptions {
+        sequence: StorySequence;
+        width: number;
+        height: number;
+
+        textureFor?: (path: string) => Texture | null;
+
+        playMusic?: (track: string | null) => void;
+    }
+
+### `StoryScript` (type)
+
+    export type StoryScript = Record<string, readonly StageCommand[]>;
 
 ### `StorySequence` (class)
 
@@ -9941,6 +18804,50 @@ build instead.
         private emit;
     }
 
+### `TabbedListOptions` (interface)
+
+    export interface TabbedListOptions<T> {
+
+        tabs: readonly ListTab[];
+
+        rowsFor: (tabId: string) => readonly T[];
+
+        pageSize?: number;
+
+        label?: (row: T) => string;
+
+        filter?: (row: T, query: string) => boolean;
+
+        disabled?: (row: T) => boolean;
+    }
+
+### `TableColumn` (interface)
+
+    export interface TableColumn<T> {
+
+        key: string;
+
+        label?: string;
+        width?: number;
+        align?: 'left' | 'right' | 'center';
+
+        compare?: (a: T, b: T) => number;
+    }
+
+### `TerrainCondition` (interface)
+
+    export interface TerrainCondition {
+        readonly dx: number;
+        readonly dy: number;
+        readonly hasAll?: readonly string[];
+        readonly hasAny?: readonly string[];
+        readonly hasNone?: readonly string[];
+    }
+
+### `TerrainFlagsAt` (type)
+
+    export type TerrainFlagsAt = (x: number, y: number) => ReadonlySet<string> | undefined;
+
 ### `TerrainGraphicsLayer` (class)
 
     export declare class TerrainGraphicsLayer extends Node2D {
@@ -9951,6 +18858,60 @@ build instead.
 
         setPlacements(placements: readonly TerrainPlacement[]): void;
         private rebuild;
+    }
+
+### `TerrainGraphicsLayerOptions` (interface)
+
+    export interface TerrainGraphicsLayerOptions {
+
+        readonly placements: readonly TerrainPlacement[];
+
+        readonly project: (x: number, y: number, dx: number, dy: number) => {
+            x: number;
+            y: number;
+        };
+
+        readonly resolveImage?: (path: string) => Texture2D;
+    }
+
+### `TerrainImage` (interface)
+
+    export interface TerrainImage {
+        readonly image: string;
+
+        readonly dx?: number;
+        readonly dy?: number;
+
+        readonly layer?: number;
+    }
+
+### `TerrainPlacement` (interface)
+
+    export interface TerrainPlacement {
+        readonly x: number;
+        readonly y: number;
+        readonly ruleId: string;
+        readonly image: string;
+        readonly dx: number;
+        readonly dy: number;
+        readonly layer: number;
+    }
+
+### `TerrainRotate` (type)
+
+    export type TerrainRotate = (dx: number, dy: number, rotationIndex: number, rotations: number) => {
+        dx: number;
+
+### `TerrainRule` (interface)
+
+    export interface TerrainRule {
+        readonly id: string;
+        readonly conditions: readonly TerrainCondition[];
+        readonly images: readonly TerrainImage[];
+
+        readonly probability?: number;
+
+        readonly rotations?: number;
     }
 
 ### `Text2D` (class)
@@ -10009,21 +18970,127 @@ build instead.
         private limit;
     }
 
+### `TextModelOptions` (interface)
+
+    export interface TextModelOptions {
+        value?: string;
+
+        maxLength?: number;
+
+        mask?: boolean;
+
+        maskCharacter?: string;
+
+        multiline?: boolean;
+    }
+
 ### `Texture2D` (export)
 
     export { Texture2D }
+
+### `TextureRegion` (interface)
+
+    export interface TextureRegion {
+        texture: Texture;
+        frame: Rect;
+    }
 
 ### `theme` (function)
 
     export declare function theme(): Theme;
 
+### `Theme` (interface)
+
+    export interface Theme {
+
+        panel?: Texture2D;
+
+        panelBorder: number;
+
+        padding: number;
+
+        spacing: number;
+        font: {
+            family: string;
+            size: number;
+
+            lineHeight: number;
+        };
+        color: {
+            text: number;
+            textDim: number;
+            textHighlight: number;
+
+            panelFill: number;
+            panelBorder: number;
+            selection: number;
+
+            overlay: number;
+        };
+
+        overlayAlpha: number;
+
+        direction: Direction;
+    }
+
 ### `themeChanged` (const)
 
     export declare const themeChanged: Signal<Theme>;
 
+### `TiledLayer` (interface)
+
+    export interface TiledLayer {
+        type: string;
+        name: string;
+        data?: number[];
+        encoding?: string;
+        objects?: TiledObject[];
+    }
+
+### `TiledMapData` (interface)
+
+    export interface TiledMapData {
+        width: number;
+        height: number;
+        tilewidth: number;
+        tileheight: number;
+        orientation?: string;
+
+        staggeraxis?: string;
+        staggerindex?: string;
+        tilesets: Array<{
+            firstgid: number;
+            source?: string;
+        }>;
+        layers: TiledLayer[];
+    }
+
+### `TiledObject` (interface)
+
+    export interface TiledObject {
+        id: number;
+        name?: string;
+        type?: string;
+        x: number;
+        y: number;
+        gid?: number;
+        properties?: Array<{
+            name: string;
+            value: unknown;
+        }>;
+    }
+
 ### `TiledSprite` (class)
 
     export declare class TiledSprite extends TilingSprite {
+    }
+
+### `TiledTilesetData` (interface)
+
+    export interface TiledTilesetData {
+        tilewidth: number;
+        tileheight: number;
+        image: string;
     }
 
 ### `tileFrame` (function)
@@ -10137,6 +19204,32 @@ build instead.
         get visibleChunks(): number;
     }
 
+### `TileMapOptions` (interface)
+
+    export interface TileMapOptions {
+
+        width: number;
+        height: number;
+
+        sheet: SpriteSheet | readonly SpriteSheet[];
+
+        tileWidth?: number;
+        tileHeight?: number;
+
+        shape?: 'square' | 'hex' | 'isometric' | 'staggered';
+
+        chunkSize?: number;
+
+        heightStep?: number;
+    }
+
+### `TilesetSheet` (interface)
+
+    export interface TilesetSheet {
+        firstgid: number;
+        sheet: SpriteSheet;
+    }
+
 ### `TintedSprite` (class)
 
     export declare class TintedSprite extends Sprite {
@@ -10153,6 +19246,13 @@ build instead.
         silhouette(color: number): void;
 
         resetColor(): void;
+    }
+
+### `TintTarget` (interface)
+
+    export interface TintTarget {
+
+        colorAdd: number;
     }
 
 ### `Toast` (class)
@@ -10175,6 +19275,19 @@ build instead.
         update(dt: number): void;
         private advance;
         private finish;
+    }
+
+### `ToastOptions` (interface)
+
+    export interface ToastOptions {
+
+        fadeIn?: number;
+
+        hold?: number;
+
+        fadeOut?: number;
+
+        scaleFrom?: number;
     }
 
 ### `Tooltip` (class)
@@ -10224,6 +19337,42 @@ build instead.
         private place;
     }
 
+### `TooltipOptions` (interface)
+
+    export interface TooltipOptions {
+
+        delay?: number;
+
+        maxWidth?: number;
+
+        offset?: {
+            x: number;
+            y: number;
+        };
+
+        margin?: number;
+    }
+
+### `TreeNode` (interface)
+
+    export interface TreeNode<T = unknown> {
+
+        id: string;
+        label: string;
+        children?: readonly TreeNode<T>[];
+        disabled?: boolean;
+        data?: T;
+    }
+
+### `TreeRow` (interface)
+
+    export interface TreeRow<T> {
+        node: TreeNode<T>;
+        depth: number;
+        expanded: boolean;
+        hasChildren: boolean;
+    }
+
 ### `TreeView` (class)
 
     export declare class TreeView<T = unknown> {
@@ -10250,6 +19399,26 @@ build instead.
         private firstEnabled;
     }
 
+### `TreeViewOptions` (interface)
+
+    export interface TreeViewOptions<T> {
+        roots: readonly TreeNode<T>[];
+
+        expanded?: readonly string[];
+
+        disabled?: (node: TreeNode<T>) => boolean;
+    }
+
+### `TwineStory` (interface)
+
+    export interface TwineStory {
+        story: StoryScript;
+
+        start: string;
+
+        title?: string;
+    }
+
 ### `VerticalLabel` (class)
 
     export declare class VerticalLabel extends Container {
@@ -10259,6 +19428,26 @@ build instead.
 
         private build;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `VerticalLabelOptions` (interface)
+
+    export interface VerticalLabelOptions {
+        text: string;
+        color?: number;
+        size?: number;
+        columnHeight: number;
+        rotate?: RegExp;
+    }
+
+### `VerticalLayoutOptions` (interface)
+
+    export interface VerticalLayoutOptions {
+        lineHeight: number;
+
+        columnHeight: number;
+
+        rotate?: RegExp;
     }
 
 ### `Viewport` (class)
@@ -10273,6 +19462,27 @@ build instead.
         resize(x: number, y: number, width: number, height: number): void;
         update(dt: number): void;
     }
+
+### `ViewportOptions` (interface)
+
+    export interface ViewportOptions extends CameraOptions {
+
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }
+
+### `WebGpuDetection` (interface)
+
+    export interface WebGpuDetection {
+        webgpu: boolean;
+        wgsl: boolean;
+    }
+
+### `WidgetState` (type)
+
+    export type WidgetState = 'idle' | 'hover' | 'pressed' | 'disabled' | 'selected' | 'focused';
 
 ### `Window` (class)
 
@@ -10323,6 +19533,24 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `WindowOptions` (interface)
+
+    export interface WindowOptions {
+        width: number;
+        height: number;
+        title?: string;
+
+        modal?: boolean;
+
+        closable?: boolean;
+
+        dims?: boolean;
+
+        anchor?: 'center' | 'bottom' | 'top';
+
+        blocker?: boolean;
+    }
+
 ### `WindowStack` (class)
 
     export declare class WindowStack extends Container {
@@ -10369,9 +19597,22 @@ build instead.
 
     export declare function xpAutotilePattern(sameTerrain: (dx: number, dy: number) => boolean): number;
 
+### `XpAutotilePattern` (type)
+
+    export type XpAutotilePattern = readonly [number, number, number, number];
+
 ### `xpAutotileRef` (function)
 
     export declare function xpAutotileRef(tile: number): XpAutotileRef | null;
+
+### `XpAutotileRef` (interface)
+
+    export interface XpAutotileRef {
+
+        index: number;
+
+        pattern: number;
+    }
 
 ## `./two-d/pixi-interop`
 
@@ -10403,6 +19644,10 @@ build instead.
 
     export { Sprite } from 'pixi.js'
 
+### `SpriteOptions` (type)
+
+    export type { SpriteOptions } from 'pixi.js'
+
 ### `Text` (re-export)
 
     export { Text } from 'pixi.js'
@@ -10420,6 +19665,10 @@ build instead.
     export { TilingSpritePipe } from 'pixi.js'
 
 ## `./two-d/render`
+
+### `ActorAnimationState` (type)
+
+    export type ActorAnimationState = 'idle' | 'move' | 'action';
 
 ### `ActorAnimator` (class)
 
@@ -10439,6 +19688,15 @@ build instead.
         playAction(variant?: string, restart?: boolean): void;
         private onSpriteFinish;
         private apply;
+    }
+
+### `ActorAnimatorOptions` (interface)
+
+    export interface ActorAnimatorOptions {
+
+        animationName: (state: ActorAnimationState, variant: string) => string;
+
+        variant?: string;
     }
 
 ### `AnimatedSprite` (class)
@@ -10490,6 +19748,32 @@ build instead.
         frameIndexAt(seconds: number): number;
     }
 
+### `AnimationFrame` (interface)
+
+    export interface AnimationFrame {
+        readonly texture: Texture2D;
+
+        readonly duration?: number;
+
+        readonly offsetX?: number;
+        readonly offsetY?: number;
+    }
+
+### `AnimationFrameInput` (type)
+
+    export type AnimationFrameInput = Texture2D | AnimationFrame;
+
+### `AnimationOptions` (interface)
+
+    export interface AnimationOptions {
+
+        fps?: number;
+
+        loop?: boolean;
+
+        startTime?: number;
+    }
+
 ### `applyAllImageModifiers` (function)
 
     export declare function applyAllImageModifiers(sprite: Sprite, parsed: ParsedImagePath, probe?: ImageTextureProbe, scale?: number): void;
@@ -10506,13 +19790,71 @@ build instead.
 
     export declare function assertAutotileLayout(layout: AutotileLayout): void;
 
+### `AttachmentPoint` (interface)
+
+    export interface AttachmentPoint {
+        x: number;
+        y: number;
+    }
+
+### `AutotileCell` (type)
+
+    export type AutotileCell = number;
+
+### `AutotileCellPart` (interface)
+
+    export interface AutotileCellPart {
+        sourceX: number;
+        sourceY: number;
+        sourceWidth: number;
+        sourceHeight: number;
+        destX: number;
+        destY: number;
+        destWidth: number;
+        destHeight: number;
+    }
+
 ### `autotileCellParts` (function)
 
     export declare function autotileCellParts(layout: AutotileLayout, tile: number, frame: number): AutotileCellPart[] | null;
 
+### `AutotileFormat` (type)
+
+    export type AutotileFormat = 'rpgm-mv' | 'rpgm-xp';
+
 ### `autotileFrames` (function)
 
     export declare function autotileFrames(width: number, height: number, sameTerrain: (x: number, y: number) => boolean, frames: readonly number[]): Int32Array;
+
+### `AutotileLayout` (type)
+
+    export type AutotileLayout = {
+        format: 'rpgm-mv';
+
+### `AutotileSet` (interface)
+
+    export interface AutotileSet {
+
+        sheet: SpriteSheet;
+
+        format?: AutotileFormat;
+
+        slot?: RpgmAutotileSlot;
+
+        mode?: 'floor' | 'wall' | 'mixed';
+
+        table?: RpgmAutotileShapeTable;
+
+        index?: number;
+
+        frames?: number;
+
+        tableEdge?: boolean;
+
+        animation?: ReadonlyArray<ReadonlyArray<number>>;
+
+        animationFrame?: number;
+    }
 
 ### `blendMatrix` (function)
 
@@ -10624,10 +19966,27 @@ build instead.
         private apply;
     }
 
+### `CameraOptions` (interface)
+
+    export interface CameraOptions {
+
+        zoom?: number;
+
+        grid?: 'square' | 'hex';
+
+        deadzone?: number;
+
+        pixelPerfectTileSize?: number;
+    }
+
 ### `channelScaleMatrix` (function)
 
     export declare function channelScaleMatrix(scale: {
         red?: number;
+
+### `ChannelSource` (type)
+
+    export type ChannelSource = 'R' | 'G' | 'B' | 'A' | '0' | '1';
 
 ### `channelSwapMatrix` (function)
 
@@ -10636,6 +19995,10 @@ build instead.
 ### `COLOR_BLINDNESS_MATRICES` (const)
 
     export declare const COLOR_BLINDNESS_MATRICES: Record<ColorBlindnessType, ColorMatrix>;
+
+### `ColorBlindnessType` (type)
+
+    export type ColorBlindnessType = 'protanopia' | 'deuteranopia' | 'tritanopia';
 
 ### `colorShiftMatrix` (function)
 
@@ -10689,6 +20052,14 @@ build instead.
 
     export declare const EMPTY = -1;
 
+### `FogCell` (type)
+
+    export type FogCell = number | ArrayLike<number>;
+
+### `FogColor` (type)
+
+    export type FogColor = readonly [number, number, number, number];
+
 ### `FogLayer` (class)
 
     export declare class FogLayer extends Sprite {
@@ -10706,9 +20077,48 @@ build instead.
         destroy(): void;
     }
 
+### `FogLayerOptions` (interface)
+
+    export interface FogLayerOptions {
+
+        width: number;
+        height: number;
+
+        tileSize?: number;
+
+        resolution?: number;
+
+        palette: readonly FogColor[];
+    }
+
 ### `Gradient` (const)
 
     export declare const Gradient: typeof FillGradient;
+
+### `GraphicsCapabilities` (interface)
+
+    export interface GraphicsCapabilities {
+        webgl1: boolean;
+        webgl2: boolean;
+        webgpu: boolean;
+
+        wgsl: boolean;
+    }
+
+### `GraphicsProbe` (interface)
+
+    export interface GraphicsProbe {
+        createCanvas?(): {
+            getContext(kind: string): unknown;
+        } | null;
+        webgpu?: boolean;
+
+        wgsl?: boolean;
+    }
+
+### `GraphicsWorkload` (type)
+
+    export type GraphicsWorkload = 'sprites' | 'ui' | 'custom-shaders' | 'particles' | 'instanced-terrain' | 'voxels' | 'animated-models' | 'large-3d-worlds';
 
 ### `Halo` (class)
 
@@ -10724,6 +20134,27 @@ build instead.
 
     export declare const HALO_ANIMATION = "halo";
 
+### `HaloOptions` (interface)
+
+    export interface HaloOptions {
+
+        readonly frames: readonly AnimationFrameInput[];
+
+        readonly animation?: AnimationOptions;
+
+        readonly offsetX?: number;
+        readonly offsetY?: number;
+
+        readonly blendMode?: 'add' | 'normal' | 'multiply' | 'screen';
+    }
+
+### `HasColorAdd` (interface)
+
+    export interface HasColorAdd {
+
+        colorAdd?: number;
+    }
+
 ### `hexRotate` (function)
 
     export declare function hexRotate(dx: number, dy: number, rotationIndex: number, rotations: number): {
@@ -10732,6 +20163,20 @@ build instead.
 ### `imageModifier` (function)
 
     export declare function imageModifier(path: ParsedImagePath, name: string): ImageModifier | undefined;
+
+### `ImageModifier` (interface)
+
+    export interface ImageModifier {
+        readonly name: string;
+        readonly args: readonly string[];
+    }
+
+### `ImageTextureProbe` (interface)
+
+    export interface ImageTextureProbe extends RecolorProbe {
+        resolveTexture?(pathWithModifiers: string): Texture2D | undefined;
+        resolveColor?(name: string): number | undefined;
+    }
 
 ### `inspectGraphicsCapabilities` (function)
 
@@ -10780,6 +20225,28 @@ build instead.
         private reroll;
     }
 
+### `LightningArcOptions` (interface)
+
+    export interface LightningArcOptions {
+
+        duration?: number;
+
+        segments?: number;
+
+        jitter?: number;
+
+        flickerInterval?: number;
+
+        random?: () => number;
+    }
+
+### `LightningArcPoint` (interface)
+
+    export interface LightningArcPoint {
+        x: number;
+        y: number;
+    }
+
 ### `LiquidLayer` (class)
 
     export declare class LiquidLayer extends Container {
@@ -10799,6 +20266,37 @@ build instead.
 
         get rippleCount(): number;
         update(dt: number): void;
+    }
+
+### `LiquidLayerOptions` (interface)
+
+    export interface LiquidLayerOptions {
+
+        texture: Texture2D;
+
+        width: number;
+        height: number;
+
+        tileSize?: number;
+
+        isLiquid: (x: number, y: number) => boolean;
+
+        speed?: number;
+
+        rippleTexture?: Texture2D;
+
+        rippleDuration?: number;
+    }
+
+### `LoadedTiledMap` (interface)
+
+    export interface LoadedTiledMap {
+        map: TileMap;
+
+        objects: Array<TiledObject & {
+            tileX: number;
+            tileY: number;
+        }>;
     }
 
 ### `loadTiledMap` (function)
@@ -10842,6 +20340,40 @@ build instead.
     export declare function minimapCellCenter(x: number, y: number, cellSize: number, shape?: 'square' | 'hex'): {
         x: number;
 
+### `MinimapMarker` (interface)
+
+    export interface MinimapMarker {
+        x: number;
+        y: number;
+        facing?: number;
+        color?: number;
+    }
+
+### `MinimapOptions` (interface)
+
+    export interface MinimapOptions {
+
+        widthInCells: number;
+        heightInCells: number;
+
+        cellSize?: number;
+
+        shape?: 'square' | 'hex';
+    }
+
+### `NeighborMask` (interface)
+
+    export interface NeighborMask {
+        n: boolean;
+        e: boolean;
+        s: boolean;
+        w: boolean;
+        ne: boolean;
+        se: boolean;
+        sw: boolean;
+        nw: boolean;
+    }
+
 ### `newlyRevealed` (function)
 
     export declare function newlyRevealed(explored: ReadonlySet<number>, alreadyDrawn: ReadonlySet<number>): number[];
@@ -10867,13 +20399,39 @@ build instead.
 
     export declare function paintFogPixels(pixels: Uint8ClampedArray | Uint8Array, width: number, height: number, resolution: number, state: (x: number, y: number) => FogCell, palette: readonly FogColor[]): void;
 
+### `PaletteMapping` (interface)
+
+    export interface PaletteMapping {
+        readonly from: readonly number[];
+        readonly to: readonly number[];
+    }
+
+### `PaletteRange` (interface)
+
+    export interface PaletteRange {
+        readonly min: number;
+        readonly mid: number;
+        readonly max: number;
+    }
+
 ### `paletteRangeMapping` (function)
 
     export declare function paletteRangeMapping(reference: readonly number[], range: PaletteRange): PaletteMapping;
 
+### `PaletteRemapMode` (type)
+
+    export type PaletteRemapMode = 'exact' | 'nearest';
+
 ### `parseColorPairs` (function)
 
     export declare function parseColorPairs(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
+
+### `ParsedImagePath` (interface)
+
+    export interface ParsedImagePath {
+        readonly path: string;
+        readonly modifiers: readonly ImageModifier[];
+    }
 
 ### `parseImagePath` (function)
 
@@ -10886,6 +20444,34 @@ build instead.
 ### `parseRotateMode` (function)
 
     export declare function parseRotateMode(argument: string | undefined): RotateMode;
+
+### `Particle` (interface)
+
+    export interface Particle {
+        x: number;
+        y: number;
+        vx: number;
+        vy: number;
+
+        age: number;
+
+        life: number;
+        rotation: number;
+        spin: number;
+
+        scale: number;
+        alpha: number;
+
+        tint: number;
+
+        frame: number;
+
+        active: boolean;
+    }
+
+### `ParticleCurve` (type)
+
+    export type ParticleCurve = (t: number) => number;
 
 ### `ParticleEmitter` (class)
 
@@ -10934,6 +20520,56 @@ build instead.
         clear(): void;
     }
 
+### `ParticleEmitterOptions` (interface)
+
+    export interface ParticleEmitterOptions {
+
+        texture?: Texture2D;
+
+        frames?: readonly Texture2D[];
+
+        max?: number;
+
+        rate?: number;
+
+        life?: ParticleRange;
+
+        speed?: ParticleRange;
+
+        angle?: ParticleRange;
+
+        gravity?: {
+            x: number;
+            y: number;
+        };
+
+        scale?: readonly [number, number] | ParticleCurve;
+
+        alpha?: readonly [number, number] | ParticleCurve;
+
+        flicker?: number;
+
+        spin?: ParticleRange;
+
+        spawn?: ParticleSpawnArea;
+
+        tint?: ParticleRange;
+    }
+
+### `ParticleRange` (type)
+
+    export type ParticleRange = number | readonly [number, number];
+
+### `ParticleSpawnArea` (interface)
+
+    export interface ParticleSpawnArea {
+        shape: 'rect' | 'ellipse';
+
+        width: number;
+
+        height?: number;
+    }
+
 ### `Projectile` (class)
 
     export declare class Projectile {
@@ -10958,9 +20594,42 @@ build instead.
         update(dt: number): boolean;
     }
 
+### `ProjectileOptions` (interface)
+
+    export interface ProjectileOptions {
+
+        speed?: number;
+
+        duration?: number;
+
+        animation?: Animation;
+    }
+
+### `ProjectilePoint` (interface)
+
+    export interface ProjectilePoint {
+        x: number;
+        y: number;
+    }
+
+### `RecolorProbe` (interface)
+
+    export interface RecolorProbe {
+        createCanvas?(width: number, height: number): RemapCanvas | null;
+    }
+
 ### `recolorTexture` (function)
 
     export declare function recolorTexture(texture: Texture, mapping: PaletteMapping, probe?: RecolorProbe, mode?: PaletteRemapMode): Texture;
+
+### `Rect` (interface)
+
+    export interface Rect {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }
 
 ### `Rectangle2D` (export)
 
@@ -10974,6 +20643,28 @@ build instead.
 
     export declare function registerColorTransform(): void;
 
+### `RemapCanvas` (interface)
+
+    export interface RemapCanvas {
+        width: number;
+        height: number;
+        getContext(kind: '2d'): RemapCanvasContext | null;
+    }
+
+### `RemapCanvasContext` (interface)
+
+    export interface RemapCanvasContext {
+        drawImage(image: unknown, dx: number, dy: number): void;
+        getImageData(sx: number, sy: number, sw: number, sh: number): {
+            data: Uint8ClampedArray;
+        };
+        putImageData(imageData: {
+            data: Uint8ClampedArray;
+            width: number;
+            height: number;
+        }, dx: number, dy: number): void;
+    }
+
 ### `remapPixels` (function)
 
     export declare function remapPixels(pixels: Uint8ClampedArray, mapping: PaletteMapping, mode?: PaletteRemapMode): Uint8ClampedArray;
@@ -10982,9 +20673,38 @@ build instead.
 
     export declare const RENDERING_DECISIONS: readonly RenderingDecision[];
 
+### `RenderingDecision` (interface)
+
+    export interface RenderingDecision {
+        workload: GraphicsWorkload;
+        preferred: string;
+        fallback: string;
+        reason: string;
+    }
+
 ### `resolveTerrainGraphics` (function)
 
     export declare function resolveTerrainGraphics(width: number, height: number, rules: readonly TerrainRule[], flagsAt: TerrainFlagsAt, options?: ResolveTerrainGraphicsOptions): TerrainPlacement[];
+
+### `ResolveTerrainGraphicsOptions` (interface)
+
+    export interface ResolveTerrainGraphicsOptions {
+        rotate?: TerrainRotate;
+
+        random?: Generator;
+    }
+
+### `RotatedPixels` (interface)
+
+    export interface RotatedPixels {
+        readonly data: Uint8ClampedArray;
+        readonly width: number;
+        readonly height: number;
+    }
+
+### `RotateMode` (type)
+
+    export type RotateMode = 'nearest' | 'linear';
 
 ### `rotatePixels` (function)
 
@@ -11020,13 +20740,69 @@ build instead.
 
     export declare function rpgmAutotileFrame(tileId: number, slot: RpgmAutotileSlot, shape: number, table: RpgmAutotileShapeTable): RpgmAutotileFrame;
 
+### `RpgmAutotileFrame` (interface)
+
+    export interface RpgmAutotileFrame {
+        tileId: number;
+        slot: RpgmAutotileSlot;
+        shape: number;
+        destinationX: number;
+        destinationY: number;
+        quadrants: readonly [RpgmAutotileQuadrant, RpgmAutotileQuadrant, RpgmAutotileQuadrant, RpgmAutotileQuadrant];
+    }
+
+### `RpgmAutotileQuadrant` (interface)
+
+    export interface RpgmAutotileQuadrant {
+        sourceX: number;
+        sourceY: number;
+        destinationX: number;
+        destinationY: number;
+    }
+
+### `RpgmAutotileShape` (type)
+
+    export type RpgmAutotileShape = readonly [
+        readonly [number, number],
+        readonly [number, number],
+        readonly [number, number],
+        readonly [number, number]
+    ];
+
+### `RpgmAutotileShapeTable` (type)
+
+    export type RpgmAutotileShapeTable = readonly RpgmAutotileShape[];
+
 ### `rpgmAutotileSlot` (function)
 
     export declare function rpgmAutotileSlot(tile: number): RpgmAutotileSlot | null;
 
+### `RpgmAutotileSlot` (type)
+
+    export type RpgmAutotileSlot = 0 | 1 | 2 | 3;
+
 ### `rpgmTableEdgeCells` (function)
 
     export declare function rpgmTableEdgeCells(map: RpgmTableEdgeMap): Int32Array;
+
+### `RpgmTableEdgeMap` (interface)
+
+    export interface RpgmTableEdgeMap {
+        width: number;
+        height: number;
+
+        ground: ArrayLike<number>;
+
+        objects: ArrayLike<number>;
+
+        flags: {
+            readonly [tile: number]: number | undefined;
+        };
+    }
+
+### `ScreenEffectPhase` (type)
+
+    export type ScreenEffectPhase = 'idle' | 'fadeOut' | 'fadeIn' | 'flash' | 'hold';
 
 ### `ScreenEffects` (class)
 
@@ -11073,6 +20849,35 @@ build instead.
         update(dt: number): boolean;
     }
 
+### `ScreenEffectsOptions` (interface)
+
+    export interface ScreenEffectsOptions {
+        width?: number;
+        height?: number;
+
+        color?: number;
+    }
+
+### `ScreenEffectStep` (interface)
+
+    export interface ScreenEffectStep {
+        kind: 'fadeOut' | 'fadeIn' | 'flash' | 'hold';
+        duration: number;
+
+        color?: number;
+
+        peak?: number;
+    }
+
+### `ShadowLayerOptions` (interface)
+
+    export interface ShadowLayerOptions {
+
+        color?: number;
+
+        alpha?: number;
+    }
+
 ### `Shape2D` (class)
 
     export declare class Shape2D extends Graphics {
@@ -11109,6 +20914,16 @@ build instead.
         update(dt: number): boolean;
     }
 
+### `SpriteAttachmentOptions` (interface)
+
+    export interface SpriteAttachmentOptions {
+
+        offsetX?: number;
+        offsetY?: number;
+
+        duration?: number;
+    }
+
 ### `spriteColorMatrix` (function)
 
     export declare function spriteColorMatrix(sprite: Sprite, matrix: ColorMatrixFilter['matrix']): void;
@@ -11127,6 +20942,14 @@ build instead.
         clear(): void;
 
         update(camera: Camera, dt: number, margin?: number): void;
+    }
+
+### `SpriteGroupMember` (interface)
+
+    export interface SpriteGroupMember {
+        x: number;
+        y: number;
+        update(dt: number): void;
     }
 
 ### `SpriteSheet` (class)
@@ -11186,6 +21009,38 @@ build instead.
         update(dt: number): void;
     }
 
+### `StatusVisualsOptions` (interface)
+
+    export interface StatusVisualsOptions {
+
+        styles: Record<string, StatusVisualStyle>;
+    }
+
+### `StatusVisualStyle` (interface)
+
+    export interface StatusVisualStyle {
+
+        color: number;
+
+        strength?: number;
+
+        pulseRate?: number;
+    }
+
+### `TerrainCondition` (interface)
+
+    export interface TerrainCondition {
+        readonly dx: number;
+        readonly dy: number;
+        readonly hasAll?: readonly string[];
+        readonly hasAny?: readonly string[];
+        readonly hasNone?: readonly string[];
+    }
+
+### `TerrainFlagsAt` (type)
+
+    export type TerrainFlagsAt = (x: number, y: number) => ReadonlySet<string> | undefined;
+
 ### `TerrainGraphicsLayer` (class)
 
     export declare class TerrainGraphicsLayer extends Node2D {
@@ -11198,6 +21053,60 @@ build instead.
         private rebuild;
     }
 
+### `TerrainGraphicsLayerOptions` (interface)
+
+    export interface TerrainGraphicsLayerOptions {
+
+        readonly placements: readonly TerrainPlacement[];
+
+        readonly project: (x: number, y: number, dx: number, dy: number) => {
+            x: number;
+            y: number;
+        };
+
+        readonly resolveImage?: (path: string) => Texture2D;
+    }
+
+### `TerrainImage` (interface)
+
+    export interface TerrainImage {
+        readonly image: string;
+
+        readonly dx?: number;
+        readonly dy?: number;
+
+        readonly layer?: number;
+    }
+
+### `TerrainPlacement` (interface)
+
+    export interface TerrainPlacement {
+        readonly x: number;
+        readonly y: number;
+        readonly ruleId: string;
+        readonly image: string;
+        readonly dx: number;
+        readonly dy: number;
+        readonly layer: number;
+    }
+
+### `TerrainRotate` (type)
+
+    export type TerrainRotate = (dx: number, dy: number, rotationIndex: number, rotations: number) => {
+        dx: number;
+
+### `TerrainRule` (interface)
+
+    export interface TerrainRule {
+        readonly id: string;
+        readonly conditions: readonly TerrainCondition[];
+        readonly images: readonly TerrainImage[];
+
+        readonly probability?: number;
+
+        readonly rotations?: number;
+    }
+
 ### `Text2D` (class)
 
     export declare class Text2D extends Text {
@@ -11207,9 +21116,67 @@ build instead.
 
     export { Texture2D }
 
+### `TextureRegion` (interface)
+
+    export interface TextureRegion {
+        texture: Texture;
+        frame: Rect;
+    }
+
+### `TiledLayer` (interface)
+
+    export interface TiledLayer {
+        type: string;
+        name: string;
+        data?: number[];
+        encoding?: string;
+        objects?: TiledObject[];
+    }
+
+### `TiledMapData` (interface)
+
+    export interface TiledMapData {
+        width: number;
+        height: number;
+        tilewidth: number;
+        tileheight: number;
+        orientation?: string;
+
+        staggeraxis?: string;
+        staggerindex?: string;
+        tilesets: Array<{
+            firstgid: number;
+            source?: string;
+        }>;
+        layers: TiledLayer[];
+    }
+
+### `TiledObject` (interface)
+
+    export interface TiledObject {
+        id: number;
+        name?: string;
+        type?: string;
+        x: number;
+        y: number;
+        gid?: number;
+        properties?: Array<{
+            name: string;
+            value: unknown;
+        }>;
+    }
+
 ### `TiledSprite` (class)
 
     export declare class TiledSprite extends TilingSprite {
+    }
+
+### `TiledTilesetData` (interface)
+
+    export interface TiledTilesetData {
+        tilewidth: number;
+        tileheight: number;
+        image: string;
     }
 
 ### `tileFrame` (function)
@@ -11323,6 +21290,32 @@ build instead.
         get visibleChunks(): number;
     }
 
+### `TileMapOptions` (interface)
+
+    export interface TileMapOptions {
+
+        width: number;
+        height: number;
+
+        sheet: SpriteSheet | readonly SpriteSheet[];
+
+        tileWidth?: number;
+        tileHeight?: number;
+
+        shape?: 'square' | 'hex' | 'isometric' | 'staggered';
+
+        chunkSize?: number;
+
+        heightStep?: number;
+    }
+
+### `TilesetSheet` (interface)
+
+    export interface TilesetSheet {
+        firstgid: number;
+        sheet: SpriteSheet;
+    }
+
 ### `TintedSprite` (class)
 
     export declare class TintedSprite extends Sprite {
@@ -11341,6 +21334,13 @@ build instead.
         resetColor(): void;
     }
 
+### `TintTarget` (interface)
+
+    export interface TintTarget {
+
+        colorAdd: number;
+    }
+
 ### `Viewport` (class)
 
     export declare class Viewport {
@@ -11352,6 +21352,23 @@ build instead.
 
         resize(x: number, y: number, width: number, height: number): void;
         update(dt: number): void;
+    }
+
+### `ViewportOptions` (interface)
+
+    export interface ViewportOptions extends CameraOptions {
+
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }
+
+### `WebGpuDetection` (interface)
+
+    export interface WebGpuDetection {
+        webgpu: boolean;
+        wgsl: boolean;
     }
 
 ### `withTextureCanvas` (function)
@@ -11370,11 +21387,36 @@ build instead.
 
     export declare function xpAutotilePattern(sameTerrain: (dx: number, dy: number) => boolean): number;
 
+### `XpAutotilePattern` (type)
+
+    export type XpAutotilePattern = readonly [number, number, number, number];
+
 ### `xpAutotileRef` (function)
 
     export declare function xpAutotileRef(tile: number): XpAutotileRef | null;
 
+### `XpAutotileRef` (interface)
+
+    export interface XpAutotileRef {
+
+        index: number;
+
+        pattern: number;
+    }
+
 ## `./two-d/stage`
+
+### `CharacterDefinition` (interface)
+
+    export interface CharacterDefinition {
+        sheet: SpriteSheet;
+
+        expressions: Record<string, number>;
+
+        height?: number;
+
+        baseline?: number;
+    }
 
 ### `DialogueStage` (class)
 
@@ -11417,6 +21459,15 @@ build instead.
     export declare function extractDialogueCatalog(commands: readonly StageCommand[] | StoryScript, options?: {
         locale?: string;
 
+### `HistoryEntry` (interface)
+
+    export interface HistoryEntry {
+        text: string;
+        speaker?: string;
+
+        chosen?: unknown;
+    }
+
 ### `importTwee` (function)
 
     export declare function importTwee(source: string): TwineStory;
@@ -11424,6 +21475,55 @@ build instead.
 ### `parseDialogueText` (function)
 
     export declare function parseDialogueText(source: string): StageCommand[];
+
+### `ScriptOptions` (interface)
+
+    export interface ScriptOptions {
+        stage: DialogueStage;
+        windows: WindowStack;
+
+        backdrop: (name: string) => Texture;
+
+        displayName?: (id: string) => string;
+
+        boxWidth?: number;
+        boxHeight?: number;
+
+        speed?: number;
+
+        mode?: 'adv' | 'nvl';
+    }
+
+### `ScriptState` (interface)
+
+    export interface ScriptState {
+
+        answers: Record<string, unknown>;
+    }
+
+### `ShowOptions` (interface)
+
+    export interface ShowOptions {
+        at?: SlotName | number;
+        expression?: string;
+
+        fade?: number;
+    }
+
+### `SlotName` (type)
+
+    export type SlotName = 'left' | 'center' | 'right' | 'farLeft' | 'farRight';
+
+### `StageChoice` (type)
+
+    export type StageChoice = Choice & {
+
+        goto?: string;
+
+### `StageCommand` (type)
+
+    export type StageCommand = {
+        backdrop: string;
 
 ### `StageScript` (class)
 
@@ -11451,6 +21551,17 @@ build instead.
         protected speak(text: string, as: string | undefined, speaker?: string, choices?: Choice[]): Promise<unknown>;
     }
 
+### `StoryBeat` (interface)
+
+    export interface StoryBeat {
+        text: string;
+        title?: string;
+
+        image?: string;
+
+        music?: string;
+    }
+
 ### `StoryScreen` (class)
 
     export declare class StoryScreen extends Container {
@@ -11475,6 +21586,22 @@ build instead.
         private applyBeat;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
+
+### `StoryScreenOptions` (interface)
+
+    export interface StoryScreenOptions {
+        sequence: StorySequence;
+        width: number;
+        height: number;
+
+        textureFor?: (path: string) => Texture | null;
+
+        playMusic?: (track: string | null) => void;
+    }
+
+### `StoryScript` (type)
+
+    export type StoryScript = Record<string, readonly StageCommand[]>;
 
 ### `StorySequence` (class)
 
@@ -11505,16 +21632,48 @@ build instead.
         private report;
     }
 
+### `TwineStory` (interface)
+
+    export interface TwineStory {
+        story: StoryScript;
+
+        start: string;
+
+        title?: string;
+    }
+
 ## `./two-d/ui`
 
 ### `advanceReveal` (function)
 
     export declare function advanceReveal(state: RevealState, dt: number): boolean;
 
+### `Anchor` (type)
+
+    export type Anchor = 'top-left' | 'top' | 'top-right' | 'left' | 'center' | 'right' | 'bottom-left' | 'bottom' | 'bottom-right' | 'fill';
+
 ### `anchorAlign` (function)
 
     export declare function anchorAlign(anchor: Anchor): {
         x: number;
+
+### `AnchorSpec` (interface)
+
+    export interface AnchorSpec {
+
+        anchor?: Anchor;
+
+        offsetX?: number;
+        offsetY?: number;
+
+        alignX?: number;
+        alignY?: number;
+
+        width?: number;
+        height?: number;
+
+        margin?: number;
+    }
 
 ### `Bar` (class)
 
@@ -11546,6 +21705,26 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `BarOptions` (interface)
+
+    export interface BarOptions {
+        width: number;
+        height: number;
+
+        color?: number;
+
+        value?: number;
+        max?: number;
+
+        fillTexture?: Texture2D;
+
+        background?: number;
+
+        backgroundTexture?: Texture2D;
+
+        roundUpToPixel?: boolean;
+    }
+
 ### `BitmapLabel` (class)
 
     export declare class BitmapLabel extends BitmapText {
@@ -11558,6 +21737,10 @@ build instead.
         private restyle;
         destroy(options?: Parameters<BitmapText['destroy']>[0]): void;
     }
+
+### `BitmapLabelOptions` (type)
+
+    export type BitmapLabelOptions = ThemedTextOptions;
 
 ### `bitmapLabelStyle` (function)
 
@@ -11594,6 +21777,40 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `ButtonOptions` (interface)
+
+    export interface ButtonOptions {
+        width: number;
+        height: number;
+
+        text?: string;
+
+        icon?: Container2D;
+
+        skin?: ButtonSkin;
+
+        label?: Omit<LabelOptions, 'text'>;
+        disabled?: boolean;
+        onClick?: () => void;
+
+        onPress?: () => void;
+
+        onRelease?: () => void;
+    }
+
+### `ButtonSkin` (interface)
+
+    export interface ButtonSkin {
+        texture: Texture2D;
+        border: NinePatchOptions['border'];
+
+        tints?: Partial<Record<ButtonState, number>>;
+    }
+
+### `ButtonState` (type)
+
+    export type ButtonState = 'idle' | 'hover' | 'pressed' | 'disabled';
+
 ### `Checkbox` (class)
 
     export declare class Checkbox extends Container {
@@ -11616,9 +21833,32 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `CheckboxOptions` (interface)
+
+    export interface CheckboxOptions {
+
+        size?: number;
+        checked?: boolean;
+        disabled?: boolean;
+
+        color?: number;
+    }
+
+### `Choice` (interface)
+
+    export interface Choice {
+        text: string;
+        value?: unknown;
+        disabled?: boolean;
+    }
+
 ### `completeReveal` (function)
 
     export declare function completeReveal(state: RevealState): void;
+
+### `ContrastLevel` (type)
+
+    export type ContrastLevel = 'AA' | 'AAA';
 
 ### `contrastRatio` (function)
 
@@ -11660,6 +21900,17 @@ build instead.
         setPage(page: number): void;
         nextPage(delta?: number): void;
         private firstEnabled;
+    }
+
+### `DataTableOptions` (interface)
+
+    export interface DataTableOptions<T> {
+        columns: readonly TableColumn<T>[];
+        rows?: readonly T[];
+
+        pageSize?: number;
+
+        disabled?: (row: T) => boolean;
     }
 
 ### `defaultTheme` (const)
@@ -11704,6 +21955,24 @@ build instead.
         private firstEnabled;
     }
 
+### `DropdownOption` (interface)
+
+    export interface DropdownOption {
+
+        id?: string;
+        label: string;
+        disabled?: boolean;
+    }
+
+### `DropdownOptions` (interface)
+
+    export interface DropdownOptions {
+        options: readonly DropdownOption[];
+
+        selectedIndex?: number;
+        disabled?: boolean;
+    }
+
 ### `escapeHtml` (function)
 
     export declare function escapeHtml(text: string): string;
@@ -11745,6 +22014,32 @@ build instead.
 
     export declare function floatingTextAlpha(t: number, hold: number): number;
 
+### `FloatingTextOptions` (interface)
+
+    export interface FloatingTextOptions {
+        text: string;
+        color?: number;
+        size?: number;
+
+        duration?: number;
+
+        rise?: number;
+
+        hold?: number;
+    }
+
+### `FloatingTextPush` (interface)
+
+    export interface FloatingTextPush extends FloatingTextOptions {
+
+        x: number;
+        y: number;
+
+        key?: string | number;
+
+        scale?: number;
+    }
+
 ### `floatingTextRise` (function)
 
     export declare function floatingTextRise(t: number, rise: number, reduce?: boolean): number;
@@ -11763,6 +22058,18 @@ build instead.
         clear(): void;
     }
 
+### `FloatingTextStackEntry` (interface)
+
+    export interface FloatingTextStackEntry {
+
+        key?: string | number;
+
+        x: number;
+        y: number;
+
+        height: number;
+    }
+
 ### `floatingTextStackLifePenalty` (function)
 
     export declare function floatingTextStackLifePenalty(linesBelow: number): number;
@@ -11771,9 +22078,29 @@ build instead.
 
     export declare function floatingTextStackLift(older: FloatingTextStackEntry, below: FloatingTextStackEntry, gap?: number): number;
 
+### `FloatingTextStackMove` (interface)
+
+    export interface FloatingTextStackMove {
+
+        readonly index: number;
+
+        readonly y: number;
+
+        readonly ageAtLeast: number;
+    }
+
 ### `floatingTextStackMoves` (function)
 
     export declare function floatingTextStackMoves(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry, gap?: number): FloatingTextStackMove[];
+
+### `GlyphLayout` (interface)
+
+    export interface GlyphLayout {
+        char: string;
+        x: number;
+        y: number;
+        rotate: boolean;
+    }
 
 ### `Grid` (class)
 
@@ -11794,6 +22121,24 @@ build instead.
         private get gap();
     }
 
+### `GridSpec` (interface)
+
+    export interface GridSpec {
+        columns: readonly GridTrack[];
+        rows: readonly GridTrack[];
+
+        gap?: number;
+    }
+
+### `GridTrack` (interface)
+
+    export interface GridTrack {
+
+        size?: number;
+
+        grow?: number;
+    }
+
 ### `HelpScreen` (class)
 
     export declare class HelpScreen extends Container {
@@ -11804,6 +22149,23 @@ build instead.
         private showBody;
 
         handleAction(action: Action): boolean;
+    }
+
+### `HelpScreenOptions` (interface)
+
+    export interface HelpScreenOptions {
+        width: number;
+        height: number;
+        topics: readonly HelpTopic[];
+
+        listWidth?: number;
+    }
+
+### `HelpTopic` (interface)
+
+    export interface HelpTopic {
+        title: string;
+        body: string;
     }
 
 ### `highContrastTheme` (const)
@@ -11867,6 +22229,39 @@ build instead.
         private refresh;
     }
 
+### `IconGridItem` (interface)
+
+    export interface IconGridItem {
+
+        icon: Container2D;
+
+        disabled?: boolean;
+
+        value?: unknown;
+
+        quantity?: number;
+    }
+
+### `IconGridOptions` (interface)
+
+    export interface IconGridOptions {
+        width: number;
+        height: number;
+
+        columns: number;
+        items?: IconGridItem[];
+
+        cellSize?: number;
+
+        longPressDuration?: number;
+        onSelect?: (item: IconGridItem, index: number) => void;
+        onHighlight?: (item: IconGridItem, index: number) => void;
+
+        onQuickslot?: (item: IconGridItem, index: number) => void;
+
+        onReorder?: (fromIndex: number, toIndex: number) => void;
+    }
+
 ### `Label` (class)
 
     export declare class Label extends Text {
@@ -11891,9 +22286,31 @@ build instead.
         destroy(options?: Parameters<Text['destroy']>[0]): void;
     }
 
+### `LabelOptions` (interface)
+
+    export interface LabelOptions extends ThemedTextOptions {
+
+        stroke?: {
+            color: number;
+            width: number;
+        };
+
+        resolution?: number;
+        roundPixels?: boolean;
+    }
+
 ### `layoutMarkupLines` (function)
 
     export declare function layoutMarkupLines(spans: readonly MarkupSpan[], measure: MarkupMeasure, maxWidth: number): MarkupLine[];
+
+### `LayoutRect` (interface)
+
+    export interface LayoutRect {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }
 
 ### `layoutVertical` (function)
 
@@ -11902,6 +22319,28 @@ build instead.
 ### `linesToDrop` (function)
 
     export declare function linesToDrop(lineCounts: readonly number[], maxLines: number): number;
+
+### `ListItem` (interface)
+
+    export interface ListItem {
+
+        text: string;
+
+        disabled?: boolean;
+
+        value?: unknown;
+
+        icon?: Container2D;
+    }
+
+### `ListTab` (interface)
+
+    export interface ListTab {
+        id: string;
+        label: string;
+
+        disabled?: boolean;
+    }
 
 ### `ListView` (class)
 
@@ -11958,6 +22397,21 @@ build instead.
         private refresh;
     }
 
+### `ListViewOptions` (interface)
+
+    export interface ListViewOptions {
+        width: number;
+        height: number;
+        items?: ListItem[];
+
+        rowHeight?: number;
+        onSelect?: (item: ListItem, index: number) => void;
+        onHighlight?: (item: ListItem, index: number) => void;
+
+        multiple?: boolean;
+        onToggle?: (item: ListItem, index: number, checked: boolean) => void;
+    }
+
 ### `LoadingScreen` (class)
 
     export declare class LoadingScreen extends Container {
@@ -11981,10 +22435,84 @@ build instead.
         private layout;
     }
 
+### `LoadingScreenOptions` (interface)
+
+    export interface LoadingScreenOptions {
+        width: number;
+        height: number;
+        title?: string;
+        onRetry?: () => void;
+        onCancel?: () => void;
+    }
+
+### `MarkdownSpan` (interface)
+
+    export interface MarkdownSpan {
+        text: string;
+        bold: boolean;
+        italic: boolean;
+    }
+
 ### `markupAccessibilityText` (function)
 
     export declare function markupAccessibilityText(spans: readonly MarkupSpan[], options?: {
         describeImage?: (path: string) => string;
+
+### `MarkupAlign` (type)
+
+    export type MarkupAlign = 'left' | 'center' | 'right';
+
+### `MarkupDirection` (type)
+
+    export type MarkupDirection = 'ltr' | 'rtl';
+
+### `MarkupLayout` (interface)
+
+    export interface MarkupLayout {
+
+        readonly measure: MarkupMeasure;
+
+        readonly maxWidth: number;
+
+        readonly lineHeight: number;
+
+        readonly direction?: MarkupDirection;
+
+        readonly align?: MarkupAlign;
+    }
+
+### `MarkupLine` (interface)
+
+    export interface MarkupLine {
+        readonly spans: readonly MarkupSpan[];
+        readonly width: number;
+    }
+
+### `MarkupMeasure` (type)
+
+    export type MarkupMeasure = (piece: Pick<MarkupSpan, 'text' | 'bold' | 'italic' | 'size' | 'image' | 'tag'>) => number;
+
+### `MarkupOptions` (interface)
+
+    export interface MarkupOptions {
+
+        readonly variables?: Readonly<Record<string, string>>;
+
+        readonly tags?: ReadonlySet<string>;
+    }
+
+### `MarkupSpan` (interface)
+
+    export interface MarkupSpan extends MarkdownSpan {
+
+        color?: string;
+
+        size?: number;
+
+        image?: string;
+
+        tag?: string;
+    }
 
 ### `MarkupText` (class)
 
@@ -12004,6 +22532,27 @@ build instead.
         private textFor;
         private spriteFor;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `MarkupTextOptions` (interface)
+
+    export interface MarkupTextOptions {
+        text?: string;
+
+        maxWidth?: number;
+
+        lineHeight?: number;
+        align?: MarkupAlign;
+
+        direction?: MarkupDirection;
+
+        resolution?: number;
+
+        resolveImage?: (path: string) => Texture2D;
+
+        variables?: Readonly<Record<string, string>>;
+
+        tagStyles?: Readonly<Record<string, TextStyleOptions>>;
     }
 
 ### `markupToHtml` (function)
@@ -12059,9 +22608,51 @@ build instead.
         private finish;
     }
 
+### `MessageBoxOptions` (interface)
+
+    export interface MessageBoxOptions {
+        width: number;
+        height: number;
+        pages: Array<MessagePage | string>;
+
+        speed?: number;
+
+        choices?: Choice[];
+
+        onDone?: (chosen: unknown) => void;
+
+        onSound?: (path: string) => void;
+
+        dims?: boolean;
+
+        blocker?: boolean;
+
+        anchor?: 'center' | 'bottom' | 'top';
+
+        announce?: boolean;
+
+        mode?: 'adv' | 'nvl';
+
+        autoAdvance?: number;
+    }
+
 ### `messageBoxPresenter` (function)
 
     export declare function messageBoxPresenter(windows: WindowStack, options?: MessageBoxPresenterOptions): DialoguePresenter;
+
+### `MessageBoxPresenterOptions` (interface)
+
+    export interface MessageBoxPresenterOptions {
+
+        width?: number;
+        height?: number;
+        speed?: number;
+        anchor?: 'center' | 'bottom' | 'top';
+    }
+
+### `MessageLevel` (type)
+
+    export type MessageLevel = 'info' | 'positive' | 'negative' | 'warning' | 'highlight';
 
 ### `MessageLog` (class)
 
@@ -12081,6 +22672,31 @@ build instead.
         private linesOf;
         private trim;
         private layout;
+    }
+
+### `MessageLogOptions` (interface)
+
+    export interface MessageLogOptions {
+
+        wrapWidth: number;
+
+        maxLines?: number;
+
+        size?: number;
+
+        colors?: Partial<Record<MessageLevel, number>>;
+
+        resolution?: number;
+    }
+
+### `MessagePage` (interface)
+
+    export interface MessagePage {
+        text: string;
+
+        speaker?: string;
+
+        portrait?: Texture2D;
     }
 
 ### `Meter` (class)
@@ -12117,6 +22733,27 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `MeterOptions` (interface)
+
+    export interface MeterOptions {
+
+        count: number;
+
+        value?: number;
+
+        size?: number;
+
+        gap?: number;
+
+        filledTexture?: Texture2D;
+
+        emptyTexture?: Texture2D;
+
+        color?: number;
+
+        emptyColor?: number;
+    }
+
 ### `NinePatch` (class)
 
     export declare class NinePatch extends Container {
@@ -12132,6 +22769,18 @@ build instead.
         resize(width: number, height: number): void;
     }
 
+### `NinePatchOptions` (interface)
+
+    export interface NinePatchOptions {
+
+        border: number | {
+            left: number;
+            top: number;
+            right: number;
+            bottom: number;
+        };
+    }
+
 ### `parseMarkdown` (function)
 
     export declare function parseMarkdown(text: string): MarkdownSpan[];
@@ -12139,6 +22788,19 @@ build instead.
 ### `parseMarkup` (function)
 
     export declare function parseMarkup(source: string, options?: MarkupOptions): MarkupSpan[];
+
+### `PositionedMarkupSpan` (interface)
+
+    export interface PositionedMarkupSpan {
+
+        readonly span: MarkupSpan;
+
+        readonly x: number;
+
+        readonly y: number;
+
+        readonly width: number;
+    }
 
 ### `positionMarkupLines` (function)
 
@@ -12175,6 +22837,29 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `RadioGroupOptions` (interface)
+
+    export interface RadioGroupOptions {
+        options?: RadioOption[];
+
+        selected?: number;
+
+        size?: number;
+
+        gap?: number;
+    }
+
+### `RadioOption` (interface)
+
+    export interface RadioOption {
+
+        text: string;
+
+        disabled?: boolean;
+
+        value?: unknown;
+    }
+
 ### `RebindScreen` (class)
 
     export declare class RebindScreen extends Container {
@@ -12198,6 +22883,20 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `RebindScreenOptions` (interface)
+
+    export interface RebindScreenOptions {
+        width: number;
+        height: number;
+
+        actions: readonly Action[];
+
+        label?: (action: Action) => string;
+        rowHeight?: number;
+
+        onConflict?: (key: string, action: Action, previousOwners: readonly Action[]) => boolean;
+    }
+
 ### `relativeLuminance` (function)
 
     export declare function relativeLuminance(color: number): number;
@@ -12210,6 +22909,17 @@ build instead.
 ### `revealComplete` (function)
 
     export declare function revealComplete(state: RevealState): boolean;
+
+### `RevealState` (interface)
+
+    export interface RevealState {
+
+        total: number;
+
+        speed: number;
+
+        revealed: number;
+    }
 
 ### `RichLabel` (class)
 
@@ -12232,6 +22942,15 @@ build instead.
 
         private restyle;
         destroy(options?: Parameters<HTMLText['destroy']>[0]): void;
+    }
+
+### `RichLabelOptions` (interface)
+
+    export interface RichLabelOptions extends ThemedTextOptions {
+
+        resolution?: number;
+
+        tagStyles?: Record<string, HTMLTextStyleOptions>;
     }
 
 ### `screenReader` (const)
@@ -12287,6 +23006,16 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `ScrollBoxOptions` (interface)
+
+    export interface ScrollBoxOptions {
+        width: number;
+        height: number;
+
+        contentHeight?: number;
+        offset?: number;
+    }
+
 ### `scrollOffset` (function)
 
     export declare function scrollOffset(offset: number, contentSize: number, viewportSize: number): number;
@@ -12294,6 +23023,11 @@ build instead.
 ### `setTheme` (function)
 
     export declare function setTheme(next: Partial<Theme>): void;
+
+### `SettingsCustomRow` (type)
+
+    export type SettingsCustomRow = {
+        kind: 'boolean';
 
 ### `SettingsScreen` (class)
 
@@ -12338,9 +23072,53 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `SettingsScreenOptions` (interface)
+
+    export interface SettingsScreenOptions {
+        settings: Settings;
+        width?: number;
+        rowHeight?: number;
+
+        labels?: {
+            music?: string;
+            sfx?: string;
+            muted?: string;
+            zoom?: string;
+            controls?: string;
+            reset?: string;
+            rebindHint?: string;
+        };
+        zoomMin?: number;
+        zoomMax?: number;
+        zoomStep?: number;
+
+        custom?: readonly SettingsCustomRow[];
+
+        actions?: readonly Action[];
+
+        onConflict?: (key: string, action: Action, previousOwners: readonly Action[]) => boolean;
+    }
+
 ### `sharpenText` (function)
 
     export declare function sharpenText(root: Container, devicePixelRatio: number): void;
+
+### `Skin` (interface)
+
+    export interface Skin {
+        background?: number;
+        border?: number;
+        borderWidth?: number;
+        text?: number;
+        padding?: number;
+        texture?: Texture2D;
+
+        borderInset?: number;
+    }
+
+### `SkinData` (type)
+
+    export type SkinData = Skin | SkinStates;
 
 ### `Skins` (class)
 
@@ -12358,6 +23136,10 @@ build instead.
 
         static from(data: Readonly<Record<string, SkinData>>): Skins;
     }
+
+### `SkinStates` (type)
+
+    export type SkinStates = Partial<Record<WidgetState, Skin>>;
 
 ### `sliceSpans` (function)
 
@@ -12405,6 +23187,21 @@ build instead.
 
     export declare function sliderFraction(value: number, min?: number, max?: number): number;
 
+### `SliderOptions` (interface)
+
+    export interface SliderOptions {
+        width: number;
+        height?: number;
+        min?: number;
+        max?: number;
+
+        step?: number;
+        value?: number;
+
+        knobSize?: number;
+        disabled?: boolean;
+    }
+
 ### `sliderValueAt` (function)
 
     export declare function sliderValueAt(fraction: number, min?: number, max?: number, step?: number): number;
@@ -12437,6 +23234,20 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `SpinnerOptions` (interface)
+
+    export interface SpinnerOptions {
+        width?: number;
+        height?: number;
+        min?: number;
+        max?: number;
+        step?: number;
+        value?: number;
+
+        wrap?: boolean;
+        disabled?: boolean;
+    }
+
 ### `spinValue` (function)
 
     export declare function spinValue(value: number, delta: number, min: number, max: number, step?: number, wrap?: boolean): number;
@@ -12444,6 +23255,13 @@ build instead.
 ### `startReveal` (function)
 
     export declare function startReveal(total: number, speed?: number): RevealState;
+
+### `StatRow` (interface)
+
+    export interface StatRow {
+        label: string;
+        value: string;
+    }
 
 ### `StatsScreen` (class)
 
@@ -12453,6 +23271,13 @@ build instead.
 
         setStats(stats: readonly StatRow[], width?: number): void;
         private static format;
+    }
+
+### `StatsScreenOptions` (interface)
+
+    export interface StatsScreenOptions {
+        width: number;
+        stats: readonly StatRow[];
     }
 
 ### `stripMarkdown` (function)
@@ -12521,6 +23346,36 @@ build instead.
         private emit;
     }
 
+### `TabbedListOptions` (interface)
+
+    export interface TabbedListOptions<T> {
+
+        tabs: readonly ListTab[];
+
+        rowsFor: (tabId: string) => readonly T[];
+
+        pageSize?: number;
+
+        label?: (row: T) => string;
+
+        filter?: (row: T, query: string) => boolean;
+
+        disabled?: (row: T) => boolean;
+    }
+
+### `TableColumn` (interface)
+
+    export interface TableColumn<T> {
+
+        key: string;
+
+        label?: string;
+        width?: number;
+        align?: 'left' | 'right' | 'center';
+
+        compare?: (a: T, b: T) => number;
+    }
+
 ### `TextModel` (class)
 
     export declare class TextModel {
@@ -12572,9 +23427,57 @@ build instead.
         private limit;
     }
 
+### `TextModelOptions` (interface)
+
+    export interface TextModelOptions {
+        value?: string;
+
+        maxLength?: number;
+
+        mask?: boolean;
+
+        maskCharacter?: string;
+
+        multiline?: boolean;
+    }
+
 ### `theme` (function)
 
     export declare function theme(): Theme;
+
+### `Theme` (interface)
+
+    export interface Theme {
+
+        panel?: Texture2D;
+
+        panelBorder: number;
+
+        padding: number;
+
+        spacing: number;
+        font: {
+            family: string;
+            size: number;
+
+            lineHeight: number;
+        };
+        color: {
+            text: number;
+            textDim: number;
+            textHighlight: number;
+
+            panelFill: number;
+            panelBorder: number;
+            selection: number;
+
+            overlay: number;
+        };
+
+        overlayAlpha: number;
+
+        direction: Direction;
+    }
 
 ### `themeChanged` (const)
 
@@ -12600,6 +23503,19 @@ build instead.
         update(dt: number): void;
         private advance;
         private finish;
+    }
+
+### `ToastOptions` (interface)
+
+    export interface ToastOptions {
+
+        fadeIn?: number;
+
+        hold?: number;
+
+        fadeOut?: number;
+
+        scaleFrom?: number;
     }
 
 ### `Tooltip` (class)
@@ -12649,6 +23565,42 @@ build instead.
         private place;
     }
 
+### `TooltipOptions` (interface)
+
+    export interface TooltipOptions {
+
+        delay?: number;
+
+        maxWidth?: number;
+
+        offset?: {
+            x: number;
+            y: number;
+        };
+
+        margin?: number;
+    }
+
+### `TreeNode` (interface)
+
+    export interface TreeNode<T = unknown> {
+
+        id: string;
+        label: string;
+        children?: readonly TreeNode<T>[];
+        disabled?: boolean;
+        data?: T;
+    }
+
+### `TreeRow` (interface)
+
+    export interface TreeRow<T> {
+        node: TreeNode<T>;
+        depth: number;
+        expanded: boolean;
+        hasChildren: boolean;
+    }
+
 ### `TreeView` (class)
 
     export declare class TreeView<T = unknown> {
@@ -12675,6 +23627,16 @@ build instead.
         private firstEnabled;
     }
 
+### `TreeViewOptions` (interface)
+
+    export interface TreeViewOptions<T> {
+        roots: readonly TreeNode<T>[];
+
+        expanded?: readonly string[];
+
+        disabled?: (node: TreeNode<T>) => boolean;
+    }
+
 ### `VerticalLabel` (class)
 
     export declare class VerticalLabel extends Container {
@@ -12685,6 +23647,30 @@ build instead.
         private build;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
+
+### `VerticalLabelOptions` (interface)
+
+    export interface VerticalLabelOptions {
+        text: string;
+        color?: number;
+        size?: number;
+        columnHeight: number;
+        rotate?: RegExp;
+    }
+
+### `VerticalLayoutOptions` (interface)
+
+    export interface VerticalLayoutOptions {
+        lineHeight: number;
+
+        columnHeight: number;
+
+        rotate?: RegExp;
+    }
+
+### `WidgetState` (type)
+
+    export type WidgetState = 'idle' | 'hover' | 'pressed' | 'disabled' | 'selected' | 'focused';
 
 ### `Window` (class)
 
@@ -12735,6 +23721,24 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `WindowOptions` (interface)
+
+    export interface WindowOptions {
+        width: number;
+        height: number;
+        title?: string;
+
+        modal?: boolean;
+
+        closable?: boolean;
+
+        dims?: boolean;
+
+        anchor?: 'center' | 'bottom' | 'top';
+
+        blocker?: boolean;
+    }
+
 ### `WindowStack` (class)
 
     export declare class WindowStack extends Container {
@@ -12767,9 +23771,32 @@ build instead.
 
 ## `./world`
 
+### `Alignment` (type)
+
+    export type Alignment = 'lawful' | 'neutral' | 'chaotic' | 'liminal';
+
 ### `alignmentBonus` (function)
 
     export declare function alignmentBonus(alignment: Alignment, lawfulBonus: number): number;
+
+### `DayPhase` (type)
+
+    export type DayPhase = 'dawn' | 'day' | 'dusk' | 'night';
+
+### `EncounterEntry` (interface)
+
+    export interface EncounterEntry<T> {
+        value: T;
+        weight: number;
+    }
+
+### `EncounterTable` (interface)
+
+    export interface EncounterTable<T> {
+        entries: readonly EncounterEntry<T>[];
+
+        rate: number;
+    }
 
 ### `EnvironmentClock` (class)
 
@@ -12793,6 +23820,38 @@ build instead.
         static fromJSON(options: EnvironmentOptions, data: EnvironmentSnapshot): EnvironmentClock;
     }
 
+### `EnvironmentOptions` (interface)
+
+    export interface EnvironmentOptions {
+
+        dayLength?: number;
+        startSeconds?: number;
+        startWeather?: string;
+
+        phaseBoundaries?: readonly [number, number, number];
+    }
+
+### `EnvironmentSnapshot` (interface)
+
+    export interface EnvironmentSnapshot {
+        day: number;
+        seconds: number;
+        phase: DayPhase;
+        weather: string;
+    }
+
+### `Location` (interface)
+
+    export interface Location {
+        id: string;
+        x: number;
+        y: number;
+
+        leadsTo: string;
+
+        spawn?: string;
+    }
+
 ### `Overworld` (class)
 
     export declare class Overworld {
@@ -12808,6 +23867,15 @@ build instead.
 ### `rollEncounter` (function)
 
     export declare function rollEncounter<T>(table: EncounterTable<T>): T | null;
+
+### `SideTurn` (interface)
+
+    export interface SideTurn {
+        side: string;
+        round: number;
+
+        newRound: boolean;
+    }
 
 ### `SideTurns` (class)
 
@@ -12833,6 +23901,59 @@ build instead.
         toJSON(): SideTurnState;
 
         static fromJSON(options: SideTurnsOptions, state: SideTurnState): SideTurns;
+    }
+
+### `SideTurnsOptions` (interface)
+
+    export interface SideTurnsOptions {
+
+        sides: readonly string[];
+
+        schedule: readonly TimeOfDay[];
+
+        sideIndex?: number;
+
+        round?: number;
+
+        timeIndex?: number;
+
+        areas?: readonly TimeArea[];
+    }
+
+### `SideTurnState` (interface)
+
+    export interface SideTurnState {
+        round: number;
+        sideIndex: number;
+        timeIndex: number;
+    }
+
+### `TimeArea` (interface)
+
+    export interface TimeArea {
+
+        times: readonly TimeOfDay[];
+        contains(x: number, y: number): boolean;
+    }
+
+### `TimedEffect` (interface)
+
+    export interface TimedEffect {
+
+        tick: (turn: number) => void;
+
+        duration?: number;
+
+        onExpire?: () => void;
+    }
+
+### `TimeOfDay` (interface)
+
+    export interface TimeOfDay {
+
+        id: string;
+
+        lawfulBonus: number;
     }
 
 ### `TurnClock` (class)

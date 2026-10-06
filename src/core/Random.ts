@@ -127,6 +127,30 @@ const stack: Generator[] = [new Generator()];
 const current = (): Generator => stack[stack.length - 1];
 
 /**
+ * The minimal draw surface the derived helpers (`chance`, `element`, `weighted`,
+ * `weightedKey`, `shuffle`, `int`, `range`, `normalRange`) need. `Generator` and
+ * `MersenneTwister` both satisfy it structurally, so a rule dispatched by a simulation
+ * runtime can pass its own injected, snapshot-able stream instead of touching the
+ * ambient one - the ambient stream stays the default when no source is given, and the
+ * null-reporting conventions are identical either way.
+ *
+ * @example
+ * ```ts
+ * import { Generator, Random } from '@datamoc/mw_games/core';
+ *
+ * // a journaled rule draws from its own stream, never the ambient one
+ * const stream = new Generator(99);
+ * const pick = Random.weightedKey(new Map([['a', 1], ['b', 2]]), stream);
+ * ```
+ */
+export interface RandomSource {
+	/** a float in [0, 1) */
+	float(): number;
+	/** an integer in [0, bound), without modulo bias */
+	int(bound: number): number;
+}
+
+/**
  * The generator the free functions (`int`, `float`, `chance`, ...) draw from.
  *
  * This is the handle a `SimulationRuntime` needs to share the ambient stream:
@@ -177,21 +201,23 @@ export function reset(): void {
 }
 
 /** a float in [0, 1), or [0, max), or [min, max) */
-export function float(min?: number, max?: number): number {
-	if (min === undefined) return current().float();
-	if (max === undefined) return current().float() * min;
-	return min + current().float() * (max - min);
+export function float(min?: number, max?: number, source?: RandomSource): number {
+	const draw = source ?? current();
+	if (min === undefined) return draw.float();
+	if (max === undefined) return draw.float() * min;
+	return min + draw.float() * (max - min);
 }
 
 /** an integer in [0, max), or [min, max) */
-export function int(min: number, max?: number): number {
-	if (max === undefined) return current().int(min);
-	return min + current().int(max - min);
+export function int(min: number, max?: number, source?: RandomSource): number {
+	const draw = source ?? current();
+	if (max === undefined) return draw.int(min);
+	return min + draw.int(max - min);
 }
 
 /** an integer in [min, max], both ends included (the usual shape for dice) */
-export function range(min: number, max: number): number {
-	return min + current().int(max - min + 1);
+export function range(min: number, max: number, source?: RandomSource): number {
+	return min + (source ?? current()).int(max - min + 1);
 }
 
 /**
@@ -199,12 +225,13 @@ export function range(min: number, max: number): number {
  *
  * Useful wherever a uniform roll feels wrong: damage, room sizes, item quality.
  */
-export function normalRange(min: number, max: number): number {
-	return min + Math.floor(((current().float() + current().float()) * (max - min + 1)) / 2);
+export function normalRange(min: number, max: number, source?: RandomSource): number {
+	const draw = source ?? current();
+	return min + Math.floor(((draw.float() + draw.float()) * (max - min + 1)) / 2);
 }
 
-export function chance(probability: number): boolean {
-	return current().float() < probability;
+export function chance(probability: number, source?: RandomSource): boolean {
+	return (source ?? current()).float() < probability;
 }
 
 /**
@@ -216,18 +243,18 @@ export function chance(probability: number): boolean {
  * separate hand-written translations between them. One sentinel, checked one way.
  */
 
-/** a random element, or `null` for an empty list */
-export function element<T>(items: readonly T[]): T | null {
-	return items.length > 0 ? items[current().int(items.length)] : null;
+/** a random element, or `null` for an empty list; draws from `source` when given */
+export function element<T>(items: readonly T[], source?: RandomSource): T | null {
+	return items.length > 0 ? items[(source ?? current()).int(items.length)] : null;
 }
 
-/** an index into `weights` drawn in proportion to its weight, or `null` if nothing has any */
-export function weighted(weights: readonly number[]): number | null {
+/** an index into `weights` drawn in proportion to its weight, or `null` if nothing has any; draws from `source` when given */
+export function weighted(weights: readonly number[], source?: RandomSource): number | null {
 	let total = 0;
 	for (const w of weights) total += w;
 	if (total <= 0) return null;
 
-	let value = current().float() * total;
+	let value = (source ?? current()).float() * total;
 	for (let i = 0; i < weights.length; i++) {
 		value -= weights[i];
 		if (value < 0) return i;
@@ -235,17 +262,20 @@ export function weighted(weights: readonly number[]): number | null {
 	return weights.length - 1;
 }
 
-/** a key from `weights`, drawn in proportion to the value it maps to, or `null` if none has any */
-export function weightedKey<K>(weights: ReadonlyMap<K, number>): K | null {
+/** a key from `weights`, drawn in proportion to the value it maps to, or `null` if none has any; draws from `source` when given */
+export function weightedKey<K>(weights: ReadonlyMap<K, number>, source?: RandomSource): K | null {
 	const keys = [...weights.keys()];
-	const index = weighted(keys.map((k) => weights.get(k) ?? 0));
+	const index = weighted(
+		keys.map((k) => weights.get(k) ?? 0),
+		source,
+	);
 	return index === null ? null : keys[index];
 }
 
-/** Fisher-Yates, in place */
-export function shuffle<T>(items: T[]): T[] {
+/** Fisher-Yates, in place; draws from `source` when given */
+export function shuffle<T>(items: T[], source?: RandomSource): T[] {
 	for (let i = items.length - 1; i > 0; i--) {
-		const j = current().int(i + 1);
+		const j = (source ?? current()).int(i + 1);
 		[items[i], items[j]] = [items[j], items[i]];
 	}
 	return items;

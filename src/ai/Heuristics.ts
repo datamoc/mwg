@@ -11,7 +11,7 @@ export interface AspectValues {
  * wants, and a difficulty level overrides a few of them.
  *
  * Typed readers give a stage a usable number without every caller casting: a missing aspect reads
- * as the fallback (`1` for a weight, so an unset aspect is neutral rather than zeroing a score).
+ * as the fallback the caller passes (`1` for a neutral weight, `0` where an unset aspect should zero the score).
  *
  * @example
  * ```ts

@@ -26,6 +26,7 @@ import * as mwlFengari from '../src/mwl/fengari.ts';
 import * as ai from '../src/ai/index.ts';
 import * as aiLua from '../src/ai/lua.ts';
 import * as threads from '../src/threads/index.ts';
+import * as headless from '../src/headless/index.ts';
 
 /**
  * Every exported class, function and namespace should carry a working `@example` - not
@@ -73,6 +74,7 @@ const MODULES: Record<string, Record<string, unknown>> = {
 	ai,
 	'ai/lua': aiLua,
 	threads,
+	headless,
 };
 
 const ROOT = resolvePath(new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));

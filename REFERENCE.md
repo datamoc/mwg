@@ -56,7 +56,7 @@ Three rules the whole API follows, so a name means one thing everywhere:
 [assets](#assets) · [audio](#audio) · [battle](#battle) · [board](#board) ·
 [actors](#actors) · [roguelike](#roguelike) · [rpg](#rpg) · [simulation](#simulation) ·
 [three-d](#three-d-optional) · [world](#world) · [i18n](#i18n) · [mwl](#mwl) · [ai](#ai) ·
-[testing](#testing) · [threads](#threads)
+[testing](#testing) · [threads](#threads) · [headless](#headless)
 
 ## `core`
 
@@ -201,7 +201,7 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   `effectiveSfxVolume` read 0 while muted, corrupt storage reads as defaults.
 - `Session` - counts launches over the same storage `SaveSystem` uses, for a native
   wrapper's own rating-prompt timing; never prompts itself.
-- `FeedbackClient`/`HttpTransportOptions` - an injectable HTTPS JSON transport for
+- `FeedbackClient`/`HttpTransport`/`HttpTransportOptions` - an injectable HTTPS JSON transport for
   player-submitted feedback; the game owns the endpoint, consent flow, and server-side storage.
   Every `HttpTransportOptions` client (`FeedbackClient`, `NewsClient`, `SaveSyncClient`,
   `TelemetryClient`) and `LockstepClient` refuses an `http:`/`ws:` url to anything but
@@ -224,12 +224,14 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   deliberately *unchecked* arithmetic, so a loop that has already proved its coordinates pays
   nothing while a module that wants a throw or a `-1` keeps that policy in its own method;
   `cellKey`/`cellFromKey` are the `'x,y'` spelling for `Map`/`Set` membership.
-- `NEIGHBOURS4`/`NEIGHBOURS8`/`CIRCLE8`/`euclidean` - one frozen offset table per square
+- `NEIGHBOURS4`/`NEIGHBOURS8`/`CIRCLE8`/`euclidean`/`chebyshev` - one frozen offset table per square
   neighbourhood, shared instead of copied: axial north/east/south/west, the eight
   surrounding cells in row-major order, and the same ring clockwise from north (the
   sequence `roguelike`'s `neighbourOffsets(8)` always returned, now returned as-is from
-  here). `euclidean` is the straight-line ruler; `roguelike`'s `chebyshevDistance` stays
-  the diagonal-costs-a-step one.
+  here). `euclidean` is the straight-line ruler, `chebyshev` the king-move one (a
+  diagonal costs one step), and `manhattan` the orthogonal-step count; `distance` measures
+  with the ruler a `DistanceMetric` names, so a data-authored rule picks its geometry by
+  name. `roguelike`'s `chebyshevDistance` delegates to `chebyshev`.
 - `Blob` - a spreading volume field over a grid: a per-cell number that `spread` diffuses a
   share of into its open 4-neighbours and decays the rest (`decay: 1` conserves and only
   moves volume around). `seed` adds to a cell, `clear` zeroes one cell and leaves its
@@ -1240,6 +1242,23 @@ wants one.
   `AbortSignal`) cancels one on demand. One worker per task, terminated the moment it
   settles. In Node an unsettled task keeps the process alive, so settle or cancel every
   task before exit.
+
+## `headless`
+
+The blessed renderer-free entry: every module that loads in bare Node, in one import,
+with no DOM or WebGL globals. A rule imported through here is headless by construction;
+anything outside it belongs in presentation, not in the rule.
+
+- `core`/`simulation`/`mwl` - scenes, saves, RNG, headless scenarios and content tables.
+- `i18n`/`actors`/`world`/`battle` - messages, stats, maps, encounters and type matchups.
+- `roguelike`/`board`/`audio`/`rpg` - dungeon generation, board rules, sound/music
+  primitives (inject `create`, as under plain `audio`) and map events.
+- `ai`/`testing` - decision runners and the shared test doubles.
+- `assetPaths`/`assetBinary` - the two renderer-free asset halves (path resolution and
+  byte caching) beside the Pixi-backed `assets` loader.
+
+Excluded with reasons in `src/headless/index.ts`: `three-d` (needs Babylon at import),
+the Lua runtimes (`mwl/fengari`, `ai/lua`), and every `two-d/*` module.
 
 ## `three-d` (optional)
 

@@ -90,12 +90,15 @@ export type {
 	MwlEffectDefinition,
 	MwlAiDefinition,
 	MwlBehaviorDefinition,
+	MwlEvolutionDefinition,
 	MwlItemDefinition,
 	MwlLootDefinition,
 	MwlMonsterDefinition,
+	MwlMoveDefinition,
 	MwlStatusDefinition,
 	MwlTableDefinition,
 	MwlTurnClockDefinition,
+	MwlTypeMatchupDefinition,
 } from './content.ts';
 export { evaluateExpression, parseExpression } from './expression.ts';
 export type { MwlExpression, MwlExpressionContext } from './expression.ts';

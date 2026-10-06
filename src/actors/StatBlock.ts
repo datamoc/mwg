@@ -40,15 +40,13 @@ export interface StatBlockOptions {
 }
 
 /**
- * Resolves one stat's modifiers into a single number.
+ * Resolves one stat's modifiers into a single number, in the framework's
+ * canonical add, multiply, then set composition.
  *
  * Every `add` modifier applies first (summed together), then every `multiply` (each
  * scaling the running total), then every `set` (the last one wins) - a stated, fixed order,
  * so a +10% ring and a cursed -2 sword combine the same way regardless of equip order, and
  * a `set` modifier (a polymorph, a stat drained to exactly zero) always wins over the rest.
- */
-/**
- * Apply the framework's canonical add, multiply, then set composition.
  *
  * @example
  * ```ts

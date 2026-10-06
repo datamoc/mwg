@@ -19,7 +19,7 @@ export type {
 export { GridMover } from './GridMover.ts';
 export type { GridMoverOptions, Direction4 } from './GridMover.ts';
 export { MoveRouteRunner } from './MoveRoute.ts';
-export type { MoveRoute, MoveRouteStep, MoveRouteOptions } from './MoveRoute.ts';
+export type { MoveRoute, MoveRouteStep, MoveRouteOptions, RouteTarget } from './MoveRoute.ts';
 export { FreeMover } from './FreeMover.ts';
 export type { FreeMoverOptions } from './FreeMover.ts';
 export { aabbOverlap, circleOverlap, circleAabbOverlap, resolveAabbAgainstTiles } from './Collision.ts';

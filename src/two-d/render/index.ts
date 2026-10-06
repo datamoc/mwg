@@ -60,10 +60,10 @@ export { Halo, HALO_ANIMATION } from './Halo.ts';
 export type { HaloOptions } from './Halo.ts';
 
 export { ParticleEmitter } from './Particles.ts';
-export type { Particle, ParticleRange, ParticleEmitterOptions } from './Particles.ts';
+export type { Particle, ParticleRange, ParticleCurve, ParticleSpawnArea, ParticleEmitterOptions } from './Particles.ts';
 
 export { ScreenEffects } from './ScreenEffects.ts';
-export type { ScreenEffectPhase, ScreenEffectsOptions } from './ScreenEffects.ts';
+export type { ScreenEffectPhase, ScreenEffectStep, ScreenEffectsOptions } from './ScreenEffects.ts';
 
 export { ActorAnimator } from './ActorAnimator.ts';
 export type { ActorAnimationState, ActorAnimatorOptions } from './ActorAnimator.ts';

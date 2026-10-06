@@ -1,5 +1,6 @@
 import type { Level } from './Level.ts';
 import type { Step } from './Pathfinder.ts';
+import { chebyshev } from '../core/Grid.ts';
 import { hexDistance, hexLine, hexRange } from '../core/Hex.ts';
 import { Signal } from '../core/Signal.ts';
 
@@ -44,7 +45,7 @@ export interface TargetingOptions {
  * ```
  */
 export function chebyshevDistance(a: Step, b: Step): number {
-	return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+	return chebyshev(a, b);
 }
 
 /**

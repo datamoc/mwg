@@ -17,7 +17,7 @@ export * as Input from './Input.ts';
 export { PlayerInput } from './PlayerInput.ts';
 export type { PlayerInputOptions } from './PlayerInput.ts';
 export { Generator, MersenneTwister, RandomStreams } from './Random.ts';
-export type { MersenneTwisterState } from './Random.ts';
+export type { MersenneTwisterState, RandomSource } from './Random.ts';
 export { JavaRandom } from './JavaRandom.ts';
 export type { JavaRandomDraw, JavaRandomOptions } from './JavaRandom.ts';
 export { SaveSystem } from './Save.ts';
@@ -56,7 +56,7 @@ export { ActionJournal } from './ActionJournal.ts';
 export { cloneData, uncloneablePath } from './Clone.ts';
 export type { ActionJournalEntry } from './ActionJournal.ts';
 export { Achievements } from './Achievements.ts';
-export type { AchievementDef } from './Achievements.ts';
+export type { AchievementDef, AchievementCriterion } from './Achievements.ts';
 export { ReactionTable } from './Reactions.ts';
 export type { ReactionRule } from './Reactions.ts';
 export { Session } from './Session.ts';
@@ -65,11 +65,13 @@ export type { GameSettings, SettingsOptions, CustomSettingValue } from './Settin
 export type { SessionOptions } from './Session.ts';
 export { FeedbackClient } from './Feedback.ts';
 export type { FeedbackOptions, FeedbackRequest, FeedbackResponse } from './Feedback.ts';
+export { HttpTransport } from './HttpTransport.ts';
 export type { HttpTransportOptions } from './HttpTransport.ts';
 export { Spawner } from './Spawner.ts';
 export type { Wave, SpawnerOptions } from './Spawner.ts';
 export { hexNeighbors, hexDistance, hexLine, hexRange, hexToPixel, pixelToHex } from './Hex.ts';
-export type { HexCoord } from './Hex.ts';
+export type { HexCoord, HexOrientation, HexOffset, HexShape } from './Hex.ts';
+export type { DistanceMetric } from './Grid.ts';
 export {
 	cellInside,
 	cellIndex,
@@ -81,6 +83,9 @@ export {
 	NEIGHBOURS8,
 	CIRCLE8,
 	euclidean,
+	chebyshev,
+	manhattan,
+	distance,
 } from './Grid.ts';
 export { motionDuration, prefersReducedMotion, reducedMotion, setReducedMotion, watchReducedMotion } from './Motion.ts';
 export type { MotionIntent } from './Motion.ts';

@@ -35,6 +35,7 @@
 	],
 	"bin": {
 		"mwg-bench": "tools/benchmark-browser.mjs",
+		"mwg-audit-adoptions": "tools/audit-adoptions.mjs",
 		"mwg-emit": "tools/emit-page.mjs",
 		"mwg-extract-rgssad": "tools/extract-rgssad.mjs",
 		"mwg-i18n": "tools/i18n-edit.mjs",
@@ -72,6 +73,7 @@
 		"tools/sbom.mjs",
 		"tools/sbom.d.mts",
 		"sbom.cdx.json",
+		"api-surface.json",
 		"tools/single-file.mjs",
 		"tools/single-file.d.mts",
 		"tools/make-example-assets.mjs",
@@ -81,6 +83,10 @@
 		"tools/mwl.mjs",
 		"tools/benchmark-browser.mjs",
 		"tools/benchmark-browser.d.mts",
+		"tools/audit-adoptions.mjs",
+		"tools/audit-adoptions.d.mts",
+		"tools/browser-driver.mjs",
+		"tools/browser-driver.d.mts",
 		"tools/benchmark-history.mjs",
 		"tools/benchmark-history.d.mts",
 		"tools/browser-smoke.mjs",
@@ -192,6 +198,8 @@
 			"import": "./dist/threads/index.js"
 		},
 		"./tools/benchmark-browser": "./tools/benchmark-browser.mjs",
+		"./tools/audit-adoptions": "./tools/audit-adoptions.mjs",
+		"./tools/browser-driver": "./tools/browser-driver.mjs",
 		"./tools/benchmark-history": "./tools/benchmark-history.mjs",
 		"./tools/browser-smoke": "./tools/browser-smoke.mjs",
 		"./tools/bundle-size": "./tools/bundle-size.mjs",
@@ -236,6 +244,11 @@
 		"./world": {
 			"types": "./dist/world/index.d.ts",
 			"import": "./dist/world/index.js"
+		},
+		"./api-manifest": "./api-surface.json",
+		"./headless": {
+			"types": "./dist/headless/index.d.ts",
+			"import": "./dist/headless/index.js"
 		}
 	},
 	"scripts": {

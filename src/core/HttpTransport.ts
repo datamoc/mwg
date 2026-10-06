@@ -36,6 +36,20 @@ export function assertSecureUrl(url: string, label: string, allowInsecure = fals
  * is aborted after `timeoutMs`. `label` names the concrete client in its own error messages
  * ("feedback endpoint is required", not a generic one that would leave a game guessing which
  * of several clients threw).
+ *
+ * @example
+ * ```ts
+ * import { HttpTransport, type HttpTransportOptions } from '@datamoc/mw_games/core';
+ *
+ * class ScoreClient extends HttpTransport {
+ * 	constructor(options: HttpTransportOptions) {
+ * 		super(options, 'score');
+ * 	}
+ * }
+ *
+ * const client = new ScoreClient({ endpoint: 'https://example.com/scores' });
+ * console.log(client instanceof HttpTransport); // true
+ * ```
  */
 export abstract class HttpTransport {
 	protected readonly endpoint: string;

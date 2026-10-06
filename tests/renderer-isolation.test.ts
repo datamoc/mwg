@@ -120,6 +120,7 @@ const RENDERER_FREE = [
 	'mwl',
 	'testing',
 	'three-d',
+	'headless',
 ];
 
 test('every module documented as renderer-free stays that way', () => {

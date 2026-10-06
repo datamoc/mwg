@@ -4,24 +4,24 @@
 	"version": "0.25.0",
 	"releaseDate": "2026-10-05",
 	"source": {
-		"files": 324,
-		"lines": 58648,
-		"modules": 17,
+		"files": 325,
+		"lines": 58876,
+		"modules": 18,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 91,
-				"lines": 18791
+				"lines": 18804
 			},
 			{
 				"name": "mwl",
 				"files": 22,
-				"lines": 6754
+				"lines": 6757
 			},
 			{
 				"name": "core",
 				"files": 50,
-				"lines": 6605
+				"lines": 6731
 			},
 			{
 				"name": "board",
@@ -36,12 +36,12 @@
 			{
 				"name": "roguelike",
 				"files": 22,
-				"lines": 3500
+				"lines": 3501
 			},
 			{
 				"name": "actors",
 				"files": 24,
-				"lines": 2456
+				"lines": 2454
 			},
 			{
 				"name": "rpg",
@@ -81,7 +81,7 @@
 			{
 				"name": "assets",
 				"files": 6,
-				"lines": 593
+				"lines": 594
 			},
 			{
 				"name": "threads",
@@ -92,17 +92,22 @@
 				"name": "testing",
 				"files": 1,
 				"lines": 157
+			},
+			{
+				"name": "headless",
+				"files": 1,
+				"lines": 86
 			}
 		]
 	},
 	"tests": {
-		"files": 286,
-		"lines": 38246,
-		"cases": 2659
+		"files": 292,
+		"lines": 39062,
+		"cases": 2695
 	},
 	"tools": {
-		"files": 46,
-		"lines": 9117
+		"files": 48,
+		"lines": 10085
 	},
 	"examples": {
 		"count": 24,
@@ -140,12 +145,12 @@
 		"percent": 98
 	},
 	"api": {
-		"declarationFiles": 323
+		"declarationFiles": 324
 	},
 	"bundle": {
-		"globalRaw": 1225983,
-		"globalGzip": 366084,
-		"distRaw": 4176222
+		"globalRaw": 1226384,
+		"globalGzip": 366245,
+		"distRaw": 4194965
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

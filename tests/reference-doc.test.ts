@@ -23,6 +23,7 @@ import * as ai from '../src/ai/index.ts';
 import * as aiLua from '../src/ai/lua.ts';
 import * as testing from '../src/testing/index.ts';
 import * as threads from '../src/threads/index.ts';
+import * as headless from '../src/headless/index.ts';
 
 /**
  * REFERENCE.md is hand-written and nothing generates it, so it drifts silently the moment an
@@ -57,6 +58,7 @@ const MODULES: Record<string, Record<string, unknown>> = {
 	'ai/lua': aiLua,
 	testing,
 	threads,
+	headless,
 };
 
 /** every identifier appearing inside a backticked span anywhere in the document */

@@ -12,8 +12,12 @@ import {
 	cellX,
 	cellY,
 	euclidean,
+	chebyshev,
+	manhattan,
+	distance,
 } from '../src/core/Grid.ts';
 import { neighbourOffsets } from '../src/roguelike/Level.ts';
+import { chebyshevDistance } from '../src/roguelike/Targeting.ts';
 
 /**
  * The port-requested primitive, tested the way its exit criterion asks: bounds are checked at
@@ -137,4 +141,31 @@ test('euclidean measures straight-line distance in cells', () => {
 	assert.equal(euclidean(from, { x: 3, y: 4 }), 5);
 	assert.equal(euclidean(from, { x: 1, y: 1 }), Math.SQRT2);
 	assert.equal(euclidean({ x: 1, y: 1 }, from), euclidean(from, { x: 1, y: 1 }), 'symmetric in its arguments');
+});
+
+test('chebyshev counts the king-move distance, diagonals costing one step', () => {
+	const from = { x: 0, y: 0 };
+	assert.equal(chebyshev(from, from), 0);
+	assert.equal(chebyshev(from, { x: 3, y: 4 }), 4);
+	assert.equal(chebyshev(from, { x: 1, y: 1 }), 1, 'a diagonal is one step, not sqrt(2)');
+	assert.equal(chebyshev(from, { x: 0, y: 5 }), 5, 'an axis run costs its length');
+	assert.equal(chebyshev({ x: 1, y: 1 }, from), chebyshev(from, { x: 1, y: 1 }), 'symmetric in its arguments');
+	assert.equal(chebyshevDistance(from, { x: 3, y: 4 }), 4, 'roguelike delegates to the same arithmetic');
+});
+
+test('manhattan counts orthogonal steps, never cutting a corner', () => {
+	const from = { x: 0, y: 0 };
+	assert.equal(manhattan(from, from), 0);
+	assert.equal(manhattan(from, { x: 3, y: 4 }), 7);
+	assert.equal(manhattan(from, { x: 1, y: 1 }), 2, 'a diagonal costs two orthogonal steps');
+	assert.equal(manhattan({ x: 1, y: 1 }, from), manhattan(from, { x: 1, y: 1 }), 'symmetric in its arguments');
+});
+
+test('distance measures with the named ruler and refuses an unknown one', () => {
+	const from = { x: 0, y: 0 };
+	const to = { x: 3, y: 4 };
+	assert.equal(distance('euclidean', from, to), 5);
+	assert.equal(distance('manhattan', from, to), 7);
+	assert.equal(distance('chebyshev', from, to), 4);
+	assert.throws(() => distance('octile' as never, from, to), RangeError);
 });
