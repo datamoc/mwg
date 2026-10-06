@@ -70,6 +70,16 @@ the public API may still change between minor versions.
   fractions/`evaluate`/`script`/`screenshot`/`consoleErrors`/`close`), reusing
   the `browser-smoke` readiness contract. Verified live on both engines.
 
+### Changed
+
+- The coverage gate now enforces `two-d/ui` instead of excluding the whole tree:
+  the widget tests the suite already ran carry it (97.3/92.6/94.3 against the
+  88/89/82 floors), so the exclusion was stale, and a wildcard also left every
+  new UI file silently ungated. `EventDialogue` stays excluded as intended, under
+  its real path (`two-d/ui`, where the old flag pointed at a nonexistent
+  `two-d/stage` copy), and `SelectionModel` gained a direct contract test that
+  covers it fully, where before only its embedding widgets exercised it.
+
 ## [0.25.0] - 2026-10-05
 
 Framework support for the Pixel Dungeon port's simulation and content proposals: numeric
