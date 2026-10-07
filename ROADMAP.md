@@ -5,10 +5,10 @@ among what is still open is reevaluated periodically, not just appended to. Entr
 mention "the capability spec" and other [README.md](README.md) sections by name; that's
 where those live.
 
-The shipped, numbered build history (everything through item 389) has moved to
-[CLOSED.md](CLOSED.md), so this file stays to what is actually open: new numbered items,
-parked decisions, and the 1.0 exit checklist. Item numbers are never reassigned, so a new
-item continues the sequence in CLOSED.md rather than restarting at 1.
+The shipped, numbered build history (everything through item 389, plus 391, 392, 395, 396,
+397 and 402 since) has moved to [CLOSED.md](CLOSED.md), so this file stays to what is actually
+open: new numbered items, parked decisions, and the 1.0 exit checklist. Item numbers are never
+reassigned, so a new item continues the sequence in CLOSED.md rather than restarting at 1.
 
 Item 390 is open, scoped below. Items 372-389, opened and closed on 2026-09-25, were the security
 review (372-379: one inbound pipeline, a Lua memory bound, a default Content-Security-Policy,
@@ -22,13 +22,12 @@ checklist below.
 
 ### Open items
 
-Priority review, 2026-10-02: keep the existing order. Item 395 now has courier and
-maze chase workloads with headless training and browser frame-time checks. These
-meet its initial scope; further neural work needs measured demand before taking
-priority over the existing work. Items 396-397, added 2026-10-07, sit at the end at
-low priority per the process: run persistence builds on `core/Replay.ts`, and the
-replay-driven AI deliberately follows the training path 395 already shipped rather
-than opening a new one. Items 398-400, added 2026-10-07, sit at the end at low priority
+Priority review, 2026-10-02: keep the existing order. Item 395 shipped with courier and
+maze chase workloads with headless training and browser frame-time checks, meeting its
+initial scope; its record, along with the run-persistence and replay-AI pair 396-397 (both
+opened 2026-10-07 at low priority per the process, 397 deliberately following the training
+path 395 shipped rather than opening a new one), is now in
+[CLOSED.md](CLOSED.md). Items 398-400, added 2026-10-07, sit at the end at low priority
 the same way: SVG completeness builds on the loading path items 15 and 198 already
 shipped, and the skeletal pair (399, 400) deliberately waits behind 398's group-split
 authoring, which is the form a rig would actually load. Items 401-402, added 2026-10-07
@@ -72,34 +71,6 @@ but stay a tool run away: full 4-piece tables are tens of megabytes each, the sa
 size argument that already excludes 5-piece. Residual before this item closes:
 either accept that split, or check 4-piece artifacts in anyway.
 
-391. **Standard form controls in `two-d/ui`: radio groups, multiline text,
-multi-select.** `Checkbox`, `Dropdown` (single select), `Button` and the single-line
-`TextModel` already cover their HTML counterparts; the gaps are an exclusive-choice
-radio group (`<input type="radio" name="...">`), a multiline text area (`<textarea>`)
-beyond `TextModel`'s single line, and a multi-select list (`<select multiple>`)
-beyond `ListView`'s single highlight. Canvas-drawn like the rest of `ui` (no DOM
-dependency, theme-aware, keyboard driven, announced through `a11y.ts`), each with
-committed tests.
-
-Status: shipped as `ui/RadioGroup.ts` (one choice among several, arrows select at
-once), multiline `TextModel` (newlines kept with `lineCount`/`caretLine`/`lineRange`/
-`moveCaretLine` holding a sticky goal column; single-line fields strip them on every
-edit), and `ListView` `multiple` mode (confirm and tap toggle checks read back
-through `checkedIndexes`). New tests: `radio-group`, `text-model` multiline rows,
-`list-view` multi-select rows.
-
-392. **Small generic widgets found in the Pixel Dungeon port, and RPG-runner gaps from the MWGP player.**
-Surveyed 2026-09-28 from `mwg-pixel-dungeon` and the MWGP player's `4MWG` notes: a
-player-facing message log, an animated liquid layer with ripples, a sub-tile smoothed fog
-overlay, a text-sharpening helper plus window-zoom fit, a bit-exact `java.util.Random`, a
-`TileMap` rectangle stamp, and per-kind autotile table selection for the MV A4 sheet.
-
-Status: all shipped, with tests: `ui/MessageLog.ts`, `ui/TextSharpness.ts`,
-`render/LiquidLayer.ts`, `render/FogLayer.ts`, `TileMap.stampRect`,
-`AutotileSet.mode: 'mixed'`, `core/JavaRandom.ts`. Each is game-agnostic; the games keep their
-palettes, rules and art. What the port and player still owe is adoption, and A4's table-edge
-and shadow quads remain adapter-side.
-
 393. **Ableton `.agr` and Reaper groove formats for `GrooveConverter`.**
 Both formats are proprietary and undocumented, so the converter throws a named error for them
 today. They are to be written against real files exported from Live and Reaper, kept as test
@@ -111,124 +82,6 @@ on round-trip, and a failed round-trip is reported rather than tolerated silentl
 as an optional peer, and its `PerformanceRNN` checkpoint compiled into `window.__MWG_ASSETS__`,
 since `fetch()` is blocked from `file://`. Low priority: it costs the small-dependency policy
 and the two shipped tiers already cover the game use case.
-
-395. **Small neural policies, headless training integration and worker batching.** Add a dependency-free,
-renderer-free dense-network inference path under `ai`, with shared model weights
-for many agents and game-owned observation vectors and action mappings. Start with
-ReLU hidden layers and linear output scores; validate layer dimensions, input
-lengths and finite weights, biases and observations. Use a versioned plain-data
-model format that can be bundled into a `file://` game, with explicit size limits
-and reusable numeric buffers to bound allocation during inference. Game-specific
-perception, rewards and training algorithms belong to the game or trainer; the
-framework provides the simulation interface and rollout execution they need.
-
-Integrate action selection with the existing AI decision shapes rather than adding
-a parallel controller API. Support legal-action masks, deterministic ties, seeded
-sampling when requested and an explicit idle result when every action is masked.
-One shared policy can serve independent agents; a controller may also consume a
-global observation and return several agents' actions. Local grid/CNN perception
-and external inference providers can follow when a game supplies a measured need.
-
-Training must run against the same game rules as play, with no UI, DOM, renderer,
-audio or frame-loop dependency. Build a seeded environment adapter over the existing
-`simulation` rules with `reset(seed)` and `step(actions)` returning observations,
-legal-action masks, rewards, episode termination and a separate truncation flag
-for step limits. Actions are chosen from each new observation, rather than supplied
-as a fixed command list. Turn-based games advance logical turns; real-time games
-advance fixed simulation ticks. Neither waits for animations or wall-clock time.
-
-Run rollouts as fast as the simulation permits in Node, with bounded parallel
-environments on workers, isolated state and RNG per environment, batched inference,
-and bounded trajectory storage. Keep models loaded across rollout batches where
-measurements justify it, and avoid retaining presentation events or full journals
-unless requested for debugging. Checkpoints must retain model and observation-schema
-versions, environment/RNG state and trainer state so runs can resume. Export trained
-weights in the same model format used by the browser inference path. Record steps
-and episodes per second, memory use and serial versus parallel throughput on a named
-workload; a worker per tiny prediction is not an acceptable training strategy.
-
-Provide an optional async batch path over the same inference implementation,
-reusing `threads` with bounded concurrency, cancellation and stale-result handling.
-Measure synchronous batches against worker batches, including startup, model copying
-and result transfer, before deciding whether reusable workers are needed. Keep
-single small predictions synchronous when they fit the frame budget; workers must
-earn their overhead. Acceptance: numerical fixtures, invalid-model and action-mask
-tests, agreement between synchronous and worker results, seeded rollout replay and
-isolation, matching simulation outcomes with and without presentation, checkpoint
-resume, and a headless training example whose exported policy runs in a generated
-multi-agent `file://` example. Measure training throughput as well as the playable
-example's input latency and frame time. No trained model weights from reference games.
-
-Status: shipped as `ai/Neural.ts` and `simulation/Training.ts`, with a headless
-courier evolution optimizer (`npm run train:neural`), checkpoint resume and exported
-weights used by `examples/neural`. `benchmark:neural` compares full-episode worker
-shards against serial rollouts and includes inference startup/transfer costs;
-`neural:browser:check` verifies the WebGL local-file example stays responsive during
-worker execution and drops stale reports after reset. The
-maze chase example also uses the same renderer-free rules for gameplay and
-imitation training (`train:pacman`), with independent live AI selectors and its own
-local-file frame-time check (`pacman:browser:check`). On this machine, the initial
-256-episode benchmark measured about 40000 serial versus 99000 parallel simulation
-steps/s; tiny standalone inference was faster synchronously. Reusable workers across
-separate batches remain measurement-driven, with one worker per shard sufficient
-for this workload. Priority review: retain the existing order; this item addresses
-the new training requirement without unblocking 393's missing format fixtures or
-justifying 394's optional dependency cost.
-
-396. **Run persistence: last-run capture, save and restore of progress, replay export and
-import.** The shipped `core/Replay.ts` (`Recorder`/`Player`/`serializeReplay`/
-`deserializeReplay`) records actions stamped by frame count, and
-`simulation.validateSimulationReplay` proves a recording reproduces its run. Nothing yet
-persists a run across sessions or moves one between machines, so this item makes a run
-durable, each half shippable alone:
-
-- **Last-run capture.** The newest recording is always kept, bounded, so a game can offer
-  "watch the previous run" with no wiring beyond the signals `Recorder` already hooks.
-- **Save and restore of progress.** A checkpoint of a run in progress: the partial replay
-  beside the state snapshot the game already takes (`core.SaveSystem` for state, the
-  recording for the actions), so restoring means resuming the run and continuing the
-  recording from there.
-- **Export and import.** `serializeReplay` already produces a string; the export shape is
-  a versioned, self-describing file (framework version, game identity, recording) so a
-  replay from one build refuses to play in another by name rather than by garbage
-  behavior. The `file://` constraint decides the plumbing: no `fetch()`, so a browser
-  export is a download and an import is a file picker, and Node-side tools read and write
-  the same file directly. No server, no cloud, nothing that breaks the
-  double-click-to-open target.
-
-397. **Replay-driven AI: training from replays, an in-game suggestion mode, and a seeded
-AI run.** Once runs persist (396), replays become a game's own training data. The
-imitation path already exists as an example (the maze chase trains on generated
-episodes) but not as a framework capability fed by a game's recorded runs. Three
-separable capabilities:
-
-- **Training from replays.** The headless `simulation/Training.ts` adapter accepts
-  imported replays as imitation targets, so a game's policy is trained on how its own
-  players played. Game-recorded data only; nothing from a reference game.
-- **Suggestion mode.** During play, the AI proposes the next action (the `HeuristicAI`
-  candidate pipeline or the trained policy) as a hint the player may accept. The
-  suggestion path never mutates state and pays for itself only inside a measured frame
-  budget, the same discipline `ai`'s decision runners already carry.
-- **A seeded AI run.** One entry point plays a whole run with the AI choosing, driven
-  from a named seed through `core.RandomSource`: the same seed and the same policy make
-  the same decisions, so a run is reproducible on demand. Benchmarks, regression tests
-  and fair comparisons between policies are the point; an AI that plays differently every
-  time can be compared by no one.
-
-Status: shipped. `core/ReplayFile.ts` owns the whole of 396: the versioned envelope
-(`exportReplayFile`/`importReplayFile`, refusing another game or framework build by
-name), `LastRun` (the newest recording, one deep and bounded, over the same storage a
-save slot uses), `runCheckpoint`/`resumeRunPlayer` (mid-run restore, with `Recorder`
-and `Player` both taking `fromFrame`), and the `file://` plumbing (`downloadReplayFile`,
-`pickReplayFile`, `readReplayFile`). 397 shipped as `simulation.imitationFromReplay`
-(recorded runs walked against their own seeded `TrainingEnvironment`, handing back
-`(observation, action)` samples for a game's trainer), `simulation.runSeededEpisode`
-(a whole run from a named seed behind any deterministic chooser, not just a
-`NeuralModel`), and `ai.Suggester` (the throttled, non-mutating hint source). Tests:
-`tests/replay-file.test.ts`, `tests/replay-ai.test.ts`, `tests/suggester.test.ts`.
-What neither item promised and neither ships: a trained policy from real player runs -
-that is a game's own trainer over the imitation samples, the same split the maze chase
-example already draws.
 
 398. **SVG as a complete image source: inbound sanitization, named scale variants, and
 group-split parts.** Items 15 and 198 already load an SVG through the compiled `data:` URI
