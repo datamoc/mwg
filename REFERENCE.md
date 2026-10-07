@@ -603,6 +603,10 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   they commit, and the message plus validation errors announce through `screenReader`.
   The interface example's Name button is the reviewed hosting pattern: push it on a
   `WindowStack` and it owns focus, closing and the stack's un-popping by itself.
+  The touch half (roadmap 402): `keyboard: UPPERCASE_KEYBOARD` (or any `KeyboardLayout`)
+  hosts an `OnScreenKeyboard` beneath the field - rows of keys as data, each tap
+  pressing through `pressKey`, the same `onText`/`onAction` paths a physical key travels,
+  so pointer-only devices type too.
 - `DataTable`/`TableColumn`/`DataTableOptions` - a renderer-free columned table: sort by a column
   (toggling direction), a highlight that skips disabled rows, and a page derived from the
   highlight.

@@ -1200,6 +1200,18 @@
 		"declaringModule": "core/JavaRandom.d.ts"
 	},
 	{
+		"name": "KeyboardKey",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
+	},
+	{
+		"name": "KeyboardLayout",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
+	},
+	{
 		"name": "Label",
 		"kind": "class",
 		"subpath": ".",
@@ -1702,6 +1714,12 @@
 		"kind": "class",
 		"subpath": ".",
 		"declaringModule": "two-d/render/Shape2D.d.ts"
+	},
+	{
+		"name": "OnScreenKeyboard",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
 	},
 	{
 		"name": "packColorAdd",
@@ -3256,6 +3274,12 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "core/Scramble.d.ts"
+	},
+	{
+		"name": "UPPERCASE_KEYBOARD",
+		"kind": "const",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
 	},
 	{
 		"name": "validateSchema",
@@ -11076,6 +11100,18 @@
 		"declaringModule": "two-d/render/SpriteGroup.d.ts"
 	},
 	{
+		"name": "KeyboardKey",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
+	},
+	{
+		"name": "KeyboardLayout",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
+	},
+	{
 		"name": "Label",
 		"kind": "class",
 		"subpath": "./two-d",
@@ -11410,6 +11446,12 @@
 		"kind": "class",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/Shape2D.d.ts"
+	},
+	{
+		"name": "OnScreenKeyboard",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
 	},
 	{
 		"name": "packColorAdd",
@@ -12454,6 +12496,12 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/stage/twee.d.ts"
+	},
+	{
+		"name": "UPPERCASE_KEYBOARD",
+		"kind": "const",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
 	},
 	{
 		"name": "VerticalLabel",
@@ -14196,6 +14244,18 @@
 		"declaringModule": "two-d/ui/IconGrid.d.ts"
 	},
 	{
+		"name": "KeyboardKey",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
+	},
+	{
+		"name": "KeyboardLayout",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
+	},
+	{
 		"name": "Label",
 		"kind": "class",
 		"subpath": "./two-d/ui",
@@ -14422,6 +14482,12 @@
 		"kind": "interface",
 		"subpath": "./two-d/ui",
 		"declaringModule": "two-d/ui/NinePatch.d.ts"
+	},
+	{
+		"name": "OnScreenKeyboard",
+		"kind": "class",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
 	},
 	{
 		"name": "parseMarkdown",
@@ -14794,6 +14860,12 @@
 		"kind": "interface",
 		"subpath": "./two-d/ui",
 		"declaringModule": "two-d/ui/TreeView.d.ts"
+	},
+	{
+		"name": "UPPERCASE_KEYBOARD",
+		"kind": "const",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
 	},
 	{
 		"name": "VerticalLabel",

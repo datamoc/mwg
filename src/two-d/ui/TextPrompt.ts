@@ -5,6 +5,7 @@ import { Window } from './Window.ts';
 import { Label } from './Label.ts';
 import { theme, themeChanged } from './theme.ts';
 import { screenReader, type ScreenReader } from './a11y.ts';
+import { OnScreenKeyboard, type KeyboardLayout } from './OnScreenKeyboard.ts';
 
 /** seconds per caret blink half-cycle */
 const BLINK_PERIOD = 0.5;
@@ -24,6 +25,11 @@ export interface TextPromptOptions {
 
 	/** the most characters the field will hold; unlimited when omitted */
 	maxLength?: number;
+	/**
+	 * Rows of keys rendered beneath the field for pointer-only devices, feeding the same
+	 * `onText`/`onAction` paths a physical key travels. Omit on a keyboard-first platform.
+	 */
+	keyboard?: KeyboardLayout;
 
 	/**
 	 * Decides whether the current value may be confirmed: return an error message to
@@ -105,6 +111,7 @@ export class TextPrompt extends Window {
 	private preview = '';
 	private promptError: string | null = null;
 
+	private readonly keyboard: OnScreenKeyboard | null = null;
 	private messageLabel: Label | null = null;
 	private valueLabel: Label;
 	private previewLabel: Label;
@@ -182,6 +189,14 @@ export class TextPrompt extends Window {
 		this.content.addChild(this.errorLabel);
 
 		this.content.addChild(this.caretBar);
+
+		//the touch half: rows of keys under the field, sized into the window
+		if (options.keyboard) {
+			this.keyboard = new OnScreenKeyboard(options.keyboard, { width: this.contentWidth });
+			this.keyboard.y = this.errorLabel.y + this.lineHeight + gap;
+			this.content.addChild(this.keyboard);
+			this.resize(options.width, options.height + this.keyboard.contentHeight + gap);
+		}
 
 		onText.add(this.textListener);
 		onComposition.add(this.compositionListener);

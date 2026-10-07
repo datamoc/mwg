@@ -86,6 +86,16 @@ export function dispatchText(text: string): void {
 	if (text.length > 0) onText.dispatch(text);
 }
 
+/**
+ * Fires `onAction` for one named action - the programmatic counterpart of a physical key
+ * press, without holding anything: an on-screen keyboard's Enter key feeds the confirm
+ * action down the same signal a real key travels, so a prompt or menu cannot tell the two
+ * apart. Deliberately no `held`/`pressedThisFrame` bookkeeping, because nothing is held.
+ */
+export function dispatchAction(action: Action): void {
+	onAction.dispatch(action);
+}
+
 /** Fires `onComposition`, copying the input so a listener cannot mutate the caller's object. */
 export function dispatchComposition(input: CompositionInput): void {
 	onComposition.dispatch({ phase: input.phase, text: input.text });

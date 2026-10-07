@@ -64,6 +64,8 @@ export { MessageBox } from './MessageBox.ts';
 export type { MessageBoxOptions, MessagePage, Choice } from './MessageBox.ts';
 
 export { TextPrompt } from './TextPrompt.ts';
+export { OnScreenKeyboard, UPPERCASE_KEYBOARD } from './OnScreenKeyboard.ts';
+export type { KeyboardKey, KeyboardLayout } from './OnScreenKeyboard.ts';
 export type { TextPromptOptions } from './TextPrompt.ts';
 
 export { VerticalLabel, layoutVertical } from './VerticalLabel.ts';

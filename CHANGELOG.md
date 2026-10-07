@@ -7,6 +7,15 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.29.0] - 2026-10-07
+
+P37's touch half: the on-screen keyboard. Rows of keys as data, rendered through the
+theme's own Button, each tap feeding the same core.Input paths a physical key travels -
+dispatchText for a typing key, the new dispatchAction for an action key - so a TextPrompt
+cannot tell the two apart. TextPrompt grows a keyboard option that hosts one beneath the
+field and resizes the window to fit it, UPPERCASE_KEYBOARD is one shipped default, and
+the interface example's Name prompt carries it as the reviewed touch pattern.
+
 ## [0.28.0] - 2026-10-07
 
 The 0.27.0 consumer wave sharpened asks: the pixel-dungeon port proposal file

@@ -2043,6 +2043,26 @@ build instead.
         onDraw?: (draw: JavaRandomDraw) => void;
     }
 
+### `KeyboardKey` (interface)
+
+    export interface KeyboardKey {
+
+        label: string;
+
+        text?: string;
+
+        action?: Action;
+
+        span?: number;
+    }
+
+### `KeyboardLayout` (interface)
+
+    export interface KeyboardLayout {
+
+        rows: KeyboardKey[][];
+    }
+
 ### `Label` (class)
 
     export declare class Label extends Text {
@@ -3055,6 +3075,17 @@ build instead.
 ### `Node2D` (class)
 
     export declare class Node2D extends Container {
+    }
+
+### `OnScreenKeyboard` (class)
+
+    export declare class OnScreenKeyboard extends Container {
+        private readonly laidOutHeight;
+        constructor(layout: KeyboardLayout, options: {
+            width: number;
+        });
+
+        get contentHeight(): number;
     }
 
 ### `packColorAdd` (function)
@@ -5438,6 +5469,7 @@ build instead.
         private readonly announcer;
         private preview;
         private promptError;
+        private readonly keyboard;
         private messageLabel;
         private valueLabel;
         private previewLabel;
@@ -5482,6 +5514,8 @@ build instead.
         initialValue?: string;
 
         maxLength?: number;
+
+        keyboard?: KeyboardLayout;
 
         validate?: (value: string) => string | null;
 
@@ -6027,13 +6061,17 @@ build instead.
 
     export declare function unscramble(payload: string, key: string): string;
 
+### `UPPERCASE_KEYBOARD` (const)
+
+    export declare const UPPERCASE_KEYBOARD: KeyboardLayout;
+
 ### `validateSchema` (function)
 
     export declare function validateSchema(value: unknown, schema: Schema, path?: string): void;
 
 ### `version` (const)
 
-    export declare const version = "0.28.0";
+    export declare const version = "0.29.0";
 
 ### `VerticalLabel` (class)
 
@@ -17355,6 +17393,26 @@ build instead.
 
     export declare function isOnScreen(camera: Camera, x: number, y: number, margin?: number): boolean;
 
+### `KeyboardKey` (interface)
+
+    export interface KeyboardKey {
+
+        label: string;
+
+        text?: string;
+
+        action?: Action;
+
+        span?: number;
+    }
+
+### `KeyboardLayout` (interface)
+
+    export interface KeyboardLayout {
+
+        rows: KeyboardKey[][];
+    }
+
 ### `Label` (class)
 
     export declare class Label extends Text {
@@ -18082,6 +18140,17 @@ build instead.
 ### `Node2D` (class)
 
     export declare class Node2D extends Container {
+    }
+
+### `OnScreenKeyboard` (class)
+
+    export declare class OnScreenKeyboard extends Container {
+        private readonly laidOutHeight;
+        constructor(layout: KeyboardLayout, options: {
+            width: number;
+        });
+
+        get contentHeight(): number;
     }
 
 ### `packColorAdd` (function)
@@ -19709,6 +19778,7 @@ build instead.
         private readonly announcer;
         private preview;
         private promptError;
+        private readonly keyboard;
         private messageLabel;
         private valueLabel;
         private previewLabel;
@@ -19753,6 +19823,8 @@ build instead.
         initialValue?: string;
 
         maxLength?: number;
+
+        keyboard?: KeyboardLayout;
 
         validate?: (value: string) => string | null;
 
@@ -20205,6 +20277,10 @@ build instead.
 
         title?: string;
     }
+
+### `UPPERCASE_KEYBOARD` (const)
+
+    export declare const UPPERCASE_KEYBOARD: KeyboardLayout;
 
 ### `VerticalLabel` (class)
 
@@ -23210,6 +23286,26 @@ build instead.
         onReorder?: (fromIndex: number, toIndex: number) => void;
     }
 
+### `KeyboardKey` (interface)
+
+    export interface KeyboardKey {
+
+        label: string;
+
+        text?: string;
+
+        action?: Action;
+
+        span?: number;
+    }
+
+### `KeyboardLayout` (interface)
+
+    export interface KeyboardLayout {
+
+        rows: KeyboardKey[][];
+    }
+
 ### `Label` (class)
 
     export declare class Label extends Text {
@@ -23736,6 +23832,17 @@ build instead.
             right: number;
             bottom: number;
         };
+    }
+
+### `OnScreenKeyboard` (class)
+
+    export declare class OnScreenKeyboard extends Container {
+        private readonly laidOutHeight;
+        constructor(layout: KeyboardLayout, options: {
+            width: number;
+        });
+
+        get contentHeight(): number;
     }
 
 ### `parseMarkdown` (function)
@@ -24413,6 +24520,7 @@ build instead.
         private readonly announcer;
         private preview;
         private promptError;
+        private readonly keyboard;
         private messageLabel;
         private valueLabel;
         private previewLabel;
@@ -24457,6 +24565,8 @@ build instead.
         initialValue?: string;
 
         maxLength?: number;
+
+        keyboard?: KeyboardLayout;
 
         validate?: (value: string) => string | null;
 
@@ -24670,6 +24780,10 @@ build instead.
 
         disabled?: (node: TreeNode<T>) => boolean;
     }
+
+### `UPPERCASE_KEYBOARD` (const)
+
+    export declare const UPPERCASE_KEYBOARD: KeyboardLayout;
 
 ### `VerticalLabel` (class)
 

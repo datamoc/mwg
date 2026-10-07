@@ -23,6 +23,7 @@ import {
 	HelpScreen,
 	Toast,
 	TextPrompt,
+	UPPERCASE_KEYBOARD,
 	theme,
 } from '../../src/two-d/ui/index.ts';
 import * as Resources from '../../src/assets/index.ts';
@@ -405,6 +406,8 @@ class InterfaceScene extends Scene2D {
 
 	/**
 	 * The reviewed TextPrompt pattern: push it on the WindowStack and it owns the rest -
+	 * The UPPERCASE_KEYBOARD option adds the touch half: rows of keys feed the same onText/action
+	 * paths a physical key travels, so a pointer-only device can type the name too.
 	 * typing through core.Input's onText, caret edits as actions, confirm gated by
 	 * validate, Escape cancelling, the stack popping it on close. The message is
 	 * announced to screen readers on open, a validation failure assertively.
@@ -418,6 +421,7 @@ class InterfaceScene extends Scene2D {
 				message: 'Up to 12 characters. Enter keeps it, Escape cancels.',
 				initialValue: this.heroName,
 				maxLength: 12,
+				keyboard: UPPERCASE_KEYBOARD,
 				validate: (value) => (value.trim() === '' ? 'Even a hero needs a name.' : null),
 				onConfirm: (value) => {
 					this.heroName = value;
