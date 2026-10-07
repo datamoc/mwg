@@ -406,11 +406,11 @@ class InterfaceScene extends Scene2D {
 
 	/**
 	 * The reviewed TextPrompt pattern: push it on the WindowStack and it owns the rest -
-	 * The UPPERCASE_KEYBOARD option adds the touch half: rows of keys feed the same onText/action
-	 * paths a physical key travels, so a pointer-only device can type the name too.
 	 * typing through core.Input's onText, caret edits as actions, confirm gated by
 	 * validate, Escape cancelling, the stack popping it on close. The message is
-	 * announced to screen readers on open, a validation failure assertively.
+	 * announced to screen readers on open, a validation failure assertively. The
+	 * UPPERCASE_KEYBOARD option adds the touch half: rows of keys feed those same
+	 * onText and action paths, so a pointer-only device can type the name too.
 	 */
 	private openNamePrompt(): void {
 		this.windows.push(

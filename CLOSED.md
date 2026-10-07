@@ -5792,3 +5792,17 @@ capability this framework was missing.
     `mwg-placeholder-assets <folder> [--force]`: it refuses to replace existing files without
     `force`, since the folder may hold a game's real art. With no folder inside this repository
     it regenerates `examples/assets`, byte-identical to before.
+
+402. ~~The pointer-driven on-screen keyboard for `TextPrompt`.~~ Landed in 0.29.0 as
+    `OnScreenKeyboard` over `KeyboardLayout`/`KeyboardKey` data: rows of keys rendered through
+    the theme's own `Button`, each tap leaving `pressKey` as `Input.dispatchText` for a typing
+    key or the new `Input.dispatchAction` for an action key, the same two paths a physical key
+    travels, so a `TextPrompt` cannot tell a tap from a keystroke. `TextPromptOptions.keyboard`
+    hosts one beneath the field and resizes the window to fit it, `UPPERCASE_KEYBOARD` is the
+    one shipped default (alphabet, digits, then `Bksp`/`Left`/`Right`/`Space`/`OK`/`Esc`), and
+    the interface example's Name prompt carries it as the reviewed touch pattern. The row
+    arithmetic and the dispatch choice are pure and tested in `tests/on-screen-keyboard.test.ts`
+    (42 keys laid out, wide keys covering their span slots exactly); the built example was
+    driven in headless Chrome, where taps changed the field's model, its drawn label and the
+    pixels together, `Esc` cancelled and `OK` confirmed. This was P37's touch half in the
+    pixel-dungeon port's proposal file.

@@ -33,7 +33,9 @@ the same way: SVG completeness builds on the loading path items 15 and 198 alrea
 shipped, and the skeletal pair (399, 400) deliberately waits behind 398's group-split
 authoring, which is the form a rig would actually load. Items 401-402, added 2026-10-07
 out of the pixel-dungeon port's proposal file (its P31 and P37), sit at the end the
-same way: both are sharpened by real consumer measurement rather than speculation.
+same way: both are sharpened by real consumer measurement rather than speculation. 402
+shipped the same day as 0.29.0 (its record is in [CLOSED.md](CLOSED.md)), so 401 is the
+one still open there.
 
 390. **A tournament-capable chess engine, Garbochess-shaped but framework-owned.** The
 shipped `board/Engine` stays a small deterministic rules engine by design; this item
@@ -287,14 +289,6 @@ notes), so a consumer budget justifies a use instead of merely counting it. What
 consumer-side: the per-symbol histogram in the consumer's own gate (so a budget raise is
 caught the commit it happens in), and the migration of newly-covered uses onto the facade
 with a browser-verified screenshot per file, which is what actually makes the budget fall.
-
-402. **The pointer-driven on-screen keyboard for `TextPrompt`.** P37's touch half:
-`TextPrompt` ships the typing state machine and the interface example ships the reviewed
-desktop hosting pattern, but a pointer-only device (a tablet on the sofa) still has no way
-to type into the field. A shipped keyboard hook - rows of keys as data, tapping feeding
-the same `onText`/action path a physical key does - keeps every game from inventing its
-own touch keyboard. Deliberately behind 401 and the rest: it is real, but a desktop-first
-game never needs it.
 
 ### Parked decisions
 

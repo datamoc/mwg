@@ -8,7 +8,7 @@ Generated for **mwg 0.29.0** on 2026-10-07.
 | Tests | 303 files, 2,797 test cases, 40,718 lines |
 | Tools | 48 files, 10,132 lines |
 | Examples | 24 runnable examples |
-| Roadmap | 389/402 items complete, 13 open |
+| Roadmap | 390/402 items complete, 12 open |
 | API | 330 declaration files |
 | Bundle | 1212.6 kB raw, 361.8 kB gzip |
 | Published dist | 4196.8 kB excluding source maps |
