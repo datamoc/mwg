@@ -7,6 +7,20 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Fixed
+
+- `tools/browser-driver`'s Chrome engine launches against its own profile
+  (`options.profileDir`, or a temp dir the driver creates and removes on `close`)
+  instead of the machine's default one, watches both stdout and stderr for the
+  debugging endpoint (which stream a build prints it on is not something to bet
+  on), waits up to 30 s instead of 15 (a cold CI machine's first Chrome start can
+  outrun the old budget), and names what the browser printed when the endpoint
+  never arrives. This is the fix for the Chrome end-to-end test failing on every
+  CI run since the driver landed: the default profile on a fresh runner never
+  reached the endpoint in time. `close` now also destroys the child's stdio
+  pipes (surviving browser helper processes could hold a suite open past the
+  browser's own death) and releases the profile only after the child exits.
+
 ## [0.26.0] - 2026-10-07
 
 The machine-readable surface and the audit tooling around it: `api-surface.json` ships as the

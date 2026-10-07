@@ -134,9 +134,10 @@ console.error('boom');
 
 /**
  * A browser profile cannot be removed while its browser is still releasing it: on
- * Windows the exiting Firefox holds profile files briefly after `kill`, so a single
- * `rmSync` throws EPERM and fails the suite for its own cleanup. Retry briefly, then
- * let the git-ignored scratch go rather than failing the test over it.
+ * Windows an exiting browser (Firefox first, Chrome once it gets a profile of its
+ * own) holds profile files briefly after `kill`, so a single `rmSync` throws EPERM
+ * and fails the suite for its own cleanup. Retry briefly, then let the git-ignored
+ * scratch go rather than failing the test over it.
  */
 function removeProfileDir(dir: string, attempts = 5) {
 	for (let attempt = 1; attempt <= attempts; attempt++) {
@@ -206,7 +207,7 @@ async function verifyDriver(
 
 test('the Chrome CDP driver plays a page end to end', { timeout: 120000 }, async (t) => {
 	const dir = mkdtempSync(join(ROOT, '.example-check', 'profile-'));
-	t.after(() => rmSync(dir, { recursive: true, force: true }));
+	t.after(() => removeProfileDir(dir));
 	await verifyDriver(t, 'chrome', driveChrome, dir);
 });
 

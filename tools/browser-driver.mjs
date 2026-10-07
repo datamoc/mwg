@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import { spawn, spawnSync } from 'node:child_process';
 import { createServer } from 'node:http';
-import { readFileSync, realpathSync, statSync } from 'node:fs';
+import { mkdtempSync, readFileSync, realpathSync, rmSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 import { createServer as createNetServer } from 'node:net';
 
@@ -248,22 +249,33 @@ export function findBrowser(kind) {
 	return null;
 }
 
-/** waits for `match` in a child process's stderr, then returns everything seen */
-function waitForEndpoint(child, match, timeoutMs = 15000) {
+/**
+ * Waits for `match` in the child's output, watching both stdout and stderr: which of the
+ * two a given browser build prints its debugging endpoint on is not something to bet on.
+ * The timeout message carries what was seen, because "no endpoint" alone cannot tell a
+ * slow cold start from a browser that started and refused to open one.
+ */
+function waitForEndpoint(child, match, timeoutMs = 30000) {
 	return new Promise((resolveEndpoint, reject) => {
 		let seen = '';
 		const timer = setTimeout(() => {
 			child.kill();
-			reject(new Error('browser printed no debugging endpoint in time'));
+			reject(
+				new Error(
+					`browser printed no debugging endpoint within ${timeoutMs} ms; output so far:\n${seen || '(none)'}`,
+				),
+			);
 		}, timeoutMs);
-		child.stderr.on('data', (chunk) => {
+		const onChunk = (chunk) => {
 			seen += chunk.toString();
 			const endpoint = match(seen);
 			if (endpoint) {
 				clearTimeout(timer);
 				resolveEndpoint({ endpoint, seen });
 			}
-		});
+		};
+		child.stdout?.on('data', onChunk);
+		child.stderr?.on('data', onChunk);
 		child.once('error', (error) => {
 			clearTimeout(timer);
 			reject(error);
@@ -360,7 +372,9 @@ function cdpTextOf(args) {
  * Drives headless Chrome over CDP. The game-facing half of P32: `goto` a served page,
  * `waitReady` for the `browser-smoke` contract, `tap` at canvas fractions with the
  * full pointer sequence, `evaluate`/`script` against the live page, `screenshot` to
- * a PNG buffer, `consoleErrors` across console/page-error channels, `close`.
+ * a PNG buffer, `consoleErrors` across console/page-error channels, `close`. The
+ * browser runs against its own profile (`options.profileDir`, or a temp dir this
+ * driver creates and removes on `close`), never the machine's default one.
  */
 /**
  * Polls the shared readiness predicate through either engine's `evaluate` until it
@@ -393,6 +407,13 @@ export async function driveChrome(options = {}) {
 	if (!executable) throw new Error('no Chrome executable found (set CHROME_PATH)');
 	const extraArgs = (process.env.MWG_DRIVER_CHROME_ARGS ?? '').split(' ').filter(Boolean);
 
+	//a dedicated profile, never the machine's own default one: a desktop Chrome already
+	//running on it (a dev machine) or a first-ever start against it (a cold CI runner) can
+	//hold the endpoint past any reasonable startup budget, and Chrome has said the default
+	//profile is the one configuration whose debugging port it may refuse. Fresh temp dir
+	//unless the caller owns the profile, and then it is the caller's to remove.
+	const ownsProfile = !options.profileDir;
+	const profileDir = resolve(options.profileDir ?? mkdtempSync(join(tmpdir(), 'mwg-chrome-')));
 	const child = spawn(
 		executable,
 		[
@@ -401,12 +422,13 @@ export async function driveChrome(options = {}) {
 			'--no-default-browser-check',
 			'--disable-extensions',
 			'--allow-file-access-from-files',
+			`--user-data-dir=${profileDir}`,
 			`--remote-debugging-port=${debuggingPort}`,
 			'--remote-allow-origins=*',
 			...(options.chromeArgs ?? extraArgs),
 			'about:blank',
 		],
-		{ stdio: ['ignore', 'ignore', 'pipe'] },
+		{ stdio: ['ignore', 'pipe', 'pipe'] },
 	);
 	await waitForEndpoint(child, parseDevToolsEndpoint);
 
@@ -477,6 +499,31 @@ export async function driveChrome(options = {}) {
 				// already closed
 			}
 			child.kill();
+			//the pipes must go: a browser's surviving helper processes can hold them (and so
+			//the whole suite) open past the main process's death
+			child.stdout?.destroy();
+			child.stderr?.destroy();
+			if (ownsProfile) {
+				//a browser releases its profile files briefly after the kill, so wait for
+				//the exit and retry: a profile left behind is clutter, not a failure
+				await new Promise((done) => {
+					if (child.exitCode !== null) return done();
+					const giveUp = setTimeout(done, 2000);
+					giveUp.unref?.();
+					child.once('exit', () => {
+						clearTimeout(giveUp);
+						done();
+					});
+				});
+				for (let attempt = 0; attempt < 5; attempt++) {
+					try {
+						rmSync(profileDir, { recursive: true, force: true });
+						return;
+					} catch {
+						await new Promise((tick) => setTimeout(tick, 100));
+					}
+				}
+			}
 		},
 	};
 }
