@@ -279,16 +279,14 @@ express:
   art from a reference game.
 
 401. **Close the pixi-interop facade gaps behind the measured escape-hatch histogram.**
-The pixel-dungeon port's proposal P31 measured what its 37 budgeted files actually import
+The pixel-dungeon port's proposal P31 measured what its budgeted files actually import
 raw from Pixi: `Rectangle` (27 files), `Texture` (23), `Container` (21), `Sprite` (19),
-`Graphics` (14), `FillGradient` (4), `TilingSprite` (2). Each use is frozen by
-pixel-verification cost, so the budget creeps (0.27 raised it to 41 files) instead of
-falling. Per symbol, either extend `two-d/pixi-interop`'s typed facade with the recurring
-operation families (atlas frame/region rects, sub-texture blits, path and gradient fills,
-arbitrary nesting) with the usual test/example/docs, or write the interop-only rationale
-on the symbol's own declaration so a consumer budget can justify a use instead of merely
-counting it. The first half - a per-symbol histogram in the consumer's own gate - is the
-consumer's, not ours.
+`Graphics` (14), `FillGradient` (4), `TilingSprite` (2). The rationale half is done: every
+`two-d/pixi-interop` export carries its interop-only note (shipped with the 0.26 interop
+notes), so a consumer budget justifies a use instead of merely counting it. What remains is
+consumer-side: the per-symbol histogram in the consumer's own gate (so a budget raise is
+caught the commit it happens in), and the migration of newly-covered uses onto the facade
+with a browser-verified screenshot per file, which is what actually makes the budget fall.
 
 402. **The pointer-driven on-screen keyboard for `TextPrompt`.** P37's touch half:
 `TextPrompt` ships the typing state machine and the interface example ships the reviewed
