@@ -7,6 +7,17 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.26.0] - 2026-10-07
+
+The machine-readable surface and the audit tooling around it: `api-surface.json` ships as the
+`./api-manifest` subpath (one `{ name, kind, subpath, declaringModule }` row per export), the
+blessed `mwg/headless` entry imports every renderer-free module in one line, `tools/audit-adoptions`
+checks a consumer's imports and local definitions against that manifest, and the dependency-free
+`tools/browser-driver` harness drives real Chrome and Firefox. `core` gained injectable `RandomSource`
+streams for every derived helper and the shared square-grid rulers (`chebyshev`, `manhattan`,
+`euclidean`, `distance` by `DistanceMetric`), the coverage gate now enforces `two-d/ui` instead of
+excluding the whole tree, and the bundle-size baseline is refreshed for the growth those brought.
+
 ### Added
 
 - Exported the types a public signature already names: `mwl` move/evolution/matchup
