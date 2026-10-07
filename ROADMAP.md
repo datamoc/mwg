@@ -31,7 +31,9 @@ replay-driven AI deliberately follows the training path 395 already shipped rath
 than opening a new one. Items 398-400, added 2026-10-07, sit at the end at low priority
 the same way: SVG completeness builds on the loading path items 15 and 198 already
 shipped, and the skeletal pair (399, 400) deliberately waits behind 398's group-split
-authoring, which is the form a rig would actually load.
+authoring, which is the form a rig would actually load. Items 401-402, added 2026-10-07
+out of the pixel-dungeon port's proposal file (its P31 and P37), sit at the end the
+same way: both are sharpened by real consumer measurement rather than speculation.
 
 390. **A tournament-capable chess engine, Garbochess-shaped but framework-owned.** The
 shipped `board/Engine` stays a small deterministic rules engine by design; this item
@@ -275,6 +277,26 @@ express:
 - Both halves carry the usual discipline: no renderer import in the pose math, measured
   frame time for a rig of bones before it replaces a frame sheet, and no animation data or
   art from a reference game.
+
+401. **Close the pixi-interop facade gaps behind the measured escape-hatch histogram.**
+The pixel-dungeon port's proposal P31 measured what its 37 budgeted files actually import
+raw from Pixi: `Rectangle` (27 files), `Texture` (23), `Container` (21), `Sprite` (19),
+`Graphics` (14), `FillGradient` (4), `TilingSprite` (2). Each use is frozen by
+pixel-verification cost, so the budget creeps (0.27 raised it to 41 files) instead of
+falling. Per symbol, either extend `two-d/pixi-interop`'s typed facade with the recurring
+operation families (atlas frame/region rects, sub-texture blits, path and gradient fills,
+arbitrary nesting) with the usual test/example/docs, or write the interop-only rationale
+on the symbol's own declaration so a consumer budget can justify a use instead of merely
+counting it. The first half - a per-symbol histogram in the consumer's own gate - is the
+consumer's, not ours.
+
+402. **The pointer-driven on-screen keyboard for `TextPrompt`.** P37's touch half:
+`TextPrompt` ships the typing state machine and the interface example ships the reviewed
+desktop hosting pattern, but a pointer-only device (a tablet on the sofa) still has no way
+to type into the field. A shipped keyboard hook - rows of keys as data, tapping feeding
+the same `onText`/action path a physical key does - keeps every game from inventing its
+own touch keyboard. Deliberately behind 401 and the rest: it is real, but a desktop-first
+game never needs it.
 
 ### Parked decisions
 

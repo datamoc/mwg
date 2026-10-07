@@ -118,6 +118,52 @@ test('spin rotates and fadeIn ramps alpha from zero to the launch value', () => 
 	flights.destroy();
 });
 
+test('spinDegrees is the same spin without the conversion at the call site', () => {
+	const flights = new Flights();
+	const inRadians = { x: 0, y: 0, rotation: 0 };
+	const inDegrees = { x: 0, y: 0, rotation: 0 };
+	flights.add(inRadians, { x: 0, y: 0 }, { x: 100, y: 0 }, { duration: 10, spin: (1440 * Math.PI) / 180 });
+	flights.add(inDegrees, { x: 0, y: 0 }, { x: 100, y: 0 }, { duration: 10, spinDegrees: 1440 });
+
+	flights.update(0.5);
+	assert.ok(Math.abs((inDegrees.rotation ?? 0) - (inRadians.rotation ?? 0)) < 1e-9);
+
+	flights.update(0.5);
+	assert.ok(Math.abs((inDegrees.rotation ?? 0) - Math.PI * 8) < 1e-9, '1440 deg/s is four turns a second');
+	flights.destroy();
+});
+
+test('fadeIn: "progress" follows the flight itself, no duration recomputed', () => {
+	const flights = new Flights();
+	const bolt = { x: 0, y: 0, alpha: 0.6, rotation: 0 };
+	const flight = flights.add(bolt, { x: 0, y: 0 }, { x: 200, y: 0 }, { speed: 400, fadeIn: 'progress' });
+	assert.equal(bolt.alpha, 0, 'the fade still starts from zero');
+
+	flights.update(0.25);
+	assert.ok(Math.abs((bolt.alpha ?? 0) - 0.3) < 1e-9, 'alpha is baseAlpha * progress at halfway');
+
+	//a speed change mid-flight moves the goalposts; the progress fade follows the
+	//tween's own clock rather than any duration the caller might have pre-computed
+	flights.update(0.25);
+	assert.equal(flight.done, true);
+	assert.ok(Math.abs((bolt.alpha ?? 0) - 0.6) < 1e-9, 'arrival lands exactly on the launch alpha');
+	flights.destroy();
+});
+
+test('fadeIn: true is the progress form and false is no fade at all', () => {
+	const flights = new Flights();
+	const progressForm = { x: 0, y: 0, alpha: 1, rotation: 0 };
+	const off = { x: 0, y: 0, alpha: 1, rotation: 0 };
+	flights.add(progressForm, { x: 0, y: 0 }, { x: 100, y: 0 }, { duration: 1, fadeIn: true });
+	flights.add(off, { x: 0, y: 0 }, { x: 100, y: 0 }, { duration: 1, fadeIn: false });
+
+	assert.equal(progressForm.alpha, 0);
+	assert.equal(off.alpha, 1, 'false leaves the sprite alone from the first frame');
+	flights.update(0.5);
+	assert.ok(Math.abs((progressForm.alpha ?? 0) - 0.5) < 1e-9);
+	flights.destroy();
+});
+
 test('tint applies once at launch when the sprite takes one', () => {
 	const flights = new Flights();
 	const tinted = { x: 0, y: 0, tint: 0xffffff };

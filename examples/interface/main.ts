@@ -22,6 +22,7 @@ import {
 	FloatingText,
 	HelpScreen,
 	Toast,
+	TextPrompt,
 	theme,
 } from '../../src/two-d/ui/index.ts';
 import * as Resources from '../../src/assets/index.ts';
@@ -39,7 +40,8 @@ declare global {
  *
  * Windows stack, only the top one takes the keyboard, and the world underneath dims. The
  * inventory is a ListView with icons and disabled rows; the conversation is a MessageBox
- * that reveals text and ends on a choice.
+ * that reveals text and ends on a choice; the Name button opens a TextPrompt, the modal
+ * single-line field with validation, IME preview and a blinking caret - no DOM overlay.
  */
 
 const TILES = 'tiles.png';
@@ -82,6 +84,7 @@ class InterfaceScene extends Scene2D {
 	private clock!: BitmapLabel;
 	private elapsed = 0;
 	private colorBlindnessIndex = 0;
+	private heroName = 'Nobody';
 	private toast!: Toast;
 
 	//the reduced-motion demo (roadmap item 202), and the state motion-smoke reads off `window`
@@ -244,6 +247,17 @@ class InterfaceScene extends Scene2D {
 		skinned.y = -6;
 		hud.addChild(skinned);
 
+		//the reviewed single-line entry pattern: a TextPrompt on the stack, no DOM overlay
+		const name = new Button({
+			width: 70,
+			height: 22,
+			text: 'Name',
+			onClick: () => this.openNamePrompt(),
+		});
+		name.x = 688;
+		name.y = -6;
+		hud.addChild(name);
+
 		//a corner minimap, synced from the same tile pattern drawBackdrop already drew -
 		//no roguelike Level in this example, so the "explored" set is just every cell
 		//the pattern has actually painted
@@ -386,6 +400,34 @@ class InterfaceScene extends Scene2D {
 			this.updateStatus();
 			return false;
 		});
+		this.updateStatus();
+	}
+
+	/**
+	 * The reviewed TextPrompt pattern: push it on the WindowStack and it owns the rest -
+	 * typing through core.Input's onText, caret edits as actions, confirm gated by
+	 * validate, Escape cancelling, the stack popping it on close. The message is
+	 * announced to screen readers on open, a validation failure assertively.
+	 */
+	private openNamePrompt(): void {
+		this.windows.push(
+			new TextPrompt({
+				width: 340,
+				height: 160,
+				title: 'Name your hero',
+				message: 'Up to 12 characters. Enter keeps it, Escape cancels.',
+				initialValue: this.heroName,
+				maxLength: 12,
+				validate: (value) => (value.trim() === '' ? 'Even a hero needs a name.' : null),
+				onConfirm: (value) => {
+					this.heroName = value;
+					const label = new Label({ text: 'Named: ' + value, color: 0xffe680, bold: true });
+					label.anchor.set(0.5);
+					this.toast.show(label);
+				},
+				onCancel: () => this.updateStatus(),
+			}),
+		);
 		this.updateStatus();
 	}
 

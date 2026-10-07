@@ -146,6 +146,15 @@ export interface FollowOptions {
 	 * gates the tick, not the call.
 	 */
 	enabled?: () => boolean;
+
+	/**
+	 * Consulted on every update tick; a false return hides the emitter and every particle
+	 * it has in the air, so a fog-of-war gate keeps an aura's spray out of unexplored
+	 * space without the consumer re-placing `visible` every frame. Drawing only: the
+	 * simulation keeps stepping behind the invisibility, emission keeps following
+	 * `enabled`, and `detach()` stops consulting the hook and leaves the emitter visible.
+	 */
+	visible?: () => boolean;
 }
 
 function pick(range: ParticleRange): number {
@@ -239,6 +248,7 @@ export class ParticleEmitter extends Container {
 	private followOffsetX = 0;
 	private followOffsetY = 0;
 	private followEnabled: (() => boolean) | null = null;
+	private followVisible: (() => boolean) | null = null;
 
 	/** where the next pool search starts, so reuse stays O(1) amortised rather than O(pool) */
 	private poolCursor = 0;
@@ -329,6 +339,7 @@ export class ParticleEmitter extends Container {
 		this.followOffsetX = options.offsetX ?? 0;
 		this.followOffsetY = options.offsetY ?? 0;
 		this.followEnabled = options.enabled ?? null;
+		this.followVisible = options.visible ?? null;
 		this.syncFollow();
 	}
 
@@ -336,6 +347,10 @@ export class ParticleEmitter extends Container {
 	detach(): void {
 		this.followTarget = null;
 		this.followEnabled = null;
+		//the hook owns `visible` only while attached; leaving a detached emitter stuck
+		//invisible would outlive the gate that hid it
+		if (this.followVisible !== null) this.visible = true;
+		this.followVisible = null;
 		this.followOffsetX = 0;
 		this.followOffsetY = 0;
 	}
@@ -355,6 +370,7 @@ export class ParticleEmitter extends Container {
 		const position = typeof target === 'function' ? target() : target;
 		this.x = position.x + this.followOffsetX;
 		this.y = position.y + this.followOffsetY;
+		if (this.followVisible !== null) this.visible = this.followVisible();
 	}
 
 	private followEmissionAllowed(): boolean {

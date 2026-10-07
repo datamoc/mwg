@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Texture, TilingSprite } from 'pixi.js';
+import { Rectangle, Sprite, Texture, TilingSprite } from 'pixi.js';
 
 import { Beam, Beams } from '../src/two-d/render/Beam.ts';
 
@@ -82,6 +82,72 @@ test('a textured beam stretches the strip to the distance and tracks retarget', 
 	strip.update(0.05);
 	near(strip.alpha, 0.75, 'the strip fades like the plain line');
 	strip.destroy();
+});
+
+test('a thin beam narrows with its remaining life, plain and textured alike', () => {
+	const line = new Beam({ x: 0, y: 0 }, { x: 100, y: 0 }, { width: 4, duration: 0.2, thin: true });
+	const strip = new Beam(
+		{ x: 0, y: 0 },
+		{ x: 100, y: 0 },
+		{ texture: new Texture(), width: 8, duration: 0.2, thin: true },
+	);
+
+	line.update(0.1);
+	//Graphics keeps no queryable stroke width, so the thinning is visible through
+	//the tiling strip below; here the expiry and the fade still behave the same
+	assert.equal(line.done, false);
+
+	const stripBody = strip.children[0] as TilingSprite;
+	assert.equal(stripBody.height, 8, 'full thickness at launch');
+	strip.update(0.1);
+	assert.equal(stripBody.height, 4, 'half the life, half the thickness');
+	strip.update(0.1);
+	assert.equal(stripBody.height, 0, 'the strip is gone at end of life');
+	assert.equal(strip.done, true);
+	line.destroy();
+	strip.destroy();
+});
+
+test('a beam without thin keeps its full thickness for the whole fade', () => {
+	const strip = new Beam({ x: 0, y: 0 }, { x: 100, y: 0 }, { texture: new Texture(), width: 8, duration: 0.2 });
+	const body = strip.children[0] as TilingSprite;
+	strip.update(0.1);
+	assert.equal(body.height, 8, 'half faded, still the full 8px strip');
+	strip.update(0.1);
+	assert.equal(body.height, 8, 'gone, but never narrowed on the way');
+	strip.destroy();
+});
+
+test('the texture object form stretches once along the span and anchors', () => {
+	//pixi's `Texture.width` is a getter over the frame, so a headless test sizes
+	//the art through the frame the way a real atlas region would
+	const ray = new Texture({ frame: new Rectangle(0, 0, 16, 8) });
+	const beam = new Beam({ x: 0, y: 0 }, { x: 64, y: 0 }, { texture: { source: ray, stretch: true }, width: 8 });
+	const body = beam.children[0] as Sprite;
+	assert.ok(body instanceof Sprite, 'the stretched form is a Sprite, not a TilingSprite');
+	near(body.scale.x, 4, 'the 16px art is stretched across the 64px span, not tiled');
+	near(body.scale.y, 1, '8px art at 8px thickness is 1:1');
+	assert.equal(body.anchor.y, 0.5, 'the strip is centred on the line by default');
+
+	beam.retarget(undefined, { x: 32, y: 0 });
+	near(body.scale.x, 2, 'retarget re-stretches');
+
+	beam.update(0.05);
+	near(body.scale.y, 1, 'without thin, the thickness never narrows');
+	beam.destroy();
+});
+
+test('the texture object form anchors the tiled strip too, and 0 matches the bare form', () => {
+	const source = new Texture();
+	const hung = new Beam({ x: 0, y: 0 }, { x: 40, y: 0 }, { texture: { source, anchor: 1 } });
+	const hungBody = hung.children[0] as TilingSprite;
+	assert.equal(hungBody.anchor.y, 1, 'the strip hangs below the line');
+
+	const bare = new Beam({ x: 0, y: 0 }, { x: 40, y: 0 }, { texture: source });
+	const bareBody = bare.children[0] as TilingSprite;
+	assert.equal(bareBody.anchor.y, 0, 'the bare-texture form keeps its old top-edge placement');
+	hung.destroy();
+	bare.destroy();
 });
 
 test('a Beams group fades its beams and forgets the finished ones', () => {

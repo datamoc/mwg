@@ -99,3 +99,43 @@ test('a live Container target is followed, a destroyed one auto-detaches', () =>
 	assert.equal(emitter.x, 50, 'the last position is kept');
 	assert.equal(emitter.y, 60);
 });
+
+test('a visible callback hides the emitter and its in-air particles, drawing only', () => {
+	const emitter = new ParticleEmitter({ max: 4, speed: 0, rate: 10, life: 10 });
+	const hero = { x: 100, y: 200 };
+	let seen = true;
+	emitter.attach(() => hero, { visible: () => seen });
+	assert.equal(emitter.visible, true, 'the gate is consulted on attach itself');
+
+	emitter.start();
+	emitter.update(0.2);
+	assert.equal(emitter.activeCount, 2, 'emission keeps following enabled while hidden or not');
+
+	seen = false;
+	emitter.update(0.2);
+	assert.equal(emitter.visible, false, 'a false return hides the whole spray');
+	assert.equal(emitter.activeCount, 4, 'particles still live and step behind the invisibility');
+
+	seen = true;
+	emitter.update(0.2);
+	assert.equal(emitter.visible, true, 'the gate reopens as soon as it returns true again');
+});
+
+test('detach stops consulting the visible hook and cannot strand the emitter hidden', () => {
+	const emitter = new ParticleEmitter({ max: 1, speed: 0 });
+	const hero = { x: 0, y: 0 };
+	let seen = false;
+	emitter.attach(() => hero, { visible: () => seen });
+	assert.equal(emitter.visible, false);
+
+	emitter.detach();
+	assert.equal(emitter.visible, true, 'detach hands visible back');
+	emitter.update(1 / 60);
+	assert.equal(emitter.visible, true, 'and no tick re-hides it afterwards');
+
+	const plain = new ParticleEmitter({ max: 1, speed: 0 });
+	plain.visible = false;
+	plain.attach(() => hero);
+	plain.detach();
+	assert.equal(plain.visible, false, 'an emitter with no visible hook keeps its own flag');
+});

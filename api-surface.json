@@ -240,6 +240,12 @@
 		"declaringModule": "two-d/render/Beam.d.ts"
 	},
 	{
+		"name": "BeamTextureOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
 		"name": "BitmapLabel",
 		"kind": "class",
 		"subpath": ".",
@@ -10488,6 +10494,12 @@
 		"declaringModule": "two-d/render/Beam.d.ts"
 	},
 	{
+		"name": "BeamTextureOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
 		"name": "BitmapLabel",
 		"kind": "class",
 		"subpath": "./two-d",
@@ -12758,6 +12770,12 @@
 	{
 		"name": "Beams",
 		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
+		"name": "BeamTextureOptions",
+		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/Beam.d.ts"
 	},

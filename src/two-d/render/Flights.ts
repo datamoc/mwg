@@ -17,8 +17,19 @@ export interface FlightOptions extends ProjectileOptions {
 	tint?: number;
 	/** radians per second added to the sprite's rotation while flying */
 	spin?: number;
-	/** seconds the sprite fades 0 to 1 from launch; 0 or omitted means no fade */
-	fadeIn?: number;
+	/**
+	 * `spin` in degrees per second instead - the same rotation, converted once here,
+	 * so an authored angular speed needs no `* Math.PI / 180` at the call site.
+	 * Ignored when `spin` is given.
+	 */
+	spinDegrees?: number;
+	/**
+	 * Seconds the sprite fades 0 to 1 from launch (a number), or `'progress'`/`true`
+	 * to ease 0 to 1 along the flight's own progress - the tween's own clock, so the
+	 * fade cannot desynchronise from a duration the caller re-computed differently.
+	 * 0, `false` or omitted means no fade.
+	 */
+	fadeIn?: number | boolean | 'progress';
 	/**
 	 * Dispatched once, when this flight arrives - never on `cancel()` or `clear()`,
 	 * and after the flight has left the list, so an arrival that launches another
@@ -42,9 +53,16 @@ interface LiveFlight {
 	built?: Sprite;
 	onArrive?: () => void;
 	spin?: number;
+	fadeMode: 'seconds' | 'progress' | 'none';
 	fadeIn: number;
 	baseAlpha: number;
 	elapsed: number;
+}
+
+function fadeModeOf(fadeIn: FlightOptions['fadeIn']): LiveFlight['fadeMode'] {
+	if (fadeIn === true || fadeIn === 'progress') return 'progress';
+	if (typeof fadeIn === 'number' && fadeIn > 0) return 'seconds';
+	return 'none';
 }
 
 /**
@@ -101,16 +119,19 @@ export class Flights extends Container {
 		}
 
 		if (options.tint !== undefined && typeof sprite.tint === 'number') sprite.tint = options.tint;
-		const fadeIn = options.fadeIn ?? 0;
+		const fadeMode = fadeModeOf(options.fadeIn);
+		const fadeIn = typeof options.fadeIn === 'number' ? options.fadeIn : 0;
 		const baseAlpha = typeof sprite.alpha === 'number' ? sprite.alpha : 1;
-		if (fadeIn > 0) sprite.alpha = 0;
+		if (fadeMode !== 'none') sprite.alpha = 0;
 
 		const flight: LiveFlight = {
 			projectile: new Projectile(sprite, from, to, options),
 			sprite,
 			built,
 			onArrive: options.onArrive,
-			spin: options.spin,
+			spin:
+				options.spin ?? (options.spinDegrees !== undefined ? (options.spinDegrees * Math.PI) / 180 : undefined),
+			fadeMode,
 			fadeIn,
 			baseAlpha,
 			elapsed: 0,
@@ -139,10 +160,16 @@ export class Flights extends Container {
 			if (flight.spin !== undefined) {
 				flight.sprite.rotation = (flight.sprite.rotation ?? 0) + flight.spin * dt;
 			}
-			if (flight.fadeIn > 0) {
+			if (flight.fadeMode === 'seconds') {
 				flight.sprite.alpha = flight.baseAlpha * Math.min(1, flight.elapsed / flight.fadeIn);
 			}
-			if (flight.projectile.update(dt)) {
+			const arrived = flight.projectile.update(dt);
+			//after the tween, so the fade tracks the progress this very update produced;
+			//on the arrival tick that is exactly 1 and the sprite lands on its base alpha
+			if (flight.fadeMode === 'progress') {
+				flight.sprite.alpha = flight.baseAlpha * flight.projectile.progress;
+			}
+			if (arrived) {
 				this.live.splice(i, 1);
 				this.release(flight);
 				flight.onArrive?.();

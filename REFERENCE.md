@@ -396,17 +396,22 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   optional `animation` (item 311) advances flight frames with the tween's own elapsed time, read
   back through `frame`/`frameOffset` so the caller can apply the frame's offset where it already
   positions the sprite. `Flights` owns the live ones: `add(sprite | texture, from, to,
-  { speed, tint?, spin?, fadeIn?, onArrive? })` returns a handle, `update(dt)` drives
+  { speed, tint?, spin? | spinDegrees?, fadeIn?, onArrive? })` returns a handle, `update(dt)` drives
   positions and dispatches each arrival exactly once, `cancel()`/`clear()` forget without
   dispatching; caller sprites stay caller-owned while texture-built sprites are parented
-  here and destroyed with their flight.
+  here and destroyed with their flight. `spinDegrees` is `spin` in degrees per second
+  (converted once, so an authored angular speed needs no radian arithmetic at the call
+  site) and `fadeIn: 'progress'` (or `true`) eases the sprite's alpha 0 to 1 along the
+  tween's own progress instead of seconds from launch.
 - `LightningArc` - the position data for a jittered line between two points (a bolt, a tether):
   `points` tapers to zero offset at both endpoints, `retarget` moves either endpoint for a
   tether following two moving units, and an optional `flickerInterval` re-rolls the jitter on a
   timer. Geometry only, drawn by the caller through `Shape2D`'s `Graphics`. `Beam` is the
-  drawn one-shot counterpart (a fading line, or a repeating texture strip, additive by
-  default, `retarget` moving either end, `update` reporting expiry once); `Beams` owns the
-  live ones with `add`/`update`/`clear` and destroys finished beams.
+  drawn one-shot counterpart (a fading line, or a texture strip - repeating by default,
+  or `BeamTextureOptions`' `stretch: true` for art that spans the whole beam once, with an
+  `anchor` placing it across the thickness - additive by default, `retarget` moving
+  either end, `thin` narrowing the body as it fades, `update` reporting expiry once);
+  `Beams` owns the live ones with `add`/`update`/`clear` and destroys finished beams.
 - `SpriteAttachment` - ties a second sprite's position to a first one's: `follow(x, y)` applies
   an offset, and an optional `duration` makes `update(dt)` report `done` once it elapses, so a
   permanent shadow and a temporary status icon are the same class with different options.
@@ -434,7 +439,7 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   pair, `tint` takes a `[from, to]` range each particle draws its own colour from channel by
   channel, and `flicker` wobbles the scale every frame with a seeded draw (dropped under reduced
   motion). All three draws happen only when used, so an existing emitter's seeded spray is
-  unchanged. `attach(target)` follows a display object or position thunk on every tick (with `offsetX`/`offsetY`, an `enabled` callback gating tick emission, and auto-detach for destroyed targets); `detach()` keeps the last position.
+  unchanged. `attach(target)` follows a display object or position thunk on every tick (with `offsetX`/`offsetY`, an `enabled` callback gating tick emission, a `visible` callback hiding the whole spray (fog-of-war gates) while the simulation steps on behind the invisibility, and auto-detach for destroyed targets); `detach()` keeps the last position.
 - `ScreenEffects`/`ScreenEffectStep` - a full-screen colour wash: `fadeOut`/`fadeIn`/`flash`/
   `setTint`, driven by `update(dt)` returning true on the frame an effect completes.
   `sequence(steps)` (item 302) chains fade/hold/flash steps end to end as one call, for the
@@ -596,6 +601,8 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   `backspace`/`delete` actions, `confirm` gated by `validate` (the error shows and announces
   assertively, the prompt stays open), `cancel` giving up. IME compositions preview until
   they commit, and the message plus validation errors announce through `screenReader`.
+  The interface example's Name button is the reviewed hosting pattern: push it on a
+  `WindowStack` and it owns focus, closing and the stack's un-popping by itself.
 - `DataTable`/`TableColumn`/`DataTableOptions` - a renderer-free columned table: sort by a column
   (toggling direction), a highlight that skips disabled rows, and a page derived from the
   highlight.

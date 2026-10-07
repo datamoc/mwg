@@ -7,6 +7,34 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `Flights` fade and spin in the units consumers author them in (P40): `fadeIn:
+  'progress'` (or `true`) eases a sprite's alpha 0 to 1 along the flight's own
+  progress - the tween's clock, so the fade cannot desynchronise from a duration
+  the caller re-computed - while a number keeps its seconds-from-launch meaning,
+  and `spinDegrees` is `spin` in degrees per second, converted once, so an
+  authored angular speed needs no radian arithmetic at the call site.
+
+- `Beam` thins and stretches (P35): `thin: true` narrows the body with its own
+  remaining life the way the alpha fades (a plain line's stroke, a strip's height,
+  a stretched sprite's `scale.y`), and the `texture` option's object form -
+  `{ source, stretch?, anchor? }` - stretches one art asset along the whole span
+  instead of tiling it, anchored across the thickness (0.5 by default) for ray
+  art that repeats badly. The bare-texture form tiles exactly as it always has.
+
+- `ParticleEmitter.attach` takes a `visible` callback beside `enabled` (P36): a
+  false return hides the emitter and every particle it has in the air, so a
+  fog-of-war gate keeps an aura's spray out of unexplored space without the
+  consumer re-placing `visible` every frame. Drawing only - the simulation
+  keeps stepping behind the invisibility, emission keeps following `enabled`,
+  and `detach()` leaves the emitter visible.
+
+- The interface example's new Name button is the reviewed `TextPrompt` hosting
+  pattern (P37): push it on a `WindowStack` and it owns typing, caret edits,
+  confirm-gated-by-`validate`, cancellation and closing - a seed or name prompt
+  with no DOM `<input>` overlay to copy around.
+
 ## [0.27.0] - 2026-10-07
 
 Two strands in one release. A run is durable and drives the AI (roadmap 396-397): the

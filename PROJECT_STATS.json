@@ -5,13 +5,13 @@
 	"releaseDate": "2026-10-07",
 	"source": {
 		"files": 330,
-		"lines": 60311,
+		"lines": 60432,
 		"modules": 18,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 94,
-				"lines": 19611
+				"lines": 19732
 			},
 			{
 				"name": "core",
@@ -102,12 +102,12 @@
 	},
 	"tests": {
 		"files": 302,
-		"lines": 40469,
-		"cases": 2783
+		"lines": 40621,
+		"cases": 2792
 	},
 	"tools": {
-		"files": 48,
-		"lines": 10132
+		"files": 49,
+		"lines": 10227
 	},
 	"examples": {
 		"count": 24,
@@ -139,18 +139,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 400,
+		"items": 402,
 		"completed": 389,
-		"open": 11,
+		"open": 13,
 		"percent": 97
 	},
 	"api": {
 		"declarationFiles": 329
 	},
 	"bundle": {
-		"globalRaw": 1239186,
-		"globalGzip": 369690,
-		"distRaw": 4278836
+		"globalRaw": 1240388,
+		"globalGzip": 369994,
+		"distRaw": 4286230
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

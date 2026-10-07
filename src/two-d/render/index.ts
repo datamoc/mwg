@@ -51,7 +51,7 @@ export type { ProjectilePoint, ProjectileOptions } from './Projectile.ts';
 export { Flights } from './Flights.ts';
 export type { FlightSprite, FlightOptions, FlightHandle } from './Flights.ts';
 export { Beam, Beams } from './Beam.ts';
-export type { BeamPoint, BeamOptions } from './Beam.ts';
+export type { BeamPoint, BeamOptions, BeamTextureOptions } from './Beam.ts';
 export { LightningArc } from './LightningArc.ts';
 export type { LightningArcOptions, LightningArcPoint } from './LightningArc.ts';
 export { SpriteAttachment } from './SpriteAttachment.ts';

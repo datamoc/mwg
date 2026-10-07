@@ -394,11 +394,16 @@ build instead.
         private to;
         private readonly colour;
         private readonly texture?;
+        private readonly stretch;
+        private readonly textureAnchor;
         private readonly thickness;
+        private readonly thin;
         private readonly duration;
         private readonly body;
         private elapsed;
         private expired;
+
+        private lifeFraction;
         constructor(from: BeamPoint, to: BeamPoint, options?: BeamOptions);
 
         get progress(): number;
@@ -417,11 +422,13 @@ build instead.
 
         colour?: number;
 
-        texture?: Texture2D;
+        texture?: Texture2D | BeamTextureOptions;
 
         duration?: number;
 
         width?: number;
+
+        thin?: boolean;
 
         additive?: boolean;
     }
@@ -446,6 +453,17 @@ build instead.
 
         clear(): void;
         destroy(): void;
+    }
+
+### `BeamTextureOptions` (interface)
+
+    export interface BeamTextureOptions {
+
+        source: Texture2D;
+
+        stretch?: boolean;
+
+        anchor?: number;
     }
 
 ### `BitmapLabel` (class)
@@ -1252,7 +1270,9 @@ build instead.
 
         spin?: number;
 
-        fadeIn?: number;
+        spinDegrees?: number;
+
+        fadeIn?: number | boolean | 'progress';
 
         onArrive?: () => void;
     }
@@ -1449,6 +1469,8 @@ build instead.
         offsetY?: number;
 
         enabled?: () => boolean;
+
+        visible?: () => boolean;
     }
 
 ### `FollowTarget` (type)
@@ -3179,6 +3201,7 @@ build instead.
         private followOffsetX;
         private followOffsetY;
         private followEnabled;
+        private followVisible;
 
         private poolCursor;
 
@@ -16171,11 +16194,16 @@ build instead.
         private to;
         private readonly colour;
         private readonly texture?;
+        private readonly stretch;
+        private readonly textureAnchor;
         private readonly thickness;
+        private readonly thin;
         private readonly duration;
         private readonly body;
         private elapsed;
         private expired;
+
+        private lifeFraction;
         constructor(from: BeamPoint, to: BeamPoint, options?: BeamOptions);
 
         get progress(): number;
@@ -16194,11 +16222,13 @@ build instead.
 
         colour?: number;
 
-        texture?: Texture2D;
+        texture?: Texture2D | BeamTextureOptions;
 
         duration?: number;
 
         width?: number;
+
+        thin?: boolean;
 
         additive?: boolean;
     }
@@ -16223,6 +16253,17 @@ build instead.
 
         clear(): void;
         destroy(): void;
+    }
+
+### `BeamTextureOptions` (interface)
+
+    export interface BeamTextureOptions {
+
+        source: Texture2D;
+
+        stretch?: boolean;
+
+        anchor?: number;
     }
 
 ### `BitmapLabel` (class)
@@ -16749,7 +16790,9 @@ build instead.
 
         spin?: number;
 
-        fadeIn?: number;
+        spinDegrees?: number;
+
+        fadeIn?: number | boolean | 'progress';
 
         onArrive?: () => void;
     }
@@ -16939,6 +16982,8 @@ build instead.
         offsetY?: number;
 
         enabled?: () => boolean;
+
+        visible?: () => boolean;
     }
 
 ### `FollowTarget` (type)
@@ -18162,6 +18207,7 @@ build instead.
         private followOffsetX;
         private followOffsetY;
         private followEnabled;
+        private followVisible;
 
         private poolCursor;
 
@@ -20604,11 +20650,16 @@ build instead.
         private to;
         private readonly colour;
         private readonly texture?;
+        private readonly stretch;
+        private readonly textureAnchor;
         private readonly thickness;
+        private readonly thin;
         private readonly duration;
         private readonly body;
         private elapsed;
         private expired;
+
+        private lifeFraction;
         constructor(from: BeamPoint, to: BeamPoint, options?: BeamOptions);
 
         get progress(): number;
@@ -20627,11 +20678,13 @@ build instead.
 
         colour?: number;
 
-        texture?: Texture2D;
+        texture?: Texture2D | BeamTextureOptions;
 
         duration?: number;
 
         width?: number;
+
+        thin?: boolean;
 
         additive?: boolean;
     }
@@ -20656,6 +20709,17 @@ build instead.
 
         clear(): void;
         destroy(): void;
+    }
+
+### `BeamTextureOptions` (interface)
+
+    export interface BeamTextureOptions {
+
+        source: Texture2D;
+
+        stretch?: boolean;
+
+        anchor?: number;
     }
 
 ### `blendMatrix` (function)
@@ -20873,7 +20937,9 @@ build instead.
 
         spin?: number;
 
-        fadeIn?: number;
+        spinDegrees?: number;
+
+        fadeIn?: number | boolean | 'progress';
 
         onArrive?: () => void;
     }
@@ -20951,6 +21017,8 @@ build instead.
         offsetY?: number;
 
         enabled?: () => boolean;
+
+        visible?: () => boolean;
     }
 
 ### `FollowTarget` (type)
@@ -21365,6 +21433,7 @@ build instead.
         private followOffsetX;
         private followOffsetY;
         private followEnabled;
+        private followVisible;
 
         private poolCursor;
 
