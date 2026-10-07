@@ -50,8 +50,12 @@ jobs:
         env:
           MWG_DRIVER_CHROME_ARGS: ${{ runner.os == 'Linux' && '--no-sandbox' || '' }}
         run: npm test
-      # the same suite again under a coverage floor, so coverage cannot quietly erode
-      - run: npm run coverage:check
+      # the same suite again under a coverage floor, so coverage cannot quietly erode;
+      # same Chrome flag as the test step above for the same reason
+      - name: Run the suite under its coverage floor
+        env:
+          MWG_DRIVER_CHROME_ARGS: ${{ runner.os == 'Linux' && '--no-sandbox' || '' }}
+        run: npm run coverage:check
       # the library build (tsc emit + the standalone mw_games.global.js IIFE) - catches a
       # build break tsc --noEmit alone would not, such as a broken vite config
       - run: npm run build
