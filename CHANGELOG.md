@@ -7,6 +7,20 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.27.0] - 2026-10-07
+
+Two strands in one release. A run is durable and drives the AI (roadmap 396-397): the
+versioned replay envelope refuses another game or framework build by name, `LastRun` keeps
+the newest recording, `runCheckpoint`/`resumeRunPlayer` restore a run mid-run, and the
+`file://` plumbing (download, picker, Blob read) ships with it; `imitationFromReplay` turns
+a recorded run into training samples against its own seeded environment, `runSeededEpisode`
+plays a whole run from a named seed behind any deterministic chooser, and `ai.Suggester`
+is the throttled, non-mutating hint source. The render and UI strand: `Flights` owns live
+projectile flights, `Beam`/`Beams` draw one-shot beams, `TextPrompt` asks for one line with
+IME and screen-reader support, `MessageLog.lastEntries` reads retained entries back, and
+`ParticleEmitter.attach` follows a target; `core.FloatSource` narrows the injectable random
+stream for float-only helpers.
+
 ### Added
 
 - `core.FloatSource` splits `core.RandomSource`: helpers that draw floats only

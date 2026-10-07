@@ -6010,7 +6010,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.26.1";
+    export declare const version = "0.27.0";
 
 ### `VerticalLabel` (class)
 
