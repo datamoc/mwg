@@ -3,6 +3,8 @@ import type { AlphaBetaGame, AlphaBetaOptions, AlphaBetaResult } from './search.
 
 export { NeuralPolicy } from './Neural.ts';
 export type { DenseLayer, NeuralModel, NeuralObservation } from './Neural.ts';
+export { Suggester } from './Suggest.ts';
+export type { SuggesterOptions } from './Suggest.ts';
 
 export { alphaBetaSearch, firstWins, rootSplits } from './search.ts';
 export type {

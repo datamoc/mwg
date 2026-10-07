@@ -143,9 +143,37 @@ const current = (): Generator => stack[stack.length - 1];
  * const pick = Random.weightedKey(new Map([['a', 1], ['b', 2]]), stream);
  * ```
  */
-export interface RandomSource {
+/**
+ * The minimal draw surface for the helpers that draw floats only (`float`, `chance`,
+ * `weighted`, `weightedKey`). A rule whose draws are floats-only implements just this -
+ * no dead `int` member that must never be called.
+ *
+ * @example
+ * ```ts
+ * import { Random } from '@datamoc/mw_games/core';
+ * import type { FloatSource } from '@datamoc/mw_games/core';
+ *
+ * // a scripted float-only stream: every draw is data, no integer path exists
+ * const scripted: FloatSource = { float: () => 0.25 };
+ * const hit = Random.chance(0.5, scripted);
+ * ```
+ */
+export interface FloatSource {
 	/** a float in [0, 1) */
 	float(): number;
+}
+
+/**
+ * The minimal draw surface for the helpers that may draw integers (`int`, `range`,
+ * `normalRange`, `element`, `shuffle`) as well as floats. `Generator` and
+ * `MersenneTwister` both satisfy it structurally.
+ *
+ * `element` stays on this wider type even though it only picks one item: it draws
+ * through `int()`, and re-spelling that draw with `float()` would change its stream
+ * (and break seeded replays that use it), so a float-only source is rejected here
+ * rather than silently re-drawn.
+ */
+export interface RandomSource extends FloatSource {
 	/** an integer in [0, bound), without modulo bias */
 	int(bound: number): number;
 }
@@ -201,7 +229,7 @@ export function reset(): void {
 }
 
 /** a float in [0, 1), or [0, max), or [min, max) */
-export function float(min?: number, max?: number, source?: RandomSource): number {
+export function float(min?: number, max?: number, source?: FloatSource): number {
 	const draw = source ?? current();
 	if (min === undefined) return draw.float();
 	if (max === undefined) return draw.float() * min;
@@ -230,7 +258,7 @@ export function normalRange(min: number, max: number, source?: RandomSource): nu
 	return min + Math.floor(((draw.float() + draw.float()) * (max - min + 1)) / 2);
 }
 
-export function chance(probability: number, source?: RandomSource): boolean {
+export function chance(probability: number, source?: FloatSource): boolean {
 	return (source ?? current()).float() < probability;
 }
 
@@ -249,7 +277,7 @@ export function element<T>(items: readonly T[], source?: RandomSource): T | null
 }
 
 /** an index into `weights` drawn in proportion to its weight, or `null` if nothing has any; draws from `source` when given */
-export function weighted(weights: readonly number[], source?: RandomSource): number | null {
+export function weighted(weights: readonly number[], source?: FloatSource): number | null {
 	let total = 0;
 	for (const w of weights) total += w;
 	if (total <= 0) return null;
@@ -263,7 +291,7 @@ export function weighted(weights: readonly number[], source?: RandomSource): num
 }
 
 /** a key from `weights`, drawn in proportion to the value it maps to, or `null` if none has any; draws from `source` when given */
-export function weightedKey<K>(weights: ReadonlyMap<K, number>, source?: RandomSource): K | null {
+export function weightedKey<K>(weights: ReadonlyMap<K, number>, source?: FloatSource): K | null {
 	const keys = [...weights.keys()];
 	const index = weighted(
 		keys.map((k) => weights.get(k) ?? 0),

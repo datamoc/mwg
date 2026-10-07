@@ -7,6 +7,69 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `core.FloatSource` splits `core.RandomSource`: helpers that draw floats only
+  (`float`, `chance`, `weighted`, `weightedKey`) accept the narrower
+  `{ float(): number }`, so a float-only stream needs no dead `int`. The
+  integer helpers (`int`, `range`, `normalRange`, `element`, `shuffle`) keep
+  requiring the full source; `element` stays wide deliberately, because it
+  draws through `int()` and re-spelling that draw would change its stream.
+
+- `MessageLog.lastEntries(n)` reads the newest retained entries back as plain
+  `{ text, level }` records, oldest first, without scraping rendered children:
+  entries the wrapped-line budget already dropped are gone, over-count reads
+  everything retained, and zero or negative reads nothing. The slice lives in
+  the pure `takeLastEntries` beside the existing `linesToDrop` budget, so the
+  readback contract is testable without a renderer.
+
+- `ParticleEmitter.attach(target)` follows a display object or position thunk on
+  every update tick and every `burst()`, with `offsetX`/`offsetY`, an `enabled`
+  callback gating tick emission, and auto-detach for destroyed targets;
+  `detach()` keeps the last position. The follow math is tested headless through
+  textureless emitters.
+
+- `Flights` owns a scene's live projectile flights over the existing `Projectile`:
+  `add(sprite | texture, from, to, { speed, tint?, spin?, fadeIn?, onArrive? })`
+  returns a handle, `update(dt)` drives positions with per-flight spin and fade,
+  each arrival dispatches once after leaving the list, and `cancel()`/`clear()`
+  forget without dispatching. Caller sprites stay caller-owned; texture-built
+  sprites are parented here and destroyed with their flight.
+
+- `Beam`/`Beams` draw one-shot beams between two screen points: a fading line by
+  default, a fading repeating texture strip with `texture`, additive blend unless
+  opted out, `retarget` for tracking endpoints, and `update` reporting expiry
+  exactly once so the `Beams` group can remove finished beams itself.
+
+- `TextPrompt` asks for one line of text over a `TextModel`: typing through
+  `onText` (the newest open prompt wins), caret and edits through
+  `left`/`right`/`backspace`/`delete` actions, `confirm` gated by `validate` and
+  `cancel` giving up. IME compositions preview until they commit, and the
+  message plus validation errors announce through `screenReader` (assertive for
+  the errors), with an injectable announcer for tests.
+
+- A run is durable now (roadmap 396): `exportReplayFile`/`importReplayFile` wrap a
+  recording in a versioned, self-describing envelope that refuses another game or
+  framework build by name, `LastRun` keeps the newest recording (one deep, bounded,
+  over the same storage a save slot uses), and `runCheckpoint`/`resumeRunPlayer`
+  pair the partial recording with the saved state so a restored run resumes mid-run
+  instead of restarting - `Recorder` and `Player` both take `fromFrame`, and
+  `parseReplayEvents` factors out the half of `deserializeReplay`'s check that
+  validates an already-parsed array. The `file://` plumbing rides along:
+  `downloadReplayFile` (a Blob download, never `fetch()`), `pickReplayFile`
+  (the file picker, null on cancel) and `readReplayFile` (any `Blob`, headless
+  Node included).
+
+- Replays train and drive the AI (roadmap 397): `imitationFromReplay` walks a
+  recorded run against the same seeded `TrainingEnvironment` it was played on and
+  returns the `(observation, action)` samples a game's own trainer fits;
+  `runSeededEpisode` plays a whole run with any deterministic chooser (a heuristic,
+  a `NeuralPolicy`'s argmax, not just a `NeuralModel` like `runRollouts`) from a
+  named seed, recording every chosen action so runs compare across builds and
+  policies; and `ai.Suggester` is the in-game suggestion mode, the same decision
+  call pointed at a hint UI instead of the world, throttled by a frame-count budget
+  and never mutating state to compute a hint.
+
 ## [0.26.1] - 2026-10-07
 
 The 0.26.0 follow-up: its Chrome end-to-end test failed on every CI run, so the

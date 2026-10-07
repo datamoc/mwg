@@ -24,7 +24,9 @@ export interface ReplayEvent {
  * ```
  *
  * The signals are parameters rather than imports so tests can drive a
- * recorder with plain `Signal` instances instead of a whole `Game`.
+ * recorder with plain `Signal` instances instead of a whole `Game`. A restored
+ * run continues its recording mid-run: pass the checkpoint's frame as `fromFrame`
+ * and new actions stamp from there, never from zero.
  *
  * @example
  * ```ts
@@ -42,22 +44,27 @@ export interface ReplayEvent {
  * ```
  */
 export class Recorder {
-	private frame = 0;
+	private frameStamp: number;
+	private readonly fromFrame: number;
 	private readonly recorded: ReplayEvent[] = [];
 	private readonly actions: Signal<string>;
 	private readonly frames: Signal<number>;
 	private readonly onAction: (action: string) => void;
 	private readonly onFrame: () => void;
 
-	constructor(actions: Signal<string>, frames: Signal<number>) {
+	constructor(actions: Signal<string>, frames: Signal<number>, options?: { fromFrame?: number }) {
+		this.fromFrame = options?.fromFrame ?? 0;
+		if (!Number.isInteger(this.fromFrame) || this.fromFrame < 0)
+			throw new RangeError('a resumed recorder needs a non-negative fromFrame');
+		this.frameStamp = this.fromFrame;
 		this.actions = actions;
 		this.frames = frames;
 		//returns void, never true: recording must not swallow the action
 		this.onAction = (action) => {
-			this.recorded.push({ frame: this.frame, action });
+			this.recorded.push({ frame: this.frameStamp, action });
 		};
 		this.onFrame = () => {
-			this.frame++;
+			this.frameStamp++;
 		};
 		actions.add(this.onAction);
 		frames.add(this.onFrame);
@@ -65,6 +72,11 @@ export class Recorder {
 
 	get events(): readonly ReplayEvent[] {
 		return this.recorded;
+	}
+
+	/** The frame count the recording is currently stamped with, so a run can be checkpointed. */
+	get frame(): number {
+		return this.frameStamp;
 	}
 
 	/** A deep copy, safe to serialise or hand to a `Player`. */
@@ -109,17 +121,29 @@ export class Recorder {
  * ```
  */
 export class Player {
-	private frame = 0;
-	private index = 0;
+	private frame: number;
+	private index: number;
+	private readonly fromFrame: number;
 	private readonly events: readonly ReplayEvent[];
 	private readonly dispatch: (action: string) => void;
 	private readonly frames: Signal<number>;
 	private readonly onFrame: () => void;
 
-	constructor(events: readonly ReplayEvent[], dispatch: (action: string) => void, frames: Signal<number>) {
+	constructor(
+		events: readonly ReplayEvent[],
+		dispatch: (action: string) => void,
+		frames: Signal<number>,
+		options?: { fromFrame?: number },
+	) {
 		this.events = events;
 		this.dispatch = dispatch;
 		this.frames = frames;
+		this.fromFrame = options?.fromFrame ?? 0;
+		if (!Number.isInteger(this.fromFrame) || this.fromFrame < 0)
+			throw new RangeError('a resumed player needs a non-negative fromFrame');
+		this.index = this.events.findIndex((event) => event.frame >= this.fromFrame);
+		if (this.index < 0) this.index = this.events.length;
+		this.frame = this.fromFrame;
 		this.onFrame = () => this.pump();
 		frames.add(this.onFrame);
 	}
@@ -149,7 +173,23 @@ export function serializeReplay(events: readonly ReplayEvent[]): string {
 
 /** Parses what `serializeReplay` wrote, rejecting anything else. */
 export function deserializeReplay(json: string): ReplayEvent[] {
-	const parsed: unknown = JSON.parse(json);
+	return parseReplayEvents(JSON.parse(json));
+}
+
+/**
+ * Validates an already-parsed replay - the same `{ frame, action }` checks `deserializeReplay`
+ * applies, for the callers that hold parsed JSON rather than a string: a replay-file envelope
+ * nests its events as an array, and re-stringifying them to parse them again would be the only
+ * reason this half could not exist.
+ *
+ * @example
+ * ```ts
+ * import { parseReplayEvents } from '@datamoc/mw_games/core';
+ *
+ * const events = parseReplayEvents([{ frame: 3, action: 'confirm' }]);
+ * ```
+ */
+export function parseReplayEvents(parsed: unknown): ReplayEvent[] {
 	if (!Array.isArray(parsed)) throw new Error('a replay must be an array of {frame, action}');
 	return parsed.map((entry) => {
 		if (

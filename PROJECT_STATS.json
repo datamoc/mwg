@@ -4,24 +4,24 @@
 	"version": "0.26.1",
 	"releaseDate": "2026-10-07",
 	"source": {
-		"files": 325,
-		"lines": 58876,
+		"files": 330,
+		"lines": 60311,
 		"modules": 18,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 91,
-				"lines": 18804
+				"files": 94,
+				"lines": 19611
+			},
+			{
+				"name": "core",
+				"files": 51,
+				"lines": 7148
 			},
 			{
 				"name": "mwl",
 				"files": 22,
 				"lines": 6757
-			},
-			{
-				"name": "core",
-				"files": 50,
-				"lines": 6731
 			},
 			{
 				"name": "board",
@@ -55,13 +55,13 @@
 			},
 			{
 				"name": "ai",
-				"files": 6,
-				"lines": 1607
+				"files": 7,
+				"lines": 1686
 			},
 			{
 				"name": "simulation",
 				"files": 9,
-				"lines": 1331
+				"lines": 1463
 			},
 			{
 				"name": "battle",
@@ -101,9 +101,9 @@
 		]
 	},
 	"tests": {
-		"files": 293,
-		"lines": 39241,
-		"cases": 2709
+		"files": 302,
+		"lines": 40469,
+		"cases": 2783
 	},
 	"tools": {
 		"files": 48,
@@ -139,18 +139,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 395,
+		"items": 400,
 		"completed": 389,
-		"open": 6,
-		"percent": 98
+		"open": 11,
+		"percent": 97
 	},
 	"api": {
-		"declarationFiles": 324
+		"declarationFiles": 329
 	},
 	"bundle": {
-		"globalRaw": 1226384,
-		"globalGzip": 366244,
-		"distRaw": 4194965
+		"globalRaw": 1239186,
+		"globalGzip": 369691,
+		"distRaw": 4278836
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

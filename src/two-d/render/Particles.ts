@@ -131,6 +131,23 @@ export interface ParticleEmitterOptions {
 	tint?: ParticleRange;
 }
 
+/** what an attached emitter follows: a display object, or a thunk reading live position */
+export type FollowTarget = Container | (() => { x: number; y: number });
+
+/** options for {@link ParticleEmitter.attach} */
+export interface FollowOptions {
+	/** added to the target position on every sync */
+	offsetX?: number;
+	offsetY?: number;
+	/**
+	 * Consulted on every update tick; a false return pauses emission while the target
+	 * is off-screen or paused, without consumer bookkeeping. Particles already alive
+	 * still finish their lives, and an explicit `burst()` always fires - the callback
+	 * gates the tick, not the call.
+	 */
+	enabled?: () => boolean;
+}
+
 function pick(range: ParticleRange): number {
 	return typeof range === 'number' ? range : Random.float(range[0], range[1]);
 }
@@ -218,6 +235,11 @@ export class ParticleEmitter extends Container {
 
 	private emitting = false;
 
+	private followTarget: FollowTarget | null = null;
+	private followOffsetX = 0;
+	private followOffsetY = 0;
+	private followEnabled: (() => boolean) | null = null;
+
 	/** where the next pool search starts, so reuse stays O(1) amortised rather than O(pool) */
 	private poolCursor = 0;
 
@@ -283,6 +305,62 @@ export class ParticleEmitter extends Container {
 		this.debt = 0;
 	}
 
+	/**
+	 * Follows `target`, repositioning on every update tick and every `burst()`, plus
+	 * once right now so the position is fresh before the first tick. A second `attach`
+	 * replaces the first; `detach()` stops following and keeps the last position. A
+	 * destroyed `Container` target cannot move again, so it auto-detaches (thunk
+	 * targets are read unconditionally - their liveness is the caller's).
+	 *
+	 * @example
+	 * ```ts
+	 * import { ParticleEmitter } from '@datamoc/mw_games/two-d/render';
+	 *
+	 * const aura = new ParticleEmitter({ rate: 20 });
+	 * const hero = { x: 100, y: 200 };
+	 * aura.attach(() => hero, { offsetY: -10 });
+	 * aura.start();
+	 * aura.update(1 / 60);
+	 * aura.detach();
+	 * ```
+	 */
+	attach(target: FollowTarget, options: FollowOptions = {}): void {
+		this.followTarget = target;
+		this.followOffsetX = options.offsetX ?? 0;
+		this.followOffsetY = options.offsetY ?? 0;
+		this.followEnabled = options.enabled ?? null;
+		this.syncFollow();
+	}
+
+	/** stops following; the emitter keeps its last position and its emitting state */
+	detach(): void {
+		this.followTarget = null;
+		this.followEnabled = null;
+		this.followOffsetX = 0;
+		this.followOffsetY = 0;
+	}
+
+	/** the current follow target, or null when detached */
+	get attachedTo(): FollowTarget | null {
+		return this.followTarget;
+	}
+
+	private syncFollow(): void {
+		const target = this.followTarget;
+		if (!target) return;
+		if (typeof target !== 'function' && target.destroyed) {
+			this.detach();
+			return;
+		}
+		const position = typeof target === 'function' ? target() : target;
+		this.x = position.x + this.followOffsetX;
+		this.y = position.y + this.followOffsetY;
+	}
+
+	private followEmissionAllowed(): boolean {
+		return this.followEnabled?.() ?? true;
+	}
+
 	get isEmitting(): boolean {
 		return this.emitting;
 	}
@@ -305,6 +383,7 @@ export class ParticleEmitter extends Container {
 	 * @returns how many were actually emitted, which is fewer than asked when the pool is full
 	 */
 	burst(count: number): number {
+		this.syncFollow();
 		let emitted = 0;
 		for (let i = 0; i < count; i++) {
 			if (!this.spawn()) break;
@@ -371,7 +450,8 @@ export class ParticleEmitter extends Container {
 	}
 
 	update(dt: number): void {
-		if (this.emitting && this.rate > 0) {
+		this.syncFollow();
+		if (this.emitting && this.rate > 0 && this.followEmissionAllowed()) {
 			this.debt += this.rate * dt;
 			while (this.debt >= 1) {
 				this.debt -= 1;

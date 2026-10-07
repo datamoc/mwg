@@ -189,6 +189,23 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   (`all`/`get`/`put`/`remove`/`where`/`clear`) - a quest log or bestiary, not a save blob.
 - `Recorder`/`Player`/`serializeReplay`/`deserializeReplay` - records `Input.onAction`
   against `Game`'s own frame counter and replays it deterministically, for testing.
+  Both resume mid-run: `Recorder` takes `fromFrame` so a restored run continues its
+  recording where the checkpoint left it, and `Player` takes `fromFrame` so playback
+  skips what the restored state already contains. `parseReplayEvents` validates an
+  already-parsed event array, the half of the check `deserializeReplay` applies after
+  its own `JSON.parse`.
+- `exportReplayFile`/`importReplayFile`/`LastRun`/`runCheckpoint`/`resumeRunPlayer` -
+  a run made durable (roadmap 396). The file is a versioned, self-describing envelope
+  (`format: 'mwg-replay'`, `version`, `framework`, `game`, optional `seed` and
+  `recordedAt`, `events`), and import refuses another game or another framework build
+  by name, treating the file as inbound data the way a save slot is treated.
+  `LastRun` keeps the newest recording, one deep and bounded, through the same storage
+  a save slot uses; `runCheckpoint(recorder, state)` pairs the partial recording with
+  the game state a save already captured, and `resumeRunPlayer` turns the restored
+  checkpoint back into a mid-run `Player`. The `file://` plumbing rides along:
+  `downloadReplayFile` is a Blob download (no `fetch()`), `pickReplayFile` is the file
+  picker resolving null on cancel, and `readReplayFile` reads any `Blob`, headless
+  Node included.
 - `Achievements` - counters crossing a target unlock a named milestone; `drainNew()`
   queues unlocks for a UI to announce. An achievement can name several `criteria`
   instead of one `counter`/`target` (item 273's sub-achievements, "recruit every unit
@@ -378,11 +395,18 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
 - `Projectile` - tweens a sprite in a straight line for a thrown/shot visual flourish; an
   optional `animation` (item 311) advances flight frames with the tween's own elapsed time, read
   back through `frame`/`frameOffset` so the caller can apply the frame's offset where it already
-  positions the sprite.
+  positions the sprite. `Flights` owns the live ones: `add(sprite | texture, from, to,
+  { speed, tint?, spin?, fadeIn?, onArrive? })` returns a handle, `update(dt)` drives
+  positions and dispatches each arrival exactly once, `cancel()`/`clear()` forget without
+  dispatching; caller sprites stay caller-owned while texture-built sprites are parented
+  here and destroyed with their flight.
 - `LightningArc` - the position data for a jittered line between two points (a bolt, a tether):
   `points` tapers to zero offset at both endpoints, `retarget` moves either endpoint for a
   tether following two moving units, and an optional `flickerInterval` re-rolls the jitter on a
-  timer. Geometry only, drawn by the caller through `Shape2D`'s `Graphics`.
+  timer. Geometry only, drawn by the caller through `Shape2D`'s `Graphics`. `Beam` is the
+  drawn one-shot counterpart (a fading line, or a repeating texture strip, additive by
+  default, `retarget` moving either end, `update` reporting expiry once); `Beams` owns the
+  live ones with `add`/`update`/`clear` and destroys finished beams.
 - `SpriteAttachment` - ties a second sprite's position to a first one's: `follow(x, y)` applies
   an offset, and an optional `duration` makes `update(dt)` report `done` once it elapses, so a
   permanent shadow and a temporary status icon are the same class with different options.
@@ -410,7 +434,7 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   pair, `tint` takes a `[from, to]` range each particle draws its own colour from channel by
   channel, and `flicker` wobbles the scale every frame with a seeded draw (dropped under reduced
   motion). All three draws happen only when used, so an existing emitter's seeded spray is
-  unchanged.
+  unchanged. `attach(target)` follows a display object or position thunk on every tick (with `offsetX`/`offsetY`, an `enabled` callback gating tick emission, and auto-detach for destroyed targets); `detach()` keeps the last position.
 - `ScreenEffects`/`ScreenEffectStep` - a full-screen colour wash: `fadeOut`/`fadeIn`/`flash`/
   `setTint`, driven by `update(dt)` returning true on the frame an effect completes.
   `sequence(steps)` (item 302) chains fade/hold/flash steps end to end as one call, for the
@@ -567,6 +591,11 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   `onText`: caret, anchor, selection-replacing edits, a length cap and a mask. Renderer-free.
   `multiline` keeps real newlines with row navigation (`lineCount`, `caretLine`, `lineRange`,
   `moveCaretLine` holding a sticky goal column); single-line fields strip them on every edit.
+- `TextPrompt`/`TextPromptOptions` - a modal single-line text field over a `TextModel` (a name
+  entry, a save-slot label): typing through `onText`, caret and edits through `left`/`right`/
+  `backspace`/`delete` actions, `confirm` gated by `validate` (the error shows and announces
+  assertively, the prompt stays open), `cancel` giving up. IME compositions preview until
+  they commit, and the message plus validation errors announce through `screenReader`.
 - `DataTable`/`TableColumn`/`DataTableOptions` - a renderer-free columned table: sort by a column
   (toggling direction), a highlight that skips disabled rows, and a page derived from the
   highlight.
@@ -606,9 +635,11 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   `floatingTextStackLift`/`floatingTextStackMoves`/`floatingTextStackLifePenalty` and
   `FLOATING_TEXT_STACK_GAP` stacks simultaneous pop-ups at one world point without overlap, lifting
   the lines already there the way Java's `FloatingText.push()` does.
-- `MessageLog`/`linesToDrop`/`MessageLevel`/`MessageLogOptions` - a player-facing message pane:
+- `MessageLog`/`linesToDrop`/`takeLastEntries`/`MessageLogEntry`/`MessageLevel`/`MessageLogOptions` - a player-facing message pane:
   one coloured block per message (info, positive, negative, warning, highlight) that drops the
-  oldest blocks once the wrapped lines pass a cap; `linesToDrop` is that budget as a pure function.
+  oldest blocks once the wrapped lines pass a cap; `linesToDrop` is that budget as a pure function,
+  and `lastEntries(n)` reads the newest retained entries back as `{ text, level }` records
+  (oldest first) without scraping rendered children.
 - `fitWindowZoom`/`sharpenText` - step a window stack's integer zoom down until its content fits
   the viewport, and re-rasterise every `Text` under a zoomed container at device ratio times its
   on-screen scale so it is not magnified 1x text.
@@ -618,10 +649,11 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
 - `HelpScreen` - a topic-list-plus-body help/controls screen.
 - `StatsScreen` - a player-stats display screen.
 - `LoadingScreen` - a progress-bar loading screen wired to `core.LoadQueue`.
-- `ScreenReader`/`screenReader` - the screen-reader bridge: `Window` announces its title and
-  `MessageBox` each page and its choices through a visually hidden `aria-live` region, and a
-  game's own widgets use the same `screenReader.announce(text, { assertive })`. No-ops where
-  there is no DOM, so ordinary scene code needs no guard around it.
+- `ScreenReader`/`screenReader` - the screen-reader bridge: `Window` announces its title,
+  `MessageBox` each page and its choices, and `TextPrompt` its message and validation errors
+  through a visually hidden `aria-live` region, and a game's own widgets use the same
+  `screenReader.announce(text, { assertive })`. No-ops where there is no DOM, so ordinary
+  scene code needs no guard around it.
 - `contrastRatio`/`meetsContrast`/`relativeLuminance`/`ContrastLevel` - WCAG contrast for a
   `theme` palette: the standard luminance and ratio formulas with AA/AAA thresholds, so a
   game checks its own colours rather than guessing.
@@ -1164,6 +1196,22 @@ code, including in a compiled `file://` page. Training algorithms and rewards ar
 game-owned; `tools/train-neural.ts` shows a seeded evolution optimizer, resumable
 checkpoint and model export, and `examples/neural` loads its trained weights.
 
+`imitationFromReplay(environment, { actions, events, seed })` turns a persisted run
+(roadmap 397) into imitation targets: it walks the recorded actions against the
+same seeded environment they were played on and returns the `(observation, action)`
+samples a game's own trainer fits, sourced from how its players played rather than a
+generated expert. One recorded event is one environment step; the environment must
+expose exactly one agent (the recorded player - anything else that moves is part of
+the rule, like the maze chase's ghosts); a recorded action outside the list is a
+named error, never a silently skipped event.
+
+`runSeededEpisode(environment, choose, { seed })` plays one whole run with the AI
+choosing, from a named seed: the same seed and the same deterministic `choose` make
+the same decisions, so runs compare across builds, policies and machines. Unlike
+`runRollouts` the chooser is not a `NeuralModel` - a heuristic, a `NeuralPolicy`'s
+argmax, or any named function works - and the result records every chosen action and
+the cumulative rewards, with the environment's `maxSteps` as the truncation bound.
+
 Headless, deterministic turn/scenario running - for testing and benchmarking without a
 live game loop.
 
@@ -1622,6 +1670,13 @@ actions, serialisable state, diagnostics and budgets.
   state, seeded `random()`, `emit()` and a cooperative `checkpoint()` for cancellation and
   step or wall-clock budgets. JavaScript cannot interrupt a synchronous function that never
   checks its checkpoint, so long-running behaviours must cooperate.
+- `Suggester` - the suggestion mode (roadmap 397): the same decision call a game makes
+  for the AI, pointed at a hint UI instead of the world, throttled by a frame-count
+  budget (`every`, never wall clock) so a hint does not tax the frame budget. The
+  first `update` decides immediately, throttled updates return null while `latest`
+  keeps the previous suggestion, an `idle` decision is a suggestion the UI reads
+  (`decision.action === null`), and `clear` drops it. The decider must not mutate
+  game state to compute a suggestion; what the player does with one is the game's.
 - `alphaBetaSearch`/`AlphaBetaGame` - deterministic minimax with alpha-beta pruning over a
   game-owned immutable-state adapter. The adapter supplies legal moves, transitions, terminal
   detection, current player and evaluation from the root player's perspective. `depth`,

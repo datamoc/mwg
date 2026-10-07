@@ -48,6 +48,10 @@ export type { TileMapOptions, AutotileSet, AutotileCell, AutotileFormat, ShadowL
 export { LayeredSprite } from './LayeredSprite.ts';
 export { Projectile } from './Projectile.ts';
 export type { ProjectilePoint, ProjectileOptions } from './Projectile.ts';
+export { Flights } from './Flights.ts';
+export type { FlightSprite, FlightOptions, FlightHandle } from './Flights.ts';
+export { Beam, Beams } from './Beam.ts';
+export type { BeamPoint, BeamOptions } from './Beam.ts';
 export { LightningArc } from './LightningArc.ts';
 export type { LightningArcOptions, LightningArcPoint } from './LightningArc.ts';
 export { SpriteAttachment } from './SpriteAttachment.ts';
@@ -60,7 +64,15 @@ export { Halo, HALO_ANIMATION } from './Halo.ts';
 export type { HaloOptions } from './Halo.ts';
 
 export { ParticleEmitter } from './Particles.ts';
-export type { Particle, ParticleRange, ParticleCurve, ParticleSpawnArea, ParticleEmitterOptions } from './Particles.ts';
+export type {
+	Particle,
+	ParticleRange,
+	ParticleCurve,
+	ParticleSpawnArea,
+	ParticleEmitterOptions,
+	FollowTarget,
+	FollowOptions,
+} from './Particles.ts';
 
 export { ScreenEffects } from './ScreenEffects.ts';
 export type { ScreenEffectPhase, ScreenEffectStep, ScreenEffectsOptions } from './ScreenEffects.ts';

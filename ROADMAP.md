@@ -211,6 +211,21 @@ separable capabilities:
   and fair comparisons between policies are the point; an AI that plays differently every
   time can be compared by no one.
 
+Status: shipped. `core/ReplayFile.ts` owns the whole of 396: the versioned envelope
+(`exportReplayFile`/`importReplayFile`, refusing another game or framework build by
+name), `LastRun` (the newest recording, one deep and bounded, over the same storage a
+save slot uses), `runCheckpoint`/`resumeRunPlayer` (mid-run restore, with `Recorder`
+and `Player` both taking `fromFrame`), and the `file://` plumbing (`downloadReplayFile`,
+`pickReplayFile`, `readReplayFile`). 397 shipped as `simulation.imitationFromReplay`
+(recorded runs walked against their own seeded `TrainingEnvironment`, handing back
+`(observation, action)` samples for a game's trainer), `simulation.runSeededEpisode`
+(a whole run from a named seed behind any deterministic chooser, not just a
+`NeuralModel`), and `ai.Suggester` (the throttled, non-mutating hint source). Tests:
+`tests/replay-file.test.ts`, `tests/replay-ai.test.ts`, `tests/suggester.test.ts`.
+What neither item promised and neither ships: a trained policy from real player runs -
+that is a game's own trainer over the imitation samples, the same split the maze chase
+example already draws.
+
 398. **SVG as a complete image source: inbound sanitization, named scale variants, and
 group-split parts.** Items 15 and 198 already load an SVG through the compiled `data:` URI
 and rasterize it at a resolution multiple; "complete" is what is still missing:

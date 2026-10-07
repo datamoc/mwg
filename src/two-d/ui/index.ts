@@ -4,8 +4,8 @@ export type { Theme } from './theme.ts';
 export { Label } from './Label.ts';
 export type { LabelOptions } from './Label.ts';
 
-export { MessageLog, linesToDrop } from './MessageLog.ts';
-export type { MessageLevel, MessageLogOptions } from './MessageLog.ts';
+export { MessageLog, linesToDrop, takeLastEntries } from './MessageLog.ts';
+export type { MessageLogEntry, MessageLevel, MessageLogOptions } from './MessageLog.ts';
 
 export { fitWindowZoom, sharpenText } from './TextSharpness.ts';
 
@@ -62,6 +62,9 @@ export type { ListTab, TabbedListOptions } from './TabbedList.ts';
 
 export { MessageBox } from './MessageBox.ts';
 export type { MessageBoxOptions, MessagePage, Choice } from './MessageBox.ts';
+
+export { TextPrompt } from './TextPrompt.ts';
+export type { TextPromptOptions } from './TextPrompt.ts';
 
 export { VerticalLabel, layoutVertical } from './VerticalLabel.ts';
 export type { VerticalLabelOptions, VerticalLayoutOptions, GlyphLayout } from './VerticalLabel.ts';

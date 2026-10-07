@@ -17,7 +17,7 @@ export * as Input from './Input.ts';
 export { PlayerInput } from './PlayerInput.ts';
 export type { PlayerInputOptions } from './PlayerInput.ts';
 export { Generator, MersenneTwister, RandomStreams } from './Random.ts';
-export type { MersenneTwisterState, RandomSource } from './Random.ts';
+export type { FloatSource, MersenneTwisterState, RandomSource } from './Random.ts';
 export { JavaRandom } from './JavaRandom.ts';
 export type { JavaRandomDraw, JavaRandomOptions } from './JavaRandom.ts';
 export { SaveSystem } from './Save.ts';
@@ -50,8 +50,19 @@ export { checkSize, checkNoControlCharacters, parseInbound, sanitizeInboundText,
 export type { SizeLimitOptions, Schema } from './Sanitize.ts';
 export { Collection } from './Collection.ts';
 export type { DbRecord, CollectionOptions } from './Collection.ts';
-export { Recorder, Player, serializeReplay, deserializeReplay } from './Replay.ts';
+export { Recorder, Player, parseReplayEvents, serializeReplay, deserializeReplay } from './Replay.ts';
 export type { ReplayEvent } from './Replay.ts';
+export {
+	exportReplayFile,
+	importReplayFile,
+	LastRun,
+	runCheckpoint,
+	resumeRunPlayer,
+	downloadReplayFile,
+	readReplayFile,
+	pickReplayFile,
+} from './ReplayFile.ts';
+export type { ReplayFile, ReplayFileMeta, LastRunData, LastRunOptions, RunCheckpoint } from './ReplayFile.ts';
 export { ActionJournal } from './ActionJournal.ts';
 export { cloneData, uncloneablePath } from './Clone.ts';
 export type { ActionJournalEntry } from './ActionJournal.ts';

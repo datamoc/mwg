@@ -20,6 +20,29 @@ const LEVEL_COLORS = { positive: 0x55dd77, negative: 0xff5555, warning: 0xffb347
  * console.log(linesToDrop([1, 2, 2], 3)); // 2 - the two oldest go, leaving one 2-line entry
  * ```
  */
+/** one retained log entry as plain data: the text as added, and its level */
+export interface MessageLogEntry {
+	text: string;
+	level: MessageLevel;
+}
+
+/**
+ * The newest `count` entries of a retained log, oldest first. Pure so the readback
+ * contract is testable without a renderer: a `count` of 0 (or negative) reads
+ * nothing, a `count past what is retained reads everything retained.
+ *
+ * @example
+ * ```ts
+ * import { takeLastEntries } from '@datamoc/mw_games/two-d/ui';
+ *
+ * console.log(takeLastEntries(['a', 'b', 'c'], 2)); // ['b', 'c']
+ * ```
+ */
+export function takeLastEntries<T>(entries: readonly T[], count: number): T[] {
+	if (!(count > 0)) return [];
+	return entries.slice(Math.max(0, entries.length - Math.floor(count)));
+}
+
 export function linesToDrop(lineCounts: readonly number[], maxLines: number): number {
 	let total = 0;
 	for (const lines of lineCounts) total += lines;
@@ -58,7 +81,7 @@ export interface MessageLogOptions {
  * ```
  */
 export class MessageLog extends Container {
-	private readonly blocks: { label: Label; level: MessageLevel }[] = [];
+	private readonly blocks: { label: Label; level: MessageLevel; text: string }[] = [];
 	private readonly options: MessageLogOptions;
 	private maxLines: number;
 
@@ -77,6 +100,22 @@ export class MessageLog extends Container {
 		return this.blocks.reduce((height, block) => height + block.label.height, 0);
 	}
 
+	/**
+	 * The newest `count` entries as plain `{ text, level }` records, oldest first -
+	 * the readback for automated checks and secondary displays, without scraping
+	 * rendered children. Entries the wrapped-line budget already dropped are gone, so
+	 * what "last" means is bounded by `entryCount`: a `count` past that returns
+	 * everything retained, and a `count` of 0 (or negative) returns `[]`. The
+	 * records are copies; mutating them cannot corrupt the log. (There is no
+	 * `snapshot()` on this widget, so there is nothing further to include.)
+	 */
+	lastEntries(count: number): MessageLogEntry[] {
+		return takeLastEntries(
+			this.blocks.map((block) => ({ text: block.text, level: block.level })),
+			count,
+		);
+	}
+
 	add(text: string, level: MessageLevel = 'info'): void {
 		const label = new Label({
 			text,
@@ -86,7 +125,7 @@ export class MessageLog extends Container {
 			resolution: this.options.resolution,
 		});
 		this.addChild(label);
-		this.blocks.push({ label, level });
+		this.blocks.push({ label, level, text });
 		this.trim();
 		this.layout();
 	}

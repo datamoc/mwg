@@ -1,5 +1,11 @@
 export { advanceToInput } from './Turns.ts';
-export { TrainingEnvironment, runRollouts, runRolloutsAsync } from './Training.ts';
+export {
+	TrainingEnvironment,
+	runRollouts,
+	runRolloutsAsync,
+	imitationFromReplay,
+	runSeededEpisode,
+} from './Training.ts';
 export type {
 	TrainingRules,
 	TrainingFrame,
@@ -9,6 +15,9 @@ export type {
 	TrainingFactory,
 	RolloutOptions,
 	RolloutEpisode,
+	ImitationSample,
+	ImitationResult,
+	SeededRun,
 } from './Training.ts';
 export type { ScheduledTurns, TurnRules, TurnResult } from './Turns.ts';
 export { runScenario } from './Scenario.ts';

@@ -387,6 +387,67 @@ build instead.
 
     export * as Battle from './battle/index.ts'
 
+### `Beam` (class)
+
+    export declare class Beam extends Container {
+        private from;
+        private to;
+        private readonly colour;
+        private readonly texture?;
+        private readonly thickness;
+        private readonly duration;
+        private readonly body;
+        private elapsed;
+        private expired;
+        constructor(from: BeamPoint, to: BeamPoint, options?: BeamOptions);
+
+        get progress(): number;
+        get done(): boolean;
+
+        retarget(from?: BeamPoint, to?: BeamPoint): void;
+
+        update(dt: number): boolean;
+        destroy(): void;
+        private redraw;
+    }
+
+### `BeamOptions` (interface)
+
+    export interface BeamOptions {
+
+        colour?: number;
+
+        texture?: Texture2D;
+
+        duration?: number;
+
+        width?: number;
+
+        additive?: boolean;
+    }
+
+### `BeamPoint` (interface)
+
+    export interface BeamPoint {
+        x: number;
+        y: number;
+    }
+
+### `Beams` (class)
+
+    export declare class Beams extends Container {
+        private readonly live;
+
+        add(from: BeamPoint, to: BeamPoint, options?: BeamOptions): Beam;
+
+        update(dt: number): void;
+
+        get count(): number;
+
+        clear(): void;
+        destroy(): void;
+    }
+
 ### `BitmapLabel` (class)
 
     export declare class BitmapLabel extends BitmapText {
@@ -1028,6 +1089,10 @@ build instead.
 
     export type DistanceMetric = 'euclidean' | 'manhattan' | 'chebyshev';
 
+### `downloadReplayFile` (function)
+
+    export declare function downloadReplayFile(json: string, filename: string): void;
+
 ### `Dropdown` (class)
 
     export declare class Dropdown {
@@ -1129,6 +1194,10 @@ build instead.
     export declare function euclidean(a: {
         readonly x: number;
 
+### `exportReplayFile` (function)
+
+    export declare function exportReplayFile(events: readonly ReplayEvent[], meta: ReplayFileMeta): string;
+
 ### `extractDialogueCatalog` (function)
 
     export declare function extractDialogueCatalog(commands: readonly StageCommand[] | StoryScript, options?: {
@@ -1163,6 +1232,56 @@ build instead.
 ### `fitWindowZoom` (function)
 
     export declare function fitWindowZoom(base: number, contentHeight: number, viewportHeight: number): number;
+
+### `FlightHandle` (interface)
+
+    export interface FlightHandle {
+
+        readonly projectile: Projectile;
+
+        readonly done: boolean;
+
+        cancel(): void;
+    }
+
+### `FlightOptions` (interface)
+
+    export interface FlightOptions extends ProjectileOptions {
+
+        tint?: number;
+
+        spin?: number;
+
+        fadeIn?: number;
+
+        onArrive?: () => void;
+    }
+
+### `Flights` (class)
+
+    export declare class Flights extends Container {
+        private readonly live;
+        add(sprite: FlightSprite, from: ProjectilePoint, to: ProjectilePoint, options?: FlightOptions): FlightHandle;
+        add(texture: Texture2D, from: ProjectilePoint, to: ProjectilePoint, options?: FlightOptions): FlightHandle;
+
+        update(dt: number): void;
+
+        get count(): number;
+
+        clear(): void;
+        destroy(): void;
+        private release;
+    }
+
+### `FlightSprite` (interface)
+
+    export interface FlightSprite {
+        x: number;
+        y: number;
+        rotation?: number;
+        alpha?: number;
+        tint?: number;
+    }
 
 ### `FLOATING_TEXT_STACK_GAP` (const)
 
@@ -1276,6 +1395,13 @@ build instead.
 
     export declare function floatingTextStackMoves(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry, gap?: number): FloatingTextStackMove[];
 
+### `FloatSource` (interface)
+
+    export interface FloatSource {
+
+        float(): number;
+    }
+
 ### `FogCell` (type)
 
     export type FogCell = number | ArrayLike<number>;
@@ -1314,6 +1440,21 @@ build instead.
 
         palette: readonly FogColor[];
     }
+
+### `FollowOptions` (interface)
+
+    export interface FollowOptions {
+
+        offsetX?: number;
+        offsetY?: number;
+
+        enabled?: () => boolean;
+    }
+
+### `FollowTarget` (type)
+
+    export type FollowTarget = Container | (() => {
+        x: number;
 
 ### `Game` (class)
 
@@ -1822,6 +1963,11 @@ build instead.
         resolveColor?(name: string): number | undefined;
     }
 
+### `importReplayFile` (function)
+
+    export declare function importReplayFile(json: string, expect: {
+        framework: string;
+
 ### `importTwee` (function)
 
     export declare function importTwee(source: string): TwineStory;
@@ -1910,6 +2056,38 @@ build instead.
 
         resolution?: number;
         roundPixels?: boolean;
+    }
+
+### `LastRun` (class)
+
+    export declare class LastRun {
+        private readonly store;
+        private readonly maxEvents;
+        constructor(options: LastRunOptions);
+
+        keep(events: readonly ReplayEvent[], seed?: number): void;
+
+        load(): LastRunData | null;
+
+        clear(): void;
+    }
+
+### `LastRunData` (interface)
+
+    export interface LastRunData {
+        version: 1;
+        seed?: number;
+        events: readonly ReplayEvent[];
+    }
+
+### `LastRunOptions` (interface)
+
+    export interface LastRunOptions {
+
+        namespace: string;
+        storage?: SaveStorage;
+
+        maxEvents?: number;
     }
 
 ### `LayeredSprite` (class)
@@ -2595,6 +2773,8 @@ build instead.
         get entryCount(): number;
 
         get contentHeight(): number;
+
+        lastEntries(count: number): MessageLogEntry[];
         add(text: string, level?: MessageLevel): void;
         setMaxLines(lines: number): void;
         setWrapWidth(width: number): void;
@@ -2603,6 +2783,13 @@ build instead.
         private linesOf;
         private trim;
         private layout;
+    }
+
+### `MessageLogEntry` (interface)
+
+    export interface MessageLogEntry {
+        text: string;
+        level: MessageLevel;
     }
 
 ### `MessageLogOptions` (interface)
@@ -2927,6 +3114,10 @@ build instead.
 
     export declare function parsePaletteLists(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
 
+### `parseReplayEvents` (function)
+
+    export declare function parseReplayEvents(parsed: unknown): ReplayEvent[];
+
 ### `parseRotateMode` (function)
 
     export declare function parseRotateMode(argument: string | undefined): RotateMode;
@@ -2984,6 +3175,10 @@ build instead.
 
         private readonly spawnArea;
         private emitting;
+        private followTarget;
+        private followOffsetX;
+        private followOffsetY;
+        private followEnabled;
 
         private poolCursor;
 
@@ -2993,6 +3188,14 @@ build instead.
         start(): void;
 
         stop(): void;
+
+        attach(target: FollowTarget, options?: FollowOptions): void;
+
+        detach(): void;
+
+        get attachedTo(): FollowTarget | null;
+        private syncFollow;
+        private followEmissionAllowed;
         get isEmitting(): boolean;
 
         get activeCount(): number;
@@ -3060,6 +3263,10 @@ build instead.
         height?: number;
     }
 
+### `pickReplayFile` (function)
+
+    export declare function pickReplayFile(accept?: string): Promise<Blob | null>;
+
 ### `pixelToHex` (function)
 
     export declare function pixelToHex(px: number, py: number, tileWidth: number, tileHeight: number, shape?: HexShape): HexCoord;
@@ -3069,11 +3276,14 @@ build instead.
     export declare class Player {
         private frame;
         private index;
+        private readonly fromFrame;
         private readonly events;
         private readonly dispatch;
         private readonly frames;
         private readonly onFrame;
-        constructor(events: readonly ReplayEvent[], dispatch: (action: string) => void, frames: Signal<number>);
+        constructor(events: readonly ReplayEvent[], dispatch: (action: string) => void, frames: Signal<number>, options?: {
+            fromFrame?: number;
+        });
 
         get done(): boolean;
 
@@ -3329,9 +3539,7 @@ build instead.
 
 ### `RandomSource` (interface)
 
-    export interface RandomSource {
-
-        float(): number;
+    export interface RandomSource extends FloatSource {
 
         int(bound: number): number;
     }
@@ -3392,6 +3600,10 @@ build instead.
         }): ReactionTable<TState>;
     }
 
+### `readReplayFile` (function)
+
+    export declare function readReplayFile(file: Blob): Promise<string>;
+
 ### `RebindScreen` (class)
 
     export declare class RebindScreen extends Container {
@@ -3442,14 +3654,19 @@ build instead.
 ### `Recorder` (class)
 
     export declare class Recorder {
-        private frame;
+        private frameStamp;
+        private readonly fromFrame;
         private readonly recorded;
         private readonly actions;
         private readonly frames;
         private readonly onAction;
         private readonly onFrame;
-        constructor(actions: Signal<string>, frames: Signal<number>);
+        constructor(actions: Signal<string>, frames: Signal<number>, options?: {
+            fromFrame?: number;
+        });
         get events(): readonly ReplayEvent[];
+
+        get frame(): number;
 
         toJSON(): ReplayEvent[];
 
@@ -3543,6 +3760,31 @@ build instead.
         action: string;
     }
 
+### `ReplayFile` (interface)
+
+    export interface ReplayFile {
+        format: 'mwg-replay';
+        version: 1;
+
+        framework: string;
+
+        game: string;
+
+        seed?: number;
+
+        recordedAt?: number;
+        events: readonly ReplayEvent[];
+    }
+
+### `ReplayFileMeta` (interface)
+
+    export interface ReplayFileMeta {
+        framework: string;
+        game: string;
+        seed?: number;
+        recordedAt?: number;
+    }
+
 ### `resolveAnchor` (function)
 
     export declare function resolveAnchor(spec: AnchorSpec, bounds: LayoutRect, size?: {
@@ -3563,6 +3805,10 @@ build instead.
 ### `Resources` (namespace)
 
     export * as Resources from './assets/index.ts'
+
+### `resumeRunPlayer` (function)
+
+    export declare function resumeRunPlayer<T>(checkpoint: RunCheckpoint<T>, dispatch: (action: string) => void, frames: Signal<number>): Player;
 
 ### `revealComplete` (function)
 
@@ -3723,6 +3969,20 @@ build instead.
         flags: {
             readonly [tile: number]: number | undefined;
         };
+    }
+
+### `runCheckpoint` (function)
+
+    export declare function runCheckpoint<T>(recorder: Recorder, state: T): RunCheckpoint<T>;
+
+### `RunCheckpoint` (interface)
+
+    export interface RunCheckpoint<T> {
+        version: 1;
+
+        frame: number;
+        events: readonly ReplayEvent[];
+        state: T;
     }
 
 ### `RunHistory` (class)
@@ -4947,6 +5207,10 @@ build instead.
         compare?: (a: T, b: T) => number;
     }
 
+### `takeLastEntries` (function)
+
+    export declare function takeLastEntries<T>(entries: readonly T[], count: number): T[];
+
 ### `TelemetryClient` (class)
 
     export declare class TelemetryClient extends HttpTransport {
@@ -5138,6 +5402,79 @@ build instead.
         maskCharacter?: string;
 
         multiline?: boolean;
+    }
+
+### `TextPrompt` (class)
+
+    export declare class TextPrompt extends Window {
+        private readonly model;
+        private readonly validate?;
+        private readonly onConfirm;
+        private readonly onCancel?;
+        private readonly announce;
+        private readonly announcer;
+        private preview;
+        private promptError;
+        private messageLabel;
+        private valueLabel;
+        private previewLabel;
+        private errorLabel;
+        private caretBar;
+        private readonly measurer;
+        private readonly lineHeight;
+        private readonly valueY;
+        private canMeasureCaret;
+        private blinkOn;
+        private blinkElapsed;
+        private readonly promptThemeListener;
+        private readonly textListener;
+        private readonly compositionListener;
+        constructor(options: TextPromptOptions);
+
+        get value(): string;
+
+        get caretIndex(): number;
+
+        get error(): string | null;
+        handleAction(action: Action): boolean;
+        update(dt: number): void;
+        destroy(options?: Parameters<Window['destroy']>[0]): void;
+
+        private edit;
+        private confirm;
+        private restylePrompt;
+        private render;
+    }
+
+### `TextPromptOptions` (interface)
+
+    export interface TextPromptOptions {
+        width: number;
+        height: number;
+
+        title?: string;
+
+        message?: string;
+
+        initialValue?: string;
+
+        maxLength?: number;
+
+        validate?: (value: string) => string | null;
+
+        onConfirm: (value: string) => void;
+
+        onCancel?: () => void;
+
+        dims?: boolean;
+
+        blocker?: boolean;
+
+        anchor?: 'center' | 'bottom' | 'top';
+
+        announce?: boolean;
+
+        announcer?: Pick<ScreenReader, 'announce'>;
     }
 
 ### `Texture2D` (export)
@@ -7486,6 +7823,29 @@ build instead.
 ### `subjectsWhere` (function)
 
     export declare function subjectsWhere<T>(world: readonly ScoreSubject<T>[], filter: ScoreSubjectFilter): ScoreSubject<T>[];
+
+### `Suggester` (class)
+
+    export declare class Suggester {
+        private readonly decide;
+        private readonly every;
+        private since;
+        private latestDecision;
+        constructor(decide: (input: AIDecisionInput) => AIDecision, options?: SuggesterOptions);
+
+        update(input: AIDecisionInput): AIDecision | null;
+
+        get latest(): AIDecision | null;
+
+        clear(): void;
+    }
+
+### `SuggesterOptions` (interface)
+
+    export interface SuggesterOptions {
+
+        every?: number;
+    }
 
 ## `./ai/lua`
 
@@ -10155,6 +10515,10 @@ build instead.
 
     export type DistanceMetric = 'euclidean' | 'manhattan' | 'chebyshev';
 
+### `downloadReplayFile` (function)
+
+    export declare function downloadReplayFile(json: string, filename: string): void;
+
 ### `Easing` (const)
 
     export declare const Easing: Record<'linear' | 'easeInQuad' | 'easeOutQuad' | 'easeInOutQuad' | 'easeInCubic' | 'easeOutCubic' | 'easeInOutCubic', Easing>;
@@ -10192,6 +10556,10 @@ build instead.
     export declare function euclidean(a: {
         readonly x: number;
 
+### `exportReplayFile` (function)
+
+    export declare function exportReplayFile(events: readonly ReplayEvent[], meta: ReplayFileMeta): string;
+
 ### `FeedbackClient` (class)
 
     export declare class FeedbackClient extends HttpTransport {
@@ -10216,6 +10584,13 @@ build instead.
     export interface FeedbackResponse {
         ok: boolean;
         status: number;
+    }
+
+### `FloatSource` (interface)
+
+    export interface FloatSource {
+
+        float(): number;
     }
 
 ### `GameSettings` (interface)
@@ -10369,6 +10744,11 @@ build instead.
         allowInsecure?: boolean;
     }
 
+### `importReplayFile` (function)
+
+    export declare function importReplayFile(json: string, expect: {
+        framework: string;
+
 ### `Input` (namespace)
 
     export * as Input from './Input.ts'
@@ -10408,6 +10788,38 @@ build instead.
     export interface JavaRandomOptions {
 
         onDraw?: (draw: JavaRandomDraw) => void;
+    }
+
+### `LastRun` (class)
+
+    export declare class LastRun {
+        private readonly store;
+        private readonly maxEvents;
+        constructor(options: LastRunOptions);
+
+        keep(events: readonly ReplayEvent[], seed?: number): void;
+
+        load(): LastRunData | null;
+
+        clear(): void;
+    }
+
+### `LastRunData` (interface)
+
+    export interface LastRunData {
+        version: 1;
+        seed?: number;
+        events: readonly ReplayEvent[];
+    }
+
+### `LastRunOptions` (interface)
+
+    export interface LastRunOptions {
+
+        namespace: string;
+        storage?: SaveStorage;
+
+        maxEvents?: number;
     }
 
 ### `LoadQueue` (class)
@@ -10672,9 +11084,17 @@ build instead.
     export declare function parseInbound(text: string, options?: SizeLimitOptions & {
         label?: string;
 
+### `parseReplayEvents` (function)
+
+    export declare function parseReplayEvents(parsed: unknown): ReplayEvent[];
+
 ### `parseTwee` (function)
 
     export declare function parseTwee(source: string): TweeStory;
+
+### `pickReplayFile` (function)
+
+    export declare function pickReplayFile(accept?: string): Promise<Blob | null>;
 
 ### `pixelToHex` (function)
 
@@ -10685,11 +11105,14 @@ build instead.
     export declare class Player {
         private frame;
         private index;
+        private readonly fromFrame;
         private readonly events;
         private readonly dispatch;
         private readonly frames;
         private readonly onFrame;
-        constructor(events: readonly ReplayEvent[], dispatch: (action: string) => void, frames: Signal<number>);
+        constructor(events: readonly ReplayEvent[], dispatch: (action: string) => void, frames: Signal<number>, options?: {
+            fromFrame?: number;
+        });
 
         get done(): boolean;
 
@@ -10792,9 +11215,7 @@ build instead.
 
 ### `RandomSource` (interface)
 
-    export interface RandomSource {
-
-        float(): number;
+    export interface RandomSource extends FloatSource {
 
         int(bound: number): number;
     }
@@ -10855,17 +11276,26 @@ build instead.
         }): ReactionTable<TState>;
     }
 
+### `readReplayFile` (function)
+
+    export declare function readReplayFile(file: Blob): Promise<string>;
+
 ### `Recorder` (class)
 
     export declare class Recorder {
-        private frame;
+        private frameStamp;
+        private readonly fromFrame;
         private readonly recorded;
         private readonly actions;
         private readonly frames;
         private readonly onAction;
         private readonly onFrame;
-        constructor(actions: Signal<string>, frames: Signal<number>);
+        constructor(actions: Signal<string>, frames: Signal<number>, options?: {
+            fromFrame?: number;
+        });
         get events(): readonly ReplayEvent[];
+
+        get frame(): number;
 
         toJSON(): ReplayEvent[];
 
@@ -10893,6 +11323,49 @@ build instead.
     export interface ReplayEvent {
         frame: number;
         action: string;
+    }
+
+### `ReplayFile` (interface)
+
+    export interface ReplayFile {
+        format: 'mwg-replay';
+        version: 1;
+
+        framework: string;
+
+        game: string;
+
+        seed?: number;
+
+        recordedAt?: number;
+        events: readonly ReplayEvent[];
+    }
+
+### `ReplayFileMeta` (interface)
+
+    export interface ReplayFileMeta {
+        framework: string;
+        game: string;
+        seed?: number;
+        recordedAt?: number;
+    }
+
+### `resumeRunPlayer` (function)
+
+    export declare function resumeRunPlayer<T>(checkpoint: RunCheckpoint<T>, dispatch: (action: string) => void, frames: Signal<number>): Player;
+
+### `runCheckpoint` (function)
+
+    export declare function runCheckpoint<T>(recorder: Recorder, state: T): RunCheckpoint<T>;
+
+### `RunCheckpoint` (interface)
+
+    export interface RunCheckpoint<T> {
+        version: 1;
+
+        frame: number;
+        events: readonly ReplayEvent[];
+        state: T;
     }
 
 ### `RunHistory` (class)
@@ -14964,6 +15437,32 @@ build instead.
         readonly random: readonly [number, number, number, number];
     }
 
+### `imitationFromReplay` (function)
+
+    export declare function imitationFromReplay<State, Command, Event>(environment: TrainingEnvironment<State, Command, Event>, options: {
+        actions: readonly string[];
+
+### `ImitationResult` (interface)
+
+    export interface ImitationResult {
+        samples: readonly ImitationSample[];
+
+        steps: number;
+        terminated: boolean;
+        truncated: boolean;
+    }
+
+### `ImitationSample` (interface)
+
+    export interface ImitationSample {
+
+        observation: NeuralObservation;
+
+        action: number;
+
+        frame: number;
+    }
+
 ### `RolloutEpisode` (interface)
 
     export interface RolloutEpisode {
@@ -15002,6 +15501,11 @@ build instead.
 ### `runScenario` (function)
 
     export declare function runScenario<State, Command, Event, Random>(scenario: Scenario<State, Command, Event, Random>): ScenarioResult<State, Event>;
+
+### `runSeededEpisode` (function)
+
+    export declare function runSeededEpisode<State, Command, Event>(environment: TrainingEnvironment<State, Command, Event>, choose: (observations: readonly NeuralObservation[]) => readonly (number | null)[], options: {
+        seed: number;
 
 ### `Scenario` (interface)
 
@@ -15068,6 +15572,19 @@ build instead.
             sequence: number;
             priority?: number;
         }>;
+    }
+
+### `SeededRun` (interface)
+
+    export interface SeededRun {
+        seed: number;
+        steps: number;
+
+        actions: readonly (readonly (number | null)[])[];
+
+        rewards: readonly number[];
+        terminated: boolean;
+        truncated: boolean;
     }
 
 ### `SimulationContext` (interface)
@@ -15647,6 +16164,67 @@ build instead.
         roundUpToPixel?: boolean;
     }
 
+### `Beam` (class)
+
+    export declare class Beam extends Container {
+        private from;
+        private to;
+        private readonly colour;
+        private readonly texture?;
+        private readonly thickness;
+        private readonly duration;
+        private readonly body;
+        private elapsed;
+        private expired;
+        constructor(from: BeamPoint, to: BeamPoint, options?: BeamOptions);
+
+        get progress(): number;
+        get done(): boolean;
+
+        retarget(from?: BeamPoint, to?: BeamPoint): void;
+
+        update(dt: number): boolean;
+        destroy(): void;
+        private redraw;
+    }
+
+### `BeamOptions` (interface)
+
+    export interface BeamOptions {
+
+        colour?: number;
+
+        texture?: Texture2D;
+
+        duration?: number;
+
+        width?: number;
+
+        additive?: boolean;
+    }
+
+### `BeamPoint` (interface)
+
+    export interface BeamPoint {
+        x: number;
+        y: number;
+    }
+
+### `Beams` (class)
+
+    export declare class Beams extends Container {
+        private readonly live;
+
+        add(from: BeamPoint, to: BeamPoint, options?: BeamOptions): Beam;
+
+        update(dt: number): void;
+
+        get count(): number;
+
+        clear(): void;
+        destroy(): void;
+    }
+
 ### `BitmapLabel` (class)
 
     export declare class BitmapLabel extends BitmapText {
@@ -16152,6 +16730,56 @@ build instead.
 
     export declare function fitWindowZoom(base: number, contentHeight: number, viewportHeight: number): number;
 
+### `FlightHandle` (interface)
+
+    export interface FlightHandle {
+
+        readonly projectile: Projectile;
+
+        readonly done: boolean;
+
+        cancel(): void;
+    }
+
+### `FlightOptions` (interface)
+
+    export interface FlightOptions extends ProjectileOptions {
+
+        tint?: number;
+
+        spin?: number;
+
+        fadeIn?: number;
+
+        onArrive?: () => void;
+    }
+
+### `Flights` (class)
+
+    export declare class Flights extends Container {
+        private readonly live;
+        add(sprite: FlightSprite, from: ProjectilePoint, to: ProjectilePoint, options?: FlightOptions): FlightHandle;
+        add(texture: Texture2D, from: ProjectilePoint, to: ProjectilePoint, options?: FlightOptions): FlightHandle;
+
+        update(dt: number): void;
+
+        get count(): number;
+
+        clear(): void;
+        destroy(): void;
+        private release;
+    }
+
+### `FlightSprite` (interface)
+
+    export interface FlightSprite {
+        x: number;
+        y: number;
+        rotation?: number;
+        alpha?: number;
+        tint?: number;
+    }
+
 ### `FLOATING_TEXT_STACK_GAP` (const)
 
     export declare const FLOATING_TEXT_STACK_GAP = 4;
@@ -16302,6 +16930,21 @@ build instead.
 
         palette: readonly FogColor[];
     }
+
+### `FollowOptions` (interface)
+
+    export interface FollowOptions {
+
+        offsetX?: number;
+        offsetY?: number;
+
+        enabled?: () => boolean;
+    }
+
+### `FollowTarget` (type)
+
+    export type FollowTarget = Container | (() => {
+        x: number;
 
 ### `Game` (class)
 
@@ -17194,6 +17837,8 @@ build instead.
         get entryCount(): number;
 
         get contentHeight(): number;
+
+        lastEntries(count: number): MessageLogEntry[];
         add(text: string, level?: MessageLevel): void;
         setMaxLines(lines: number): void;
         setWrapWidth(width: number): void;
@@ -17202,6 +17847,13 @@ build instead.
         private linesOf;
         private trim;
         private layout;
+    }
+
+### `MessageLogEntry` (interface)
+
+    export interface MessageLogEntry {
+        text: string;
+        level: MessageLevel;
     }
 
 ### `MessageLogOptions` (interface)
@@ -17506,6 +18158,10 @@ build instead.
 
         private readonly spawnArea;
         private emitting;
+        private followTarget;
+        private followOffsetX;
+        private followOffsetY;
+        private followEnabled;
 
         private poolCursor;
 
@@ -17515,6 +18171,14 @@ build instead.
         start(): void;
 
         stop(): void;
+
+        attach(target: FollowTarget, options?: FollowOptions): void;
+
+        detach(): void;
+
+        get attachedTo(): FollowTarget | null;
+        private syncFollow;
+        private followEmissionAllowed;
         get isEmitting(): boolean;
 
         get activeCount(): number;
@@ -18834,6 +19498,10 @@ build instead.
         compare?: (a: T, b: T) => number;
     }
 
+### `takeLastEntries` (function)
+
+    export declare function takeLastEntries<T>(entries: readonly T[], count: number): T[];
+
 ### `TerrainCondition` (interface)
 
     export interface TerrainCondition {
@@ -18982,6 +19650,79 @@ build instead.
         maskCharacter?: string;
 
         multiline?: boolean;
+    }
+
+### `TextPrompt` (class)
+
+    export declare class TextPrompt extends Window {
+        private readonly model;
+        private readonly validate?;
+        private readonly onConfirm;
+        private readonly onCancel?;
+        private readonly announce;
+        private readonly announcer;
+        private preview;
+        private promptError;
+        private messageLabel;
+        private valueLabel;
+        private previewLabel;
+        private errorLabel;
+        private caretBar;
+        private readonly measurer;
+        private readonly lineHeight;
+        private readonly valueY;
+        private canMeasureCaret;
+        private blinkOn;
+        private blinkElapsed;
+        private readonly promptThemeListener;
+        private readonly textListener;
+        private readonly compositionListener;
+        constructor(options: TextPromptOptions);
+
+        get value(): string;
+
+        get caretIndex(): number;
+
+        get error(): string | null;
+        handleAction(action: Action): boolean;
+        update(dt: number): void;
+        destroy(options?: Parameters<Window['destroy']>[0]): void;
+
+        private edit;
+        private confirm;
+        private restylePrompt;
+        private render;
+    }
+
+### `TextPromptOptions` (interface)
+
+    export interface TextPromptOptions {
+        width: number;
+        height: number;
+
+        title?: string;
+
+        message?: string;
+
+        initialValue?: string;
+
+        maxLength?: number;
+
+        validate?: (value: string) => string | null;
+
+        onConfirm: (value: string) => void;
+
+        onCancel?: () => void;
+
+        dims?: boolean;
+
+        blocker?: boolean;
+
+        anchor?: 'center' | 'bottom' | 'top';
+
+        announce?: boolean;
+
+        announcer?: Pick<ScreenReader, 'announce'>;
     }
 
 ### `Texture2D` (export)
@@ -19856,6 +20597,67 @@ build instead.
         animationFrame?: number;
     }
 
+### `Beam` (class)
+
+    export declare class Beam extends Container {
+        private from;
+        private to;
+        private readonly colour;
+        private readonly texture?;
+        private readonly thickness;
+        private readonly duration;
+        private readonly body;
+        private elapsed;
+        private expired;
+        constructor(from: BeamPoint, to: BeamPoint, options?: BeamOptions);
+
+        get progress(): number;
+        get done(): boolean;
+
+        retarget(from?: BeamPoint, to?: BeamPoint): void;
+
+        update(dt: number): boolean;
+        destroy(): void;
+        private redraw;
+    }
+
+### `BeamOptions` (interface)
+
+    export interface BeamOptions {
+
+        colour?: number;
+
+        texture?: Texture2D;
+
+        duration?: number;
+
+        width?: number;
+
+        additive?: boolean;
+    }
+
+### `BeamPoint` (interface)
+
+    export interface BeamPoint {
+        x: number;
+        y: number;
+    }
+
+### `Beams` (class)
+
+    export declare class Beams extends Container {
+        private readonly live;
+
+        add(from: BeamPoint, to: BeamPoint, options?: BeamOptions): Beam;
+
+        update(dt: number): void;
+
+        get count(): number;
+
+        clear(): void;
+        destroy(): void;
+    }
+
 ### `blendMatrix` (function)
 
     export declare function blendMatrix(color: number, ratio: number): ColorMatrixFilter['matrix'];
@@ -20052,6 +20854,56 @@ build instead.
 
     export declare const EMPTY = -1;
 
+### `FlightHandle` (interface)
+
+    export interface FlightHandle {
+
+        readonly projectile: Projectile;
+
+        readonly done: boolean;
+
+        cancel(): void;
+    }
+
+### `FlightOptions` (interface)
+
+    export interface FlightOptions extends ProjectileOptions {
+
+        tint?: number;
+
+        spin?: number;
+
+        fadeIn?: number;
+
+        onArrive?: () => void;
+    }
+
+### `Flights` (class)
+
+    export declare class Flights extends Container {
+        private readonly live;
+        add(sprite: FlightSprite, from: ProjectilePoint, to: ProjectilePoint, options?: FlightOptions): FlightHandle;
+        add(texture: Texture2D, from: ProjectilePoint, to: ProjectilePoint, options?: FlightOptions): FlightHandle;
+
+        update(dt: number): void;
+
+        get count(): number;
+
+        clear(): void;
+        destroy(): void;
+        private release;
+    }
+
+### `FlightSprite` (interface)
+
+    export interface FlightSprite {
+        x: number;
+        y: number;
+        rotation?: number;
+        alpha?: number;
+        tint?: number;
+    }
+
 ### `FogCell` (type)
 
     export type FogCell = number | ArrayLike<number>;
@@ -20090,6 +20942,21 @@ build instead.
 
         palette: readonly FogColor[];
     }
+
+### `FollowOptions` (interface)
+
+    export interface FollowOptions {
+
+        offsetX?: number;
+        offsetY?: number;
+
+        enabled?: () => boolean;
+    }
+
+### `FollowTarget` (type)
+
+    export type FollowTarget = Container | (() => {
+        x: number;
 
 ### `Gradient` (const)
 
@@ -20494,6 +21361,10 @@ build instead.
 
         private readonly spawnArea;
         private emitting;
+        private followTarget;
+        private followOffsetX;
+        private followOffsetY;
+        private followEnabled;
 
         private poolCursor;
 
@@ -20503,6 +21374,14 @@ build instead.
         start(): void;
 
         stop(): void;
+
+        attach(target: FollowTarget, options?: FollowOptions): void;
+
+        detach(): void;
+
+        get attachedTo(): FollowTarget | null;
+        private syncFollow;
+        private followEmissionAllowed;
         get isEmitting(): boolean;
 
         get activeCount(): number;
@@ -22664,6 +23543,8 @@ build instead.
         get entryCount(): number;
 
         get contentHeight(): number;
+
+        lastEntries(count: number): MessageLogEntry[];
         add(text: string, level?: MessageLevel): void;
         setMaxLines(lines: number): void;
         setWrapWidth(width: number): void;
@@ -22672,6 +23553,13 @@ build instead.
         private linesOf;
         private trim;
         private layout;
+    }
+
+### `MessageLogEntry` (interface)
+
+    export interface MessageLogEntry {
+        text: string;
+        level: MessageLevel;
     }
 
 ### `MessageLogOptions` (interface)
@@ -23376,6 +24264,10 @@ build instead.
         compare?: (a: T, b: T) => number;
     }
 
+### `takeLastEntries` (function)
+
+    export declare function takeLastEntries<T>(entries: readonly T[], count: number): T[];
+
 ### `TextModel` (class)
 
     export declare class TextModel {
@@ -23439,6 +24331,79 @@ build instead.
         maskCharacter?: string;
 
         multiline?: boolean;
+    }
+
+### `TextPrompt` (class)
+
+    export declare class TextPrompt extends Window {
+        private readonly model;
+        private readonly validate?;
+        private readonly onConfirm;
+        private readonly onCancel?;
+        private readonly announce;
+        private readonly announcer;
+        private preview;
+        private promptError;
+        private messageLabel;
+        private valueLabel;
+        private previewLabel;
+        private errorLabel;
+        private caretBar;
+        private readonly measurer;
+        private readonly lineHeight;
+        private readonly valueY;
+        private canMeasureCaret;
+        private blinkOn;
+        private blinkElapsed;
+        private readonly promptThemeListener;
+        private readonly textListener;
+        private readonly compositionListener;
+        constructor(options: TextPromptOptions);
+
+        get value(): string;
+
+        get caretIndex(): number;
+
+        get error(): string | null;
+        handleAction(action: Action): boolean;
+        update(dt: number): void;
+        destroy(options?: Parameters<Window['destroy']>[0]): void;
+
+        private edit;
+        private confirm;
+        private restylePrompt;
+        private render;
+    }
+
+### `TextPromptOptions` (interface)
+
+    export interface TextPromptOptions {
+        width: number;
+        height: number;
+
+        title?: string;
+
+        message?: string;
+
+        initialValue?: string;
+
+        maxLength?: number;
+
+        validate?: (value: string) => string | null;
+
+        onConfirm: (value: string) => void;
+
+        onCancel?: () => void;
+
+        dims?: boolean;
+
+        blocker?: boolean;
+
+        anchor?: 'center' | 'bottom' | 'top';
+
+        announce?: boolean;
+
+        announcer?: Pick<ScreenReader, 'announce'>;
     }
 
 ### `theme` (function)

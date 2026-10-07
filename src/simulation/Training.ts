@@ -1,4 +1,6 @@
 import { Generator } from '../core/Random.ts';
+import { parseReplayEvents } from '../core/Replay.ts';
+import type { ReplayEvent } from '../core/Replay.ts';
 import { createNeuralEvaluator } from '../ai/Neural.ts';
 import type { NeuralModel, NeuralObservation } from '../ai/Neural.ts';
 import { spawn } from '../threads/index.ts';
@@ -396,4 +398,125 @@ export async function runRolloutsAsync<Config, State, Command, Event>(
 		abort.abort();
 		options.signal?.removeEventListener('abort', cancel);
 	}
+}
+
+export interface ImitationSample {
+	/** the observation the recorded action was taken against */
+	observation: NeuralObservation;
+	/** the recorded action's index in the caller's `actions` list */
+	action: number;
+	/** the frame the action was recorded on */
+	frame: number;
+}
+
+export interface ImitationResult {
+	samples: readonly ImitationSample[];
+	/** env steps taken, one per recorded event reached */
+	steps: number;
+	terminated: boolean;
+	truncated: boolean;
+}
+
+/**
+ * Turns a persisted run into imitation targets: walks the recorded actions against the same
+ * seeded environment they were played on, and hands back the (observation, action) pairs a
+ * game's own trainer fits - the same shape the maze chase example fits, but sourced from how
+ * the game's own players played rather than a generated expert.
+ *
+ * One recorded event is one environment step, so a turn-based game steps once per action
+ * taken; a tick-based game whose rule needs an explicit idle records one, since a frame
+ * without an event advances nothing here. The environment must expose exactly one agent
+ * (the recorded player); anything else that moves is part of the rule, the way the maze
+ * chase's ghosts are. A recorded action outside the list is a named error, not a skipped
+ * event: every sample after a skipped one would be off-trajectory.
+ *
+ * @example
+ * ```ts
+ * import { TrainingEnvironment, imitationFromReplay } from '@datamoc/mw_games/simulation';
+ * declare const env: TrainingEnvironment<{ x: number }, number, never>;
+ * const result = imitationFromReplay(env, {
+ * 	actions: ['left', 'right'],
+ * 	events: [{ frame: 0, action: 'right' }],
+ * 	seed: 7,
+ * });
+ * console.log(result.samples[0].action); // 1: 'right'
+ * ```
+ */
+export function imitationFromReplay<State, Command, Event>(
+	environment: TrainingEnvironment<State, Command, Event>,
+	options: { actions: readonly string[]; events: readonly ReplayEvent[]; seed: number },
+): ImitationResult {
+	const names = [...options.actions];
+	if (!names.length || names.some((name) => typeof name !== 'string'))
+		throw new TypeError('imitation needs the recorded action names in policy order');
+	const events = parseReplayEvents(options.events);
+	const frame = environment.reset(options.seed);
+	if (frame.observations.length !== 1)
+		throw new Error('imitation trains the recorded player alone: the environment must expose one agent');
+	const samples: ImitationSample[] = [];
+	let current = frame;
+	let steps = 0;
+	for (const event of events) {
+		if (current.terminated || current.truncated) break;
+		const action = names.indexOf(event.action);
+		if (action < 0) throw new Error(`a recorded action ${JSON.stringify(event.action)} is not in the action list`);
+		samples.push({ observation: current.observations[0], action, frame: event.frame });
+		current = environment.step([action]);
+		steps++;
+	}
+	return { samples, steps, terminated: current.terminated, truncated: current.truncated };
+}
+
+/** The record of one AI-played run from a seed, reproducible on demand. */
+export interface SeededRun {
+	seed: number;
+	steps: number;
+	/** the chosen actions, one array per step, in the env's roster order */
+	actions: readonly (readonly (number | null)[])[];
+	/** cumulative reward per agent over the whole run */
+	rewards: readonly number[];
+	terminated: boolean;
+	truncated: boolean;
+}
+
+/**
+ * Plays one whole run with the AI choosing, from a named seed: the same seed and the same
+ * `choose` make the same decisions, so a run is comparable between builds, policies and
+ * machines. `choose` must be deterministic for that to hold - the deterministic argmax of a
+ * `NeuralPolicy`, a heuristic's fixed candidate order - and receives the env's full roster,
+ * returning one action per agent. Unlike `runRollouts`, the chooser is not a `NeuralModel`:
+ * a heuristic policy, a trained model behind `NeuralPolicy.selectAction`, or any function a
+ * benchmark can name works the same way. The env's own `maxSteps` is the truncation bound.
+ *
+ * @example
+ * ```ts
+ * import { TrainingEnvironment, runSeededEpisode } from '@datamoc/mw_games/simulation';
+ * declare const env: TrainingEnvironment<{ x: number }, number, never>;
+ * const run = runSeededEpisode(env, (observations) => [0], { seed: 7 });
+ * console.log(run.steps, run.terminated);
+ * ```
+ */
+export function runSeededEpisode<State, Command, Event>(
+	environment: TrainingEnvironment<State, Command, Event>,
+	choose: (observations: readonly NeuralObservation[]) => readonly (number | null)[],
+	options: { seed: number },
+): SeededRun {
+	let frame = environment.reset(options.seed);
+	const rewards = frame.rewards.map(() => 0);
+	const actions: (readonly (number | null)[])[] = [];
+	let steps = 0;
+	while (!frame.terminated && !frame.truncated) {
+		const chosen = choose(frame.observations);
+		if (!Array.isArray(chosen) || chosen.length !== frame.observations.length)
+			throw new RangeError('the seeded-run chooser must return one action per agent');
+		actions.push([...chosen]);
+		const next = environment.step(chosen);
+		for (let i = 0; i < rewards.length; i++) {
+			rewards[i] += next.rewards[i];
+			if (!Number.isFinite(rewards[i])) throw new RangeError('seeded-run cumulative reward overflow');
+		}
+		frame = next;
+		steps++;
+	}
+	return { seed: options.seed, steps, actions, rewards, terminated: frame.terminated, truncated: frame.truncated };
 }

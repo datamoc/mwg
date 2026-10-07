@@ -216,6 +216,30 @@
 		"declaringModule": "index.d.ts"
 	},
 	{
+		"name": "Beam",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
+		"name": "BeamOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
+		"name": "BeamPoint",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
+		"name": "Beams",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
 		"name": "BitmapLabel",
 		"kind": "class",
 		"subpath": ".",
@@ -606,6 +630,12 @@
 		"declaringModule": "core/Grid.d.ts"
 	},
 	{
+		"name": "downloadReplayFile",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
 		"name": "Dropdown",
 		"kind": "class",
 		"subpath": ".",
@@ -672,6 +702,12 @@
 		"declaringModule": "core/Grid.d.ts"
 	},
 	{
+		"name": "exportReplayFile",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
 		"name": "extractDialogueCatalog",
 		"kind": "function",
 		"subpath": ".",
@@ -706,6 +742,30 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/TextSharpness.d.ts"
+	},
+	{
+		"name": "FlightHandle",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Flights.d.ts"
+	},
+	{
+		"name": "FlightOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Flights.d.ts"
+	},
+	{
+		"name": "Flights",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Flights.d.ts"
+	},
+	{
+		"name": "FlightSprite",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Flights.d.ts"
 	},
 	{
 		"name": "FLOATING_TEXT_STACK_GAP",
@@ -786,6 +846,12 @@
 		"declaringModule": "two-d/ui/FloatingTextStack.d.ts"
 	},
 	{
+		"name": "FloatSource",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "core/Random.d.ts"
+	},
+	{
 		"name": "FogCell",
 		"kind": "type",
 		"subpath": ".",
@@ -808,6 +874,18 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/render/FogLayer.d.ts"
+	},
+	{
+		"name": "FollowOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Particles.d.ts"
+	},
+	{
+		"name": "FollowTarget",
+		"kind": "type",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Particles.d.ts"
 	},
 	{
 		"name": "Game",
@@ -1068,6 +1146,12 @@
 		"declaringModule": "two-d/render/ImageModifiers.d.ts"
 	},
 	{
+		"name": "importReplayFile",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
 		"name": "importTwee",
 		"kind": "function",
 		"subpath": ".",
@@ -1120,6 +1204,24 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/Label.d.ts"
+	},
+	{
+		"name": "LastRun",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
+		"name": "LastRunData",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
+		"name": "LastRunOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "core/ReplayFile.d.ts"
 	},
 	{
 		"name": "LayeredSprite",
@@ -1446,6 +1548,12 @@
 		"declaringModule": "two-d/ui/MessageLog.d.ts"
 	},
 	{
+		"name": "MessageLogEntry",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/MessageLog.d.ts"
+	},
+	{
 		"name": "MessageLogOptions",
 		"kind": "interface",
 		"subpath": ".",
@@ -1692,6 +1800,12 @@
 		"declaringModule": "two-d/render/ImageModifiers.d.ts"
 	},
 	{
+		"name": "parseReplayEvents",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/Replay.d.ts"
+	},
+	{
 		"name": "parseRotateMode",
 		"kind": "function",
 		"subpath": ".",
@@ -1738,6 +1852,12 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/render/Particles.d.ts"
+	},
+	{
+		"name": "pickReplayFile",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/ReplayFile.d.ts"
 	},
 	{
 		"name": "pixelToHex",
@@ -1884,6 +2004,12 @@
 		"declaringModule": "core/Reactions.d.ts"
 	},
 	{
+		"name": "readReplayFile",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
 		"name": "RebindScreen",
 		"kind": "class",
 		"subpath": ".",
@@ -1992,6 +2118,18 @@
 		"declaringModule": "core/Replay.d.ts"
 	},
 	{
+		"name": "ReplayFile",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
+		"name": "ReplayFileMeta",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
 		"name": "resolveAnchor",
 		"kind": "function",
 		"subpath": ".",
@@ -2014,6 +2152,12 @@
 		"kind": "namespace",
 		"subpath": ".",
 		"declaringModule": "index.d.ts"
+	},
+	{
+		"name": "resumeRunPlayer",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/ReplayFile.d.ts"
 	},
 	{
 		"name": "revealComplete",
@@ -2152,6 +2296,18 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/render/RpgmAutotile.d.ts"
+	},
+	{
+		"name": "runCheckpoint",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
+		"name": "RunCheckpoint",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "core/ReplayFile.d.ts"
 	},
 	{
 		"name": "RunHistory",
@@ -2766,6 +2922,12 @@
 		"declaringModule": "two-d/ui/DataTable.d.ts"
 	},
 	{
+		"name": "takeLastEntries",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/MessageLog.d.ts"
+	},
+	{
 		"name": "TelemetryClient",
 		"kind": "class",
 		"subpath": ".",
@@ -2854,6 +3016,18 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/TextModel.d.ts"
+	},
+	{
+		"name": "TextPrompt",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/TextPrompt.d.ts"
+	},
+	{
+		"name": "TextPromptOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/TextPrompt.d.ts"
 	},
 	{
 		"name": "Texture2D",
@@ -4312,6 +4486,18 @@
 		"kind": "function",
 		"subpath": "./ai",
 		"declaringModule": "ai/score.d.ts"
+	},
+	{
+		"name": "Suggester",
+		"kind": "class",
+		"subpath": "./ai",
+		"declaringModule": "ai/Suggest.d.ts"
+	},
+	{
+		"name": "SuggesterOptions",
+		"kind": "interface",
+		"subpath": "./ai",
+		"declaringModule": "ai/Suggest.d.ts"
 	},
 	{
 		"name": "AIAgentDefinition",
@@ -6300,6 +6486,12 @@
 		"declaringModule": "core/Grid.d.ts"
 	},
 	{
+		"name": "downloadReplayFile",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
 		"name": "Easing",
 		"kind": "const",
 		"subpath": "./core",
@@ -6336,6 +6528,12 @@
 		"declaringModule": "core/Grid.d.ts"
 	},
 	{
+		"name": "exportReplayFile",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
 		"name": "FeedbackClient",
 		"kind": "class",
 		"subpath": "./core",
@@ -6358,6 +6556,12 @@
 		"kind": "interface",
 		"subpath": "./core",
 		"declaringModule": "core/Feedback.d.ts"
+	},
+	{
+		"name": "FloatSource",
+		"kind": "interface",
+		"subpath": "./core",
+		"declaringModule": "core/Random.d.ts"
 	},
 	{
 		"name": "GameSettings",
@@ -6456,6 +6660,12 @@
 		"declaringModule": "core/HttpTransport.d.ts"
 	},
 	{
+		"name": "importReplayFile",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
 		"name": "Input",
 		"kind": "namespace",
 		"subpath": "./core",
@@ -6478,6 +6688,24 @@
 		"kind": "interface",
 		"subpath": "./core",
 		"declaringModule": "core/JavaRandom.d.ts"
+	},
+	{
+		"name": "LastRun",
+		"kind": "class",
+		"subpath": "./core",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
+		"name": "LastRunData",
+		"kind": "interface",
+		"subpath": "./core",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
+		"name": "LastRunOptions",
+		"kind": "interface",
+		"subpath": "./core",
+		"declaringModule": "core/ReplayFile.d.ts"
 	},
 	{
 		"name": "LoadQueue",
@@ -6642,10 +6870,22 @@
 		"declaringModule": "core/Sanitize.d.ts"
 	},
 	{
+		"name": "parseReplayEvents",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/Replay.d.ts"
+	},
+	{
 		"name": "parseTwee",
 		"kind": "function",
 		"subpath": "./core",
 		"declaringModule": "core/Twee.d.ts"
+	},
+	{
+		"name": "pickReplayFile",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/ReplayFile.d.ts"
 	},
 	{
 		"name": "pixelToHex",
@@ -6732,6 +6972,12 @@
 		"declaringModule": "core/Reactions.d.ts"
 	},
 	{
+		"name": "readReplayFile",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
 		"name": "Recorder",
 		"kind": "class",
 		"subpath": "./core",
@@ -6754,6 +7000,36 @@
 		"kind": "interface",
 		"subpath": "./core",
 		"declaringModule": "core/Replay.d.ts"
+	},
+	{
+		"name": "ReplayFile",
+		"kind": "interface",
+		"subpath": "./core",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
+		"name": "ReplayFileMeta",
+		"kind": "interface",
+		"subpath": "./core",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
+		"name": "resumeRunPlayer",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
+		"name": "runCheckpoint",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
+		"name": "RunCheckpoint",
+		"kind": "interface",
+		"subpath": "./core",
+		"declaringModule": "core/ReplayFile.d.ts"
 	},
 	{
 		"name": "RunHistory",
@@ -9600,6 +9876,24 @@
 		"declaringModule": "simulation/Harness.d.ts"
 	},
 	{
+		"name": "imitationFromReplay",
+		"kind": "function",
+		"subpath": "./simulation",
+		"declaringModule": "simulation/Training.d.ts"
+	},
+	{
+		"name": "ImitationResult",
+		"kind": "interface",
+		"subpath": "./simulation",
+		"declaringModule": "simulation/Training.d.ts"
+	},
+	{
+		"name": "ImitationSample",
+		"kind": "interface",
+		"subpath": "./simulation",
+		"declaringModule": "simulation/Training.d.ts"
+	},
+	{
 		"name": "RolloutEpisode",
 		"kind": "interface",
 		"subpath": "./simulation",
@@ -9636,6 +9930,12 @@
 		"declaringModule": "simulation/Scenario.d.ts"
 	},
 	{
+		"name": "runSeededEpisode",
+		"kind": "function",
+		"subpath": "./simulation",
+		"declaringModule": "simulation/Training.d.ts"
+	},
+	{
 		"name": "Scenario",
 		"kind": "interface",
 		"subpath": "./simulation",
@@ -9664,6 +9964,12 @@
 		"kind": "interface",
 		"subpath": "./simulation",
 		"declaringModule": "roguelike/Scheduler.d.ts"
+	},
+	{
+		"name": "SeededRun",
+		"kind": "interface",
+		"subpath": "./simulation",
+		"declaringModule": "simulation/Training.d.ts"
 	},
 	{
 		"name": "SimulationContext",
@@ -10158,6 +10464,30 @@
 		"declaringModule": "two-d/ui/Bar.d.ts"
 	},
 	{
+		"name": "Beam",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
+		"name": "BeamOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
+		"name": "BeamPoint",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
+		"name": "Beams",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
 		"name": "BitmapLabel",
 		"kind": "class",
 		"subpath": "./two-d",
@@ -10422,6 +10752,30 @@
 		"declaringModule": "two-d/ui/TextSharpness.d.ts"
 	},
 	{
+		"name": "FlightHandle",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Flights.d.ts"
+	},
+	{
+		"name": "FlightOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Flights.d.ts"
+	},
+	{
+		"name": "Flights",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Flights.d.ts"
+	},
+	{
+		"name": "FlightSprite",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Flights.d.ts"
+	},
+	{
 		"name": "FLOATING_TEXT_STACK_GAP",
 		"kind": "const",
 		"subpath": "./two-d",
@@ -10522,6 +10876,18 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/FogLayer.d.ts"
+	},
+	{
+		"name": "FollowOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Particles.d.ts"
+	},
+	{
+		"name": "FollowTarget",
+		"kind": "type",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Particles.d.ts"
 	},
 	{
 		"name": "Game",
@@ -10940,6 +11306,12 @@
 	{
 		"name": "MessageLog",
 		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/MessageLog.d.ts"
+	},
+	{
+		"name": "MessageLogEntry",
+		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/MessageLog.d.ts"
 	},
@@ -11826,6 +12198,12 @@
 		"declaringModule": "two-d/ui/DataTable.d.ts"
 	},
 	{
+		"name": "takeLastEntries",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/MessageLog.d.ts"
+	},
+	{
 		"name": "TerrainCondition",
 		"kind": "interface",
 		"subpath": "./two-d",
@@ -11890,6 +12268,18 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/TextModel.d.ts"
+	},
+	{
+		"name": "TextPrompt",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/TextPrompt.d.ts"
+	},
+	{
+		"name": "TextPromptOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/TextPrompt.d.ts"
 	},
 	{
 		"name": "Texture2D",
@@ -12348,6 +12738,30 @@
 		"declaringModule": "two-d/render/TileMap.d.ts"
 	},
 	{
+		"name": "Beam",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
+		"name": "BeamOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
+		"name": "BeamPoint",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
+		"name": "Beams",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Beam.d.ts"
+	},
+	{
 		"name": "blendMatrix",
 		"kind": "function",
 		"subpath": "./two-d/render",
@@ -12468,6 +12882,30 @@
 		"declaringModule": "two-d/render/TileMap.d.ts"
 	},
 	{
+		"name": "FlightHandle",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Flights.d.ts"
+	},
+	{
+		"name": "FlightOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Flights.d.ts"
+	},
+	{
+		"name": "Flights",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Flights.d.ts"
+	},
+	{
+		"name": "FlightSprite",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Flights.d.ts"
+	},
+	{
 		"name": "FogCell",
 		"kind": "type",
 		"subpath": "./two-d/render",
@@ -12490,6 +12928,18 @@
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/FogLayer.d.ts"
+	},
+	{
+		"name": "FollowOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Particles.d.ts"
+	},
+	{
+		"name": "FollowTarget",
+		"kind": "type",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Particles.d.ts"
 	},
 	{
 		"name": "Gradient",
@@ -13914,6 +14364,12 @@
 		"declaringModule": "two-d/ui/MessageLog.d.ts"
 	},
 	{
+		"name": "MessageLogEntry",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/MessageLog.d.ts"
+	},
+	{
 		"name": "MessageLogOptions",
 		"kind": "interface",
 		"subpath": "./two-d/ui",
@@ -14226,6 +14682,12 @@
 		"declaringModule": "two-d/ui/DataTable.d.ts"
 	},
 	{
+		"name": "takeLastEntries",
+		"kind": "function",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/MessageLog.d.ts"
+	},
+	{
 		"name": "TextModel",
 		"kind": "class",
 		"subpath": "./two-d/ui",
@@ -14236,6 +14698,18 @@
 		"kind": "interface",
 		"subpath": "./two-d/ui",
 		"declaringModule": "two-d/ui/TextModel.d.ts"
+	},
+	{
+		"name": "TextPrompt",
+		"kind": "class",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/TextPrompt.d.ts"
+	},
+	{
+		"name": "TextPromptOptions",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/TextPrompt.d.ts"
 	},
 	{
 		"name": "theme",
