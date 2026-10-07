@@ -147,6 +147,112 @@ export function buildTapSequence(x, y) {
 }
 
 /**
+ * The named keys a game binds, with everything each input protocol needs: the
+ * DOM `code`, the Windows virtual-key code CDP wants, the character the key types
+ * (so `press('a')` reaches `onText`), and the WebDriver key value BiDi's key actions
+ * speak (the raw DOM key for printables, the `\uE0xx` control codes for the rest).
+ * Pure data so the suite can pin every mapping without a browser.
+ */
+const NAMED_KEYS = {
+	Enter: { code: 'Enter', vk: 13, bidi: '\uE007' },
+	Escape: { code: 'Escape', vk: 27, bidi: '\uE00B' },
+	Tab: { code: 'Tab', vk: 9, bidi: '\uE004' },
+	Backspace: { code: 'Backspace', vk: 8, bidi: '\uE003' },
+	Delete: { code: 'Delete', vk: 46, bidi: '\uE017' },
+	ArrowUp: { code: 'ArrowUp', vk: 38, bidi: '\uE013' },
+	ArrowDown: { code: 'ArrowDown', vk: 40, bidi: '\uE015' },
+	ArrowLeft: { code: 'ArrowLeft', vk: 37, bidi: '\uE012' },
+	ArrowRight: { code: 'ArrowRight', vk: 39, bidi: '\uE014' },
+	Space: { code: 'Space', vk: 32, bidi: ' ', text: ' ' },
+	Shift: { code: 'ShiftLeft', vk: 16, bidi: '\uE008' },
+	F5: { code: 'F5', vk: 116, bidi: '\uE035' },
+	F9: { code: 'F9', vk: 120, bidi: '\uE039' },
+};
+
+/**
+ * Everything `press(key)` needs for one key: a printable character reads its own
+ * code off its spelling (`a` -> `KeyA`, `5` -> `Digit5`), a named key comes from the
+ * table, and anything else has no mapping (the caller hears `null`, not a guess).
+ */
+export function keyInfoOf(key) {
+	if (NAMED_KEYS[key]) return NAMED_KEYS[key];
+	if (key.length === 1) {
+		const lower = key.toLowerCase();
+		const code =
+			lower >= 'a' && lower <= 'z'
+				? `Key${key.toUpperCase()}`
+				: lower >= '0' && lower <= '9'
+					? `Digit${key}`
+					: null;
+		if (!code) return null;
+		return { code, vk: key.toUpperCase().charCodeAt(0), bidi: key, text: key };
+	}
+	return null;
+}
+
+/**
+ * The CDP `Input.dispatchKeyEvent` pair a press is: `keyDown` carries the character a
+ * text-producing key types, then `keyUp`. Pure so the suite pins the shape.
+ */
+export function cdpKeySequence(key) {
+	const info = keyInfoOf(key);
+	if (!info) return null;
+	return [
+		{
+			type: 'keyDown',
+			key,
+			code: info.code,
+			windowsVirtualKeyCode: info.vk,
+			...(info.text ? { text: info.text } : {}),
+		},
+		{ type: 'keyUp', key, code: info.code, windowsVirtualKeyCode: info.vk },
+	];
+}
+
+/**
+ * The BiDi `input.performActions` key sequence a press is: `keyDown`, a pause of
+ * the hold, `keyUp`, speaking the WebDriver key values. Pure for the same reason.
+ */
+export function bidiKeyActions(key, holdMs = 60) {
+	const info = keyInfoOf(key);
+	if (!info) return null;
+	return [
+		{
+			type: 'key',
+			id: 'mwg-keyboard',
+			actions: [
+				{ type: 'keyDown', value: info.bidi },
+				{ type: 'pause', duration: holdMs },
+				{ type: 'keyUp', value: info.bidi },
+			],
+		},
+	];
+}
+
+/**
+ * The in-page pointer sequence a tap is, as page JS: a full synthetic
+ * move/press/release (plus the click it composes to) at CSS pixels with the
+ * pointer identity a real mouse carries. This is the Firefox tap path, because
+ * the WebDriver BiDi `input.performActions` pointer half does not reach Pixi 8's
+ * canvas EventSystem (measured by the pixel-dungeon port: a title-screen button
+ * does not advance; the identical in-page dispatch does), and every Pixi consumer
+ * on Firefox would otherwise rediscover that. `buildPointerActions` stays exported
+ * for a consumer that wants the trusted sequence anyway.
+ */
+export function pageTapSource(x, y) {
+	return `(() => {
+		const canvas = document.querySelector("canvas");
+		const rect = canvas.getBoundingClientRect();
+		const base = { bubbles: true, cancelable: true, composed: true, pointerId: 1, pointerType: "mouse", isPrimary: true, button: 0, clientX: ${x}, clientY: ${y} };
+		canvas.dispatchEvent(new PointerEvent("pointermove", { ...base, buttons: 0 }));
+		canvas.dispatchEvent(new PointerEvent("pointerdown", { ...base, buttons: 1 }));
+		canvas.dispatchEvent(new PointerEvent("pointerup", { ...base, buttons: 0 }));
+		canvas.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, composed: true, button: 0, buttons: 0, clientX: ${x}, clientY: ${y} }));
+		return { x: rect.x, y: rect.y, w: rect.width, h: rect.height };
+	})()`;
+}
+
+/**
  * Unwraps a WebDriver BiDi remote value into plain JSON: primitives read off
  * `.value`, arrays unwrap element-wise, objects/maps unwrap their key/value pairs,
  * sets unwrap to arrays. Handles (nodes, windows) carry no value and unwrap to
@@ -417,7 +523,7 @@ export async function driveChrome(options = {}) {
 	const child = spawn(
 		executable,
 		[
-			'--headless',
+			...(options.headed ? [] : ['--headless']),
 			'--no-first-run',
 			'--no-default-browser-check',
 			'--disable-extensions',
@@ -451,6 +557,18 @@ export async function driveChrome(options = {}) {
 	await cdp.send('Runtime.enable');
 	await cdp.send('Log.enable');
 
+	//P41: the inner viewport, applied through the protocol rather than window flags -
+	//`--window-size` is the OUTER size (22x98 of window chrome on this build), so every
+	//consumer that compensated the flags was drift-fragile across browser updates.
+	if (options.viewport) {
+		await cdp.send('Emulation.setDeviceMetricsOverride', {
+			width: options.viewport.width,
+			height: options.viewport.height,
+			deviceScaleFactor: 1,
+			mobile: false,
+		});
+	}
+
 	let closed = false;
 	const evaluate = async (expression, awaitPromise = false) => {
 		const { result } = await cdp.send('Runtime.evaluate', {
@@ -479,6 +597,13 @@ export async function driveChrome(options = {}) {
 			for (const event of buildTapSequence(x, y)) {
 				await cdp.send('Input.dispatchMouseEvent', event);
 			}
+		},
+		/** presses and releases one key through Chrome's trusted input channel (P41) */
+		press: async (key, holdMs = 60) => {
+			const sequence = cdpKeySequence(key);
+			if (!sequence) throw new Error(`no key mapping for '${key}'`);
+			for (const event of sequence) await cdp.send('Input.dispatchKeyEvent', event);
+			await new Promise((tick) => setTimeout(tick, holdMs));
 		},
 		screenshot: async () => {
 			const { data } = await cdp.send('Page.captureScreenshot', { format: 'png', fromSurface: true });
@@ -542,7 +667,7 @@ export async function driveFirefox(options = {}) {
 	const child = spawn(
 		executable,
 		[
-			'--headless',
+			...(options.headed ? [] : ['--headless']),
 			'--no-remote',
 			'--profile',
 			profile,
@@ -590,6 +715,16 @@ export async function driveFirefox(options = {}) {
 	await send('session.subscribe', { events: ['log.entryAdded'] }, sessionId);
 	const { context } = await send('browsingContext.create', { type: 'tab' }, sessionId);
 
+	//P41: the inner viewport, through the protocol (Firefox's --height flag lands 85
+	//short of the inner size, which is what the window-flag compensation measured).
+	if (options.viewport) {
+		await send(
+			'browsingContext.setViewport',
+			{ context, viewport: { width: options.viewport.width, height: options.viewport.height } },
+			sessionId,
+		);
+	}
+
 	const evaluate = async (expression, awaitPromise = false) => {
 		const outer = await send(
 			'script.evaluate',
@@ -616,7 +751,15 @@ export async function driveFirefox(options = {}) {
 			);
 			const x = Math.round(point.x + point.w * xFraction);
 			const y = Math.round(point.y + point.h * yFraction);
-			await send('input.performActions', { context, actions: buildPointerActions(x, y) }, sessionId);
+			//P41: the in-page synthetic sequence (see pageTapSource) - the BiDi pointer
+			//actions never reach Pixi 8's EventSystem, and this is the measured-working path.
+			await evaluate(pageTapSource(x, y), true);
+		},
+		/** presses and releases one key through WebDriver's key actions (P41) */
+		press: async (key, holdMs = 60) => {
+			const actions = bidiKeyActions(key, holdMs);
+			if (!actions) throw new Error(`no key mapping for '${key}'`);
+			await send('input.performActions', { context, actions }, sessionId);
 		},
 		screenshot: async () => {
 			const { data } = await send('browsingContext.captureScreenshot', { context }, sessionId);

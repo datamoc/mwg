@@ -7,6 +7,15 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.30.0] - 2026-10-07
+
+P41, the browser driver's four measured gaps: the viewport option (inner size through the
+protocol, not window flags), the trusted keyboard channel (press through CDP key events and
+BiDi key actions, with the WebDriver key-value table), the Firefox tap that actually reaches
+Pixi 8's EventSystem (the in-page synthetic sequence, measured and documented), and headed
+mode. Live-verified on Chrome and Firefox: exact 800x600 viewport, keys delivered, the
+Firefox tap advancing a real Pixi page.
+
 ## [0.29.0] - 2026-10-07
 
 P37's touch half: the on-screen keyboard. Rows of keys as data, rendered through the

@@ -144,8 +144,11 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   over keyboard, `bindButton`/`bindAxis`/`pollGamepads` over a gamepad,
   `bindTouch`/`pressTouch`/`releaseTouch`/`attachSwipe` over touch, `actionsForKey` for
   rebind-conflict detection, `rumble` for gamepad haptics. `onText` carries the character a
-  key press produces (via `textFromKey`/`dispatchText`) and `onComposition` follows an IME
-  through `start`/`update`/`end`, so a free text field can be built on top.
+  key press produces (via `textFromKey`/`dispatchText`) and `onAction` the named action a
+  key fires, each with its own programmatic counterpart (`dispatchText`,
+  `dispatchAction`) so an on-screen keyboard feeds the same signals a physical key
+  travels; `onComposition` follows an IME through `start`/`update`/`end`, so a free text
+  field can be built on top.
 - `PlayerInput` - a per-player scoped `Input`, for local multiplayer/split-screen.
 - `SaveSystem` - named, versioned save slots over `localStorage` (in-memory fallback under
   `file://`); a `migrations` chain, and `importExternal` as a plug-in point for a foreign
@@ -604,9 +607,18 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   The interface example's Name button is the reviewed hosting pattern: push it on a
   `WindowStack` and it owns focus, closing and the stack's un-popping by itself.
   The touch half (roadmap 402): `keyboard: UPPERCASE_KEYBOARD` (or any `KeyboardLayout`)
-  hosts an `OnScreenKeyboard` beneath the field - rows of keys as data, each tap
-  pressing through `pressKey`, the same `onText`/`onAction` paths a physical key travels,
-  so pointer-only devices type too.
+  hosts one beneath the field and resizes the window to fit it - `OnScreenKeyboard`,
+  next.
+- `OnScreenKeyboard`/`KeyboardLayout`/`KeyboardKey` + `UPPERCASE_KEYBOARD`/`pressKey`/
+  `layoutKeys` - pointer-only typing: a layout is rows of keys as plain data (ragged rows
+  fine), each key a caption, the `text` it types (defaulting to its label), or the named
+  `action` it fires instead, plus a `span` in row units for a space bar. The class renders
+  it through the theme's own `Button` and reports `contentHeight` so a host can size
+  itself; `pressKey` is the pure dispatch rule (`dispatchText` for a typing key,
+  `dispatchAction` for an action key, the two paths a physical key travels, so no
+  listener can tell a tap from a keystroke) and `layoutKeys` the rows-to-buttons
+  arithmetic behind it. `UPPERCASE_KEYBOARD` is the one shipped default: the alphabet
+  over a digit row, then `Bksp`, caret moves, space, `OK`, `Esc`.
 - `DataTable`/`TableColumn`/`DataTableOptions` - a renderer-free columned table: sort by a column
   (toggling direction), a highlight that skips disabled rows, and a page derived from the
   highlight.

@@ -1,6 +1,12 @@
 export interface ServedDir {
 	url: string;
 	port: number;
+	/**
+	 * Presses and releases one key through the engine's trusted input channel (P41): a
+	 * named key from the table (`Enter`, `Escape`, `ArrowUp`, ...), or a single character
+	 * that types itself. `holdMs` parks between the down and the up.
+	 */
+	press(key: string, holdMs?: number): Promise<void>;
 	close(): Promise<void>;
 }
 
@@ -42,6 +48,15 @@ export interface DriveOptions {
 	chromeArgs?: string[];
 	firefoxArgs?: string[];
 	profileDir?: string;
+	/**
+	 * The inner page viewport, applied through each engine's protocol call (CDP
+	 * `Emulation.setDeviceMetricsOverride`, BiDi `browsingContext.setViewport`) rather
+	 * than window flags, whose outer size is what a consumer's compensation kept
+	 * rediscovering (P41).
+	 */
+	viewport?: { width: number; height: number };
+	/** show the browser window instead of running headless, for watching a driven run */
+	headed?: boolean;
 }
 
 /** the readiness predicate browser-smoke's waitForGame waits on, as page JS */
@@ -64,6 +79,21 @@ export function buildTapSequence(x: number, y: number): CdpMouseEvent[];
 
 /** the BiDi input.performActions pointer half of a tap, at CSS pixels */
 export function buildPointerActions(x: number, y: number): BidiPointerAction[];
+
+/** everything a named key's press needs per protocol: DOM `code`, Windows VK, the typed character, the WebDriver key value; null for the unmapped */
+export function keyInfoOf(key: string): { code: string; vk: number; bidi: string; text?: string } | null;
+
+/** the CDP `Input.dispatchKeyEvent` pair one press is */
+export function cdpKeySequence(key: string): unknown[] | null;
+
+/** the BiDi `input.performActions` key sequence one press is, with the hold as a pause */
+export function bidiKeyActions(key: string, holdMs?: number): unknown[] | null;
+
+/**
+ * The in-page synthetic pointer sequence a tap is, as page JS - the Firefox tap path,
+ * because the BiDi pointer actions do not reach Pixi 8's canvas EventSystem (P41).
+ */
+export function pageTapSource(x: number, y: number): string;
 
 /** unwraps a WebDriver BiDi remote value into plain JSON */
 export function unwrapRemoteValue(node: unknown): unknown;

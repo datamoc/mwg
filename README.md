@@ -205,6 +205,7 @@ only some do.
 | | screen transitions: fade, flash, tint | `mwg/two-d/render` |
 | **ui** | windows, lists, tooltips, markdown labels | `mwg/two-d/ui` |
 | | text and fonts, including non-latin fallback | PixiJS |
+| | modal single-line text entry, with validation and an on-screen keyboard for touch | `mwg/two-d/ui` |
 | | pointer, keyboard and gamepad input with rebinding | `mwg/core` |
 | **text** | message tables per language, compiled at build time | `mwg/i18n` |
 | | plurals, gendered forms, interpolation, and Python f-string-style format specs | `mwg/i18n` |

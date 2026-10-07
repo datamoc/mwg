@@ -4,8 +4,12 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve as resolvePath } from 'node:path';
 
 import {
+	bidiKeyActions,
 	buildPointerActions,
 	buildTapSequence,
+	cdpKeySequence,
+	keyInfoOf,
+	pageTapSource,
 	driveChrome,
 	driveFirefox,
 	findBrowser,
@@ -215,4 +219,77 @@ test('the Firefox BiDi driver plays a page end to end', { timeout: 120000 }, asy
 	const dir = mkdtempSync(join(ROOT, '.example-check', 'profile-'));
 	t.after(() => removeProfileDir(dir));
 	await verifyDriver(t, 'firefox', driveFirefox, dir);
+});
+
+test('key mappings cover the named keys and printable characters, and refuse the unknown', () => {
+	const enter = keyInfoOf('Enter');
+	assert.equal(enter?.code, 'Enter');
+	assert.equal(enter?.vk, 13);
+	assert.equal(enter?.bidi, '\uE007');
+	assert.equal(enter?.text, undefined, 'Enter types nothing');
+	const a = keyInfoOf('a');
+	assert.deepEqual([a?.code, a?.vk, a?.bidi, a?.text], ['KeyA', 65, 'a', 'a']);
+	const five = keyInfoOf('5');
+	assert.deepEqual([five?.code, five?.vk, five?.text], ['Digit5', 53, '5']);
+	const space = keyInfoOf('Space');
+	assert.equal(space?.text, ' ', 'Space types its own character');
+	for (const named of [
+		'Escape',
+		'Tab',
+		'Backspace',
+		'ArrowUp',
+		'ArrowDown',
+		'ArrowLeft',
+		'ArrowRight',
+		'Shift',
+		'F5',
+		'F9',
+		'Delete',
+	]) {
+		assert.ok(keyInfoOf(named), named + ' is mapped');
+	}
+	assert.equal(keyInfoOf('not-a-key'), null, 'an unknown key is null, not a guess');
+});
+
+test('a press is the CDP keyDown/keyUp pair, and the typed character rides the keyDown', () => {
+	const [down, up] = cdpKeySequence('Enter') as { type: string; text?: string }[];
+	assert.equal(down.type, 'keyDown');
+	assert.equal(up.type, 'keyUp');
+	assert.equal(down.text, undefined, 'Enter carries no character');
+	const [aDown, aUp] = cdpKeySequence('a') as { type: string; text?: string }[];
+	assert.equal(aDown.text, 'a', 'a types itself on the keyDown');
+	assert.equal(aUp.text, undefined);
+	assert.equal(cdpKeySequence('not-a-key'), null);
+});
+
+test('a press is the BiDi key action sequence with the hold as a pause, in WebDriver key values', () => {
+	const actions = bidiKeyActions('Enter', 120) as {
+		type: string;
+		actions: { type: string; value?: string; duration?: number }[];
+	}[];
+	assert.equal(actions.length, 1);
+	assert.equal(actions[0]!.type, 'key');
+	assert.deepEqual(
+		actions[0]!.actions.map((step) => step.type),
+		['keyDown', 'pause', 'keyUp'],
+	);
+	assert.equal(actions[0]!.actions[0]!.value, '\uE007', 'the WebDriver Enter value, not the DOM key');
+	assert.equal(actions[0]!.actions[1]!.duration, 120, 'the hold is the pause');
+	const charActions = bidiKeyActions('a') as { actions: { value?: string }[] }[];
+	assert.equal(charActions[0]!.actions[0]!.value, 'a');
+	assert.equal(bidiKeyActions('not-a-key'), null);
+});
+
+test('the page tap source is the full pointer identity a real mouse carries', () => {
+	const source = pageTapSource(320, 240);
+	assert.match(source, /PointerEvent\("pointermove"/);
+	assert.match(source, /PointerEvent\("pointerdown"/);
+	assert.match(source, /PointerEvent\("pointerup"/);
+	assert.match(source, /MouseEvent\("click"/);
+	assert.match(source, /pointerType: "mouse"/);
+	assert.match(source, /clientX: 320/);
+	assert.match(source, /clientY: 240/);
+	// the source must be an expression the driver's evaluate can wrap in parens
+	assert.ok(source.endsWith(')()'), 'an IIFE with no trailing statement');
+	new Function(source);
 });

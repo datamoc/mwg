@@ -125,7 +125,7 @@ npm run cap:open:android
 | --- | --- | --- |
 | `hello-world` | 1 | `Game` -> `Scene` -> `update(dt)`, one sprite moving - the smallest thing mwg can show |
 | `loading` | 1 | `core.LoadQueue` driving named, weighted tasks (an asset load, a simulated world generation that fails once on purpose, an `assets.AssetStream` preload), with `ui.LoadingScreen` showing truthful progress, failure, retry and cancel |
-| `interface` | 1 | windows that stack, keyboard focus going to the top one only, a list with icons and disabled rows, and a message box that reveals text and ends on a choice |
+| `interface` | 1 | windows that stack, keyboard focus going to the top one only, a list with icons and disabled rows, a message box that reveals text and ends on a choice, and a `TextPrompt` Name button on the stack - the reviewed hosting pattern, carrying the `OnScreenKeyboard` so a pointer-only device can type |
 | `movement` | 1 | `Input.onAction` + `GridMover` + a wall-tile collision rule over two `TileMap` layers (a full ground layer, a sparse cosmetic decoration layer), isolated from `village`'s dialogue and `dungeon`'s combat, plus a zoomable following camera and `TileMap.cull(camera)` called out on its own |
 | `save-load` | 1 | `core.SaveSystem`'s `save`/`load`/`delete`/`list`, without `dungeon`'s permadeath policy on top |
 | `i18n` | 1 | `Catalog`, `t()` interpolation, `Intl.PluralRules`-backed plurals, and `theme.direction` flipping to right-to-left |
