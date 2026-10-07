@@ -25,7 +25,10 @@ checklist below.
 Priority review, 2026-10-02: keep the existing order. Item 395 now has courier and
 maze chase workloads with headless training and browser frame-time checks. These
 meet its initial scope; further neural work needs measured demand before taking
-priority over the existing work.
+priority over the existing work. Items 396-397, added 2026-10-07, sit at the end at
+low priority per the process: run persistence builds on `core/Replay.ts`, and the
+replay-driven AI deliberately follows the training path 395 already shipped rather
+than opening a new one.
 
 390. **A tournament-capable chess engine, Garbochess-shaped but framework-owned.** The
 shipped `board/Engine` stays a small deterministic rules engine by design; this item
@@ -164,6 +167,46 @@ separate batches remain measurement-driven, with one worker per shard sufficient
 for this workload. Priority review: retain the existing order; this item addresses
 the new training requirement without unblocking 393's missing format fixtures or
 justifying 394's optional dependency cost.
+
+396. **Run persistence: last-run capture, save and restore of progress, replay export and
+import.** The shipped `core/Replay.ts` (`Recorder`/`Player`/`serializeReplay`/
+`deserializeReplay`) records actions stamped by frame count, and
+`simulation.validateSimulationReplay` proves a recording reproduces its run. Nothing yet
+persists a run across sessions or moves one between machines, so this item makes a run
+durable, each half shippable alone:
+
+- **Last-run capture.** The newest recording is always kept, bounded, so a game can offer
+  "watch the previous run" with no wiring beyond the signals `Recorder` already hooks.
+- **Save and restore of progress.** A checkpoint of a run in progress: the partial replay
+  beside the state snapshot the game already takes (`core.SaveSystem` for state, the
+  recording for the actions), so restoring means resuming the run and continuing the
+  recording from there.
+- **Export and import.** `serializeReplay` already produces a string; the export shape is
+  a versioned, self-describing file (framework version, game identity, recording) so a
+  replay from one build refuses to play in another by name rather than by garbage
+  behavior. The `file://` constraint decides the plumbing: no `fetch()`, so a browser
+  export is a download and an import is a file picker, and Node-side tools read and write
+  the same file directly. No server, no cloud, nothing that breaks the
+  double-click-to-open target.
+
+397. **Replay-driven AI: training from replays, an in-game suggestion mode, and a seeded
+AI run.** Once runs persist (396), replays become a game's own training data. The
+imitation path already exists as an example (the maze chase trains on generated
+episodes) but not as a framework capability fed by a game's recorded runs. Three
+separable capabilities:
+
+- **Training from replays.** The headless `simulation/Training.ts` adapter accepts
+  imported replays as imitation targets, so a game's policy is trained on how its own
+  players played. Game-recorded data only; nothing from a reference game.
+- **Suggestion mode.** During play, the AI proposes the next action (the `HeuristicAI`
+  candidate pipeline or the trained policy) as a hint the player may accept. The
+  suggestion path never mutates state and pays for itself only inside a measured frame
+  budget, the same discipline `ai`'s decision runners already carry.
+- **A seeded AI run.** One entry point plays a whole run with the AI choosing, driven
+  from a named seed through `core.RandomSource`: the same seed and the same policy make
+  the same decisions, so a run is reproducible on demand. Benchmarks, regression tests
+  and fair comparisons between policies are the point; an AI that plays differently every
+  time can be compared by no one.
 
 ### Parked decisions
 
