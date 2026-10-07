@@ -7,6 +7,18 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.26.1] - 2026-10-07
+
+The 0.26.0 follow-up: its Chrome end-to-end test failed on every CI run, so the
+`tools/browser-driver` Chrome engine never actually worked on a CI machine (a cold
+Windows runner never reached the debugging endpoint in the old budget; an Ubuntu
+runner crashed in Chrome's sandbox). Chrome now launches against its own profile,
+the endpoint is watched on both output streams with a cold-start budget and a
+diagnostic that names what the browser printed, `close` releases the profile and
+the stdio pipes only after the child exits, and the CI workflows pass
+`--no-sandbox` on Linux through the driver's own `MWG_DRIVER_CHROME_ARGS` channel.
+0.26.0 was tagged before this was known and its npm publish never ran.
+
 ### Fixed
 
 - `tools/browser-driver`'s Chrome engine launches against its own profile
