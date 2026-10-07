@@ -28,7 +28,10 @@ meet its initial scope; further neural work needs measured demand before taking
 priority over the existing work. Items 396-397, added 2026-10-07, sit at the end at
 low priority per the process: run persistence builds on `core/Replay.ts`, and the
 replay-driven AI deliberately follows the training path 395 already shipped rather
-than opening a new one.
+than opening a new one. Items 398-400, added 2026-10-07, sit at the end at low priority
+the same way: SVG completeness builds on the loading path items 15 and 198 already
+shipped, and the skeletal pair (399, 400) deliberately waits behind 398's group-split
+authoring, which is the form a rig would actually load.
 
 390. **A tournament-capable chess engine, Garbochess-shaped but framework-owned.** The
 shipped `board/Engine` stays a small deterministic rules engine by design; this item
@@ -207,6 +210,56 @@ separable capabilities:
   the same decisions, so a run is reproducible on demand. Benchmarks, regression tests
   and fair comparisons between policies are the point; an AI that plays differently every
   time can be compared by no one.
+
+398. **SVG as a complete image source: inbound sanitization, named scale variants, and
+group-split parts.** Items 15 and 198 already load an SVG through the compiled `data:` URI
+and rasterize it at a resolution multiple; "complete" is what is still missing:
+
+- **Sanitization.** An SVG is inbound data that can carry active content (`<script>`,
+  event-handler attributes, `foreignObject`), the same way a save slot or a replay file is
+  inbound data. Loading sanitizes by name and refuses what it cannot prove inert, rather
+  than trusting the `file://` CSP to make the question moot.
+- **Named scale variants.** One source, rasterized once per named scale (1x, 2x, 3x),
+  so a game picks the variant by device the way it picks an asset path, instead of every
+  call site re-deciding a resolution multiplier.
+- **Group-split parts.** An SVG authored with named `<g>` groups (one for the arm, the leg,
+  the head) loads as one region per group, which is the natural authoring form for a
+  skeletal puppet (399/400): one drawing, one source of truth for palette and style, split
+  at load. Where a game needs runtime vector drawing instead of rasterized textures, that
+  is a measured case to bring back, not a default: item 198's benchmark already showed DOM
+  SVG collapsing (about 14 fps for 250 elements) where rasterized Pixi sprites hold 60.
+
+399. **The skeleton math, renderer-free: a bone tree, poses, keyframed clips, blending.**
+The pose half of a skeletal puppet, as pure data and arithmetic so it loads headless and
+tests without a renderer, the same split every other module draws:
+
+- **Bones.** A tree of bones (parent, local rotation, origin, length): rotating an arm, a
+  leg, a hand, a head is one number on one bone, and a whole pose is the tree resolved
+  through its parents.
+- **Clips.** Keyframed poses over time (rotate the arm through a swing, the head through a
+  look), with interpolation, looping, playback rate and crossfade between clips. Clips are
+  plain data a game authors in JSON, never code, and never a borrowed game's animation
+  data.
+- **Blending.** Additive layers (aim on top of walk, hurt on top of idle) with priorities,
+  so a game composes motion instead of authoring every combination as its own clip.
+
+400. **Skeletal sprites and articulated chains: bones driving drawn parts, and serpent
+spines.** The drawing half of 399, plus the one articulated shape a keyframe cannot
+express:
+
+- **Skeletal sprites.** Sprites or texture regions (including 398's SVG group parts) bound
+  to bones; `update(dt)` resolves the pose and places each part, so a character sheet, an
+  SVG puppet or a mixed rig animate through the same bone tree. Walk, swing and look
+  cycles are clips; the binding is the only rendering decision.
+- **Articulated chains.** A long body (a dragon's neck and tail, a serpent's spine) drawn
+  as a chain of segments that follows its head procedurally: each segment eases toward its
+  parent's previous position, with per-segment rotation limits so the body bends like a
+  body and not like a rope of beads. This is deliberately not a clip (it is a follower
+  rule, not authored motion), and composes with one: a clip drives the head and limbs, the
+  chain does the rest of the body.
+- Both halves carry the usual discipline: no renderer import in the pose math, measured
+  frame time for a rig of bones before it replaces a frame sheet, and no animation data or
+  art from a reference game.
 
 ### Parked decisions
 
