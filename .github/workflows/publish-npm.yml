@@ -44,7 +44,13 @@ jobs:
       # the same gate CI already runs on every push; a tag alone proves nothing about
       # whether the code at that tag still builds and passes
       - run: npm run check
-      - run: npm test
+      # Ubuntu 23.10+ runners disable the unprivileged user namespaces Chrome's sandbox
+      # needs (AppArmor), so Chrome there crashes at startup unless it launches without
+      # one; the browser-driver reads machine-specific Chrome flags from this variable
+      - name: Run the test suite
+        env:
+          MWG_DRIVER_CHROME_ARGS: '--no-sandbox'
+        run: npm test
       - run: npm run build
       - run: npm run stats:check
 

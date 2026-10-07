@@ -42,7 +42,14 @@ jobs:
       # Prettier over src, tests, examples and tools: formatting only, no lint rules, so the
       # diff review stays about behaviour rather than whitespace
       - run: npm run format:check
-      - run: npm test
+      # Ubuntu 23.10+ images disable the unprivileged user namespaces Chrome's sandbox
+      # needs (AppArmor), so Chrome there crashes at startup unless it launches without
+      # one. The browser-driver reads machine-specific Chrome flags from this variable,
+      # the same channel MWG_VISUAL_CHROME_ARGS gives browser-smoke on the smoke job below.
+      - name: Run the test suite
+        env:
+          MWG_DRIVER_CHROME_ARGS: ${{ runner.os == 'Linux' && '--no-sandbox' || '' }}
+        run: npm test
       # the same suite again under a coverage floor, so coverage cannot quietly erode
       - run: npm run coverage:check
       # the library build (tsc emit + the standalone mw_games.global.js IIFE) - catches a

@@ -20,6 +20,11 @@ the public API may still change between minor versions.
   reached the endpoint in time. `close` now also destroys the child's stdio
   pipes (surviving browser helper processes could hold a suite open past the
   browser's own death) and releases the profile only after the child exits.
+  The failing configuration is now diagnosed, not just reported: the timeout
+  names what the browser printed. CI's Linux jobs pass `--no-sandbox` through
+  the driver's `MWG_DRIVER_CHROME_ARGS` channel, since an Ubuntu 23.10+ runner
+  that disables unprivileged user namespaces is a property of that machine,
+  not of the tool.
 
 ## [0.26.0] - 2026-10-07
 
