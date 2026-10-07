@@ -1,7 +1,7 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.27.0",
+	"version": "0.28.0",
 	"releaseDate": "2026-10-07",
 	"source": {
 		"files": 330,
@@ -149,7 +149,7 @@
 	},
 	"bundle": {
 		"globalRaw": 1240388,
-		"globalGzip": 369994,
+		"globalGzip": 369992,
 		"distRaw": 4286230
 	},
 	"quality": {

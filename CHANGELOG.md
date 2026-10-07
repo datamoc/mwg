@@ -7,6 +7,17 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-10-07
+
+The 0.27.0 consumer wave sharpened asks: the pixel-dungeon port proposal file
+audited what 0.27 shipped against what a real consumer needs, and this release
+closes the four framework-side gaps it found. Flights fades and spins in the
+units games author (fadeIn: progress, spinDegrees), Beam thins as it fades and
+stretches a single art asset along its span with anchor control,
+ParticleEmitter.attach gates visibility (fog-of-war) beside emission, and the
+interface example carries the reviewed TextPrompt hosting pattern a seed or name
+prompt can be copied from.
+
 ### Added
 
 - `Flights` fade and spin in the units consumers author them in (P40): `fadeIn:
