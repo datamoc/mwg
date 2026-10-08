@@ -142,6 +142,53 @@ test('the modules that genuinely do need Pixi are not accidentally in that list'
 		assert.ok(offenders.length > 0, `mwg/${module} is documented as depending on Pixi`);
 	}
 });
+/**
+ * The forbidden-package half of the same boundary, ahead of the optional physics and Studio
+ * work the runtime modernization plan proposes: a physics engine (matter-js), an editor UI
+ * framework (react) and the Studio application itself must never reach the modules a headless
+ * game imports. None is a dependency today, which is what makes the check cheap - it exists
+ * so the physics contracts and adapters land without any of them leaking into
+ * `core`/`simulation` the way Pixi once leaked into `3d`. Type-only imports stay exempt,
+ * matching the Pixi/Babylon checks above.
+ */
+const FORBIDDEN_PACKAGE =
+	/^\s*(?:import|export)\s+(?!type\s)[^;]*from\s*['"](?:matter-js|react|react-dom|@react\/[^'"]*)['"]/m;
+const BARE_FORBIDDEN_PACKAGE = /^\s*import\s*['"](?:matter-js|react|react-dom)['"]/m;
+const FORBIDDEN_APP_PATH = /['"](?:\.\.\/)*apps\//;
+
+function importsForbiddenPackage(file: string): boolean {
+	const source = readFileSync(file, 'utf8');
+	return FORBIDDEN_PACKAGE.test(source) || BARE_FORBIDDEN_PACKAGE.test(source) || FORBIDDEN_APP_PATH.test(source);
+}
+
+test('every renderer-free module also stays free of matter-js, react and apps/studio', () => {
+	for (const module of RENDERER_FREE) {
+		const offenders = reachableFrom(`${module}/index.ts`).filter(importsForbiddenPackage);
+		assert.deepEqual(
+			offenders.map((file) => file.slice(SRC.length + 1).replace(/\\/g, '/')),
+			[],
+			`mwg/${module} must not reach a physics engine, an editor UI framework, or the Studio app`,
+		);
+	}
+});
+
+test('the forbidden-package scan really detects, so the check above cannot pass for the wrong reason', () => {
+	const detects = (line: string) => FORBIDDEN_PACKAGE.test(line) || BARE_FORBIDDEN_PACKAGE.test(line);
+	assert.equal(detects("import { Engine } from 'matter-js';"), true);
+	assert.equal(detects("export { Body } from 'matter-js';"), true);
+	assert.equal(detects("import { useState } from 'react';"), true);
+	assert.equal(
+		detects("import type { World } from 'matter-js';"),
+		false,
+		'type-only imports cost nothing at runtime',
+	);
+	assert.equal(FORBIDDEN_APP_PATH.test("from '../../apps/studio/bridge'"), true);
+	assert.equal(
+		FORBIDDEN_APP_PATH.test("from './matter.ts'"),
+		false,
+		'a same-named relative import is not the package',
+	);
+});
 
 /**
  * The consumer side of the same rule: a normal 2D game should depend on `mwg`, not on
