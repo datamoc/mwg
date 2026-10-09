@@ -143,6 +143,86 @@ consumer-side: the per-symbol histogram in the consumer's own gate (so a budget 
 caught the commit it happens in), and the migration of newly-covered uses onto the facade
 with a browser-verified screenshot per file, which is what actually makes the budget fall.
 
+Items 405-409, added 2026-10-10 out of the Wesnoth port's proposal file (410, the overworld
+generator, came from a direct request the same day and follows the same low-priority rule) (`4MWG/proposals.md`,
+its ten proposals checked against `src/` the same day). Four of the ten need no item: the
+formula proposal is already shipped (`set_variable` has `mode=expression`, see REFERENCE.md),
+the `fengari` `os` problem is a bundler alias the `mwl/fengari` docs should show rather than a
+shim the package should own, the image-variant resolution is Wesnoth-specific and stays in the
+port, and the compound-condition ask is mostly met already (see 406). 405 is a bug, so it
+jumps the usual end-of-list rule and is the first thing to pick up; the rest sit at the end at
+low priority.
+
+405. **`MwlRuntime.loadLeaders` spawns phantom leaders.** `src/mwl/runtime.ts` creates a unit
+of type `<leader>` on every side start cell that is free, without checking that `leader=`
+names a known unit type: when it names the id of an already declared unit (`Kalenz`), it
+still spawns a ghost typed `Kalenz` with 1 hp and 0 moves, which broke about ten scenarios
+downstream ("unknown unit type"). Fix: skip `leader=` when it matches an id in
+`world.units`, spawn only when the value is a known unit type, and throw a named error for
+a value that is neither. Regression tests for each of the three cases.
+
+406. **Compound conditions and a visible loop cap in MWL.** `test="..."` already carries
+`and`/`or`/`not`, comparison, arithmetic and parentheses (`src/mwl/conditions.ts`), and
+`[if]`/`[while]` accept it, so a nested `[and]`/`[or]`/`[not]` tree would be a second way to
+say the same thing and is not proposed. What is genuinely missing:
+
+- **Queries inside `test=`.** `nodeConditionMatches` passes only the primitive variables and
+  no helpers, so a condition cannot ask about units or locations (`have_unit(...)`,
+  `have_location(...)`). Expose game and built-in helpers through the existing
+  `MwlConditionOptions.helpers`, fed from the hook registry, so the port stops routing
+  compound predicates through `condition=hook` with `tree=`.
+- **Free predicate attributes on `[condition]`.** The schema should accept them, so a port
+  does not extend the schema to pass a predicate its context.
+- **The `[while]` cap.** `max_iterations` (default 1000) ends the loop silently. Reaching it
+  should emit an observable diagnostic, with an opt-in `on_limit=error`; no new
+  per-iteration cost model.
+
+407. **A deterministic cave generator.** The Wesnoth port wrote one (chambers, passages,
+jaggedness, windiness, villages, start markers) in its own `src/simulation/cave-generator.ts`.
+`roguelike.generate` covers dungeons only. A seeded, renderer-free cave generator with those
+knobs fits the module, written from the port's behaviour as a spec and from no reference
+game's content. Compare against the port's version before designing, to keep what its
+scenarios actually depend on.
+
+408. **A scene control API for tests, and a shipped all-scenarios verifier.** The port needs
+`enterScenario`, `finishTurn` and `advanceDialogue`, private today, to drive scenes from a
+headless Chrome. Two halves: first the control surface itself (in `src/testing`, so a game
+opts in), then, only after reading the port's `tools/verify-all-scenarios.mjs` to confirm it
+holds nothing Wesnoth-specific, a generic `mwg-*` tool that runs every scenario in one
+browser with a bot playing the sides. The second half is a tool to maintain, so it waits on
+the first.
+
+409. **Compare the port's HUD against what `two-d/ui` already has.** `Bar`, `BitmapLabel`,
+`Minimap` and the other HUD widgets are shipped. The port's `src/ui/hud.ts` hand-writes an
+icon status bar, a side panel with minimap, and HP/XP bars. Before adding anything, list
+which of those three the framework cannot already compose from existing parts; the item
+shrinks to that residue, possibly to documentation alone.
+
+410. **An overworld map generator: a realm of mountains, rivers, plains, forests and
+settlements.** The world-map counterpart to dungeon (`roguelike.generate`) and cave (407)
+generation, in the lineage of ADOM's world map and the classic Ultima overland maps: one
+seeded, renderer-free pass that yields a whole realm as plain tile data a game draws with
+`TileMap` and walks with `world.Overworld`. Scope:
+
+- **Terrain.** Elevation and moisture fields from seeded noise, classified into water,
+  plains, forest, hills, mountains, desert and swamp, with coast and mountain-range
+  coherence (ranges, not scattered peaks) and a sea level knob.
+- **Rivers.** Sources on high ground flowing downhill to the sea or a lake, merging
+  into larger rivers, never crossing a mountain ridge; fords or bridge sites where a road
+  meets one.
+- **Settlements and roads.** Villages, towns and castles placed by terrain suitability
+  (near water, on plains, spaced apart), joined by roads that prefer flat ground and use
+  the existing `Pathfinder`, plus points of interest (dungeon mouths, ruins, shrines) that
+  feed `Overworld` locations with a `leadsTo`.
+- **Regions.** A coarse region or biome id per cell so a game can hang encounter tables
+  (`rollEncounter`) and names off it.
+- **Determinism and size.** The same seed gives the same realm on every platform, using
+  the framework `Random`; sizes up to a few hundred tiles a side stay fast enough to
+  generate on load, with `threads.spawn` available for larger ones.
+- **Not in scope:** any reference game's own map data, region layout or naming; the
+  generator invents its realms from the seed and the knobs. Share the noise and
+  placement helpers with 407 rather than writing them twice.
+
 ### Parked decisions
 
 Not open work, and not forgotten: these are decisions this project has deliberately
