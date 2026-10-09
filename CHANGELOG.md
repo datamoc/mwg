@@ -7,6 +7,13 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `two-d/render` `SpriteMotion` (pixel-dungeon proposal P43): squash, hop, bob, wobble, spin,
+  shear and flip over any display object's transform, through a `Tweener`. Effects compose from
+  a captured rest pose, never drift, cancel cleanly, and follow `setReducedMotion` (a looping
+  bob holds still; `intent: 'meaningful'` is shortened instead of dropped).
+
 ### Fixed
 
 - `Camera` rounded its screen offset to a whole CSS pixel, which at a fractional

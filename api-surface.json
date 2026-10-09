@@ -1626,10 +1626,22 @@
 		"declaringModule": "core/Motion.d.ts"
 	},
 	{
+		"name": "MotionHandle",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SpriteMotion.d.ts"
+	},
+	{
 		"name": "MotionIntent",
 		"kind": "type",
 		"subpath": ".",
 		"declaringModule": "core/Motion.d.ts"
+	},
+	{
+		"name": "MotionTarget",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SpriteMotion.d.ts"
 	},
 	{
 		"name": "Mwl",
@@ -2770,6 +2782,18 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/render/SpriteGroup.d.ts"
+	},
+	{
+		"name": "SpriteMotion",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SpriteMotion.d.ts"
+	},
+	{
+		"name": "SpriteMotionOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SpriteMotion.d.ts"
 	},
 	{
 		"name": "SpriteSheet",
@@ -11412,6 +11436,18 @@
 		"declaringModule": "two-d/render/Minimap.d.ts"
 	},
 	{
+		"name": "MotionHandle",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SpriteMotion.d.ts"
+	},
+	{
+		"name": "MotionTarget",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SpriteMotion.d.ts"
+	},
+	{
 		"name": "NeighborMask",
 		"kind": "interface",
 		"subpath": "./two-d",
@@ -12118,6 +12154,18 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/SpriteGroup.d.ts"
+	},
+	{
+		"name": "SpriteMotion",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SpriteMotion.d.ts"
+	},
+	{
+		"name": "SpriteMotionOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SpriteMotion.d.ts"
 	},
 	{
 		"name": "SpriteSheet",
@@ -13176,6 +13224,18 @@
 		"declaringModule": "two-d/render/Minimap.d.ts"
 	},
 	{
+		"name": "MotionHandle",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SpriteMotion.d.ts"
+	},
+	{
+		"name": "MotionTarget",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SpriteMotion.d.ts"
+	},
+	{
 		"name": "NeighborMask",
 		"kind": "interface",
 		"subpath": "./two-d/render",
@@ -13588,6 +13648,18 @@
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/SpriteGroup.d.ts"
+	},
+	{
+		"name": "SpriteMotion",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SpriteMotion.d.ts"
+	},
+	{
+		"name": "SpriteMotionOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SpriteMotion.d.ts"
 	},
 	{
 		"name": "SpriteSheet",

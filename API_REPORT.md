@@ -2973,9 +2973,32 @@ build instead.
 
     export declare function motionDuration(duration: number, intent?: MotionIntent): number;
 
+### `MotionHandle` (interface)
+
+    export interface MotionHandle {
+        readonly done: Promise<void>;
+        cancel(): void;
+    }
+
 ### `MotionIntent` (type)
 
     export type MotionIntent = 'decorative' | 'meaningful';
+
+### `MotionTarget` (interface)
+
+    export interface MotionTarget {
+        x: number;
+        y: number;
+        rotation: number;
+        scale: {
+            x: number;
+            y: number;
+        };
+        skew: {
+            x: number;
+            y: number;
+        };
+    }
 
 ### `Mwl` (namespace)
 
@@ -4875,6 +4898,74 @@ build instead.
         x: number;
         y: number;
         update(dt: number): void;
+    }
+
+### `SpriteMotion` (class)
+
+    export declare class SpriteMotion {
+        private readonly target;
+        private readonly tweener;
+        private readonly ownsTweener;
+        private readonly intent;
+        private readonly rest;
+        private readonly contributions;
+        private readonly loops;
+        private nextId;
+        private flipX;
+        private flipY;
+        private destroyed;
+        constructor(target: MotionTarget, options?: SpriteMotionOptions);
+
+        squash(options: {
+            amount: number;
+            duration: number;
+        }): MotionHandle;
+
+        hop(options: {
+            height: number;
+            duration: number;
+        }): MotionHandle;
+
+        bob(options: {
+            amplitude: number;
+            period: number;
+            cycles?: number;
+        }): MotionHandle;
+
+        wobble(options: {
+            angle: number;
+            duration: number;
+        }): MotionHandle;
+
+        spin(options: {
+            turns: number;
+            duration: number;
+        }): MotionHandle;
+
+        shear(options: {
+            amount: number;
+            duration: number;
+        }): MotionHandle;
+
+        flip(axis: 'x' | 'y', mirrored?: boolean): boolean;
+
+        update(dt: number): void;
+
+        get isBusy(): boolean;
+
+        destroy(): void;
+        private run;
+        private loop;
+        private write;
+    }
+
+### `SpriteMotionOptions` (interface)
+
+    export interface SpriteMotionOptions {
+
+        tweener?: Tweener;
+
+        intent?: MotionIntent;
     }
 
 ### `SpriteSheet` (class)
@@ -18099,6 +18190,29 @@ build instead.
         shape?: 'square' | 'hex';
     }
 
+### `MotionHandle` (interface)
+
+    export interface MotionHandle {
+        readonly done: Promise<void>;
+        cancel(): void;
+    }
+
+### `MotionTarget` (interface)
+
+    export interface MotionTarget {
+        x: number;
+        y: number;
+        rotation: number;
+        scale: {
+            x: number;
+            y: number;
+        };
+        skew: {
+            x: number;
+            y: number;
+        };
+    }
+
 ### `NeighborMask` (interface)
 
     export interface NeighborMask {
@@ -19304,6 +19418,74 @@ build instead.
         x: number;
         y: number;
         update(dt: number): void;
+    }
+
+### `SpriteMotion` (class)
+
+    export declare class SpriteMotion {
+        private readonly target;
+        private readonly tweener;
+        private readonly ownsTweener;
+        private readonly intent;
+        private readonly rest;
+        private readonly contributions;
+        private readonly loops;
+        private nextId;
+        private flipX;
+        private flipY;
+        private destroyed;
+        constructor(target: MotionTarget, options?: SpriteMotionOptions);
+
+        squash(options: {
+            amount: number;
+            duration: number;
+        }): MotionHandle;
+
+        hop(options: {
+            height: number;
+            duration: number;
+        }): MotionHandle;
+
+        bob(options: {
+            amplitude: number;
+            period: number;
+            cycles?: number;
+        }): MotionHandle;
+
+        wobble(options: {
+            angle: number;
+            duration: number;
+        }): MotionHandle;
+
+        spin(options: {
+            turns: number;
+            duration: number;
+        }): MotionHandle;
+
+        shear(options: {
+            amount: number;
+            duration: number;
+        }): MotionHandle;
+
+        flip(axis: 'x' | 'y', mirrored?: boolean): boolean;
+
+        update(dt: number): void;
+
+        get isBusy(): boolean;
+
+        destroy(): void;
+        private run;
+        private loop;
+        private write;
+    }
+
+### `SpriteMotionOptions` (interface)
+
+    export interface SpriteMotionOptions {
+
+        tweener?: Tweener;
+
+        intent?: MotionIntent;
     }
 
 ### `SpriteSheet` (class)
@@ -21387,6 +21569,29 @@ build instead.
         shape?: 'square' | 'hex';
     }
 
+### `MotionHandle` (interface)
+
+    export interface MotionHandle {
+        readonly done: Promise<void>;
+        cancel(): void;
+    }
+
+### `MotionTarget` (interface)
+
+    export interface MotionTarget {
+        x: number;
+        y: number;
+        rotation: number;
+        scale: {
+            x: number;
+            y: number;
+        };
+        skew: {
+            x: number;
+            y: number;
+        };
+    }
+
 ### `NeighborMask` (interface)
 
     export interface NeighborMask {
@@ -21989,6 +22194,74 @@ build instead.
         x: number;
         y: number;
         update(dt: number): void;
+    }
+
+### `SpriteMotion` (class)
+
+    export declare class SpriteMotion {
+        private readonly target;
+        private readonly tweener;
+        private readonly ownsTweener;
+        private readonly intent;
+        private readonly rest;
+        private readonly contributions;
+        private readonly loops;
+        private nextId;
+        private flipX;
+        private flipY;
+        private destroyed;
+        constructor(target: MotionTarget, options?: SpriteMotionOptions);
+
+        squash(options: {
+            amount: number;
+            duration: number;
+        }): MotionHandle;
+
+        hop(options: {
+            height: number;
+            duration: number;
+        }): MotionHandle;
+
+        bob(options: {
+            amplitude: number;
+            period: number;
+            cycles?: number;
+        }): MotionHandle;
+
+        wobble(options: {
+            angle: number;
+            duration: number;
+        }): MotionHandle;
+
+        spin(options: {
+            turns: number;
+            duration: number;
+        }): MotionHandle;
+
+        shear(options: {
+            amount: number;
+            duration: number;
+        }): MotionHandle;
+
+        flip(axis: 'x' | 'y', mirrored?: boolean): boolean;
+
+        update(dt: number): void;
+
+        get isBusy(): boolean;
+
+        destroy(): void;
+        private run;
+        private loop;
+        private write;
+    }
+
+### `SpriteMotionOptions` (interface)
+
+    export interface SpriteMotionOptions {
+
+        tweener?: Tweener;
+
+        intent?: MotionIntent;
     }
 
 ### `SpriteSheet` (class)

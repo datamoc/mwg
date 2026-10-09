@@ -454,6 +454,10 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   at 1 rather than wrapping. Never touches the multiply `tint`, so a sprite's own identity
   tint (a team colour) survives underneath. `flash(color, strength, duration)` layers a
   one-shot, linearly-decaying pulse (a hit, a heal) on top of whatever is active.
+- `SpriteMotion` - squash, hop, bob, wobble, spin, shear and flip over any display object's
+  transform through a `Tweener` (item 404). Effects compose from the rest pose captured at
+  construction, never drift, return a `MotionHandle` (`done`, `cancel()`), and follow
+  `setReducedMotion`; `destroy` restores the rest pose, flips included.
 - `loadTiledMap`/`TiledMapData`/`TiledTilesetData`/`TilesetSheet`/`LoadedTiledMap` - loads
   Tiled JSON maps into a `TileMap`: orthogonal, isometric and staggered orientations, multiple
   tilesets (embedded or external `.tsx`). Lives here rather than in `rpg` because what it

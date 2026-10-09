@@ -82,6 +82,8 @@ export type { ActorAnimationState, ActorAnimatorOptions } from './ActorAnimator.
 
 export { StatusVisuals } from './StatusVisuals.ts';
 export type { TintTarget, StatusVisualStyle, StatusVisualsOptions } from './StatusVisuals.ts';
+export { SpriteMotion } from './SpriteMotion.ts';
+export type { MotionTarget, MotionHandle, SpriteMotionOptions } from './SpriteMotion.ts';
 
 export { blobIndex, autotileFrames, BLOB_SHAPES } from './Autotile.ts';
 export type { NeighborMask } from './Autotile.ts';

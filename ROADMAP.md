@@ -143,23 +143,6 @@ consumer-side: the per-symbol histogram in the consumer's own gate (so a budget 
 caught the commit it happens in), and the migration of newly-covered uses onto the facade
 with a browser-verified screenshot per file, which is what actually makes the budget fall.
 
-402. **Camera snapping in device pixels (pixel-dungeon proposal P42).** `Camera.apply()` rounded
-the screen offset to a whole CSS pixel while the renderer draws at `devicePixelRatio`, so at a
-fractional ratio (Windows at 150%) an odd offset put every tile edge between device pixels and
-left thin seams that came and went as the camera moved. `CameraOptions.resolution` (read live;
-`createCamera` supplies the renderer's) now rounds the offset to whole device pixels, and
-`snapZoom(zoom, tileSize, resolution)` snaps `pixelPerfectTileSize` zoom to whole device pixels,
-re-snapped on read so a `QualityScaler` step is followed. Shipped with renderer-free tests; the
-consumer's own workaround can go once it takes the release.
-
-403. **`SpriteMotion`: transform effects over `Tweener` (pixel-dungeon proposal P43).** Nothing
-animates a sprite's transform: no squash, hop, bob, wobble, spin, shear or flip, so each game
-hand-rolls `scale`/`Math.sin` writes that also ignore reduced motion. A helper in `two-d/render`
-beside `StatusVisuals`, each effect declaring its `MotionIntent`, composing without drift,
-restoring the rest transform on cancel or `destroy`, setting its own pivot for rotation, and
-queueable behind an `ActorAnimator` action. Generic only; which effect plays on which event and
-every amount stays in the game.
-
 ### Parked decisions
 
 Not open work, and not forgotten: these are decisions this project has deliberately

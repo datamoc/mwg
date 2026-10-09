@@ -5952,3 +5952,19 @@ example already draws.
     driven in headless Chrome, where taps changed the field's model, its drawn label and the
     pixels together, `Esc` cancelled and `OK` confirmed. This was P37's touch half in the
     pixel-dungeon port's proposal file.
+403. ~~Camera snapping in device pixels.~~ Landed as `CameraOptions.resolution` (read live;
+    `createCamera` supplies the renderer's) and `snapZoom(zoom, tileSize, resolution)`. `Camera.apply()`
+    had rounded the screen offset to a whole CSS pixel while the renderer draws at
+    `devicePixelRatio`, so at a fractional ratio (Windows at 150%) an odd offset put every tile edge
+    between device pixels and left thin seams that came and went as the camera moved. The offset now
+    rounds to whole device pixels, and `pixelPerfectTileSize` snaps zoom to whole device pixels,
+    re-snapped on read so a `QualityScaler` step is followed. Tested as pure arithmetic in
+    `tests/camera.test.ts`. This was P42 in the pixel-dungeon port's proposal file.
+404. ~~`SpriteMotion`: transform effects over `Tweener`.~~ Squash, hop, bob, wobble, spin, shear and
+    flip over any display object's transform, each returning a `MotionHandle` (`done` to await,
+    `cancel()`). The transform at construction is the rest pose and every running effect keeps its own
+    contribution, so effects compose, never drift, and cancel or `destroy` restores the rest pose. Effects
+    follow `intent` and `setReducedMotion` (a looping bob holds still). Sequencing behind an
+    `ActorAnimator` action is by awaiting a handle, since the animator has no completion promise.
+    Tested without a renderer in `tests/sprite-motion.test.ts`. This was P43 in the pixel-dungeon
+    port's proposal file.
