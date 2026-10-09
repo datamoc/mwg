@@ -7,6 +7,10 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.31.0] - 2026-10-09
+
+Two pixel-dungeon proposals: P43, `SpriteMotion` (squash, hop, bob, wobble, spin, shear and flip over `Tweener`, reduced-motion aware), and P42, camera snapping in whole device pixels, which closes the thin tile seams at a fractional `devicePixelRatio`.
+
 ### Added
 
 - `two-d/render` `SpriteMotion` (pixel-dungeon proposal P43): squash, hop, bob, wobble, spin,
