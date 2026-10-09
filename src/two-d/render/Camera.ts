@@ -74,6 +74,13 @@ export interface CameraOptions {
 	 * its source, without a per-tile sampling flag.
 	 */
 	pixelPerfectTileSize?: number;
+
+	/**
+	 * Device pixels per CSS pixel, read live. `apply()` rounds the screen offset, and
+	 * `pixelPerfectTileSize` snaps zoom, to whole *device* pixels at this ratio. Defaults to 1;
+	 * `createCamera` supplies the running renderer's resolution.
+	 */
+	resolution?: () => number;
 }
 
 /**
@@ -103,7 +110,8 @@ export class Camera {
 	x = 0;
 	y = 0;
 
-	private _zoom: number;
+	private requestedZoom = 1;
+	private readonly resolution: () => number;
 	private deadzone: number;
 	private readonly pixelPerfectTileSize?: number;
 
@@ -145,7 +153,7 @@ export class Camera {
 		this.stepsPerTurn = options.grid === 'hex' ? 6 : 4;
 		this.deadzone = options.deadzone ?? 0;
 		this.pixelPerfectTileSize = options.pixelPerfectTileSize;
-		this._zoom = 1;
+		this.resolution = options.resolution ?? (() => 1);
 		this.zoom = options.zoom ?? 1;
 	}
 
@@ -212,13 +220,15 @@ export class Camera {
 		return { cos: Math.cos(angle), sin: Math.sin(angle) };
 	}
 
+	/** snapped on every read, not on set, so a resolution change (a `QualityScaler` step) is followed */
 	get zoom(): number {
-		return this._zoom;
+		return this.pixelPerfectTileSize
+			? snapZoom(this.requestedZoom, this.pixelPerfectTileSize, this.resolution())
+			: this.requestedZoom;
 	}
 
 	set zoom(value: number) {
-		const clamped = Math.max(0.01, value);
-		this._zoom = this.pixelPerfectTileSize ? snapZoom(clamped, this.pixelPerfectTileSize) : clamped;
+		this.requestedZoom = Math.max(0.01, value);
 	}
 
 	/**
@@ -243,8 +253,8 @@ export class Camera {
 	 * its exact numbers.
 	 */
 	get view(): { x: number; y: number; width: number; height: number } {
-		const width = this.viewWidth / this._zoom;
-		const height = this.viewHeight / this._zoom;
+		const width = this.viewWidth / this.zoom;
+		const height = this.viewHeight / this.zoom;
 		const { x: centreX, y: centreY } = this.clampedCentre(this.x, this.y);
 		if (this._angle === 0) return { x: centreX - width / 2, y: centreY - height / 2, width, height };
 
@@ -312,15 +322,15 @@ export class Camera {
 	 * it starts, matching what a caller asked for rather than what world-space asked for.
 	 */
 	shakeScreen(intensity: number, duration = 0.4): void {
-		this.shake(intensity / this._zoom, duration);
+		this.shake(intensity / this.zoom, duration);
 	}
 
 	update(dt: number): void {
 		if (this.followTarget && this.followIntensity > 0) {
 			//half the view's world-unit size, not this.view itself: that getter also clamps to
 			//bounds, which the deadzone has no use for and would cost an extra allocation here
-			const deadX = ((this.viewWidth / this._zoom) * this.deadzone) / 2;
-			const deadY = ((this.viewHeight / this._zoom) * this.deadzone) / 2;
+			const deadX = ((this.viewWidth / this.zoom) * this.deadzone) / 2;
+			const deadY = ((this.viewHeight / this.zoom) * this.deadzone) / 2;
 
 			let dx = this.followTarget.x - this.x;
 			let dy = this.followTarget.y - this.y;
@@ -372,8 +382,8 @@ export class Camera {
 		const dx = x - centreX;
 		const dy = y - centreY;
 		return {
-			x: (dx * cos - dy * sin) * this._zoom + this.screenX + this.viewWidth / 2,
-			y: (dx * sin + dy * cos) * this._zoom + this.screenY + this.viewHeight / 2,
+			x: (dx * cos - dy * sin) * this.zoom + this.screenX + this.viewWidth / 2,
+			y: (dx * sin + dy * cos) * this.zoom + this.screenY + this.viewHeight / 2,
 		};
 	}
 
@@ -381,8 +391,8 @@ export class Camera {
 	toWorld(x: number, y: number): { x: number; y: number } {
 		const { x: centreX, y: centreY } = this.clampedCentre(this.x + this.shakeX, this.y + this.shakeY);
 		const { cos, sin } = this.spin;
-		const rx = (x - this.screenX - this.viewWidth / 2) / this._zoom;
-		const ry = (y - this.screenY - this.viewHeight / 2) / this._zoom;
+		const rx = (x - this.screenX - this.viewWidth / 2) / this.zoom;
+		const ry = (y - this.screenY - this.viewHeight / 2) / this.zoom;
 		return {
 			x: centreX + rx * cos + ry * sin,
 			y: centreY - rx * sin + ry * cos,
@@ -394,8 +404,8 @@ export class Camera {
 	private clampedCentre(x: number, y: number): { x: number; y: number } {
 		if (!this.bounds) return { x, y };
 
-		const halfWidth = this.viewWidth / this._zoom / 2;
-		const halfHeight = this.viewHeight / this._zoom / 2;
+		const halfWidth = this.viewWidth / this.zoom / 2;
+		const halfHeight = this.viewHeight / this.zoom / 2;
 		const { minX, minY, maxX, maxY } = this.bounds;
 
 		//when the map is narrower than the view, centre it rather than clamping to an
@@ -409,14 +419,14 @@ export class Camera {
 	private apply(): void {
 		const { x: centreX, y: centreY } = this.clampedCentre(this.x + this.shakeX, this.y + this.shakeY);
 
-		this.world.scale.set(this._zoom);
+		this.world.scale.set(this.zoom);
 		if (this._angle === 0) {
 			//unturned: rotate about the origin, the transform every existing camera had
 			this.world.rotation = 0;
 			this.world.pivot.set(0, 0);
 			//rounding to whole screen pixels stops pixel art shimmering as the camera moves
-			this.world.x = Math.round(this.screenX + this.viewWidth / 2 - centreX * this._zoom);
-			this.world.y = Math.round(this.screenY + this.viewHeight / 2 - centreY * this._zoom);
+			this.world.x = this.snapToDevice(this.screenX + this.viewWidth / 2 - centreX * this.zoom);
+			this.world.y = this.snapToDevice(this.screenY + this.viewHeight / 2 - centreY * this.zoom);
 			return;
 		}
 
@@ -424,8 +434,15 @@ export class Camera {
 		//at, and the centre lands on the same screen point the unturned camera would use
 		this.world.rotation = this.rotation;
 		this.world.pivot.set(centreX, centreY);
-		this.world.x = Math.round(this.screenX + this.viewWidth / 2);
-		this.world.y = Math.round(this.screenY + this.viewHeight / 2);
+		this.world.x = this.snapToDevice(this.screenX + this.viewWidth / 2);
+		this.world.y = this.snapToDevice(this.screenY + this.viewHeight / 2);
+	}
+
+	//a whole device pixel, not a whole CSS one: at a devicePixelRatio of 1.5 an odd CSS offset is
+	//half a device pixel, which puts every tile edge between pixels and leaves a seam
+	private snapToDevice(value: number): number {
+		const resolution = this.resolution();
+		return Math.round(value * resolution) / resolution;
 	}
 }
 
@@ -440,7 +457,8 @@ function angleDiff(from: number, to: number): number {
 }
 
 /**
- * The nearest zoom to `zoom` at which `tileSize * zoom` is a whole number of screen pixels -
+ * The nearest zoom to `zoom` at which `tileSize * zoom` is a whole number of device pixels
+ * (`resolution` device pixels per screen pixel, default 1) -
  * the pure math behind `CameraOptions.pixelPerfectTileSize`, exported so a game can snap a
  * zoom value (from a slider, say) before ever handing it to a `Camera`.
  *
@@ -451,9 +469,9 @@ function angleDiff(from: number, to: number): number {
  * console.log(snapZoom(2.4, 16)); // 2.375 - 16 * 2.375 = 38, a whole number of pixels
  * ```
  */
-export function snapZoom(zoom: number, tileSize: number): number {
-	const pixels = Math.max(1, Math.round(zoom * tileSize));
-	return pixels / tileSize;
+export function snapZoom(zoom: number, tileSize: number, resolution = 1): number {
+	const pixels = Math.max(1, Math.round(zoom * tileSize * resolution));
+	return pixels / (tileSize * resolution);
 }
 
 /**
@@ -467,8 +485,8 @@ export function snapZoom(zoom: number, tileSize: number): number {
  * ```
  */
 export function createCamera(options: CameraOptions = {}): Camera {
-	const camera = new Camera(options);
 	const game = Game.current;
+	const camera = new Camera({ resolution: () => game.app.renderer.resolution, ...options });
 	//the logical viewport, not the backing store, which is larger on a hidpi display
 	camera.setViewport(game.width, game.height);
 	return camera;

@@ -7,6 +7,14 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Fixed
+
+- `Camera` rounded its screen offset to a whole CSS pixel, which at a fractional
+  `devicePixelRatio` (Windows at 150%) left thin seams between tiles. The offset now rounds to
+  whole device pixels through the new `CameraOptions.resolution` (supplied by `createCamera`,
+  read live), and `snapZoom` takes an optional `resolution` so `pixelPerfectTileSize` snaps to
+  whole device pixels too.
+
 ## [0.30.0] - 2026-10-07
 
 P41, the browser driver's four measured gaps: the viewport option (inner size through the

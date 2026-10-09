@@ -620,7 +620,8 @@ build instead.
 
         x: number;
         y: number;
-        private _zoom;
+        private requestedZoom;
+        private readonly resolution;
         private deadzone;
         private readonly pixelPerfectTileSize?;
         private viewWidth;
@@ -659,6 +660,7 @@ build instead.
         animateRotationTo(angle: number, intensity?: number): void;
 
         private get spin();
+
         get zoom(): number;
         set zoom(value: number);
 
@@ -704,6 +706,7 @@ build instead.
         };
         private clampedCentre;
         private apply;
+        private snapToDevice;
     }
 
 ### `CameraOptions` (interface)
@@ -717,6 +720,8 @@ build instead.
         deadzone?: number;
 
         pixelPerfectTileSize?: number;
+
+        resolution?: () => number;
     }
 
 ### `CanonicalState` (class)
@@ -4731,7 +4736,7 @@ build instead.
 
 ### `snapZoom` (function)
 
-    export declare function snapZoom(zoom: number, tileSize: number): number;
+    export declare function snapZoom(zoom: number, tileSize: number, resolution?: number): number;
 
 ### `Spawner` (class)
 
@@ -16414,7 +16419,8 @@ build instead.
 
         x: number;
         y: number;
-        private _zoom;
+        private requestedZoom;
+        private readonly resolution;
         private deadzone;
         private readonly pixelPerfectTileSize?;
         private viewWidth;
@@ -16453,6 +16459,7 @@ build instead.
         animateRotationTo(angle: number, intensity?: number): void;
 
         private get spin();
+
         get zoom(): number;
         set zoom(value: number);
 
@@ -16498,6 +16505,7 @@ build instead.
         };
         private clampedCentre;
         private apply;
+        private snapToDevice;
     }
 
 ### `CameraOptions` (interface)
@@ -16511,6 +16519,8 @@ build instead.
         deadzone?: number;
 
         pixelPerfectTileSize?: number;
+
+        resolution?: () => number;
     }
 
 ### `channelScaleMatrix` (function)
@@ -19183,7 +19193,7 @@ build instead.
 
 ### `snapZoom` (function)
 
-    export declare function snapZoom(zoom: number, tileSize: number): number;
+    export declare function snapZoom(zoom: number, tileSize: number, resolution?: number): number;
 
 ### `Spinner` (class)
 
@@ -20822,7 +20832,8 @@ build instead.
 
         x: number;
         y: number;
-        private _zoom;
+        private requestedZoom;
+        private readonly resolution;
         private deadzone;
         private readonly pixelPerfectTileSize?;
         private viewWidth;
@@ -20861,6 +20872,7 @@ build instead.
         animateRotationTo(angle: number, intensity?: number): void;
 
         private get spin();
+
         get zoom(): number;
         set zoom(value: number);
 
@@ -20906,6 +20918,7 @@ build instead.
         };
         private clampedCentre;
         private apply;
+        private snapToDevice;
     }
 
 ### `CameraOptions` (interface)
@@ -20919,6 +20932,8 @@ build instead.
         deadzone?: number;
 
         pixelPerfectTileSize?: number;
+
+        resolution?: () => number;
     }
 
 ### `channelScaleMatrix` (function)
@@ -21909,7 +21924,7 @@ build instead.
 
 ### `snapZoom` (function)
 
-    export declare function snapZoom(zoom: number, tileSize: number): number;
+    export declare function snapZoom(zoom: number, tileSize: number, resolution?: number): number;
 
 ### `splitScreenHalves` (function)
 

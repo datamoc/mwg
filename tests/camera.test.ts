@@ -83,6 +83,32 @@ test('a camera with pixelPerfectTileSize snaps its own zoom on construction and 
 	assert.equal(camera.zoom, snapZoom(1.1, 16));
 });
 
+test('snapZoom lands on whole device pixels at a fractional resolution', () => {
+	//110% scaling: a 16px tile at zoom 3 is 52.8 device px, so the nearest whole is 53
+	assert.equal(snapZoom(3, 16, 1.1) * 16 * 1.1, 53);
+	assert.equal(snapZoom(3, 16, 1.5), 3); // 72 device px already whole
+});
+
+test('apply rounds the offset to whole device pixels, following a live resolution', () => {
+	let resolution = 1.5;
+	const camera = new Camera({ resolution: () => resolution });
+	camera.setViewport(101, 100);
+	camera.snapTo(0, 0);
+	assert.ok(Math.abs(camera.world.x - 76 / 1.5) < 1e-9); // 50.5 CSS = 75.75 device px, rounded to 76
+	assert.ok(Math.abs(camera.world.x * 1.5 - Math.round(camera.world.x * 1.5)) < 1e-9);
+	resolution = 1;
+	camera.snapTo(0, 0);
+	assert.equal(camera.world.x, 51);
+});
+
+test('a pixelPerfectTileSize camera re-snaps its zoom when the resolution changes', () => {
+	let resolution = 1;
+	const camera = new Camera({ zoom: 3, pixelPerfectTileSize: 16, resolution: () => resolution });
+	assert.equal(camera.zoom, 3);
+	resolution = 1.1;
+	assert.equal(camera.zoom * 16 * 1.1, 53);
+});
+
 test('a camera without pixelPerfectTileSize keeps a fractional zoom exactly', () => {
 	const camera = new Camera({ zoom: 2.3 });
 	assert.equal(camera.zoom, 2.3);
