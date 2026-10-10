@@ -18,6 +18,9 @@ export { load, texture, get, isLoaded, release } from './loader.ts';
 export type { LoadAssetsOptions } from './loader.ts';
 
 export { loadBinary, getBinary, isBinaryLoaded, releaseBinary } from './binary.ts';
+
+export { sanitizeSvg, svgScaleVariants, svgDataUri, splitSvgGroups } from './svg.ts';
+export type { ScaleVariant, SvgVariant } from './svg.ts';
 export type { LoadBinaryOptions } from './binary.ts';
 
 export { AssetStream } from './Streaming.ts';
