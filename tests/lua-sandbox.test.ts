@@ -73,3 +73,39 @@ test('a refused allocation surfaces as not enough memory to scripts, and the hos
 	assert.equal(seen, 'not enough memory');
 	host.dispose();
 });
+
+test('the Lua host runs <const> and <close> variables, and the limits unwind through them', () => {
+	const host = createFengariScriptHost({ instructionLimit: 5000 });
+	const seen: unknown[] = [];
+	const collect = (name: string, payload: unknown): void => void seen.push([name, payload]);
+	const closer = 'setmetatable({}, { __close = function(_, err) mwg_emit("closed", tostring(err)) end })';
+	host.execute('local x <const> = 5; mwg_emit("const", x)', {}, collect);
+	assert.throws(() => host.execute('local x <const> = 5; x = 6'), /attempt to assign to const variable 'x'/);
+	host.execute(`local g <close> = ${closer}; mwg_emit("body")`, {}, collect);
+	assert.throws(() => host.execute(`local g <close> = ${closer}; error("boom")`, {}, collect), /boom/);
+	assert.throws(() => host.execute('local g <close> = 42'), /non-closable value/);
+	host.execute(
+		`local co = coroutine.create(function() local g <close> = ${closer}; coroutine.yield() end)
+		coroutine.resume(co); mwg_emit("coroutine.close", coroutine.close(co))`,
+		{},
+		collect,
+	);
+	assert.match(String((seen[3] as unknown[])[1]), /boom/, 'a failing block closes with its error');
+	assert.deepEqual(
+		seen.filter((_, i) => i !== 3),
+		[
+			['const', 5],
+			['body', undefined],
+			['closed', 'nil'],
+			['closed', 'nil'],
+			['coroutine.close', true],
+		],
+	);
+	assert.throws(
+		() => host.execute(`local g <close> = ${closer}; while true do end`),
+		/instruction limit exceeded/,
+		'a closer cannot buy extra instructions after the limit fired',
+	);
+	assert.equal(host.evaluate('1 + 1'), 2, 'the host stays usable afterwards');
+	host.dispose();
+});

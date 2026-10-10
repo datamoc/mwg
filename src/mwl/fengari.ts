@@ -100,24 +100,22 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 		}
 	};
 
-	const read = (index: number, depth = 0): ScriptValue => {
-		const type = lua.lua_type(state, index);
+	const read = (L: unknown, index: number, depth = 0): ScriptValue => {
+		const type = lua.lua_type(L, index);
 		if (type === lua.LUA_TNIL) return null;
-		if (type === lua.LUA_TBOOLEAN) return lua.lua_toboolean(state, index);
-		if (type === lua.LUA_TNUMBER) return lua.lua_tonumber(state, index);
-		if (type === lua.LUA_TSTRING) return lua.lua_tojsstring(state, index) ?? '';
+		if (type === lua.LUA_TBOOLEAN) return lua.lua_toboolean(L, index);
+		if (type === lua.LUA_TNUMBER) return lua.lua_tonumber(L, index);
+		if (type === lua.LUA_TSTRING) return lua.lua_tojsstring(L, index) ?? '';
 		if (type !== lua.LUA_TTABLE) throw new Error('Lua result must be a JSON-compatible value');
 		if (depth > 20) throw new Error('Lua result is nested too deeply');
 		const result: Record<string, ScriptValue> = {};
-		const tableIndex = index < 0 ? lua.lua_gettop(state) + index + 1 : index;
-		lua.lua_pushnil(state);
-		while (lua.lua_next(state, tableIndex) !== 0) {
-			const key = lua.lua_isinteger(state, -2)
-				? String(lua.lua_tointeger(state, -2))
-				: lua.lua_tojsstring(state, -2);
+		const tableIndex = index < 0 ? lua.lua_gettop(L) + index + 1 : index;
+		lua.lua_pushnil(L);
+		while (lua.lua_next(L, tableIndex) !== 0) {
+			const key = lua.lua_isinteger(L, -2) ? String(lua.lua_tointeger(L, -2)) : lua.lua_tojsstring(L, -2);
 			if (key === null) throw new Error('Lua table keys must be strings or integers');
-			result[key] = read(-1, depth + 1);
-			lua.lua_settop(state, -2);
+			result[key] = read(L, -1, depth + 1);
+			lua.lua_settop(L, -2);
 		}
 		return result;
 	};
@@ -153,7 +151,7 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 			throw new Error('Lua memory limit exceeded');
 		}
 		if (status !== lua.LUA_OK) throw new Error(lua.lua_tojsstring(state, -1) ?? 'Lua execution error');
-		return results === 0 ? null : read(-1);
+		return results === 0 ? null : read(state, -1);
 	};
 
 	const run = (source: string, results: number): ScriptValue => {
@@ -175,7 +173,7 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 		setContext(context);
 		lua.lua_pushjsfunction(state, (currentState: unknown) => {
 			const name = lua.lua_tojsstring(currentState, 1) ?? '';
-			const payload = lua.lua_gettop(currentState) > 1 ? read(2) : undefined;
+			const payload = lua.lua_gettop(currentState) > 1 ? read(currentState, 2) : undefined;
 			//host-side code: the allocation hook charges only the VM's own strings and buffers
 			emit?.(name, payload);
 			return 0;

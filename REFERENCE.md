@@ -1662,7 +1662,9 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   enforces an
   instruction budget and a `memoryLimit` (bytes of string and buffer data one call may
   allocate, 32 MB by default, parsing included), since one `..` or `string.rep` instruction
-  can allocate without bound. The byte budget rides the fork 0.2.0's per-state allocation
+  can allocate without bound. Scripts get `local x <const>`, `local x <close>` (with `__close`,
+  run on a normal exit, `break`, `return` and error, and unwound by a limit error too) and
+  `coroutine.close`, from fork 0.3.0; a `__close` cannot yield. The byte budget rides the fork 0.2.0's per-state allocation
   hook (`lua_setallocf`), so a script's own `pcall` sees the standard `not enough memory`
   while the host still rejects the call. `getmetatable("")` returns `false`. Globals persist between calls on one host, so
   mutually untrusted scripts need a host each. Lua VM state is not save data: reload scripts

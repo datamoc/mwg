@@ -7,10 +7,22 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.34.0] - 2026-10-10
+
+Hex grids for the cave, dungeon and overworld generators, and the Lua host moves to the `@datamoc/fengari` 0.3.0 fork (`<const>`, `<close>`, `coroutine.close`).
+
 ### Added
 
 - `shape: 'hex'` on `generateDungeon`/`generateDungeonGraph`, `generateCave` and `generateOverworld`: the generators lay their output out on a hex grid (odd-q offsets, as `Level` does) instead of squares. The dungeon and cave `Level` carry the hex shape; a dungeon corridor leg runs as a hex line and `furthestRoom` counts hex steps on a hex level; a cave grows chambers by hex distance and walks passages by true on-screen distance, so a chamber is round rather than a skewed diamond; the overworld samples its value noise where each hex is drawn and steps rivers and roads across the six edges, with settlement spacing and the near-water test in hex steps. Square output is unchanged byte for byte.
 - `generateCave` accepts `random`, a `RandomSource`, in place of `seed`: the cave draws from that stream and advances it, and the ambient `Random` stack is left alone. Passing neither is refused by name.
+
+### Changed
+
+- `@datamoc/fengari` moves to `^0.3.0`. Lua scripts in `mwl/fengari` and `ai/lua` now accept `<const>` and `<close>` variables and `coroutine.close`; a limit error (instructions or memory) unwinds through pending `__close` handlers, and a handler cannot buy extra instructions after the limit fired.
+
+### Fixed
+
+- `mwg_emit(name, payload)` called from inside a coroutine read its payload from the main thread's stack, so it returned garbage or failed; it now reads from the calling coroutine.
 
 ## [0.33.0] - 2026-10-10
 
