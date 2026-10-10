@@ -21,10 +21,26 @@ test('the Lua host bounds string allocation, not only instruction count', () => 
 	host.dispose();
 });
 
-test('the Lua host hides the string metatable and keeps the removed libraries removed', () => {
+test('the Lua host hides the string metatable and never constructs the unsafe libraries', () => {
 	const host = createFengariScriptHost();
 	assert.equal(host.evaluate('getmetatable("")'), false);
-	assert.equal(host.evaluate('os == nil and io == nil and load == nil and require == nil'), true);
+	assert.equal(
+		host.evaluate(
+			'os == nil and io == nil and debug == nil and package == nil and require == nil and load == nil and loadfile == nil and dofile == nil',
+		),
+		true,
+	);
+	assert.equal(
+		host.evaluate('coroutine ~= nil and string ~= nil and table ~= nil and math ~= nil and utf8 ~= nil'),
+		true,
+	);
+	host.dispose();
+});
+
+test('the Lua host compiles text chunks only and rejects binary bytecode', () => {
+	const host = createFengariScriptHost();
+	assert.throws(() => host.execute('\x1bLua\x00\x00\x00'), /binary chunk/);
+	assert.equal(host.evaluate('1 + 1'), 2, 'the host stays usable afterwards');
 	host.dispose();
 });
 

@@ -7,6 +7,14 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Changed
+
+- `mwl/fengari` opens only the sandbox-safe Lua standard libraries (base, coroutine, math,
+  string, table, utf8) through the fork's `luaL_openselectedlibs`: `io`, `os`, `debug` and
+  `package` with its `require` are never constructed - identically in Node and the browser -
+  instead of being opened and then nil'd. Chunks now compile in text mode, so a binary
+  `\x1bLua` dump is rejected instead of reaching the bytecode undumper.
+
 ## [0.31.0] - 2026-10-09
 
 Two pixel-dungeon proposals: P43, `SpriteMotion` (squash, hop, bob, wobble, spin, shear and flip over `Tweener`, reduced-motion aware), and P42, camera snapping in whole device pixels, which closes the thin tile seams at a fractional `devicePixelRatio`.

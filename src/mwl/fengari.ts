@@ -1,7 +1,8 @@
-// Fengari 0.1 intentionally ships JavaScript without TypeScript declarations.
-// The checked subset is documented in fengari.d.ts.
+// @datamoc/fengari 0.1 intentionally ships JavaScript without TypeScript declarations.
 // @ts-expect-error Fengari has no declarations in its npm package.
-import { lauxlib, lua, lualib, to_luastring } from 'fengari';
+import fengari from '@datamoc/fengari';
+const { lauxlib, lua, lualib } = fengari;
+const to_luastring = (str: string) => new TextEncoder().encode(str);
 import type { ScriptContext, ScriptEmit, ScriptHost, ScriptValue } from './scripts.ts';
 
 export interface FengariScriptHostOptions {
@@ -13,6 +14,14 @@ export interface FengariScriptHostOptions {
 
 const DEFAULT_INSTRUCTION_LIMIT = 100_000;
 const DEFAULT_MEMORY_LIMIT = 32 * 1024 * 1024;
+/** only the sandbox-safe standard libraries: `io`, `os`, `debug` and `package` are never opened */
+const SAFE_LIBRARIES =
+	lualib.LUA_GLIBK |
+	lualib.LUA_COLIBK |
+	lualib.LUA_MATHLIBK |
+	lualib.LUA_STRLIBK |
+	lualib.LUA_TABLIBK |
+	lualib.LUA_UTF8LIBK;
 const NativeUint8Array = Uint8Array;
 
 /**
@@ -67,12 +76,15 @@ function outsideBudget<T>(work: () => T): T {
 }
 
 /**
- * Optional Lua 5.3 host. Fengari is loaded only by this subpath, never by `mwg/mwl`.
+ * Optional Lua 5.4 host. Fengari is loaded only by this subpath, never by `mwg/mwl`.
  *
- * Sandboxed for untrusted scripts: `os`, `io`, `debug`, `package`, `require`, `load`, `dofile`
- * and `loadfile` are removed, `math.random` is the host's seeded stream, and every call is
- * bounded by `instructionLimit` and by `memoryLimit` (bytes of string data allocated during the
- * call). Globals persist between calls on one host, so scripts that must not influence each
+ * Sandboxed for untrusted scripts: only the base, coroutine, math, string, table and utf8
+ * libraries are opened (`io`, `os`, `debug` and `package` with its `require` are never
+ * constructed, identically in Node and the browser), the base library's `load`, `loadfile`
+ * and `dofile` are removed, every chunk is compiled in text mode so binary bytecode is
+ * rejected, `math.random` is the host's seeded stream, and every call is bounded by
+ * `instructionLimit` and by `memoryLimit` (bytes of string data allocated during the call).
+ * Globals persist between calls on one host, so scripts that must not influence each
  * other need a host each.
  *
  * @example
@@ -86,7 +98,7 @@ function outsideBudget<T>(work: () => T): T {
  */
 export function createFengariScriptHost(options: FengariScriptHostOptions = {}): ScriptHost {
 	const state = lauxlib.luaL_newstate();
-	lualib.luaL_openlibs(state);
+	lualib.luaL_openselectedlibs(state, SAFE_LIBRARIES, 0);
 	const limit = options.instructionLimit ?? DEFAULT_INSTRUCTION_LIMIT;
 	if (!Number.isInteger(limit) || limit < 1) throw new RangeError('instructionLimit must be a positive integer');
 	const memoryLimit = options.memoryLimit ?? DEFAULT_MEMORY_LIMIT;
@@ -176,7 +188,9 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 
 	const run = (source: string, results: number): ScriptValue => {
 		lua.lua_settop(state, 0);
-		const loadStatus = lauxlib.luaL_loadstring(state, to_luastring(source));
+		const bytes = to_luastring(source);
+		//'t' compiles text only: a '\x1bLua' binary dump must never reach the bytecode undumper
+		const loadStatus = lauxlib.luaL_loadbufferx(state, bytes, bytes.length, bytes, to_luastring('t'));
 		if (loadStatus !== lua.LUA_OK) throw new Error(lua.lua_tojsstring(state, -1) ?? 'Lua syntax error');
 		return protectedCall(0, results);
 	};
@@ -197,8 +211,7 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 			return 1;
 		});
 		lua.lua_setglobal(state, to_luastring('__mwg_random'));
-		const sandbox =
-			'os=nil; io=nil; debug=nil; package=nil; require=nil; dofile=nil; loadfile=nil; load=nil; math.random=__mwg_random; math.randomseed=function() end';
+		const sandbox = 'load=nil; loadfile=nil; dofile=nil; math.random=__mwg_random; math.randomseed=function() end';
 		run(sandbox, 0);
 	};
 	//hides the string metatable (the `string` library itself) from `getmetatable("")`

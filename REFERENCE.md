@@ -1614,9 +1614,13 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   The expression host is the statement-free default. The main `mwl` entry point
   exports its types without loading a scripting VM. Projects that opt in to the optional
   `fengari` dependency can import `createFengariScriptHost` from `@datamoc/mw_games/mwl/fengari`.
-  It provides Lua 5.3 evaluation, chunks, named function calls, JSON-shaped context values, and
-  `mwg_emit(name, payload)` events. The adapter removes filesystem, process, module-loading and
-  debug globals, replaces `math.random` with seeded deterministic random, and enforces an
+  It provides Lua 5.4 evaluation, chunks, named function calls, JSON-shaped context values, and
+  `mwg_emit(name, payload)` events. The adapter opens only the sandbox-safe standard libraries
+  (base, coroutine, math, string, table, utf8): `io`, `os`, `debug` and `package` with its
+  `require` are never constructed, identically in Node and the browser, the base library's `load`,
+  `loadfile` and `dofile` are removed, and chunks compile in text mode only, so a binary
+  `\x1bLua` dump is rejected. It replaces `math.random` with seeded deterministic random, and
+  enforces an
   instruction budget and a `memoryLimit` (bytes of string and buffer data one call may
   allocate, 32 MB by default), since one `..` or `string.rep` instruction can allocate without
   bound. `getmetatable("")` returns `false`. Globals persist between calls on one host, so

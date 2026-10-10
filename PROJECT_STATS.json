@@ -4,8 +4,8 @@
 	"version": "0.31.0",
 	"releaseDate": "2026-10-09",
 	"source": {
-		"files": 332,
-		"lines": 60884,
+		"files": 331,
+		"lines": 60851,
 		"modules": 18,
 		"breakdown": [
 			{
@@ -20,8 +20,8 @@
 			},
 			{
 				"name": "mwl",
-				"files": 22,
-				"lines": 6757
+				"files": 21,
+				"lines": 6724
 			},
 			{
 				"name": "board",
@@ -101,9 +101,9 @@
 		]
 	},
 	"tests": {
-		"files": 305,
-		"lines": 41198,
-		"cases": 2828
+		"files": 306,
+		"lines": 41244,
+		"cases": 2832
 	},
 	"tools": {
 		"files": 48,
@@ -148,9 +148,9 @@
 		"declarationFiles": 331
 	},
 	"bundle": {
-		"globalRaw": 1243358,
-		"globalGzip": 371359,
-		"distRaw": 4313016
+		"globalRaw": 1243454,
+		"globalGzip": 371394,
+		"distRaw": 4314333
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
