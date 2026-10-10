@@ -361,6 +361,9 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 			less_than_or_equal_to: 'string',
 			greater_than_or_equal_to: 'string',
 		},
+		//free predicate attributes, so a port passes a predicate its context without
+		//extending the schema (same shape as the [predicate] tag's own attributes)
+		openAttributes: 'string',
 	},
 	filter: {
 		attributes: {
@@ -491,7 +494,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
 		],
 	},
 	while: {
-		attributes: { test: 'string', max_iterations: 'integer' },
+		attributes: { test: 'string', max_iterations: 'integer', on_limit: 'id' },
 		children: [
 			'condition',
 			'while',

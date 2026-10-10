@@ -1004,3 +1004,13 @@ test('MWL conditions evaluate bounded comparisons and explicit helpers', () => {
 	assert.equal(evaluateCondition('bonus > 3 where bonus = level + 2', { level: 2 }), true);
 	assert.throws(() => evaluateCondition('unknown == 1', {}), /missing/i);
 });
+
+test('[condition] accepts free predicate attributes (406)', () => {
+	const diagnostics = validate(
+		parse(
+			"[{ tag: 'game', children: [{ tag: 'if', children: [{ tag: 'condition', condition: 'hook', hook: 'predicate:gate', gate: 'open' }] }] }]",
+		),
+	);
+	assert.equal(diagnostics.filter((diagnostic) => diagnostic.code === 'MWL_UNKNOWN_ATTRIBUTE').length, 0);
+	assert.equal(diagnostics.filter((diagnostic) => diagnostic.code === 'MWL_UNKNOWN_TAG').length, 0);
+});

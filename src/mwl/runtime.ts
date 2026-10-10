@@ -13,7 +13,7 @@ import type {
 	MwlSaveableHookState,
 } from './hooks.ts';
 import { decodeSaveEnvelope, encodeSave, type MwlPersistenceOptions } from './persistence.ts';
-import { evaluateCondition } from './conditions.ts';
+import { evaluateCondition, type MwlConditionHelper, type MwlConditionValue } from './conditions.ts';
 import { evaluateExpression, type MwlExpressionContext } from './expression.ts';
 import { booleanAttribute, booleanValue, integerAttribute, numberAttribute, requiredAttribute } from './utils.ts';
 import { endLevelCarryover } from './carryover.ts';
@@ -170,7 +170,8 @@ export type MwlTraceEvent =
 			readonly trigger?: string;
 	  }
 	| { readonly type: 'variable'; readonly name: string; readonly previous?: MwlValue; readonly value: MwlValue }
-	| { readonly type: 'error'; readonly message: string; readonly event?: string };
+	| { readonly type: 'error'; readonly message: string; readonly event?: string }
+	| { readonly type: 'while_limit'; readonly iterations: number };
 
 /** One public MWL runtime operation, retained for deterministic replay and diagnostics. */
 export type MwlRuntimeAction =
@@ -326,6 +327,8 @@ export class MwlRuntime {
 	private readonly resolveMap?: (file: string) => string;
 	private readonly hooks?: MwlHookRegistry;
 	private readonly onTrace?: (event: MwlTraceEvent) => void;
+	private testHelpers?: Readonly<Record<string, MwlConditionHelper>>;
+	/** the helpers a `test=` expression may call, built once from the hook registry */
 	private readonly persistence: MwlPersistenceOptions;
 	private readonly random: Generator;
 	private readonly unitTypes = new Map<string, { hitpoints: number; movement: number }>();
@@ -1004,8 +1007,18 @@ export class MwlRuntime {
 	private cmdWhile(node: MwlCompiledNode): void {
 		const limit = integer(node, 'max_iterations', 1000);
 		if (limit < 1 || limit > 100_000) throw new Error('MWL while max_iterations must be between 1 and 100000');
-		for (let iteration = 0; iteration < limit && this.nodeConditionMatches(node); iteration++)
+		let iteration = 0;
+		while (iteration < limit && this.nodeConditionMatches(node)) {
 			this.runBlock(this.commandChildren(node));
+			iteration++;
+		}
+		//the cap is observable: reaching it with the condition still true traces a
+		//while_limit, and on_limit=error turns that into a hard failure instead
+		if (iteration === limit && this.nodeConditionMatches(node)) {
+			if (node.attributes.on_limit === 'error')
+				throw new Error(`MWL while reached its max_iterations cap of ${limit}`);
+			this.onTrace?.({ type: 'while_limit', iterations: limit });
+		}
 	}
 
 	private cmdForeach(node: MwlCompiledNode): void {
@@ -1382,8 +1395,64 @@ export class MwlRuntime {
 
 	private nodeConditionMatches(node: MwlCompiledNode): boolean {
 		if (node.attributes.test !== undefined)
-			return evaluateCondition(node.attributes.test, primitiveVariables(this.world.variables));
+			return evaluateCondition(node.attributes.test, primitiveVariables(this.world.variables), {
+				helpers: this.conditionHelpers(),
+			});
 		return this.conditionMatches(node);
+	}
+
+	/**
+	 * The helpers a `test=` expression may call (item 406): the built-in `have_unit` and
+	 * `have_location` queries over this world, plus one entry per registered predicate
+	 * hook, so a compound predicate no longer has to detour through `condition=hook` with
+	 * a `[condition]` tree. Each argument is one `key=value` pair (a bare argument names
+	 * `value`), matching the string-shaped context predicates already receive.
+	 */
+	private conditionHelpers(): Readonly<Record<string, MwlConditionHelper>> {
+		if (this.testHelpers) return this.testHelpers;
+		const filterFromArgs = (args: readonly MwlConditionValue[]): Record<string, string> => {
+			const filter: Record<string, string> = {};
+			for (const arg of args) {
+				const text = String(arg);
+				const split = text.indexOf('=');
+				if (split <= 0) filter.value = text;
+				else filter[text.slice(0, split)] = text.slice(split + 1);
+			}
+			return filter;
+		};
+		const helpers: Record<string, MwlConditionHelper> = {
+			have_unit: (...args) => {
+				const filter = filterFromArgs(args);
+				return Object.entries(this.world.units).some(
+					([id, unit]) =>
+						unit.alive &&
+						(filter.id === undefined || id === filter.id) &&
+						unitMatchesFilter(unit, id, filter),
+				);
+			},
+			have_location: (...args) => {
+				const filter = filterFromArgs(args);
+				const map = this.world.map;
+				const x = Number(filter.x);
+				const y = Number(filter.y);
+				if (
+					!map ||
+					!Number.isInteger(x) ||
+					!Number.isInteger(y) ||
+					x < 0 ||
+					y < 0 ||
+					x >= map.width ||
+					y >= map.height
+				)
+					return false;
+				const code = map.codes[y * map.width + x];
+				return filter.terrain === undefined || code === filter.terrain;
+			},
+		};
+		for (const [name, predicate] of Object.entries(this.hooks?.predicate ?? {}))
+			helpers[name] = (...args) => Boolean(predicate(this.worldView(), filterFromArgs(args)));
+		this.testHelpers = helpers;
+		return helpers;
 	}
 
 	/**

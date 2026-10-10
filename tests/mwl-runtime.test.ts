@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { compile } from '../src/mwl/compiler.ts';
 import { Generator } from '../src/core/Random.ts';
-import { MwlRuntime, parseTerrain, type MwlMessage } from '../src/mwl/runtime.ts';
+import { MwlRuntime, parseTerrain, type MwlMessage, type MwlRuntimeOptions } from '../src/mwl/runtime.ts';
 
 const ARENA_MAP = ['1 Kh,Gg,Gg', 'Gg,Gg,Gg', 'Gg,Gg,2 Kh'].join('\n');
 
@@ -456,4 +456,63 @@ test('a side leader naming a declared unit spawns no phantom unit', () => {
 
 test('a side leader that is neither a unit nor a unit type is refused by name', () => {
 	assert.throws(() => new MwlRuntime(compile(leaderGame(''))), /leader "Kalenz" is neither a unit nor a unit type/);
+});
+
+const conditionGame = (test: string) => `[{
+	tag: 'game', children: [
+		{ tag: 'unit_type', id: 'Swordsman', hitpoints: 10, movement: 3 },
+		{ tag: 'side', id: 1, controller: 'human', leader: 'Swordsman' },
+		{ tag: 'map', id: 'm', terrain: '1 Kh,Gg' },
+		{ tag: 'event', id: 'start', on: 'start', children: [
+			{ tag: 'if', test: ${JSON.stringify(test)}, children: [
+				{ tag: 'set_variable', name: 'hit', value: '1', mode: 'number' },
+			] },
+		] },
+	] }]`;
+
+test('test= reaches units, locations and predicate hooks (406)', () => {
+	const run = (test: string, hooks: MwlRuntimeOptions['hooks'] = {}) => {
+		const runtime = new MwlRuntime(compile(conditionGame(test)), { hooks });
+		runtime.fireEvent('start');
+		return runtime.world.variables.hit;
+	};
+	const gate = {
+		predicate: { gate_open: (_world: unknown, context: Record<string, string>) => context.gate === 'open' },
+	};
+	assert.equal(run("have_unit('type=Swordsman')"), 1);
+	assert.equal(run("have_unit('type=Archer')"), undefined);
+	assert.equal(run("have_location('x=1', 'y=0', 'terrain=Gg')"), 1);
+	assert.equal(run("have_location('x=0', 'y=0', 'terrain=Gg')"), undefined);
+	assert.equal(run("have_location('x=9', 'y=9')"), undefined);
+	assert.equal(run("gate_open('gate=open')", gate), 1);
+	assert.equal(run("gate_open('gate=closed')", gate), undefined);
+	assert.equal(run("have_unit('type=Swordsman') and have_location('x=0', 'y=0', 'terrain=Kh')"), 1);
+});
+
+test('the [while] cap is observable, and on_limit=error makes it a hard failure (406)', () => {
+	const whileGame = (attrs: string, test: string) => `[{
+		tag: 'game', children: [
+			{ tag: 'side', id: 1, controller: 'human' },
+			{ tag: 'event', id: 'start', on: 'start', children: [
+				{ tag: 'set_variable', name: 'spins', value: '0', mode: 'number' },
+				{ tag: 'while', test: ${JSON.stringify(test)}, ${attrs}, children: [
+					{ tag: 'set_variable', name: 'spins', value: 'spins + 1', mode: 'expression' },
+				] },
+			] },
+		] }]`;
+	const events: { type: string; iterations?: number }[] = [];
+	const capped = new MwlRuntime(compile(whileGame('max_iterations: 5', 'spins < 100')), {
+		onTrace: (event) => events.push(event as { type: string }),
+	});
+	capped.fireEvent('start');
+	assert.equal(capped.world.variables.spins, 5);
+	assert.ok(events.some((event) => event.type === 'while_limit'));
+	assert.equal(events.find((event) => event.type === 'while_limit')?.iterations, 5);
+
+	const natural = new MwlRuntime(compile(whileGame('max_iterations: 100', 'spins < 3')));
+	natural.fireEvent('start');
+	assert.equal(natural.world.variables.spins, 3);
+
+	const failing = new MwlRuntime(compile(whileGame('max_iterations: 3, on_limit: "error"', '1 == 1')));
+	assert.throws(() => failing.fireEvent('start'), /max_iterations cap of 3/);
 });
