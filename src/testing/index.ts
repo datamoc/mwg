@@ -155,3 +155,6 @@ export function fakeGamepad(index: number, buttons: number[] = [], axes: number[
 		axes,
 	} as unknown as Gamepad;
 }
+
+export { createSceneControls } from './SceneControls.ts';
+export type { SceneControls, SceneStep } from './SceneControls.ts';
