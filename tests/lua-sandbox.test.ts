@@ -55,3 +55,21 @@ test('an emit callback runs with the real Uint8Array and outside the Lua budget'
 	assert.throws(() => createFengariScriptHost({ memoryLimit: 0 }), /memoryLimit must be a positive integer/);
 	host.dispose();
 });
+
+test('a refused allocation surfaces as not enough memory to scripts, and the host still rejects the call', () => {
+	const host = createFengariScriptHost({ memoryLimit: 1024 });
+	let seen: unknown = null;
+	assert.throws(
+		() =>
+			host.execute(
+				'local ok, err = pcall(function() return ("x"):rep(100000) end); mwg_emit("seen", err)',
+				{},
+				(_name, payload) => {
+					seen = payload;
+				},
+			),
+		/memory limit exceeded/,
+	);
+	assert.equal(seen, 'not enough memory');
+	host.dispose();
+});

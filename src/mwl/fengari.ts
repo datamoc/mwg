@@ -1,4 +1,4 @@
-// @datamoc/fengari 0.1 intentionally ships JavaScript without TypeScript declarations.
+// @datamoc/fengari intentionally ships JavaScript without TypeScript declarations.
 // @ts-expect-error Fengari has no declarations in its npm package.
 import fengari from '@datamoc/fengari';
 const { lauxlib, lua, lualib } = fengari;
@@ -22,58 +22,6 @@ const SAFE_LIBRARIES =
 	lualib.LUA_STRLIBK |
 	lualib.LUA_TABLIBK |
 	lualib.LUA_UTF8LIBK;
-const NativeUint8Array = Uint8Array;
-
-/**
- * Runs `work` with every `new Uint8Array` charged against `budget` bytes. Fengari stores every
- * Lua string and buffer in a `Uint8Array` it constructs through the global name, so this is
- * the one place a concatenation (`s = s .. s` doubles in one instruction), `string.rep`,
- * `table.concat` or `string.gsub` can be bounded: the instruction limit alone let
- * `string.rep("x", 2^28)` allocate 268 MB in a single instruction. Views (`subarray`) are
- * not charged, since they allocate nothing.
- */
-function withMemoryBudget<T>(budget: number, work: () => T): { result: T; exceeded: boolean } {
-	let remaining = budget;
-	let exceeded = false;
-	class Counted extends NativeUint8Array {
-		static get [Symbol.species]() {
-			return NativeUint8Array;
-		}
-		//fengari's own `instanceof Uint8Array` checks resolve to this class while it is installed
-		static override [Symbol.hasInstance](value: unknown) {
-			return value instanceof NativeUint8Array;
-		}
-		constructor(...args: unknown[]) {
-			super(...(args as []));
-			remaining -= this.byteLength;
-			if (remaining < 0) {
-				exceeded = true;
-				throw new Error('Lua memory limit exceeded');
-			}
-		}
-	}
-	const previous = globalThis.Uint8Array;
-	globalThis.Uint8Array = Counted as Uint8ArrayConstructor;
-	try {
-		return { result: work(), exceeded };
-	} catch (error) {
-		if (exceeded) return { result: undefined as T, exceeded };
-		throw error;
-	} finally {
-		globalThis.Uint8Array = previous;
-	}
-}
-
-/** runs host-side code (a game's `emit` callback) outside the budget and with the real constructor */
-function outsideBudget<T>(work: () => T): T {
-	const previous = globalThis.Uint8Array;
-	globalThis.Uint8Array = NativeUint8Array;
-	try {
-		return work();
-	} finally {
-		globalThis.Uint8Array = previous;
-	}
-}
 
 /**
  * Optional Lua 5.4 host. Fengari is loaded only by this subpath, never by `mwg/mwl`.
@@ -83,9 +31,12 @@ function outsideBudget<T>(work: () => T): T {
  * constructed, identically in Node and the browser), the base library's `load`, `loadfile`
  * and `dofile` are removed, every chunk is compiled in text mode so binary bytecode is
  * rejected, `math.random` is the host's seeded stream, and every call is bounded by
- * `instructionLimit` and by `memoryLimit` (bytes of string data allocated during the call).
- * Globals persist between calls on one host, so scripts that must not influence each
- * other need a host each.
+ * `instructionLimit` and by `memoryLimit` (bytes of string and buffer data the call
+ * allocates, parsing included). The byte budget is enforced through the fork's per-state
+ * allocation hook, so a refused allocation surfaces to scripts as Lua's standard
+ * `not enough memory` even under a script-level `pcall`, but the host rejects the whole
+ * call regardless. Globals persist between calls on one host, so scripts that must not
+ * influence each other need a host each.
  *
  * @example
  * ```ts
@@ -106,6 +57,25 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 		throw new RangeError('memoryLimit must be a positive integer');
 	let randomState = (options.seed ?? 0x6d7767) >>> 0;
 	let emit: ScriptEmit | undefined;
+	//the per-call byte budget, charged by the fork's allocation hook: every internal string or
+	//buffer allocation decrements `remaining`, and the first to cross zero refuses the
+	//allocation exactly like a failing C allocator (LUA_ERRMEM, "not enough memory")
+	const budget = { remaining: memoryLimit, exceeded: false };
+	lua.lua_setallocf(
+		state,
+		(_ud: unknown, nsize: number) => {
+			budget.remaining -= nsize;
+			if (budget.remaining < 0) {
+				budget.exceeded = true;
+				throw new Error('Lua memory limit exceeded');
+			}
+		},
+		budget,
+	);
+	const resetBudget = (): void => {
+		budget.remaining = memoryLimit;
+		budget.exceeded = false;
+	};
 
 	const push = (value: ScriptValue): void => {
 		if (value === null) return lua.lua_pushnil(state);
@@ -174,11 +144,11 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 			lua.LUA_MASKCOUNT,
 			limit > 1000 ? 1000 : 1,
 		);
-		const { result: status, exceeded } = withMemoryBudget(memoryLimit, () =>
-			lua.lua_pcall(state, args, results, 0),
-		);
+		//the memory budget is reset by the caller (run/call), not here, so the parse of a
+		//chunk is charged against the same budget as its execution
+		const status = lua.lua_pcall(state, args, results, 0);
 		lua.lua_sethook(state, null, 0, 0);
-		if (exceeded) {
+		if (budget.exceeded) {
 			lua.lua_settop(state, 0);
 			throw new Error('Lua memory limit exceeded');
 		}
@@ -188,10 +158,15 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 
 	const run = (source: string, results: number): ScriptValue => {
 		lua.lua_settop(state, 0);
+		resetBudget();
 		const bytes = to_luastring(source);
 		//'t' compiles text only: a '\x1bLua' binary dump must never reach the bytecode undumper
 		const loadStatus = lauxlib.luaL_loadbufferx(state, bytes, bytes.length, bytes, to_luastring('t'));
-		if (loadStatus !== lua.LUA_OK) throw new Error(lua.lua_tojsstring(state, -1) ?? 'Lua syntax error');
+		if (loadStatus !== lua.LUA_OK) {
+			//a budget exhausted by parsing itself is a limit error, not a syntax error
+			if (budget.exceeded) throw new Error('Lua memory limit exceeded');
+			throw new Error(lua.lua_tojsstring(state, -1) ?? 'Lua syntax error');
+		}
 		return protectedCall(0, results);
 	};
 
@@ -201,7 +176,8 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 		lua.lua_pushjsfunction(state, (currentState: unknown) => {
 			const name = lua.lua_tojsstring(currentState, 1) ?? '';
 			const payload = lua.lua_gettop(currentState) > 1 ? read(2) : undefined;
-			outsideBudget(() => emit?.(name, payload));
+			//host-side code: the allocation hook charges only the VM's own strings and buffers
+			emit?.(name, payload);
 			return 0;
 		});
 		lua.lua_setglobal(state, to_luastring('mwg_emit'));
@@ -229,6 +205,7 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 		call(name, args = [], context = {}, callback) {
 			install(context, callback);
 			lua.lua_settop(state, 0);
+			resetBudget();
 			lua.lua_getglobal(state, to_luastring(name));
 			args.forEach(push);
 			return protectedCall(args.length, 1);

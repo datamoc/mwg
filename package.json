@@ -413,6 +413,6 @@
 	"types": "./dist/index.d.ts",
 	"unpkg": "./dist/mw_games.global.js",
 	"optionalDependencies": {
-		"@datamoc/fengari": "^0.1.5"
+		"@datamoc/fengari": "^0.2.0"
 	}
 }

@@ -7,6 +7,15 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Changed
+
+- `mwl/fengari` now requires `@datamoc/fengari@^0.2.0` and enforces `memoryLimit` through the
+  fork's per-state allocation hook (`lua_setallocf`) instead of swapping the global
+  `Uint8Array` constructor mid-call: no global mutation (and so no reentrancy hazard between
+  hosts on one page), parsing is inside the budget, host callbacks allocate freely, and a
+  refused allocation surfaces to scripts as Lua's standard `not enough memory` while the
+  host still rejects the call.
+
 ## [0.32.0] - 2026-10-10
 
 The optional Lua host hardens around what the `@datamoc/fengari` fork offers, and the

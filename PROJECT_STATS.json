@@ -5,7 +5,7 @@
 	"releaseDate": "2026-10-10",
 	"source": {
 		"files": 331,
-		"lines": 60851,
+		"lines": 60828,
 		"modules": 18,
 		"breakdown": [
 			{
@@ -21,7 +21,7 @@
 			{
 				"name": "mwl",
 				"files": 21,
-				"lines": 6724
+				"lines": 6701
 			},
 			{
 				"name": "board",
@@ -102,8 +102,8 @@
 	},
 	"tests": {
 		"files": 306,
-		"lines": 41244,
-		"cases": 2832
+		"lines": 41262,
+		"cases": 2833
 	},
 	"tools": {
 		"files": 48,
@@ -150,7 +150,7 @@
 	"bundle": {
 		"globalRaw": 1243454,
 		"globalGzip": 371394,
-		"distRaw": 4314333
+		"distRaw": 4314088
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
