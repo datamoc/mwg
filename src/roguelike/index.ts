@@ -2,6 +2,8 @@ export { Level, WALL, FLOOR, rectCenter, rectsOverlap } from './Level.ts';
 export type { TerrainKind, Rect, LevelShape } from './Level.ts';
 
 export { generateDungeon, generateDungeonGraph, findFreeCell, furthestRoom, DUNGEON_KINDS } from './generate.ts';
+export { generateCave } from './Cave.ts';
+export type { CaveOptions, CaveResult, CaveChamber, CavePassage, CaveStart } from './Cave.ts';
 export type { DungeonOptions, DungeonGenerationHooks, RoomEdge, DungeonResult } from './generate.ts';
 
 export { hallBuilder, eligibleBuilders, pickBuilder } from './RoomBuilders.ts';
