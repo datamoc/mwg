@@ -7,6 +7,13 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.33.0] - 2026-10-10
+
+Seven roadmap items in one release: the Wesnoth port's proposal file is now fully answered
+(405 shipped with 0.32.0, 406/407/409 this release, 408's first half, 401 parked with the
+port), alongside the skeletal puppet pair (399/400), SVG as inbound data (398), the overworld
+generator (410), and the Lua host riding the fork's new allocation hook.
+
 ### Added
 
 - `skeleton`, a new renderer-free root module (roadmap 399): a bone tree where a pose is one
