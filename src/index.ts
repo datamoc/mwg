@@ -22,3 +22,4 @@ export * as Audio from './audio/index.ts';
 export * as Simulation from './simulation/index.ts';
 export * as Mwl from './mwl/index.ts';
 export * as AI from './ai/index.ts';
+export * as Skeleton from './skeleton/index.ts';
