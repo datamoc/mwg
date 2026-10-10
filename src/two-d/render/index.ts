@@ -32,6 +32,8 @@ export type {
 export { AnimatedSprite, Animation } from './AnimatedSprite.ts';
 export type { AnimationFrame, AnimationFrameInput, AnimationOptions } from './AnimatedSprite.ts';
 export { SpriteGroup, isOnScreen } from './SpriteGroup.ts';
+export { SkeletalSprite, ArticulatedChain, ChainRig } from './SkeletalSprite.ts';
+export type { ChainOptions } from './SkeletalSprite.ts';
 export type { SpriteGroupMember } from './SpriteGroup.ts';
 export { SpriteSheet } from './SpriteSheet.ts';
 export { Camera, createCamera, snapZoom } from './Camera.ts';
