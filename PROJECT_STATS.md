@@ -8,10 +8,10 @@ Generated for **mwg 0.31.0** on 2026-10-09.
 | Tests | 305 files, 2,828 test cases, 41,198 lines |
 | Tools | 48 files, 10,275 lines |
 | Examples | 24 runnable examples |
-| Roadmap | 397/404 items complete, 7 open |
+| Roadmap | 397/410 items complete, 13 open |
 | API | 331 declaration files |
-| Bundle | 1215.2 kB raw, 362.7 kB gzip |
-| Published dist | 4212.9 kB excluding source maps |
+| Bundle | 1214.2 kB raw, 362.7 kB gzip |
+| Published dist | 4211.9 kB excluding source maps |
 | Test-to-source ratio | 0.7x by line count |
 
 ## Source modules

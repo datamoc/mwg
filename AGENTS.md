@@ -43,6 +43,23 @@ There is no lint script. `npm run check`, `npm test`, then build and open an exa
 verification loop (see "Verifying" below): layout and rendering bugs don't show up in the
 typechecker.
 
+Two gates compare a committed file against what the checkout currently generates, so both
+need regenerating on a schedule of their own rather than only when a check turns red:
+
+- `npm run sbom` rewrites `sbom.cdx.json` from `package.json` and `package-lock.json`.
+  Regenerate it whenever the lockfile moves: a dependency bump, an `npm update`, or merging
+  a Dependabot PR. A lockfile-only change that skips it fails `sbom:check` on every runner,
+  which is precisely the shape of every Dependabot npm PR (Dependabot only edits
+  `package-lock.json`, so its PRs need this follow-up commit before they can merge).
+- `npm run stats:write` rewrites `PROJECT_STATS.json`, `PROJECT_STATS.md` and
+  `webpage/statistics/index.html` from the sources, the roadmap and the built bundle.
+  Regenerate it when any of those move, and run `npm run build` first, since it measures
+  what `dist/` actually contains.
+
+Both regenerated files belong in the same commit as the change that moved them, the way the
+release process below regenerates `API_REPORT.md`, `PROJECT_STATS.*` and `sbom.cdx.json`
+before tagging.
+
 Releasing a new version is the agent's own job up through the GitHub release; the actual
 npm publish step is the user's, deliberately - see "Release process" below.
 

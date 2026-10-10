@@ -139,18 +139,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 404,
+		"items": 410,
 		"completed": 397,
-		"open": 7,
-		"percent": 98
+		"open": 13,
+		"percent": 97
 	},
 	"api": {
 		"declarationFiles": 331
 	},
 	"bundle": {
-		"globalRaw": 1244361,
-		"globalGzip": 371432,
-		"distRaw": 4314019
+		"globalRaw": 1243358,
+		"globalGzip": 371359,
+		"distRaw": 4313016
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
