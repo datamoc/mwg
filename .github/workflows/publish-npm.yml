@@ -28,7 +28,7 @@ jobs:
       # attempting the OIDC exchange, and fails with E401 - which is exactly what every run
       # of this workflow did under v6. v7 removed that fallback for precisely this reason:
       # "npm Trusted Publishing (OIDC) is not affected, since it does not use NODE_AUTH_TOKEN."
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '26'
           # never cache in a release build: a stale package-manager cache is exactly the
