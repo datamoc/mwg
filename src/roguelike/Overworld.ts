@@ -1,4 +1,6 @@
+import { hexDistance, hexNeighbors, hexRange } from '../core/Hex.ts';
 import * as Random from '../core/Random.ts';
+import type { LevelShape } from './Level.ts';
 
 /**
  * An overworld map: a whole realm as plain tile data.
@@ -12,6 +14,10 @@ import * as Random from '../core/Random.ts';
  * that prefers flat ground and fords a river where it must cross one; points of interest
  * carry a `leadsTo` id a game feeds its `Overworld` locations with; and every cell carries a
  * coarse region id so encounter tables and names can hang off a region instead of a cell.
+ *
+ * `shape: 'hex'` generates the same realm on a hex grid (odd-q offset coordinates, the `Level`
+ * convention): the noise is sampled where each hex is drawn so landmasses are not stretched,
+ * rivers and roads step across the six edges, spacing and "near water" count hex distance.
  *
  * Deterministic: the same seed gives the same realm on every platform, drawn from the
  * framework `Random` stack. Sizes up to a few hundred tiles a side generate on load; a
@@ -45,6 +51,8 @@ export interface OverworldOptions {
 	regionSize?: number;
 	/** how stretched the noise is: larger values give broader landmasses; defaults to 6 */
 	noiseScale?: number;
+	/** the grid the realm is laid out on; defaults to `'square'` */
+	shape?: LevelShape;
 }
 
 export interface OverworldSettlement {
@@ -81,7 +89,7 @@ export interface OverworldResult {
 }
 
 /** seeded value noise: a lattice of random values, smoothly interpolated, a few octaves */
-function valueNoise(random: () => number, width: number, height: number, scale: number): number[] {
+function valueNoise(random: () => number, width: number, height: number, scale: number, hex: boolean): number[] {
 	const latticeSide = (side: number): number => Math.max(2, Math.ceil(side / scale) + 2);
 	const columns = latticeSide(width);
 	const rows = latticeSide(height);
@@ -94,8 +102,10 @@ function valueNoise(random: () => number, width: number, height: number, scale: 
 		const weight = 1 / (factor * factor);
 		for (let y = 0; y < height; y++) {
 			for (let x = 0; x < width; x++) {
-				const gx = (x / scale) * factor;
-				const gy = (y / scale) * factor;
+				//on a hex grid sample where the cell is drawn: columns are 0.866 apart and
+				//odd columns sit half a row lower
+				const gx = ((hex ? x * HEX_COLUMN_PITCH : x) / scale) * factor;
+				const gy = ((hex ? y + (x & 1) / 2 : y) / scale) * factor;
 				const x0 = Math.floor(gx) % (columns - 1);
 				const y0 = Math.floor(gy) % (rows - 1);
 				const fx = smooth(gx - Math.floor(gx));
@@ -113,6 +123,9 @@ function valueNoise(random: () => number, width: number, height: number, scale: 
 	return field;
 }
 
+/** distance between hex columns in units of the row height: 3/4 of a flat-top hex's width */
+const HEX_COLUMN_PITCH = Math.sqrt(3) / 2;
+
 const EIGHT = [
 	[0, -1],
 	[0, 1],
@@ -123,6 +136,23 @@ const EIGHT = [
 	[-1, 1],
 	[1, 1],
 ] as const;
+
+/**
+ * Visit the cells a river or road may step to from `(x, y)`: the eight surrounding squares
+ * (flagged diagonal for the corners), or the six hexes, every one an edge neighbour.
+ */
+function forEachStep(
+	hex: boolean,
+	x: number,
+	y: number,
+	visit: (nx: number, ny: number, diagonal: boolean) => void,
+): void {
+	if (hex) {
+		for (const cell of hexNeighbors(x, y)) visit(cell.x, cell.y, false);
+		return;
+	}
+	for (const [dx, dy] of EIGHT) visit(x + dx, y + dy, dx !== 0 && dy !== 0);
+}
 
 /** how much a road dislikes crossing each terrain; water is only crossable at a ford */
 const ROAD_COST: Record<OverworldTerrain, number> = {
@@ -141,6 +171,7 @@ export function generateOverworld(options: OverworldOptions): OverworldResult {
 	const seaLevel = options.seaLevel ?? 0.4;
 	if (!(seaLevel > 0 && seaLevel < 1)) throw new Error('seaLevel must be between 0 and 1');
 	const scale = options.noiseScale ?? 6;
+	const hex = options.shape === 'hex';
 	const at = (x: number, y: number): number => y * width + x;
 	const inside = (x: number, y: number): boolean => x >= 0 && y >= 0 && x < width && y < height;
 
@@ -148,8 +179,8 @@ export function generateOverworld(options: OverworldOptions): OverworldResult {
 	try {
 		//a terrain field from elevation and moisture, both seeded; landmasses read as
 		//coherent shapes rather than scattered peaks because the noise octaves overlap
-		const elevation = valueNoise(() => Random.float(), width, height, scale);
-		const moisture = valueNoise(() => Random.float(), width, height, scale * 1.5);
+		const elevation = valueNoise(() => Random.float(), width, height, scale, hex);
+		const moisture = valueNoise(() => Random.float(), width, height, scale * 1.5, hex);
 		const terrain: OverworldTerrain[] = new Array(width * height);
 		const classify = (x: number, y: number): OverworldTerrain => {
 			const index = at(x, y);
@@ -189,13 +220,11 @@ export function generateOverworld(options: OverworldOptions): OverworldResult {
 				path.push({ x, y });
 				walked.add(index);
 				let best: { x: number; y: number; up: number } | undefined;
-				for (const [dx, dy] of EIGHT) {
-					const nx = x + dx;
-					const ny = y + dy;
-					if (!inside(nx, ny)) continue;
+				forEachStep(hex, x, y, (nx, ny) => {
+					if (!inside(nx, ny)) return;
 					const candidate = { x: nx, y: ny, up: elevation[at(nx, ny)] };
 					if (!best || candidate.up < best.up) best = candidate;
-				}
+				});
 				if (!best || best.up >= elevation[at(x, y)]) {
 					//no way down: a ridge or a basin. Drown the cell as a lake and stop here
 					terrain[at(x, y)] = 'water';
@@ -213,6 +242,10 @@ export function generateOverworld(options: OverworldOptions): OverworldResult {
 		//a town the plains, and everything else reads as a village
 		const settlements: OverworldSettlement[] = [];
 		const nearWater = (x: number, y: number): boolean => {
+			if (hex)
+				return hexRange({ x, y }, 3).some(
+					(cell) => inside(cell.x, cell.y) && terrain[at(cell.x, cell.y)] === 'water',
+				);
 			for (let dy = -3; dy <= 3; dy++)
 				for (let dx = -3; dx <= 3; dx++) {
 					const nx = x + dx;
@@ -222,7 +255,12 @@ export function generateOverworld(options: OverworldOptions): OverworldResult {
 			return false;
 		};
 		const spaced = (x: number, y: number, distance: number): boolean =>
-			settlements.every((settlement) => Math.abs(settlement.x - x) + Math.abs(settlement.y - y) >= distance);
+			settlements.every(
+				(settlement) =>
+					(hex
+						? hexDistance(settlement, { x, y })
+						: Math.abs(settlement.x - x) + Math.abs(settlement.y - y)) >= distance,
+			);
 		const wanted = options.settlements ?? Math.max(2, Math.floor((width * height) / 500));
 		for (let attempt = 0; attempt < wanted * 60 && settlements.length < wanted; attempt++) {
 			const x = Random.int(width);
@@ -247,7 +285,7 @@ export function generateOverworld(options: OverworldOptions): OverworldResult {
 				let bestRoute: { path: Array<{ x: number; y: number }>; to: OverworldSettlement } | undefined;
 				for (const to of pending) {
 					for (const start of connected) {
-						const path = roadBetween(terrain, width, height, start, to);
+						const path = roadBetween(terrain, width, height, start, to, hex);
 						if (path && (!bestRoute || path.length < bestRoute.path.length)) bestRoute = { path, to };
 					}
 				}
@@ -298,6 +336,7 @@ function roadBetween(
 	height: number,
 	from: { x: number; y: number },
 	to: { x: number; y: number },
+	hex: boolean,
 ): Array<{ x: number; y: number }> | undefined {
 	const at = (x: number, y: number): number => y * width + x;
 	const inside = (x: number, y: number): boolean => x >= 0 && y >= 0 && x < width && y < height;
@@ -354,19 +393,17 @@ function roadBetween(
 		}
 		const cx = current % width;
 		const cy = Math.floor(current / width);
-		for (const [dx, dy] of EIGHT) {
-			const nx = cx + dx;
-			const ny = cy + dy;
-			if (!inside(nx, ny)) continue;
+		forEachStep(hex, cx, cy, (nx, ny, diagonal) => {
+			if (!inside(nx, ny)) return;
 			const next = at(nx, ny);
-			if (distance[current] === Infinity) continue;
-			const step = ROAD_COST[terrain[next]] * (dx !== 0 && dy !== 0 ? 1.5 : 1);
+			if (distance[current] === Infinity) return;
+			const step = ROAD_COST[terrain[next]] * (diagonal ? 1.5 : 1);
 			if (distance[current] + step < distance[next]) {
 				distance[next] = distance[current] + step;
 				previous[next] = current;
 				if (!inHeap[next]) push(next);
 			}
-		}
+		});
 	}
 	return undefined;
 }

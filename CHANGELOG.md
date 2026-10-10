@@ -7,6 +7,11 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `shape: 'hex'` on `generateDungeon`/`generateDungeonGraph`, `generateCave` and `generateOverworld`: the generators lay their output out on a hex grid (odd-q offsets, as `Level` does) instead of squares. The dungeon and cave `Level` carry the hex shape; a dungeon corridor leg runs as a hex line and `furthestRoom` counts hex steps on a hex level; a cave grows chambers by hex distance and walks passages by true on-screen distance, so a chamber is round rather than a skewed diamond; the overworld samples its value noise where each hex is drawn and steps rivers and roads across the six edges, with settlement spacing and the near-water test in hex steps. Square output is unchanged byte for byte.
+- `generateCave` accepts `random`, a `RandomSource`, in place of `seed`: the cave draws from that stream and advances it, and the ambient `Random` stack is left alone. Passing neither is refused by name.
+
 ## [0.33.0] - 2026-10-10
 
 Seven roadmap items in one release: the Wesnoth port's proposal file is now fully answered

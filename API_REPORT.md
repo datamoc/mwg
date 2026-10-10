@@ -14134,7 +14134,11 @@ build instead.
         width: number;
         height: number;
 
-        seed: number;
+        seed?: number;
+
+        random?: Random.RandomSource;
+
+        shape?: LevelShape;
 
         wall?: number;
         floor?: number;
@@ -14389,6 +14393,8 @@ build instead.
     export interface DungeonOptions {
         width: number;
         height: number;
+
+        shape?: LevelShape;
 
         rooms?: number;
         minRoomSize?: number;
@@ -14740,6 +14746,8 @@ build instead.
         regionSize?: number;
 
         noiseScale?: number;
+
+        shape?: LevelShape;
     }
 
 ### `OverworldResult` (interface)

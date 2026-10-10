@@ -1,5 +1,6 @@
+import { hexDistance, hexLine } from '../core/Hex.ts';
 import * as Random from '../core/Random.ts';
-import { Level, rectCenter, rectsOverlap, type Rect, type TerrainKind } from './Level.ts';
+import { Level, rectCenter, rectsOverlap, type LevelShape, type Rect, type TerrainKind } from './Level.ts';
 import { hallBuilder, pickBuilder, type RoomBuilder } from './RoomBuilders.ts';
 
 /**
@@ -13,11 +14,18 @@ import { hallBuilder, pickBuilder, type RoomBuilder } from './RoomBuilders.ts';
  * The rooms are kept on the level afterwards, because everything else a game wants to do
  * (put the stairs far from the entrance, spawn a monster where the player is not, place
  * treasure in a dead end) is a question about rooms, not about cells.
+ *
+ * `shape: 'hex'` lays the same floor on a hex grid (odd-q offset coordinates, the `Level`
+ * convention): rooms stay rectangles of cells, and each corridor leg runs as a straight hex line
+ * instead of a row or column, so every corridor cell touches the next across an edge.
  */
 
 export interface DungeonOptions {
 	width: number;
 	height: number;
+
+	/** the grid the floor is laid on; defaults to `'square'` */
+	shape?: LevelShape;
 
 	/** how many rooms to attempt; fewer will be placed if they do not fit */
 	rooms?: number;
@@ -130,7 +138,7 @@ export function generateDungeonGraph(options: DungeonOptions): DungeonResult {
 		builders,
 	} = options;
 
-	const level = new Level(width, height, [...DUNGEON_KINDS, ...kinds], wall);
+	const level = new Level(width, height, [...DUNGEON_KINDS, ...kinds], wall, options.shape);
 	const placed: Rect[] = [];
 	const graph: RoomEdge[] = [];
 	const roomBuilders: string[] = [];
@@ -227,6 +235,15 @@ function carveCorridor(
 ): void {
 	const horizontalFirst = Random.chance(0.5);
 
+	if (level.shape === 'hex') {
+		//the same L, but each leg a hex line: a row of an offset grid is a zigzag of hexes, and
+		//the line is what reads as straight (and stays edge-connected) on the hex picture
+		const elbow = horizontalFirst ? { x: to.x, y: from.y } : { x: from.x, y: to.y };
+		for (const cell of [...hexLine(from, elbow), ...hexLine(elbow, to)])
+			if (level.insideWithBorder(cell.x, cell.y)) level.set(cell.x, cell.y, floor);
+		return;
+	}
+
 	if (horizontalFirst) {
 		carveLine(level, from.x, to.x, from.y, true, floor);
 		carveLine(level, from.y, to.y, to.x, false, floor);
@@ -272,14 +289,15 @@ export function findFreeCell(level: Level, taken: ReadonlySet<number> = new Set(
 	return free.length > 0 ? free[Random.int(free.length)] : null;
 }
 
-/** the room furthest from `from`, by straight-line distance between centres */
+/** the room furthest from `from`, by straight-line distance between centres (hex distance on a hex level) */
 export function furthestRoom(level: Level, from: { x: number; y: number }): Rect | null {
 	let best: Rect | null = null;
 	let bestDistance = -1;
 
 	for (const room of level.rooms) {
 		const centre = rectCenter(room);
-		const distance = (centre.x - from.x) ** 2 + (centre.y - from.y) ** 2;
+		const distance =
+			level.shape === 'hex' ? hexDistance(centre, from) : (centre.x - from.x) ** 2 + (centre.y - from.y) ** 2;
 		if (distance > bestDistance) {
 			bestDistance = distance;
 			best = room;

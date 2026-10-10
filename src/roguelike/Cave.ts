@@ -1,6 +1,7 @@
+import { hexDistance, hexNeighbors, hexToPixel } from '../core/Hex.ts';
 import * as Random from '../core/Random.ts';
 import { DUNGEON_KINDS } from './generate.ts';
-import { Level, type TerrainKind } from './Level.ts';
+import { Level, type LevelShape, type TerrainKind } from './Level.ts';
 
 /**
  * Caves: chambers grown as blobs, joined by winding passages.
@@ -16,7 +17,14 @@ import { Level, type TerrainKind } from './Level.ts';
  * always fully connected whatever the rolls did.
  *
  * Seeded through the framework `Random` stack: the same seed produces the same cave on every
- * machine, the same contract `generateDungeon` already carries.
+ * machine, the same contract `generateDungeon` already carries. A game that owns its stream
+ * (a `SimulationRuntime`'s, say) passes it as `random` instead and the cave draws from that,
+ * advancing it, with no seed involved.
+ *
+ * `shape: 'hex'` carves the same cave on a hex grid (odd-q offset coordinates, the `Level`
+ * convention): six neighbours instead of four, chambers growing and passages closing in by hex
+ * distance, so a chamber is round on screen rather than a skewed diamond. The result's `level`
+ * carries the shape, so `Pathfinder` and `FieldOfView` walk it as hexes.
  *
  * @example
  * ```ts
@@ -68,8 +76,17 @@ export interface CaveOptions {
 	width: number;
 	height: number;
 
-	/** seeds the `Random` stream the cave is drawn from */
-	seed: number;
+	/** seeds the `Random` stream the cave is drawn from; required unless `random` is given */
+	seed?: number;
+
+	/**
+	 * A stream to draw from instead of seeding one: the cave consumes it, so the caller's
+	 * sequence advances and a replay of that sequence reproduces the cave. Wins over `seed`.
+	 */
+	random?: Random.RandomSource;
+
+	/** the grid the cave is carved on; defaults to `'square'` */
+	shape?: LevelShape;
 
 	/** terrain ids to write; both must exist in the kinds passed to the Level */
 	wall?: number;
@@ -108,13 +125,26 @@ export interface CaveResult {
 }
 
 /** the four orthogonal neighbours, the square-grid cave's whole step set */
-function neighbours(x: number, y: number): Array<[number, number]> {
+function squareNeighbours(x: number, y: number): Array<[number, number]> {
 	return [
 		[x, y - 1],
 		[x, y + 1],
 		[x - 1, y],
 		[x + 1, y],
 	];
+}
+
+function hexNeighbours(x: number, y: number): Array<[number, number]> {
+	return hexNeighbors(x, y).map((cell) => [cell.x, cell.y]);
+}
+
+/** a regular flat-top hex is 2/sqrt(3) wider than tall, so pixel distance is true distance */
+const HEX_TILE_WIDTH = 2 / Math.sqrt(3);
+
+function hexPixelDistanceSquared(ax: number, ay: number, bx: number, by: number): number {
+	const a = hexToPixel(ax, ay, HEX_TILE_WIDTH, 1);
+	const b = hexToPixel(bx, by, HEX_TILE_WIDTH, 1);
+	return (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
 }
 
 export function generateCave(options: CaveOptions): CaveResult {
@@ -124,7 +154,20 @@ export function generateCave(options: CaveOptions): CaveResult {
 	const wall = options.wall ?? 0;
 	const floor = options.floor ?? 1;
 	const kinds = options.kinds ?? [];
-	const level = new Level(width, height, [...DUNGEON_KINDS, ...kinds], wall);
+	const shape = options.shape ?? 'square';
+	const hex = shape === 'hex';
+	const neighbours = hex ? hexNeighbours : squareNeighbours;
+	//how far a cell is from a target: growth wants rings around the centre, a walk wants the
+	//step that closes in on the target in the picture the player sees
+	const growthDistance = (ax: number, ay: number, bx: number, by: number): number =>
+		hex ? hexDistance({ x: ax, y: ay }, { x: bx, y: by }) : Math.abs(ax - bx) + Math.abs(ay - by);
+	const walkDistance = (ax: number, ay: number, bx: number, by: number): number =>
+		hex ? hexPixelDistanceSquared(ax, ay, bx, by) : (ax - bx) ** 2 + (ay - by) ** 2;
+	if (options.random === undefined && options.seed === undefined)
+		throw new Error('a cave needs a seed or a random source');
+	const source = options.random;
+	const roll = (bound: number): number => Random.int(bound, undefined, source);
+	const level = new Level(width, height, [...DUNGEON_KINDS, ...kinds], wall, shape);
 	const at = (x: number, y: number): number => y * width + x;
 	const inner = (x: number, y: number): boolean => level.insideWithBorder(x, y);
 	const open = new Uint8Array(width * height);
@@ -132,14 +175,14 @@ export function generateCave(options: CaveOptions): CaveResult {
 		if (inner(x, y)) open[at(x, y)] = 1;
 	};
 
-	Random.push(options.seed);
+	if (source === undefined) Random.push(options.seed!);
 	try {
 		const centres = new Map<string, { x: number; y: number }>();
 		const cellsById = new Map<string, Array<{ x: number; y: number }>>();
 		for (const chamber of options.chambers) {
 			if (chamber.size < 1) throw new Error(`cave chamber ${chamber.id} needs at least one cell`);
-			const cx = Random.range(Math.max(1, chamber.xRange[0]), Math.min(width - 2, chamber.xRange[1]));
-			const cy = Random.range(Math.max(1, chamber.yRange[0]), Math.min(height - 2, chamber.yRange[1]));
+			const cx = Random.range(Math.max(1, chamber.xRange[0]), Math.min(width - 2, chamber.xRange[1]), source);
+			const cy = Random.range(Math.max(1, chamber.yRange[0]), Math.min(height - 2, chamber.yRange[1]), source);
 			centres.set(chamber.id, { x: cx, y: cy });
 
 			// random growth: absorb frontier cells until `size` are carved; `jagged` is the
@@ -157,12 +200,12 @@ export function generateCave(options: CaveOptions): CaveResult {
 			push(cx, cy);
 			while (cells.length < chamber.size && frontier.length) {
 				let pick = 0;
-				if (Random.int(100) < (chamber.jagged ?? 0)) {
-					pick = Random.int(frontier.length);
+				if (roll(100) < (chamber.jagged ?? 0)) {
+					pick = roll(frontier.length);
 				} else {
 					let best = Infinity;
 					for (let index = 0; index < frontier.length; index++) {
-						const distance = Math.abs(frontier[index][0] - cx) + Math.abs(frontier[index][1] - cy);
+						const distance = growthDistance(frontier[index][0], frontier[index][1], cx, cy);
 						if (distance < best) {
 							best = distance;
 							pick = index;
@@ -191,12 +234,12 @@ export function generateCave(options: CaveOptions): CaveResult {
 				if (widthHexes > 1) for (const [nx, ny] of neighbours(x, y).slice(0, widthHexes - 1)) carve(nx, ny);
 				const steps = neighbours(x, y).filter(([nx, ny]) => inner(nx, ny));
 				let next = steps[0];
-				if (Random.int(100) < windiness) {
-					next = steps[Random.int(steps.length)];
+				if (roll(100) < windiness) {
+					next = steps[roll(steps.length)];
 				} else {
 					let best = Infinity;
 					for (const option of steps) {
-						const distance = (option[0] - to.x) ** 2 + (option[1] - to.y) ** 2;
+						const distance = walkDistance(option[0], option[1], to.x, to.y);
 						if (distance < best) {
 							best = distance;
 							next = option;
@@ -212,7 +255,7 @@ export function generateCave(options: CaveOptions): CaveResult {
 				const from = centres.get(chamber.id);
 				const to = centres.get(passage.to);
 				if (!from || !to) throw new Error(`cave passage ${chamber.id} -> ${passage.to} names no chamber`);
-				if (Random.int(100) >= (passage.chance ?? 100)) continue;
+				if (roll(100) >= (passage.chance ?? 100)) continue;
 				walk(from, to, Math.max(1, passage.width ?? 1), passage.windiness ?? 0);
 			}
 		}
@@ -271,7 +314,7 @@ export function generateCave(options: CaveOptions): CaveResult {
 				if (open[index] && !reserved.has(index)) candidates.push(index);
 			const wanted = Math.floor((candidates.length * density) / 1000);
 			for (let placed = 0; placed < wanted && candidates.length; placed++) {
-				const pick = Random.int(candidates.length);
+				const pick = roll(candidates.length);
 				const index = candidates.splice(pick, 1)[0];
 				villages.push({ x: index % width, y: Math.floor(index / width) });
 			}
@@ -286,6 +329,6 @@ export function generateCave(options: CaveOptions): CaveResult {
 			villages,
 		};
 	} finally {
-		Random.pop();
+		if (source === undefined) Random.pop();
 	}
 }

@@ -1076,7 +1076,17 @@ the dungeon-crawl half of the capability spec.
   (buildable ground, water within reach, spaced apart) and join into a road tree that
   prefers flat ground, water a ford rather than a wall; points of interest carry a
   `leadsTo` id for `Overworld` locations, and every cell carries a coarse region id for
-  encounter tables. The realm invents itself from the seed: no reference game's map data.- `RoomBuilder`/`hallBuilder`/`eligibleBuilders`/`pickBuilder` - composable room interiors:
+  encounter tables. The realm invents itself from the seed: no reference game's map data.
+- `shape: 'hex'` on `generateDungeon`, `generateDungeonGraph`, `generateCave` and
+  `generateOverworld` lays the same generator out on a hex grid (odd-q offsets, the `Level`
+  convention): the dungeon and cave `Level` carry the hex shape, a dungeon corridor leg runs
+  as a hex line, a cave grows its chambers by hex distance and walks passages toward their
+  target in true on-screen distance, and the overworld samples its noise where each hex is
+  drawn and steps rivers and roads across the six edges. The default stays square, byte for
+  byte. `generateCave` also takes `random` (a `RandomSource`, such as a `Generator`) in place
+  of `seed`: it draws from, and advances, that stream, leaving the ambient `Random` stack
+  untouched.
+- `RoomBuilder`/`hallBuilder`/`eligibleBuilders`/`pickBuilder` - composable room interiors:
   the generator places and joins rooms, a builder carves each one, picked by weight among
   those whose size constraints fit. `DungeonOptions.builders` wires them in; a room no
   builder fits falls back to a plain hall rather than staying solid rock.
