@@ -1551,6 +1551,9 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   `hidden` and `flag` are read onto `MwlWorld.sides` as written, `yes`/`no` becoming booleans.
   `sideVisionGroups` turns `team_name` and `share_vision` into the groups `FactionFog.share` takes,
   so a scenario's teams see together without every game re-deriving who shares with whom.
+  `leader=` names either a `[unit]` id already declared (that unit is the side's leader; nothing
+  is spawned) or a unit type (one leader per free start cell, with that type's stats); a value
+  that is neither is refused by name (item 405).
 - A `[side]`'s own `[victory]`/`[defeat]` children (item 283): a side condition that names no
   `side`/`side_filter` reads as that side's own, its result lands in `MwlWorld.sideStatus` keyed by
   the side id, and the aggregate `MwlWorld.status` ends the scenario as a scenario-wide condition

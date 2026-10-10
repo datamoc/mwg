@@ -1,8 +1,8 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.31.0",
-	"releaseDate": "2026-10-09",
+	"version": "0.32.0",
+	"releaseDate": "2026-10-10",
 	"source": {
 		"files": 331,
 		"lines": 60851,
@@ -140,8 +140,8 @@
 	},
 	"roadmap": {
 		"items": 410,
-		"completed": 397,
-		"open": 13,
+		"completed": 399,
+		"open": 11,
 		"percent": 97
 	},
 	"api": {

@@ -47,10 +47,9 @@ Two gates compare a committed file against what the checkout currently generates
 need regenerating on a schedule of their own rather than only when a check turns red:
 
 - `npm run sbom` rewrites `sbom.cdx.json` from `package.json` and `package-lock.json`.
-  Regenerate it whenever the lockfile moves: a dependency bump, an `npm update`, or merging
-  a Dependabot PR. A lockfile-only change that skips it fails `sbom:check` on every runner,
-  which is precisely the shape of every Dependabot npm PR (Dependabot only edits
-  `package-lock.json`, so its PRs need this follow-up commit before they can merge).
+  Regenerate it whenever the lockfile moves (a dependency bump, an `npm update`, a merged
+  Dependabot PR) and commit it alongside: Dependabot only edits `package-lock.json`, so its
+  PRs fail `sbom:check` on every runner until this follow-up lands.
 - `npm run stats:write` rewrites `PROJECT_STATS.json`, `PROJECT_STATS.md` and
   `webpage/statistics/index.html` from the sources, the roadmap and the built bundle.
   Regenerate it when any of those move, and run `npm run build` first, since it measures

@@ -5966,5 +5966,26 @@ example already draws.
     contribution, so effects compose, never drift, and cancel or `destroy` restores the rest pose. Effects
     follow `intent` and `setReducedMotion` (a looping bob holds still). Sequencing behind an
     `ActorAnimator` action is by awaiting a handle, since the animator has no completion promise.
-    Tested without a renderer in `tests/sprite-motion.test.ts`. This was P43 in the pixel-dungeon
-    port's proposal file.
+    Tested without a renderer in `tests/sprite-motion.test.ts`. port's proposal file.
+405. ~~`MwlRuntime.loadLeaders` spawns phantom leaders.~~ Landed with 0.32.0: `leader=` naming
+    an id already in `world.units` is that unit (nothing is spawned for it), a value that is a
+    known unit type still spawns one leader per free start cell, typed with the full
+    `hitpoints` and `movement` the old code silently defaulted to 1 and 0, and a value that is
+    neither is refused by name when the runtime is built. The unit-type case keeps its existing
+    tests; the other two are the `leaderGame` pair in `tests/mwl-runtime.test.ts`. This was
+    the bug among the Wesnoth port's ten proposals, the one that broke about ten of its
+    scenarios with "unknown unit type".
+
+390. ~~A tournament-capable chess engine, Garbochess-shaped but framework-owned.~~ Closed
+    2026-10-10 by accepting the split its status note named, so the item is decided rather
+    than left hanging. Shipped: Phase 1 as `board/tourney.ts` (`searchTourney`/
+    `searchTourneyAsync` over one self-contained `tourneyThink` task, so the worker side
+    cannot diverge), Phase 2 as the UCI adapter (`tools/play-uci.mjs`, book then tablebase
+    then search), the opening-book compiler, and the tablebase generator
+    (`tools/build-tablebases.mjs`, one `spawn` task per ending) with 3-piece tables compiled
+    under `data/tablebases` (`KQK KRK KBK KNK`). 4-piece endings generate and verify the same
+    way (`KBNK` and `KBBK` proven) but stay a tool run away: a full 4-piece table is tens of
+    megabytes, the same size argument that already excludes 5-piece, so checking them in would
+    blow the shipped package to defend rare endgames. A consumer that wants one runs the
+    generator and ships the artifact with its own game. Syzygy 6-7-piece and NNUE stay parked
+    in ROADMAP.md as written.

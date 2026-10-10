@@ -802,18 +802,21 @@ export class MwlRuntime {
 			if (!sideId) continue;
 			const starts = this.world.map?.starts[sideId];
 			if (!starts?.length) continue;
+			//a leader naming a declared [unit] is that unit, not a type to spawn a second one of
+			if (this.world.units[leader]) continue;
 			const stats = this.unitTypes.get(leader);
+			if (!stats) throw new Error(`MWL side ${sideId} leader "${leader}" is neither a unit nor a unit type`);
 			for (const start of starts) {
 				if (this.unitAt(start.x, start.y)) continue;
 				const id = `${leader} ${sideId} (${start.x},${start.y})`;
 				this.world.units[id] = {
-					hp: stats?.hitpoints ?? 1,
+					hp: stats.hitpoints,
 					x: start.x,
 					y: start.y,
 					alive: true,
 					type: leader,
 					side: sideId,
-					moves: stats?.movement ?? 0,
+					moves: stats.movement,
 					can_recruit: true,
 					leader: true,
 				};

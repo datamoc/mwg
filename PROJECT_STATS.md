@@ -1,6 +1,6 @@
 # Project statistics
 
-Generated for **mwg 0.31.0** on 2026-10-09.
+Generated for **mwg 0.32.0** on 2026-10-10.
 
 | Area | Statistics |
 | --- | ---: |
@@ -8,7 +8,7 @@ Generated for **mwg 0.31.0** on 2026-10-09.
 | Tests | 306 files, 2,832 test cases, 41,244 lines |
 | Tools | 48 files, 10,275 lines |
 | Examples | 24 runnable examples |
-| Roadmap | 397/410 items complete, 13 open |
+| Roadmap | 399/410 items complete, 11 open |
 | API | 331 declaration files |
 | Bundle | 1214.3 kB raw, 362.7 kB gzip |
 | Published dist | 4213.2 kB excluding source maps |

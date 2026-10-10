@@ -10,7 +10,8 @@ The shipped, numbered build history (everything through item 389, plus 391, 392,
 open: new numbered items, parked decisions, and the 1.0 exit checklist. Item numbers are never
 reassigned, so a new item continues the sequence in CLOSED.md rather than restarting at 1.
 
-Item 390 is open, scoped below. Items 372-389, opened and closed on 2026-09-25, were the security
+Item 390 is closed by accepting its recorded split (2026-10-10, its record in
+[CLOSED.md](CLOSED.md) with the others). Items 372-389, opened and closed on 2026-09-25, were the security
 review (372-379: one inbound pipeline, a Lua memory bound, a default Content-Security-Policy,
 transport defaults, decoder fuzzing, the `file://` saves rule, telemetry bounds, CI
 hardening), the consumer-side CycloneDX SBOM (380) and the repository tools worth shipping to a
@@ -35,41 +36,6 @@ out of the pixel-dungeon port's proposal file (its P31 and P37), sit at the end 
 same way: both are sharpened by real consumer measurement rather than speculation. 402
 shipped the same day as 0.29.0 (its record is in [CLOSED.md](CLOSED.md)), so 401 is the
 one still open there.
-
-390. **A tournament-capable chess engine, Garbochess-shaped but framework-owned.** The
-shipped `board/Engine` stays a small deterministic rules engine by design; this item
-builds the stronger engine beside it as a separate module, so the minigame path never
-pays for what it does not use. Garbochess-JS (BSD-3-clause, in
-`C:\Users\miche\dev\Garbochess-JS-master` on this machine) is the technique reference;
-inspiration only, no code and no tuned tables cross over. Phased, each phase shippable
-on its own:
-
-- **Phase 1, engine core (dependency-free, renderer-free, worker-safe).** Bitboard
-  board with make/unmake move generation, verified by perft counts on the standard
-  positions; negamax alpha-beta; iterative deepening with aspiration windows and
-  AbortSignal/node-budget time management; Zobrist hashing with a bounded
-  transposition table; quiescence over captures and promotions; ordering (hash move,
-  MVV-LVA captures, killers, history); PVS; null-move pruning; LMR; classical
-  evaluation with in-house piece-square values. Positions stay structured-cloneable so
-  worker root splitting keeps working.
-- **Phase 2, data and protocol.** An opening book compiled from the vendored CC0
-  tables (`data/openings/`, lichess-org/chess-openings) by `tools/compile-openings.mjs`
-  into a game-side artifact, probed with `board.probeBook`; WDL50 3-to-4-piece
-  tablebases generated and verified by a local Node tool and shipped compiled
-  (5-piece is already very big: an order of magnitude more positions for rare
-  endgames); a UCI adapter as a Node tool over stdin/stdout, never part of the
-  browser bundle.
-- **Not in scope:** Syzygy 6-7-piece support and NNUE (see the parked entries below).
-
-Status: Phase 1 shipped as `board/tourney.ts` (`searchTourney`/`searchTourneyAsync`
-over one self-contained `tourneyThink` task, so the worker side cannot diverge).
-Phase 2 shipped the UCI adapter (`tools/play-uci.mjs`, book then tablebase then
-search) and the tablebase generator (`tools/build-tablebases.mjs`, one `spawn` task
-per ending) with 3-piece tables compiled under `data/tablebases` (`KQK KRK KBK KNK`).
-4-piece endings generate and verify the same way (`KBNK KBBK` proven this session)
-but stay a tool run away: full 4-piece tables are tens of megabytes each, the same
-size argument that already excludes 5-piece. Residual before this item closes:
-either accept that split, or check 4-piece artifacts in anyway.
 
 393. **Ableton `.agr` and Reaper groove formats for `GrooveConverter`.**
 Both formats are proprietary and undocumented, so the converter throws a named error for them
@@ -147,19 +113,11 @@ Items 405-409, added 2026-10-10 out of the Wesnoth port's proposal file (410, th
 generator, came from a direct request the same day and follows the same low-priority rule) (`4MWG/proposals.md`,
 its ten proposals checked against `src/` the same day). Four of the ten need no item: the
 formula proposal is already shipped (`set_variable` has `mode=expression`, see REFERENCE.md),
-the `fengari` `os` problem is a bundler alias the `mwl/fengari` docs should show rather than a
-shim the package should own, the image-variant resolution is Wesnoth-specific and stays in the
-port, and the compound-condition ask is mostly met already (see 406). 405 is a bug, so it
-jumps the usual end-of-list rule and is the first thing to pick up; the rest sit at the end at
-low priority.
-
-405. **`MwlRuntime.loadLeaders` spawns phantom leaders.** `src/mwl/runtime.ts` creates a unit
-of type `<leader>` on every side start cell that is free, without checking that `leader=`
-names a known unit type: when it names the id of an already declared unit (`Kalenz`), it
-still spawns a ghost typed `Kalenz` with 1 hp and 0 moves, which broke about ten scenarios
-downstream ("unknown unit type"). Fix: skip `leader=` when it matches an id in
-`world.units`, spawn only when the value is a known unit type, and throw a named error for
-a value that is neither. Regression tests for each of the three cases.
+the `fengari` `os` problem dissolved with the 0.32.0 sandbox (the host never constructs
+`os`, so there is no alias left to document), the image-variant resolution is
+Wesnoth-specific and stays in the port, and the compound-condition ask is mostly met
+already (see 406). 405 was a bug, so it jumped the usual end-of-list rule and shipped with
+0.32.0 (its record is in [CLOSED.md](CLOSED.md)); the rest sit at the end at low priority.
 
 406. **Compound conditions and a visible loop cap in MWL.** `test="..."` already carries
 `and`/`or`/`not`, comparison, arithmetic and parentheses (`src/mwl/conditions.ts`), and

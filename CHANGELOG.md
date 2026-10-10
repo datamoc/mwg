@@ -7,13 +7,30 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.32.0] - 2026-10-10
+
+The optional Lua host hardens around what the `@datamoc/fengari` fork offers, and the
+phantom-leader bug the Wesnoth port's scenarios exposed is fixed.
+
 ### Changed
 
-- `mwl/fengari` opens only the sandbox-safe Lua standard libraries (base, coroutine, math,
-  string, table, utf8) through the fork's `luaL_openselectedlibs`: `io`, `os`, `debug` and
-  `package` with its `require` are never constructed - identically in Node and the browser -
-  instead of being opened and then nil'd. Chunks now compile in text mode, so a binary
-  `\x1bLua` dump is rejected instead of reaching the bytecode undumper.
+- `mwl/fengari` moves to the `@datamoc/fengari` fork (Lua 5.4) and opens only the
+  sandbox-safe Lua standard libraries (base, coroutine, math, string, table, utf8) through
+  the fork's `luaL_openselectedlibs`: `io`, `os`, `debug` and `package` with its `require`
+  are never constructed - identically in Node and the browser - instead of being opened and
+  then nil'd. Chunks now compile in text mode, so a binary `\x1bLua` dump is rejected instead
+  of reaching the bytecode undumper.
+- Roadmap item 390 (the tourney chess engine) is closed by accepting its recorded split:
+  4-piece tablebases stay a `tools/build-tablebases.mjs` run away rather than shipping tens
+  of megabytes per ending; the compiled 3-piece tables stay under `data/tablebases`.
+
+### Fixed
+
+- `MwlRuntime` no longer spawns a phantom leader when a `[side]`'s `leader=` names an
+  already-declared unit: the named unit is the leader, a known unit type still spawns one
+  leader per free start cell with its real stats, and a value that is neither is refused by
+  name instead of creating a 1-hp, 0-move ghost (roadmap 405, which broke about ten of the
+  Wesnoth port's scenarios with "unknown unit type").
 
 ## [0.31.0] - 2026-10-09
 

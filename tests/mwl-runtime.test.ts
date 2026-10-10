@@ -438,3 +438,22 @@ test('runtime executes the remaining event command forms', () => {
 	assert.equal(outcome('win').evaluate(), 'won');
 	assert.equal(outcome('lose').evaluate(), 'lost');
 });
+
+const leaderGame = (children: string) =>
+	`[{ tag: 'game', children: [
+		{ tag: 'unit_type', id: 'Swordsman', hitpoints: 10, movement: 3 },
+		{ tag: 'side', id: 1, controller: 'human', leader: 'Kalenz' },
+		{ tag: 'map', id: 'm', terrain: '1 Kh,Gg' },
+		${children}
+	] }]`;
+
+test('a side leader naming a declared unit spawns no phantom unit', () => {
+	const runtime = new MwlRuntime(
+		compile(leaderGame(`{ tag: 'unit', id: 'Kalenz', type: 'Swordsman', side: 1, x: 1, y: 0, hp: 10 },`)),
+	);
+	assert.deepEqual(Object.keys(runtime.world.units), ['Kalenz']);
+});
+
+test('a side leader that is neither a unit nor a unit type is refused by name', () => {
+	assert.throws(() => new MwlRuntime(compile(leaderGame(''))), /leader "Kalenz" is neither a unit nor a unit type/);
+});
