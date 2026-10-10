@@ -14,3 +14,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # Grouped so a week of npm bumps arrives as one PR: Dependabot only edits
+    # package-lock.json, so every npm PR needs the same follow-up before CI can
+    # pass (regenerate sbom.cdx.json with `npm run sbom`, and PROJECT_STATS.*
+    # with `npm run stats:write` once the bundle bytes move, see AGENTS.md).
+    # One PR means one such regeneration per cycle instead of one per dependency.
+    groups:
+      npm:
+        patterns: ['*']
