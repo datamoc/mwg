@@ -252,6 +252,24 @@ build instead.
 
     export declare function applyTextureModifiers(texture: Texture, parsed: ParsedImagePath, probe?: ImageTextureProbe): Texture;
 
+### `ArticulatedChain` (class)
+
+    export declare class ArticulatedChain {
+        readonly points: Array<{
+            x: number;
+            y: number;
+        }>;
+        private readonly previous;
+        private readonly length;
+        private readonly stiffness;
+        private readonly bendLimit;
+        constructor(options: ChainOptions);
+
+        pull(x: number, y: number): void;
+
+        update(_dt: number): void;
+    }
+
 ### `assertAutotileLayout` (function)
 
     export declare function assertAutotileLayout(layout: AutotileLayout): void;
@@ -777,6 +795,28 @@ build instead.
 ### `cellY` (function)
 
     export declare function cellY(width: number, index: number): number;
+
+### `ChainOptions` (interface)
+
+    export interface ChainOptions {
+
+        segments: number;
+
+        length: number;
+
+        stiffness?: number;
+
+        bendLimit?: number;
+    }
+
+### `ChainRig` (class)
+
+    export declare class ChainRig extends Container {
+        private readonly chain;
+        private readonly segments;
+        constructor(chain: ArticulatedChain, textures: readonly Texture2D[]);
+        update(dt: number): void;
+    }
 
 ### `channelScaleMatrix` (function)
 
@@ -4650,6 +4690,27 @@ build instead.
         maxBytes?: number;
     }
 
+### `SkeletalSprite` (class)
+
+    export declare class SkeletalSprite extends Container {
+        private readonly skeleton;
+        private readonly parts;
+        private readonly mixer;
+        constructor(skeleton: SkeletonBones, mixer?: Mixer);
+
+        bind(bone: string, texture: Texture2D): TintedSprite;
+
+        part(bone: string): TintedSprite | undefined;
+
+        apply(pose: Pose): void;
+
+        update(_dt: number): void;
+    }
+
+### `Skeleton` (namespace)
+
+    export * as Skeleton from './skeleton/index.ts'
+
 ### `Skin` (interface)
 
     export interface Skin {
@@ -8219,6 +8280,19 @@ build instead.
 
     export declare function resolve(path: string): string;
 
+### `sanitizeSvg` (function)
+
+    export declare function sanitizeSvg(source: string): string;
+
+### `ScaleVariant` (interface)
+
+    export interface ScaleVariant {
+
+        name: string;
+
+        resolution: number;
+    }
+
 ### `setAssetMap` (function)
 
     export declare function setAssetMap(map: Record<string, string> | undefined): void;
@@ -8226,6 +8300,28 @@ build instead.
 ### `setBase` (function)
 
     export declare function setBase(path: string): void;
+
+### `splitSvgGroups` (function)
+
+    export declare function splitSvgGroups(source: string): Record<string, string>;
+
+### `svgDataUri` (function)
+
+    export declare function svgDataUri(source: string): string;
+
+### `svgScaleVariants` (function)
+
+    export declare function svgScaleVariants(source: string, scales: readonly ScaleVariant[]): SvgVariant[];
+
+### `SvgVariant` (interface)
+
+    export interface SvgVariant {
+        name: string;
+
+        src: string;
+
+        resolution: number;
+    }
 
 ### `texture` (function)
 
@@ -13315,6 +13411,8 @@ build instead.
         private readonly resolveMap?;
         private readonly hooks?;
         private readonly onTrace?;
+        private testHelpers?;
+
         private readonly persistence;
         private readonly random;
         private readonly unitTypes;
@@ -13422,6 +13520,8 @@ build instead.
 
         private conditionMatches;
         private nodeConditionMatches;
+
+        private conditionHelpers;
 
         private filterConditionMatches;
 
@@ -14014,6 +14114,94 @@ build instead.
 
     export declare function canTarget(level: Level, origin: Step, target: Step, options: TargetingOptions): boolean;
 
+### `CaveChamber` (interface)
+
+    export interface CaveChamber {
+        id: string;
+
+        xRange: [number, number];
+        yRange: [number, number];
+
+        size: number;
+
+        jagged?: number;
+        passages: CavePassage[];
+    }
+
+### `CaveOptions` (interface)
+
+    export interface CaveOptions {
+        width: number;
+        height: number;
+
+        seed: number;
+
+        wall?: number;
+        floor?: number;
+
+        kinds?: TerrainKind[];
+        chambers: CaveChamber[];
+
+        starts?: CaveStart[];
+
+        villageDensity?: number;
+
+        mustBeClear?: ReadonlyArray<{
+            x: number;
+            y: number;
+        }>;
+    }
+
+### `CavePassage` (interface)
+
+    export interface CavePassage {
+
+        to: string;
+
+        width?: number;
+
+        windiness?: number;
+
+        chance?: number;
+    }
+
+### `CaveResult` (interface)
+
+    export interface CaveResult {
+        level: Level;
+
+        chambers: ReadonlyArray<{
+            id: string;
+            centre: {
+                x: number;
+                y: number;
+            };
+            cells: ReadonlyArray<{
+                x: number;
+                y: number;
+            }>;
+        }>;
+
+        starts: ReadonlyArray<{
+            side: string;
+            x: number;
+            y: number;
+        }>;
+
+        villages: ReadonlyArray<{
+            x: number;
+            y: number;
+        }>;
+    }
+
+### `CaveStart` (interface)
+
+    export interface CaveStart {
+        side: string;
+        chamber: string;
+        ring?: boolean;
+    }
+
 ### `CellFeatureDef` (interface)
 
     export interface CellFeatureDef<TContext = unknown> {
@@ -14319,6 +14507,10 @@ build instead.
     export declare function furthestRoom(level: Level, from: {
         x: number;
 
+### `generateCave` (function)
+
+    export declare function generateCave(options: CaveOptions): CaveResult;
+
 ### `generateDungeon` (function)
 
     export declare function generateDungeon(options: DungeonOptions): Level;
@@ -14326,6 +14518,10 @@ build instead.
 ### `generateDungeonGraph` (function)
 
     export declare function generateDungeonGraph(options: DungeonOptions): DungeonResult;
+
+### `generateOverworld` (function)
+
+    export declare function generateOverworld(options: OverworldOptions): OverworldResult;
 
 ### `hallBuilder` (const)
 
@@ -14515,6 +14711,75 @@ build instead.
 ### `neighbourOffsets` (function)
 
     export declare function neighbourOffsets(topology: 4 | 8): ReadonlyArray<readonly [number, number]>;
+
+### `OverworldInterest` (interface)
+
+    export interface OverworldInterest {
+        x: number;
+        y: number;
+        kind: 'ruin' | 'shrine' | 'dungeon';
+
+        leadsTo: string;
+    }
+
+### `OverworldOptions` (interface)
+
+    export interface OverworldOptions {
+        width: number;
+        height: number;
+        seed: number;
+
+        seaLevel?: number;
+
+        rivers?: number;
+
+        settlements?: number;
+
+        pointsOfInterest?: number;
+
+        regionSize?: number;
+
+        noiseScale?: number;
+    }
+
+### `OverworldResult` (interface)
+
+    export interface OverworldResult {
+
+        terrain: OverworldTerrain[];
+
+        elevation: number[];
+
+        moisture: number[];
+
+        rivers: Array<Array<{
+            x: number;
+            y: number;
+        }>>;
+
+        roads: Array<Array<{
+            x: number;
+            y: number;
+        }>>;
+        settlements: OverworldSettlement[];
+        pointsOfInterest: OverworldInterest[];
+
+        regions: number[];
+
+        regionColumns: number;
+    }
+
+### `OverworldSettlement` (interface)
+
+    export interface OverworldSettlement {
+        x: number;
+        y: number;
+        kind: 'village' | 'town' | 'castle';
+    }
+
+### `OverworldTerrain` (type)
+
+    export type OverworldTerrain = 'water' | 'plains' | 'forest' | 'hills' | 'mountains' | 'desert' | 'swamp';
 
 ### `Pathfinder` (class)
 
@@ -15970,7 +16235,146 @@ build instead.
     export declare function validateSimulationReplay<State, Command, Event, A extends Actor>(initial: SimulationSnapshot<State>, entries: readonly ActionJournalEntry<Command, Event>[], options: {
         rule: SimulationRuntimeRule<State, Command, Event, A>;
 
+## `./skeleton`
+
+### `advance` (function)
+
+    export declare function advance(mixer: Mixer, dt: number): Record<string, number>;
+
+### `advancePlayback` (function)
+
+    export declare function advancePlayback(playback: Playback, dt: number): Playback;
+
+### `Bone` (interface)
+
+    export interface Bone {
+
+        name: string;
+
+        parent?: string;
+
+        length?: number;
+
+        origin?: {
+            x: number;
+            y: number;
+        };
+
+        rotation?: number;
+    }
+
+### `boneOrder` (function)
+
+    export declare function boneOrder(skeleton: SkeletonBones): string[];
+
+### `BoneTransform` (interface)
+
+    export interface BoneTransform {
+        name: string;
+
+        x: number;
+        y: number;
+
+        angle: number;
+
+        tipX: number;
+        tipY: number;
+    }
+
+### `Clip` (interface)
+
+    export interface Clip {
+        id: string;
+
+        duration: number;
+        loop?: boolean;
+
+        frames: readonly Keyframe[];
+    }
+
+### `create` (function)
+
+    export declare function create(bones: readonly Bone[]): SkeletonBones;
+
+### `createMixer` (function)
+
+    export declare function createMixer(skeleton: SkeletonBones, base: Clip, rate?: number): Mixer;
+
+### `crossfadeTo` (function)
+
+    export declare function crossfadeTo(mixer: Mixer, clip: Clip, duration?: number, rate?: number): void;
+
+### `Keyframe` (interface)
+
+    export interface Keyframe {
+
+        time: number;
+        rotations: Pose;
+    }
+
+### `Layer` (interface)
+
+    export interface Layer {
+        playback: Playback;
+
+        weight: number;
+
+        priority: number;
+    }
+
+### `Mixer` (interface)
+
+    export interface Mixer {
+        skeleton: SkeletonBones;
+
+        base: Playback;
+
+        layers: Layer[];
+
+        crossfade?: {
+            from: Playback;
+            remaining: number;
+            duration: number;
+        };
+    }
+
+### `mixPoses` (function)
+
+    export declare function mixPoses(base: Pose, layers: ReadonlyArray<{
+        pose: Pose;
+
+### `Playback` (interface)
+
+    export interface Playback {
+        clip: Clip;
+        time: number;
+
+        rate: number;
+    }
+
+### `Pose` (type)
+
+    export type Pose = Readonly<Record<string, number>>;
+
+### `resolve` (function)
+
+    export declare function resolve(skeleton: SkeletonBones, pose?: Pose): BoneTransform[];
+
+### `samplePose` (function)
+
+    export declare function samplePose(clip: Clip, time: number): Record<string, number>;
+
+### `SkeletonBones` (interface)
+
+    export interface SkeletonBones {
+        bones: readonly Bone[];
+    }
+
 ## `./testing`
+
+### `createSceneControls` (function)
+
+    export declare function createSceneControls(): SceneControls;
 
 ### `fakeAudio` (function)
 
@@ -16023,6 +16427,23 @@ build instead.
 ### `memoryStorage` (function)
 
     export declare function memoryStorage(): SaveStorage;
+
+### `SceneControls` (interface)
+
+    export interface SceneControls {
+
+        register(step: string, run: SceneStep): void;
+
+        has(step: string): boolean;
+
+        steps(): string[];
+
+        run(step: string): Promise<void>;
+    }
+
+### `SceneStep` (type)
+
+    export type SceneStep = () => void | Promise<void>;
 
 ## `./threads`
 
@@ -16193,6 +16614,24 @@ build instead.
 ### `applyTextureModifiers` (function)
 
     export declare function applyTextureModifiers(texture: Texture, parsed: ParsedImagePath, probe?: ImageTextureProbe): Texture;
+
+### `ArticulatedChain` (class)
+
+    export declare class ArticulatedChain {
+        readonly points: Array<{
+            x: number;
+            y: number;
+        }>;
+        private readonly previous;
+        private readonly length;
+        private readonly stiffness;
+        private readonly bendLimit;
+        constructor(options: ChainOptions);
+
+        pull(x: number, y: number): void;
+
+        update(_dt: number): void;
+    }
 
 ### `assertAutotileLayout` (function)
 
@@ -16612,6 +17051,28 @@ build instead.
         pixelPerfectTileSize?: number;
 
         resolution?: () => number;
+    }
+
+### `ChainOptions` (interface)
+
+    export interface ChainOptions {
+
+        segments: number;
+
+        length: number;
+
+        stiffness?: number;
+
+        bendLimit?: number;
+    }
+
+### `ChainRig` (class)
+
+    export declare class ChainRig extends Container {
+        private readonly chain;
+        private readonly segments;
+        constructor(chain: ArticulatedChain, textures: readonly Texture2D[]);
+        update(dt: number): void;
     }
 
 ### `channelScaleMatrix` (function)
@@ -19198,6 +19659,23 @@ build instead.
         fade?: number;
     }
 
+### `SkeletalSprite` (class)
+
+    export declare class SkeletalSprite extends Container {
+        private readonly skeleton;
+        private readonly parts;
+        private readonly mixer;
+        constructor(skeleton: SkeletonBones, mixer?: Mixer);
+
+        bind(bone: string, texture: Texture2D): TintedSprite;
+
+        part(bone: string): TintedSprite | undefined;
+
+        apply(pose: Pose): void;
+
+        update(_dt: number): void;
+    }
+
 ### `Skin` (interface)
 
     export interface Skin {
@@ -20841,6 +21319,24 @@ build instead.
 
     export declare function applyTextureModifiers(texture: Texture, parsed: ParsedImagePath, probe?: ImageTextureProbe): Texture;
 
+### `ArticulatedChain` (class)
+
+    export declare class ArticulatedChain {
+        readonly points: Array<{
+            x: number;
+            y: number;
+        }>;
+        private readonly previous;
+        private readonly length;
+        private readonly stiffness;
+        private readonly bendLimit;
+        constructor(options: ChainOptions);
+
+        pull(x: number, y: number): void;
+
+        update(_dt: number): void;
+    }
+
 ### `assertAutotileLayout` (function)
 
     export declare function assertAutotileLayout(layout: AutotileLayout): void;
@@ -21116,6 +21612,28 @@ build instead.
         pixelPerfectTileSize?: number;
 
         resolution?: () => number;
+    }
+
+### `ChainOptions` (interface)
+
+    export interface ChainOptions {
+
+        segments: number;
+
+        length: number;
+
+        stiffness?: number;
+
+        bendLimit?: number;
+    }
+
+### `ChainRig` (class)
+
+    export declare class ChainRig extends Container {
+        private readonly chain;
+        private readonly segments;
+        constructor(chain: ArticulatedChain, textures: readonly Texture2D[]);
+        update(dt: number): void;
     }
 
 ### `channelScaleMatrix` (function)
@@ -22125,6 +22643,23 @@ build instead.
 ### `Shape2D` (class)
 
     export declare class Shape2D extends Graphics {
+    }
+
+### `SkeletalSprite` (class)
+
+    export declare class SkeletalSprite extends Container {
+        private readonly skeleton;
+        private readonly parts;
+        private readonly mixer;
+        constructor(skeleton: SkeletonBones, mixer?: Mixer);
+
+        bind(bone: string, texture: Texture2D): TintedSprite;
+
+        part(bone: string): TintedSprite | undefined;
+
+        apply(pose: Pose): void;
+
+        update(_dt: number): void;
     }
 
 ### `snapZoom` (function)

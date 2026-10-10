@@ -22,8 +22,9 @@
  * ```ts
  * import { sanitizeSvg, splitSvgGroups } from '@datamoc/mw_games/assets';
  *
- * const parts = splitSvgGroups(sanitizeSvg(await readText('puppet.svg')));
- * console.log(Object.keys(parts)); // ['arm', 'leg', 'head']
+ * const puppet = '<svg><g id=\"arm\"><rect/></g></svg>';
+ * const parts = splitSvgGroups(sanitizeSvg(puppet));
+ * console.log(Object.keys(parts)); // ['arm']
  * ```
  */
 
@@ -66,7 +67,16 @@ export interface SvgVariant {
 	resolution: number;
 }
 
-/** the `data:image/svg\+xml` form of a source, ready for the loader */
+/**
+ * The `data:image/svg+xml` form of a source, ready for the loader.
+ *
+ * @example
+ * ```ts
+ * import { svgDataUri } from '@datamoc/mw_games/assets';
+ *
+ * console.log(svgDataUri('<svg/>').startsWith('data:image/svg+xml,')); // true
+ * ```
+ */
 export function svgDataUri(source: string): string {
 	return `data:image/svg\+xml,${encodeURIComponent(source)}`;
 }
@@ -75,6 +85,17 @@ export function svgDataUri(source: string): string {
  * One source, one variant per named scale. Each variant is the same proven-inert source at
  * its own resolution multiple, so the loader rasterizes each scale once and a game asks for
  * the variant by name instead of re-deciding a multiplier at every call site.
+ */
+/**
+ * One source, one variant per named scale.
+ *
+ * @example
+ * ```ts
+ * import { svgScaleVariants } from '@datamoc/mw_games/assets';
+ *
+ * const [sharp] = svgScaleVariants('<svg/>', [{ name: '3x', resolution: 3 }]);
+ * console.log(sharp.resolution); // 3
+ * ```
  */
 export function svgScaleVariants(source: string, scales: readonly ScaleVariant[]): SvgVariant[] {
 	const inert = sanitizeSvg(source);

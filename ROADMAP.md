@@ -49,137 +49,25 @@ as an optional peer, and its `PerformanceRNN` checkpoint compiled into `window._
 since `fetch()` is blocked from `file://`. Low priority: it costs the small-dependency policy
 and the two shipped tiers already cover the game use case.
 
-398. **SVG as a complete image source: inbound sanitization, named scale variants, and
-group-split parts.** Items 15 and 198 already load an SVG through the compiled `data:` URI
-and rasterize it at a resolution multiple; "complete" is what is still missing:
+Items 405-410, added 2026-10-10 out of the Wesnoth port's proposal file and a direct
+request the same day, are closed or parked as of this session: 405 shipped with 0.32.0, and
+406, 407, 398, 399, 400, 409 and 410 all shipped (their records are in
+[CLOSED.md](CLOSED.md)). Two halves stay open below: 408's second half, the
+all-scenarios verifier tool, and 401's consumer half, parked with the port the way item 347
+parks migration work.
 
-- **Sanitization.** An SVG is inbound data that can carry active content (`<script>`,
-  event-handler attributes, `foreignObject`), the same way a save slot or a replay file is
-  inbound data. Loading sanitizes by name and refuses what it cannot prove inert, rather
-  than trusting the `file://` CSP to make the question moot.
-- **Named scale variants.** One source, rasterized once per named scale (1x, 2x, 3x),
-  so a game picks the variant by device the way it picks an asset path, instead of every
-  call site re-deciding a resolution multiplier.
-- **Group-split parts.** An SVG authored with named `<g>` groups (one for the arm, the leg,
-  the head) loads as one region per group, which is the natural authoring form for a
-  skeletal puppet (399/400): one drawing, one source of truth for palette and style, split
-  at load. Where a game needs runtime vector drawing instead of rasterized textures, that
-  is a measured case to bring back, not a default: item 198's benchmark already showed DOM
-  SVG collapsing (about 14 fps for 250 elements) where rasterized Pixi sprites hold 60.
+401. **The pixi-interop facade's consumer half.** The framework half is done: every
+`two-d/pixi-interop` export carries its interop-only note, so a consumer budget justifies a
+use instead of merely counting it. What remains is consumer-side work in the port itself -
+the per-symbol histogram in the port's own gate, and the migration of its raw Pixi imports
+onto the facade with a browser-verified screenshot per file - which un-parks the way item
+347 does: a port session picking it up.
 
-399. **The skeleton math, renderer-free: a bone tree, poses, keyframed clips, blending.**
-The pose half of a skeletal puppet, as pure data and arithmetic so it loads headless and
-tests without a renderer, the same split every other module draws:
-
-- **Bones.** A tree of bones (parent, local rotation, origin, length): rotating an arm, a
-  leg, a hand, a head is one number on one bone, and a whole pose is the tree resolved
-  through its parents.
-- **Clips.** Keyframed poses over time (rotate the arm through a swing, the head through a
-  look), with interpolation, looping, playback rate and crossfade between clips. Clips are
-  plain data a game authors in JSON, never code, and never a borrowed game's animation
-  data.
-- **Blending.** Additive layers (aim on top of walk, hurt on top of idle) with priorities,
-  so a game composes motion instead of authoring every combination as its own clip.
-
-400. **Skeletal sprites and articulated chains: bones driving drawn parts, and serpent
-spines.** The drawing half of 399, plus the one articulated shape a keyframe cannot
-express:
-
-- **Skeletal sprites.** Sprites or texture regions (including 398's SVG group parts) bound
-  to bones; `update(dt)` resolves the pose and places each part, so a character sheet, an
-  SVG puppet or a mixed rig animate through the same bone tree. Walk, swing and look
-  cycles are clips; the binding is the only rendering decision.
-- **Articulated chains.** A long body (a dragon's neck and tail, a serpent's spine) drawn
-  as a chain of segments that follows its head procedurally: each segment eases toward its
-  parent's previous position, with per-segment rotation limits so the body bends like a
-  body and not like a rope of beads. This is deliberately not a clip (it is a follower
-  rule, not authored motion), and composes with one: a clip drives the head and limbs, the
-  chain does the rest of the body.
-- Both halves carry the usual discipline: no renderer import in the pose math, measured
-  frame time for a rig of bones before it replaces a frame sheet, and no animation data or
-  art from a reference game.
-
-401. **Close the pixi-interop facade gaps behind the measured escape-hatch histogram.**
-The pixel-dungeon port's proposal P31 measured what its budgeted files actually import
-raw from Pixi: `Rectangle` (27 files), `Texture` (23), `Container` (21), `Sprite` (19),
-`Graphics` (14), `FillGradient` (4), `TilingSprite` (2). The rationale half is done: every
-`two-d/pixi-interop` export carries its interop-only note (shipped with the 0.26 interop
-notes), so a consumer budget justifies a use instead of merely counting it. What remains is
-consumer-side: the per-symbol histogram in the consumer's own gate (so a budget raise is
-caught the commit it happens in), and the migration of newly-covered uses onto the facade
-with a browser-verified screenshot per file, which is what actually makes the budget fall.
-
-Items 405-409, added 2026-10-10 out of the Wesnoth port's proposal file (410, the overworld
-generator, came from a direct request the same day and follows the same low-priority rule) (`4MWG/proposals.md`,
-its ten proposals checked against `src/` the same day). Four of the ten need no item: the
-formula proposal is already shipped (`set_variable` has `mode=expression`, see REFERENCE.md),
-the `fengari` `os` problem dissolved with the 0.32.0 sandbox (the host never constructs
-`os`, so there is no alias left to document), the image-variant resolution is
-Wesnoth-specific and stays in the port, and the compound-condition ask is mostly met
-already (see 406). 405 was a bug, so it jumped the usual end-of-list rule and shipped with
-0.32.0 (its record is in [CLOSED.md](CLOSED.md)); the rest sit at the end at low priority.
-
-406. **Compound conditions and a visible loop cap in MWL.** `test="..."` already carries
-`and`/`or`/`not`, comparison, arithmetic and parentheses (`src/mwl/conditions.ts`), and
-`[if]`/`[while]` accept it, so a nested `[and]`/`[or]`/`[not]` tree would be a second way to
-say the same thing and is not proposed. What is genuinely missing:
-
-- **Queries inside `test=`.** `nodeConditionMatches` passes only the primitive variables and
-  no helpers, so a condition cannot ask about units or locations (`have_unit(...)`,
-  `have_location(...)`). Expose game and built-in helpers through the existing
-  `MwlConditionOptions.helpers`, fed from the hook registry, so the port stops routing
-  compound predicates through `condition=hook` with `tree=`.
-- **Free predicate attributes on `[condition]`.** The schema should accept them, so a port
-  does not extend the schema to pass a predicate its context.
-- **The `[while]` cap.** `max_iterations` (default 1000) ends the loop silently. Reaching it
-  should emit an observable diagnostic, with an opt-in `on_limit=error`; no new
-  per-iteration cost model.
-
-407. **A deterministic cave generator.** The Wesnoth port wrote one (chambers, passages,
-jaggedness, windiness, villages, start markers) in its own `src/simulation/cave-generator.ts`.
-`roguelike.generate` covers dungeons only. A seeded, renderer-free cave generator with those
-knobs fits the module, written from the port's behaviour as a spec and from no reference
-game's content. Compare against the port's version before designing, to keep what its
-scenarios actually depend on.
-
-408. **A scene control API for tests, and a shipped all-scenarios verifier.** The port needs
-`enterScenario`, `finishTurn` and `advanceDialogue`, private today, to drive scenes from a
-headless Chrome. Two halves: first the control surface itself (in `src/testing`, so a game
-opts in), then, only after reading the port's `tools/verify-all-scenarios.mjs` to confirm it
-holds nothing Wesnoth-specific, a generic `mwg-*` tool that runs every scenario in one
-browser with a bot playing the sides. The second half is a tool to maintain, so it waits on
-the first.
-
-409. **Compare the port's HUD against what `two-d/ui` already has.** `Bar`, `BitmapLabel`,
-`Minimap` and the other HUD widgets are shipped. The port's `src/ui/hud.ts` hand-writes an
-icon status bar, a side panel with minimap, and HP/XP bars. Before adding anything, list
-which of those three the framework cannot already compose from existing parts; the item
-shrinks to that residue, possibly to documentation alone.
-
-410. **An overworld map generator: a realm of mountains, rivers, plains, forests and
-settlements.** The world-map counterpart to dungeon (`roguelike.generate`) and cave (407)
-generation, in the lineage of ADOM's world map and the classic Ultima overland maps: one
-seeded, renderer-free pass that yields a whole realm as plain tile data a game draws with
-`TileMap` and walks with `world.Overworld`. Scope:
-
-- **Terrain.** Elevation and moisture fields from seeded noise, classified into water,
-  plains, forest, hills, mountains, desert and swamp, with coast and mountain-range
-  coherence (ranges, not scattered peaks) and a sea level knob.
-- **Rivers.** Sources on high ground flowing downhill to the sea or a lake, merging
-  into larger rivers, never crossing a mountain ridge; fords or bridge sites where a road
-  meets one.
-- **Settlements and roads.** Villages, towns and castles placed by terrain suitability
-  (near water, on plains, spaced apart), joined by roads that prefer flat ground and use
-  the existing `Pathfinder`, plus points of interest (dungeon mouths, ruins, shrines) that
-  feed `Overworld` locations with a `leadsTo`.
-- **Regions.** A coarse region or biome id per cell so a game can hang encounter tables
-  (`rollEncounter`) and names off it.
-- **Determinism and size.** The same seed gives the same realm on every platform, using
-  the framework `Random`; sizes up to a few hundred tiles a side stay fast enough to
-  generate on load, with `threads.spawn` available for larger ones.
-- **Not in scope:** any reference game's own map data, region layout or naming; the
-  generator invents its realms from the seed and the knobs. Share the noise and
-  placement helpers with 407 rather than writing them twice.
+408. **The all-scenarios verifier, second half.** The control surface shipped as
+`src/testing`'s `SceneControls` (named steps a game opts into, refused by name when
+unknown), which is the first half. The `mwg-*` tool that runs every scenario in one
+browser with a bot playing the sides still waits on a read of the Wesnoth port's
+`tools/verify-all-scenarios.mjs` to confirm it holds nothing port-specific.
 
 ### Parked decisions
 

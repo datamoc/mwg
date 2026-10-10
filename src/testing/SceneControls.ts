@@ -15,9 +15,9 @@
  * import { createSceneControls } from '@datamoc/mw_games/testing';
  *
  * const controls = createSceneControls();
- * controls.register('enterScenario', () => game.enterScenario('the-freelands'));
- * controls.register('finishTurn', () => game.finishTurn());
- * await controls.run('enterScenario'); // a headless driver calls steps by name
+ * const enterScenario = (name: string) => {}; // the game's own private scene flow
+ * controls.register('enterScenario', () => enterScenario('the-freelands'));
+ * controls.register('finishTurn', () => {});
  * ```
  */
 

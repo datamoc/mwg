@@ -132,6 +132,12 @@
 		"declaringModule": "two-d/render/ImageModifiers.d.ts"
 	},
 	{
+		"name": "ArticulatedChain",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SkeletalSprite.d.ts"
+	},
+	{
 		"name": "assertAutotileLayout",
 		"kind": "function",
 		"subpath": ".",
@@ -382,6 +388,18 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "core/Grid.d.ts"
+	},
+	{
+		"name": "ChainOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SkeletalSprite.d.ts"
+	},
+	{
+		"name": "ChainRig",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SkeletalSprite.d.ts"
 	},
 	{
 		"name": "channelScaleMatrix",
@@ -2646,6 +2664,18 @@
 		"declaringModule": "core/Sanitize.d.ts"
 	},
 	{
+		"name": "SkeletalSprite",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SkeletalSprite.d.ts"
+	},
+	{
+		"name": "Skeleton",
+		"kind": "namespace",
+		"subpath": ".",
+		"declaringModule": "index.d.ts"
+	},
+	{
 		"name": "Skin",
 		"kind": "interface",
 		"subpath": ".",
@@ -4734,6 +4764,18 @@
 		"declaringModule": "assets/paths.d.ts"
 	},
 	{
+		"name": "sanitizeSvg",
+		"kind": "function",
+		"subpath": "./assets",
+		"declaringModule": "assets/svg.d.ts"
+	},
+	{
+		"name": "ScaleVariant",
+		"kind": "interface",
+		"subpath": "./assets",
+		"declaringModule": "assets/svg.d.ts"
+	},
+	{
 		"name": "setAssetMap",
 		"kind": "function",
 		"subpath": "./assets",
@@ -4744,6 +4786,30 @@
 		"kind": "function",
 		"subpath": "./assets",
 		"declaringModule": "assets/paths.d.ts"
+	},
+	{
+		"name": "splitSvgGroups",
+		"kind": "function",
+		"subpath": "./assets",
+		"declaringModule": "assets/svg.d.ts"
+	},
+	{
+		"name": "svgDataUri",
+		"kind": "function",
+		"subpath": "./assets",
+		"declaringModule": "assets/svg.d.ts"
+	},
+	{
+		"name": "svgScaleVariants",
+		"kind": "function",
+		"subpath": "./assets",
+		"declaringModule": "assets/svg.d.ts"
+	},
+	{
+		"name": "SvgVariant",
+		"kind": "interface",
+		"subpath": "./assets",
+		"declaringModule": "assets/svg.d.ts"
 	},
 	{
 		"name": "texture",
@@ -9012,6 +9078,36 @@
 		"declaringModule": "roguelike/Targeting.d.ts"
 	},
 	{
+		"name": "CaveChamber",
+		"kind": "interface",
+		"subpath": "./roguelike",
+		"declaringModule": "roguelike/Cave.d.ts"
+	},
+	{
+		"name": "CaveOptions",
+		"kind": "interface",
+		"subpath": "./roguelike",
+		"declaringModule": "roguelike/Cave.d.ts"
+	},
+	{
+		"name": "CavePassage",
+		"kind": "interface",
+		"subpath": "./roguelike",
+		"declaringModule": "roguelike/Cave.d.ts"
+	},
+	{
+		"name": "CaveResult",
+		"kind": "interface",
+		"subpath": "./roguelike",
+		"declaringModule": "roguelike/Cave.d.ts"
+	},
+	{
+		"name": "CaveStart",
+		"kind": "interface",
+		"subpath": "./roguelike",
+		"declaringModule": "roguelike/Cave.d.ts"
+	},
+	{
 		"name": "CellFeatureDef",
 		"kind": "interface",
 		"subpath": "./roguelike",
@@ -9198,6 +9294,12 @@
 		"declaringModule": "roguelike/generate.d.ts"
 	},
 	{
+		"name": "generateCave",
+		"kind": "function",
+		"subpath": "./roguelike",
+		"declaringModule": "roguelike/Cave.d.ts"
+	},
+	{
 		"name": "generateDungeon",
 		"kind": "function",
 		"subpath": "./roguelike",
@@ -9208,6 +9310,12 @@
 		"kind": "function",
 		"subpath": "./roguelike",
 		"declaringModule": "roguelike/generate.d.ts"
+	},
+	{
+		"name": "generateOverworld",
+		"kind": "function",
+		"subpath": "./roguelike",
+		"declaringModule": "roguelike/Overworld.d.ts"
 	},
 	{
 		"name": "hallBuilder",
@@ -9286,6 +9394,36 @@
 		"kind": "function",
 		"subpath": "./roguelike",
 		"declaringModule": "roguelike/Level.d.ts"
+	},
+	{
+		"name": "OverworldInterest",
+		"kind": "interface",
+		"subpath": "./roguelike",
+		"declaringModule": "roguelike/Overworld.d.ts"
+	},
+	{
+		"name": "OverworldOptions",
+		"kind": "interface",
+		"subpath": "./roguelike",
+		"declaringModule": "roguelike/Overworld.d.ts"
+	},
+	{
+		"name": "OverworldResult",
+		"kind": "interface",
+		"subpath": "./roguelike",
+		"declaringModule": "roguelike/Overworld.d.ts"
+	},
+	{
+		"name": "OverworldSettlement",
+		"kind": "interface",
+		"subpath": "./roguelike",
+		"declaringModule": "roguelike/Overworld.d.ts"
+	},
+	{
+		"name": "OverworldTerrain",
+		"kind": "type",
+		"subpath": "./roguelike",
+		"declaringModule": "roguelike/Overworld.d.ts"
 	},
 	{
 		"name": "Pathfinder",
@@ -10152,6 +10290,120 @@
 		"declaringModule": "simulation/Runtime.d.ts"
 	},
 	{
+		"name": "advance",
+		"kind": "function",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "advancePlayback",
+		"kind": "function",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "Bone",
+		"kind": "interface",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "boneOrder",
+		"kind": "function",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "BoneTransform",
+		"kind": "interface",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "Clip",
+		"kind": "interface",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "create",
+		"kind": "function",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "createMixer",
+		"kind": "function",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "crossfadeTo",
+		"kind": "function",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "Keyframe",
+		"kind": "interface",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "Layer",
+		"kind": "interface",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "Mixer",
+		"kind": "interface",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "mixPoses",
+		"kind": "function",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "Playback",
+		"kind": "interface",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "Pose",
+		"kind": "type",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "resolve",
+		"kind": "function",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "samplePose",
+		"kind": "function",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "SkeletonBones",
+		"kind": "interface",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "createSceneControls",
+		"kind": "function",
+		"subpath": "./testing",
+		"declaringModule": "testing/SceneControls.d.ts"
+	},
+	{
 		"name": "fakeAudio",
 		"kind": "function",
 		"subpath": "./testing",
@@ -10198,6 +10450,18 @@
 		"kind": "function",
 		"subpath": "./testing",
 		"declaringModule": "testing/index.d.ts"
+	},
+	{
+		"name": "SceneControls",
+		"kind": "interface",
+		"subpath": "./testing",
+		"declaringModule": "testing/SceneControls.d.ts"
+	},
+	{
+		"name": "SceneStep",
+		"kind": "type",
+		"subpath": "./testing",
+		"declaringModule": "testing/SceneControls.d.ts"
 	},
 	{
 		"name": "spawn",
@@ -10446,6 +10710,12 @@
 		"declaringModule": "two-d/render/ImageModifiers.d.ts"
 	},
 	{
+		"name": "ArticulatedChain",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SkeletalSprite.d.ts"
+	},
+	{
 		"name": "assertAutotileLayout",
 		"kind": "function",
 		"subpath": "./two-d",
@@ -10624,6 +10894,18 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/Camera.d.ts"
+	},
+	{
+		"name": "ChainOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SkeletalSprite.d.ts"
+	},
+	{
+		"name": "ChainRig",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SkeletalSprite.d.ts"
 	},
 	{
 		"name": "channelScaleMatrix",
@@ -12030,6 +12312,12 @@
 		"declaringModule": "two-d/stage/DialogueStage.d.ts"
 	},
 	{
+		"name": "SkeletalSprite",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SkeletalSprite.d.ts"
+	},
+	{
 		"name": "Skin",
 		"kind": "interface",
 		"subpath": "./two-d",
@@ -12792,6 +13080,12 @@
 		"declaringModule": "two-d/render/ImageModifiers.d.ts"
 	},
 	{
+		"name": "ArticulatedChain",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SkeletalSprite.d.ts"
+	},
+	{
 		"name": "assertAutotileLayout",
 		"kind": "function",
 		"subpath": "./two-d/render",
@@ -12910,6 +13204,18 @@
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/Camera.d.ts"
+	},
+	{
+		"name": "ChainOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SkeletalSprite.d.ts"
+	},
+	{
+		"name": "ChainRig",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SkeletalSprite.d.ts"
 	},
 	{
 		"name": "channelScaleMatrix",
@@ -13600,6 +13906,12 @@
 		"kind": "class",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/Shape2D.d.ts"
+	},
+	{
+		"name": "SkeletalSprite",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SkeletalSprite.d.ts"
 	},
 	{
 		"name": "snapZoom",

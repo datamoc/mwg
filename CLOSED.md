@@ -5989,3 +5989,53 @@ example already draws.
     blow the shipped package to defend rare endgames. A consumer that wants one runs the
     generator and ships the artifact with its own game. Syzygy 6-7-piece and NNUE stay parked
     in ROADMAP.md as written.
+
+406. ~~Compound conditions and a visible loop cap in MWL.~~ `test=` expressions call the
+    helpers the condition parser always knew how to invoke: the built-in `have_unit` and
+    `have_location` queries over the runtime's own world (0-based coordinates, the frame
+    unit filters compare in), plus one entry per registered predicate hook, each argument
+    one `key=value` pair. `[while]` reaching its cap with the condition still true traces a
+    `while_limit` event, and the opt-in `on_limit=error` turns it into a named hard failure.
+    `[condition]` accepts free string attributes, the shape `[predicate]` already had.
+407. ~~A deterministic cave generator.~~ `roguelike.generateCave`, written from the
+    Wesnoth port's cave_map_generator behaviour as a spec and from none of its content:
+    chambers as random-growth blobs (`jagged`), passages as biased random walks
+    (`windiness`, `width`, `chance`), starts on chamber centres with cleared rings,
+    `villageDensity` returning picked clear cells as data, and a forced join to the first
+    chamber so a cave is always connected. Square grid, framework `Random` stack,
+    `tests/cave.test.ts`.
+410. ~~An overworld map generator.~~ `roguelike.generateOverworld`: elevation and moisture
+    from seeded value noise classify water, plains, forest, hills, mountains, desert and
+    swamp (`seaLevel` knob); rivers walk downhill to the sea, merging when they meet, and
+    a ridge drowns a lake rather than being crossed; settlements place themselves by
+    suitability and join into a road tree whose heap-based Dijkstra prefers flat ground,
+    water expensive rather than impassable so a crossing is a ford; points of interest
+    carry a `leadsTo` id; every cell carries a coarse region id. No reference game's map
+    data or naming - the realm invents itself from the seed. `tests/overworld.test.ts`.
+398. ~~SVG as a complete image source.~~ `assets.sanitizeSvg` refuses what it cannot
+    prove inert by name (script, foreignObject, iframe, embed, object, event handlers,
+    javascript: and active data: URLs) - a gate, not a rewrite; `svgScaleVariants`
+    rasterizes one source once per named scale, loader-ready data URIs with their
+    resolution hint; `splitSvgGroups` loads a group-authored SVG as one standalone part
+    per top-level group, refusing self-closing traps, duplicate and missing ids and
+    unbalanced groups by name. All string processing, headless-tested in
+    `tests/svg.test.ts`.
+399. ~~The skeleton math, renderer-free.~~ The new root `skeleton` module: a bone tree
+    where a pose is one rotation per bone and resolving it walks the parents; keyframed
+    clips as plain JSON with interpolation, looping, playback rate and crossfade; and
+    additive layers mixing by priority that displace only the bones they name, so an aim
+    layer never resets the legs to rest. `tests/skeleton.test.ts`.
+400. ~~Skeletal sprites and articulated chains.~~ `two-d/render`'s `SkeletalSprite` binds
+    drawn parts to bones by name and `update(dt)` places each at its bone's world
+    transform - the binding is the only rendering decision, the pose math stays in
+    `skeleton`. `ArticulatedChain` is the follower rule a keyframe cannot express, pure
+    positions with per-segment rotation limits, and `ChainRig` only positions one sprite
+    per segment. `tests/skeletal-sprite.test.ts`; the browser frame-time measurement for a
+    rig of bones remains owed before a rig replaces a frame sheet.
+409. ~~Compare the port's HUD against what `two-d/ui` already has.~~ The residue is empty:
+    all three of the port's HUD pans compose from shipped parts - the icon status bar from
+    `Label`/`BitmapLabel`/`Meter` plus sprites, the side panel from `Minimap` and labels,
+    the HP/XP bars from `Bar`. What the port hand-writes beyond that is the Wesnoth
+    default theme's own fixed layout and icon art, which is port content by the same rule
+    that keeps its terrain graphics local. The item closes as documentation, which this
+    record is.

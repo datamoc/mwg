@@ -4,14 +4,14 @@
 	"version": "0.32.0",
 	"releaseDate": "2026-10-10",
 	"source": {
-		"files": 331,
-		"lines": 60828,
-		"modules": 18,
+		"files": 337,
+		"lines": 62306,
+		"modules": 19,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 96,
-				"lines": 20174
+				"files": 97,
+				"lines": 20395
 			},
 			{
 				"name": "core",
@@ -21,7 +21,7 @@
 			{
 				"name": "mwl",
 				"files": 21,
-				"lines": 6701
+				"lines": 6773
 			},
 			{
 				"name": "board",
@@ -35,8 +35,8 @@
 			},
 			{
 				"name": "roguelike",
-				"files": 22,
-				"lines": 3501
+				"files": 24,
+				"lines": 4174
 			},
 			{
 				"name": "actors",
@@ -69,6 +69,11 @@
 				"lines": 1156
 			},
 			{
+				"name": "assets",
+				"files": 7,
+				"lines": 763
+			},
+			{
 				"name": "three-d",
 				"files": 9,
 				"lines": 756
@@ -79,19 +84,19 @@
 				"lines": 603
 			},
 			{
-				"name": "assets",
-				"files": 6,
-				"lines": 594
-			},
-			{
 				"name": "threads",
 				"files": 3,
 				"lines": 297
 			},
 			{
-				"name": "testing",
+				"name": "skeleton",
 				"files": 1,
-				"lines": 157
+				"lines": 280
+			},
+			{
+				"name": "testing",
+				"files": 2,
+				"lines": 219
 			},
 			{
 				"name": "headless",
@@ -101,9 +106,9 @@
 		]
 	},
 	"tests": {
-		"files": 306,
-		"lines": 41262,
-		"cases": 2833
+		"files": 312,
+		"lines": 41903,
+		"cases": 2863
 	},
 	"tools": {
 		"files": 48,
@@ -140,17 +145,17 @@
 	},
 	"roadmap": {
 		"items": 410,
-		"completed": 399,
-		"open": 11,
-		"percent": 97
+		"completed": 406,
+		"open": 4,
+		"percent": 99
 	},
 	"api": {
-		"declarationFiles": 331
+		"declarationFiles": 337
 	},
 	"bundle": {
-		"globalRaw": 1243454,
-		"globalGzip": 371394,
-		"distRaw": 4314088
+		"globalRaw": 1258489,
+		"globalGzip": 376927,
+		"distRaw": 4404917
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

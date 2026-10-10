@@ -7,6 +7,28 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `skeleton`, a new renderer-free root module (roadmap 399): a bone tree where a pose is one
+  rotation per bone, keyframed clips (plain JSON, interpolation, looping, playback rate,
+  crossfade), and additive layers mixing by priority that displace only the bones they name.
+  `two-d/render` gains the drawing half (400): `SkeletalSprite` binds parts to bones by
+  name, and `ArticulatedChain`/`ChainRig` draw a follower-rule spine with per-segment
+  rotation limits.
+- `roguelike.generateCave` (407): chambers grown as blobs (`jagged`), winding passages
+  (`windiness`, `width`, `chance`), starts with cleared rings, village density, and a forced
+  join so a cave is always connected. `roguelike.generateOverworld` (410): seeded elevation
+  and moisture fields classify seven terrains behind a `seaLevel` knob, rivers run downhill
+  to the sea and drown lakes at ridges, settlements place themselves by suitability and join
+  into a road tree that prefers flat ground (water a ford, not a wall), points of interest
+  carry `leadsTo`, and every cell carries a coarse region id.
+- `assets` SVG inbound rules (398): `sanitizeSvg` refuses what it cannot prove inert by name,
+  `svgScaleVariants` rasterizes one source per named scale, `splitSvgGroups` loads one part
+  per top-level `<g>` group.
+- `testing` gains `createSceneControls` (408's first half): named steps a game opts into,
+  driven by name, refused by name when unknown - the seam a headless driver calls a game's
+  private scene flow through.
+
 ### Changed
 
 - `mwl/fengari` now requires `@datamoc/fengari@^0.2.0` and enforces `memoryLimit` through the
@@ -15,6 +37,10 @@ the public API may still change between minor versions.
   hosts on one page), parsing is inside the budget, host callbacks allocate freely, and a
   refused allocation surfaces to scripts as Lua's standard `not enough memory` while the
   host still rejects the call.
+- MWL `test=` expressions can call `have_unit`/`have_location` and registered predicate hooks
+  directly (406), `[while]` traces `while_limit` when its cap is reached with the condition
+  still true (`on_limit=error` makes it a hard failure), and `[condition]` accepts free
+  predicate attributes.
 
 ## [0.32.0] - 2026-10-10
 

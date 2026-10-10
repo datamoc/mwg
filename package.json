@@ -161,6 +161,10 @@
 			"types": "./dist/i18n/index.d.ts",
 			"import": "./dist/i18n/index.js"
 		},
+		"./skeleton": {
+			"types": "./dist/skeleton/index.d.ts",
+			"import": "./dist/skeleton/index.js"
+		},
 		"./roguelike": {
 			"types": "./dist/roguelike/index.d.ts",
 			"import": "./dist/roguelike/index.js"

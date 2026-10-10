@@ -28,12 +28,19 @@ import type { Texture2D } from './Types2D.ts';
  *
  * @example
  * ```ts
+ * import * as Skeleton from '@datamoc/mw_games/skeleton';
+ * import { Texture, TextureSource } from 'pixi.js';
  * import { SkeletalSprite } from '@datamoc/mw_games/two-d/render';
  *
- * const rig = new SkeletalSprite(puppet, idleClip);
+ * const puppet = Skeleton.create([{ name: 'arm', length: 12 }]);
+ * const mixer = Skeleton.createMixer(puppet, {
+ *   id: 'idle', duration: 1, loop: true,
+ *   frames: [{ time: 0, rotations: { arm: 0 } }, { time: 1, rotations: { arm: 90 } }],
+ * });
+ * const rig = new SkeletalSprite(puppet, mixer);
+ * const armTexture = new Texture({ source: new TextureSource({ width: 8, height: 8 }) });
  * rig.bind('arm', armTexture).anchor.set(0, 0.5);
- * stage.addChild(rig);
- * rig.update(dt); // each part sits on its bone, every frame
+ * rig.update(1 / 60); // each part sits on its bone, every frame
  * ```
  */
 export class SkeletalSprite extends Container {
@@ -93,6 +100,18 @@ export interface ChainOptions {
  * A serpent's spine as pure positions: the head is pulled by the game, every segment eases
  * toward where its parent just was, and no two segments may bend past `bendLimit`. The
  * positions are the contract; drawing them is a `ChainRig`.
+ */
+/**
+ * A serpent's spine as pure positions.
+ *
+ * @example
+ * ```ts
+ * import { ArticulatedChain } from '@datamoc/mw_games/two-d/render';
+ *
+ * const spine = new ArticulatedChain({ segments: 8, length: 12, bendLimit: 45 });
+ * spine.pull(100, 0);
+ * spine.update(1); // the body starts following the head
+ * ```
  */
 export class ArticulatedChain {
 	readonly points: Array<{ x: number; y: number }> = [];
@@ -157,6 +176,20 @@ export class ArticulatedChain {
 /**
  * The drawing half of a chain: one sprite per segment, placed on `update`. The chain is the
  * motion; this only positions what the game handed over.
+ */
+/**
+ * The drawing half of a chain: one sprite per segment.
+ *
+ * @example
+ * ```ts
+ * import { Texture, TextureSource } from 'pixi.js';
+ * import { ArticulatedChain, ChainRig } from '@datamoc/mw_games/two-d/render';
+ *
+ * const skin = new Texture({ source: new TextureSource({ width: 8, height: 8 }) });
+ * const spine = new ArticulatedChain({ segments: 3, length: 10 });
+ * const rig = new ChainRig(spine, [skin, skin, skin]); // one Texture per segment
+ * rig.update(1); // segments sit on the chain's points
+ * ```
  */
 export class ChainRig extends Container {
 	private readonly chain: ArticulatedChain;

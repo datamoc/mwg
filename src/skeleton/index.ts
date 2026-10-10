@@ -13,7 +13,7 @@
  *
  * @example
  * ```ts
- * import { Skeleton } from '@datamoc/mw_games/skeleton';
+ * import * as Skeleton from '@datamoc/mw_games/skeleton';
  *
  * const puppet = Skeleton.create([
  *   { name: 'body' },
@@ -24,7 +24,8 @@
  *   { time: 1, rotations: { arm: 90 } },
  * ] });
  * Skeleton.advance(mixer, 1); // the arm swings up over one second
- * const arm = Skeleton.resolve(puppet, mixer)[1]; // world x, y and angle per bone
+ * const pose = Skeleton.advance(mixer, 1); // the arm swings up over one second
+ * const arm = Skeleton.resolve(puppet, pose)[1]; // world x, y and angle per bone
  * ```
  */
 

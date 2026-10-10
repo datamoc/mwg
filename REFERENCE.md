@@ -395,7 +395,12 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
 - `TileMap`/`EMPTY`/`tileFrame`/`tileFrameSheet`/`tileFrameIndex` - tile map rendering:
   square/hex/isometric/staggered projections, multi-sheet tiles, elevation columns.
 - `LayeredSprite` - layered character sprites (body/hair/equipment as separate layers).
-- `Projectile` - tweens a sprite in a straight line for a thrown/shot visual flourish; an
+- `SkeletalSprite`/`ArticulatedChain`/`ChainRig` (items 399/400) - bones driving drawn
+  parts: the pose math lives in the renderer-free `skeleton` module (bone tree, keyframed
+  clips, crossfade, priority layers), `SkeletalSprite` binds a part to a bone by name and
+  `update(dt)` places it at the bone's world transform, and `ArticulatedChain` is the
+  follower rule a keyframe cannot express - a serpent's spine whose segments ease toward
+  their parent's previous position within per-segment rotation limits.- `Projectile` - tweens a sprite in a straight line for a thrown/shot visual flourish; an
   optional `animation` (item 311) advances flight frames with the tween's own elapsed time, read
   back through `frame`/`frameOffset` so the caller can apply the frame's offset where it already
   positions the sprite. `Flights` owns the live ones: `add(sprite | texture, from, to,
@@ -747,7 +752,12 @@ reach the compiled asset map without it.
   loads those paths separately so one missing file never aborts the required batch, calling
   `onMissing` for each; `texture`/`get` take a `fallback` returned instead of a throw for a
   path that never loaded, so a caller stops needing its own try/catch around a missing asset.
-  `load` also supplies Pixi's `Assets.add` a `format` hint - the original path's own extension
+- `sanitizeSvg`/`svgScaleVariants`/`svgDataUri`/`splitSvgGroups` (item 398) - SVG as
+  inbound data: `sanitizeSvg` refuses what it cannot prove inert by name (script,
+  `foreignObject`, event handlers, `javascript:` and active `data:` URLs - a gate, never
+  a silent rewrite), `svgScaleVariants` rasterizes one proven-inert source once per named
+  scale with its resolution hint, and `splitSvgGroups` loads a group-authored SVG as one
+  standalone part per top-level `<g id=...` group, the authoring form for an SVG puppet.  `load` also supplies Pixi's `Assets.add` a `format` hint - the original path's own extension
   - whenever the resolved `src` is a compiled build's `data:` URI (item 308): a `data:` URI
   carries no extension of its own for Pixi's resolver to pick a parser from, which otherwise
   left a game no way to load a compiled asset without building its own `{src, parser}`
@@ -1053,7 +1063,20 @@ the dungeon-crawl half of the capability spec.
   `DungeonOptions.hooks` fires `onRoomPlaced`/`onCorridorCarved` as the pipeline runs, the
   seam a regional generator hangs hand-placed rooms, branches, wells, plants, statues,
   chasms, doors and traps from.
-- `RoomBuilder`/`hallBuilder`/`eligibleBuilders`/`pickBuilder` - composable room interiors:
+- `generateCave` (item 407) - the cave counterpart: chambers grown as random blobs
+  (`jagged` the chance a growth step wanders), passages as biased random walks
+  (`windiness`, `width`, `chance`), starts on chamber centres with cleared rings,
+  `villageDensity` returning picked clear cells as data, and a forced join so a cave is
+  always connected whatever the rolls did. Seeded through the `Random` stack like the
+  dungeon.
+- `generateOverworld` (item 410) - a whole realm as plain tile data: seeded elevation and
+  moisture fields classify water, plains, forest, hills, mountains, desert and swamp behind
+  a `seaLevel` knob; rivers run downhill to the sea, merging when they meet, drowning a
+  lake at a ridge instead of crossing it; settlements place themselves by suitability
+  (buildable ground, water within reach, spaced apart) and join into a road tree that
+  prefers flat ground, water a ford rather than a wall; points of interest carry a
+  `leadsTo` id for `Overworld` locations, and every cell carries a coarse region id for
+  encounter tables. The realm invents itself from the seed: no reference game's map data.- `RoomBuilder`/`hallBuilder`/`eligibleBuilders`/`pickBuilder` - composable room interiors:
   the generator places and joins rooms, a builder carves each one, picked by weight among
   those whose size constraints fit. `DungeonOptions.builders` wires them in; a room no
   builder fits falls back to a plain hall rather than staying solid rock.
@@ -1280,7 +1303,10 @@ live game loop.
 Test doubles for the seams mwg takes by injection (item 388), so a game's tests and this
 repository's own share one copy of each. Renderer-free, dependency-free, and off the root barrel:
 nothing here reaches a shipped game unless a test imports it.
-
+- `createSceneControls` (item 408) - named steps a game opts into (`enterScenario`,
+  `finishTurn`, `advanceDialogue` in the Wesnoth port), driven by name from a test or a
+  headless Chrome: the game decides what a step does, the controls only promise that a
+  registered name runs and an unknown one is refused by name.
 - `memoryStorage` - a `SaveStorage` held in memory, for `SaveSystem`, `Settings`, `Collection`,
   `PlayerStats` and the other stored values; the same class `core` falls back to where
   `localStorage` is missing.
