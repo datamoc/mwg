@@ -3,6 +3,14 @@ export type { TerrainKind, Rect, LevelShape } from './Level.ts';
 
 export { generateDungeon, generateDungeonGraph, findFreeCell, furthestRoom, DUNGEON_KINDS } from './generate.ts';
 export { generateCave } from './Cave.ts';
+export { generateOverworld } from './Overworld.ts';
+export type {
+	OverworldOptions,
+	OverworldResult,
+	OverworldTerrain,
+	OverworldSettlement,
+	OverworldInterest,
+} from './Overworld.ts';
 export type { CaveOptions, CaveResult, CaveChamber, CavePassage, CaveStart } from './Cave.ts';
 export type { DungeonOptions, DungeonGenerationHooks, RoomEdge, DungeonResult } from './generate.ts';
 
