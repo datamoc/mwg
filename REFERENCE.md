@@ -1664,8 +1664,9 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   allocate, 32 MB by default, parsing included), since one `..` or `string.rep` instruction
   can allocate without bound. Scripts get `local x <const>`, `local x <close>` (with `__close`,
   run on a normal exit, `break`, `return` and error, and unwound by a limit error too) and
-  `coroutine.close`, from fork 0.3.0; a `__close` cannot yield. The byte budget rides the fork 0.2.0's per-state allocation
-  hook (`lua_setallocf`), so a script's own `pcall` sees the standard `not enough memory`
+  `coroutine.close`, from fork 0.3.0; a `__close` cannot yield. The byte budget is the VM's
+  per-call allocation limit (`limits.totalAllocation` on `FengariVm`), so a script's own `pcall`
+  sees the standard `not enough memory`
   while the host still rejects the call. `getmetatable("")` returns `false`. Globals persist between calls on one host, so
   mutually untrusted scripts need a host each. Lua VM state is not save data: reload scripts
   from the game's entry point.
@@ -1831,7 +1832,7 @@ actions, serialisable state, diagnostics and budgets.
   a JavaScript behaviour when it observes cancellation or exceeds its configured budget.
 - `exportState`/`importState` - versioned, JSON-shaped agent state. Function closures, VM
   state and arbitrary object graphs never become save data.
-- `LuaAI`/`createLuaAI` from `@datamoc/mw_games/ai/lua` - optional Lua 5.3 provider with the same
+- `LuaAI`/`createLuaAI` from `@datamoc/mw_games/ai/lua` - optional Lua 5.4 provider with the same
   action and state envelope. A Lua function receives `(perception, state)` and returns an action
   table or `{ action, state, events }`. It uses the existing optional Fengari host, which
   removes filesystem, process, module-loading, clock and debug access, supplies seeded random,

@@ -155,7 +155,7 @@
 	"bundle": {
 		"globalRaw": 1259318,
 		"globalGzip": 377250,
-		"distRaw": 4436782
+		"distRaw": 4436806
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

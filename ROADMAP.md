@@ -144,8 +144,8 @@ reconciling it) included - all but item 320, which is the port's own side of a d
 framework only invited (319 shipped the framework half), and the [Low] items the ports' reviews
 surfaced (327, 329 and 330) are shipped rather than left open, so none of them is a framework
 blocker: the
-framework's 1.0 is what the ports build against, and both of them being complete is the line below
-that says so rather than a numbered item of its own.
+framework's 1.0 is what the ports build against, and both of them being complete is the external
+condition below that says so rather than a numbered item of its own.
 
 - [x] `npm run check`, `npm test`, `npm run build`, and `npm run audit` are all green on
       the release commit. (2026-09-11: green on the 0.7.6 release commit `98c64df`, whose own CI
@@ -213,7 +213,16 @@ that says so rather than a numbered item of its own.
       the peer-dependency sentence. CHANGELOG carries a new `[Unreleased]` section covering
       the `Blob` hook and the pixi move, moved to the top where Keep a Changelog puts it, from
       the stale empty one that had been sitting between 0.7.2 and 0.7.1.)
-- [ ] **Both reference ports are complete and playable end to end against this release**
+- **Both reference ports are complete and playable end to end against this release.**
+      *Revised 2026-10-11: no longer a checkbox in this repository.* Its completeness half is
+      the two ports' own definition of done, which neither port's README claims and no change
+      here can satisfy, so a box that this repo can never tick only hides the checks it can.
+      It stays a condition for declaring 1.0, held by the ports' maintainers: 1.0 is declared
+      once both say their Status is no longer "In progress, not yet feature-complete". This
+      repository's half (does each port build and run against the current release?) is a check
+      to re-run before that declaration. It last ran against 0.16.0 on 2026-09-20 and has
+      **not** been re-run against 0.35.x. The wording below is the 2026-09-11 and 2026-09-15
+      record, kept as written.
       (requested directly, 2026-09-11): the Shattered Pixel Dungeon port
       (`mwg-pixel-dungeon`) and the Wesnoth port. This
       is the one line here that is not a check to run in this repo - it depends on two other

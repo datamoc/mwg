@@ -52,8 +52,8 @@ const DEFAULT_MEMORY_LIMIT = 32 * 1024 * 1024;
  * and `dofile` are removed, every chunk is compiled in text mode so binary bytecode is
  * rejected, `math.random` is the host's seeded stream, and every call is bounded by
  * `instructionLimit` and by `memoryLimit` (bytes of string and buffer data the call
- * allocates, parsing included). The byte budget is enforced through the fork's per-state
- * allocation hook, so a refused allocation surfaces to scripts as Lua's standard
+ * allocates, parsing included). The byte budget is the VM's own per-call allocation limit
+ * (`limits.totalAllocation`), so a refused allocation surfaces to scripts as Lua's standard
  * `not enough memory` even under a script-level `pcall`, but the host rejects the whole
  * call regardless. Globals persist between calls on one host, so scripts that must not
  * influence each other need a host each.

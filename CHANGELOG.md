@@ -7,6 +7,10 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Changed
+
+- Docs: the 1.0 checklist's ports line is restated as an external condition rather than an open box, `LuaAI` is described as the Lua 5.4 provider it is, and the Lua host's byte budget is described as `FengariVm`'s per-call allocation limit rather than the `lua_setallocf` hook it no longer rides. The 0.35.0 entry names the `^0.5.2` range that release shipped with.
+
 ## [0.35.1] - 2026-10-11
 
 The Lua host moves to `@datamoc/fengari` 0.5.4: tighter execution limits and a simpler `ScriptHost` setup.
@@ -25,7 +29,7 @@ A Lua integration host for games that need synchronous API results and resumable
 
 ### Changed
 
-- The optional Lua dependency moves to `@datamoc/fengari` `^0.5.4`, whose shipped TypeScript declarations replace the old `@ts-expect-error` import and the hand-written `luaToJs` types, and whose `vm.protect` and `vm.throwLuaError` replace the host-side protected-call code. The host reuses `FengariVm`'s execution guard while retaining text-only compilation, JSON-shaped tables and seeded randomness.
+- The optional Lua dependency moves to `@datamoc/fengari` `^0.5.2`, whose shipped TypeScript declarations replace the old `@ts-expect-error` import and the hand-written `luaToJs` types, and whose `vm.protect` and `vm.throwLuaError` replace the host-side protected-call code. The host reuses `FengariVm`'s execution guard while retaining text-only compilation, JSON-shaped tables and seeded randomness.
 
 ### Fixed
 
