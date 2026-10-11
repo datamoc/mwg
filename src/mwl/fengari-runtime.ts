@@ -1,4 +1,5 @@
 import fengari from '@datamoc/fengari';
+import type { LuaRefType } from '@datamoc/fengari';
 import type { FengariScriptHostOptions } from './fengari.ts';
 
 /** Values for the integration host; Lua functions and live tables can retain their identity. */
@@ -144,7 +145,7 @@ export function createFengariRuntime(options: FengariRuntimeOptions = {}): Fenga
 	}
 	function own(native: InstanceType<typeof fengari.LuaRef>): FengariReference {
 		const ref: FengariReference = {
-			type: native.type as FengariReference['type'],
+			type: native.type,
 			dispose() {
 				if (!references.delete(ref)) return;
 				native.release();
@@ -300,12 +301,13 @@ export function createFengariRuntime(options: FengariRuntimeOptions = {}): Fenga
 		};
 	}
 	function capture(index: number): FengariReference {
-		const type = lua.lua_type(L, index);
-		const name = lua.lua_typename(L, type);
-		if (![lua.LUA_TTABLE, lua.LUA_TFUNCTION, lua.LUA_TTHREAD, lua.LUA_TUSERDATA].includes(type))
+		const luaType = lua.lua_type(L, index);
+		if (![lua.LUA_TTABLE, lua.LUA_TFUNCTION, lua.LUA_TTHREAD, lua.LUA_TUSERDATA].includes(luaType))
 			throw new Error('Only Lua tables, functions, threads and userdata can be referenced');
 		lua.lua_pushvalue(L, index);
-		return own(new fengari.LuaRef(vm, lauxlib.luaL_ref(L, lua.LUA_REGISTRYINDEX), fengari.to_jsstring(name)));
+		// Fengari's own references are never tables, but a table is registry-owned the same way.
+		const type = fengari.to_jsstring(lua.lua_typename(L, luaType)) as LuaRefType;
+		return own(new fengari.LuaRef(vm, lauxlib.luaL_ref(L, lua.LUA_REGISTRYINDEX), type));
 	}
 	function key(value: FengariValue): string | number {
 		if (typeof value !== 'string' && typeof value !== 'number')

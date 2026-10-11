@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.35.0",
+	"version": "0.35.1",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -417,6 +417,6 @@
 	"types": "./dist/index.d.ts",
 	"unpkg": "./dist/mw_games.global.js",
 	"optionalDependencies": {
-		"@datamoc/fengari": "^0.5.2"
+		"@datamoc/fengari": "^0.5.4"
 	}
 }

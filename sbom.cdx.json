@@ -1,7 +1,7 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
-  "serialNumber": "urn:uuid:1560a5c9-c2d1-5ffe-83a8-6af0fb1b2a7e",
+  "serialNumber": "urn:uuid:3e62dab5-a42a-5172-8b56-a445e53bf279",
   "version": 1,
   "metadata": {
     "tools": {
@@ -10,16 +10,16 @@
           "type": "application",
           "group": "datamoc",
           "name": "tools/sbom.mjs",
-          "version": "0.35.0"
+          "version": "0.35.1"
         }
       ]
     },
     "component": {
       "type": "library",
-      "bom-ref": "pkg:npm/%40datamoc/mw_games@0.35.0",
+      "bom-ref": "pkg:npm/%40datamoc/mw_games@0.35.1",
       "name": "@datamoc/mw_games",
-      "version": "0.35.0",
-      "purl": "pkg:npm/%40datamoc/mw_games@0.35.0",
+      "version": "0.35.1",
+      "purl": "pkg:npm/%40datamoc/mw_games@0.35.1",
       "description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
       "licenses": [
         {
@@ -159,15 +159,15 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40datamoc/fengari@0.5.2",
+      "bom-ref": "pkg:npm/%40datamoc/fengari@0.5.4",
       "name": "@datamoc/fengari",
-      "version": "0.5.2",
-      "purl": "pkg:npm/%40datamoc/fengari@0.5.2",
+      "version": "0.5.4",
+      "purl": "pkg:npm/%40datamoc/fengari@0.5.4",
       "scope": "optional",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "5ecc773f7497b0ee51dc4491f8d140cef42fcf8a7b1245f56da1f0c223a9084623cb8cb7cf2305f119e87ed7be5032a59b9581d3e9ef6d0b372006559db64b18"
+          "content": "600ee0cf8026d34e0222194a2030866a7087af55eded0422af36df86870c1831b542b108da2d3e527775134336250b4582876329132712c61848b10e617bd526"
         }
       ],
       "licenses": [
@@ -4601,7 +4601,7 @@
       ]
     },
     {
-      "ref": "pkg:npm/%40datamoc/fengari@0.5.2",
+      "ref": "pkg:npm/%40datamoc/fengari@0.5.4",
       "dependsOn": [
         "pkg:npm/readline-sync@1.4.10",
         "pkg:npm/sprintf-js@1.1.3",
@@ -4609,7 +4609,7 @@
       ]
     },
     {
-      "ref": "pkg:npm/%40datamoc/mw_games@0.35.0",
+      "ref": "pkg:npm/%40datamoc/mw_games@0.35.1",
       "dependsOn": [
         "pkg:npm/%40babylonjs/core@9.30.0",
         "pkg:npm/%40babylonjs/loaders@9.30.0",
@@ -4617,7 +4617,7 @@
         "pkg:npm/%40capacitor/cli@8.5.3",
         "pkg:npm/%40capacitor/core@8.5.3",
         "pkg:npm/%40capacitor/ios@8.5.3",
-        "pkg:npm/%40datamoc/fengari@0.5.2",
+        "pkg:npm/%40datamoc/fengari@0.5.4",
         "pkg:npm/%40types/node@26.6.5",
         "pkg:npm/%40types/ws@8.18.2",
         "pkg:npm/json5@2.2.3",

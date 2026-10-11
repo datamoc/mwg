@@ -1,6 +1,6 @@
 import fengari from '@datamoc/fengari';
 import type { LuaToJsOptions, LuaToJsResult } from '@datamoc/fengari';
-const { lauxlib, lua, lualib } = fengari;
+const { lauxlib, lua } = fengari;
 const to_luastring = (str: string) => new TextEncoder().encode(str);
 import type { ScriptContext, ScriptEmit, ScriptHost, ScriptValue } from './scripts.ts';
 
@@ -79,23 +79,11 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 	// native operations, coroutine resumes and script-level protected calls.
 	const vm = new fengari.FengariVm(undefined, options.seed, {
 		sandbox: true,
-		libs: [],
-		remove: ['load', 'print', '__random'],
+		print: 'native',
+		remove: ['load'],
 		limits: { instructions: limit, totalAllocation: memoryLimit },
 	});
 	const state = vm.state;
-	// Open the native libraries after construction to keep the original print function,
-	// rather than FengariVm's accumulating output buffer.
-	lualib.luaL_openselectedlibs(
-		state,
-		lualib.LUA_GLIBK |
-			lualib.LUA_COLIBK |
-			lualib.LUA_MATHLIBK |
-			lualib.LUA_STRLIBK |
-			lualib.LUA_TABLIBK |
-			lualib.LUA_UTF8LIBK,
-		0,
-	);
 
 	const push = (value: ScriptValue): void => {
 		if (value === null) return lua.lua_pushnil(state);
@@ -189,9 +177,7 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 			return 1;
 		});
 		lua.lua_setglobal(state, to_luastring('__mwg_random'));
-		const sandbox =
-			'load=nil; loadfile=nil; dofile=nil; __random=nil; string.dump=nil; math.random=__mwg_random; math.randomseed=function() end';
-		run(sandbox, 0);
+		run('math.random=__mwg_random; math.randomseed=function() end', 0);
 	};
 	//hides the string metatable (the `string` library itself) from `getmetatable("")`
 	run('getmetatable("").__metatable = false', 0);

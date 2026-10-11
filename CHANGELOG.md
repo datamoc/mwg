@@ -7,6 +7,14 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.35.1] - 2026-10-11
+
+The Lua host moves to `@datamoc/fengari` 0.5.4: tighter execution limits and a simpler `ScriptHost` setup.
+
+### Changed
+
+- The optional Lua dependency moves to `@datamoc/fengari` `^0.5.4`. The `ScriptHost` uses its `print: 'native'` option instead of building the VM without libraries and re-opening them, which also drops the `string.dump` and `__random` clean-up the re-open made necessary. Execution limits now also hold against a limit overrun hidden by a script-created coroutine, global-path lookups and `Coroutine#close()`.
+
 ## [0.35.0] - 2026-10-11
 
 A Lua integration host for games that need synchronous API results and resumable dialogue, an offline Lua to JavaScript translator, and the Lua dependency moves to `@datamoc/fengari` 0.5.2.
@@ -17,7 +25,7 @@ A Lua integration host for games that need synchronous API results and resumable
 
 ### Changed
 
-- The optional Lua dependency moves to `@datamoc/fengari` `^0.5.2`, whose shipped TypeScript declarations replace the old `@ts-expect-error` import and the hand-written `luaToJs` types, and whose `vm.protect` and `vm.throwLuaError` replace the host-side protected-call code. The host reuses `FengariVm`'s execution guard while retaining text-only compilation, JSON-shaped tables and seeded randomness.
+- The optional Lua dependency moves to `@datamoc/fengari` `^0.5.4`, whose shipped TypeScript declarations replace the old `@ts-expect-error` import and the hand-written `luaToJs` types, and whose `vm.protect` and `vm.throwLuaError` replace the host-side protected-call code. The host reuses `FengariVm`'s execution guard while retaining text-only compilation, JSON-shaped tables and seeded randomness.
 
 ### Fixed
 
