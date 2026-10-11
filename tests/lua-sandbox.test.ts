@@ -1,6 +1,28 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createFengariScriptHost } from '../src/mwl/fengari.ts';
+import { createFengariScriptHost, luaToJs } from '../src/mwl/fengari.ts';
+
+test('Lua budgets interrupt native operations and survive protected calls and coroutines', () => {
+	const host = createFengariScriptHost({ instructionLimit: 1000 });
+	try {
+		for (const source of [
+			'table.move({}, 1, 200000, 1)',
+			'local s = string.rep("a", 2000); string.find(s, string.rep("a", 1000) .. "b", 1, true)',
+			'local s = string.rep("a", 100); string.find(s, ".-.-.-.-b")',
+			'for i = 1, 10000 do pcall(function() local n = 0; for j = 1, 100 do n = n + j end end) end',
+			'xpcall(function() for i = 1, 10000 do end end, function() for i = 1, 10000 do end end)',
+			'local co = coroutine.create(function() for i = 1, 10000 do end end); coroutine.resume(co)',
+		]) {
+			assert.throws(() => host.execute(source), /instruction limit exceeded/, source);
+			assert.equal(host.evaluate('1 + 1'), 2, 'a fresh call gets a fresh budget');
+		}
+		host.execute('function move() table.move({}, 1, 200000, 1) end');
+		assert.throws(() => host.call('move'), /instruction limit exceeded/);
+		assert.deepEqual(host.evaluate('{10, 20}'), { 1: 10, 2: 20 }, 'the existing table contract is preserved');
+	} finally {
+		host.dispose();
+	}
+});
 
 test('the Lua host bounds string allocation, not only instruction count', () => {
 	const host = createFengariScriptHost({ instructionLimit: 1000, memoryLimit: 1024 * 1024 });
@@ -108,4 +130,25 @@ test('the Lua host runs <const> and <close> variables, and the limits unwind thr
 	);
 	assert.equal(host.evaluate('1 + 1'), 2, 'the host stays usable afterwards');
 	host.dispose();
+});
+
+test('luaToJs translates Lua to JavaScript that computes the same result, and flags what it cannot', () => {
+	const { code, exports } = luaToJs('function double(n) return n * 2 end', { format: 'cjs', header: false });
+	assert.deepEqual(exports, ['double']);
+	const module = { exports: {} as { double(n: number): number } };
+	new Function('module', code)(module);
+	assert.equal(module.exports.double(21), 42);
+	const flagged = luaToJs('local t = setmetatable({}, {})');
+	assert.ok(flagged.warnings.length > 0 && flagged.code.includes('TODO(lua2js)'));
+	assert.throws(() => luaToJs('local ='), /line 1/);
+});
+
+test('the Lua host exposes no loader, no bytecode dumper and no VM internals', () => {
+	const host = createFengariScriptHost();
+	try {
+		for (const name of ['load', 'loadfile', 'dofile', 'require', '__random', 'string.dump'])
+			assert.equal(host.evaluate(`type(${name})`), 'nil', name);
+	} finally {
+		host.dispose();
+	}
 });

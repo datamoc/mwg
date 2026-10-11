@@ -8964,14 +8964,74 @@
 		"declaringModule": "mwl/schema.d.ts"
 	},
 	{
+		"name": "createFengariRuntime",
+		"kind": "function",
+		"subpath": "./mwl/fengari",
+		"declaringModule": "mwl/fengari-runtime.d.ts"
+	},
+	{
 		"name": "createFengariScriptHost",
 		"kind": "function",
 		"subpath": "./mwl/fengari",
 		"declaringModule": "mwl/fengari.d.ts"
 	},
 	{
+		"name": "FengariCoroutine",
+		"kind": "interface",
+		"subpath": "./mwl/fengari",
+		"declaringModule": "mwl/fengari-runtime.d.ts"
+	},
+	{
+		"name": "FengariReference",
+		"kind": "interface",
+		"subpath": "./mwl/fengari",
+		"declaringModule": "mwl/fengari-runtime.d.ts"
+	},
+	{
+		"name": "FengariRuntime",
+		"kind": "interface",
+		"subpath": "./mwl/fengari",
+		"declaringModule": "mwl/fengari-runtime.d.ts"
+	},
+	{
+		"name": "FengariRuntimeOptions",
+		"kind": "interface",
+		"subpath": "./mwl/fengari",
+		"declaringModule": "mwl/fengari-runtime.d.ts"
+	},
+	{
 		"name": "FengariScriptHostOptions",
 		"kind": "interface",
+		"subpath": "./mwl/fengari",
+		"declaringModule": "mwl/fengari.d.ts"
+	},
+	{
+		"name": "FengariTableBinding",
+		"kind": "interface",
+		"subpath": "./mwl/fengari",
+		"declaringModule": "mwl/fengari-runtime.d.ts"
+	},
+	{
+		"name": "FengariValue",
+		"kind": "type",
+		"subpath": "./mwl/fengari",
+		"declaringModule": "mwl/fengari-runtime.d.ts"
+	},
+	{
+		"name": "luaToJs",
+		"kind": "function",
+		"subpath": "./mwl/fengari",
+		"declaringModule": "mwl/fengari.d.ts"
+	},
+	{
+		"name": "LuaToJsOptions",
+		"kind": "type",
+		"subpath": "./mwl/fengari",
+		"declaringModule": "mwl/fengari.d.ts"
+	},
+	{
+		"name": "LuaToJsResult",
+		"kind": "type",
 		"subpath": "./mwl/fengari",
 		"declaringModule": "mwl/fengari.d.ts"
 	},

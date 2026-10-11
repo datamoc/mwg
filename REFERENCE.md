@@ -1670,6 +1670,50 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   mutually untrusted scripts need a host each. Lua VM state is not save data: reload scripts
   from the game's entry point.
 
+- `createFengariRuntime` (the same optional `mwl/fengari` subpath) returns a
+  `FengariRuntime` for games that need synchronous API responses, live state and
+  resumable handlers. It keeps the smaller `ScriptHost` contract intact.
+  `defineFunction(path, callback)` exposes a host function with arguments and a
+  result, and `get`/`set` use dotted global paths made of identifiers. `run` executes
+  text and returns its first result; `call` accepts a path or a `FengariReference`.
+  `reference(path)` retains a Lua table or function's identity, including callbacks
+  registered by Lua; dispose references when finished, or dispose the entire runtime.
+  `FengariValue` includes plain values, arrays, objects, Maps, BigInts, binary strings
+  as Uint8Arrays and owned references. Ordinary tables are copied on read; contiguous
+  sequences become arrays. Bound tables retain their references even inside lists.
+  Nil maps to null; assigning it removes a Lua table entry. Lua VM state and references
+  are not JSON save data.
+  `createTable(FengariTableBinding)` creates a live proxy: `get` and optional `set`
+  run on ordinary indexed reads/writes, with optional `keys` for `pairs` and `length`
+  for `#`. Nested bindings can return other proxy references, allowing a game to expose
+  a side list, each side's resources, a variable namespace or an entity lookup.
+  Its metatable is hidden; Lua `rawget`/`rawset` still bypass bindings, so callbacks
+  must enforce game rules themselves.
+  `FengariRuntimeOptions.modules` snapshots exact module IDs and embedded source
+  strings. Lua `require` caches the first result with Lua identity; `dofile` reruns
+  a source and returns all results. A game can alias `game.require = require` without
+  copying a loader. Unknown IDs, cyclic loads and binary chunks are rejected.
+  No filesystem, fetch or XHR is involved; `io`, `os`, `debug`, `package`, `load` and
+  `loadfile` stay absent. Closing a suspended module load clears its loading marker.
+  `defineYieldingFunction` returns request values to the host; a
+  `FengariCoroutine` created by `coroutine(pathOrReference)` exposes `status`,
+  `resume(args)` and `close()`. It can also adopt a thread created by Lua, including
+  one already suspended by the script; each thread has one host controller.
+  Each resume returns `{ done, values }`, with scene
+  answers supplied as the next resume's arguments. Close handlers run on explicit
+  closure or runtime disposal; failed handlers retain their error until closure.
+  Instruction and string/buffer allocation budgets cover compilation, modules,
+  host-side indexing and coroutine resumes. Nested host calls share the current
+  budget; a later top-level call/resume gets a fresh budget. Optional `timeLimit`
+  bounds wall-clock time, including callbacks, but cannot preempt host JavaScript.
+  Randomness is seeded; bounded `math.random` intervals require safe integers.
+  Total JavaScript heap and some native operations remain outside these bounds.
+- `luaToJs(source, { format?, header? })` (same subpath) translates Lua to readable
+  JavaScript without running it and returns `{ code, warnings, exports, freeGlobals }`.
+  Metatables, coroutines, general `goto` and some patterns stay as `TODO(lua2js)`
+  comments with a matching warning; invalid Lua throws `LuaSyntaxError`. fengari's
+  runtime numeric `compile` is not used: it is skipped whenever execution limits are on.
+
 `MwlRuntime` exposes `fireEvent(id)` for named event execution. Event conditions compare
 numeric variables numerically, `set_variable` accepts the bounded MWL expression syntax,
 filters can match a unit id, `unit_at` can constrain a side, and both moveto events and unit

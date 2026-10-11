@@ -6228,7 +6228,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.34.0";
+    export declare const version = "0.35.0";
 
 ### `VerticalLabel` (class)
 
@@ -13961,9 +13961,58 @@ build instead.
 
 ## `./mwl/fengari`
 
+### `createFengariRuntime` (function)
+
+    export declare function createFengariRuntime(options?: FengariRuntimeOptions): FengariRuntime;
+
 ### `createFengariScriptHost` (function)
 
     export declare function createFengariScriptHost(options?: FengariScriptHostOptions): ScriptHost;
+
+### `FengariCoroutine` (interface)
+
+    export interface FengariCoroutine {
+        readonly status: 'suspended' | 'running' | 'dead';
+        resume(args?: readonly FengariValue[]): {
+            readonly done: boolean;
+            readonly values: readonly FengariValue[];
+        };
+
+        close(): void;
+    }
+
+### `FengariReference` (interface)
+
+    export interface FengariReference {
+        readonly type: 'function' | 'table' | 'thread' | 'userdata';
+        dispose(): void;
+    }
+
+### `FengariRuntime` (interface)
+
+    export interface FengariRuntime {
+        run(source: string, chunkName?: string): FengariValue;
+        call(target: string | FengariReference, args?: readonly FengariValue[]): FengariValue;
+        get(path: string): FengariValue;
+        set(path: string, value: FengariValue): void;
+        reference(path: string): FengariReference;
+        defineFunction(path: string, callback: (...args: FengariValue[]) => FengariValue | void): void;
+
+        defineYieldingFunction(path: string, callback: (...args: FengariValue[]) => readonly FengariValue[]): void;
+        createTable(binding: FengariTableBinding): FengariReference;
+
+        coroutine(target: string | FengariReference): FengariCoroutine;
+        dispose(): void;
+    }
+
+### `FengariRuntimeOptions` (interface)
+
+    export interface FengariRuntimeOptions extends FengariScriptHostOptions {
+
+        readonly modules?: Readonly<Record<string, string>>;
+
+        readonly timeLimit?: number;
+    }
 
 ### `FengariScriptHostOptions` (interface)
 
@@ -13973,6 +14022,32 @@ build instead.
         readonly memoryLimit?: number;
         readonly seed?: number;
     }
+
+### `FengariTableBinding` (interface)
+
+    export interface FengariTableBinding {
+        get(key: string | number): FengariValue;
+        set?(key: string | number, value: FengariValue): void;
+        keys?(): readonly (string | number)[];
+        length?(): number;
+    }
+
+### `FengariValue` (type)
+
+    export type FengariValue = null | boolean | number | string | bigint | Uint8Array | FengariReference | FengariValue[] | {
+        readonly [key: string]: FengariValue;
+
+### `luaToJs` (function)
+
+    export declare function luaToJs(source: string, options?: LuaToJsOptions): LuaToJsResult;
+
+### `LuaToJsOptions` (type)
+
+    export { LuaToJsOptions } from '@datamoc/fengari'
+
+### `LuaToJsResult` (type)
+
+    export { LuaToJsResult } from '@datamoc/fengari'
 
 ## `./roguelike`
 

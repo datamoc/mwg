@@ -6,7 +6,7 @@ mention "the capability spec" and other [README.md](README.md) sections by name;
 where those live.
 
 The shipped, numbered build history (everything through item 389, plus 391, 392, 395, 396,
-397 and 402 since) has moved to [CLOSED.md](CLOSED.md), so this file stays to what is actually
+397, 402 and 411 since) has moved to [CLOSED.md](CLOSED.md), so this file stays to what is actually
 open: new numbered items, parked decisions, and the 1.0 exit checklist. Item numbers are never
 reassigned, so a new item continues the sequence in CLOSED.md rather than restarting at 1.
 
@@ -68,6 +68,13 @@ onto the facade with a browser-verified screenshot per file - which un-parks the
 unknown), which is the first half. The `mwg-*` tool that runs every scenario in one
 browser with a bot playing the sides still waits on a read of the Wesnoth port's
 `tools/verify-all-scenarios.mjs` to confirm it holds nothing port-specific.
+
+Priority review, 2026-10-11: the Wesnoth port's concrete need for synchronous API
+results and scene-controlled dialogue suspension promoted item 411 from a candidate
+to implementation. Its generic integration host is now closed in [CLOSED.md](CLOSED.md);
+`ScriptHost` stays synchronous. The other open items keep their order and blockers.
+Lua calls and resumes remain bounded so a dialogue need not hold the rendering loop
+while waiting for a scene answer; frame-time claims still require consumer measurements.
 
 ### Parked decisions
 

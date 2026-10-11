@@ -6039,3 +6039,12 @@ example already draws.
     default theme's own fixed layout and icon art, which is port content by the same rule
     that keeps its terrain graphics local. The item closes as documentation, which this
     record is.
+411. ~~Host-driven Lua coroutines and game API integration.~~ `createFengariRuntime`
+    on the optional `mwl/fengari` subpath exposes synchronous host functions, live
+    indexed tables, owned references, embedded `require`/`dofile` and coroutine
+    requests/responses. It opens no system libraries and applies fresh execution
+    budgets per top-level call/resume, with nested calls sharing their budget.
+    `ScriptHost` stays intact; game-specific names and mechanics belong in the port.
+    `tests/fengari-runtime.test.ts` pins replies, live writes, module identity,
+    suspended loads, lifecycle failures and budget recovery. The `file://` browser
+    check records startup and resume costs, not a real consumer's frame budget.

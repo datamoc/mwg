@@ -7,6 +7,22 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.35.0] - 2026-10-11
+
+A Lua integration host for games that need synchronous API results and resumable dialogue, an offline Lua to JavaScript translator, and the Lua dependency moves to `@datamoc/fengari` 0.5.2.
+
+### Added
+
+- `createFengariRuntime` on the optional `mwl/fengari` subpath: synchronous host functions with results, live indexed table bindings, owned Lua callback/table references, embedded `require`/`dofile`, and host-driven coroutines with request values and scene answers. `luaToJs` translates Lua source to readable JavaScript offline (fengari 0.5.0's `lua2js`), flagging untranslatable constructs, for a game leaving Lua scripting. The existing JSON-only `ScriptHost` stays unchanged. Calls, module compilation and coroutine resumes share bounded execution, with a fresh budget for each top-level operation.
+
+### Changed
+
+- The optional Lua dependency moves to `@datamoc/fengari` `^0.5.2`, whose shipped TypeScript declarations replace the old `@ts-expect-error` import and the hand-written `luaToJs` types, and whose `vm.protect` and `vm.throwLuaError` replace the host-side protected-call code. The host reuses `FengariVm`'s execution guard while retaining text-only compilation, JSON-shaped tables and seeded randomness.
+
+### Fixed
+
+- Lua instruction limits now interrupt native table moves and string searches, and cannot be swallowed by `pcall`, `xpcall` message handlers or coroutine resumes. Parsing and execution still share the per-call string/buffer allocation budget. The `ScriptHost` sandbox also drops `string.dump` and fengari's internal `__random`, which scripts could still reach.
+
 ## [0.34.0] - 2026-10-10
 
 Hex grids for the cave, dungeon and overworld generators, and the Lua host moves to the `@datamoc/fengari` 0.3.0 fork (`<const>`, `<close>`, `coroutine.close`).
