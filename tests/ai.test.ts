@@ -152,7 +152,7 @@ test('LuaAI runs the shared decision contract and keeps state explicit', () => {
 	ai.dispose();
 });
 
-test('LuaAI turns the Fengari instruction limit into a bounded decision', () => {
+test('LuaAI turns the Pyroeis instruction limit into a bounded decision', () => {
 	const ai = new LuaAI({ maxSteps: 1_000 });
 	ai.register({ id: 'stuck', source: 'function decide() while true do end end' });
 	assert.equal(ai.decide('stuck', { perception: null }).status, 'budget-exceeded');

@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createFengariRuntime, type FengariReference, type FengariValue } from '../src/mwl/fengari.ts';
+import { createPyroeisRuntime, type PyroeisReference, type PyroeisValue } from '../src/mwl/pyroeis.ts';
 
 test('Lua queries return results and indexed bindings read and write live game state', () => {
-	const runtime = createFengariRuntime();
-	const variables = new Map<string | number, FengariValue>([['turn', 1]]);
+	const runtime = createPyroeisRuntime();
+	const variables = new Map<string | number, PyroeisValue>([['turn', 1]]);
 	let gold = 20;
 	try {
 		const side = runtime.createTable({
@@ -62,7 +62,7 @@ test('embedded require caches Lua identity, dofile reruns, and aliases use the s
 		cycle: 'return require("cycle")',
 		bad: 'local =',
 	};
-	const runtime = createFengariRuntime({ modules });
+	const runtime = createPyroeisRuntime({ modules });
 	try {
 		modules['rules/core.lua'] = 'error("mutated source")';
 		runtime.run('game = { require = require }; local a = game.require("entry"); a.cost = 9');
@@ -94,16 +94,16 @@ test('embedded require caches Lua identity, dofile reruns, and aliases use the s
 	} finally {
 		runtime.dispose();
 	}
-	assert.throws(() => createFengariRuntime({ modules: { binary: '\x1bLua' } }), /binary bytecode/);
+	assert.throws(() => createPyroeisRuntime({ modules: { binary: '\x1bLua' } }), /binary bytecode/);
 });
 
 test('a game can retain a Lua callback, call it, and reject foreign or released references', () => {
-	const runtime = createFengariRuntime();
-	const other = createFengariRuntime();
-	let handler: FengariReference | undefined;
+	const runtime = createPyroeisRuntime();
+	const other = createPyroeisRuntime();
+	let handler: PyroeisReference | undefined;
 	try {
 		runtime.defineFunction('game.register', (value) => {
-			handler = value as FengariReference;
+			handler = value as PyroeisReference;
 		});
 		runtime.run('game.register(function(n) return n + 4 end)');
 		assert.equal(handler?.type, 'function');
@@ -125,7 +125,7 @@ test('a game can retain a Lua callback, call it, and reject foreign or released 
 });
 
 test('host-driven coroutines yield a request and resume with scene answers through modules', () => {
-	const runtime = createFengariRuntime({
+	const runtime = createPyroeisRuntime({
 		modules: { dialogue: 'local answer, amount = game.ask("Choose", 7); return answer, amount' },
 	});
 	try {
@@ -148,8 +148,8 @@ test('host-driven coroutines yield a request and resume with scene answers throu
 });
 
 test('closing and disposing suspended handlers runs their close handlers and rejects reuse', () => {
-	const runtime = createFengariRuntime();
-	const seen: FengariValue[] = [];
+	const runtime = createPyroeisRuntime();
+	const seen: PyroeisValue[] = [];
 	const close =
 		'local g <close> = setmetatable({}, { __close = function() game.closed("closed") end }); coroutine.yield()';
 	runtime.defineFunction('game.closed', (value) => {
@@ -173,7 +173,7 @@ test('closing and disposing suspended handlers runs their close handlers and rej
 });
 
 test('integration budgets cover parsing, native work, modules and each coroutine resume', () => {
-	const runtime = createFengariRuntime({
+	const runtime = createPyroeisRuntime({
 		instructionLimit: 2000,
 		memoryLimit: 64 * 1024,
 		modules: {
@@ -201,8 +201,8 @@ test('integration budgets cover parsing, native work, modules and each coroutine
 });
 
 test('callbacks fail as Lua errors and seeded random supports bounded game intervals', () => {
-	const a = createFengariRuntime({ seed: 7 });
-	const b = createFengariRuntime({ seed: 7 });
+	const a = createPyroeisRuntime({ seed: 7 });
+	const b = createPyroeisRuntime({ seed: 7 });
 	try {
 		a.defineFunction('game.fail', () => {
 			throw new Error('game failure');
@@ -226,12 +226,12 @@ test('callbacks fail as Lua errors and seeded random supports bounded game inter
 		a.dispose();
 		b.dispose();
 	}
-	assert.throws(() => createFengariRuntime({ instructionLimit: 0 }), /instructionLimit/);
-	assert.throws(() => createFengariRuntime({ timeLimit: Infinity }), /timeLimit/);
+	assert.throws(() => createPyroeisRuntime({ instructionLimit: 0 }), /instructionLimit/);
+	assert.throws(() => createPyroeisRuntime({ timeLimit: Infinity }), /timeLimit/);
 });
 
 test('host-side binding errors are protected and callbacks cannot dispose an active state', () => {
-	const runtime = createFengariRuntime();
+	const runtime = createPyroeisRuntime();
 	try {
 		runtime.set(
 			'game.side',
@@ -262,7 +262,7 @@ test('host-side binding errors are protected and callbacks cannot dispose an act
 });
 
 test('closing a module coroutine clears pending require state and permits another load', () => {
-	const runtime = createFengariRuntime({ modules: { prompt: 'coroutine.yield("question"); return { answer = 1 }' } });
+	const runtime = createPyroeisRuntime({ modules: { prompt: 'coroutine.yield("question"); return { answer = 1 }' } });
 	try {
 		runtime.run('function load_prompt() return require("prompt") end');
 		const first = runtime.coroutine('load_prompt');
@@ -278,8 +278,8 @@ test('closing a module coroutine clears pending require state and permits anothe
 });
 
 test('coroutine errors reach close handlers and disposal closes other handlers even after a close error', () => {
-	const runtime = createFengariRuntime();
-	const seen: FengariValue[] = [];
+	const runtime = createPyroeisRuntime();
+	const seen: PyroeisValue[] = [];
 	runtime.defineFunction('game.closed', (error) => {
 		seen.push(error);
 	});
@@ -309,7 +309,7 @@ end`);
 });
 
 test('each coroutine resume gets a fresh budget while nested host calls share the current budget', () => {
-	const runtime = createFengariRuntime({ instructionLimit: 2000 });
+	const runtime = createPyroeisRuntime({ instructionLimit: 2000 });
 	try {
 		const work = 'for i = 1, 600 do sum = sum + i end';
 		runtime.run(`function work() local sum = 0; ${work}; return sum end
@@ -328,7 +328,7 @@ function steps() local sum = 0; ${work}; coroutine.yield(sum); ${work}; return s
 });
 
 test('the host can adopt Lua-created threads before or after their first script-side yield', () => {
-	const runtime = createFengariRuntime();
+	const runtime = createPyroeisRuntime();
 	try {
 		runtime.run(
 			'stored = coroutine.create(function(n) assert(game.status() == "running"); local answer = coroutine.yield(n); return answer end)',

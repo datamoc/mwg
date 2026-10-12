@@ -12,7 +12,7 @@
  * `npm test` run has no reason to have installed), plus the two renderer-free asset
  * halves (`assetPaths`, `assetBinary` - path resolution and byte caching with no
  * renderer, beside the Pixi-backed `assets` loader). Deliberately excluded: the Lua
- * runtimes (`mwl/fengari`, `ai/lua`), which carry their own load contracts, and every
+ * runtimes (`mwl/pyroeis`, `ai/lua`), which carry their own load contracts, and every
  * `two-d/*` module (Pixi by documentation, enforced by test).
  *
  * `threads` rides along (simulation's async rollouts and `ai` training spawn through

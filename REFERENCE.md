@@ -1369,7 +1369,7 @@ anything outside it belongs in presentation, not in the rule.
   byte caching) beside the Pixi-backed `assets` loader.
 
 Excluded with reasons in `src/headless/index.ts`: `three-d` (needs Babylon at import),
-the Lua runtimes (`mwl/fengari`, `ai/lua`), and every `two-d/*` module.
+the Lua runtimes (`mwl/pyroeis`, `ai/lua`), and every `two-d/*` module.
 
 ## `three-d` (optional)
 
@@ -1652,7 +1652,7 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 - `ScriptHost` and `createExpressionScriptHost` - the game-owned boundary for executable content.
   The expression host is the statement-free default. The main `mwl` entry point
   exports its types without loading a scripting VM. Projects that opt in to the optional
-  `fengari` dependency can import `createFengariScriptHost` from `@datamoc/mw_games/mwl/fengari`.
+  `@datamoc/pyroeis` dependency can import `createPyroeisScriptHost` from `@datamoc/mw_games/mwl/pyroeis`.
   It provides Lua 5.4 evaluation, chunks, named function calls, JSON-shaped context values, and
   `mwg_emit(name, payload)` events. The adapter opens only the sandbox-safe standard libraries
   (base, coroutine, math, string, table, utf8): `io`, `os`, `debug` and `package` with its
@@ -1665,39 +1665,39 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   can allocate without bound. Scripts get `local x <const>`, `local x <close>` (with `__close`,
   run on a normal exit, `break`, `return` and error, and unwound by a limit error too) and
   `coroutine.close`, from fork 0.3.0; a `__close` cannot yield. The byte budget is the VM's
-  per-call allocation limit (`limits.totalAllocation` on `FengariVm`), so a script's own `pcall`
+  per-call allocation limit (`limits.totalAllocation` on `PyroeisVm`), so a script's own `pcall`
   sees the standard `not enough memory`
   while the host still rejects the call. `getmetatable("")` returns `false`. Globals persist between calls on one host, so
   mutually untrusted scripts need a host each. Lua VM state is not save data: reload scripts
   from the game's entry point.
 
-- `createFengariRuntime` (the same optional `mwl/fengari` subpath) returns a
-  `FengariRuntime` for games that need synchronous API responses, live state and
+- `createPyroeisRuntime` (the same optional `mwl/pyroeis` subpath) returns a
+  `PyroeisRuntime` for games that need synchronous API responses, live state and
   resumable handlers. It keeps the smaller `ScriptHost` contract intact.
   `defineFunction(path, callback)` exposes a host function with arguments and a
   result, and `get`/`set` use dotted global paths made of identifiers. `run` executes
-  text and returns its first result; `call` accepts a path or a `FengariReference`.
+  text and returns its first result; `call` accepts a path or a `PyroeisReference`.
   `reference(path)` retains a Lua table or function's identity, including callbacks
   registered by Lua; dispose references when finished, or dispose the entire runtime.
-  `FengariValue` includes plain values, arrays, objects, Maps, BigInts, binary strings
+  `PyroeisValue` includes plain values, arrays, objects, Maps, BigInts, binary strings
   as Uint8Arrays and owned references. Ordinary tables are copied on read; contiguous
   sequences become arrays. Bound tables retain their references even inside lists.
   Nil maps to null; assigning it removes a Lua table entry. Lua VM state and references
   are not JSON save data.
-  `createTable(FengariTableBinding)` creates a live proxy: `get` and optional `set`
+  `createTable(PyroeisTableBinding)` creates a live proxy: `get` and optional `set`
   run on ordinary indexed reads/writes, with optional `keys` for `pairs` and `length`
   for `#`. Nested bindings can return other proxy references, allowing a game to expose
   a side list, each side's resources, a variable namespace or an entity lookup.
   Its metatable is hidden; Lua `rawget`/`rawset` still bypass bindings, so callbacks
   must enforce game rules themselves.
-  `FengariRuntimeOptions.modules` snapshots exact module IDs and embedded source
+  `PyroeisRuntimeOptions.modules` snapshots exact module IDs and embedded source
   strings. Lua `require` caches the first result with Lua identity; `dofile` reruns
   a source and returns all results. A game can alias `game.require = require` without
   copying a loader. Unknown IDs, cyclic loads and binary chunks are rejected.
   No filesystem, fetch or XHR is involved; `io`, `os`, `debug`, `package`, `load` and
   `loadfile` stay absent. Closing a suspended module load clears its loading marker.
   `defineYieldingFunction` returns request values to the host; a
-  `FengariCoroutine` created by `coroutine(pathOrReference)` exposes `status`,
+  `PyroeisCoroutine` created by `coroutine(pathOrReference)` exposes `status`,
   `resume(args)` and `close()`. It can also adopt a thread created by Lua, including
   one already suspended by the script; each thread has one host controller.
   Each resume returns `{ done, values }`, with scene
@@ -1712,7 +1712,7 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 - `luaToJs(source, { format?, header? })` (same subpath) translates Lua to readable
   JavaScript without running it and returns `{ code, warnings, exports, freeGlobals }`.
   Metatables, coroutines, general `goto` and some patterns stay as `TODO(lua2js)`
-  comments with a matching warning; invalid Lua throws `LuaSyntaxError`. fengari's
+  comments with a matching warning; invalid Lua throws `LuaSyntaxError`. Pyroeis's
   runtime numeric `compile` is not used: it is skipped whenever execution limits are on.
 
 `MwlRuntime` exposes `fireEvent(id)` for named event execution. Event conditions compare
@@ -1834,7 +1834,7 @@ actions, serialisable state, diagnostics and budgets.
   state and arbitrary object graphs never become save data.
 - `LuaAI`/`createLuaAI` from `@datamoc/mw_games/ai/lua` - optional Lua 5.4 provider with the same
   action and state envelope. A Lua function receives `(perception, state)` and returns an action
-  table or `{ action, state, events }`. It uses the existing optional Fengari host, which
+  table or `{ action, state, events }`. It uses the existing optional Pyroeis host, which
   removes filesystem, process, module-loading, clock and debug access, supplies seeded random,
   and enforces an instruction budget.
 - `AIAgentDefinition`/`AIBehavior` - JavaScript registrations; Lua registrations instead

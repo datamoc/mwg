@@ -6228,7 +6228,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.35.1";
+    export declare const version = "0.36.0";
 
 ### `VerticalLabel` (class)
 
@@ -8141,7 +8141,7 @@ build instead.
 
 ### `LuaAIOptions` (interface)
 
-    export interface LuaAIOptions extends FengariScriptHostOptions {
+    export interface LuaAIOptions extends PyroeisScriptHostOptions {
         readonly host?: ScriptHost;
         readonly maxSteps?: number;
         readonly maxMilliseconds?: number;
@@ -13959,83 +13959,15 @@ build instead.
 
     export declare function validAttributeValue(value: string, type: MwlAttributeType): boolean;
 
-## `./mwl/fengari`
+## `./mwl/pyroeis`
 
-### `createFengariRuntime` (function)
+### `createPyroeisRuntime` (function)
 
-    export declare function createFengariRuntime(options?: FengariRuntimeOptions): FengariRuntime;
+    export declare function createPyroeisRuntime(options?: PyroeisRuntimeOptions): PyroeisRuntime;
 
-### `createFengariScriptHost` (function)
+### `createPyroeisScriptHost` (function)
 
-    export declare function createFengariScriptHost(options?: FengariScriptHostOptions): ScriptHost;
-
-### `FengariCoroutine` (interface)
-
-    export interface FengariCoroutine {
-        readonly status: 'suspended' | 'running' | 'dead';
-        resume(args?: readonly FengariValue[]): {
-            readonly done: boolean;
-            readonly values: readonly FengariValue[];
-        };
-
-        close(): void;
-    }
-
-### `FengariReference` (interface)
-
-    export interface FengariReference {
-        readonly type: 'function' | 'table' | 'thread' | 'userdata';
-        dispose(): void;
-    }
-
-### `FengariRuntime` (interface)
-
-    export interface FengariRuntime {
-        run(source: string, chunkName?: string): FengariValue;
-        call(target: string | FengariReference, args?: readonly FengariValue[]): FengariValue;
-        get(path: string): FengariValue;
-        set(path: string, value: FengariValue): void;
-        reference(path: string): FengariReference;
-        defineFunction(path: string, callback: (...args: FengariValue[]) => FengariValue | void): void;
-
-        defineYieldingFunction(path: string, callback: (...args: FengariValue[]) => readonly FengariValue[]): void;
-        createTable(binding: FengariTableBinding): FengariReference;
-
-        coroutine(target: string | FengariReference): FengariCoroutine;
-        dispose(): void;
-    }
-
-### `FengariRuntimeOptions` (interface)
-
-    export interface FengariRuntimeOptions extends FengariScriptHostOptions {
-
-        readonly modules?: Readonly<Record<string, string>>;
-
-        readonly timeLimit?: number;
-    }
-
-### `FengariScriptHostOptions` (interface)
-
-    export interface FengariScriptHostOptions {
-        readonly instructionLimit?: number;
-
-        readonly memoryLimit?: number;
-        readonly seed?: number;
-    }
-
-### `FengariTableBinding` (interface)
-
-    export interface FengariTableBinding {
-        get(key: string | number): FengariValue;
-        set?(key: string | number, value: FengariValue): void;
-        keys?(): readonly (string | number)[];
-        length?(): number;
-    }
-
-### `FengariValue` (type)
-
-    export type FengariValue = null | boolean | number | string | bigint | Uint8Array | FengariReference | FengariValue[] | {
-        readonly [key: string]: FengariValue;
+    export declare function createPyroeisScriptHost(options?: PyroeisScriptHostOptions): ScriptHost;
 
 ### `luaToJs` (function)
 
@@ -14043,11 +13975,79 @@ build instead.
 
 ### `LuaToJsOptions` (type)
 
-    export { LuaToJsOptions } from '@datamoc/fengari'
+    export { LuaToJsOptions } from '@datamoc/pyroeis'
 
 ### `LuaToJsResult` (type)
 
-    export { LuaToJsResult } from '@datamoc/fengari'
+    export { LuaToJsResult } from '@datamoc/pyroeis'
+
+### `PyroeisCoroutine` (interface)
+
+    export interface PyroeisCoroutine {
+        readonly status: 'suspended' | 'running' | 'dead';
+        resume(args?: readonly PyroeisValue[]): {
+            readonly done: boolean;
+            readonly values: readonly PyroeisValue[];
+        };
+
+        close(): void;
+    }
+
+### `PyroeisReference` (interface)
+
+    export interface PyroeisReference {
+        readonly type: 'function' | 'table' | 'thread' | 'userdata';
+        dispose(): void;
+    }
+
+### `PyroeisRuntime` (interface)
+
+    export interface PyroeisRuntime {
+        run(source: string, chunkName?: string): PyroeisValue;
+        call(target: string | PyroeisReference, args?: readonly PyroeisValue[]): PyroeisValue;
+        get(path: string): PyroeisValue;
+        set(path: string, value: PyroeisValue): void;
+        reference(path: string): PyroeisReference;
+        defineFunction(path: string, callback: (...args: PyroeisValue[]) => PyroeisValue | void): void;
+
+        defineYieldingFunction(path: string, callback: (...args: PyroeisValue[]) => readonly PyroeisValue[]): void;
+        createTable(binding: PyroeisTableBinding): PyroeisReference;
+
+        coroutine(target: string | PyroeisReference): PyroeisCoroutine;
+        dispose(): void;
+    }
+
+### `PyroeisRuntimeOptions` (interface)
+
+    export interface PyroeisRuntimeOptions extends PyroeisScriptHostOptions {
+
+        readonly modules?: Readonly<Record<string, string>>;
+
+        readonly timeLimit?: number;
+    }
+
+### `PyroeisScriptHostOptions` (interface)
+
+    export interface PyroeisScriptHostOptions {
+        readonly instructionLimit?: number;
+
+        readonly memoryLimit?: number;
+        readonly seed?: number;
+    }
+
+### `PyroeisTableBinding` (interface)
+
+    export interface PyroeisTableBinding {
+        get(key: string | number): PyroeisValue;
+        set?(key: string | number, value: PyroeisValue): void;
+        keys?(): readonly (string | number)[];
+        length?(): number;
+    }
+
+### `PyroeisValue` (type)
+
+    export type PyroeisValue = null | boolean | number | string | bigint | Uint8Array | PyroeisReference | PyroeisValue[] | {
+        readonly [key: string]: PyroeisValue;
 
 ## `./roguelike`
 

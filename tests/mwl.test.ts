@@ -22,7 +22,7 @@ import { composeEffects, effectToModifier, inventoryItem, itemDefinition } from 
 import { evaluateExpression } from '../src/mwl/expression.ts';
 import { validateCatalog } from '../src/mwl/catalog.ts';
 import { decodeSave, encodeSave } from '../src/mwl/persistence.ts';
-import { createFengariScriptHost } from '../src/mwl/fengari.ts';
+import { createPyroeisScriptHost } from '../src/mwl/pyroeis.ts';
 import { createExpressionScriptHost } from '../src/mwl/scripts.ts';
 import { contentReport, loadContent } from '../src/mwl/report.ts';
 import { readAttributes, readChildren, readTableIndex, readTableMap, tableKey } from '../src/mwl/readers.ts';
@@ -853,8 +853,8 @@ test('MWL describes actor and controller alpha-beta profiles', () => {
 	]);
 });
 
-test('MWL Fengari host evaluates Lua with context and calls game-owned emitters', () => {
-	const host = createFengariScriptHost({ seed: 7 });
+test('MWL Pyroeis host evaluates Lua with context and calls game-owned emitters', () => {
+	const host = createPyroeisScriptHost({ seed: 7 });
 	assert.equal(host.evaluate('hp + 2', { hp: 3 }), 5);
 	const events: Array<[string, unknown]> = [];
 	host.execute('mwg_emit("spawn", { type = unit_type, x = 2 })', { unit_type: 'scout' }, (name, payload) => {
@@ -866,14 +866,14 @@ test('MWL Fengari host evaluates Lua with context and calls game-owned emitters'
 	host.dispose();
 });
 
-test('MWL Fengari host is deterministic, sandboxed, and budgeted', () => {
-	const first = createFengariScriptHost({ seed: 9 });
-	const second = createFengariScriptHost({ seed: 9 });
+test('MWL Pyroeis host is deterministic, sandboxed, and budgeted', () => {
+	const first = createPyroeisScriptHost({ seed: 9 });
+	const second = createPyroeisScriptHost({ seed: 9 });
 	assert.equal(first.evaluate('math.random()'), second.evaluate('math.random()'));
 	assert.throws(() => first.evaluate('os.execute("echo unsafe")'));
 	first.dispose();
 	second.dispose();
-	const limited = createFengariScriptHost({ instructionLimit: 10 });
+	const limited = createPyroeisScriptHost({ instructionLimit: 10 });
 	assert.throws(() => limited.execute('while true do end'), /instruction limit/i);
 	limited.dispose();
 });

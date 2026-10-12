@@ -22,7 +22,7 @@ import * as stage from '../src/two-d/stage/index.ts';
 import * as world from '../src/world/index.ts';
 import * as i18n from '../src/i18n/index.ts';
 import * as mwl from '../src/mwl/index.ts';
-import * as mwlFengari from '../src/mwl/fengari.ts';
+import * as mwlPyroeis from '../src/mwl/pyroeis.ts';
 import * as ai from '../src/ai/index.ts';
 import * as aiLua from '../src/ai/lua.ts';
 import * as threads from '../src/threads/index.ts';
@@ -70,7 +70,7 @@ const MODULES: Record<string, Record<string, unknown>> = {
 	world,
 	i18n,
 	mwl,
-	'mwl/fengari': mwlFengari,
+	'mwl/pyroeis': mwlPyroeis,
 	ai,
 	'ai/lua': aiLua,
 	threads,

@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createFengariScriptHost, luaToJs } from '../src/mwl/fengari.ts';
+import { createPyroeisScriptHost, luaToJs } from '../src/mwl/pyroeis.ts';
 
 test('Lua budgets interrupt native operations and survive protected calls and coroutines', () => {
-	const host = createFengariScriptHost({ instructionLimit: 1000 });
+	const host = createPyroeisScriptHost({ instructionLimit: 1000 });
 	try {
 		for (const source of [
 			'table.move({}, 1, 200000, 1)',
@@ -25,7 +25,7 @@ test('Lua budgets interrupt native operations and survive protected calls and co
 });
 
 test('the Lua host bounds string allocation, not only instruction count', () => {
-	const host = createFengariScriptHost({ instructionLimit: 1000, memoryLimit: 1024 * 1024 });
+	const host = createPyroeisScriptHost({ instructionLimit: 1000, memoryLimit: 1024 * 1024 });
 	assert.throws(() => host.evaluate('#string.rep("x", 2^28)'), /memory limit exceeded/);
 	assert.throws(
 		() => host.evaluate('(function() local s = "x" for i = 1, 40 do s = s .. s end return #s end)()'),
@@ -44,7 +44,7 @@ test('the Lua host bounds string allocation, not only instruction count', () => 
 });
 
 test('the Lua host hides the string metatable and never constructs the unsafe libraries', () => {
-	const host = createFengariScriptHost();
+	const host = createPyroeisScriptHost();
 	assert.equal(host.evaluate('getmetatable("")'), false);
 	assert.equal(
 		host.evaluate(
@@ -60,26 +60,26 @@ test('the Lua host hides the string metatable and never constructs the unsafe li
 });
 
 test('the Lua host compiles text chunks only and rejects binary bytecode', () => {
-	const host = createFengariScriptHost();
+	const host = createPyroeisScriptHost();
 	assert.throws(() => host.execute('\x1bLua\x00\x00\x00'), /binary chunk/);
 	assert.equal(host.evaluate('1 + 1'), 2, 'the host stays usable afterwards');
 	host.dispose();
 });
 
 test('an emit callback runs with the real Uint8Array and outside the Lua budget', () => {
-	const host = createFengariScriptHost({ memoryLimit: 64 * 1024 });
+	const host = createPyroeisScriptHost({ memoryLimit: 64 * 1024 });
 	let seen = 0;
 	host.execute('mwg_emit("big")', {}, () => {
 		seen = new Uint8Array(1024 * 1024).byteLength;
 		assert.equal(Object.getPrototypeOf(new Uint8Array(1)), Uint8Array.prototype);
 	});
 	assert.equal(seen, 1024 * 1024);
-	assert.throws(() => createFengariScriptHost({ memoryLimit: 0 }), /memoryLimit must be a positive integer/);
+	assert.throws(() => createPyroeisScriptHost({ memoryLimit: 0 }), /memoryLimit must be a positive integer/);
 	host.dispose();
 });
 
 test('a refused allocation surfaces as not enough memory to scripts, and the host still rejects the call', () => {
-	const host = createFengariScriptHost({ memoryLimit: 1024 });
+	const host = createPyroeisScriptHost({ memoryLimit: 1024 });
 	let seen: unknown = null;
 	assert.throws(
 		() =>
@@ -97,7 +97,7 @@ test('a refused allocation surfaces as not enough memory to scripts, and the hos
 });
 
 test('the Lua host runs <const> and <close> variables, and the limits unwind through them', () => {
-	const host = createFengariScriptHost({ instructionLimit: 5000 });
+	const host = createPyroeisScriptHost({ instructionLimit: 5000 });
 	const seen: unknown[] = [];
 	const collect = (name: string, payload: unknown): void => void seen.push([name, payload]);
 	const closer = 'setmetatable({}, { __close = function(_, err) mwg_emit("closed", tostring(err)) end })';
@@ -144,7 +144,7 @@ test('luaToJs translates Lua to JavaScript that computes the same result, and fl
 });
 
 test('the Lua host exposes no loader, no bytecode dumper and no VM internals', () => {
-	const host = createFengariScriptHost();
+	const host = createPyroeisScriptHost();
 	try {
 		for (const name of ['load', 'loadfile', 'dofile', 'require', '__random', 'string.dump'])
 			assert.equal(host.evaluate(`type(${name})`), 'nil', name);

@@ -1,60 +1,60 @@
-import fengari from '@datamoc/fengari';
-import type { LuaRefType } from '@datamoc/fengari';
-import type { FengariScriptHostOptions } from './fengari.ts';
+import pyroeis from '@datamoc/pyroeis';
+import type { LuaRefType } from '@datamoc/pyroeis';
+import type { PyroeisScriptHostOptions } from './pyroeis.ts';
 
 /** Values for the integration host; Lua functions and live tables can retain their identity. */
-export type FengariValue =
+export type PyroeisValue =
 	| null
 	| boolean
 	| number
 	| string
 	| bigint
 	| Uint8Array
-	| FengariReference
-	| FengariValue[]
-	| { readonly [key: string]: FengariValue }
-	| Map<FengariValue, FengariValue>;
+	| PyroeisReference
+	| PyroeisValue[]
+	| { readonly [key: string]: PyroeisValue }
+	| Map<PyroeisValue, PyroeisValue>;
 
 /** An owned Lua registry reference. Use runtime.call/coroutine for functions; dispose when no longer needed. */
-export interface FengariReference {
+export interface PyroeisReference {
 	readonly type: 'function' | 'table' | 'thread' | 'userdata';
 	dispose(): void;
 }
 
-export interface FengariCoroutine {
+export interface PyroeisCoroutine {
 	readonly status: 'suspended' | 'running' | 'dead';
-	resume(args?: readonly FengariValue[]): { readonly done: boolean; readonly values: readonly FengariValue[] };
+	resume(args?: readonly PyroeisValue[]): { readonly done: boolean; readonly values: readonly PyroeisValue[] };
 	/** Runs pending close handlers with a fresh, bounded execution budget. */
 	close(): void;
 }
 
 /** An empty Lua proxy table whose ordinary indexing always consults the game. */
-export interface FengariTableBinding {
-	get(key: string | number): FengariValue;
-	set?(key: string | number, value: FengariValue): void;
+export interface PyroeisTableBinding {
+	get(key: string | number): PyroeisValue;
+	set?(key: string | number, value: PyroeisValue): void;
 	keys?(): readonly (string | number)[];
 	length?(): number;
 }
 
-export interface FengariRuntimeOptions extends FengariScriptHostOptions {
+export interface PyroeisRuntimeOptions extends PyroeisScriptHostOptions {
 	/** Exact module IDs mapped to embedded text sources; never filesystem or network paths. */
 	readonly modules?: Readonly<Record<string, string>>;
 	/** Optional wall-clock budget per call/resume, host callbacks included. */
 	readonly timeLimit?: number;
 }
 
-export interface FengariRuntime {
-	run(source: string, chunkName?: string): FengariValue;
-	call(target: string | FengariReference, args?: readonly FengariValue[]): FengariValue;
-	get(path: string): FengariValue;
-	set(path: string, value: FengariValue): void;
-	reference(path: string): FengariReference;
-	defineFunction(path: string, callback: (...args: FengariValue[]) => FengariValue | void): void;
+export interface PyroeisRuntime {
+	run(source: string, chunkName?: string): PyroeisValue;
+	call(target: string | PyroeisReference, args?: readonly PyroeisValue[]): PyroeisValue;
+	get(path: string): PyroeisValue;
+	set(path: string, value: PyroeisValue): void;
+	reference(path: string): PyroeisReference;
+	defineFunction(path: string, callback: (...args: PyroeisValue[]) => PyroeisValue | void): void;
 	/** The returned values are yielded to the host; resume arguments become the Lua call's results. */
-	defineYieldingFunction(path: string, callback: (...args: FengariValue[]) => readonly FengariValue[]): void;
-	createTable(binding: FengariTableBinding): FengariReference;
+	defineYieldingFunction(path: string, callback: (...args: PyroeisValue[]) => readonly PyroeisValue[]): void;
+	createTable(binding: PyroeisTableBinding): PyroeisReference;
 	/** Creates a thread from a function or adopts an existing Lua thread, with one host controller. */
-	coroutine(target: string | FengariReference): FengariCoroutine;
+	coroutine(target: string | PyroeisReference): PyroeisCoroutine;
 	dispose(): void;
 }
 
@@ -68,9 +68,9 @@ export interface FengariRuntime {
  *
  * @example
  * ```ts
- * import { createFengariRuntime } from '@datamoc/mw_games/mwl/fengari';
+ * import { createPyroeisRuntime } from '@datamoc/mw_games/mwl/pyroeis';
  *
- * const runtime = createFengariRuntime({ modules: { rules: 'return { cost = 4 }' } });
+ * const runtime = createPyroeisRuntime({ modules: { rules: 'return { cost = 4 }' } });
  * let gold = 10;
  * runtime.set('game.side', runtime.createTable({
  *   get: (key) => key === 'gold' ? gold : null,
@@ -85,8 +85,8 @@ export interface FengariRuntime {
  * runtime.dispose();
  * ```
  */
-export function createFengariRuntime(options: FengariRuntimeOptions = {}): FengariRuntime {
-	const { lua, lauxlib } = fengari;
+export function createPyroeisRuntime(options: PyroeisRuntimeOptions = {}): PyroeisRuntime {
+	const { lua, lauxlib } = pyroeis;
 	const instructionLimit = options.instructionLimit ?? 100_000;
 	const memoryLimit = options.memoryLimit ?? 32 * 1024 * 1024;
 	for (const [name, value] of [
@@ -99,7 +99,7 @@ export function createFengariRuntime(options: FengariRuntimeOptions = {}): Fenga
 		throw new RangeError('timeLimit must be a positive finite number');
 	const sources = new Map(Object.entries(options.modules ?? {}));
 	for (const source of sources.values()) text(source);
-	const vm = new fengari.FengariVm(undefined, options.seed ?? 0x6d7767, {
+	const vm = new pyroeis.PyroeisVm(undefined, options.seed ?? 0x6d7767, {
 		sandbox: true,
 		remove: ['print'],
 		limits: { instructions: instructionLimit, totalAllocation: memoryLimit, timeMs: options.timeLimit },
@@ -107,10 +107,10 @@ export function createFengariRuntime(options: FengariRuntimeOptions = {}): Fenga
 	const L = vm.state;
 	let disposed = false;
 	let depth = 0;
-	const references = new Map<FengariReference, InstanceType<typeof fengari.LuaRef>>();
-	const proxies = new Map<unknown, FengariReference>();
-	const coroutines = new Map<unknown, FengariCoroutine>();
-	const bytes = fengari.to_luastring;
+	const references = new Map<PyroeisReference, InstanceType<typeof pyroeis.LuaRef>>();
+	const proxies = new Map<unknown, PyroeisReference>();
+	const coroutines = new Map<unknown, PyroeisCoroutine>();
+	const bytes = pyroeis.to_luastring;
 
 	function text(source: string): void {
 		if (typeof source !== 'string' || source.startsWith('\x1b'))
@@ -143,8 +143,8 @@ export function createFengariRuntime(options: FengariRuntimeOptions = {}): Fenga
 			depth--;
 		}
 	}
-	function own(native: InstanceType<typeof fengari.LuaRef>): FengariReference {
-		const ref: FengariReference = {
+	function own(native: InstanceType<typeof pyroeis.LuaRef>): PyroeisReference {
+		const ref: PyroeisReference = {
 			type: native.type,
 			dispose() {
 				if (!references.delete(ref)) return;
@@ -155,7 +155,7 @@ export function createFengariRuntime(options: FengariRuntimeOptions = {}): Fenga
 		references.set(ref, native);
 		return ref;
 	}
-	function nativeRef(ref: FengariReference): InstanceType<typeof fengari.LuaRef> {
+	function nativeRef(ref: PyroeisReference): InstanceType<typeof pyroeis.LuaRef> {
 		const native = references.get(ref);
 		if (!native) throw new Error('Lua reference is released or belongs to another runtime');
 		return native;
@@ -170,7 +170,7 @@ export function createFengariRuntime(options: FengariRuntimeOptions = {}): Fenga
 		}
 		if (value instanceof Uint8Array) return value;
 		if ('dispose' in value && typeof value.dispose === 'function' && 'type' in value)
-			return nativeRef(value as FengariReference);
+			return nativeRef(value as PyroeisReference);
 		if (seen.has(value)) return seen.get(value);
 		if (value instanceof Map) {
 			const result = new Map();
@@ -196,24 +196,24 @@ export function createFengariRuntime(options: FengariRuntimeOptions = {}): Fenga
 			});
 		return result;
 	}
-	function read(state: unknown, index: number, seen = new Map<unknown, FengariValue>(), depth = 0): FengariValue {
+	function read(state: unknown, index: number, seen = new Map<unknown, PyroeisValue>(), depth = 0): PyroeisValue {
 		if (depth > 128) throw new RangeError('Lua value is too deeply nested');
 		const pointer = lua.lua_topointer(state, index);
 		const proxy = proxies.get(pointer);
 		if (proxy) return proxy;
 		if (lua.lua_type(state, index) !== lua.LUA_TTABLE) {
 			const value = vm.read(index, 0, state);
-			if (value instanceof fengari.Userdata) throw new TypeError('Unsupported Lua light userdata');
-			return value instanceof fengari.LuaRef ? own(value) : (value as FengariValue);
+			if (value instanceof pyroeis.Userdata) throw new TypeError('Unsupported Lua light userdata');
+			return value instanceof pyroeis.LuaRef ? own(value) : (value as PyroeisValue);
 		}
 		const previous = seen.get(pointer);
 		if (previous) return previous;
 		lua.lua_checkstack(state, 8);
 		const table = lua.lua_absindex(state, index);
 		const kind = vm.classifyKeys(state, table);
-		let result: FengariValue;
+		let result: PyroeisValue;
 		if (kind === 'array') result = [];
-		else if (kind === 'map') result = new Map<FengariValue, FengariValue>();
+		else if (kind === 'map') result = new Map<PyroeisValue, PyroeisValue>();
 		else result = {};
 		seen.set(pointer, result);
 		lua.lua_pushnil(state);
@@ -234,7 +234,7 @@ export function createFengariRuntime(options: FengariRuntimeOptions = {}): Fenga
 		}
 		return result;
 	}
-	function callStack(args: number): FengariValue {
+	function callStack(args: number): PyroeisValue {
 		if (lua.lua_pcall(L, args, 1, 0) !== lua.LUA_OK) vm.throwLuaError(L);
 		return read(L, -1);
 	}
@@ -283,15 +283,15 @@ export function createFengariRuntime(options: FengariRuntimeOptions = {}): Fenga
 		};
 	}
 	function callback(
-		fn: (...args: FengariValue[]) => FengariValue | void | readonly FengariValue[],
+		fn: (...args: PyroeisValue[]) => PyroeisValue | void | readonly PyroeisValue[],
 		mode: 'single' | 'multi' | 'yield' = 'single',
 	) {
 		const pushResults = protectedCallback((state) => {
 			const args = Array.from({ length: lua.lua_gettop(state) }, (_, index) => read(state, index + 1));
 			const result = fn(...args);
-			let values: readonly FengariValue[];
-			if (mode === 'single') values = result === undefined ? [] : [result as FengariValue];
-			else values = result as readonly FengariValue[];
+			let values: readonly PyroeisValue[];
+			if (mode === 'single') values = result === undefined ? [] : [result as PyroeisValue];
+			else values = result as readonly PyroeisValue[];
 			for (const value of values) vm.push(toNative(value), state);
 			return values.length;
 		});
@@ -300,22 +300,22 @@ export function createFengariRuntime(options: FengariRuntimeOptions = {}): Fenga
 			return mode === 'yield' ? lua.lua_yield(state, count) : count;
 		};
 	}
-	function capture(index: number): FengariReference {
+	function capture(index: number): PyroeisReference {
 		const luaType = lua.lua_type(L, index);
 		if (![lua.LUA_TTABLE, lua.LUA_TFUNCTION, lua.LUA_TTHREAD, lua.LUA_TUSERDATA].includes(luaType))
 			throw new Error('Only Lua tables, functions, threads and userdata can be referenced');
 		lua.lua_pushvalue(L, index);
-		// Fengari's own references are never tables, but a table is registry-owned the same way.
-		const type = fengari.to_jsstring(lua.lua_typename(L, luaType)) as LuaRefType;
-		return own(new fengari.LuaRef(vm, lauxlib.luaL_ref(L, lua.LUA_REGISTRYINDEX), type));
+		// Pyroeis's own references are never tables, but a table is registry-owned the same way.
+		const type = pyroeis.to_jsstring(lua.lua_typename(L, luaType)) as LuaRefType;
+		return own(new pyroeis.LuaRef(vm, lauxlib.luaL_ref(L, lua.LUA_REGISTRYINDEX), type));
 	}
-	function key(value: FengariValue): string | number {
+	function key(value: PyroeisValue): string | number {
 		if (typeof value !== 'string' && typeof value !== 'number')
 			throw new TypeError('Lua binding keys must be strings or numbers');
 		return value;
 	}
 
-	const runtime: FengariRuntime = {
+	const runtime: PyroeisRuntime = {
 		run(source, chunkName = '=game') {
 			text(source);
 			return guard(() => {
@@ -362,7 +362,7 @@ export function createFengariRuntime(options: FengariRuntimeOptions = {}): Fenga
 				lua.lua_newtable(L);
 				const pointer = lua.lua_topointer(L, -1);
 				lua.lua_newtable(L);
-				const methods: Record<string, (...args: FengariValue[]) => FengariValue | void> = {
+				const methods: Record<string, (...args: PyroeisValue[]) => PyroeisValue | void> = {
 					__index: (_table, index) => binding.get(key(index)),
 					__newindex: (_table, index, value) => {
 						if (!binding.set) throw new Error('Lua table binding is read-only');
@@ -418,7 +418,7 @@ export function createFengariRuntime(options: FengariRuntimeOptions = {}): Fenga
 				let closed = false;
 				let running = false;
 				let failure: string | undefined;
-				const coroutine: FengariCoroutine = {
+				const coroutine: PyroeisCoroutine = {
 					get status() {
 						if (closed || disposed) return 'dead';
 						if (running) return 'running';

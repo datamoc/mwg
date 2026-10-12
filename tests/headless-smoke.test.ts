@@ -61,7 +61,7 @@ test('nothing reachable from the headless entry imports a renderer', () => {
 
 test('the headless entry excludes the modules with their own load contracts', () => {
 	const files = reachableFrom('headless/index.ts').map((file) => file.slice(SRC.length + 1).replace(/\\/g, '/'));
-	for (const banned of ['three-d/', 'two-d/', 'mwl/fengari', 'ai/lua']) {
+	for (const banned of ['three-d/', 'two-d/', 'mwl/pyroeis', 'ai/lua']) {
 		assert.ok(!files.some((file) => file.includes(banned)), `${banned} stays out of the headless graph`);
 	}
 });

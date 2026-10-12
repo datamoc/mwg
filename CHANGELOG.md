@@ -7,9 +7,15 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.36.0] - 2026-10-12
+
+The optional Lua integration uses Pyroeis, with a matching public subpath, factories and types. Games using the Lua host must update their imports to `mwl/pyroeis` and the `Pyroeis` names.
+
 ### Changed
 
-- Docs: the 1.0 checklist's ports line is restated as an external condition rather than an open box, `LuaAI` is described as the Lua 5.4 provider it is, and the Lua host's byte budget is described as `FengariVm`'s per-call allocation limit rather than the `lua_setallocf` hook it no longer rides. The 0.35.0 entry names the `^0.5.2` range that release shipped with.
+- Replace the optional `@datamoc/fengari` dependency with `@datamoc/pyroeis` `^0.6.0` and use `PyroeisVm`. Rename the public Lua subpath to `mwl/pyroeis`, the factories to `createPyroeisScriptHost` and `createPyroeisRuntime`, and all associated `Fengari*` types to `Pyroeis*`.
+
+- Docs: the 1.0 checklist's ports line is restated as an external condition rather than an open box, `LuaAI` is described as the Lua 5.4 provider it is, and the Lua host's byte budget is described as the VM's per-call allocation limit rather than the `lua_setallocf` hook it no longer rides. The 0.35.0 entry names the `^0.5.2` range that release shipped with.
 
 ## [0.35.1] - 2026-10-11
 

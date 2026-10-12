@@ -1,4 +1,4 @@
-import { createFengariScriptHost, type FengariScriptHostOptions } from '../mwl/fengari.ts';
+import { createPyroeisScriptHost, type PyroeisScriptHostOptions } from '../mwl/pyroeis.ts';
 import type { ScriptHost } from '../mwl/scripts.ts';
 import { type AIDecision, type AIDecisionInput, type AIStateEnvelope } from './index.ts';
 import { alphaBetaSearch, type AlphaBetaOptions, type AlphaBetaResult, type LuaAlphaBetaFunctions } from './search.ts';
@@ -10,7 +10,7 @@ export interface LuaAIAgentDefinition {
 	readonly search?: LuaAlphaBetaFunctions;
 }
 
-export interface LuaAIOptions extends FengariScriptHostOptions {
+export interface LuaAIOptions extends PyroeisScriptHostOptions {
 	readonly host?: ScriptHost;
 	readonly maxSteps?: number;
 	readonly maxMilliseconds?: number;
@@ -24,7 +24,7 @@ export interface LuaAIOptions extends FengariScriptHostOptions {
  * A Lua function receives `(perception, state)` and returns either an action
  * table or `{ action = action_table, state = state_table, events = {...} }`.
  * The host is supplied so games can choose their own VM policy and tests can
- * inject a fake without loading Fengari.
+ * inject a fake without loading Pyroeis.
  *
  * @example
  * ```ts
@@ -46,7 +46,7 @@ export class LuaAI {
 		this.options = options;
 		this.host =
 			options.host ??
-			createFengariScriptHost({
+			createPyroeisScriptHost({
 				instructionLimit: options.maxSteps ?? options.instructionLimit,
 				memoryLimit: options.memoryLimit,
 				seed: options.seed,

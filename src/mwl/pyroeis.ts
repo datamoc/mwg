@@ -1,18 +1,18 @@
-import fengari from '@datamoc/fengari';
-import type { LuaToJsOptions, LuaToJsResult } from '@datamoc/fengari';
-const { lauxlib, lua } = fengari;
+import pyroeis from '@datamoc/pyroeis';
+import type { LuaToJsOptions, LuaToJsResult } from '@datamoc/pyroeis';
+const { lauxlib, lua } = pyroeis;
 const to_luastring = (str: string) => new TextEncoder().encode(str);
 import type { ScriptContext, ScriptEmit, ScriptHost, ScriptValue } from './scripts.ts';
 
-export { createFengariRuntime } from './fengari-runtime.ts';
+export { createPyroeisRuntime } from './pyroeis-runtime.ts';
 export type {
-	FengariValue,
-	FengariReference,
-	FengariCoroutine,
-	FengariTableBinding,
-	FengariRuntimeOptions,
-	FengariRuntime,
-} from './fengari-runtime.ts';
+	PyroeisValue,
+	PyroeisReference,
+	PyroeisCoroutine,
+	PyroeisTableBinding,
+	PyroeisRuntimeOptions,
+	PyroeisRuntime,
+} from './pyroeis-runtime.ts';
 
 export type { LuaToJsOptions, LuaToJsResult };
 
@@ -24,16 +24,16 @@ export type { LuaToJsOptions, LuaToJsResult };
  *
  * @example
  * ```ts
- * import { luaToJs } from '@datamoc/mw_games/mwl/fengari';
+ * import { luaToJs } from '@datamoc/mw_games/mwl/pyroeis';
  *
  * const { code } = luaToJs('function double(n) return n * 2 end', { format: 'esm' });
  * ```
  */
 export function luaToJs(source: string, options: LuaToJsOptions = {}): LuaToJsResult {
-	return fengari.FengariVm.toJs(source, options);
+	return pyroeis.PyroeisVm.toJs(source, options);
 }
 
-export interface FengariScriptHostOptions {
+export interface PyroeisScriptHostOptions {
 	readonly instructionLimit?: number;
 	/** bytes of string and buffer data one call may allocate; defaults to 32 MB */
 	readonly memoryLimit?: number;
@@ -44,7 +44,7 @@ const DEFAULT_INSTRUCTION_LIMIT = 100_000;
 const DEFAULT_MEMORY_LIMIT = 32 * 1024 * 1024;
 
 /**
- * Optional Lua 5.4 host. Fengari is loaded only by this subpath, never by `mwg/mwl`.
+ * Optional Lua 5.4 host. Pyroeis is loaded only by this subpath, never by `mwg/mwl`.
  *
  * Sandboxed for untrusted scripts: only the base, coroutine, math, string, table and utf8
  * libraries are opened (`io`, `os`, `debug` and `package` with its `require` are never
@@ -60,14 +60,14 @@ const DEFAULT_MEMORY_LIMIT = 32 * 1024 * 1024;
  *
  * @example
  * ```ts
- * import { createFengariScriptHost } from '@datamoc/mw_games/mwl/fengari';
+ * import { createPyroeisScriptHost } from '@datamoc/mw_games/mwl/pyroeis';
  *
- * const host = createFengariScriptHost();
+ * const host = createPyroeisScriptHost();
  * console.log(host.evaluate('1 + 2')); // 3
  * host.dispose();
  * ```
  */
-export function createFengariScriptHost(options: FengariScriptHostOptions = {}): ScriptHost {
+export function createPyroeisScriptHost(options: PyroeisScriptHostOptions = {}): ScriptHost {
 	const limit = options.instructionLimit ?? DEFAULT_INSTRUCTION_LIMIT;
 	if (!Number.isInteger(limit) || limit < 1) throw new RangeError('instructionLimit must be a positive integer');
 	const memoryLimit = options.memoryLimit ?? DEFAULT_MEMORY_LIMIT;
@@ -75,9 +75,9 @@ export function createFengariScriptHost(options: FengariScriptHostOptions = {}):
 		throw new RangeError('memoryLimit must be a positive integer');
 	let randomState = (options.seed ?? 0x6d7767) >>> 0;
 	let emit: ScriptEmit | undefined;
-	// Keep our text-only loader and JSON conversion, but share Fengari's guard with
+	// Keep our text-only loader and JSON conversion, but share Pyroeis's guard with
 	// native operations, coroutine resumes and script-level protected calls.
-	const vm = new fengari.FengariVm(undefined, options.seed, {
+	const vm = new pyroeis.PyroeisVm(undefined, options.seed, {
 		sandbox: true,
 		print: 'native',
 		remove: ['load'],
