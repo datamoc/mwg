@@ -7,6 +7,21 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.36.1] - 2026-10-13
+
+A maintenance release: the optional Lua dependency catches up with Pyroeis 0.9.0, and the CI no longer hangs on a stuck browser.
+
+### Changed
+
+- The optional `@datamoc/pyroeis` dependency moves from `^0.6.0` to `^0.9.0`. No API change on the mwg side.
+- The Actions group is bumped (`actions/setup-node` 7.1.0 and `actions/upload-artifact`).
+- The scheduled browser benchmark uses floors fit for a software-rendered runner (10 fps, p95 250 ms) instead of the GPU defaults it failed every week; the 15% history comparison still catches regressions.
+
+### Fixed
+
+- The browser driver kills the whole browser process group when it times out or closes, instead of only the launcher. Surviving helper processes held the output pipes and kept `npm test` alive until the runner's 6 hour limit.
+- The browser start-up budget is 90 s and the CI `check` job is capped at 30 minutes; Linux Chrome runs with `--disable-dev-shm-usage --disable-gpu`.
+
 ## [0.36.0] - 2026-10-12
 
 The optional Lua integration uses Pyroeis, with a matching public subpath, factories and types. Games using the Lua host must update their imports to `mwl/pyroeis` and the `Pyroeis` names.
