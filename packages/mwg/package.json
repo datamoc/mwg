@@ -65,6 +65,10 @@
 			"types": "./physics.d.ts",
 			"import": "./physics.js"
 		},
+		"./physics/xpbd": {
+			"types": "./physics/xpbd.d.ts",
+			"import": "./physics/xpbd.js"
+		},
 		"./skeleton": {
 			"types": "./skeleton.d.ts",
 			"import": "./skeleton.js"

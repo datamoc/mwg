@@ -4,8 +4,8 @@
 	"version": "0.36.1",
 	"releaseDate": "2026-10-13",
 	"source": {
-		"files": 342,
-		"lines": 63652,
+		"files": 344,
+		"lines": 63911,
 		"modules": 20,
 		"breakdown": [
 			{
@@ -84,6 +84,11 @@
 				"lines": 603
 			},
 			{
+				"name": "physics",
+				"files": 4,
+				"lines": 458
+			},
+			{
 				"name": "threads",
 				"files": 3,
 				"lines": 297
@@ -99,11 +104,6 @@
 				"lines": 219
 			},
 			{
-				"name": "physics",
-				"files": 2,
-				"lines": 199
-			},
-			{
 				"name": "headless",
 				"files": 1,
 				"lines": 86
@@ -111,9 +111,9 @@
 		]
 	},
 	"tests": {
-		"files": 316,
-		"lines": 42913,
-		"cases": 2914
+		"files": 317,
+		"lines": 43014,
+		"cases": 2922
 	},
 	"tools": {
 		"files": 50,
@@ -155,12 +155,12 @@
 		"percent": 99
 	},
 	"api": {
-		"declarationFiles": 342
+		"declarationFiles": 344
 	},
 	"bundle": {
 		"globalRaw": 1263960,
 		"globalGzip": 378776,
-		"distRaw": 4480050
+		"distRaw": 4493737
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

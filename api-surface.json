@@ -9150,6 +9150,42 @@
 		"declaringModule": "physics/PhysicsWorld.d.ts"
 	},
 	{
+		"name": "XpbdLink",
+		"kind": "interface",
+		"subpath": "./physics/xpbd",
+		"declaringModule": "physics/XpbdWorld.d.ts"
+	},
+	{
+		"name": "XpbdLinkSpec",
+		"kind": "interface",
+		"subpath": "./physics/xpbd",
+		"declaringModule": "physics/XpbdWorld.d.ts"
+	},
+	{
+		"name": "XpbdNode",
+		"kind": "interface",
+		"subpath": "./physics/xpbd",
+		"declaringModule": "physics/XpbdWorld.d.ts"
+	},
+	{
+		"name": "XpbdNodeSpec",
+		"kind": "interface",
+		"subpath": "./physics/xpbd",
+		"declaringModule": "physics/XpbdWorld.d.ts"
+	},
+	{
+		"name": "XpbdOptions",
+		"kind": "interface",
+		"subpath": "./physics/xpbd",
+		"declaringModule": "physics/XpbdWorld.d.ts"
+	},
+	{
+		"name": "XpbdWorld",
+		"kind": "class",
+		"subpath": "./physics/xpbd",
+		"declaringModule": "physics/XpbdWorld.d.ts"
+	},
+	{
 		"name": "AbilityCycle",
 		"kind": "class",
 		"subpath": "./roguelike",

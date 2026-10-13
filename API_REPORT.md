@@ -14288,6 +14288,124 @@ build instead.
         private add;
     }
 
+## `./physics/xpbd`
+
+### `XpbdLink` (interface)
+
+    export interface XpbdLink {
+        a: number;
+        b: number;
+        stiffness: number;
+        rest: number;
+        tensionOnly: boolean;
+        strength: number | undefined;
+        tensionStrength: number | undefined;
+        broken: boolean;
+
+        force: number;
+
+        ratio: number;
+    }
+
+### `XpbdLinkSpec` (interface)
+
+    export interface XpbdLinkSpec {
+        a: number;
+        b: number;
+
+        stiffness: number;
+
+        rest?: number;
+
+        mass?: number;
+
+        tensionOnly?: boolean;
+
+        strength?: number;
+
+        tensionStrength?: number;
+    }
+
+### `XpbdNode` (interface)
+
+    export interface XpbdNode {
+        x: number;
+        y: number;
+        fixed: boolean;
+        vx: number;
+        vy: number;
+
+        w: number;
+    }
+
+### `XpbdNodeSpec` (interface)
+
+    export interface XpbdNodeSpec {
+        x: number;
+        y: number;
+
+        fixed?: boolean;
+
+        mass?: number;
+    }
+
+### `XpbdOptions` (interface)
+
+    export interface XpbdOptions {
+
+        gravity?: number;
+
+        substeps?: number;
+
+        iterations?: number;
+
+        step?: number;
+
+        damping?: number;
+
+        smoothing?: number;
+    }
+
+### `XpbdWorld` (class)
+
+    export declare class XpbdWorld {
+        readonly nodes: XpbdNode[];
+        readonly links: XpbdLink[];
+
+        readonly onBreak: Signal<{
+            link: number;
+            x: number;
+            y: number;
+        }>;
+
+        breaking: boolean;
+
+        peakRatio: number;
+        gravity: number;
+        damping: number;
+        private readonly frame;
+        private readonly substeps;
+        private readonly iterations;
+        private readonly smoothing;
+        private readonly forces;
+        private readonly masses;
+        private readonly lambda;
+        private readonly accumulated;
+        constructor(options?: XpbdOptions);
+
+        addNode(spec: XpbdNodeSpec): number;
+
+        addLink(spec: XpbdLinkSpec): number;
+
+        applyForce(node: number, fx: number, fy: number): void;
+
+        step(): void;
+        private refreshInverseMass;
+        private substep;
+
+        private settleLoads;
+    }
+
 ## `./roguelike`
 
 ### `AbilityCycle` (class)

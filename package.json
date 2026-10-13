@@ -168,6 +168,10 @@
 			"types": "./dist/physics/index.d.ts",
 			"import": "./dist/physics/index.js"
 		},
+		"./physics/xpbd": {
+			"types": "./dist/physics/xpbd.d.ts",
+			"import": "./dist/physics/xpbd.js"
+		},
 		"./skeleton": {
 			"types": "./dist/skeleton/index.d.ts",
 			"import": "./dist/skeleton/index.js"

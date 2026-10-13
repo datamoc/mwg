@@ -803,6 +803,11 @@ reach the compiled asset map without it.
   a `Sound` placed at a point, and `audioGain`/`audioPan` turning distance and heading into a
   volume and a stereo position. `SoundSource.playFor` applies the distance gain through
   `Sound.play`; panning is reported for a backend that has a panner. `Music` stays global.
+- `XpbdWorld` (`@datamoc/mw_games/physics/xpbd`, no `matter-js`) - a deterministic structure solver
+  (extended position-based dynamics): `addNode`/`addLink` (stiffness, `tensionOnly` cables, `strength`/
+  `tensionStrength`), `applyForce`, `step()` on fixed substeps, the load of every link read back
+  (`force`, smoothed `ratio`, `peakRatio`) and `onBreak` when a link passes its strength. The engine of
+  Pontifex, generalised: bridges, trusses, cranes, anything where the question is which beam fails.
 - `PhysicsWorld` (`@datamoc/mw_games/physics`, optional peer `matter-js`) - rigid bodies and constraints
   stepped on a `FixedStepper`: `addBox`/`addCircle`/`addConstraint`/`remove`, `update(dt)` from
   `Scene.update`, `onContact`, `alpha` for interpolation. A constraint with `maxStretch` breaks when pulled
