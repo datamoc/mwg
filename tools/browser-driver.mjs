@@ -356,6 +356,23 @@ export function findBrowser(kind) {
 }
 
 /**
+ * Ends a browser and its helper processes. `child.kill()` reaches only the launcher: the
+ * zygote, renderers and crashpad handlers survive it holding the output pipes, which keeps
+ * the whole Node process (a test run, a CI job) alive until the runner's own timeout. On
+ * POSIX the browser is spawned as a process-group leader, so the group goes in one signal.
+ */
+function killBrowser(child) {
+	try {
+		if (process.platform !== 'win32' && child.pid) process.kill(-child.pid, 'SIGKILL');
+		else child.kill();
+	} catch {
+		child.kill();
+	}
+	child.stdout?.destroy();
+	child.stderr?.destroy();
+}
+
+/**
  * Waits for `match` in the child's output, watching both stdout and stderr: which of the
  * two a given browser build prints its debugging endpoint on is not something to bet on.
  * The timeout message carries what was seen, because "no endpoint" alone cannot tell a
@@ -365,7 +382,7 @@ function waitForEndpoint(child, match, timeoutMs = 30000) {
 	return new Promise((resolveEndpoint, reject) => {
 		let seen = '';
 		const timer = setTimeout(() => {
-			child.kill();
+			killBrowser(child);
 			reject(
 				new Error(
 					`browser printed no debugging endpoint within ${timeoutMs} ms; output so far:\n${seen || '(none)'}`,
@@ -388,6 +405,7 @@ function waitForEndpoint(child, match, timeoutMs = 30000) {
 		});
 		child.once('exit', () => {
 			clearTimeout(timer);
+			killBrowser(child);
 			reject(new Error(`browser exited before printing a debugging endpoint:\n${seen}`));
 		});
 	});
@@ -534,7 +552,7 @@ export async function driveChrome(options = {}) {
 			...(options.chromeArgs ?? extraArgs),
 			'about:blank',
 		],
-		{ stdio: ['ignore', 'pipe', 'pipe'] },
+		{ stdio: ['ignore', 'pipe', 'pipe'], detached: process.platform !== 'win32' },
 	);
 	await waitForEndpoint(child, parseDevToolsEndpoint);
 
@@ -623,11 +641,7 @@ export async function driveChrome(options = {}) {
 			} catch {
 				// already closed
 			}
-			child.kill();
-			//the pipes must go: a browser's surviving helper processes can hold them (and so
-			//the whole suite) open past the main process's death
-			child.stdout?.destroy();
-			child.stderr?.destroy();
+			killBrowser(child);
 			if (ownsProfile) {
 				//a browser releases its profile files briefly after the kill, so wait for
 				//the exit and retry: a profile left behind is clutter, not a failure
@@ -676,7 +690,7 @@ export async function driveFirefox(options = {}) {
 			...(options.firefoxArgs ?? []),
 			'about:blank',
 		],
-		{ stdio: ['ignore', 'ignore', 'pipe'] },
+		{ stdio: ['ignore', 'ignore', 'pipe'], detached: process.platform !== 'win32' },
 	);
 	const { endpoint } = await waitForEndpoint(child, parseBidiEndpoint);
 	const socket = await openSocket(endpoint);
@@ -779,7 +793,7 @@ export async function driveFirefox(options = {}) {
 			} catch {
 				// already closed
 			}
-			child.kill();
+			killBrowser(child);
 		},
 	};
 }

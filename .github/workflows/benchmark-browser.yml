@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
     inputs:
       min-fps:
-        description: 'Minimum fps before the run fails (tool default 45; software WebGL on a runner may warrant lower)'
+        description: 'Minimum fps before the run fails (CI default 10: software WebGL on a runner is far below the tool's GPU default of 45)'
         required: false
         default: ''
       frames:
@@ -93,7 +93,12 @@ jobs:
           # no GPU on a runner: keep Pixi on a real WebGL path via ANGLE's software backend
           # rather than letting Chrome fall back to something the tool would reject
           MWG_BENCHMARK_CHROME_ARGS: '--use-gl=angle --use-angle=swiftshader --disable-dev-shm-usage'
-          MWG_BENCHMARK_MIN_FPS: ${{ inputs.min-fps }}
+          # SwiftShader floors, measured on shared runners (ui 13.9 fps / p95 133 ms,
+          # dungeon 30 fps / p95 67 ms): the tool's 45 fps / 40 ms defaults are a GPU
+          # target and failed every weekly run. Real regressions are caught by the 15%
+          # history comparison; these only catch a page that has stopped rendering.
+          MWG_BENCHMARK_MIN_FPS: ${{ inputs.min-fps || '10' }}
+          MWG_BENCHMARK_MAX_P95_MS: '250'
           MWG_BENCHMARK_FRAMES: ${{ inputs.frames }}
         run: |
           # an empty workflow input must not become MWG_BENCHMARK_MIN_FPS="" - Number("") is
