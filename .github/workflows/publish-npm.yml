@@ -64,3 +64,15 @@ jobs:
       - run: |
           if [[ "${{ github.ref_name }}" == *-* ]]; then TAG="--tag alpha"; else TAG=""; fi
           npm stage publish --access public $TAG
+
+      # the short-name package, generated into packages/mwg at the same version (a test fails
+      # when it drifts), staged the same way. It lists @datamoc/mw_games at that exact
+      # version, so approve the main package first: until it is public, an install of this
+      # one cannot resolve. Needs its own entry in npmjs.org's trusted-publisher settings
+      # (this repository, this workflow file, `npm stage publish` only), or this step fails
+      # after the main package has already been staged.
+      - name: Stage the @datamoc/mwg alias
+        working-directory: packages/mwg
+        run: |
+          if [[ "${{ github.ref_name }}" == *-* ]]; then TAG="--tag alpha"; else TAG=""; fi
+          npm stage publish --access public $TAG
