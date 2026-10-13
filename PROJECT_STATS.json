@@ -4,8 +4,8 @@
 	"version": "0.36.1",
 	"releaseDate": "2026-10-13",
 	"source": {
-		"files": 338,
-		"lines": 63166,
+		"files": 339,
+		"lines": 63225,
 		"modules": 19,
 		"breakdown": [
 			{
@@ -20,8 +20,8 @@
 			},
 			{
 				"name": "core",
-				"files": 51,
-				"lines": 7169
+				"files": 52,
+				"lines": 7228
 			},
 			{
 				"name": "board",
@@ -106,9 +106,9 @@
 		]
 	},
 	"tests": {
-		"files": 314,
-		"lines": 42543,
-		"cases": 2893
+		"files": 315,
+		"lines": 42661,
+		"cases": 2902
 	},
 	"tools": {
 		"files": 48,
