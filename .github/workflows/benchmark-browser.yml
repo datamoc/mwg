@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
     inputs:
       min-fps:
-        description: 'Minimum fps before the run fails (CI default 10: software WebGL on a runner is far below the tool's GPU default of 45)'
+        description: 'Minimum fps before the run fails (CI default 10: software WebGL on a runner is far below the GPU default of 45)'
         required: false
         default: ''
       frames:
