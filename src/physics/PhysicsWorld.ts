@@ -33,6 +33,15 @@ export interface ConstraintOptions {
 	/** attachment points in each body's local space; the body centre when omitted */
 	pointA?: { x: number; y: number };
 	pointB?: { x: number; y: number };
+	/**
+	 * Makes the joint breakable: once its two ends are further apart than the rest length times
+	 * `1 + maxStretch`, the constraint is removed and `onBreak` fires. 0.2 lets a beam stretch 20%
+	 * before it snaps. For a zero-length joint (a pin) it is the absolute distance instead.
+	 * The strain is read after each step's solve, so a fully rigid joint (`stiffness` 1) is pulled
+	 * back before it is measured under a light load: use a stiffness below 1, as a real beam has.
+	 * Unbreakable when omitted.
+	 */
+	maxStretch?: number;
 }
 
 export type PhysicsBody = Matter.Body;
@@ -49,8 +58,9 @@ export type PhysicsConstraint = Matter.Constraint;
  *
  * `matter-js` is an optional peer dependency (`npm install matter-js`), imported only by this
  * module (`@datamoc/mw_games/physics`), so a game that never simulates physics never bundles it.
- * Constraints here are springs and rods; a game that needs breakable joints removes the
- * constraint itself when its own stress rule says so (`remove`).
+ * Constraints are springs and rods. Give one a `maxStretch` and it breaks when pulled that far
+ * past its rest length (`onBreak`); a game with a different stress rule reads `stretchOf` itself
+ * and calls `remove`.
  *
  * @example
  * ```ts
@@ -67,7 +77,10 @@ export class PhysicsWorld {
 	readonly engine: Matter.Engine;
 	/** fires once per new contact between two bodies, with the matter-js bodies of the pair */
 	readonly onContact = new Signal<{ a: PhysicsBody; b: PhysicsBody }>();
+	/** fires when a breakable constraint passes its `maxStretch`; it is already removed from the world */
+	readonly onBreak = new Signal<{ constraint: PhysicsConstraint; stretch: number }>();
 	private readonly stepper: FixedStepper;
+	private readonly breakable = new Map<PhysicsConstraint, number>();
 
 	constructor(options: PhysicsOptions = {}) {
 		this.engine = Matter.Engine.create();
@@ -121,12 +134,25 @@ export class PhysicsWorld {
 			...(options.length !== undefined ? { length: options.length } : {}),
 		});
 		Matter.Composite.add(this.engine.world, constraint);
+		if (options.maxStretch !== undefined) this.breakable.set(constraint, options.maxStretch);
 		return constraint;
 	}
 
 	/** removes a body, or a constraint, from the simulation */
 	remove(item: PhysicsBody | PhysicsConstraint): void {
 		Matter.Composite.remove(this.engine.world, item);
+		this.breakable.delete(item as PhysicsConstraint);
+	}
+
+	/**
+	 * How far a constraint is stretched past its rest length, as a fraction of it (0.1 is 10%
+	 * longer); for a zero-length joint, the distance between its ends. Negative when compressed.
+	 */
+	stretchOf(constraint: PhysicsConstraint): number {
+		const a = endPoint(constraint.bodyA, constraint.pointA);
+		const b = endPoint(constraint.bodyB, constraint.pointB);
+		const distance = Math.hypot(a.x - b.x, a.y - b.y);
+		return constraint.length > 0 ? distance / constraint.length - 1 : distance;
 	}
 
 	/**
@@ -136,11 +162,36 @@ export class PhysicsWorld {
 	 * @returns how many fixed steps ran
 	 */
 	update(dt: number): number {
-		return this.stepper.advance(dt, (step) => Matter.Engine.update(this.engine, step * 1000));
+		return this.stepper.advance(dt, (step) => {
+			Matter.Engine.update(this.engine, step * 1000);
+			this.breakOverstretched();
+		});
+	}
+
+	private breakOverstretched(): void {
+		//collected first: removing while iterating the map would skip entries
+		const snapped: [PhysicsConstraint, number][] = [];
+		for (const [constraint, limit] of this.breakable) {
+			const stretch = this.stretchOf(constraint);
+			if (stretch > limit) snapped.push([constraint, stretch]);
+		}
+		for (const [constraint, stretch] of snapped) {
+			this.remove(constraint);
+			this.onBreak.dispatch({ constraint, stretch });
+		}
 	}
 
 	private add(body: PhysicsBody): PhysicsBody {
 		Matter.Composite.add(this.engine.world, body);
 		return body;
 	}
+}
+
+/** a constraint end in world space: the body's attachment point turned and moved with it, or the fixed point itself */
+function endPoint(body: Matter.Body | null, point: { x: number; y: number } | undefined): { x: number; y: number } {
+	const local = point ?? { x: 0, y: 0 };
+	if (!body) return local;
+	const cos = Math.cos(body.angle);
+	const sin = Math.sin(body.angle);
+	return { x: body.position.x + local.x * cos - local.y * sin, y: body.position.y + local.x * sin + local.y * cos };
 }

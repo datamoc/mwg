@@ -14223,6 +14223,8 @@ build instead.
             x: number;
             y: number;
         };
+
+        maxStretch?: number;
     }
 
 ### `PhysicsBody` (type)
@@ -14256,7 +14258,13 @@ build instead.
             a: PhysicsBody;
             b: PhysicsBody;
         }>;
+
+        readonly onBreak: Signal<{
+            constraint: PhysicsConstraint;
+            stretch: number;
+        }>;
         private readonly stepper;
+        private readonly breakable;
         constructor(options?: PhysicsOptions);
         get bodies(): readonly PhysicsBody[];
         get constraints(): readonly PhysicsConstraint[];
@@ -14273,7 +14281,10 @@ build instead.
 
         remove(item: PhysicsBody | PhysicsConstraint): void;
 
+        stretchOf(constraint: PhysicsConstraint): number;
+
         update(dt: number): number;
+        private breakOverstretched;
         private add;
     }
 

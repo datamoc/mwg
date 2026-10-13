@@ -48,3 +48,38 @@ test('onContact reports a new contact once', () => {
 	assert.equal(ball.position.y < 100, true);
 	assert.ok(seen.includes('ball+floor'));
 });
+
+test('a breakable constraint snaps past its maxStretch, once, and onBreak reports it', () => {
+	const world = new PhysicsWorld({ gravity: { x: 0, y: 0 } });
+	const anchor = world.addBox(0, 0, 10, 10, { isStatic: true });
+	const pulled = world.addCircle(0, 40, 10);
+	const beam = world.addConstraint(anchor, pulled, { length: 40, stiffness: 0.1, maxStretch: 0.5 });
+	const sturdy = world.addConstraint(anchor, world.addCircle(300, 40, 5), { length: 300 });
+	const broken: number[] = [];
+	world.onBreak.add(({ constraint, stretch }) => {
+		assert.equal(constraint, beam);
+		broken.push(stretch);
+	});
+	pulled.position.y = 55;
+	world.update(1 / 60);
+	assert.equal(broken.length, 0, '37% stretched: still holding');
+	pulled.position.y = 100;
+	world.update(1 / 60);
+	for (let i = 0; i < 60; i++) world.update(1 / 60);
+	assert.equal(broken.length, 1, 'it broke exactly once');
+	assert.ok(broken[0] > 0.5, `reported a stretch past the limit, ${broken[0]}`);
+	assert.ok(!world.constraints.includes(beam), 'and left the world');
+	assert.ok(world.constraints.includes(sturdy), 'a joint with no limit stays');
+});
+
+test('a stiff, lightly loaded breakable joint holds, and stretchOf reads the live strain', () => {
+	const world = new PhysicsWorld();
+	const anchor = world.addBox(0, 0, 10, 10, { isStatic: true });
+	const weight = world.addCircle(0, 100, 5);
+	const rope = world.addConstraint(anchor, weight, { length: 100, stiffness: 1, maxStretch: 0.5 });
+	let breaks = 0;
+	world.onBreak.add(() => void breaks++);
+	for (let i = 0; i < 240; i++) world.update(1 / 60);
+	assert.equal(breaks, 0);
+	assert.ok(Math.abs(world.stretchOf(rope)) < 0.1, `strain ${world.stretchOf(rope)}`);
+});

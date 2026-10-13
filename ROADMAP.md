@@ -380,7 +380,8 @@ what this machine owed the line was the location - now recorded here.
 `CREDITS.txt` from `assets/credits.json`, the `@datamoc/mwg` alias package generated into
 `packages/mwg`). Open: (a) publish `@datamoc/mwg` (the name is free on npm; publishing is the
 package owner's, and the trusted-publisher setup of `publish-npm.yml` must be extended to it);
-(b) breakable joints and soft-body (XPBD) simulation, which matter-js constraints do not give:
+(b) soft-body (XPBD) simulation; breakable joints shipped on matter-js (`maxStretch`), which
+covers a beam that snaps but not cloth or ropes with their own stretch model:
 the reporter's solver (`pontifex/src/physics.ts`, ~250 lines, 16 tests) is the candidate, to
 check for determinism across machines first; (c) the bundle-size report was investigated: the
 growth on adding `assets`/`SpriteSheet`/`AnimatedSprite` is Pixi's own asset loader and

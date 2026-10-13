@@ -805,7 +805,8 @@ reach the compiled asset map without it.
   `Sound.play`; panning is reported for a backend that has a panner. `Music` stays global.
 - `PhysicsWorld` (`@datamoc/mw_games/physics`, optional peer `matter-js`) - rigid bodies and constraints
   stepped on a `FixedStepper`: `addBox`/`addCircle`/`addConstraint`/`remove`, `update(dt)` from
-  `Scene.update`, `onContact`, `alpha` for interpolation. The bodies stay plain matter-js objects.
+  `Scene.update`, `onContact`, `alpha` for interpolation. A constraint with `maxStretch` breaks when pulled
+  that far past its rest length (`onBreak`, `stretchOf`). The bodies stay plain matter-js objects.
 - `synthesizeTone`/`synthesizeSound`/`playTone`/`Waveform` - a runtime square/triangle/sine/noise
   waveform synth for a procedural tone or SFX, no sample library; `synthesizeSound` returns a
   pooled `Sound` over the tone.

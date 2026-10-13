@@ -18,7 +18,7 @@ Fixes and small additions from the first outside game built on mwg (Pontifex, on
 - `ParticleEmitter.burst(count, { x, y, tint })`, `Shape2D.dashedLine`, `Camera.fit(worldWidth, worldHeight)` and `SpriteSheet.strip(path, frames)`.
 - `BrowserDriver.drag(fromX, fromY, toX, toY, steps)` on Chrome (CDP) and Firefox (in-page pointer events).
 - `Input.attachPointer`: down, move, drag and up signals with target-relative and world positions.
-- `physics.PhysicsWorld` (`@datamoc/mw_games/physics`, optional peer `matter-js`): rigid bodies, constraints and contact events on a fixed clock.
+- `physics.PhysicsWorld` (`@datamoc/mw_games/physics`, optional peer `matter-js`): rigid bodies, constraints, contact events and breakable joints (`maxStretch`, `onBreak`, `stretchOf`) on a fixed clock.
 - `ui.DropdownView`, the widget over the `Dropdown` model.
 - `mwg-init <folder>`: writes a starter project that builds to a double-clickable page.
 - `assets/credits.json` becomes `CREDITS.txt` in the compiled output (`compileResources`, `creditsText`).

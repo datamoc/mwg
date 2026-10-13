@@ -5,7 +5,7 @@
 	"releaseDate": "2026-10-13",
 	"source": {
 		"files": 342,
-		"lines": 63601,
+		"lines": 63652,
 		"modules": 20,
 		"breakdown": [
 			{
@@ -101,7 +101,7 @@
 			{
 				"name": "physics",
 				"files": 2,
-				"lines": 148
+				"lines": 199
 			},
 			{
 				"name": "headless",
@@ -112,8 +112,8 @@
 	},
 	"tests": {
 		"files": 316,
-		"lines": 42878,
-		"cases": 2912
+		"lines": 42913,
+		"cases": 2914
 	},
 	"tools": {
 		"files": 50,
@@ -160,7 +160,7 @@
 	"bundle": {
 		"globalRaw": 1263960,
 		"globalGzip": 378776,
-		"distRaw": 4476971
+		"distRaw": 4480050
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
