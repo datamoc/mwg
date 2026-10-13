@@ -13,7 +13,12 @@ export interface XpbdOptions {
 	damping?: number;
 	/** time constant of the load smoothing used for breaking, in seconds; 0.06 when omitted */
 	smoothing?: number;
+	/** how much of a node's sideways motion the ground removes while it touches, 0 to 1; 0.5 when omitted */
+	groundFriction?: number;
 }
+
+/** the ground a node cannot sink below: a height (y grows downward), or a height at each x */
+export type XpbdGround = number | ((x: number) => number);
 
 export interface XpbdNodeSpec {
 	x: number;
@@ -107,6 +112,9 @@ export class XpbdWorld {
 	peakRatio = 0;
 	gravity: number;
 	damping: number;
+	/** nodes are held on or above this; null for none. Water, a gorge or a cliff face is the game's own business */
+	ground: XpbdGround | null = null;
+	groundFriction: number;
 	private readonly frame: number;
 	private readonly substeps: number;
 	private readonly iterations: number;
@@ -119,6 +127,7 @@ export class XpbdWorld {
 	constructor(options: XpbdOptions = {}) {
 		this.gravity = options.gravity ?? 520;
 		this.damping = options.damping ?? 2.5;
+		this.groundFriction = options.groundFriction ?? 0.5;
 		this.frame = options.step ?? 1 / 60;
 		this.substeps = Math.max(1, Math.floor(options.substeps ?? 16));
 		this.iterations = Math.max(1, Math.floor(options.iterations ?? 2));
@@ -224,6 +233,7 @@ export class XpbdWorld {
 				q.y += q.w * delta * ny;
 			});
 		}
+		this.collideWithGround(previous);
 		this.nodes.forEach((node, i) => {
 			if (node.fixed) return;
 			node.vx = (node.x - previous[i].x) / dt;
@@ -231,6 +241,19 @@ export class XpbdWorld {
 		});
 		this.links.forEach((_, i) => {
 			this.accumulated[i] += -this.lambda[i] / (dt * dt);
+		});
+	}
+
+	/** lifts any node that sank below the ground back onto it, and takes some of its sideways motion with it */
+	private collideWithGround(previous: { x: number; y: number }[]): void {
+		const ground = this.ground;
+		if (ground === null) return;
+		this.nodes.forEach((node, i) => {
+			if (node.fixed) return;
+			const surface = typeof ground === 'number' ? ground : ground(node.x);
+			if (node.y <= surface) return;
+			node.y = surface;
+			node.x -= (node.x - previous[i].x) * this.groundFriction;
 		});
 	}
 

@@ -9150,6 +9150,12 @@
 		"declaringModule": "physics/PhysicsWorld.d.ts"
 	},
 	{
+		"name": "XpbdGround",
+		"kind": "type",
+		"subpath": "./physics/xpbd",
+		"declaringModule": "physics/XpbdWorld.d.ts"
+	},
+	{
 		"name": "XpbdLink",
 		"kind": "interface",
 		"subpath": "./physics/xpbd",

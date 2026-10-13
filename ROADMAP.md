@@ -375,15 +375,9 @@ empty (branch `master` has no commits, so the work remains loose files on this d
 2026-09-20 and 2026-09-15 results stand as the last recorded run, this box stays open, and
 what this machine owed the line was the location - now recorded here.
 
-412. **Pontifex feedback, what is left.** The rest of this item shipped (pointer signals
-`Input.attachPointer`, `physics.PhysicsWorld` over matter-js, `DropdownView`, `mwg-init`,
-`CREDITS.txt` from `assets/credits.json`, the `@datamoc/mwg` alias package generated into
-`packages/mwg`). Open: (a) publish `@datamoc/mwg` (the name is free on npm; publishing is the
-package owner's, and the trusted-publisher setup of `publish-npm.yml` must be extended to it);
-(b) `XpbdWorld` shipped from the reporter's solver (licence chosen by its author, the project owner); open: 2D collisions between structure nodes and terrain, and a wheel/vehicle helper if a second game wants one;
-(c) the bundle-size report was investigated: the
-growth on adding `assets`/`SpriteSheet`/`AnimatedSprite` is Pixi's own asset loader and
-animated-sprite code (about 53 KB minified), `Random` costs 4 KB and `Button` adds under 3 KB
-beyond Pixi, so there is no mwg tree-shaking defect to fix; (d) `Settings.custom` stays
-flat on purpose (settings screens bind to it); structured progress goes through the now-public
-`StoredValue`.
+412. **Publish `@datamoc/mwg`.** Everything from the Pontifex feedback shipped in 0.37.0
+(pointer signals, `PhysicsWorld` with breakable joints, `XpbdWorld` with ground collision,
+`DropdownView`, `mwg-init`, `CREDITS.txt`, the alias package generated into `packages/mwg`).
+What is left is the one step only the package owner can take: `npm publish` of `packages/mwg`
+under the `@datamoc` scope (the name is free), and the npm trusted-publisher entry for it so
+`publish-npm.yml` can stage it the way it stages `@datamoc/mw_games`.

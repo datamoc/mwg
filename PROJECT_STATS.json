@@ -1,11 +1,11 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.36.1",
-	"releaseDate": "2026-10-13",
+	"version": "0.37.0",
+	"releaseDate": "2026-10-14",
 	"source": {
 		"files": 344,
-		"lines": 63911,
+		"lines": 63934,
 		"modules": 20,
 		"breakdown": [
 			{
@@ -86,7 +86,7 @@
 			{
 				"name": "physics",
 				"files": 4,
-				"lines": 458
+				"lines": 481
 			},
 			{
 				"name": "threads",
@@ -112,8 +112,8 @@
 	},
 	"tests": {
 		"files": 317,
-		"lines": 43014,
-		"cases": 2922
+		"lines": 43038,
+		"cases": 2924
 	},
 	"tools": {
 		"files": 50,
@@ -159,8 +159,8 @@
 	},
 	"bundle": {
 		"globalRaw": 1263960,
-		"globalGzip": 378776,
-		"distRaw": 4493737
+		"globalGzip": 378777,
+		"distRaw": 4495199
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

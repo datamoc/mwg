@@ -99,3 +99,27 @@ test('bad inputs are refused by name', () => {
 	const c = world.addNode({ x: 10, y: 0 });
 	assert.throws(() => world.addLink({ a, b: c, stiffness: 0 }), /positive stiffness/);
 });
+
+test('a node falls onto flat ground and rests on it, losing sideways speed to friction', () => {
+	const world = new XpbdWorld();
+	world.ground = 100;
+	const node = world.addNode({ x: 0, y: 0, mass: 1 });
+	world.nodes[node].vx = 300;
+	for (let i = 0; i < 180; i++) world.step();
+	assert.ok(Math.abs(world.nodes[node].y - 100) < 0.5, `rests on the ground, y=${world.nodes[node].y}`);
+	assert.ok(Math.abs(world.nodes[node].vx) < 1, 'friction stopped its slide');
+});
+
+test('ground can be a height function, and a structure stands on it', () => {
+	const world = new XpbdWorld();
+	world.ground = (x) => 100 + x * 0.1;
+	const a = world.addNode({ x: 0, y: 60 });
+	const b = world.addNode({ x: 40, y: 60 });
+	world.addLink({ a, b, stiffness: 1e4 });
+	for (let i = 0; i < 240; i++) world.step();
+	for (const index of [a, b]) {
+		const node = world.nodes[index];
+		assert.ok(node.y <= 100 + node.x * 0.1 + 1e-6, 'never below the slope');
+		assert.ok(node.y > 100 + node.x * 0.1 - 3, 'and resting on it');
+	}
+});

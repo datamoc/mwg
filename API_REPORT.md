@@ -6330,7 +6330,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.36.1";
+    export declare const version = "0.37.0";
 
 ### `VerticalLabel` (class)
 
@@ -14290,6 +14290,10 @@ build instead.
 
 ## `./physics/xpbd`
 
+### `XpbdGround` (type)
+
+    export type XpbdGround = number | ((x: number) => number);
+
 ### `XpbdLink` (interface)
 
     export interface XpbdLink {
@@ -14364,6 +14368,8 @@ build instead.
         damping?: number;
 
         smoothing?: number;
+
+        groundFriction?: number;
     }
 
 ### `XpbdWorld` (class)
@@ -14383,6 +14389,9 @@ build instead.
         peakRatio: number;
         gravity: number;
         damping: number;
+
+        ground: XpbdGround | null;
+        groundFriction: number;
         private readonly frame;
         private readonly substeps;
         private readonly iterations;
@@ -14402,6 +14411,8 @@ build instead.
         step(): void;
         private refreshInverseMass;
         private substep;
+
+        private collideWithGround;
 
         private settleLoads;
     }
