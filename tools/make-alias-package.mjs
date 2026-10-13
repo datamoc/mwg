@@ -42,6 +42,8 @@ export function aliasFiles(main) {
 				repository: main.repository,
 				type: 'module',
 				sideEffects: false,
+				//a scoped package is private by default, which npm only allows on a paid plan
+				publishConfig: { access: 'public' },
 				dependencies: { [SOURCE]: main.version },
 				exports,
 				files: ['*.js', '*.mjs', '*.d.ts', '*.d.mts', '**/*.js', '**/*.mjs', '**/*.d.ts', '**/*.d.mts'],
