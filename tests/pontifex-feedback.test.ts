@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { resolve as resolvePath } from 'node:path';
 import assert from 'node:assert/strict';
 
 import { FixedStepper, StoredValue, defaultStorage } from '../src/core/index.ts';
@@ -9,6 +10,8 @@ import { fakeAudio } from '../src/testing/index.ts';
 import { Camera } from '../src/two-d/render/Camera.ts';
 import { Shape2D } from '../src/two-d/render/Shape2D.ts';
 import { memoryStorage } from '../src/testing/index.ts';
+
+const ROOT_DIR = resolvePath(new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
 
 test('FixedStepper runs whole steps, carries the remainder and bounds a slow frame', () => {
 	const stepper = new FixedStepper(0.1, 3);
@@ -115,4 +118,168 @@ test('mwgPage drops the EMPTY_IMPORT_META noise and keeps every other log', asyn
 	config.build.rollupOptions.onLog('warn', { code: 'EMPTY_IMPORT_META' }, next);
 	config.build.rollupOptions.onLog('warn', { code: 'OTHER' }, next);
 	assert.deepEqual(seen, ['OTHER']);
+});
+
+test('packages/mwg, the @datamoc/mwg alias, is what the generator writes and re-exports real entry points', async () => {
+	const { readFileSync, readdirSync, statSync } = await import('node:fs');
+	const { join } = await import('node:path');
+	const { aliasFiles } = await import('../tools/make-alias-package.mjs');
+	const main = JSON.parse(readFileSync(join(ROOT_DIR, 'package.json'), 'utf8'));
+	const files = aliasFiles(main);
+	for (const [path, content] of Object.entries(files)) {
+		assert.equal(
+			//a Windows checkout may hand text files over as CRLF
+			readFileSync(join(ROOT_DIR, 'packages', 'mwg', path), 'utf8').replace(/\r\n/g, '\n'),
+			content,
+			`${path} is stale - run npm run alias:write`,
+		);
+	}
+	const committed: string[] = [];
+	const walk = (dir: string, prefix: string) => {
+		for (const name of readdirSync(dir)) {
+			const full = join(dir, name);
+			if (statSync(full).isDirectory()) walk(full, `${prefix}${name}/`);
+			else committed.push(prefix + name);
+		}
+	};
+	walk(join(ROOT_DIR, 'packages', 'mwg'), '');
+	assert.deepEqual(
+		committed.sort(),
+		Object.keys(files).sort(),
+		'no file in packages/mwg the generator does not write',
+	);
+	const alias = JSON.parse(files['package.json']);
+	assert.equal(alias.name, '@datamoc/mwg');
+	assert.equal(alias.dependencies['@datamoc/mw_games'], main.version, 'pinned to the exact matching version');
+	assert.ok(alias.exports['./two-d'] && alias.exports['.'] && alias.exports['./tools/vite']);
+	for (const [key, entry] of Object.entries(alias.exports) as [string, { import: string }][]) {
+		const specifier = key === '.' ? '@datamoc/mw_games' : `@datamoc/mw_games/${key.slice(2)}`;
+		assert.equal(files[entry.import.slice(2)], `export * from '${specifier}';\n`);
+		assert.ok(key === '.' || key in main.exports, `${key} exists in the main package`);
+	}
+});
+
+test('importing a build tool never runs its command line, whatever the importing file is called', async () => {
+	//`compress-dist.mjs` ends in `t.mjs`: a suffix test on the file name took any importer called `t.mjs` for it
+	const { mkdtempSync, writeFileSync, rmSync } = await import('node:fs');
+	const { tmpdir } = await import('node:os');
+	const { join } = await import('node:path');
+	const { spawnSync } = await import('node:child_process');
+	const dir = mkdtempSync(join(tmpdir(), 'mwg-ismain-'));
+	try {
+		const file = join(dir, 't.mjs');
+		const tool = new URL('../tools/compress-dist.mjs', import.meta.url).href;
+		writeFileSync(file, `import ${JSON.stringify(tool)};\nconsole.log('imported quietly');\n`);
+		const run = spawnSync(process.execPath, [file], { encoding: 'utf8' });
+		assert.equal(run.stdout.trim(), 'imported quietly');
+		assert.equal(run.stderr, '');
+		assert.equal(run.status, 0);
+	} finally {
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test('DropdownView opens a list of buttons and a pick selects, closes and fires onChange', async () => {
+	const { DropdownView } = await import('../src/two-d/ui/DropdownView.ts');
+	const { Button } = await import('../src/two-d/ui/Button.ts');
+	const { Label } = await import('../src/two-d/ui/Label.ts');
+	//text measuring needs a DOM canvas, which Node has not: a label is 10x10 here
+	for (const side of ['width', 'height'])
+		Object.defineProperty(Label.prototype, side, { get: () => 10, set() {}, configurable: true });
+	const view = new DropdownView({ width: 120, options: [{ label: 'A' }, { label: 'B' }, { label: 'C' }] });
+	const picked: number[] = [];
+	view.model.onChange.add(({ index }) => void picked.push(index));
+	const rows = () => (view.children[1] as unknown as { children: InstanceType<typeof Button>[] }).children;
+	assert.equal(rows().length, 0, 'closed: no list');
+	(view.children[0] as InstanceType<typeof Button>).onClick.dispatch();
+	assert.equal(view.model.isOpen, true);
+	assert.equal(rows().length, 3);
+	assert.equal(rows()[0].selected, true, 'the current choice is marked');
+	rows()[2].onClick.dispatch();
+	assert.deepEqual(picked, [2]);
+	assert.equal(view.model.isOpen, false);
+	assert.equal(rows().length, 0);
+});
+
+test('Input.attachPointer reports down, move, drag past the threshold, and up with dragged', async () => {
+	const { attachPointer } = await import('../src/core/Input.ts');
+	const target = new EventTarget() as EventTarget & { getBoundingClientRect: () => { left: number; top: number } };
+	target.getBoundingClientRect = () => ({ left: 10, top: 20 });
+	const fire = (type: string, x: number, y: number, pointerId = 1) =>
+		target.dispatchEvent(Object.assign(new Event(type), { clientX: x, clientY: y, pointerId }));
+	const pointer = attachPointer(target, { dragThreshold: 5, toWorld: (x, y) => ({ x: x / 2, y: y / 2 }) });
+	const log: string[] = [];
+	pointer.down.add((p) => void log.push(`down ${p.x},${p.y} w${p.worldX},${p.worldY}`));
+	pointer.drag.add((p) => void log.push(`drag ${p.dx},${p.dy}`));
+	pointer.up.add((p) => void log.push(`up ${p.dragged}`));
+
+	fire('pointerdown', 30, 60);
+	fire('pointermove', 32, 60);
+	fire('pointermove', 40, 70);
+	fire('pointerdown', 99, 99, 2);
+	fire('pointermove', 50, 80, 2);
+	fire('pointerup', 40, 70, 2);
+	fire('pointerup', 40, 70);
+	fire('pointerdown', 30, 60);
+	fire('pointerup', 30, 60);
+	assert.deepEqual(log, ['down 20,40 w10,20', 'drag 10,10', 'up true', 'down 20,40 w10,20', 'up false']);
+	pointer.detach();
+	fire('pointerdown', 0, 0);
+	assert.equal(log.length, 5, 'detached: nothing more is reported');
+});
+
+test('compileResources turns assets/credits.json into CREDITS.txt and does not embed it', async () => {
+	const { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } = await import('node:fs');
+	const { tmpdir } = await import('node:os');
+	const { join } = await import('node:path');
+	const { compileResources, creditsText } = await import('../tools/compile-resources.mjs');
+	const dir = mkdtempSync(join(tmpdir(), 'mwg-credits-'));
+	try {
+		const from = join(dir, 'assets');
+		mkdirSync(from);
+		writeFileSync(join(from, 'a.png'), Buffer.from([1, 2, 3]));
+		writeFileSync(
+			join(from, 'credits.json'),
+			JSON.stringify({ credits: [{ name: 'Cars', author: 'CraftPix', license: 'Free', url: 'https://x' }] }),
+		);
+		const result = await compileResources({ from, to: join(dir, 'out') });
+		assert.equal(result.credits, 'Cars by CraftPix\nLicense: Free\nhttps://x\n');
+		assert.equal(readFileSync(join(dir, 'out', 'CREDITS.txt'), 'utf8'), result.credits);
+		assert.ok(!readFileSync(join(dir, 'out', 'assets.js'), 'utf8').includes('credits.json'));
+		assert.equal(
+			result.groups.reduce((n, g) => n + g.count, 0),
+			1,
+			'only the png is an asset',
+		);
+		assert.throws(() => creditsText([{ name: 'No licence' }]), /needs a "name" and a "license"/);
+		assert.throws(() => creditsText({}), /must be an array/);
+	} finally {
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test('mwg-init writes a buildable starter that uses the published package names and refuses a used folder', async () => {
+	const { mkdtempSync, readFileSync, writeFileSync, rmSync } = await import('node:fs');
+	const { tmpdir } = await import('node:os');
+	const { join } = await import('node:path');
+	const { initProject, initFiles } = await import('../tools/init.mjs');
+	const dir = mkdtempSync(join(tmpdir(), 'mwg-init-'));
+	try {
+		const target = join(dir, 'My Game');
+		const { files } = initProject(target);
+		assert.ok(
+			['package.json', 'vite.config.mts', 'index.html', 'src/main.ts', 'assets/.gitkeep'].every((f) =>
+				files.includes(f),
+			),
+		);
+		const pkg = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8'));
+		assert.equal(pkg.name, 'my-game');
+		assert.match(pkg.dependencies['@datamoc/mw_games'], /^\^\d+\.\d+\.\d+$/);
+		assert.match(readFileSync(join(target, 'vite.config.mts'), 'utf8'), /mwgPage/);
+		assert.match(initFiles('x')['src/main.ts'], /@datamoc\/mw_games\/two-d/);
+		writeFileSync(join(target, 'keep.txt'), 'mine');
+		assert.throws(() => initProject(target), /not empty/);
+	} finally {
+		rmSync(dir, { recursive: true, force: true });
+	}
 });

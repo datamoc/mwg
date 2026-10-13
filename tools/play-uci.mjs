@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { readFileSync, readdirSync } from 'node:fs';
-import { join, basename, extname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { readFileSync, readdirSync, realpathSync } from 'node:fs';
+import { join, extname } from 'node:path';
 import { createInterface } from 'node:readline';
 import { applyMove, cloneChess, legalMoves, parseFen, squareName, startingChess } from '../src/board/chess.ts';
 import { parseUciMove, probeBook } from '../src/board/openings.ts';
@@ -164,7 +165,9 @@ export function createUciSession(options = {}) {
 	};
 }
 
-const isMain = process.argv[1] && import.meta.url.endsWith(basename(process.argv[1]));
+//the real path, since an npm `bin` shim reaches this file through a symlink; a suffix test on the
+//name is not enough (`compress-dist.mjs` ends with `t.mjs`)
+const isMain = process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
 
 if (isMain) {
 	const args = process.argv.slice(2);

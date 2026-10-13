@@ -17,7 +17,13 @@ Fixes and small additions from the first outside game built on mwg (Pontifex, on
 - `Button.setSelected`, `Label.setWrapWidth`, `Window({ closeButton: true })` (a visible ✕), and `ui.flowLayout` (wrapping rows with alignment).
 - `ParticleEmitter.burst(count, { x, y, tint })`, `Shape2D.dashedLine`, `Camera.fit(worldWidth, worldHeight)` and `SpriteSheet.strip(path, frames)`.
 - `BrowserDriver.drag(fromX, fromY, toX, toY, steps)` on Chrome (CDP) and Firefox (in-page pointer events).
-- Roadmap 412 collects the feedback items that need design rather than a fix.
+- `Input.attachPointer`: down, move, drag and up signals with target-relative and world positions.
+- `physics.PhysicsWorld` (`@datamoc/mw_games/physics`, optional peer `matter-js`): rigid bodies, constraints and contact events on a fixed clock.
+- `ui.DropdownView`, the widget over the `Dropdown` model.
+- `mwg-init <folder>`: writes a starter project that builds to a double-clickable page.
+- `assets/credits.json` becomes `CREDITS.txt` in the compiled output (`compileResources`, `creditsText`).
+- `@datamoc/mwg`, the short name for the package, generated into `packages/mwg` by `npm run alias:write` (publishing it is a separate step).
+- Roadmap 412 keeps what is still open of the feedback items.
 
 ### Changed
 
@@ -27,6 +33,7 @@ Fixes and small additions from the first outside game built on mwg (Pontifex, on
 
 ### Fixed
 
+- `compile-resources`, `compress-dist`, `play-uci`, `build-tablebases` and `compile-openings` took any importer whose file name was a suffix of theirs (`t.mjs` for `compress-dist.mjs`) for their own command line and ran it on import; they now compare real paths.
 - A sound that is missing from the build plays as silence with a warning instead of rejecting inside `Game.start` and leaving a black screen.
 - `tools/vite.mjs` and the build tools it imports no longer use top-level await, so a `vite.config.ts` in a project without `"type": "module"` loads.
 - `mwgPage()` and the examples stop printing the `EMPTY_IMPORT_META` warning on every build.

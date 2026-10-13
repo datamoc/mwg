@@ -84,6 +84,8 @@ export type { SpinnerOptions } from './Spinner.ts';
 
 export { Dropdown } from './Dropdown.ts';
 export type { DropdownOption, DropdownOptions } from './Dropdown.ts';
+export { DropdownView } from './DropdownView.ts';
+export type { DropdownViewOptions } from './DropdownView.ts';
 
 export { TextModel } from './TextModel.ts';
 export type { TextModelOptions } from './TextModel.ts';

@@ -142,7 +142,8 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   an AI draw never shift each other, with `getState`/`setState` for a save and `reseed`.
 - `Input` (namespace, so `Input.onAction`, not a bare `onAction` import) - named-action input: `bind`/`isDown`/`justPressed`/`justReleased`
   over keyboard, `bindButton`/`bindAxis`/`pollGamepads` over a gamepad,
-  `bindTouch`/`pressTouch`/`releaseTouch`/`attachSwipe` over touch, `actionsForKey` for
+  `bindTouch`/`pressTouch`/`releaseTouch`/`attachSwipe` over touch, `attachPointer` for
+  down/move/drag/up signals with target-relative and (through `toWorld`) world positions, `actionsForKey` for
   rebind-conflict detection, `rumble` for gamepad haptics. `onText` carries the character a
   key press produces (via `textFromKey`/`dispatchText`) and `onAction` the named action a
   key fires, each with its own programmatic counterpart (`dispatchText`,
@@ -608,6 +609,8 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   move the selection and select at once, a tap selects directly, disabled options are skipped.
 - `Spinner`/`SpinnerOptions` + `spinValue` - an up/down numeric stepper; `spinValue` is the rule
   (snap to the step, then clamp at the ends or wrap past them).
+- `DropdownView`/`DropdownViewOptions` - the widget over a `Dropdown` model: a button showing the choice
+  that opens a column of `Button`s, the chosen one marked with `Button.setSelected`.
 - `Dropdown`/`DropdownOption`/`DropdownOptions` - a renderer-free option button: a selected entry,
   an open list, a highlight that starts on the selection and skips disabled options.
 - `TextModel`/`TextModelOptions` - the editing state behind a text field, fed by `core.Input`'s
@@ -800,6 +803,9 @@ reach the compiled asset map without it.
   a `Sound` placed at a point, and `audioGain`/`audioPan` turning distance and heading into a
   volume and a stereo position. `SoundSource.playFor` applies the distance gain through
   `Sound.play`; panning is reported for a backend that has a panner. `Music` stays global.
+- `PhysicsWorld` (`@datamoc/mw_games/physics`, optional peer `matter-js`) - rigid bodies and constraints
+  stepped on a `FixedStepper`: `addBox`/`addCircle`/`addConstraint`/`remove`, `update(dt)` from
+  `Scene.update`, `onContact`, `alpha` for interpolation. The bodies stay plain matter-js objects.
 - `synthesizeTone`/`synthesizeSound`/`playTone`/`Waveform` - a runtime square/triangle/sine/noise
   waveform synth for a procedural tone or SFX, no sample library; `synthesizeSound` returns a
   pooled `Sound` over the tone.

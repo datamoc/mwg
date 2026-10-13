@@ -1,6 +1,8 @@
 #!/usr/bin/env node
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
-import { basename, join, relative } from 'node:path';
+import { join, relative } from 'node:path';
 import { applyMove, legalMoves, positionKey, sq, squareName, startingChess } from '../src/board/chess.ts';
 import { parseUciMove } from '../src/board/openings.ts';
 
@@ -115,7 +117,9 @@ export function compileBook(dir) {
 	return { version: 1, positions };
 }
 
-const isMain = process.argv[1] && import.meta.url.endsWith(basename(process.argv[1]));
+//the real path, since an npm `bin` shim reaches this file through a symlink; a suffix test on the
+//name is not enough (`compress-dist.mjs` ends with `t.mjs`)
+const isMain = process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
 
 if (isMain) {
 	const [dir, out] = process.argv.slice(2);

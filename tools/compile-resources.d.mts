@@ -24,6 +24,11 @@ export interface CompileResourcesResult {
 	embeddedBytes: number;
 	webpConverted: number;
 	skipped: number;
+	/** the `CREDITS.txt` text when the asset folder holds a `credits.json`, else null */
+	credits: string | null;
 }
+
+/** the plain-text credits for a manifest (an array, or `{ credits: [...] }`, of `{ name, license, author?, url? }`) */
+export function creditsText(manifest: unknown): string;
 
 export function compileResources(options: CompileResourcesOptions): Promise<CompileResourcesResult>;

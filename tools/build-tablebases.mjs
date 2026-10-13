@@ -1,6 +1,8 @@
 #!/usr/bin/env node
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { join, relative, basename } from 'node:path';
+import { join, relative } from 'node:path';
 import { huffEncode } from '../src/board/tablebase.ts';
 import { spawn } from '../src/threads/spawn.ts';
 
@@ -451,7 +453,9 @@ function defaultJobs() {
 	return 2;
 }
 
-const isMain = process.argv[1] && import.meta.url.endsWith(basename(process.argv[1]));
+//the real path, since an npm `bin` shim reaches this file through a symlink; a suffix test on the
+//name is not enough (`compress-dist.mjs` ends with `t.mjs`)
+const isMain = process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
 
 if (isMain) {
 	const args = process.argv.slice(2);

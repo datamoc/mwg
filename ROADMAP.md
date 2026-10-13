@@ -375,18 +375,16 @@ empty (branch `master` has no commits, so the work remains loose files on this d
 2026-09-20 and 2026-09-15 results stand as the last recorded run, this box stays open, and
 what this machine owed the line was the location - now recorded here.
 
-412. **Pontifex feedback, the parts that need design.** Reported by a game built on 0.36.0
-(a bridge-building physics puzzle); the small fixes shipped in 0.37.0 and these remain:
-(a) `Input.pointer` - down/move/up/drag with world coordinates through a `Camera`, so a
-game does not reach for Pixi's federated events; (b) an optional `mwg/physics` module
-(XPBD constraint solver at a fixed step, deterministic, serializable, testable without a
-renderer), the reporter offering their ~250-line `src/physics.ts` as a base (check licence
-and determinism first); (c) a `DropdownView` widget over the existing `Dropdown` model;
-(d) `mwg-init` or `examples/` in the published tarball, since "copy the nearest example"
-is the documented advice and the tarball has none; (e) a generated `CREDITS` file in
-`compile-resources` from an `assets/credits.json` manifest, for attribution-licensed packs;
-(f) investigate why importing `assets`, `SpriteSheet`, `AnimatedSprite` and `Random` on top
-of `Game`/`Window`/`Button` grew a game bundle from 534 to 690 KB (tree-shaking of the
-`two-d` barrel) with `mwg-size`, and fix what it finds; (g) reserve `@datamoc/mwg` on npm
-as a pointer to `@datamoc/mw_games`, which only the package owner can do; (h) give
-`Settings.custom` JSON values (the reporter stored progress as a JSON string).
+412. **Pontifex feedback, what is left.** The rest of this item shipped (pointer signals
+`Input.attachPointer`, `physics.PhysicsWorld` over matter-js, `DropdownView`, `mwg-init`,
+`CREDITS.txt` from `assets/credits.json`, the `@datamoc/mwg` alias package generated into
+`packages/mwg`). Open: (a) publish `@datamoc/mwg` (the name is free on npm; publishing is the
+package owner's, and the trusted-publisher setup of `publish-npm.yml` must be extended to it);
+(b) breakable joints and soft-body (XPBD) simulation, which matter-js constraints do not give:
+the reporter's solver (`pontifex/src/physics.ts`, ~250 lines, 16 tests) is the candidate, to
+check for determinism across machines first; (c) the bundle-size report was investigated: the
+growth on adding `assets`/`SpriteSheet`/`AnimatedSprite` is Pixi's own asset loader and
+animated-sprite code (about 53 KB minified), `Random` costs 4 KB and `Button` adds under 3 KB
+beyond Pixi, so there is no mwg tree-shaking defect to fix; (d) `Settings.custom` stays
+flat on purpose (settings screens bind to it); structured progress goes through the now-public
+`StoredValue`.

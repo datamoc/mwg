@@ -1,5 +1,7 @@
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { readdir, readFile, mkdir, writeFile, rm } from 'node:fs/promises';
-import { join, extname, relative, sep, dirname, basename } from 'node:path';
+import { join, extname, relative, sep, dirname } from 'node:path';
 import { WEBP_CONVERTIBLE_EXTENSIONS } from './webp-convert.mjs';
 
 /**
@@ -68,6 +70,11 @@ export async function* walk(dir) {
  *   lossy re-encoding for photographic source art)
  * @param options.webpQuality 0-100, used only when `webpLossless` is false (default 90)
  * @returns the group names, in the order the page should load them
+ *
+ * An `assets/credits.json` (an array, or `{ "credits": [...] }`, of `{ name, license, author?, url? }`)
+ * is not embedded as an asset: it is turned into `CREDITS.txt` beside the compiled scripts, for
+ * the attribution that free art packs require. An entry without a `name` and a `license` is an
+ * error, since a credits file that silently omits a pack defeats its purpose.
  */
 export async function compileResources({
 	from,
@@ -96,7 +103,14 @@ export async function compileResources({
 	// (or requires installing) sharp
 	const toWebp = convertToWebp ? (await import('./webp-convert.mjs')).toWebp : null;
 
+	const creditsFile = join(from, 'credits.json');
+	let credits = null;
+
 	for await (const file of walk(from)) {
+		if (file === creditsFile) {
+			credits = creditsText(JSON.parse(await readFile(file, 'utf8')));
+			continue;
+		}
 		const ext = extname(file).toLowerCase();
 		const type = types[ext];
 		if (!type) {
@@ -136,12 +150,31 @@ export async function compileResources({
 		written.push({ name, count: Object.keys(assets).length, size: js.length });
 	}
 
-	return { groups: written, rawBytes, embeddedBytes, webpConverted, skipped };
+	if (credits) await writeFile(join(to, 'CREDITS.txt'), credits, 'utf8');
+
+	return { groups: written, rawBytes, embeddedBytes, webpConverted, skipped, credits };
+}
+
+/** the plain-text credits for a manifest, one block per entry; throws on an entry that cannot be attributed */
+export function creditsText(manifest) {
+	const entries = Array.isArray(manifest) ? manifest : manifest?.credits;
+	if (!Array.isArray(entries)) throw new Error('credits.json must be an array or { "credits": [...] }');
+	const blocks = entries.map((entry, index) => {
+		if (typeof entry?.name !== 'string' || typeof entry?.license !== 'string') {
+			throw new Error(`credits.json entry ${index} needs a "name" and a "license"`);
+		}
+		const lines = [entry.name + (entry.author ? ` by ${entry.author}` : ''), `License: ${entry.license}`];
+		if (entry.url) lines.push(entry.url);
+		return lines.join('\n');
+	});
+	return blocks.join('\n\n') + '\n';
 }
 
 // ---------------------------------------------------------------- CLI
 
-const isMain = process.argv[1] && import.meta.url.endsWith(basename(process.argv[1]));
+//the real path, since an npm `bin` shim reaches this file through a symlink; a suffix test on the
+//name is not enough (`compress-dist.mjs` ends with `t.mjs`)
+const isMain = process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
 
 async function runCli() {
 	const args = process.argv.slice(2);

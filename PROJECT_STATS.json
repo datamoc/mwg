@@ -4,24 +4,24 @@
 	"version": "0.36.1",
 	"releaseDate": "2026-10-13",
 	"source": {
-		"files": 339,
-		"lines": 63225,
-		"modules": 19,
+		"files": 342,
+		"lines": 63601,
+		"modules": 20,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 97,
-				"lines": 20571
+				"files": 98,
+				"lines": 20657
+			},
+			{
+				"name": "core",
+				"files": 52,
+				"lines": 7370
 			},
 			{
 				"name": "mwl",
 				"files": 22,
 				"lines": 7316
-			},
-			{
-				"name": "core",
-				"files": 52,
-				"lines": 7228
 			},
 			{
 				"name": "board",
@@ -99,6 +99,11 @@
 				"lines": 219
 			},
 			{
+				"name": "physics",
+				"files": 2,
+				"lines": 148
+			},
+			{
 				"name": "headless",
 				"files": 1,
 				"lines": 86
@@ -106,13 +111,13 @@
 		]
 	},
 	"tests": {
-		"files": 315,
-		"lines": 42661,
-		"cases": 2902
+		"files": 316,
+		"lines": 42878,
+		"cases": 2912
 	},
 	"tools": {
-		"files": 48,
-		"lines": 10404
+		"files": 50,
+		"lines": 10674
 	},
 	"examples": {
 		"count": 24,
@@ -150,12 +155,12 @@
 		"percent": 99
 	},
 	"api": {
-		"declarationFiles": 339
+		"declarationFiles": 342
 	},
 	"bundle": {
-		"globalRaw": 1261962,
-		"globalGzip": 378207,
-		"distRaw": 4456068
+		"globalRaw": 1263960,
+		"globalGzip": 378776,
+		"distRaw": 4476971
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

@@ -684,6 +684,18 @@
 		"declaringModule": "two-d/ui/Dropdown.d.ts"
 	},
 	{
+		"name": "DropdownView",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/DropdownView.d.ts"
+	},
+	{
+		"name": "DropdownViewOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/DropdownView.d.ts"
+	},
+	{
 		"name": "Easing",
 		"kind": "const",
 		"subpath": ".",
@@ -9102,6 +9114,42 @@
 		"declaringModule": "mwl/pyroeis-runtime.d.ts"
 	},
 	{
+		"name": "BodyOptions",
+		"kind": "interface",
+		"subpath": "./physics",
+		"declaringModule": "physics/PhysicsWorld.d.ts"
+	},
+	{
+		"name": "ConstraintOptions",
+		"kind": "interface",
+		"subpath": "./physics",
+		"declaringModule": "physics/PhysicsWorld.d.ts"
+	},
+	{
+		"name": "PhysicsBody",
+		"kind": "type",
+		"subpath": "./physics",
+		"declaringModule": "physics/PhysicsWorld.d.ts"
+	},
+	{
+		"name": "PhysicsConstraint",
+		"kind": "type",
+		"subpath": "./physics",
+		"declaringModule": "physics/PhysicsWorld.d.ts"
+	},
+	{
+		"name": "PhysicsOptions",
+		"kind": "interface",
+		"subpath": "./physics",
+		"declaringModule": "physics/PhysicsWorld.d.ts"
+	},
+	{
+		"name": "PhysicsWorld",
+		"kind": "class",
+		"subpath": "./physics",
+		"declaringModule": "physics/PhysicsWorld.d.ts"
+	},
+	{
 		"name": "AbilityCycle",
 		"kind": "class",
 		"subpath": "./roguelike",
@@ -10704,6 +10752,12 @@
 		"declaringModule": "tools/i18n-edit.mjs"
 	},
 	{
+		"name": "./tools/init",
+		"kind": "tool",
+		"subpath": "./tools/init",
+		"declaringModule": "tools/init.mjs"
+	},
+	{
 		"name": "./tools/make-example-assets",
 		"kind": "tool",
 		"subpath": "./tools/make-example-assets",
@@ -11194,6 +11248,18 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/Dropdown.d.ts"
+	},
+	{
+		"name": "DropdownView",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/DropdownView.d.ts"
+	},
+	{
+		"name": "DropdownViewOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/DropdownView.d.ts"
 	},
 	{
 		"name": "EMPTY",
@@ -14620,6 +14686,18 @@
 		"kind": "interface",
 		"subpath": "./two-d/ui",
 		"declaringModule": "two-d/ui/Dropdown.d.ts"
+	},
+	{
+		"name": "DropdownView",
+		"kind": "class",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/DropdownView.d.ts"
+	},
+	{
+		"name": "DropdownViewOptions",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/DropdownView.d.ts"
 	},
 	{
 		"name": "escapeHtml",

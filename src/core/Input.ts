@@ -559,6 +559,148 @@ export function attachSwipe(target: EventTarget, options: SwipeOptions = {}): ()
 	};
 }
 
+/** where a pointer is, and where its current drag began */
+export interface PointerPoint {
+	/** CSS pixels from the target's top-left corner */
+	x: number;
+	y: number;
+	/** `x`/`y` through the `toWorld` option, or equal to them without one */
+	worldX: number;
+	worldY: number;
+	/** CSS pixel offset from where the press began; 0 outside a drag */
+	dx: number;
+	dy: number;
+	pointerId: number;
+	/** true while the button or finger is down */
+	pressed: boolean;
+}
+
+export interface PointerOptions {
+	/** maps target-relative CSS pixels to world units, e.g. `(x, y) => camera.toWorld(x, y)` */
+	toWorld?: (x: number, y: number) => { x: number; y: number };
+	/** movement, in CSS pixels, before a press counts as a drag rather than a click; default 4 */
+	dragThreshold?: number;
+}
+
+export interface PointerTracker {
+	readonly down: Signal<PointerPoint>;
+	/** every move, pressed or not (hover), with `dx`/`dy` set while pressed */
+	readonly move: Signal<PointerPoint>;
+	/** fires once a press has moved past the drag threshold, then on every further move */
+	readonly drag: Signal<PointerPoint>;
+	/** the release; `dragged` tells a drop from a click */
+	readonly up: Signal<PointerPoint & { dragged: boolean }>;
+	/** the last known position, or null before the pointer has been seen */
+	readonly current: PointerPoint | null;
+	detach(): void;
+}
+
+/**
+ * Pointer input as signals - down, move, drag, up - with positions relative to `target` and,
+ * through `toWorld`, in world units, so a game does not reach for the renderer's own event
+ * system to build a draggable thing. One pointer is tracked at a time (the first to press),
+ * which is what a mouse or a single finger is; a second finger is ignored until the first lifts.
+ *
+ * @example
+ * ```ts
+ * import { Input } from '@datamoc/mw_games/core';
+ *
+ * const target = new EventTarget(); // the game's canvas in a browser
+ * const pointer = Input.attachPointer(target, { dragThreshold: 6 });
+ * pointer.drag.add((p) => console.log('dragging', p.worldX, p.worldY));
+ * pointer.up.add((p) => console.log(p.dragged ? 'dropped' : 'clicked'));
+ * pointer.detach();
+ * ```
+ */
+export function attachPointer(
+	target: EventTarget & { getBoundingClientRect?: () => { left: number; top: number } },
+	options: PointerOptions = {},
+): PointerTracker {
+	const threshold = options.dragThreshold ?? 4;
+	const toWorld = options.toWorld ?? ((x: number, y: number) => ({ x, y }));
+	const down = new Signal<PointerPoint>();
+	const move = new Signal<PointerPoint>();
+	const drag = new Signal<PointerPoint>();
+	const up = new Signal<PointerPoint & { dragged: boolean }>();
+
+	let activeId = -1;
+	let pressed = false;
+	let dragging = false;
+	let startX = 0;
+	let startY = 0;
+	let current: PointerPoint | null = null;
+
+	function pointAt(event: PointerEvent): PointerPoint {
+		const rect = target.getBoundingClientRect?.() ?? { left: 0, top: 0 };
+		const x = event.clientX - rect.left;
+		const y = event.clientY - rect.top;
+		const world = toWorld(x, y);
+		return {
+			x,
+			y,
+			worldX: world.x,
+			worldY: world.y,
+			dx: pressed ? x - startX : 0,
+			dy: pressed ? y - startY : 0,
+			pointerId: event.pointerId,
+			pressed,
+		};
+	}
+
+	function onDown(event: PointerEvent): void {
+		if (pressed) return;
+		pressed = true;
+		dragging = false;
+		activeId = event.pointerId;
+		const rect = target.getBoundingClientRect?.() ?? { left: 0, top: 0 };
+		startX = event.clientX - rect.left;
+		startY = event.clientY - rect.top;
+		current = pointAt(event);
+		down.dispatch(current);
+	}
+
+	function onMove(event: PointerEvent): void {
+		//hover is tracked for any pointer; only the pressing one drags
+		if (pressed && event.pointerId !== activeId) return;
+		current = pointAt(event);
+		move.dispatch(current);
+		if (!pressed) return;
+		if (!dragging && Math.hypot(current.dx, current.dy) >= threshold) dragging = true;
+		if (dragging) drag.dispatch(current);
+	}
+
+	function onUp(event: PointerEvent): void {
+		if (!pressed || event.pointerId !== activeId) return;
+		const dragged = dragging;
+		const point = pointAt(event);
+		pressed = false;
+		dragging = false;
+		current = { ...point, pressed: false, dx: 0, dy: 0 };
+		up.dispatch({ ...point, pressed: false, dragged });
+	}
+
+	target.addEventListener('pointerdown', onDown as EventListener);
+	target.addEventListener('pointermove', onMove as EventListener);
+	target.addEventListener('pointerup', onUp as EventListener);
+	target.addEventListener('pointercancel', onUp as EventListener);
+
+	return {
+		down,
+		move,
+		drag,
+		up,
+		get current() {
+			return current;
+		},
+		detach() {
+			target.removeEventListener('pointerdown', onDown as EventListener);
+			target.removeEventListener('pointermove', onMove as EventListener);
+			target.removeEventListener('pointerup', onUp as EventListener);
+			target.removeEventListener('pointercancel', onUp as EventListener);
+		},
+	};
+}
+
 export function attach(target: EventTarget = window): void {
 	if (attached) return;
 	attached = true;

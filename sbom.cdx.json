@@ -1,7 +1,7 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
-  "serialNumber": "urn:uuid:17cd32d6-94ff-58fa-90e1-9bec6171c507",
+  "serialNumber": "urn:uuid:29bb5b1b-9ac7-5497-a425-f4944d6b3b3f",
   "version": 1,
   "metadata": {
     "tools": {
@@ -1365,6 +1365,27 @@
         {
           "alg": "SHA-512",
           "content": "d1dcca7303be4bcb3692e17967da1459ab50263e54abf8aaa6112d137190255451626fed0f52e0954d949d78b603c8cbab9ba6906a2e397391f72d27eb5dd9c1"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40types/matter-js@0.20.2",
+      "name": "@types/matter-js",
+      "version": "0.20.2",
+      "purl": "pkg:npm/%40types/matter-js@0.20.2",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "dcf3cacb7431bd9f3d87dfb0741576e3cf08d492d5b3b0c4a4890fbe03bc242d6651d89548edfb648bd572d3930fb848abc3802f6809dee8064ae522a7a0e10b"
         }
       ],
       "licenses": [
@@ -3162,6 +3183,27 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:npm/matter-js@0.20.0",
+      "name": "matter-js",
+      "version": "0.20.0",
+      "purl": "pkg:npm/matter-js@0.20.0",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "882f5f611ef3553dc7a69367b05b29f573a841d40ddad5327da2a0e021cb1fc6cdfa3e864f81b0ec81f6acfd2d7e501e6eb1c5c3bdf4451dc3915499457f21c0"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:npm/minimatch@10.2.6",
       "name": "minimatch",
       "version": "10.2.6",
@@ -4610,9 +4652,11 @@
         "pkg:npm/%40capacitor/core@8.5.3",
         "pkg:npm/%40capacitor/ios@8.5.3",
         "pkg:npm/%40datamoc/pyroeis@0.9.0",
+        "pkg:npm/%40types/matter-js@0.20.2",
         "pkg:npm/%40types/node@26.6.5",
         "pkg:npm/%40types/ws@8.18.2",
         "pkg:npm/json5@2.2.3",
+        "pkg:npm/matter-js@0.20.0",
         "pkg:npm/multithreading@0.3.52",
         "pkg:npm/pixi.js@8.22.0",
         "pkg:npm/playwright-core@1.64.0",
@@ -4935,6 +4979,10 @@
       "dependsOn": [
         "pkg:npm/%40types/node@26.6.5"
       ]
+    },
+    {
+      "ref": "pkg:npm/%40types/matter-js@0.20.2",
+      "dependsOn": []
     },
     {
       "ref": "pkg:npm/%40types/node@26.6.5",
@@ -5335,6 +5383,10 @@
     },
     {
       "ref": "pkg:npm/lru-cache@11.5.3",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/matter-js@0.20.0",
       "dependsOn": []
     },
     {

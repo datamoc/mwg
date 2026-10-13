@@ -1,5 +1,7 @@
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { readFile, writeFile } from 'node:fs/promises';
-import { relative, extname, basename } from 'node:path';
+import { relative, extname } from 'node:path';
 import { gzip, brotliCompress, constants } from 'node:zlib';
 import { promisify } from 'node:util';
 import { availableParallelism } from 'node:os';
@@ -153,7 +155,9 @@ async function compressOne(dir, file, { gzip, brotli, wantXz }) {
 	return row;
 }
 
-const isMain = process.argv[1] && import.meta.url.endsWith(basename(process.argv[1]));
+//the real path, since an npm `bin` shim reaches this file through a symlink; a suffix test on the
+//name is not enough (`compress-dist.mjs` ends with `t.mjs`)
+const isMain = process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
 
 async function runCli() {
 	const [dir, ...flags] = process.argv.slice(2);

@@ -39,6 +39,7 @@
 		"mwg-emit": "tools/emit-page.mjs",
 		"mwg-extract-rgssad": "tools/extract-rgssad.mjs",
 		"mwg-i18n": "tools/i18n-edit.mjs",
+		"mwg-init": "tools/init.mjs",
 		"mwg-lockstep-server": "tools/multiplayer-server.mjs",
 		"mwg-mwl": "tools/mwl.mjs",
 		"mwg-openings": "tools/compile-openings.mjs",
@@ -68,6 +69,8 @@
 		"tools/build-tablebases.d.mts",
 		"tools/play-uci.mjs",
 		"tools/play-uci.d.mts",
+		"tools/init.mjs",
+		"tools/init.d.mts",
 		"tools/classic-html.mjs",
 		"tools/classic-html.d.mts",
 		"tools/sbom.mjs",
@@ -161,6 +164,10 @@
 			"types": "./dist/i18n/index.d.ts",
 			"import": "./dist/i18n/index.js"
 		},
+		"./physics": {
+			"types": "./dist/physics/index.d.ts",
+			"import": "./dist/physics/index.js"
+		},
 		"./skeleton": {
 			"types": "./dist/skeleton/index.d.ts",
 			"import": "./dist/skeleton/index.js"
@@ -211,6 +218,7 @@
 		"./tools/compile-resources": "./tools/compile-resources.mjs",
 		"./tools/compile-openings": "./tools/compile-openings.mjs",
 		"./tools/build-tablebases": "./tools/build-tablebases.mjs",
+		"./tools/init": "./tools/init.mjs",
 		"./tools/play-uci": "./tools/play-uci.mjs",
 		"./tools/compress-dist": "./tools/compress-dist.mjs",
 		"./tools/csp": "./tools/csp.mjs",
@@ -361,7 +369,8 @@
 		"desktop:run": "npm run mobile:build && dotnet run --project desktop/MwgDesktopHost",
 		"multiplayer:server": "node tools/multiplayer-server.mjs",
 		"roadmap:progress": "node tools/roadmap-progress.mjs",
-		"roadmap:browser": "node tools/roadmap-progress.mjs --browser"
+		"roadmap:browser": "node tools/roadmap-progress.mjs --browser",
+		"alias:write": "node tools/make-alias-package.mjs"
 	},
 	"dependencies": {
 		"json5": "^2.2.3",
@@ -371,6 +380,7 @@
 		"@babylonjs/core": "^9.25.0",
 		"@babylonjs/loaders": "^9.25.0",
 		"@capacitor/core": "^8.5.2",
+		"matter-js": "^0.20.0",
 		"pixi.js": "^8.20.1",
 		"playwright-core": "^1.62.1",
 		"ws": "^8.21.3"
@@ -393,6 +403,9 @@
 		},
 		"ws": {
 			"optional": true
+		},
+		"matter-js": {
+			"optional": true
 		}
 	},
 	"devDependencies": {
@@ -402,8 +415,10 @@
 		"@capacitor/cli": "^8.5.2",
 		"@capacitor/core": "^8.5.2",
 		"@capacitor/ios": "^8.5.2",
+		"@types/matter-js": "^0.20.2",
 		"@types/node": "^26.4.1",
 		"@types/ws": "^8.18.1",
+		"matter-js": "^0.20.0",
 		"multithreading": "^0.3.52",
 		"pixi.js": "^8.20.1",
 		"playwright-core": "^1.62.1",

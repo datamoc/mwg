@@ -1222,6 +1222,27 @@ build instead.
         disabled?: boolean;
     }
 
+### `DropdownView` (class)
+
+    export declare class DropdownView extends Container {
+        readonly model: Dropdown;
+        private readonly width_;
+        private readonly rowHeight;
+        private readonly head;
+        private readonly list;
+        constructor(options: DropdownViewOptions);
+
+        refresh(): void;
+    }
+
+### `DropdownViewOptions` (interface)
+
+    export interface DropdownViewOptions extends DropdownOptions {
+        width: number;
+
+        rowHeight?: number;
+    }
+
 ### `Easing` (const)
 
     export declare const Easing: Record<'linear' | 'easeInQuad' | 'easeOutQuad' | 'easeInOutQuad' | 'easeInCubic' | 'easeOutCubic' | 'easeInOutCubic', Easing>;
@@ -14168,6 +14189,94 @@ build instead.
     export type PyroeisValue = null | boolean | number | string | bigint | Uint8Array | PyroeisReference | PyroeisValue[] | {
         readonly [key: string]: PyroeisValue;
 
+## `./physics`
+
+### `BodyOptions` (interface)
+
+    export interface BodyOptions {
+
+        isStatic?: boolean;
+
+        restitution?: number;
+        friction?: number;
+
+        density?: number;
+        angle?: number;
+
+        label?: string;
+    }
+
+### `ConstraintOptions` (interface)
+
+    export interface ConstraintOptions {
+
+        stiffness?: number;
+        damping?: number;
+
+        length?: number;
+
+        pointA?: {
+            x: number;
+            y: number;
+        };
+        pointB?: {
+            x: number;
+            y: number;
+        };
+    }
+
+### `PhysicsBody` (type)
+
+    export type PhysicsBody = Matter.Body;
+
+### `PhysicsConstraint` (type)
+
+    export type PhysicsConstraint = Matter.Constraint;
+
+### `PhysicsOptions` (interface)
+
+    export interface PhysicsOptions {
+
+        gravity?: {
+            x: number;
+            y: number;
+        };
+
+        step?: number;
+
+        maxSubsteps?: number;
+    }
+
+### `PhysicsWorld` (class)
+
+    export declare class PhysicsWorld {
+        readonly engine: Matter.Engine;
+
+        readonly onContact: Signal<{
+            a: PhysicsBody;
+            b: PhysicsBody;
+        }>;
+        private readonly stepper;
+        constructor(options?: PhysicsOptions);
+        get bodies(): readonly PhysicsBody[];
+        get constraints(): readonly PhysicsConstraint[];
+
+        get alpha(): number;
+
+        addBox(x: number, y: number, width: number, height: number, options?: BodyOptions): PhysicsBody;
+        addCircle(x: number, y: number, radius: number, options?: BodyOptions): PhysicsBody;
+
+        addConstraint(a: PhysicsBody, b: PhysicsBody | {
+            x: number;
+            y: number;
+        }, options?: ConstraintOptions): PhysicsConstraint;
+
+        remove(item: PhysicsBody | PhysicsConstraint): void;
+
+        update(dt: number): number;
+        private add;
+    }
+
 ## `./roguelike`
 
 ### `AbilityCycle` (class)
@@ -17560,6 +17669,27 @@ build instead.
 
         selectedIndex?: number;
         disabled?: boolean;
+    }
+
+### `DropdownView` (class)
+
+    export declare class DropdownView extends Container {
+        readonly model: Dropdown;
+        private readonly width_;
+        private readonly rowHeight;
+        private readonly head;
+        private readonly list;
+        constructor(options: DropdownViewOptions);
+
+        refresh(): void;
+    }
+
+### `DropdownViewOptions` (interface)
+
+    export interface DropdownViewOptions extends DropdownOptions {
+        width: number;
+
+        rowHeight?: number;
     }
 
 ### `EMPTY` (const)
@@ -24089,6 +24219,27 @@ build instead.
 
         selectedIndex?: number;
         disabled?: boolean;
+    }
+
+### `DropdownView` (class)
+
+    export declare class DropdownView extends Container {
+        readonly model: Dropdown;
+        private readonly width_;
+        private readonly rowHeight;
+        private readonly head;
+        private readonly list;
+        constructor(options: DropdownViewOptions);
+
+        refresh(): void;
+    }
+
+### `DropdownViewOptions` (interface)
+
+    export interface DropdownViewOptions extends DropdownOptions {
+        width: number;
+
+        rowHeight?: number;
     }
 
 ### `escapeHtml` (function)
