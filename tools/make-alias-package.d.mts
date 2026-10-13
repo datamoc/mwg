@@ -2,7 +2,9 @@
 export function aliasFiles(main: {
 	version: string;
 	license?: string;
-	repository?: unknown;
+	repository?: Record<string, unknown>;
+	homepage?: string;
+	bugs?: unknown;
 	exports: Record<string, string | Record<string, string>>;
 }): Record<string, string>;
 

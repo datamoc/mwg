@@ -39,7 +39,10 @@ export function aliasFiles(main) {
 				version: main.version,
 				description: `The short name for ${SOURCE}: every entry point re-exports the same one there.`,
 				license: main.license,
-				repository: main.repository,
+				//the same repository, with the folder this package is generated into so npm links to it
+				repository: { ...main.repository, directory: 'packages/mwg' },
+				homepage: main.homepage,
+				bugs: main.bugs,
 				type: 'module',
 				sideEffects: false,
 				//a scoped package is private by default, which npm only allows on a paid plan

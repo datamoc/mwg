@@ -5,7 +5,8 @@
 	"license": "MPL-2.0",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/datamoc/mwg.git"
+		"url": "git+https://github.com/datamoc/mwg.git",
+		"directory": "packages/mwg"
 	},
 	"type": "module",
 	"sideEffects": false,
