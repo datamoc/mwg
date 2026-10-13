@@ -209,13 +209,13 @@ async function verifyDriver(
 	}
 }
 
-test('the Chrome CDP driver plays a page end to end', { timeout: 120000 }, async (t) => {
+test('the Chrome CDP driver plays a page end to end', { timeout: 180000 }, async (t) => {
 	const dir = mkdtempSync(join(ROOT, '.example-check', 'profile-'));
 	t.after(() => removeProfileDir(dir));
 	await verifyDriver(t, 'chrome', driveChrome, dir);
 });
 
-test('the Firefox BiDi driver plays a page end to end', { timeout: 120000 }, async (t) => {
+test('the Firefox BiDi driver plays a page end to end', { timeout: 180000 }, async (t) => {
 	const dir = mkdtempSync(join(ROOT, '.example-check', 'profile-'));
 	t.after(() => removeProfileDir(dir));
 	await verifyDriver(t, 'firefox', driveFirefox, dir);

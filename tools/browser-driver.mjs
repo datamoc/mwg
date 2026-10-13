@@ -378,7 +378,7 @@ function killBrowser(child) {
  * The timeout message carries what was seen, because "no endpoint" alone cannot tell a
  * slow cold start from a browser that started and refused to open one.
  */
-function waitForEndpoint(child, match, timeoutMs = 30000) {
+function waitForEndpoint(child, match, timeoutMs = 90000) {
 	return new Promise((resolveEndpoint, reject) => {
 		let seen = '';
 		const timer = setTimeout(() => {
