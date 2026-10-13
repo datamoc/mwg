@@ -417,6 +417,6 @@
 	"types": "./dist/index.d.ts",
 	"unpkg": "./dist/mw_games.global.js",
 	"optionalDependencies": {
-		"@datamoc/pyroeis": "^0.6.0"
+		"@datamoc/pyroeis": "^0.9.0"
 	}
 }

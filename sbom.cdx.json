@@ -1,7 +1,7 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
-  "serialNumber": "urn:uuid:d6286cd5-19f5-5fa4-a70a-a97edfc4b9dd",
+  "serialNumber": "urn:uuid:6506e319-d4c5-590a-986b-e3f9a2f46a28",
   "version": 1,
   "metadata": {
     "tools": {
@@ -159,15 +159,15 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40datamoc/pyroeis@0.6.0",
+      "bom-ref": "pkg:npm/%40datamoc/pyroeis@0.9.0",
       "name": "@datamoc/pyroeis",
-      "version": "0.6.0",
-      "purl": "pkg:npm/%40datamoc/pyroeis@0.6.0",
+      "version": "0.9.0",
+      "purl": "pkg:npm/%40datamoc/pyroeis@0.9.0",
       "scope": "optional",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "cd5087e67203c62762e4da82e249f4c662743c1b3479d0906e1dd774394b909e0819c1fe67aabf79212b035260af10752fcfa5e8259af909ce4b970f33d6c7dc"
+          "content": "22c2104fc4df7b87209157a3168afb143eefd46abdb5b4f92c45125244c26265badca578a81b78be2bc6c5f59c29973b5b20dc0b940143aa00016abebed6da22"
         }
       ],
       "licenses": [
@@ -4609,7 +4609,7 @@
         "pkg:npm/%40capacitor/cli@8.5.3",
         "pkg:npm/%40capacitor/core@8.5.3",
         "pkg:npm/%40capacitor/ios@8.5.3",
-        "pkg:npm/%40datamoc/pyroeis@0.6.0",
+        "pkg:npm/%40datamoc/pyroeis@0.9.0",
         "pkg:npm/%40types/node@26.6.5",
         "pkg:npm/%40types/ws@8.18.2",
         "pkg:npm/json5@2.2.3",
@@ -4625,7 +4625,7 @@
       ]
     },
     {
-      "ref": "pkg:npm/%40datamoc/pyroeis@0.6.0",
+      "ref": "pkg:npm/%40datamoc/pyroeis@0.9.0",
       "dependsOn": [
         "pkg:npm/readline-sync@1.4.10",
         "pkg:npm/sprintf-js@1.1.3",
