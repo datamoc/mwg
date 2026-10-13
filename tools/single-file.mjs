@@ -200,7 +200,7 @@ function renderBootstrap(payloads, algorithm) {
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
-if (isMain) {
+async function runCli() {
 	const args = process.argv.slice(2);
 	const dist = args[0];
 	if (!dist || dist.startsWith('--')) {
@@ -228,4 +228,12 @@ if (isMain) {
 			(compress ? ` (${algorithm} level ${level ?? (algorithm === 'brotli' ? 11 : 9)})` : ' (uncompressed)'),
 	);
 	console.log('  one file, no server, no sibling script - open it directly');
+}
+
+//no top-level await: a vite config loaded as CommonJS has to be able to require() this module
+if (isMain) {
+	runCli().catch((error) => {
+		console.error(error);
+		process.exitCode = 1;
+	});
 }

@@ -97,8 +97,17 @@ export type { TreeNode, TreeRow, TreeViewOptions } from './TreeView.ts';
 export { ScrollBox, scrollOffset } from './ScrollBox.ts';
 export type { ScrollBoxOptions } from './ScrollBox.ts';
 
-export { Grid, anchorAlign, resolveAnchor } from './Layout.ts';
-export type { Anchor, AnchorSpec, GridSpec, GridTrack, LayoutRect } from './Layout.ts';
+export { Grid, anchorAlign, resolveAnchor, flowLayout } from './Layout.ts';
+export type {
+	Anchor,
+	AnchorSpec,
+	FlowItem,
+	FlowOptions,
+	FlowResult,
+	GridSpec,
+	GridTrack,
+	LayoutRect,
+} from './Layout.ts';
 
 export { Skins } from './Skins.ts';
 export type { Skin, SkinData, SkinStates, WidgetState } from './Skins.ts';

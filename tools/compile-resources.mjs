@@ -143,7 +143,7 @@ export async function compileResources({
 
 const isMain = process.argv[1] && import.meta.url.endsWith(basename(process.argv[1]));
 
-if (isMain) {
+async function runCli() {
 	const args = process.argv.slice(2);
 	const [from, to] = args.filter((a) => !a.startsWith('--'));
 	if (!from || !to) {
@@ -178,6 +178,14 @@ if (isMain) {
 				`${kb(rawBytes)} -> ${kb(embeddedBytes)} embedded`,
 		);
 	}
+}
+
+//no top-level await: a vite config loaded as CommonJS has to be able to require() this module
+if (isMain) {
+	runCli().catch((error) => {
+		console.error(error);
+		process.exitCode = 1;
+	});
 }
 
 export { dirname };

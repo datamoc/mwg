@@ -50,6 +50,11 @@ export function mwgPage(options = {}) {
 					reportCompressedSize: false,
 					rollupOptions: {
 						output: { format: 'iife', entryFileNames: 'game.js', assetFileNames: '[name][extname]' },
+						//an iife has no import.meta, and the bundler already swaps it for {} (vite's own
+						//preload helper reads it); the warning on every build is noise, not information
+						onLog(level, log, defaultHandler) {
+							if (log.code !== 'EMPTY_IMPORT_META') defaultHandler(level, log);
+						},
 					},
 				},
 			};

@@ -29,6 +29,10 @@ export function exampleConfig(dir: string) {
 			assetsInlineLimit: 0,
 			rollupOptions: {
 				output: { format: 'iife', entryFileNames: 'game.js', assetFileNames: '[name][extname]' },
+				//the bundler already swaps import.meta for {} in an iife; the warning is noise
+				onLog(level, log, defaultHandler) {
+					if (log.code !== 'EMPTY_IMPORT_META') defaultHandler(level, log);
+				},
 			},
 		},
 	});

@@ -38,6 +38,8 @@ export interface BrowserDriver {
 	evaluate<T>(expression: string): Promise<T>;
 	script<Args extends unknown[], T>(fn: (...args: Args) => T | Promise<T>, ...args: Args): Promise<T>;
 	tap(xFraction: number, yFraction: number): Promise<void>;
+	/** presses at one canvas fraction, moves to another with the button held in `steps` moves (default 8), releases */
+	drag(fromX: number, fromY: number, toX: number, toY: number, steps?: number): Promise<void>;
 	screenshot(): Promise<Buffer>;
 	consoleErrors(): string[];
 	close(): Promise<void>;
@@ -76,6 +78,18 @@ export function parseBidiEndpoint(stderr: string): string | null;
 
 /** the CDP Input.dispatchMouseEvent sequence a tap is, at CSS pixels */
 export function buildTapSequence(x: number, y: number): CdpMouseEvent[];
+
+/** the CDP Input.dispatchMouseEvent sequence a drag is: press, held moves, release, at CSS pixels */
+export function buildDragSequence(
+	x1: number,
+	y1: number,
+	x2: number,
+	y2: number,
+	steps?: number,
+): Record<string, unknown>[];
+
+/** the in-page synthetic pointer drag, the Firefox path (see pageTapSource) */
+export function pageDragSource(x1: number, y1: number, x2: number, y2: number, steps?: number): string;
 
 /** the BiDi input.performActions pointer half of a tap, at CSS pixels */
 export function buildPointerActions(x: number, y: number): BidiPointerAction[];

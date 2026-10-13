@@ -77,6 +77,7 @@ export class Button extends Container {
 	private height_: number;
 	private state: ButtonState = 'idle';
 	private disabled_: boolean;
+	private selected_ = false;
 
 	private readonly themeListener = () => this.draw();
 
@@ -169,6 +170,20 @@ export class Button extends Container {
 		this.setState(disabled ? 'disabled' : 'idle');
 	}
 
+	get selected(): boolean {
+		return this.selected_;
+	}
+
+	/**
+	 * Marks the button as the active choice (the current tool, the open tab), drawn in the
+	 * theme's `color.selection` - a toggle's look without a second widget.
+	 */
+	setSelected(selected: boolean): void {
+		if (this.selected_ === selected) return;
+		this.selected_ = selected;
+		this.draw();
+	}
+
 	private setState(state: ButtonState): void {
 		if (this.disabled_ && state !== 'disabled') return;
 		this.state = state;
@@ -226,9 +241,9 @@ export class Button extends Container {
 
 		if (this.background instanceof NinePatch) {
 			this.background.resize(this.width_, this.height_);
-			this.background.tint = this.skin?.tints?.[this.state] ?? tint;
+			this.background.tint = this.selected_ ? t.color.selection : (this.skin?.tints?.[this.state] ?? tint);
 		} else {
-			const fill = this.state === 'pressed' ? t.color.selection : t.color.panelFill;
+			const fill = this.state === 'pressed' || this.selected_ ? t.color.selection : t.color.panelFill;
 			this.background
 				.clear()
 				.roundRect(0, 0, this.width_, this.height_, 4)

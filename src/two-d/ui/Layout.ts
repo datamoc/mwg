@@ -231,3 +231,71 @@ function spanOf(sizes: readonly number[], index: number, span: number, gap: numb
 	}
 	return Math.max(0, width);
 }
+
+export interface FlowItem {
+	width: number;
+	height: number;
+}
+
+export interface FlowOptions {
+	/** space between items on a row and between rows; 0 when omitted */
+	gap?: number;
+	/** how each row sits in `width`; 'start' when omitted */
+	align?: 'start' | 'center' | 'end';
+}
+
+export interface FlowResult {
+	/** one position per item, in the order given */
+	positions: { x: number; y: number }[];
+	/** the total height the rows take, for sizing the container */
+	height: number;
+}
+
+/**
+ * Lays items out left to right and wraps to a new row when the next one would pass `width`:
+ * a toolbar that takes one row on a desktop and two on a phone. An item wider than `width`
+ * sits alone on its row rather than being dropped.
+ *
+ * @example
+ * ```ts
+ * import { flowLayout } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const buttons = [{ width: 120, height: 32 }, { width: 120, height: 32 }, { width: 120, height: 32 }];
+ * const { positions, height } = flowLayout(buttons, 300, { gap: 8, align: 'center' });
+ * console.log(positions.length, height); // 3 buttons on two rows: 72
+ * ```
+ */
+export function flowLayout(items: readonly FlowItem[], width: number, options: FlowOptions = {}): FlowResult {
+	const gap = options.gap ?? 0;
+	const align = options.align ?? 'start';
+	const positions: { x: number; y: number }[] = new Array(items.length);
+	let y = 0;
+	let row: number[] = [];
+	let rowWidth = 0;
+	let rowHeight = 0;
+
+	const flush = () => {
+		if (row.length === 0) return;
+		const free = Math.max(0, width - rowWidth);
+		let x = align === 'center' ? free / 2 : align === 'end' ? free : 0;
+		for (const index of row) {
+			positions[index] = { x, y };
+			x += items[index].width + gap;
+		}
+		y += rowHeight + gap;
+		row = [];
+		rowWidth = 0;
+		rowHeight = 0;
+	};
+
+	items.forEach((item, index) => {
+		const needed = row.length === 0 ? item.width : rowWidth + gap + item.width;
+		if (row.length > 0 && needed > width) flush();
+		rowWidth = row.length === 0 ? item.width : rowWidth + gap + item.width;
+		rowHeight = Math.max(rowHeight, item.height);
+		row.push(index);
+	});
+	flush();
+
+	return { positions, height: Math.max(0, y - gap) };
+}

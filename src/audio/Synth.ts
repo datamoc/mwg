@@ -1,4 +1,5 @@
 import type { Playable } from './Playable.ts';
+import { Sound, type SoundOptions } from './Sound.ts';
 
 /**
  * A small runtime waveform generator - the licence-avoiding synthesis
@@ -81,6 +82,22 @@ export function playTone(
 	// expected, not an error, and must not escape as an unhandled rejection.
 	void Promise.resolve(playable.play()).catch(() => {});
 	return playable;
+}
+
+/**
+ * A pooled `Sound` playing a synthesized tone: `synthesizeTone` and `Sound` composed, for the
+ * common case of a procedural effect that must overlap itself.
+ *
+ * @example
+ * ```ts
+ * import { synthesizeSound } from '@datamoc/mw_games/audio';
+ *
+ * const blip = synthesizeSound({ waveform: 'square', frequency: 660, duration: 0.08 }, { poolSize: 6 });
+ * blip.play(1, 0.9 + Math.random() * 0.2); // a little pitch variance per hit
+ * ```
+ */
+export function synthesizeSound(tone: ToneOptions = {}, sound: SoundOptions = {}): Sound {
+	return new Sound(synthesizeTone(tone), sound);
 }
 
 function waveSample(waveform: Waveform, phase: number, seed: number, index: number): number {

@@ -31,5 +31,18 @@ export interface Playable {
  * ```
  */
 export function createAudio(path: string): Playable {
-	return new Audio(Resources.resolve(path));
+	let url: string;
+	try {
+		url = Resources.resolve(path);
+	} catch (error) {
+		//a sound missing from the build must not stop the game from starting: it plays as silence
+		console.warn(`${(error as Error).message} - "${path}" will be silent`);
+		return silentPlayable();
+	}
+	return new Audio(url);
+}
+
+/** a `Playable` that makes no sound, standing in for an asset that could not be resolved */
+function silentPlayable(): Playable {
+	return { play() {}, pause() {}, currentTime: 0, volume: 1, loop: false };
 }

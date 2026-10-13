@@ -30,6 +30,13 @@ export class SpriteSheet {
 		this.frameHeight = frameHeight;
 		this.columns = frameWidth > 0 ? Math.floor(texture.width / frameWidth) : 0;
 		this.rows = frameHeight > 0 ? Math.floor(texture.height / frameHeight) : 0;
+		//a frame size that does not divide the sheet cuts every frame after the first from the
+		//wrong place: silent distortion, so say it once, at construction
+		if (frameWidth > 0 && (texture.width % frameWidth !== 0 || texture.height % frameHeight !== 0)) {
+			console.warn(
+				`sprite sheet ${texture.width}x${texture.height} is not a whole number of ${frameWidth}x${frameHeight} frames; the frames will be cut from the wrong places`,
+			);
+		}
 	}
 
 	/**
@@ -40,6 +47,16 @@ export class SpriteSheet {
 	 */
 	static grid(path: string, frameWidth = 0, frameHeight = frameWidth): SpriteSheet {
 		return new SpriteSheet(Resources.texture(path), frameWidth, frameHeight);
+	}
+
+	/**
+	 * A horizontal strip of `frames` equal frames, the frame size taken from the texture: for
+	 * packs whose sheets differ in size, where a hand-kept table of frame sizes goes stale.
+	 */
+	static strip(path: string, frames: number): SpriteSheet {
+		if (!(frames > 0)) throw new Error('a sprite strip needs at least one frame');
+		const texture = Resources.texture(path);
+		return new SpriteSheet(texture, texture.width / frames, texture.height);
 	}
 
 	static fromTexture(texture: Texture2D, frameWidth = 0, frameHeight = frameWidth): SpriteSheet {

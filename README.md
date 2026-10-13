@@ -15,7 +15,7 @@ playable in the browser with no download, plus the generated API reference.
 planning or porting a demanding game with mwg, with links to the [mwg reference](https://github.com/datamoc/mwg/blob/main/REFERENCE.md)
 and the [mwg Pixel Dungeon study](https://datamoc.github.io/mwg-pixel-dungeon/).
 
-> **Status: pre-alpha (v0.31.0).** Every module in the shared floor below, plus optional
+> **Status: pre-alpha (v0.36).** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
 > [ROADMAP.md](https://github.com/datamoc/mwg/blob/main/ROADMAP.md) for open work, and
 > [CLOSED.md](https://github.com/datamoc/mwg/blob/main/CLOSED.md) for the full, numbered shipped history.
@@ -164,6 +164,10 @@ With Vite, none of that is by hand: `@datamoc/mw_games/tools/vite`'s `mwgPage()`
 the classic-script configuration and, when `vite build` finishes, compiles `assets/`, rewrites
 the tag and precompresses the output (item 381). The same finishing step is `emitPage` from
 `@datamoc/mw_games/tools/emit-page`, or the `mwg-emit` command, for another bundler.
+`mwgPage({ singleFile: true })` (or `{ singleFile: { compress: true } }`) additionally writes one
+self-contained `standalone.html`. Plain `.ts` tests under `node --test` need a Node with type
+stripping (22.18 or later, or any build with `--experimental-strip-types`); otherwise run them
+through `tsx`.
 
 The finished page also carries a Content-Security-Policy, with nothing to configure (item 374):
 scripts only from its own folder and its own hashed inline scripts, no network request except to
@@ -190,7 +194,7 @@ only some do.
 
 | area | capability | provided by |
 | --- | --- | --- |
-| **core** | fixed-step game loop, scenes, timing | `mwg/core` |
+| **core** | frame loop (variable `dt`, clamped; `FixedStepper` for fixed simulation steps), scenes, timing | `mwg/core` |
 | | signals and listeners | `mwg/core` |
 | | deterministic seeded RNG, reproducible across machines | `mwg/core` |
 | | named, versioned save slots with a preview | `mwg/core` |

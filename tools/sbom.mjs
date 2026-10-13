@@ -328,5 +328,9 @@ async function main(argv) {
 }
 
 //realpath, since an npm `bin` shim reaches this file through a symlink
+//no top-level await: a vite config loaded as CommonJS has to be able to require() this module
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url))
-	await main(process.argv.slice(2));
+	main(process.argv.slice(2)).catch((error) => {
+		console.error(error);
+		process.exitCode = 1;
+	});

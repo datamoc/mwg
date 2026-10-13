@@ -235,6 +235,8 @@ export class ParticleEmitter extends Container {
 	private readonly flicker: number;
 	private readonly spin: ParticleRange;
 	private readonly tintRange: ParticleRange;
+	/** set once a burst brings its own tint, after which the sprites take each particle's */
+	private tintOverridden = false;
 
 	/** the frame sequence to walk, if one was given - `texture` is ignored in its favour */
 	private readonly frames?: readonly Texture2D[];
@@ -396,19 +398,23 @@ export class ParticleEmitter extends Container {
 	/**
 	 * Emits `count` particles at once - a hit spark, an explosion.
 	 *
+	 * @param at where this burst happens and what colour it is, in the emitter's parent space,
+	 * instead of the emitter's own position and tint - one emitter can then throw sparks of a
+	 * different colour from each broken part without being moved or duplicated.
 	 * @returns how many were actually emitted, which is fewer than asked when the pool is full
 	 */
-	burst(count: number): number {
+	burst(count: number, at: { x?: number; y?: number; tint?: number } = {}): number {
 		this.syncFollow();
+		if (at.tint !== undefined) this.tintOverridden = true;
 		let emitted = 0;
 		for (let i = 0; i < count; i++) {
-			if (!this.spawn()) break;
+			if (!this.spawn(at)) break;
 			emitted++;
 		}
 		return emitted;
 	}
 
-	private spawn(): boolean {
+	private spawn(at: { x?: number; y?: number; tint?: number } = {}): boolean {
 		//a cursor rather than a scan from zero: reusing the pool must not get more expensive
 		//the fuller it gets, which is exactly when an emitter is under the most load
 		let particle: Particle | null = null;
@@ -428,8 +434,8 @@ export class ParticleEmitter extends Container {
 		const motion = reducedMotion() ? 0 : 1;
 		const offset = this.spawnOffset();
 
-		particle.x = this.x + offset.x;
-		particle.y = this.y + offset.y;
+		particle.x = (at.x ?? this.x) + offset.x;
+		particle.y = (at.y ?? this.y) + offset.y;
 		particle.vx = Math.cos(angle) * speed * motion;
 		particle.vy = Math.sin(angle) * speed * motion;
 		particle.age = 0;
@@ -438,7 +444,7 @@ export class ParticleEmitter extends Container {
 		particle.spin = pick(this.spin) * motion;
 		particle.scale = this.scaleOf(0);
 		particle.alpha = this.alphaOf(0);
-		particle.tint = pickTint(this.tintRange);
+		particle.tint = at.tint ?? pickTint(this.tintRange);
 		particle.frame = 0;
 		particle.active = true;
 		return true;
@@ -528,7 +534,7 @@ export class ParticleEmitter extends Container {
 
 		//asked once per frame rather than per particle: a plain tint was set at construction,
 		//while a range belongs to the particle and has to be assigned as it is drawn
-		const tintPerParticle = typeof this.tintRange !== 'number';
+		const tintPerParticle = typeof this.tintRange !== 'number' || this.tintOverridden;
 
 		for (let i = 0; i < this.pool.length; i++) {
 			const particle = this.pool[i];

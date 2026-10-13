@@ -37,7 +37,7 @@ export function toClassicScript(html) {
 	return { html: html.replace(scriptTag, `<script defer src="${match[1]}"></script>`), src: match[1] };
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+async function runCli() {
 	const input = process.argv[2];
 	if (!input) {
 		console.error('Usage: node tools/classic-html.mjs dist/index.html');
@@ -58,4 +58,12 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 			console.log(`${input}: rewrote the ${result.src} entry tag to a classic deferred script`);
 		}
 	}
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+	//no top-level await: a vite config loaded as CommonJS has to be able to require() this module
+	runCli().catch((error) => {
+		console.error(error);
+		process.exitCode = 1;
+	});
 }

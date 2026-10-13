@@ -374,3 +374,19 @@ progress (its own Status section still says not feature-complete), and its git h
 empty (branch `master` has no commits, so the work remains loose files on this disk). So the
 2026-09-20 and 2026-09-15 results stand as the last recorded run, this box stays open, and
 what this machine owed the line was the location - now recorded here.
+
+412. **Pontifex feedback, the parts that need design.** Reported by a game built on 0.36.0
+(a bridge-building physics puzzle); the small fixes shipped in 0.37.0 and these remain:
+(a) `Input.pointer` - down/move/up/drag with world coordinates through a `Camera`, so a
+game does not reach for Pixi's federated events; (b) an optional `mwg/physics` module
+(XPBD constraint solver at a fixed step, deterministic, serializable, testable without a
+renderer), the reporter offering their ~250-line `src/physics.ts` as a base (check licence
+and determinism first); (c) a `DropdownView` widget over the existing `Dropdown` model;
+(d) `mwg-init` or `examples/` in the published tarball, since "copy the nearest example"
+is the documented advice and the tarball has none; (e) a generated `CREDITS` file in
+`compile-resources` from an `assets/credits.json` manifest, for attribution-licensed packs;
+(f) investigate why importing `assets`, `SpriteSheet`, `AnimatedSprite` and `Random` on top
+of `Game`/`Window`/`Button` grew a game bundle from 534 to 690 KB (tree-shaking of the
+`two-d` barrel) with `mwg-size`, and fix what it finds; (g) reserve `@datamoc/mwg` on npm
+as a pointer to `@datamoc/mw_games`, which only the package owner can do; (h) give
+`Settings.custom` JSON values (the reporter stored progress as a JSON string).

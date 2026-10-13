@@ -8,8 +8,17 @@ import { parseInbound } from './Sanitize.ts';
  * absent (the `raw ? ... : fallback` rule two of the three already followed); corrupt JSON
  * or a forbidden key throws a named error (`parseInbound`), since silently inventing a value would hide a real bug.
  *
- * Internal: multi-key shapes (`Collection`'s prefix scan, `SaveSystem`'s slots) do not fit
- * it and keep their own code.
+ * Public so a game can keep its own progress (a level list, a best score) as structured JSON
+ * under one key, with `defaultStorage()` as the storage. Multi-key shapes (`Collection`'s
+ * prefix scan, `SaveSystem`'s slots) do not fit it and keep their own code.
+ *
+ * @example
+ * ```ts
+ * import { StoredValue, defaultStorage } from '@datamoc/mw_games/core';
+ *
+ * const progress = new StoredValue<{ solved: number[] }>(defaultStorage(), 'mygame.progress');
+ * progress.write({ solved: [...progress.read({ solved: [] }).solved, 3] });
+ * ```
  */
 export class StoredValue<T> {
 	private readonly storage: SaveStorage;

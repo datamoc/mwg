@@ -612,6 +612,12 @@
 		"declaringModule": "core/Settings.d.ts"
 	},
 	{
+		"name": "defaultStorage",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/Save.d.ts"
+	},
+	{
 		"name": "defaultTheme",
 		"kind": "const",
 		"subpath": ".",
@@ -768,6 +774,12 @@
 		"declaringModule": "two-d/ui/TextSharpness.d.ts"
 	},
 	{
+		"name": "FixedStepper",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "core/FixedStepper.d.ts"
+	},
+	{
 		"name": "FlightHandle",
 		"kind": "interface",
 		"subpath": ".",
@@ -874,6 +886,30 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "core/Random.d.ts"
+	},
+	{
+		"name": "FlowItem",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/Layout.d.ts"
+	},
+	{
+		"name": "flowLayout",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/Layout.d.ts"
+	},
+	{
+		"name": "FlowOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/Layout.d.ts"
+	},
+	{
+		"name": "FlowResult",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/Layout.d.ts"
 	},
 	{
 		"name": "FogCell",
@@ -2932,6 +2968,12 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/render/StatusVisuals.d.ts"
+	},
+	{
+		"name": "StoredValue",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "core/StoredValue.d.ts"
 	},
 	{
 		"name": "StoryBeat",
@@ -5364,6 +5406,12 @@
 		"declaringModule": "audio/SoundFont.d.ts"
 	},
 	{
+		"name": "synthesizeSound",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Synth.d.ts"
+	},
+	{
 		"name": "synthesizeTone",
 		"kind": "function",
 		"subpath": "./audio",
@@ -6582,6 +6630,12 @@
 		"declaringModule": "core/Settings.d.ts"
 	},
 	{
+		"name": "defaultStorage",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/Save.d.ts"
+	},
+	{
 		"name": "deserializeReplay",
 		"kind": "function",
 		"subpath": "./core",
@@ -6676,6 +6730,12 @@
 		"kind": "interface",
 		"subpath": "./core",
 		"declaringModule": "core/Feedback.d.ts"
+	},
+	{
+		"name": "FixedStepper",
+		"kind": "class",
+		"subpath": "./core",
+		"declaringModule": "core/FixedStepper.d.ts"
 	},
 	{
 		"name": "FloatSource",
@@ -7366,6 +7426,12 @@
 		"kind": "type",
 		"subpath": "./core",
 		"declaringModule": "core/State.d.ts"
+	},
+	{
+		"name": "StoredValue",
+		"kind": "class",
+		"subpath": "./core",
+		"declaringModule": "core/StoredValue.d.ts"
 	},
 	{
 		"name": "SyncGuard",
@@ -11256,6 +11322,30 @@
 		"declaringModule": "two-d/ui/FloatingTextStack.d.ts"
 	},
 	{
+		"name": "FlowItem",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/Layout.d.ts"
+	},
+	{
+		"name": "flowLayout",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/Layout.d.ts"
+	},
+	{
+		"name": "FlowOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/Layout.d.ts"
+	},
+	{
+		"name": "FlowResult",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/Layout.d.ts"
+	},
+	{
 		"name": "FogCell",
 		"kind": "type",
 		"subpath": "./two-d",
@@ -14620,6 +14710,30 @@
 		"kind": "function",
 		"subpath": "./two-d/ui",
 		"declaringModule": "two-d/ui/FloatingTextStack.d.ts"
+	},
+	{
+		"name": "FlowItem",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/Layout.d.ts"
+	},
+	{
+		"name": "flowLayout",
+		"kind": "function",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/Layout.d.ts"
+	},
+	{
+		"name": "FlowOptions",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/Layout.d.ts"
+	},
+	{
+		"name": "FlowResult",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/Layout.d.ts"
 	},
 	{
 		"name": "GlyphLayout",

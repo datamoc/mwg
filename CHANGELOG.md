@@ -7,6 +7,30 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+Fixes and small additions from the first outside game built on mwg (Pontifex, on 0.36.0).
+
+### Added
+
+- `audio.synthesizeSound(tone, options)`: a pooled `Sound` over a synthesized tone.
+- `core.FixedStepper`: turns the variable frame `dt` into fixed simulation steps with a substep cap.
+- `core.StoredValue` and `core.defaultStorage` are public, so a game can keep structured JSON progress under one key.
+- `Button.setSelected`, `Label.setWrapWidth`, `Window({ closeButton: true })` (a visible ✕), and `ui.flowLayout` (wrapping rows with alignment).
+- `ParticleEmitter.burst(count, { x, y, tint })`, `Shape2D.dashedLine`, `Camera.fit(worldWidth, worldHeight)` and `SpriteSheet.strip(path, frames)`.
+- `BrowserDriver.drag(fromX, fromY, toX, toY, steps)` on Chrome (CDP) and Firefox (in-page pointer events).
+- Roadmap 412 collects the feedback items that need design rather than a fix.
+
+### Changed
+
+- `assets.resolve` returns a `data:` or `blob:` URL unchanged, so a synthesized tone or a runtime blob composes with `Sound`, `Music` and textures.
+- `SpriteSheet.grid` warns when the frame size does not divide the sheet instead of cutting distorted frames silently.
+- The README status line names the current version and the core row no longer calls the loop fixed-step.
+
+### Fixed
+
+- A sound that is missing from the build plays as silence with a warning instead of rejecting inside `Game.start` and leaving a black screen.
+- `tools/vite.mjs` and the build tools it imports no longer use top-level await, so a `vite.config.ts` in a project without `"type": "module"` loads.
+- `mwgPage()` and the examples stop printing the `EMPTY_IMPORT_META` warning on every build.
+
 ## [0.36.1] - 2026-10-13
 
 A maintenance release: the optional Lua dependency catches up with Pyroeis 0.9.0, and the CI no longer hangs on a stuck browser.

@@ -18,6 +18,13 @@ export interface WindowOptions {
 	closable?: boolean;
 
 	/**
+	 * Draws a visible close mark (✕) in the title corner of a closable window, so a touch
+	 * player can see how to dismiss it. Off by default: `cancel` and a click outside already
+	 * close it, and a mark would change every existing window's look.
+	 */
+	closeButton?: boolean;
+
+	/**
 	 * Whether the world behind is dimmed. Defaults to true for a modal window.
 	 *
 	 * A dialogue box over a conversation scene is the case for false: it takes the input
@@ -77,6 +84,7 @@ export class Window extends Container {
 
 	private background: NinePatch | Graphics;
 	private titleLabel: Label | null = null;
+	private closeMark: Label | null = null;
 
 	private innerWidth = 0;
 	private innerHeight = 0;
@@ -124,6 +132,14 @@ export class Window extends Container {
 			screenReader.announce(options.title);
 		}
 
+		if (options.closeButton === true && this.closable) {
+			this.closeMark = new Label({ text: '✕', color: t.color.textHighlight, bold: true });
+			this.closeMark.eventMode = 'static';
+			this.closeMark.cursor = 'pointer';
+			this.closeMark.on('pointertap', () => this.close());
+			this.addChild(this.closeMark);
+		}
+
 		this.addChild(this.content);
 		this.resize(options.width, options.height);
 		themeChanged.add(this.themeListener);
@@ -132,6 +148,7 @@ export class Window extends Container {
 	/** reapplies the current theme to the frame and title, without changing size or content */
 	private restyle(): void {
 		this.titleLabel?.setColor(theme().color.textHighlight);
+		this.closeMark?.setColor(theme().color.textHighlight);
 		this.resize(this.currentWidth, this.currentHeight);
 	}
 
@@ -150,6 +167,11 @@ export class Window extends Container {
 				.roundRect(0, 0, width, height, 4)
 				.fill({ color: t.color.panelFill })
 				.stroke({ color: t.color.panelBorder, width: 1 });
+		}
+
+		if (this.closeMark) {
+			this.closeMark.x = t.direction === 'rtl' ? inset : width - inset - this.closeMark.width;
+			this.closeMark.y = inset;
 		}
 
 		let contentTop = inset;

@@ -68,6 +68,13 @@ export class Label extends Text {
 		this.style.fill = color;
 	}
 
+	/** re-wraps at `width` pixels, or stops wrapping with `undefined` - for a label that follows the screen width */
+	setWrapWidth(width: number | undefined): void {
+		if (this.destroyed) return;
+		this.style.wordWrap = width !== undefined;
+		this.style.wordWrapWidth = width ?? 0;
+	}
+
 	/** avoids the re-render when the text has not actually changed */
 	setText(value: string): void {
 		//Pixi's text update on a destroyed label reads its released texture and throws

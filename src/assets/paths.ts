@@ -90,6 +90,8 @@ export function has(path: string): boolean {
 
 /** an asset path resolved to something the browser can actually load */
 export function resolve(path: string): string {
+	//already a loadable URL (a synthesized tone, a canvas blob): nothing to look up
+	if (/^(data|blob):/.test(path)) return path;
 	const map = compiled();
 	if (!map) return base + path;
 

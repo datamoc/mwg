@@ -69,7 +69,25 @@ export function createLayers(parent: Container, names: readonly string[]): Recor
  * marker.y = 60;
  * ```
  */
-export class Shape2D extends Graphics {}
+export class Shape2D extends Graphics {
+	/**
+	 * Adds a dashed line from (x1, y1) to (x2, y2) as separate segments, to be stroked like any
+	 * other path: `shape.dashedLine(0, 0, 100, 0, 6, 4).stroke({ color: 0xffffff, width: 1 })`.
+	 * Pixi strokes are solid only, so the dashes are built here, the pattern starting at the
+	 * first point.
+	 */
+	dashedLine(x1: number, y1: number, x2: number, y2: number, dash = 6, gap = 4): this {
+		const length = Math.hypot(x2 - x1, y2 - y1);
+		if (length === 0 || dash <= 0) return this;
+		const ux = (x2 - x1) / length;
+		const uy = (y2 - y1) / length;
+		for (let at = 0; at < length; at += dash + Math.max(0, gap)) {
+			const end = Math.min(at + dash, length);
+			this.moveTo(x1 + ux * at, y1 + uy * at).lineTo(x1 + ux * end, y1 + uy * end);
+		}
+		return this;
+	}
+}
 
 /**
  * Text under an MWG-owned name, for the case `ui.Label`/`ui.BitmapLabel` do not cover - a

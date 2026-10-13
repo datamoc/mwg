@@ -58,7 +58,7 @@ export const WEBP_CONVERTIBLE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg']);
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
-if (isMain) {
+async function runCli() {
 	const args = process.argv.slice(2);
 	const input = args.find((a) => !a.startsWith('--'));
 	if (!input) {
@@ -87,4 +87,12 @@ if (isMain) {
 		`  ${kb(sourceSize)} -> ${kb(converted.length)} (${pct >= 0 ? '-' : '+'}${Math.abs(pct)}%)` +
 			(lossless ? ' [lossless]' : ` [lossy, quality ${quality}]`),
 	);
+}
+
+//no top-level await: a vite config loaded as CommonJS has to be able to require() this module
+if (isMain) {
+	runCli().catch((error) => {
+		console.error(error);
+		process.exitCode = 1;
+	});
 }

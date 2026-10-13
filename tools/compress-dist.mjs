@@ -155,7 +155,7 @@ async function compressOne(dir, file, { gzip, brotli, wantXz }) {
 
 const isMain = process.argv[1] && import.meta.url.endsWith(basename(process.argv[1]));
 
-if (isMain) {
+async function runCli() {
 	const [dir, ...flags] = process.argv.slice(2);
 	if (!dir) {
 		console.error('usage: node tools/compress-dist.mjs <dist folder> [--xz] [--no-gzip] [--no-brotli]');
@@ -178,4 +178,12 @@ if (isMain) {
 		console.log('  (xz requested but no `xz` binary found - skipping LZMA2, gz stays the fallback)');
 	}
 	console.log(`  ${rows.length} file(s) considered in ${relative(process.cwd(), dir)}`);
+}
+
+//no top-level await: a vite config loaded as CommonJS has to be able to require() this module
+if (isMain) {
+	runCli().catch((error) => {
+		console.error(error);
+		process.exitCode = 1;
+	});
 }

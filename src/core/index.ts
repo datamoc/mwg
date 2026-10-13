@@ -20,7 +20,8 @@ export { Generator, MersenneTwister, RandomStreams } from './Random.ts';
 export type { FloatSource, MersenneTwisterState, RandomSource } from './Random.ts';
 export { JavaRandom } from './JavaRandom.ts';
 export type { JavaRandomDraw, JavaRandomOptions } from './JavaRandom.ts';
-export { SaveSystem } from './Save.ts';
+export { SaveSystem, defaultStorage } from './Save.ts';
+export { StoredValue } from './StoredValue.ts';
 export type { SaveMeta, SaveData, SaveStorage, SaveSystemOptions } from './Save.ts';
 export { CanonicalState, StateRegistry } from './State.ts';
 export type {
@@ -101,6 +102,7 @@ export {
 export { motionDuration, prefersReducedMotion, reducedMotion, setReducedMotion, watchReducedMotion } from './Motion.ts';
 export type { MotionIntent } from './Motion.ts';
 export { Blob } from './Blob.ts';
+export { FixedStepper } from './FixedStepper.ts';
 export { Tweener, Easing } from './Tween.ts';
 export type { TweenOptions } from './Tween.ts';
 export { UndoHistory } from './UndoHistory.ts';

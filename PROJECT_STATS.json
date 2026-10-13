@@ -5,13 +5,13 @@
 	"releaseDate": "2026-10-13",
 	"source": {
 		"files": 338,
-		"lines": 62947,
+		"lines": 63166,
 		"modules": 19,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 97,
-				"lines": 20395
+				"lines": 20571
 			},
 			{
 				"name": "mwl",
@@ -21,7 +21,7 @@
 			{
 				"name": "core",
 				"files": 51,
-				"lines": 7158
+				"lines": 7169
 			},
 			{
 				"name": "board",
@@ -31,7 +31,7 @@
 			{
 				"name": "audio",
 				"files": 21,
-				"lines": 4700
+				"lines": 4730
 			},
 			{
 				"name": "roguelike",
@@ -71,7 +71,7 @@
 			{
 				"name": "assets",
 				"files": 7,
-				"lines": 763
+				"lines": 765
 			},
 			{
 				"name": "three-d",
@@ -112,7 +112,7 @@
 	},
 	"tools": {
 		"files": 48,
-		"lines": 10289
+		"lines": 10404
 	},
 	"examples": {
 		"count": 24,
@@ -144,18 +144,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 411,
+		"items": 412,
 		"completed": 407,
-		"open": 4,
+		"open": 5,
 		"percent": 99
 	},
 	"api": {
-		"declarationFiles": 338
+		"declarationFiles": 339
 	},
 	"bundle": {
-		"globalRaw": 1259318,
-		"globalGzip": 377250,
-		"distRaw": 4436806
+		"globalRaw": 1261962,
+		"globalGzip": 378207,
+		"distRaw": 4456068
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

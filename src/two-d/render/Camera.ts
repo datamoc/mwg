@@ -245,6 +245,16 @@ export class Camera {
 	}
 
 	/**
+	 * Frames a fixed-size world (0,0 to `worldWidth`,`worldHeight`) entirely inside the
+	 * viewport, centred, with the spare screen left as bars: the "virtual resolution" of a
+	 * game laid out at one size. Call it after `setViewport`, again on every resize.
+	 */
+	fit(worldWidth: number, worldHeight: number): void {
+		this.zoom = Math.min(this.viewWidth / worldWidth, this.viewHeight / worldHeight);
+		this.snapTo(worldWidth / 2, worldHeight / 2);
+	}
+
+	/**
 	 * The visible region, in world units, as an axis-aligned box: use it to cull.
 	 *
 	 * With the view turned, the visible region is the viewport rectangle rotated in world space,

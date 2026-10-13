@@ -18,6 +18,10 @@ export interface DropdownOptions {
  * A closed button that opens a list of options - the "option button" a settings row or a
  * scenario picker drops down.
  *
+ * This is the model only, with no widget: a game draws the closed value as a `Button` and the
+ * open list as a `ListView` (or a `Window` of `Button`s with `setSelected` on the current one),
+ * driven by `open`/`move`/`confirm` and `onChange`.
+ *
  * Renderer-free, like `TabbedList`: the state is the whole widget's mind, and a game draws the
  * button's label and the open list wherever its own layout wants them. The rule worth naming is
  * that opening restores the highlight to the current selection, so the first arrow key does not

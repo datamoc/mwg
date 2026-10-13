@@ -146,6 +146,47 @@ export function buildTapSequence(x, y) {
 	];
 }
 
+/** `steps` evenly spaced points from (x1, y1) to (x2, y2), both ends included */
+function dragPath(x1, y1, x2, y2, steps) {
+	const count = Math.max(1, Math.floor(steps));
+	return Array.from({ length: count + 1 }, (_, i) => ({
+		x: Math.round(x1 + ((x2 - x1) * i) / count),
+		y: Math.round(y1 + ((y2 - y1) * i) / count),
+	}));
+}
+
+/**
+ * The CDP `Input.dispatchMouseEvent` sequence a drag is: press at the start, move through
+ * `steps` intermediate points with the button held, release at the end - the down, move, up a
+ * pointer-drag handler (a bridge builder, a slider, a pan) needs and `tap` cannot give.
+ */
+export function buildDragSequence(x1, y1, x2, y2, steps = 8) {
+	const path = dragPath(x1, y1, x2, y2, steps);
+	const last = path[path.length - 1];
+	return [
+		{ type: 'mouseMoved', x: x1, y: y1, button: 'none', buttons: 0 },
+		{ type: 'mousePressed', x: x1, y: y1, button: 'left', buttonValue: 0, clickCount: 1, buttons: 1 },
+		...path.slice(1).map((p) => ({ type: 'mouseMoved', x: p.x, y: p.y, button: 'left', buttons: 1 })),
+		{ type: 'mouseReleased', x: last.x, y: last.y, button: 'left', buttonValue: 0, clickCount: 1, buttons: 0 },
+	];
+}
+
+/** the in-page counterpart of `buildDragSequence` for Firefox, for the reason `pageTapSource` exists */
+export function pageDragSource(x1, y1, x2, y2, steps = 8) {
+	const path = dragPath(x1, y1, x2, y2, steps);
+	return `(() => {
+		const canvas = document.querySelector("canvas");
+		const base = { bubbles: true, cancelable: true, composed: true, pointerId: 1, pointerType: "mouse", isPrimary: true, button: 0 };
+		const fire = (type, x, y, buttons) => canvas.dispatchEvent(new PointerEvent(type, { ...base, clientX: x, clientY: y, buttons }));
+		const path = ${JSON.stringify(path)};
+		fire("pointermove", path[0].x, path[0].y, 0);
+		fire("pointerdown", path[0].x, path[0].y, 1);
+		for (const p of path.slice(1)) fire("pointermove", p.x, p.y, 1);
+		const end = path[path.length - 1];
+		fire("pointerup", end.x, end.y, 0);
+	})()`;
+}
+
 /**
  * The named keys a game binds, with everything each input protocol needs: the
  * DOM `code`, the Windows virtual-key code CDP wants, the character the key types
@@ -520,6 +561,13 @@ async function waitForReadyPage(evaluate, consoleErrors, url, timeoutMs = READY_
 	}
 }
 
+/** the canvas rectangle in CSS pixels, which canvas fractions are measured against */
+function canvasBox(evaluate) {
+	return evaluate(
+		'(() => { const box = document.querySelector("canvas").getBoundingClientRect(); return { x: box.x, y: box.y, w: box.width, h: box.height }; })()',
+	);
+}
+
 /** runs a consumer function against the live page, awaiting it when it is async */
 function runPageScript(evaluate, fn, args) {
 	return evaluate(`(${fn.toString()})(...${JSON.stringify(args)})`, true);
@@ -613,6 +661,14 @@ export async function driveChrome(options = {}) {
 			const x = Math.round(point.x + point.w * xFraction);
 			const y = Math.round(point.y + point.h * yFraction);
 			for (const event of buildTapSequence(x, y)) {
+				await cdp.send('Input.dispatchMouseEvent', event);
+			}
+		},
+		/** press at one canvas fraction, move to another with the button held, release */
+		drag: async (fromX, fromY, toX, toY, steps) => {
+			const box = await canvasBox(evaluate);
+			const at = (fx, fy) => [Math.round(box.x + box.w * fx), Math.round(box.y + box.h * fy)];
+			for (const event of buildDragSequence(...at(fromX, fromY), ...at(toX, toY), steps)) {
 				await cdp.send('Input.dispatchMouseEvent', event);
 			}
 		},
@@ -768,6 +824,12 @@ export async function driveFirefox(options = {}) {
 			//P41: the in-page synthetic sequence (see pageTapSource) - the BiDi pointer
 			//actions never reach Pixi 8's EventSystem, and this is the measured-working path.
 			await evaluate(pageTapSource(x, y), true);
+		},
+		/** press at one canvas fraction, move to another with the button held, release */
+		drag: async (fromX, fromY, toX, toY, steps) => {
+			const box = await canvasBox(evaluate);
+			const at = (fx, fy) => [Math.round(box.x + box.w * fx), Math.round(box.y + box.h * fy)];
+			await evaluate(pageDragSource(...at(fromX, fromY), ...at(toX, toY), steps), true);
 		},
 		/** presses and releases one key through WebDriver's key actions (P41) */
 		press: async (key, holdMs = 60) => {

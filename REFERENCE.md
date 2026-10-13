@@ -140,7 +140,7 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   reduction (C++'s `uniform_int_distribution` is implementation-defined).
 - `RandomStreams` - named, independent MT19937 streams over one base seed, so a loot draw and
   an AI draw never shift each other, with `getState`/`setState` for a save and `reseed`.
-- `Input` (namespace) - named-action input: `bind`/`isDown`/`justPressed`/`justReleased`
+- `Input` (namespace, so `Input.onAction`, not a bare `onAction` import) - named-action input: `bind`/`isDown`/`justPressed`/`justReleased`
   over keyboard, `bindButton`/`bindAxis`/`pollGamepads` over a gamepad,
   `bindTouch`/`pressTouch`/`releaseTouch`/`attachSwipe` over touch, `actionsForKey` for
   rebind-conflict detection, `rumble` for gamepad haptics. `onText` carries the character a
@@ -150,6 +150,12 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   travels; `onComposition` follows an IME through `start`/`update`/`end`, so a free text
   field can be built on top.
 - `PlayerInput` - a per-player scoped `Input`, for local multiplayer/split-screen.
+- `StoredValue`/`defaultStorage` - one JSON value under one storage key (`read(fallback)`/
+  `write`/`remove`) over the same storage `SaveSystem` uses: a game's structured progress or
+  best scores without a save slot.
+- `FixedStepper` - turns the variable `Scene.update(dt)` into fixed simulation steps
+  (`advance(dt, tick)`, a `maxSubsteps` cap, `alpha` for interpolated drawing): the deterministic,
+  refresh-rate-independent loop a physics solver or lockstep game needs.
 - `SaveSystem` - named, versioned save slots over `localStorage` (in-memory fallback under
   `file://`); a `migrations` chain, and `importExternal` as a plug-in point for a foreign
   save format's own `normalize` function. `load`, `list` and `importSlot` read every slot
@@ -635,6 +641,8 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   the rows on screen; collapsing the branch the highlight is inside lands it on the branch.
 - `ScrollBox`/`ScrollBoxOptions` + `scrollOffset` - a clipped viewport with a themed scrollbar;
   `scrollOffset` is the clamping rule the wheel, `scrollBy` and `scrollIntoView` all share.
+- `flowLayout(items, width, { gap, align })` - left-to-right rows that wrap, returning each item's
+  position and the total height: a toolbar that takes two rows on a phone.
 - `Grid`/`GridSpec`/`GridTrack` + `resolveAnchor`/`anchorAlign` with `Anchor`/`AnchorSpec`/
   `LayoutRect` - data-driven shell layout (item 263): named anchors placed inside bounds (margin,
   offset, fill), and columns/rows that are `size` or `grow`, so one sidebar plus one content column
@@ -792,8 +800,9 @@ reach the compiled asset map without it.
   a `Sound` placed at a point, and `audioGain`/`audioPan` turning distance and heading into a
   volume and a stereo position. `SoundSource.playFor` applies the distance gain through
   `Sound.play`; panning is reported for a backend that has a panner. `Music` stays global.
-- `synthesizeTone`/`playTone`/`Waveform` - a runtime square/triangle/sine/noise waveform
-  synth for a procedural tone or SFX, no sample library.
+- `synthesizeTone`/`synthesizeSound`/`playTone`/`Waveform` - a runtime square/triangle/sine/noise
+  waveform synth for a procedural tone or SFX, no sample library; `synthesizeSound` returns a
+  pooled `Sound` over the tone.
 - `parseMidi`/`scheduleMidi`/`midiLoopStart`/`noteToFrequency`/`MidiPlayer` - a small `.mid` file player
   built on `synthesizeTone` rather than a licensed instrument library: program, bank,
   controller and pitch-bend events plus the controller-111 loop start, with each

@@ -580,6 +580,7 @@ build instead.
         private height_;
         private state;
         private disabled_;
+        private selected_;
         private readonly themeListener;
         constructor(options: ButtonOptions);
 
@@ -589,6 +590,9 @@ build instead.
         setText(text: string | undefined): void;
         get disabled(): boolean;
         setDisabled(disabled: boolean): void;
+        get selected(): boolean;
+
+        setSelected(selected: boolean): void;
         private setState;
 
         private layoutContent;
@@ -683,6 +687,8 @@ build instead.
         set zoom(value: number);
 
         setViewport(width: number, height: number, screenX?: number, screenY?: number): void;
+
+        fit(worldWidth: number, worldHeight: number): void;
 
         get view(): {
             x: number;
@@ -1088,6 +1094,10 @@ build instead.
 
     export declare function defaultSettings(): GameSettings;
 
+### `defaultStorage` (function)
+
+    export declare function defaultStorage(): SaveStorage;
+
 ### `defaultTheme` (const)
 
     export declare const defaultTheme: Theme;
@@ -1296,6 +1306,21 @@ build instead.
 
     export declare function fitWindowZoom(base: number, contentHeight: number, viewportHeight: number): number;
 
+### `FixedStepper` (class)
+
+    export declare class FixedStepper {
+        readonly step: number;
+        readonly maxSubsteps: number;
+        private accumulator;
+        constructor(step?: number, maxSubsteps?: number);
+
+        advance(dt: number, tick: (step: number) => void): number;
+
+        get alpha(): number;
+
+        reset(): void;
+    }
+
 ### `FlightHandle` (interface)
 
     export interface FlightHandle {
@@ -1465,6 +1490,38 @@ build instead.
     export interface FloatSource {
 
         float(): number;
+    }
+
+### `FlowItem` (interface)
+
+    export interface FlowItem {
+        width: number;
+        height: number;
+    }
+
+### `flowLayout` (function)
+
+    export declare function flowLayout(items: readonly FlowItem[], width: number, options?: FlowOptions): FlowResult;
+
+### `FlowOptions` (interface)
+
+    export interface FlowOptions {
+
+        gap?: number;
+
+        align?: 'start' | 'center' | 'end';
+    }
+
+### `FlowResult` (interface)
+
+    export interface FlowResult {
+
+        positions: {
+            x: number;
+            y: number;
+        }[];
+
+        height: number;
     }
 
 ### `FogCell` (type)
@@ -2118,6 +2175,8 @@ build instead.
         constructor(options?: LabelOptions | string);
 
         setColor(color: number): void;
+
+        setWrapWidth(width: number | undefined): void;
 
         setText(value: string): void;
 
@@ -3292,6 +3351,8 @@ build instead.
         private readonly spin;
         private readonly tintRange;
 
+        private tintOverridden;
+
         private readonly frames?;
 
         private readonly spawnArea;
@@ -3324,7 +3385,11 @@ build instead.
 
         get particles(): readonly Particle[];
 
-        burst(count: number): number;
+        burst(count: number, at?: {
+            x?: number;
+            y?: number;
+            tint?: number;
+        }): number;
         private spawn;
 
         private spawnOffset;
@@ -4645,6 +4710,8 @@ build instead.
 ### `Shape2D` (class)
 
     export declare class Shape2D extends Graphics {
+
+        dashedLine(x1: number, y1: number, x2: number, y2: number, dash?: number, gap?: number): this;
     }
 
 ### `sharpenText` (function)
@@ -5042,6 +5109,8 @@ build instead.
         private constructor();
 
         static grid(path: string, frameWidth?: number, frameHeight?: number): SpriteSheet;
+
+        static strip(path: string, frames: number): SpriteSheet;
         static fromTexture(texture: Texture2D, frameWidth?: number, frameHeight?: number): SpriteSheet;
         get count(): number;
 
@@ -5224,6 +5293,18 @@ build instead.
         strength?: number;
 
         pulseRate?: number;
+    }
+
+### `StoredValue` (class)
+
+    export declare class StoredValue<T> {
+        private readonly storage;
+        private readonly key;
+        constructor(storage: SaveStorage, key: string);
+
+        read(fallback: T): T;
+        write(value: T): void;
+        remove(): void;
     }
 
 ### `StoryBeat` (interface)
@@ -6364,6 +6445,7 @@ build instead.
         readonly anchor: 'center' | 'bottom' | 'top';
         private background;
         private titleLabel;
+        private closeMark;
         private innerWidth;
         private innerHeight;
         private currentWidth;
@@ -6412,6 +6494,8 @@ build instead.
         modal?: boolean;
 
         closable?: boolean;
+
+        closeButton?: boolean;
 
         dims?: boolean;
 
@@ -9182,6 +9266,10 @@ build instead.
 
     export declare function subsetSoundFont(data: ArrayBuffer | ArrayBufferView, usage: readonly SoundFontProgram[]): ArrayBuffer;
 
+### `synthesizeSound` (function)
+
+    export declare function synthesizeSound(tone?: ToneOptions, sound?: SoundOptions): Sound;
+
 ### `synthesizeTone` (function)
 
     export declare function synthesizeTone(options?: ToneOptions): string;
@@ -10748,6 +10836,10 @@ build instead.
 
     export declare function defaultSettings(): GameSettings;
 
+### `defaultStorage` (function)
+
+    export declare function defaultStorage(): SaveStorage;
+
 ### `deserializeReplay` (function)
 
     export declare function deserializeReplay(json: string): ReplayEvent[];
@@ -10837,6 +10929,21 @@ build instead.
     export interface FeedbackResponse {
         ok: boolean;
         status: number;
+    }
+
+### `FixedStepper` (class)
+
+    export declare class FixedStepper {
+        readonly step: number;
+        readonly maxSubsteps: number;
+        private accumulator;
+        constructor(step?: number, maxSubsteps?: number);
+
+        advance(dt: number, tick: (step: number) => void): number;
+
+        get alpha(): number;
+
+        reset(): void;
     }
 
 ### `FloatSource` (interface)
@@ -12005,6 +12112,18 @@ build instead.
 
     export type StateValue = null | boolean | number | string | StateValue[] | {
         readonly [key: string]: StateValue;
+
+### `StoredValue` (class)
+
+    export declare class StoredValue<T> {
+        private readonly storage;
+        private readonly key;
+        constructor(storage: SaveStorage, key: string);
+
+        read(fallback: T): T;
+        write(value: T): void;
+        remove(): void;
+    }
 
 ### `SyncGuard` (class)
 
@@ -16974,6 +17093,7 @@ build instead.
         private height_;
         private state;
         private disabled_;
+        private selected_;
         private readonly themeListener;
         constructor(options: ButtonOptions);
 
@@ -16983,6 +17103,9 @@ build instead.
         setText(text: string | undefined): void;
         get disabled(): boolean;
         setDisabled(disabled: boolean): void;
+        get selected(): boolean;
+
+        setSelected(selected: boolean): void;
         private setState;
 
         private layoutContent;
@@ -17077,6 +17200,8 @@ build instead.
         set zoom(value: number);
 
         setViewport(width: number, height: number, screenX?: number, screenY?: number): void;
+
+        fit(worldWidth: number, worldHeight: number): void;
 
         get view(): {
             x: number;
@@ -17618,6 +17743,38 @@ build instead.
 
     export declare function floatingTextStackMoves(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry, gap?: number): FloatingTextStackMove[];
 
+### `FlowItem` (interface)
+
+    export interface FlowItem {
+        width: number;
+        height: number;
+    }
+
+### `flowLayout` (function)
+
+    export declare function flowLayout(items: readonly FlowItem[], width: number, options?: FlowOptions): FlowResult;
+
+### `FlowOptions` (interface)
+
+    export interface FlowOptions {
+
+        gap?: number;
+
+        align?: 'start' | 'center' | 'end';
+    }
+
+### `FlowResult` (interface)
+
+    export interface FlowResult {
+
+        positions: {
+            x: number;
+            y: number;
+        }[];
+
+        height: number;
+    }
+
 ### `FogCell` (type)
 
     export type FogCell = number | ArrayLike<number>;
@@ -18068,6 +18225,8 @@ build instead.
         constructor(options?: LabelOptions | string);
 
         setColor(color: number): void;
+
+        setWrapWidth(width: number | undefined): void;
 
         setText(value: string): void;
 
@@ -18936,6 +19095,8 @@ build instead.
         private readonly spin;
         private readonly tintRange;
 
+        private tintOverridden;
+
         private readonly frames?;
 
         private readonly spawnArea;
@@ -18968,7 +19129,11 @@ build instead.
 
         get particles(): readonly Particle[];
 
-        burst(count: number): number;
+        burst(count: number, at?: {
+            x?: number;
+            y?: number;
+            tint?: number;
+        }): number;
         private spawn;
 
         private spawnOffset;
@@ -19727,6 +19892,8 @@ build instead.
 ### `Shape2D` (class)
 
     export declare class Shape2D extends Graphics {
+
+        dashedLine(x1: number, y1: number, x2: number, y2: number, dash?: number, gap?: number): this;
     }
 
 ### `sharpenText` (function)
@@ -20062,6 +20229,8 @@ build instead.
         private constructor();
 
         static grid(path: string, frameWidth?: number, frameHeight?: number): SpriteSheet;
+
+        static strip(path: string, frames: number): SpriteSheet;
         static fromTexture(texture: Texture2D, frameWidth?: number, frameHeight?: number): SpriteSheet;
         get count(): number;
 
@@ -21111,6 +21280,7 @@ build instead.
         readonly anchor: 'center' | 'bottom' | 'top';
         private background;
         private titleLabel;
+        private closeMark;
         private innerWidth;
         private innerHeight;
         private currentWidth;
@@ -21159,6 +21329,8 @@ build instead.
         modal?: boolean;
 
         closable?: boolean;
+
+        closeButton?: boolean;
 
         dims?: boolean;
 
@@ -21638,6 +21810,8 @@ build instead.
         set zoom(value: number);
 
         setViewport(width: number, height: number, screenX?: number, screenY?: number): void;
+
+        fit(worldWidth: number, worldHeight: number): void;
 
         get view(): {
             x: number;
@@ -22322,6 +22496,8 @@ build instead.
         private readonly spin;
         private readonly tintRange;
 
+        private tintOverridden;
+
         private readonly frames?;
 
         private readonly spawnArea;
@@ -22354,7 +22530,11 @@ build instead.
 
         get particles(): readonly Particle[];
 
-        burst(count: number): number;
+        burst(count: number, at?: {
+            x?: number;
+            y?: number;
+            tint?: number;
+        }): number;
         private spawn;
 
         private spawnOffset;
@@ -22726,6 +22906,8 @@ build instead.
 ### `Shape2D` (class)
 
     export declare class Shape2D extends Graphics {
+
+        dashedLine(x1: number, y1: number, x2: number, y2: number, dash?: number, gap?: number): this;
     }
 
 ### `SkeletalSprite` (class)
@@ -22895,6 +23077,8 @@ build instead.
         private constructor();
 
         static grid(path: string, frameWidth?: number, frameHeight?: number): SpriteSheet;
+
+        static strip(path: string, frames: number): SpriteSheet;
         static fromTexture(texture: Texture2D, frameWidth?: number, frameHeight?: number): SpriteSheet;
         get count(): number;
 
@@ -23691,6 +23875,7 @@ build instead.
         private height_;
         private state;
         private disabled_;
+        private selected_;
         private readonly themeListener;
         constructor(options: ButtonOptions);
 
@@ -23700,6 +23885,9 @@ build instead.
         setText(text: string | undefined): void;
         get disabled(): boolean;
         setDisabled(disabled: boolean): void;
+        get selected(): boolean;
+
+        setSelected(selected: boolean): void;
         private setState;
 
         private layoutContent;
@@ -24023,6 +24211,38 @@ build instead.
 
     export declare function floatingTextStackMoves(live: readonly FloatingTextStackEntry[], incoming: FloatingTextStackEntry, gap?: number): FloatingTextStackMove[];
 
+### `FlowItem` (interface)
+
+    export interface FlowItem {
+        width: number;
+        height: number;
+    }
+
+### `flowLayout` (function)
+
+    export declare function flowLayout(items: readonly FlowItem[], width: number, options?: FlowOptions): FlowResult;
+
+### `FlowOptions` (interface)
+
+    export interface FlowOptions {
+
+        gap?: number;
+
+        align?: 'start' | 'center' | 'end';
+    }
+
+### `FlowResult` (interface)
+
+    export interface FlowResult {
+
+        positions: {
+            x: number;
+            y: number;
+        }[];
+
+        height: number;
+    }
+
 ### `GlyphLayout` (interface)
 
     export interface GlyphLayout {
@@ -24222,6 +24442,8 @@ build instead.
         constructor(options?: LabelOptions | string);
 
         setColor(color: number): void;
+
+        setWrapWidth(width: number | undefined): void;
 
         setText(value: string): void;
 
@@ -25737,6 +25959,7 @@ build instead.
         readonly anchor: 'center' | 'bottom' | 'top';
         private background;
         private titleLabel;
+        private closeMark;
         private innerWidth;
         private innerHeight;
         private currentWidth;
@@ -25785,6 +26008,8 @@ build instead.
         modal?: boolean;
 
         closable?: boolean;
+
+        closeButton?: boolean;
 
         dims?: boolean;
 
