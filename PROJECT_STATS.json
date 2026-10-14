@@ -1,27 +1,27 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.37.0",
+	"version": "0.38.0",
 	"releaseDate": "2026-10-14",
 	"source": {
-		"files": 344,
-		"lines": 63934,
+		"files": 347,
+		"lines": 65198,
 		"modules": 20,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 98,
-				"lines": 20657
+				"files": 100,
+				"lines": 21464
+			},
+			{
+				"name": "mwl",
+				"files": 23,
+				"lines": 7773
 			},
 			{
 				"name": "core",
 				"files": 52,
 				"lines": 7370
-			},
-			{
-				"name": "mwl",
-				"files": 22,
-				"lines": 7316
 			},
 			{
 				"name": "board",
@@ -111,16 +111,16 @@
 		]
 	},
 	"tests": {
-		"files": 317,
-		"lines": 43038,
-		"cases": 2924
+		"files": 319,
+		"lines": 43705,
+		"cases": 2943
 	},
 	"tools": {
-		"files": 50,
-		"lines": 10679
+		"files": 52,
+		"lines": 10990
 	},
 	"examples": {
-		"count": 24,
+		"count": 25,
 		"names": [
 			"audio",
 			"battle",
@@ -138,6 +138,7 @@
 			"movement",
 			"multi-turn-beam",
 			"mwl-content",
+			"mwl-presentation",
 			"neural",
 			"pacman",
 			"save-load",
@@ -149,18 +150,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 412,
-		"completed": 407,
-		"open": 5,
-		"percent": 99
+		"items": 413,
+		"completed": 411,
+		"open": 2,
+		"percent": 100
 	},
 	"api": {
-		"declarationFiles": 344
+		"declarationFiles": 347
 	},
 	"bundle": {
-		"globalRaw": 1263960,
-		"globalGzip": 378777,
-		"distRaw": 4495199
+		"globalRaw": 1264485,
+		"globalGzip": 378908,
+		"distRaw": 4551626
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

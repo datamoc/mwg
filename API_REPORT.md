@@ -363,7 +363,7 @@ build instead.
         private fraction;
         private readonly fillTexture?;
         private readonly backgroundTexture?;
-        private readonly background_?;
+        private background_?;
         private readonly roundUpToPixel;
         private readonly themeListener;
         constructor(options: BarOptions);
@@ -376,6 +376,8 @@ build instead.
         setColor(color: number): void;
 
         get background(): number;
+
+        setBackground(color?: number): void;
         resize(width: number, height: number): void;
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -581,6 +583,7 @@ build instead.
         private state;
         private disabled_;
         private selected_;
+        private colors;
         private readonly themeListener;
         constructor(options: ButtonOptions);
 
@@ -593,11 +596,23 @@ build instead.
         get selected(): boolean;
 
         setSelected(selected: boolean): void;
+
+        setColors(colors: ButtonColors): void;
         private setState;
 
         private layoutContent;
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `ButtonColors` (interface)
+
+    export interface ButtonColors {
+        text?: number;
+        disabledText?: number;
+        background?: number;
+        border?: number;
+        selection?: number;
     }
 
 ### `ButtonOptions` (interface)
@@ -613,6 +628,8 @@ build instead.
         skin?: ButtonSkin;
 
         label?: Omit<LabelOptions, 'text'>;
+
+        colors?: ButtonColors;
         disabled?: boolean;
         onClick?: () => void;
 
@@ -6330,7 +6347,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.37.0";
+    export declare const version = "0.38.0";
 
 ### `VerticalLabel` (class)
 
@@ -6475,6 +6492,7 @@ build instead.
         private blocker;
         private readonly themeListener;
         private isClosed;
+        private colors;
         constructor(options: WindowOptions);
 
         private restyle;
@@ -6483,6 +6501,8 @@ build instead.
         get contentWidth(): number;
         get contentHeight(): number;
         setTitle(text: string): void;
+
+        setColors(colors: WindowColors): void;
 
         delegate: {
             handleAction(action: Action): boolean;
@@ -6505,12 +6525,22 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `WindowColors` (interface)
+
+    export interface WindowColors {
+        background?: number;
+        border?: number;
+        title?: number;
+    }
+
 ### `WindowOptions` (interface)
 
     export interface WindowOptions {
         width: number;
         height: number;
         title?: string;
+
+        colors?: WindowColors;
 
         modal?: boolean;
 
@@ -14099,6 +14129,95 @@ build instead.
 
     export declare function validAttributeValue(value: string, type: MwlAttributeType): boolean;
 
+## `./mwl/presentation`
+
+### `CompiledPresentation` (interface)
+
+    export interface CompiledPresentation {
+        readonly scenes: Readonly<Record<string, PresentationScene>>;
+        readonly themes: Readonly<Record<string, PresentationTheme>>;
+        readonly contexts: Readonly<Record<string, PresentationContext>>;
+        readonly variants: Readonly<Record<string, PresentationProperties>>;
+        readonly manifest: PresentationManifest;
+        readonly ids: readonly string[];
+        readonly assets: readonly string[];
+        readonly messages: readonly string[];
+    }
+
+### `compilePresentation` (function)
+
+    export declare function compilePresentation(files: readonly MwlSourceFile[], manifest: PresentationManifest): CompiledPresentation;
+
+### `emitPresentationModule` (function)
+
+    export declare function emitPresentationModule(data: CompiledPresentation): string;
+
+### `PresentationCollection` (interface)
+
+    export interface PresentationCollection {
+        readonly type: 'items';
+        readonly fields: Readonly<Record<string, PresentationScalarType>>;
+    }
+
+### `PresentationContext` (interface)
+
+    export interface PresentationContext {
+        readonly theme: string;
+        readonly tokens: Readonly<Record<string, number>>;
+        readonly overrides: Readonly<Record<string, PresentationProperties>>;
+    }
+
+### `PresentationItem` (type)
+
+    export type PresentationItem = Readonly<Record<string, PresentationValue>>;
+
+### `PresentationManifest` (interface)
+
+    export interface PresentationManifest {
+        readonly values: Readonly<Record<string, PresentationScalarType | PresentationCollection>>;
+        readonly actions: readonly string[];
+        readonly adapters?: readonly string[];
+        readonly assets?: readonly string[];
+    }
+
+### `PresentationNode` (interface)
+
+    export interface PresentationNode {
+        readonly kind: string;
+        readonly id: string;
+
+        readonly source: string;
+        readonly properties: PresentationProperties;
+        readonly states: Readonly<Record<string, PresentationProperties>>;
+        readonly children: readonly PresentationNode[];
+    }
+
+### `PresentationProperties` (type)
+
+    export type PresentationProperties = Readonly<Record<string, string>>;
+
+### `PresentationScalarType` (type)
+
+    export type PresentationScalarType = 'string' | 'number' | 'boolean';
+
+### `PresentationScene` (interface)
+
+    export interface PresentationScene {
+        readonly theme: string;
+        readonly children: readonly PresentationNode[];
+    }
+
+### `PresentationTheme` (interface)
+
+    export interface PresentationTheme {
+        readonly tokens: Readonly<Record<string, number>>;
+        readonly properties: PresentationProperties;
+    }
+
+### `PresentationValue` (type)
+
+    export type PresentationValue = string | number | boolean;
+
 ## `./mwl/pyroeis`
 
 ### `createPyroeisRuntime` (function)
@@ -17173,7 +17292,7 @@ build instead.
         private fraction;
         private readonly fillTexture?;
         private readonly backgroundTexture?;
-        private readonly background_?;
+        private background_?;
         private readonly roundUpToPixel;
         private readonly themeListener;
         constructor(options: BarOptions);
@@ -17186,6 +17305,8 @@ build instead.
         setColor(color: number): void;
 
         get background(): number;
+
+        setBackground(color?: number): void;
         resize(width: number, height: number): void;
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -17343,6 +17464,7 @@ build instead.
         private state;
         private disabled_;
         private selected_;
+        private colors;
         private readonly themeListener;
         constructor(options: ButtonOptions);
 
@@ -17355,11 +17477,23 @@ build instead.
         get selected(): boolean;
 
         setSelected(selected: boolean): void;
+
+        setColors(colors: ButtonColors): void;
         private setState;
 
         private layoutContent;
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `ButtonColors` (interface)
+
+    export interface ButtonColors {
+        text?: number;
+        disabledText?: number;
+        background?: number;
+        border?: number;
+        selection?: number;
     }
 
 ### `ButtonOptions` (interface)
@@ -17375,6 +17509,8 @@ build instead.
         skin?: ButtonSkin;
 
         label?: Omit<LabelOptions, 'text'>;
+
+        colors?: ButtonColors;
         disabled?: boolean;
         onClick?: () => void;
 
@@ -21559,6 +21695,7 @@ build instead.
         private blocker;
         private readonly themeListener;
         private isClosed;
+        private colors;
         constructor(options: WindowOptions);
 
         private restyle;
@@ -21567,6 +21704,8 @@ build instead.
         get contentWidth(): number;
         get contentHeight(): number;
         setTitle(text: string): void;
+
+        setColors(colors: WindowColors): void;
 
         delegate: {
             handleAction(action: Action): boolean;
@@ -21589,12 +21728,22 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `WindowColors` (interface)
+
+    export interface WindowColors {
+        background?: number;
+        border?: number;
+        title?: number;
+    }
+
 ### `WindowOptions` (interface)
 
     export interface WindowOptions {
         width: number;
         height: number;
         title?: string;
+
+        colors?: WindowColors;
 
         modal?: boolean;
 
@@ -21721,6 +21870,98 @@ build instead.
 ### `TilingSpritePipe` (re-export)
 
     export { TilingSpritePipe } from 'pixi.js'
+
+## `./two-d/presentation`
+
+### `MwlPresentation` (class)
+
+    export declare class MwlPresentation<Id extends string = string> {
+        private readonly data;
+        private readonly options;
+        readonly root: Container<import("pixi.js").ContainerChild>;
+        readonly windows: WindowStack;
+        readonly camera: Camera;
+        private readonly nodes;
+        private readonly roots;
+        private readonly baseTheme;
+        private readonly cameraProperties;
+        private readonly cameraPath;
+        private readonly previousTheme;
+        private appliedTheme;
+        private context;
+        private tokens;
+        private viewport;
+        private focused;
+        private destroyed;
+        private unsubscribe?;
+        private state;
+        private readonly inputListener;
+        constructor(data: CompiledPresentation, sceneId: string, options: PresentationRuntimeOptions);
+
+        get(id: Id): Container | null;
+        get focusId(): string | null;
+        get activeContext(): string;
+        get palette(): Readonly<Record<string, number>>;
+        setContext(context?: string): void;
+        private applyTheme;
+        update(dt?: number): void;
+        resize(width: number, height: number): void;
+        private createRecord;
+        private read;
+        private coerce;
+        private resolveProperties;
+        private refresh;
+        private mount;
+        private reconcile;
+        private token;
+        private applyProperties;
+        private layout;
+        private layoutNode;
+        private invoke;
+        private isFocusable;
+        private focusable;
+        private setFocus;
+        private navigate;
+
+        handleAction(action: string): boolean;
+        private unmount;
+        private dispose;
+        private assertAlive;
+        destroy(): void;
+    }
+
+### `PresentationAdapter` (interface)
+
+    export interface PresentationAdapter {
+        readonly view: Container;
+        update?(dt: number, state: PresentationState): void;
+        resize?(width: number, height: number): void;
+        restyle?(context: PresentationAdapterContext): void;
+        destroy?(): void;
+    }
+
+### `PresentationAdapterContext` (interface)
+
+    export interface PresentationAdapterContext {
+        readonly tokens: Readonly<Record<string, number>>;
+        readonly properties: PresentationProperties;
+    }
+
+### `PresentationRuntimeOptions` (interface)
+
+    export interface PresentationRuntimeOptions {
+        readonly parent: Container;
+        readonly state: () => PresentationState;
+        readonly actions: Readonly<Record<string, (item?: PresentationItem) => void>>;
+        readonly adapters?: Readonly<Record<string, (context: PresentationAdapterContext) => PresentationAdapter>>;
+        readonly translate?: (message: string) => string;
+
+        readonly subscribe?: (refresh: () => void) => () => void;
+    }
+
+### `PresentationState` (type)
+
+    export type PresentationState = Readonly<Record<string, PresentationValue | readonly PresentationItem[]>>;
 
 ## `./two-d/render`
 
@@ -24071,7 +24312,7 @@ build instead.
         private fraction;
         private readonly fillTexture?;
         private readonly backgroundTexture?;
-        private readonly background_?;
+        private background_?;
         private readonly roundUpToPixel;
         private readonly themeListener;
         constructor(options: BarOptions);
@@ -24084,6 +24325,8 @@ build instead.
         setColor(color: number): void;
 
         get background(): number;
+
+        setBackground(color?: number): void;
         resize(width: number, height: number): void;
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
@@ -24146,6 +24389,7 @@ build instead.
         private state;
         private disabled_;
         private selected_;
+        private colors;
         private readonly themeListener;
         constructor(options: ButtonOptions);
 
@@ -24158,11 +24402,23 @@ build instead.
         get selected(): boolean;
 
         setSelected(selected: boolean): void;
+
+        setColors(colors: ButtonColors): void;
         private setState;
 
         private layoutContent;
         private draw;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `ButtonColors` (interface)
+
+    export interface ButtonColors {
+        text?: number;
+        disabledText?: number;
+        background?: number;
+        border?: number;
+        selection?: number;
     }
 
 ### `ButtonOptions` (interface)
@@ -24178,6 +24434,8 @@ build instead.
         skin?: ButtonSkin;
 
         label?: Omit<LabelOptions, 'text'>;
+
+        colors?: ButtonColors;
         disabled?: boolean;
         onClick?: () => void;
 
@@ -26259,6 +26517,7 @@ build instead.
         private blocker;
         private readonly themeListener;
         private isClosed;
+        private colors;
         constructor(options: WindowOptions);
 
         private restyle;
@@ -26267,6 +26526,8 @@ build instead.
         get contentWidth(): number;
         get contentHeight(): number;
         setTitle(text: string): void;
+
+        setColors(colors: WindowColors): void;
 
         delegate: {
             handleAction(action: Action): boolean;
@@ -26289,12 +26550,22 @@ build instead.
         destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
+### `WindowColors` (interface)
+
+    export interface WindowColors {
+        background?: number;
+        border?: number;
+        title?: number;
+    }
+
 ### `WindowOptions` (interface)
 
     export interface WindowOptions {
         width: number;
         height: number;
         title?: string;
+
+        colors?: WindowColors;
 
         modal?: boolean;
 

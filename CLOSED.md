@@ -6039,6 +6039,13 @@ example already draws.
     default theme's own fixed layout and icon art, which is port content by the same rule
     that keeps its terrain graphics local. The item closes as documentation, which this
     record is.
+408. ~~The all-scenarios verifier, second half.~~ `mwg-scenarios` opens one built page
+    from `file://` and runs its game-owned scenario plan through `SceneControls`.
+    Named entry, bot-turn, verification and cleanup steps keep campaign rules and
+    dialogue handling in the game. Empty coverage and missing steps fail preflight;
+    page errors and failed checks are reported per scenario, and a timeout aborts
+    without overlapping a still-live step. `tests/verify-scenarios.test.ts` drives
+    actual Chrome pages to verify turn ordering, failure cleanup and timeout isolation.
 411. ~~Host-driven Lua coroutines and game API integration.~~ `createFengariRuntime`
     on the optional `mwl/fengari` subpath exposes synchronous host functions, live
     indexed tables, owned references, embedded `require`/`dofile` and coroutine
@@ -6048,3 +6055,40 @@ example already draws.
     `tests/fengari-runtime.test.ts` pins replies, live writes, module identity,
     suspended loads, lifecycle failures and budget recovery. The `file://` browser
     check records startup and resume costs, not a real consumer's frame budget.
+413. ~~Optional MWL scene and UI composition.~~ The `mwl/presentation` compiler turns
+    authored presentation definitions into a deterministic emitted module (stable
+    literal IDs, typed `PresentationId`s, i18n messages through the existing MWL
+    extraction pipeline), and the `two-d/presentation` runtime mounts it onto the
+    existing scene, widget, theme and layout components: scene layers with camera
+    configuration, reusable component trees with typed IDs and game-owned adapters
+    for procedural rendering, anchors/rows/columns/grids over the existing layout
+    helpers, and keyed repeat templates that keep instance identity (and keyboard
+    focus) across reorder and detach subscriptions only on removal. Named bindings
+    for text, values, selection, visibility, disabled state and actions are checked
+    against a TypeScript manifest; content holds no script bodies. Theme tokens,
+    scene palettes and component variants resolve base, context override,
+    component variant, component state in that order, with palette validation
+    keeping text readable and danger/selection identifiable; a game's own biome
+    schema selects contexts, biome semantics staying game-owned. Mount, update,
+    resize and destroy detach every owned subscription, variant switching preserves
+    simulation state without duplicating callbacks, and unknown actions, bindings,
+    assets, adapters, variants and override targets fail at compile time with the
+    authored file and line. `Button.setColors`, `Window.setColors` and
+    `Bar.setBackground` restyle instances without rebuilding them.
+    `tests/mwl-presentation.test.ts` pins compilation, diagnostics, precedence,
+    keyed updates, geometry and teardown; the `mwl-presentation` bridge-editor
+    example exercises a narrow-window HUD/editor, dynamic text and lists,
+    keyboard focus, a modal window, coordinated palette/scene/UI switching and
+    destruction, and `tools/presentation-smoke.mjs` (wired into CI) asserts it
+    from `file://` with measured costs (presentation updates under 8 ms at p95,
+    submitted frames under 30 ms at p95). Physics tests unchanged; the runtime
+    stays optional and on the GPU path.
+393. ~~Ableton `.agr` and Reaper groove formats for `GrooveConverter`.~~ Parked for lack of
+     fixtures: both formats are proprietary and undocumented, so the converter keeps throwing
+     a named error for them, and writing against a description of the format is not acceptable.
+     Un-parks when real files exported from Live and Reaper arrive to keep as test fixtures.
+394. ~~`MagentaAIHumanizer`, the third humanizer tier.~~ Closed as too expensive: a real tier
+     needs `@magenta/music` (about 18 MB) as an optional peer plus its `PerformanceRNN`
+     checkpoint compiled into `window.__MWG_ASSETS__`, and the two shipped tiers already cover
+     the game use case. `HumanizerFactory` keeps refusing `'magenta'` by name. Un-parks with a
+     consumer that needs neural humanization and accepts the peer weight and checkpoint size.

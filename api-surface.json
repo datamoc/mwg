@@ -312,6 +312,12 @@
 		"declaringModule": "two-d/ui/Button.d.ts"
 	},
 	{
+		"name": "ButtonColors",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/Button.d.ts"
+	},
+	{
 		"name": "ButtonOptions",
 		"kind": "interface",
 		"subpath": ".",
@@ -3482,6 +3488,12 @@
 	{
 		"name": "Window",
 		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/Window.d.ts"
+	},
+	{
+		"name": "WindowColors",
+		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/Window.d.ts"
 	},
@@ -9042,6 +9054,84 @@
 		"declaringModule": "mwl/schema.d.ts"
 	},
 	{
+		"name": "CompiledPresentation",
+		"kind": "interface",
+		"subpath": "./mwl/presentation",
+		"declaringModule": "mwl/presentation.d.ts"
+	},
+	{
+		"name": "compilePresentation",
+		"kind": "function",
+		"subpath": "./mwl/presentation",
+		"declaringModule": "mwl/presentation.d.ts"
+	},
+	{
+		"name": "emitPresentationModule",
+		"kind": "function",
+		"subpath": "./mwl/presentation",
+		"declaringModule": "mwl/presentation.d.ts"
+	},
+	{
+		"name": "PresentationCollection",
+		"kind": "interface",
+		"subpath": "./mwl/presentation",
+		"declaringModule": "mwl/presentation.d.ts"
+	},
+	{
+		"name": "PresentationContext",
+		"kind": "interface",
+		"subpath": "./mwl/presentation",
+		"declaringModule": "mwl/presentation.d.ts"
+	},
+	{
+		"name": "PresentationItem",
+		"kind": "type",
+		"subpath": "./mwl/presentation",
+		"declaringModule": "mwl/presentation.d.ts"
+	},
+	{
+		"name": "PresentationManifest",
+		"kind": "interface",
+		"subpath": "./mwl/presentation",
+		"declaringModule": "mwl/presentation.d.ts"
+	},
+	{
+		"name": "PresentationNode",
+		"kind": "interface",
+		"subpath": "./mwl/presentation",
+		"declaringModule": "mwl/presentation.d.ts"
+	},
+	{
+		"name": "PresentationProperties",
+		"kind": "type",
+		"subpath": "./mwl/presentation",
+		"declaringModule": "mwl/presentation.d.ts"
+	},
+	{
+		"name": "PresentationScalarType",
+		"kind": "type",
+		"subpath": "./mwl/presentation",
+		"declaringModule": "mwl/presentation.d.ts"
+	},
+	{
+		"name": "PresentationScene",
+		"kind": "interface",
+		"subpath": "./mwl/presentation",
+		"declaringModule": "mwl/presentation.d.ts"
+	},
+	{
+		"name": "PresentationTheme",
+		"kind": "interface",
+		"subpath": "./mwl/presentation",
+		"declaringModule": "mwl/presentation.d.ts"
+	},
+	{
+		"name": "PresentationValue",
+		"kind": "type",
+		"subpath": "./mwl/presentation",
+		"declaringModule": "mwl/presentation.d.ts"
+	},
+	{
 		"name": "createPyroeisRuntime",
 		"kind": "function",
 		"subpath": "./mwl/pyroeis",
@@ -10830,6 +10920,12 @@
 		"declaringModule": "tools/single-file.mjs"
 	},
 	{
+		"name": "./tools/verify-scenarios",
+		"kind": "tool",
+		"subpath": "./tools/verify-scenarios",
+		"declaringModule": "tools/verify-scenarios.mjs"
+	},
+	{
 		"name": "./tools/vite",
 		"kind": "tool",
 		"subpath": "./tools/vite",
@@ -11084,6 +11180,12 @@
 	{
 		"name": "Button",
 		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/Button.d.ts"
+	},
+	{
+		"name": "ButtonColors",
+		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/Button.d.ts"
 	},
@@ -13146,6 +13248,12 @@
 		"declaringModule": "two-d/ui/Window.d.ts"
 	},
 	{
+		"name": "WindowColors",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/Window.d.ts"
+	},
+	{
 		"name": "WindowOptions",
 		"kind": "interface",
 		"subpath": "./two-d",
@@ -13270,6 +13378,36 @@
 		"kind": "re-export",
 		"subpath": "./two-d/pixi-interop",
 		"declaringModule": "two-d/pixi-interop.d.ts"
+	},
+	{
+		"name": "MwlPresentation",
+		"kind": "class",
+		"subpath": "./two-d/presentation",
+		"declaringModule": "two-d/presentation/MwlPresentation.d.ts"
+	},
+	{
+		"name": "PresentationAdapter",
+		"kind": "interface",
+		"subpath": "./two-d/presentation",
+		"declaringModule": "two-d/presentation/MwlPresentation.d.ts"
+	},
+	{
+		"name": "PresentationAdapterContext",
+		"kind": "interface",
+		"subpath": "./two-d/presentation",
+		"declaringModule": "two-d/presentation/MwlPresentation.d.ts"
+	},
+	{
+		"name": "PresentationRuntimeOptions",
+		"kind": "interface",
+		"subpath": "./two-d/presentation",
+		"declaringModule": "two-d/presentation/MwlPresentation.d.ts"
+	},
+	{
+		"name": "PresentationState",
+		"kind": "type",
+		"subpath": "./two-d/presentation",
+		"declaringModule": "two-d/presentation/MwlPresentation.d.ts"
 	},
 	{
 		"name": "ActorAnimationState",
@@ -14640,6 +14778,12 @@
 		"declaringModule": "two-d/ui/Button.d.ts"
 	},
 	{
+		"name": "ButtonColors",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/Button.d.ts"
+	},
+	{
 		"name": "ButtonOptions",
 		"kind": "interface",
 		"subpath": "./two-d/ui",
@@ -15572,6 +15716,12 @@
 	{
 		"name": "Window",
 		"kind": "class",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/Window.d.ts"
+	},
+	{
+		"name": "WindowColors",
+		"kind": "interface",
 		"subpath": "./two-d/ui",
 		"declaringModule": "two-d/ui/Window.d.ts"
 	},

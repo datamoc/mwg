@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.37.0",
+	"version": "0.38.0",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -45,6 +45,7 @@
 		"mwg-openings": "tools/compile-openings.mjs",
 		"mwg-placeholder-assets": "tools/make-example-assets.mjs",
 		"mwg-sbom": "tools/sbom.mjs",
+		"mwg-scenarios": "tools/verify-scenarios.mjs",
 		"mwg-size": "tools/bundle-size.mjs",
 		"mwg-smoke": "tools/browser-smoke.mjs",
 		"mwg-tablebases": "tools/build-tablebases.mjs",
@@ -71,6 +72,8 @@
 		"tools/play-uci.d.mts",
 		"tools/init.mjs",
 		"tools/init.d.mts",
+		"tools/verify-scenarios.mjs",
+		"tools/verify-scenarios.d.mts",
 		"tools/classic-html.mjs",
 		"tools/classic-html.d.mts",
 		"tools/sbom.mjs",
@@ -116,6 +119,14 @@
 		"MWG - Best Practices.md"
 	],
 	"exports": {
+		"./mwl/presentation": {
+			"types": "./dist/mwl/presentation.d.ts",
+			"import": "./dist/mwl/presentation.js"
+		},
+		"./two-d/presentation": {
+			"types": "./dist/two-d/presentation/index.d.ts",
+			"import": "./dist/two-d/presentation/index.js"
+		},
 		".": {
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
@@ -223,6 +234,7 @@
 		"./tools/compile-openings": "./tools/compile-openings.mjs",
 		"./tools/build-tablebases": "./tools/build-tablebases.mjs",
 		"./tools/init": "./tools/init.mjs",
+		"./tools/verify-scenarios": "./tools/verify-scenarios.mjs",
 		"./tools/play-uci": "./tools/play-uci.mjs",
 		"./tools/compress-dist": "./tools/compress-dist.mjs",
 		"./tools/csp": "./tools/csp.mjs",
@@ -298,6 +310,9 @@
 		"i18n:edit": "node tools/i18n-edit.mjs",
 		"i18n:check": "node tools/i18n-edit.mjs --check",
 		"example:ui": "vite --config examples/interface/vite.config.ts",
+		"example:mwl-presentation": "npm run build:pkg && node examples/mwl-presentation/generate.mjs && vite --config examples/mwl-presentation/vite.config.ts",
+		"example:mwl-presentation:build": "npm run build:pkg && node examples/mwl-presentation/generate.mjs && vite build --config examples/mwl-presentation/vite.config.ts && node tools/emit-page.mjs examples/mwl-presentation --assets=examples/mwl-presentation/assets",
+		"visual:smoke:presentation": "npm run example:mwl-presentation:build && node tools/presentation-smoke.mjs",
 		"example:ui:build": "vite build --config examples/interface/vite.config.ts && node tools/emit-page.mjs examples/interface --assets=examples/assets",
 		"example:dialogue": "vite --config examples/dialogue/vite.config.ts",
 		"example:dialogue:build": "vite build --config examples/dialogue/vite.config.ts && node tools/emit-page.mjs examples/dialogue --assets=examples/assets",

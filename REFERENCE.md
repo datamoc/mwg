@@ -31,6 +31,73 @@ at all, and a 2D game importing `core` + `two-d` pulls in no Babylon. `rpg` is r
 its event interpreter takes an injected `DialoguePresenter` rather than building a widget, so
 a 3D game can run map events, dialogue and quests without a 2D renderer anywhere in reach.
 
+## MWL presentation
+
+The optional compiler at `@datamoc/mw_games/mwl/presentation` is renderer-free. The
+runtime at `@datamoc/mw_games/two-d/presentation` imports Pixi and is kept off the root
+barrel. The browser consumes compiled data, with no MWL parser or network requests.
+
+- `compilePresentation(files, manifest)` validates and compiles top-level
+  `theme_definition`, `presentation_context`, `component_variant`, `ui_component` and
+  `scene_definition` nodes. It checks named actions/adapters, binding types, assets,
+  reusable-component cycles, duplicate IDs, overrides and token references at build time,
+  with source-file/line diagnostics. The manifest's asset names must be generated files
+  that the game's asset build actually includes.
+- `emitPresentationModule(data)` emits deterministic TypeScript data, `PresentationId`
+  (including keyed instance paths) and `PresentationSceneId` literal types. A game's build
+  script writes this module plus `data.messages` and `data.assets` into its existing MWL
+  artifact pipeline. See `examples/mwl-presentation/generate.mjs`.
+- `MwlPresentation(data, sceneId, options)` mounts existing `Button`, `Label`, `Bar`,
+  `Window`, `WindowStack` and `Camera` components. `get(id)`, `focusId`, `palette` and
+  `activeContext` expose instances and presentation state. `update(dt)`, `resize(width,
+  height)`, `setContext(id)` and `destroy()` drive its lifecycle; `handleAction(action)`
+  offers modal windows input first. Register destruction with the owning scene's
+  `onDestroy`; it detaches input, theme, controller and adapter subscriptions.
+
+Declare the TypeScript manifest with `values: { name: 'string' | 'number' | 'boolean' }`,
+or `{ type: 'items', fields: { id: 'string', text: 'string', selected: 'boolean' } }` for
+collections, plus `actions`, optional `adapters` and `assets` name lists. The runtime's
+`options.state()` supplies those values; `options.actions` implements the named callbacks.
+Repeated-item actions receive the current item, even after reorder. Optional `subscribe`
+returns a disposer, and `translate` resolves authored/gettext text. Asset textures must
+be loaded before mounting. `PresentationAdapter` exposes a view plus optional `update`,
+`resize`, `restyle` and `destroy`: the runtime destroys the view, while the adapter
+detaches its own subscriptions. Cleanup continues even if an adapter throws.
+
+Scenes contain `scene_camera` (zoom, position or fit dimensions), `scene_layer` (world or
+screen space, optional generated image or named procedural adapter) and UI trees.
+`ui_mount` expands a reusable component at build time. UI trees use `ui_container`,
+`ui_row` (wrapping by default), `ui_column`, `ui_grid` (equal grow columns), `ui_label`,
+`ui_button`, `ui_bar`, `ui_window`, `ui_repeat` and `ui_adapter`. Every node has an `id`;
+runtime paths start with the scene ID and join descendant IDs with `/`. Repeats insert
+the URI-encoded stable key before their single template child's ID, preserving instances
+and focus on updates. A reusable component using item fields may declare `items_binding`
+so even an unused template can be validated against its collection.
+
+Properties include pixel dimensions, anchors, offsets (`x`, `y`), spacing, alpha and
+semantic color tokens. Bindings use `text_binding`, `title_binding`, `value_binding`,
+`max_binding`, `color_binding`, `visible_binding`, `selected_binding` and
+`disabled_binding`; item fields use `item.field`. Buttons name an `action`, windows may
+name a `close_action`, and repeats declare `items_binding` plus a string/number `key`.
+Window close actions should update the controller's visibility binding. Closed windows
+stay closed until their visibility transitions false then true; reopening creates a
+fresh window, because existing `Window.close()` destroys its contents.
+
+Themes require `panel`, `text`, `accent`, `success`, `warning`, `danger` and `selection`
+24-bit color tokens; games may add scenery tokens and choose font/padding metrics.
+Text/panel contrast must reach 4.5, and danger/selection against panel must reach 3.
+Contexts choose a theme and may override tokens or authored-node properties using
+`ui_override.target`, such as `component:controls/toolbar` or `scene:bridge/decor`.
+Image overrides on scene layers select generated scenery. Precedence is base properties,
+context overrides, component variant, then `ui_state` (`idle`, `hover`, `pressed`,
+`disabled`, `selected`, `focused`). A game's biome schema selects a context; MWG defines
+no biome rules. Context switches preserve mounted adapters and controller state.
+
+One active presentation owns the existing global UI theme. Destruction restores its prior
+theme if nobody replaced it meanwhile. Existing widgets also expose local palette updates:
+`Button.setColors` (`ButtonColors`), `Window.setColors` (`WindowColors`) and
+`Bar.setBackground`, for variants that must follow token changes without remounting.
+
 ## Conventions
 
 Three rules the whole API follows, so a name means one thing everywhere:

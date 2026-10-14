@@ -7,6 +7,30 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.38.0] - 2026-10-14
+
+Optional MWL scene and UI composition with its bridge-editor example, the
+all-scenarios browser verifier, instance palette setters, and a powered-by badge
+games can carry on their login screen. Roadmap 393 and 394 move to parked: no
+fixture files for the proprietary groove formats, and the neural humanizer costs
+more than the game use case justifies.
+
+### Added
+
+- Optional MWL presentation compiler (`mwl/presentation`) and Pixi runtime
+  (`two-d/presentation`): scene layers, camera, reusable UI, responsive layouts, keyed
+  collections, typed bindings and biome-selected palette/scenery overrides. The local-file
+  bridge-editor example checks keyboard/pointer focus, modal input, cleanup and update cost.
+- `Button.setColors`, `Window.setColors` and `Bar.setBackground` update instance palettes
+  without rebuilding widgets.
+
+- `mwg-scenarios`: verifies every scenario in one local-file browser page through game-owned
+  `SceneControls` steps for entry, bot turns, assertions and cleanup, with bounded execution
+  and per-scenario failures.
+- `webpage/assets/powered-by-mwg.svg`: a badge games can copy onto their login screen,
+  linked to the framework site, with the snippet in the README's new "Powered by mwg"
+  section and the badge itself in the website footer.
+
 ## [0.37.0] - 2026-10-14
 
 Fixes and additions from the first outside game built on mwg (Pontifex, on 0.36.0): sounds compose with synthesized tones, two physics modules (matter-js rigid bodies and a deterministic XPBD structure solver), pointer and dropdown widgets, a project scaffold, and the `@datamoc/mwg` short-name package.

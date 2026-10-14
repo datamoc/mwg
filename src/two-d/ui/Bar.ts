@@ -65,7 +65,7 @@ export class Bar extends Container {
 	private fraction: number;
 	private readonly fillTexture?: Texture2D;
 	private readonly backgroundTexture?: Texture2D;
-	private readonly background_?: number;
+	private background_?: number;
 	private readonly roundUpToPixel: boolean;
 
 	private readonly themeListener = () => this.draw();
@@ -121,6 +121,12 @@ export class Bar extends Container {
 	/** the resolved track colour: `background`, or the theme's panel fill */
 	get background(): number {
 		return this.background_ ?? theme().color.panelFill;
+	}
+
+	/** Replaces the track's color override; undefined returns it to the active theme. */
+	setBackground(color?: number): void {
+		this.background_ = color;
+		this.draw();
 	}
 
 	resize(width: number, height: number): void {

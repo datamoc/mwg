@@ -37,18 +37,6 @@ same way: both are sharpened by real consumer measurement rather than speculatio
 shipped the same day as 0.29.0 (its record is in [CLOSED.md](CLOSED.md)), so 401 is the
 one still open there.
 
-393. **Ableton `.agr` and Reaper groove formats for `GrooveConverter`.**
-Both formats are proprietary and undocumented, so the converter throws a named error for them
-today. They are to be written against real files exported from Live and Reaper, kept as test
-fixtures, never against a description of the format. Blocked on getting such files; best effort
-on round-trip, and a failed round-trip is reported rather than tolerated silently.
-
-394. **`MagentaAIHumanizer`, the third humanizer tier.**
-`HumanizerFactory` refuses `'magenta'` by name. A real tier needs `@magenta/music` (about 18 MB)
-as an optional peer, and its `PerformanceRNN` checkpoint compiled into `window.__MWG_ASSETS__`,
-since `fetch()` is blocked from `file://`. Low priority: it costs the small-dependency policy
-and the two shipped tiers already cover the game use case.
-
 Items 405-410, added 2026-10-10 out of the Wesnoth port's proposal file and a direct
 request the same day, are closed or parked as of this session: 405 shipped with 0.32.0, and
 406, 407, 398, 399, 400, 409 and 410 all shipped (their records are in
@@ -63,11 +51,8 @@ the per-symbol histogram in the port's own gate, and the migration of its raw Pi
 onto the facade with a browser-verified screenshot per file - which un-parks the way item
 347 does: a port session picking it up.
 
-408. **The all-scenarios verifier, second half.** The control surface shipped as
-`src/testing`'s `SceneControls` (named steps a game opts into, refused by name when
-unknown), which is the first half. The `mwg-*` tool that runs every scenario in one
-browser with a bot playing the sides still waits on a read of the Wesnoth port's
-`tools/verify-all-scenarios.mjs` to confirm it holds nothing port-specific.
+Item 408's second half is implemented in `mwg-scenarios`; its record is in
+[CLOSED.md](CLOSED.md). The port's own campaign and bot rules remain game-owned steps.
 
 Priority review, 2026-10-11: the Wesnoth port's concrete need for synchronous API
 results and scene-controlled dialogue suspension promoted item 411 from a candidate
@@ -75,6 +60,25 @@ to implementation. Its generic integration host is now closed in [CLOSED.md](CLO
 `ScriptHost` stays synchronous. The other open items keep their order and blockers.
 Lua calls and resumes remain bounded so a dialogue need not hold the rendering loop
 while waiting for a scene answer; frame-time claims still require consumer measurements.
+
+412. **Publish `@datamoc/mwg`.** Everything from the initial Pontifex feedback shipped in
+0.37.0 (pointer signals, `PhysicsWorld` with breakable joints, `XpbdWorld` with ground
+collision, `DropdownView`, `mwg-init`, `CREDITS.txt`, the alias package generated into
+`packages/mwg`). Registry verification on 2026-10-14 confirms `@datamoc/mwg@0.37.0`
+is public and depends on `@datamoc/mw_games@0.37.0`, so initial publication is done.
+What remains is verifying its npm trusted-publisher entry through a successful alias
+staging run. The workflow contains the alias step, but the latest successful run
+(`38475918563`) predates that step and only proves main-package staging. Do not publish
+the existing version again or infer the alias's OIDC configuration from its registry presence.
+
+Item 413's optional MWL scene and UI composition shipped in `mwl/presentation` and
+`two-d/presentation` with the `mwl-presentation` example and its browser smoke check;
+its record is in [CLOSED.md](CLOSED.md).
+
+Priority review, 2026-10-14 (close-out): 413 shipped above; 412 keeps its order and
+blocker (alias staging still waits on a successful CI run), 393 is parked below until fixture files turn up,
+394 is parked below as too expensive,
+and 401 stays parked with the port. Nothing is promoted.
 
 ### Parked decisions
 
@@ -109,6 +113,19 @@ standing intentions.
   third-party weights bring third-party terms), and dependency-free JS inference costs
   frame time the rendering policy weighs. Classical evaluation is the target; un-parks
   with in-house weights and a measured inference budget.
+- **Item 393: Ableton `.agr` and Reaper groove formats, parked for lack of fixtures (2026-10-14).**
+  Both formats are proprietary and undocumented, so the converter keeps throwing a named error
+  for them. Writing against a description of the format is not acceptable; un-parks when real
+  files exported from Live and Reaper arrive to keep as test fixtures, with best effort on
+  round-trip and failures reported rather than tolerated silently.
+
+- **Item 394: `MagentaAIHumanizer`, closed as too expensive (2026-10-14).** A real third
+  humanizer tier needs `@magenta/music` (about 18 MB) as an optional peer plus its
+  `PerformanceRNN` checkpoint compiled into `window.__MWG_ASSETS__`, and the two shipped
+  tiers already cover the game use case, so the cost buys nothing a game asks for.
+  `HumanizerFactory` keeps refusing `'magenta'` by name. Un-parks with a consumer that
+  needs neural humanization and accepts the peer weight and checkpoint size.
+
 - **The Wesnoth port's non-adoption review (2026-09-12).** The counterpart to the reports that
   became items 316-321 and 327: a walk of the surfaces MWG offers, naming the ones the port
   deliberately keeps local and why. Nothing in it is a request, and the reasons live here so a
@@ -374,10 +391,3 @@ progress (its own Status section still says not feature-complete), and its git h
 empty (branch `master` has no commits, so the work remains loose files on this disk). So the
 2026-09-20 and 2026-09-15 results stand as the last recorded run, this box stays open, and
 what this machine owed the line was the location - now recorded here.
-
-412. **Publish `@datamoc/mwg`.** Everything from the Pontifex feedback shipped in 0.37.0
-(pointer signals, `PhysicsWorld` with breakable joints, `XpbdWorld` with ground collision,
-`DropdownView`, `mwg-init`, `CREDITS.txt`, the alias package generated into `packages/mwg`).
-What is left is the one step only the package owner can take: `npm publish` of `packages/mwg`
-under the `@datamoc` scope (the name is free), and the npm trusted-publisher entry for it so
-`publish-npm.yml` can stage it the way it stages `@datamoc/mw_games`.

@@ -496,6 +496,13 @@ real numbers and booleans for scalar values and `_("...")` marking translatable
 strings. It describes game data and commands while `mwg` remains responsible for
 execution, rendering, input, audio, and saves. MWL is a new language, not a WML
 compatibility layer.
+Optional scene and UI composition is available through `@datamoc/mw_games/mwl/presentation`
+(build-time compiler) and `@datamoc/mw_games/two-d/presentation` (Pixi runtime). Compile
+reusable widgets, responsive layouts, keyed lists, semantic palettes and context overrides
+against a TypeScript binding manifest. The game supplies actions, physics and procedural
+adapters. See [the presentation contract](REFERENCE.md#mwl-presentation) and
+`examples/mwl-presentation`; `npm run visual:smoke:presentation` verifies the compiled
+`file://` page, keyboard/pointer input, modal windows, cleanup and update cost.
 The Wesnoth port can nevertheless use its native `.cfg` files as build inputs:
 the port-owned WML front end parses them, the adapter converts the supported
 nodes to MWL, and the normal MWL compiler emits the runtime module.
@@ -591,6 +598,25 @@ moveto coordinates accept comma lists and inclusive ranges such as `1,3-5`.
 The generated data is plain TypeScript and works with the same local-file build
 pipeline as the rest of the framework. Wesnoth-specific MWL source belongs in
 the Wesnoth port, not in this framework package.
+
+## Powered by mwg
+
+Games built with mwg are welcome to carry the badge on their login screen:
+
+[![powered by mwg](webpage/assets/powered-by-mwg.svg)](https://datamoc.github.io/mwg/)
+
+Copy `webpage/assets/powered-by-mwg.svg` into your own project (a shipped game
+cannot fetch it from here; local-file pages only load their own assets) and link
+it to the framework site. In plain HTML that is:
+
+```html
+<a href="https://datamoc.github.io/mwg/">
+  <img src="./powered-by-mwg.svg" alt="powered by mwg" width="196" height="38">
+</a>
+```
+
+A canvas-drawn login screen loads the same file through the asset pipeline and
+opens the URL on click with `window.open('https://datamoc.github.io/mwg/', '_blank')`.
 
 ## Licence and provenance
 

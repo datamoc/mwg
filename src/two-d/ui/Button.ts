@@ -7,6 +7,14 @@ import type { Container2D, Texture2D } from '../render/Types2D.ts';
 
 export type ButtonState = 'idle' | 'hover' | 'pressed' | 'disabled';
 
+export interface ButtonColors {
+	text?: number;
+	disabledText?: number;
+	background?: number;
+	border?: number;
+	selection?: number;
+}
+
 export interface ButtonSkin {
 	texture: Texture2D;
 	border: NinePatchOptions['border'];
@@ -29,6 +37,8 @@ export interface ButtonOptions {
 	skin?: ButtonSkin;
 	/** Caption styling, also used when setText creates a caption later. */
 	label?: Omit<LabelOptions, 'text'>;
+	/** Instance palette overrides; omitted fields continue following the active theme. */
+	colors?: ButtonColors;
 	disabled?: boolean;
 	onClick?: () => void;
 	/** fires on pointerdown, before onClick - the hook a virtual d-pad button needs to feed `core.Input`'s `pressTouch` for hold-to-repeat movement, which a click-only callback cannot do */
@@ -78,6 +88,7 @@ export class Button extends Container {
 	private state: ButtonState = 'idle';
 	private disabled_: boolean;
 	private selected_ = false;
+	private colors: ButtonColors;
 
 	private readonly themeListener = () => this.draw();
 
@@ -87,6 +98,7 @@ export class Button extends Container {
 		this.width_ = options.width;
 		this.height_ = options.height;
 		this.disabled_ = options.disabled ?? false;
+		this.colors = { ...options.colors };
 
 		this.skin = options.skin;
 		this.labelOptions = options.label ?? {};
@@ -184,6 +196,12 @@ export class Button extends Container {
 		this.draw();
 	}
 
+	/** Replaces local palette overrides, for semantic tokens or component variants. */
+	setColors(colors: ButtonColors): void {
+		this.colors = { ...colors };
+		this.draw();
+	}
+
 	private setState(state: ButtonState): void {
 		if (this.disabled_ && state !== 'disabled') return;
 		this.state = state;
@@ -241,17 +259,26 @@ export class Button extends Container {
 
 		if (this.background instanceof NinePatch) {
 			this.background.resize(this.width_, this.height_);
-			this.background.tint = this.selected_ ? t.color.selection : (this.skin?.tints?.[this.state] ?? tint);
+			this.background.tint = this.selected_
+				? (this.colors.selection ?? t.color.selection)
+				: (this.colors.background ?? this.skin?.tints?.[this.state] ?? tint);
 		} else {
-			const fill = this.state === 'pressed' || this.selected_ ? t.color.selection : t.color.panelFill;
+			const fill =
+				this.state === 'pressed' || this.selected_
+					? (this.colors.selection ?? t.color.selection)
+					: (this.colors.background ?? t.color.panelFill);
 			this.background
 				.clear()
 				.roundRect(0, 0, this.width_, this.height_, 4)
 				.fill({ color: fill, alpha: this.state === 'disabled' ? 0.5 : 1 })
-				.stroke({ color: t.color.panelBorder, width: 1 });
+				.stroke({ color: this.colors.border ?? t.color.panelBorder, width: 1 });
 		}
 
-		this.labelText?.setColor(this.disabled_ ? t.color.textDim : (this.labelOptions.color ?? t.color.text));
+		this.labelText?.setColor(
+			this.disabled_
+				? (this.colors.disabledText ?? t.color.textDim)
+				: (this.colors.text ?? this.labelOptions.color ?? t.color.text),
+		);
 		if (this.icon) this.icon.alpha = this.disabled_ ? 0.4 : 1;
 		this.layoutContent();
 	}

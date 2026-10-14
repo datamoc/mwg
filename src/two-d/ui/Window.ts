@@ -6,10 +6,18 @@ import { Label } from './Label.ts';
 import { theme, themeChanged } from './theme.ts';
 import { screenReader } from './a11y.ts';
 
+export interface WindowColors {
+	background?: number;
+	border?: number;
+	title?: number;
+}
+
 export interface WindowOptions {
 	width: number;
 	height: number;
 	title?: string;
+	/** Local palette overrides; omitted fields keep following the active theme. */
+	colors?: WindowColors;
 
 	/** a modal window swallows input; anything below it stops responding */
 	modal?: boolean;
@@ -97,11 +105,13 @@ export class Window extends Container {
 
 	private readonly themeListener = () => this.restyle();
 	private isClosed = false;
+	private colors: WindowColors;
 
 	constructor(options: WindowOptions) {
 		super();
 
 		const t = theme();
+		this.colors = { ...options.colors };
 		this.modal = options.modal ?? true;
 		this.closable = options.closable ?? true;
 		this.dims = options.dims ?? this.modal;
@@ -126,14 +136,18 @@ export class Window extends Container {
 		this.addChild(this.background);
 
 		if (options.title !== undefined) {
-			this.titleLabel = new Label({ text: options.title, color: t.color.textHighlight, bold: true });
+			this.titleLabel = new Label({
+				text: options.title,
+				color: this.colors.title ?? t.color.textHighlight,
+				bold: true,
+			});
 			this.addChild(this.titleLabel);
 			//the canvas is opaque to assistive technology, so a windowed screen announces its title
 			screenReader.announce(options.title);
 		}
 
 		if (options.closeButton === true && this.closable) {
-			this.closeMark = new Label({ text: '✕', color: t.color.textHighlight, bold: true });
+			this.closeMark = new Label({ text: '✕', color: this.colors.title ?? t.color.textHighlight, bold: true });
 			this.closeMark.eventMode = 'static';
 			this.closeMark.cursor = 'pointer';
 			this.closeMark.on('pointertap', () => this.close());
@@ -147,8 +161,8 @@ export class Window extends Container {
 
 	/** reapplies the current theme to the frame and title, without changing size or content */
 	private restyle(): void {
-		this.titleLabel?.setColor(theme().color.textHighlight);
-		this.closeMark?.setColor(theme().color.textHighlight);
+		this.titleLabel?.setColor(this.colors.title ?? theme().color.textHighlight);
+		this.closeMark?.setColor(this.colors.title ?? theme().color.textHighlight);
 		this.resize(this.currentWidth, this.currentHeight);
 	}
 
@@ -161,12 +175,13 @@ export class Window extends Container {
 
 		if (this.background instanceof NinePatch) {
 			this.background.resize(width, height);
+			this.background.tint = this.colors.background ?? 0xffffff;
 		} else {
 			this.background
 				.clear()
 				.roundRect(0, 0, width, height, 4)
-				.fill({ color: t.color.panelFill })
-				.stroke({ color: t.color.panelBorder, width: 1 });
+				.fill({ color: this.colors.background ?? t.color.panelFill })
+				.stroke({ color: this.colors.border ?? t.color.panelBorder, width: 1 });
 		}
 
 		if (this.closeMark) {
@@ -199,6 +214,12 @@ export class Window extends Container {
 
 	setTitle(text: string): void {
 		this.titleLabel?.setText(text);
+	}
+
+	/** Replaces this window's palette without changing its contents or lifecycle. */
+	setColors(colors: WindowColors): void {
+		this.colors = { ...colors };
+		this.restyle();
 	}
 
 	/**

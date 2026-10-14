@@ -21,6 +21,7 @@ npm run assets           # generate example tiles and sounds
 npm run examples:build   # build every example page, not just the benchmarked ones
 npm run visual:smoke     # screenshot one built example from file:// and check it rendered
 npm run visual:smoke:ui  # build the interface example first, then smoke it
+npm run visual:smoke:presentation # compiled MWL layouts, keyboard/pointer, modal input, cleanup and update timing
 npm run package:smoke    # npm pack + install + open both published paths from file:// (run build first)
 npm run stats:write      # regenerate PROJECT_STATS and the website statistics page
 npm run stats:check      # verify the committed release statistics are reproducible

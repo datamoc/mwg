@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mwg",
-	"version": "0.37.0",
+	"version": "0.38.0",
 	"description": "The short name for @datamoc/mw_games: every entry point re-exports the same one there.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -14,9 +14,17 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@datamoc/mw_games": "0.37.0"
+		"@datamoc/mw_games": "0.38.0"
 	},
 	"exports": {
+		"./mwl/presentation": {
+			"types": "./mwl/presentation.d.ts",
+			"import": "./mwl/presentation.js"
+		},
+		"./two-d/presentation": {
+			"types": "./two-d/presentation.d.ts",
+			"import": "./two-d/presentation.js"
+		},
 		".": {
 			"types": "./index.d.ts",
 			"import": "./index.js"
@@ -156,6 +164,10 @@
 		"./tools/init": {
 			"types": "./tools/init.d.mts",
 			"import": "./tools/init.mjs"
+		},
+		"./tools/verify-scenarios": {
+			"types": "./tools/verify-scenarios.d.mts",
+			"import": "./tools/verify-scenarios.mjs"
 		},
 		"./tools/play-uci": {
 			"types": "./tools/play-uci.d.mts",

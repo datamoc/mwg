@@ -1,6 +1,6 @@
 {
 	"$schema": "https://typedoc.org/schema.json",
-	"entryPoints": ["../../src/index.ts"],
+	"entryPoints": ["../../src/index.ts", "../../src/mwl/presentation.ts", "../../src/two-d/presentation/index.ts"],
 	"tsconfig": "../../tsconfig.json",
 	"out": "../../webpage/documentation/api",
 	"name": "mwg API",

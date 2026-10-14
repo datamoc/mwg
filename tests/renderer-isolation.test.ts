@@ -123,6 +123,16 @@ const RENDERER_FREE = [
 	'headless',
 ];
 
+test('the MWL presentation compiler is renderer-free and its optional runtime stays off the root barrel', () => {
+	assert.deepEqual(reachableFrom('mwl/presentation.ts').filter(importsPixi), []);
+	assert.deepEqual(reachableFrom('mwl/presentation.ts').filter(importsBabylon), []);
+	assert.equal(
+		reachableFrom('index.ts').some((file) => file.replace(/\\/g, '/').includes('/two-d/presentation/')),
+		false,
+	);
+	assert.ok(reachableFrom('two-d/presentation/index.ts').some(importsPixi));
+});
+
 test('every module documented as renderer-free stays that way', () => {
 	for (const module of RENDERER_FREE) {
 		const offenders = reachableFrom(`${module}/index.ts`).filter(importsPixi);

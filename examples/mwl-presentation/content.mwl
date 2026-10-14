@@ -1,0 +1,57 @@
+[
+  { tag: 'theme_definition', id: 'bridge-ui', font_size: 16, padding: 10, children: [
+    { tag: 'theme_token', id: 'panel', value: 0x111827 },
+    { tag: 'theme_token', id: 'text', value: 0xffffff },
+    { tag: 'theme_token', id: 'accent', value: 0x99ccff },
+    { tag: 'theme_token', id: 'success', value: 0x88eeaa },
+    { tag: 'theme_token', id: 'warning', value: 0xffcc66 },
+    { tag: 'theme_token', id: 'danger', value: 0xff8888 },
+    { tag: 'theme_token', id: 'selection', value: 0x627ab0 },
+    { tag: 'theme_token', id: 'sky', value: 0x315570 },
+    { tag: 'theme_token', id: 'rock', value: 0x527655 },
+    { tag: 'theme_token', id: 'water', value: 0x2489ab },
+  ] },
+  { tag: 'presentation_context', id: 'alpine', theme: 'bridge-ui', children: [
+    { tag: 'theme_token', id: 'sky', value: 0x839eb3 },
+    { tag: 'theme_token', id: 'rock', value: 0xc5d5dd },
+    { tag: 'theme_token', id: 'water', value: 0x4b97bc },
+    { tag: 'theme_token', id: 'accent', value: 0xb5deff },
+    { tag: 'ui_override', target: 'component:controls/toolbar', gap: 12 },
+    { tag: 'ui_override', target: 'scene:bridge/decor', image: 'scenery/snow.svg' },
+  ] },
+  { tag: 'component_variant', id: 'tool', width: 140, height: 36, color_token: 'text', border_token: 'accent' },
+  { tag: 'ui_component', id: 'controls', children: [
+    { tag: 'ui_row', id: 'toolbar', wrap: true, gap: 8, children: [
+      { tag: 'ui_button', id: 'add', text: _('Add beam'), variant: 'tool', action: 'add', children: [
+        { tag: 'ui_state', state: 'focused', border_token: 'warning' },
+      ] },
+      { tag: 'ui_button', id: 'biome', text: _('Change biome'), variant: 'tool', action: 'biome' },
+      { tag: 'ui_button', id: 'reorder', text: _('Reorder list'), variant: 'tool', action: 'reorder' },
+      { tag: 'ui_button', id: 'open', text: _('Results'), variant: 'tool', action: 'open' },
+    ] },
+  ] },
+  { tag: 'scene_definition', id: 'bridge', theme: 'bridge-ui', children: [
+    { tag: 'scene_camera', id: 'camera', x: 320, y: 180, fit_width: 640, fit_height: 360 },
+    { tag: 'scene_layer', id: 'world', space: 'world', adapter: 'bridgeWorld' },
+    { tag: 'scene_layer', id: 'decor', space: 'world', image: 'scenery/trees.svg' },
+    { tag: 'ui_column', id: 'hud', anchor: 'bottom', padding: 12, gap: 8, background_token: 'panel', children: [
+      { tag: 'ui_label', id: 'caption', text_binding: 'caption', color_token: 'text' },
+      { tag: 'ui_bar', id: 'budget', width: 300, height: 12, value_binding: 'cost', max_binding: 'budget', color_token: 'success' },
+      { tag: 'ui_mount', id: 'controls', component: 'controls' },
+      { tag: 'ui_repeat', id: 'materials', items_binding: 'materials', key: 'id', gap: 8, children: [
+        { tag: 'ui_button', id: 'material', width: 140, height: 36, text_binding: 'item.text', selected_binding: 'item.selected', disabled_binding: 'item.disabled', action: 'choose', children: [
+          { tag: 'ui_state', state: 'focused', border_token: 'warning' },
+          { tag: 'ui_state', state: 'selected', background_token: 'selection' },
+        ] },
+      ] },
+    ] },
+    { tag: 'ui_window', id: 'results', width: 320, height: 210, title: _('Bridge results'), visible_binding: 'showWindow', close_action: 'close', children: [
+      { tag: 'ui_column', id: 'body', gap: 12, children: [
+        { tag: 'ui_label', id: 'message', text_binding: 'caption' },
+        { tag: 'ui_button', id: 'close', text: _('Continue editing'), action: 'close', width: 220, height: 40, children: [
+          { tag: 'ui_state', state: 'focused', border_token: 'warning' },
+        ] },
+      ] },
+    ] },
+  ] },
+]

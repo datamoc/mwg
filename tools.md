@@ -26,12 +26,42 @@ by double-clicking. Run from the repo root.
 | `webp-convert` | Converts one raster image buffer (PNG/JPEG) to WebP, lossless by default; the standalone half of `compile-resources`'s `toWebp` option (item 350) | `node tools/webp-convert.mjs <file.png\|file.jpg> [--lossy[=quality]]` |
 | `emit-page` | Finishes a vite build so it opens from `file://` with no server: compiles the assets, rewrites the entry to a classic deferred script with the asset scripts before it, then optionally precompresses and writes a single-file variant (item 381) | `emitPage(options)` from `@datamoc/mw_games/tools/emit-page`, the `mwg-emit <folder> [--dist=] [--assets=]` command, or called by each `example:*:build` script here |
 | `init` | `mwg-init <folder>` writes a starter project (vite config using `mwgPage`, one scene, tsconfig, scripts) that builds to a double-clickable page | `npx mwg-init my-game` |
+| `verify-scenarios` | `mwg-scenarios <built index.html>` runs every game-owned scenario in one Chrome page, using registered scene controls for bot turns, assertions and cleanup | `npx mwg-scenarios dist/index.html --turns 3` |
+
 | `vite` | The Vite plugin a game uses instead of either: `mwgPage(options)` sets the `file://` build configuration (IIFE `game.js`, `base: './'`, `assets/` as the public folder) and runs `emitPage` when `vite build` finishes (item 381) | `plugins: [mwgPage()]` from `@datamoc/mw_games/tools/vite`; `mwgPage({ singleFile: { compress: true } })` also writes one self-contained `standalone.html` (about 250 KB for Pixi + mwg + a small game) |
 | `browser-smoke` | Opens a built page from `file://` in headless Chrome and fails unless it rendered: no page error, an mwg game ready on a WebGL/WebGPU canvas, non-flat pixels, then a screenshot (item 383). `find-chrome` beside it picks the system Chrome, then the newest Chromium Playwright installed, then PATH; `CHROME_PATH` overrides | `vite build && npx mwg-smoke dist` in a game's CI (needs the optional peer `playwright-core`), or `smokePage(options)` from `@datamoc/mw_games/tools/browser-smoke` |
 | `csp` | The Content-Security-Policy `emitPage` writes into every page by default (item 374): scripts only from the page's own folder plus the hashed inline ones, images/fonts/media only `data:`/`blob:`, network (`connect-src`) only to declared origins, `'unsafe-eval'` kept because Pixi 8 needs it | automatic; `csp: { connect: ['https://api.example'] }` or `csp: false` on `emitPage`/`mwgPage`, `--connect=`/`--no-csp` on `mwg-emit`, or `withContentSecurityPolicy(html)` from `@datamoc/mw_games/tools/csp` |
 | `classic-html` | Rewrites a bundler build's `<script type="module">` entry tag to a classic deferred script, the shipped, reusable half of what `emit-page` does for this repo's own examples (item 306) | `import { toClassicScript } from '@datamoc/mw_games/tools/classic-html'` in a game's own build script, or `node tools/classic-html.mjs dist/index.html` here |
 | `compress-dist` | Writes `.gz`/`.br` siblings for large build outputs, into the folder it is handed, plus `.xz` where smaller behind the opt-in `xz` option (needs the system `xz` binary). Files compress in parallel over async `zlib`, `MWG_COMPRESS_JOBS` names the lane count, rows keep walk order | used by the packaging flow |
 | `single-file` | Inlines every `<script src>` an `emit-page` output loads into one additional standalone HTML file, no sibling `.js` at all; `compress: true` compresses each script first (gzip by default, or `algorithm: 'brotli'`), unpacked at load through the browser's own `DecompressionStream` behind a splash screen. Brotli needs `DecompressionStream('br')`, unsupported in a directly-tested current Chrome (153) as of this writing - gzip is the broadly-supported default, brotli an advanced option that degrades to a clear, catchable error rather than hanging (items 349, 350) | `node tools/single-file.mjs <dist folder> [--compress[=level]] [--brotli[=quality]] [--no-splash] [--output name.html]`, `emit-page --single-file [--single-file-compress[=level]] [--single-file-brotli[=quality]]`, or `buildSingleFile` from `@datamoc/mw_games/tools/single-file`. `output` is a file name written inside `dist`, not a path: one with a separator is refused |
+
+### Scenario verification contract
+
+Expose `window.__MWG_SCENARIOS__` in a verification build with `controls` (a
+`createSceneControls()` registry from `@datamoc/mw_games/testing`) and `scenarios`:
+
+```js
+window.__MWG_SCENARIOS__ = {
+  controls,
+  scenarios: [
+    { id: 'tutorial', enter: 'enterTutorial', turn: ['playHumanBot', 'playEnemyBots', 'advanceDialogue'],
+      verify: 'checkTutorial', leave: 'destroyScenario' },
+  ],
+};
+```
+
+Each name is a registered step. The game implements scenario entry, bots for all sides,
+dialogue advancement and checks for map, units, outcomes or campaign references. A check
+throws on failure; an optional `leave` step handles cleanup even after a failed entry or
+turn. The tool validates the whole selected plan before entering any scenario, runs each
+turn's steps in order, then checks it. Empty plans and filters matching nothing fail.
+Exceptions and console errors fail the report. A timed-out step aborts the run and closes
+the browser because its promise may still be changing scene state.
+
+Run `mwg-scenarios dist/index.html --turns 3 --timeout-ms 120000 --only tutorial`.
+The page opens from `file://` once, and the JSON report names every attempted scenario,
+completed turn count and failure. Install the optional `playwright-core` development peer
+to use this tool. `CHROME_PATH` selects Chrome; `MWG_VISUAL_CHROME_ARGS` supplies runner flags.
 
 ## Packaging as a native app
 

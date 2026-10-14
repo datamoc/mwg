@@ -143,6 +143,11 @@ jobs:
           MWG_VISUAL_CHROME_ARGS: '--use-gl=angle --use-angle=swiftshader --disable-dev-shm-usage'
         run: npm run motion:smoke
 
+      - name: Verify compiled MWL presentation
+        env:
+          MWG_VISUAL_CHROME_ARGS: '--use-gl=angle --use-angle=swiftshader --disable-dev-shm-usage'
+        run: npm run visual:smoke:presentation
+
       # kept even when a smoke fails, so a reviewer can see what each page actually drew
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
@@ -151,6 +156,7 @@ jobs:
           path: |
             benchmark-results/visual-smoke/
             benchmark-results/motion-smoke/
+            benchmark-results/mwl-presentation/
           if-no-files-found: warn
 
   # The central promise, checked rather than assumed: `npm pack`, install the tarball in a

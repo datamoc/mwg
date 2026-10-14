@@ -121,6 +121,8 @@ export type { SettingsCustomRow, SettingsScreenOptions } from './SettingsScreen.
 
 export { Button } from './Button.ts';
 export type { ButtonOptions, ButtonSkin, ButtonState } from './Button.ts';
+export type { ButtonColors } from './Button.ts';
+export type { WindowColors } from './Window.ts';
 export { Meter } from './Meter.ts';
 export type { MeterOptions } from './Meter.ts';
 
