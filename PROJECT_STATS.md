@@ -10,7 +10,7 @@ Generated for **mwg 0.40.0** on 2026-10-15.
 | Examples | 27 runnable examples |
 | Roadmap | 411/426 items complete, 15 open |
 | API | 357 declaration files |
-| Bundle | 1262.3 kB raw, 377.6 kB gzip |
+| Bundle | 1262.2 kB raw, 377.6 kB gzip |
 | Published dist | 4585.3 kB excluding source maps |
 | Test-to-source ratio | 0.7x by line count |
 
