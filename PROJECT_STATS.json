@@ -112,12 +112,12 @@
 	},
 	"tests": {
 		"files": 330,
-		"lines": 45175,
-		"cases": 3019
+		"lines": 45199,
+		"cases": 3021
 	},
 	"tools": {
 		"files": 60,
-		"lines": 12310
+		"lines": 12340
 	},
 	"examples": {
 		"count": 27,

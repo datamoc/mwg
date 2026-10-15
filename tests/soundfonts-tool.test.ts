@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { mergeSoundFonts, parseSoundFont } from '../src/audio/SoundFont.ts';
 import {
 	creditsFor,
+	ffmpegDecode,
 	fetchSoundFont,
 	findFont,
 	parseProgramList,
@@ -231,4 +232,27 @@ test('the default bank ships with the package, with its provenance and the catal
 	assert.equal(font.presetCount, bundled.programs);
 	assert.ok(font.hasPreset(0, 0) && font.hasPreset(128, 0), 'piano and the drum kit');
 	assert.match(readFileSync(new URL('data/microgm-opt.PROVENANCE.md', root), 'utf8'), /WTFPL/);
+});
+
+test('a font whose sample offsets point outside the sample data is refused, not copied from beyond it', () => {
+	const font = buildSf3(0, 5, Buffer.from([1, 0]));
+	const header = font.indexOf('shdr') + 8;
+	const lie = (end: number, type: number): Buffer => {
+		const copy = Buffer.from(font);
+		copy.writeUInt32LE(end, header + 24);
+		copy.writeUInt16LE(type, header + 44);
+		return copy;
+	};
+	assert.throws(() => sf3ToSf2(lie(5000, 0x11), fakeDecode), /outside the sample data/);
+	assert.throws(() => sf3ToSf2(lie(5000, 1), fakeDecode), /outside the sample data/);
+	const backwards = Buffer.from(lie(2, 0x11));
+	backwards.writeUInt32LE(2, header + 20);
+	backwards.writeUInt32LE(1, header + 24);
+	assert.throws(() => sf3ToSf2(backwards, fakeDecode), /outside the sample data/);
+});
+
+test('ffmpeg is never handed bytes that are not Ogg: a probed playlist could name local files', () => {
+	const playlist = Buffer.from('#EXTM3U\nfile:///etc/passwd\n');
+	assert.throws(() => ffmpegDecode(playlist), /not Ogg Vorbis data/);
+	assert.throws(() => ffmpegDecode(new Uint8Array(0)), /not Ogg Vorbis data/);
 });

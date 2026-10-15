@@ -57,12 +57,36 @@ export function parseProgramList(text) {
 		});
 }
 
-/** mono 16-bit PCM from Ogg Vorbis bytes, through `ffmpeg` */
+/**
+ * mono 16-bit PCM from Ogg Vorbis bytes, through `ffmpeg`. The bytes come from a font file that
+ * may have been downloaded, so they are not trusted: anything that does not start with the Ogg
+ * magic is refused before a process is spawned, the demuxer is forced to Ogg rather than probed
+ * (a probed "sample" could be read as a playlist naming local files), and only the `pipe` protocol
+ * is allowed.
+ */
 export function ffmpegDecode(ogg) {
-	const run = spawnSync('ffmpeg', ['-v', 'error', '-i', 'pipe:0', '-f', 's16le', '-ac', '1', 'pipe:1'], {
-		input: ogg,
-		maxBuffer: 256 * 1024 * 1024,
-	});
+	if (Buffer.from(ogg.subarray(0, 4)).toString('latin1') !== 'OggS') {
+		throw new Error('a compressed sample is not Ogg Vorbis data: the font is damaged or not a SoundFont 3');
+	}
+	const run = spawnSync(
+		'ffmpeg',
+		[
+			'-v',
+			'error',
+			'-protocol_whitelist',
+			'pipe',
+			'-f',
+			'ogg',
+			'-i',
+			'pipe:0',
+			'-f',
+			's16le',
+			'-ac',
+			'1',
+			'pipe:1',
+		],
+		{ input: ogg, maxBuffer: 256 * 1024 * 1024 },
+	);
 	if (run.error?.code === 'ENOENT') {
 		throw new Error('ffmpeg was not found on PATH: install it to convert SoundFont 3 (developer machines only)');
 	}
@@ -140,13 +164,19 @@ export function sf3ToSf2(bytes, decode = ffmpegDecode) {
 			continue;
 		}
 		const compressed = Boolean(type & 0x10);
+		//offsets come from the file: a compressed sample is a byte range of the chunk, a plain one a frame range
+		const limit = compressed ? smpl.length : smpl.length >> 1;
+		if (start > end || end > limit) {
+			throw new Error(`sample ${index} points outside the sample data: the SoundFont is damaged`);
+		}
 		let pcm;
 		if (compressed) {
 			const key = `${start}:${end}`;
 			if (!decoded.has(key)) decoded.set(key, decode(smpl.subarray(start, end)));
 			pcm = decoded.get(key);
 		} else {
-			pcm = new Int16Array(smpl.buffer.slice(smpl.byteOffset + start * 2, smpl.byteOffset + end * 2));
+			//a copy of just this sample's bytes, never a slice of the whole underlying buffer
+			pcm = new Int16Array(Uint8Array.prototype.slice.call(smpl, start * 2, end * 2).buffer);
 		}
 		const relativeStart = compressed ? loopStart : loopStart - start;
 		const relativeEnd = compressed ? loopEnd : loopEnd - start;

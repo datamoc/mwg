@@ -30,6 +30,10 @@ instruments the game plays.
 
 - `parseSoundFont` (and so `subsetSoundFont` and the asset compiler) refuses a SoundFont 3 by
   name instead of reading its Ogg bytes as PCM and playing noise.
+- `mwg-soundfonts` treats the font as untrusted input: a sample whose offsets point outside the
+  sample data is refused instead of copied from beyond it, and `ffmpeg` only ever receives bytes
+  that start with the Ogg magic, with the demuxer forced to Ogg and only the `pipe` protocol
+  allowed, so a crafted "sample" cannot be probed as a playlist that names local files.
 
 ## [0.40.1] - 2026-10-15
 
