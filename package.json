@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.39.1",
+	"version": "0.40.0",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -82,6 +82,8 @@
 		"tools/sbom.mjs",
 		"tools/sbom.d.mts",
 		"sbom.cdx.json",
+		"data/microgm-opt.sf2",
+		"data/microgm-opt.PROVENANCE.md",
 		"api-surface.json",
 		"tools/single-file.mjs",
 		"tools/single-file.d.mts",

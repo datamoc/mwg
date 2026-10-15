@@ -7,6 +7,26 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.40.0] - 2026-10-15
+
+A game that plays sampled MIDI no longer ships a whole SoundFont: the asset
+compiler subsets the bank to the instruments its tracks actually use, and the
+package now carries a small WTFPL General MIDI bank to subset from.
+
+### Added
+
+- Build-time SoundFont subsetting: `compileResources`, `emitPage` and `mwgPage` now
+  embed `.mid`/`.midi` and `.sf2` assets, and every embedded SoundFont is subset to
+  the programs the embedded MIDI files actually use (`collectSoundFontUsage` over
+  the shipped tracks, drums as bank 128). `soundFont: false` embeds a font whole,
+  `soundFontUsage` (or `--soundfont-usage=bank:program,...`) names the programs
+  explicitly, and a font with no shipped MIDI embeds whole. An unreadable MIDI or
+  SoundFont fails the build by name instead of shipping silently. The result and
+  both CLIs report each font's kept programs and byte saving: the reference bank
+  `data/microgm-opt.sf2` (2.6 MB, 137 presets, WTFPL, shipped in the npm package
+  for a game to copy into its assets) embeds as 25 KB for a piano-only track.
+
+
 ## [0.39.1] - 2026-10-15
 
 Fixes the 0.39.0 publish gate on Linux: the WebP skip-shrink test asserted one

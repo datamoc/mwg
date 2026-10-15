@@ -919,7 +919,14 @@ reach the compiled asset map without it.
   request across MIDI files, drums as bank 128, for the compile step to keep.
 - `subsetSoundFont` - writes a smaller valid SoundFont 2 file carrying only the used
   programs, zones and samples copied verbatim and indexes remapped, so a game ships
-  megabytes instead of tens of megabytes with identical voices.
+  megabytes instead of tens of megabytes with identical voices. The build does this
+  on its own: `compileResources` (and so `emitPage` and `mwgPage`) embeds `.mid` and
+  `.sf2` assets, and subsets every embedded SoundFont to the programs the embedded
+  MIDI files use. `soundFont: false` embeds the font whole, `soundFontUsage` names
+  the programs explicitly, and with no shipped MIDI the font embeds whole because
+  the usage is unknowable. The reference bank in `data/microgm-opt.sf2` (2.6 MB,
+  WTFPL, shipped in the npm package for a game to copy into its assets) drops to
+  tens of kilobytes per game this way.
 - `Channel`/`AudioBus` - buffered WebAudio music: a `Channel` plays one looping track with
   volume, pitch, pan, a loop region and a seekable playhead, and an `AudioBus` wires two of
   them into independent BGM/BGS loops, ME jingles that suspend and resume the BGM,

@@ -1,4 +1,4 @@
-import type { CompileResourcesGroup } from './compile-resources.mjs';
+import type { CompileResourcesGroup, SoundFontEmbed, SoundFontUsage } from './compile-resources.mjs';
 import type { CompressRow } from './compress-dist.mjs';
 import type { SingleFileOptions, SingleFileResult } from './single-file.mjs';
 
@@ -20,6 +20,10 @@ export interface EmitPageOptions {
 	toWebp?: boolean;
 	webpLossless?: boolean;
 	webpQuality?: number;
+	/** Subset an embedded `.sf2` to the programs the embedded `.mid`/`.midi` files use. Default true; `false` embeds every SoundFont whole. */
+	soundFont?: boolean;
+	/** Explicit `{ bank, program }` list to subset a SoundFont to, overriding the MIDI-derived list. */
+	soundFontUsage?: readonly SoundFontUsage[];
 	/** the page's Content-Security-Policy: on by default, `false` to leave it out */
 	csp?: boolean | CspOptions;
 }
@@ -38,6 +42,8 @@ export interface EmitPageResult {
 	rawBytes: number;
 	embeddedBytes: number;
 	webpConverted: number;
+	/** one entry per embedded `.sf2`: the programs kept (null when embedded whole) and the byte saving */
+	soundFonts: SoundFontEmbed[];
 	compressed: CompressRow[] | null;
 	single: SingleFileResult | null;
 }

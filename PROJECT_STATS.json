@@ -1,7 +1,7 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.39.1",
+	"version": "0.40.0",
 	"releaseDate": "2026-10-15",
 	"source": {
 		"files": 357,
@@ -112,12 +112,12 @@
 	},
 	"tests": {
 		"files": 329,
-		"lines": 44750,
-		"cases": 3002
+		"lines": 44904,
+		"cases": 3007
 	},
 	"tools": {
 		"files": 59,
-		"lines": 11785
+		"lines": 11917
 	},
 	"examples": {
 		"count": 27,

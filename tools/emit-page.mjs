@@ -3,7 +3,7 @@ import { readFile, writeFile, rm, stat } from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
 import { join, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compileResources } from './compile-resources.mjs';
+import { compileResources, soundFontUsageFromFlag } from './compile-resources.mjs';
 import { compressDist } from './compress-dist.mjs';
 import { toClassicScript } from './classic-html.mjs';
 import { buildSingleFile } from './single-file.mjs';
@@ -30,6 +30,7 @@ import { withContentSecurityPolicy } from './csp.mjs';
  *                 [--no-compress] [--xz]
  *                 [--single-file] [--single-file-compress[=level]]
  *                 [--single-file-brotli[=quality]] [--to-webp] [--webp-lossy[=quality]]
+ *                 [--no-soundfont-subset] [--soundfont-usage=bank:program,...]
  *
  * `--dist` defaults to `<project folder>/dist` and `--assets` to `<project folder>/assets`; with
  * no assets folder at all, the page is rewritten and nothing is compiled.
@@ -73,6 +74,8 @@ export async function emitPage({
 	toWebp = false,
 	webpLossless = true,
 	webpQuality = 90,
+	soundFont = true,
+	soundFontUsage,
 	csp = true,
 }) {
 	if (!dist) throw new Error('emitPage needs the dist folder of a vite build');
@@ -86,8 +89,10 @@ export async function emitPage({
 				toWebp,
 				webpLossless,
 				webpQuality,
+				soundFont,
+				soundFontUsage,
 			})
-		: { groups: [], rawBytes: 0, embeddedBytes: 0, webpConverted: 0 };
+		: { groups: [], rawBytes: 0, embeddedBytes: 0, webpConverted: 0, soundFonts: [] };
 
 	const html = await readFile(join(dist, 'index.html'), 'utf8');
 	const classic = toClassicScript(html);
@@ -142,6 +147,10 @@ async function main(argv) {
 		level: levelFlag?.includes('=') ? Number(levelFlag.split('=')[1]) : undefined,
 	};
 
+	const soundFontUsage = soundFontUsageFromFlag(
+		argv.find((a) => a.startsWith('--soundfont-usage='))?.slice('--soundfont-usage='.length),
+	);
+
 	const result = await emitPage({
 		dist,
 		assets: hasAssets ? assetsDir : undefined,
@@ -153,6 +162,8 @@ async function main(argv) {
 		toWebp: argv.includes('--to-webp'),
 		webpLossless: !webpLossyFlag,
 		webpQuality: webpLossyFlag?.includes('=') ? Number(webpLossyFlag.split('=')[1]) : 90,
+		soundFont: !argv.includes('--no-soundfont-subset'),
+		soundFontUsage,
 		csp: argv.includes('--no-csp')
 			? false
 			: { connect: argv.filter((a) => a.startsWith('--connect=')).map((a) => a.slice('--connect='.length)) },
@@ -166,6 +177,13 @@ async function main(argv) {
 		console.log(
 			`  ${result.webpConverted} image(s) converted to WebP (${webpLossyFlag ? 'lossy' : 'lossless'}), ` +
 				`${kb(result.rawBytes)} -> ${kb(result.embeddedBytes)} embedded`,
+		);
+	}
+	for (const font of result.soundFonts ?? []) {
+		console.log(
+			font.programs === null
+				? `  ${font.key}: SoundFont embedded whole (${kb(font.rawBytes)}), no shipped MIDI to subset against`
+				: `  ${font.key}: SoundFont subset to ${font.programs} program(s), ${kb(font.rawBytes)} -> ${kb(font.embeddedBytes)}`,
 		);
 	}
 	console.log('  open index.html directly - no server needed');

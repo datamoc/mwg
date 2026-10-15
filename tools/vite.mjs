@@ -14,6 +14,8 @@ import { buildArtifactSbom, serialize, shippedFiles } from './sbom.mjs';
  * build. `assetFiles: ['characters/hero.svg', 'music/theme.ogg']` embeds only those paths;
  * omit it for all assets, or pass [] for none. An unknown entry fails by name. Filtering
  * affects the build only, so the dev server still serves the asset folder normally.
+ * An embedded `.sf2` is subset at build time to the programs the embedded `.mid` files
+ * use (`soundFont: false` embeds it whole, `soundFontUsage` names the programs instead).
  * At the end of the build it runs `emitPage` over the output folder with the same
  * options. A setting the game's own config gives explicitly still wins, since vite merges a
  * plugin's `config` result under the user's.

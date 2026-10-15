@@ -38,7 +38,55 @@ export const DEFAULT_MIME = {
 	'.woff2': 'font/woff2',
 	'.json': 'application/json',
 	'.txt': 'text/plain',
+	'.mid': 'audio/midi',
+	'.midi': 'audio/midi',
+	'.sf2': 'application/octet-stream',
 };
+
+const isSoundFontKey = (key) => key.toLowerCase().endsWith('.sf2');
+const isMidiKey = (key) => /\.(mid|midi)$/i.test(key);
+
+/**
+ * The SoundFont/MIDI implementation lives in the library, not in this tool: in this
+ * repository it is the TypeScript source, in an installed package it is the built
+ * `dist/` the source compiles to. Only called when a build actually embeds a
+ * SoundFont it can subset, so a game without one never pays for the import.
+ */
+async function loadSoundFontTools() {
+	try {
+		const [soundFont, midi] = await Promise.all([
+			import('../src/audio/SoundFont.ts'),
+			import('../src/audio/Midi.ts'),
+		]);
+		return { ...soundFont, ...midi };
+	} catch {
+		return import('../dist/audio/index.js');
+	}
+}
+
+function checkedSoundFontUsage(soundFontUsage) {
+	if (soundFontUsage === undefined) return undefined;
+	if (!Array.isArray(soundFontUsage)) throw new Error('soundFontUsage must be an array of { bank, program }');
+	return soundFontUsage.map((entry, index) => {
+		const { bank, program } = entry ?? {};
+		if (!Number.isInteger(bank) || bank < 0 || !Number.isInteger(program) || program < 0 || program > 127) {
+			throw new Error(`soundFontUsage[${index}] needs an integer bank >= 0 and a program between 0 and 127`);
+		}
+		return { bank, program };
+	});
+}
+
+/** parses a `--soundfont-usage=bank:program,...` CLI value; undefined when the flag is absent */
+export function soundFontUsageFromFlag(value) {
+	if (value === undefined) return undefined;
+	return value
+		.split(',')
+		.filter(Boolean)
+		.map((pair) => {
+			const [bank, program] = pair.split(':').map(Number);
+			return { bank, program };
+		});
+}
 
 export async function* walk(dir) {
 	let entries;
@@ -72,6 +120,10 @@ export async function* walk(dir) {
  *   pixel-art tileset's exact colours survive; set false only with `webpQuality` to opt into
  *   lossy re-encoding for photographic source art)
  * @param options.webpQuality 0-100, used only when `webpLossless` is false (default 90)
+ * @param options.soundFont subset an embedded `.sf2` to the programs the embedded
+ *   `.mid`/`.midi` files use (default true); `false` embeds every SoundFont whole
+ * @param options.soundFontUsage explicit `{ bank, program }` list to subset to, for a
+ *   game that voices notes no shipped MIDI file requests; overrides the MIDI-derived list
  * @returns the group names, in the order the page should load them
  *
  * An `assets/credits.json` (an array, or `{ "credits": [...] }`, of `{ name, license, author?, url? }`)
@@ -88,6 +140,8 @@ export async function compileResources({
 	toWebp: convertToWebp = false,
 	webpLossless = true,
 	webpQuality = 90,
+	soundFont = true,
+	soundFontUsage,
 } = {}) {
 	if (!from || !to) throw new Error('compileResources needs both `from` and `to`');
 
@@ -109,6 +163,38 @@ export async function compileResources({
 				throw new Error(`unsupported asset file ${key}`);
 		}
 	}
+
+	// A shipped SoundFont carries only the programs the game's shipped MIDI files
+	// request: the full bank - even a small one - is mostly
+	// instruments no track plays. Usage is resolved before any output is replaced,
+	// so an unreadable MIDI or SoundFont fails the build with the old output intact.
+	// With no shipped MIDI and no explicit `soundFontUsage` the usage is unknowable
+	// (a game may voice notes it generates), so the font embeds whole.
+	const isSelected = (file) => !selected || selected.has(keyOf(file));
+	const explicitUsage = checkedSoundFontUsage(soundFontUsage);
+	const embedsSoundFont =
+		soundFont !== false && files.some((file) => isSelected(file) && isSoundFontKey(keyOf(file)));
+	let soundFontTools = null;
+	let usage = explicitUsage;
+	if (embedsSoundFont && usage === undefined) {
+		const midiFiles = files.filter((file) => isSelected(file) && isMidiKey(keyOf(file)));
+		if (midiFiles.length > 0) {
+			soundFontTools = await loadSoundFontTools();
+			const parsed = [];
+			for (const file of midiFiles) {
+				try {
+					parsed.push(soundFontTools.parseMidi(await readFile(file)));
+				} catch (error) {
+					throw new Error(
+						`cannot read MIDI asset ${keyOf(file)} to subset a SoundFont: ${error.message ?? error}`,
+					);
+				}
+			}
+			usage = soundFontTools.collectSoundFontUsage(parsed);
+		}
+	}
+	if (embedsSoundFont && usage !== undefined && !soundFontTools) soundFontTools = await loadSoundFontTools();
+	const soundFonts = [];
 
 	await rm(to, { recursive: true, force: true });
 	await mkdir(to, { recursive: true });
@@ -153,6 +239,19 @@ export async function compileResources({
 			}
 		}
 
+		if (isSoundFontKey(key)) {
+			if (usage !== undefined && soundFontTools) {
+				try {
+					bytes = Buffer.from(soundFontTools.subsetSoundFont(data, usage));
+				} catch (error) {
+					throw new Error(`cannot subset SoundFont asset ${key}: ${error.message ?? error}`);
+				}
+				soundFonts.push({ key, programs: usage.length, rawBytes: data.length, embeddedBytes: bytes.length });
+			} else {
+				soundFonts.push({ key, programs: null, rawBytes: data.length, embeddedBytes: data.length });
+			}
+		}
+
 		const name = group(key);
 		if (!groups.has(name)) groups.set(name, {});
 		groups.get(name)[key] = `data:${mimeType};base64,${bytes.toString('base64')}`;
@@ -173,7 +272,7 @@ export async function compileResources({
 
 	if (credits) await writeFile(join(to, 'CREDITS.txt'), credits, 'utf8');
 
-	return { groups: written, rawBytes, embeddedBytes, webpConverted, skipped, credits };
+	return { groups: written, rawBytes, embeddedBytes, webpConverted, skipped, credits, soundFonts };
 }
 
 /** the plain-text credits for a manifest, one block per entry; throws on an entry that cannot be attributed */
@@ -202,7 +301,7 @@ async function runCli() {
 	const [from, to] = args.filter((a) => !a.startsWith('--'));
 	if (!from || !to) {
 		console.error(
-			'usage: node compile-resources.mjs <asset folder> <output folder> [--to-webp] [--webp-lossy[=quality]]',
+			'usage: node compile-resources.mjs <asset folder> <output folder> [--to-webp] [--webp-lossy[=quality]] [--no-soundfont-subset] [--soundfont-usage=bank:program,...]',
 		);
 		process.exit(1);
 	}
@@ -211,7 +310,11 @@ async function runCli() {
 	const webpLossless = !lossyFlag;
 	const webpQuality = lossyFlag && lossyFlag.includes('=') ? Number(lossyFlag.split('=')[1]) : 90;
 
-	const { groups, rawBytes, embeddedBytes, webpConverted, skipped } = await compileResources({
+	const soundFontUsage = soundFontUsageFromFlag(
+		args.find((a) => a.startsWith('--soundfont-usage='))?.slice('--soundfont-usage='.length),
+	);
+
+	const { groups, rawBytes, embeddedBytes, webpConverted, skipped, soundFonts } = await compileResources({
 		from,
 		to,
 		//a flat folder has no subdirectories to group by, so everything lands in one file
@@ -219,6 +322,8 @@ async function runCli() {
 		toWebp,
 		webpLossless,
 		webpQuality,
+		soundFont: !args.includes('--no-soundfont-subset'),
+		soundFontUsage,
 	});
 
 	const kb = (n) => (n / 1024).toFixed(1).padStart(8) + ' KB';
@@ -226,6 +331,13 @@ async function runCli() {
 		console.log(`  ${join(relative(process.cwd(), to), name + '.js').padEnd(40)}${kb(size)}  (${count} files)`);
 	}
 	console.log(`  ${groups.length} script(s), ${kb(rawBytes)} of assets` + (skipped ? `, ${skipped} skipped` : ''));
+	for (const font of soundFonts) {
+		console.log(
+			font.programs === null
+				? `  ${font.key}: SoundFont embedded whole (${kb(font.rawBytes)}), no shipped MIDI to subset against`
+				: `  ${font.key}: SoundFont subset to ${font.programs} program(s), ${kb(font.rawBytes)} -> ${kb(font.embeddedBytes)}`,
+		);
+	}
 	if (toWebp) {
 		console.log(
 			`  ${webpConverted} image(s) converted to WebP (${webpLossless ? 'lossless' : `lossy, quality ${webpQuality}`}), ` +
