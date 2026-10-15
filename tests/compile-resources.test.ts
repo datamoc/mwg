@@ -82,19 +82,32 @@ test('compileResources with toWebp: true embeds a convertible image as WebP unde
 	});
 });
 
-test('compileResources with toWebp: true keeps the original bytes when WebP would not be smaller', async () => {
+test('compileResources with toWebp: true embeds whichever encoding is smaller, byte-exact', async () => {
 	await withDirs(async (from, to) => {
-		// tiny random noise: WebP's container overhead reliably outweighs its savings here
+		// tiny random noise sits within tens of bytes of the break-even point, and which
+		// side of it a lossless WebP lands on differs per encoder build (it converted on one
+		// platform's sharp and skipped on another's), so the test asserts the actual guarantee
+		// instead of the local encoder's answer: never embed the bigger file, and whichever
+		// encoding wins must round-trip to the original pixels.
 		const png = await noisyPng(4, 4);
 		await writeFile(join(from, 'noise.png'), png);
 
 		const result = await compileResources({ from, to, groupBy: () => 'assets', toWebp: true });
-		assert.equal(result.webpConverted, 0, 'a conversion that would not shrink the asset must be skipped');
 
 		const js = await readFile(join(to, 'assets.js'), 'utf8');
 		const map = extractAssetMap(js);
-		assert.ok(map['noise.png'].startsWith('data:image/png;base64,'));
-		assert.equal(Buffer.from(map['noise.png'].split(',')[1], 'base64').toString('base64'), png.toString('base64'));
+		const embeddedBytes = Buffer.from(map['noise.png'].split(',')[1], 'base64');
+		assert.ok(embeddedBytes.length <= png.length, 'the embedded encoding must never be the bigger one');
+		if (result.webpConverted === 0) {
+			assert.ok(map['noise.png'].startsWith('data:image/png;base64,'));
+			assert.equal(embeddedBytes.toString('base64'), png.toString('base64'));
+		} else {
+			assert.equal(result.webpConverted, 1);
+			assert.ok(map['noise.png'].startsWith('data:image/webp;base64,'));
+			const decodedOriginal = await sharp(png).ensureAlpha().raw().toBuffer();
+			const decodedEmbedded = await sharp(embeddedBytes).ensureAlpha().raw().toBuffer();
+			assert.deepEqual(decodedEmbedded, decodedOriginal);
+		}
 	});
 });
 
