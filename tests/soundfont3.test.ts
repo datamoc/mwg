@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { webAudioSampleDecoder } from '../src/audio/SampleDecoder.ts';
+import { MAX_SAMPLE_FRAMES, webAudioSampleDecoder } from '../src/audio/SampleDecoder.ts';
 import {
 	decodeSoundFont,
 	loadSoundFont,
@@ -158,5 +158,45 @@ test('without WebAudio the default decoder says so instead of failing on a missi
 	await assert.rejects(
 		async () => webAudioSampleDecoder()(new Uint8Array([1]), 22050),
 		/no OfflineAudioContext here/,
+	);
+});
+
+test('a sample header cannot make the decoder allocate without bound', async () => {
+	const font = buildSf3(0, 5, Buffer.from([1, 0]));
+	const header = font.indexOf('shdr') + 8;
+	const withRate = (rate: number): Buffer => {
+		const copy = Buffer.from(font);
+		copy.writeUInt32LE(rate, header + 36);
+		return copy;
+	};
+	for (const rate of [0, 100, 4_000_000_000]) {
+		await assert.rejects(() => decodeSoundFont(withRate(rate), () => assert.fail('never reached')), /Hz/);
+	}
+	//a few Ogg bytes that decode to a very long sound
+	await assert.rejects(
+		() => decodeSoundFont(font, () => new Int16Array(MAX_SAMPLE_FRAMES + 1)),
+		/larger than a SoundFont may hold/,
+	);
+	assert.equal((await decodeSoundFont(font, () => new Int16Array(MAX_SAMPLE_FRAMES))).byteLength > 0, true);
+});
+
+test('the WebAudio decoder refuses a rate no SoundFont states and a decoded sound with no bound', async () => {
+	const seen: { rate?: number; bytes?: number } = {};
+	const decode = webAudioSampleDecoder(fakeContext([0], null, seen));
+	await assert.rejects(
+		() => Promise.resolve(decode(new Uint8Array([1]), 4_000_000_000)),
+		/not one a SoundFont can state/,
+	);
+	assert.equal(seen.rate, undefined, 'no context was even created for it');
+	const huge = (rate: number) => ({
+		decodeAudioData: async () => ({
+			sampleRate: rate,
+			length: MAX_SAMPLE_FRAMES + 1,
+			getChannelData: () => assert.fail('never read'),
+		}),
+	});
+	await assert.rejects(
+		() => Promise.resolve(webAudioSampleDecoder(huge)(new Uint8Array([1]), 22050)),
+		/longer than a SoundFont sample may be/,
 	);
 });

@@ -19,6 +19,15 @@ export interface SampleDecodingContext {
 const MIN_RATE = 8000;
 const MAX_RATE = 96000;
 
+/**
+ * What a sample header may claim. The rate and the Ogg bytes come from a font file that may have been
+ * downloaded, so what they ask the decoder to allocate is bounded: the SoundFont 2 format itself
+ * stops at 50 kHz, and sixteen million frames is six minutes at 44.1 kHz for a single instrument sample.
+ */
+export const MIN_SAMPLE_RATE = 400;
+export const MAX_SAMPLE_RATE = 200000;
+export const MAX_SAMPLE_FRAMES = 1 << 24;
+
 function toInt16(frames: Float32Array): Int16Array {
 	const out = new Int16Array(frames.length);
 	for (let index = 0; index < frames.length; index++) {
@@ -29,7 +38,9 @@ function toInt16(frames: Float32Array): Int16Array {
 
 /** linear resampling, only for the rare sample whose rate a context cannot be created at */
 function resample(frames: Float32Array, from: number, to: number): Float32Array {
-	const out = new Float32Array(Math.max(1, Math.round((frames.length * to) / from)));
+	const length = Math.max(1, Math.round((frames.length * to) / from));
+	if (length > MAX_SAMPLE_FRAMES) throw new Error('a decoded sample is longer than a SoundFont sample may be');
+	const out = new Float32Array(length);
 	for (let index = 0; index < out.length; index++) {
 		const at = (index * from) / to;
 		const base = Math.floor(at);
@@ -66,10 +77,15 @@ export function webAudioSampleDecoder(
 	create: (rate: number) => SampleDecodingContext = offlineContext,
 ): SoundFontSampleDecoder {
 	return async (ogg, rate) => {
+		if (!(rate >= MIN_SAMPLE_RATE && rate <= MAX_SAMPLE_RATE)) {
+			throw new Error(`a sample rate of ${rate} Hz is not one a SoundFont can state`);
+		}
 		const contextRate = Math.max(MIN_RATE, Math.min(MAX_RATE, rate));
 		//decodeAudioData detaches what it is given, and `ogg` is a view into the caller's font
 		const copy = ogg.slice().buffer as ArrayBuffer;
 		const decoded = await create(contextRate).decodeAudioData(copy);
+		if (decoded.length > MAX_SAMPLE_FRAMES)
+			throw new Error('a decoded sample is longer than a SoundFont sample may be');
 		const channel = decoded.getChannelData(0);
 		return toInt16(decoded.sampleRate === rate ? channel : resample(channel, decoded.sampleRate, rate));
 	};

@@ -1,5 +1,5 @@
 import { scheduleMidi, type MidiFile } from './Midi.ts';
-import { webAudioSampleDecoder } from './SampleDecoder.ts';
+import { MAX_SAMPLE_FRAMES, MAX_SAMPLE_RATE, MIN_SAMPLE_RATE, webAudioSampleDecoder } from './SampleDecoder.ts';
 import type { SoundFontSampleDecoder } from './SampleDecoder.ts';
 
 /**
@@ -620,6 +620,9 @@ function distinctPresets(tables: SoundTables): number[] {
 	return out;
 }
 
+/** decoded frames one font may hold in all: 256 MB of 16-bit audio */
+const MAX_DECODED_FRAMES = 1 << 27;
+
 /**
  * Decodes a SoundFont 3 into a plain SoundFont 2: every Ogg Vorbis sample a preset reaches goes
  * through `decode` (one call per sample, mono 16-bit frames at the rate the header states) into
@@ -660,7 +663,16 @@ export async function decodeSoundFont(
 		const key = `${sample.start}:${sample.end}`;
 		let at = placed.get(key);
 		if (!at) {
+			if (!(sample.rate >= MIN_SAMPLE_RATE && sample.rate <= MAX_SAMPLE_RATE)) {
+				throw new Error(`a sample states ${sample.rate} Hz, which no SoundFont does: the font is damaged`);
+			}
 			const pcm = await decode(reachable.smplBytes.subarray(sample.start, sample.end), sample.rate);
+			//what a decoder returns is bounded too: a few bytes of Ogg can name a very long sound
+			if (pcm.length > MAX_SAMPLE_FRAMES || total + pcm.length > MAX_DECODED_FRAMES) {
+				throw new Error(
+					'the decoded sample data is larger than a SoundFont may hold: subset the font before shipping it',
+				);
+			}
 			at = { start: total, length: pcm.length };
 			placed.set(key, at);
 			frames.push(pcm);

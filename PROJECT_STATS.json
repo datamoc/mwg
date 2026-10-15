@@ -5,7 +5,7 @@
 	"releaseDate": "2026-10-15",
 	"source": {
 		"files": 358,
-		"lines": 67894,
+		"lines": 67922,
 		"modules": 20,
 		"breakdown": [
 			{
@@ -31,7 +31,7 @@
 			{
 				"name": "audio",
 				"files": 22,
-				"lines": 5075
+				"lines": 5103
 			},
 			{
 				"name": "roguelike",
@@ -112,8 +112,8 @@
 	},
 	"tests": {
 		"files": 332,
-		"lines": 45429,
-		"cases": 3035
+		"lines": 45469,
+		"cases": 3037
 	},
 	"tools": {
 		"files": 60,
@@ -161,9 +161,9 @@
 		"declarationFiles": 358
 	},
 	"bundle": {
-		"globalRaw": 1296841,
-		"globalGzip": 388056,
-		"distRaw": 4725675
+		"globalRaw": 1297409,
+		"globalGzip": 388210,
+		"distRaw": 4728303
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

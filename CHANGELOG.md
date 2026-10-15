@@ -42,6 +42,9 @@ font reaches the page compressed and is decoded at load.
   reading its Ogg bytes as PCM and playing noise.
 - A SoundFont whose sample offsets point outside its sample data is refused when read, rather
   than read beyond it.
+- Decoding a SoundFont 3 bounds what the file can make it allocate: a sample rate outside 400 to
+  200000 Hz is refused, a decoded sample is capped at sixteen million frames and a whole font at
+  134 million (256 MB of audio), in both `decodeSoundFont` and the WebAudio decoder.
 - `mwg-soundfonts` treats the font as untrusted input: a sample whose offsets point outside the
   sample data is refused instead of copied from beyond it, and `ffmpeg` only ever receives bytes
   that start with the Ogg magic, with the demuxer forced to Ogg and only the `pipe` protocol
