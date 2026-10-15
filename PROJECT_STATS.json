@@ -5,13 +5,13 @@
 	"releaseDate": "2026-10-16",
 	"source": {
 		"files": 358,
-		"lines": 67922,
+		"lines": 68095,
 		"modules": 20,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 106,
-				"lines": 22738
+				"lines": 22756
 			},
 			{
 				"name": "mwl",
@@ -21,7 +21,7 @@
 			{
 				"name": "core",
 				"files": 52,
-				"lines": 7370
+				"lines": 7480
 			},
 			{
 				"name": "board",
@@ -66,7 +66,7 @@
 			{
 				"name": "physics",
 				"files": 6,
-				"lines": 1225
+				"lines": 1270
 			},
 			{
 				"name": "battle",
@@ -112,8 +112,8 @@
 	},
 	"tests": {
 		"files": 332,
-		"lines": 45469,
-		"cases": 3037
+		"lines": 45511,
+		"cases": 3038
 	},
 	"tools": {
 		"files": 60,
@@ -152,9 +152,9 @@
 		]
 	},
 	"roadmap": {
-		"items": 427,
+		"items": 430,
 		"completed": 411,
-		"open": 16,
+		"open": 19,
 		"percent": 96
 	},
 	"api": {
@@ -163,7 +163,7 @@
 	"bundle": {
 		"globalRaw": 1297409,
 		"globalGzip": 388210,
-		"distRaw": 4728303
+		"distRaw": 4739981
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

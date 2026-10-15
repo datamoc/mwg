@@ -103,6 +103,26 @@ export function watchReducedMotion(listener: (reduced: boolean) => void): () => 
  * "reduce" means for a slide, spin or zoom. A `meaningful` motion, one that conveys state
  * rather than moving the viewer through space, is shortened instead of deleted, so a health
  * bar still visibly fills and a selection still visibly moves.
+ *
+ * @example
+ * ```ts
+ * import { Tweener, motionDuration, setReducedMotion } from '@datamoc/mw_games/core';
+ *
+ * const tweener = new Tweener();
+ * const panel = { x: -200, fill: 0 };
+ *
+ * //a slide is decorative: with reduced motion it arrives at once. A health bar is meaningful:
+ * //it still fills, only faster
+ * void tweener.tween(motionDuration(0.4), (t) => {
+ * 	panel.x = -200 + 200 * t;
+ * });
+ * void tweener.tween(motionDuration(0.4, 'meaningful'), (t) => {
+ * 	panel.fill = t;
+ * });
+ * tweener.update(1 / 60); //once per frame
+ *
+ * setReducedMotion(true); //a settings toggle: motionDuration now returns 0, and 0.12 when meaningful
+ * ```
  */
 export function motionDuration(duration: number, intent: MotionIntent = 'decorative'): number {
 	if (!reducedMotion()) return duration;

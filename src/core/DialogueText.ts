@@ -44,6 +44,31 @@ export interface DialogueLine {
 	speaker?: string;
 }
 
+/**
+ * Parses the terse `@id text` / `- text` dialogue format into one `DialogueLine` per spoken or
+ * narrated line, in order. To play it on a scene, hand the same source to `parseDialogueText` in
+ * `two-d/stage` (or `rpg`), which wraps these lines in that module's own commands.
+ *
+ * @example
+ * ```ts
+ * import { parseDialogueLines } from '@datamoc/mw_games/core';
+ *
+ * const lines = parseDialogueLines(`
+ * The bridge creaks.
+ * @mara Careful.
+ * @jon I know.
+ * - Is it holding?
+ * - Barely.
+ * `);
+ *
+ * for (const line of lines) console.log(`${line.speaker ?? 'narrator'}: ${line.text}`);
+ * //narrator: The bridge creaks.
+ * //mara: Careful.
+ * //jon: I know.
+ * //mara: Is it holding?
+ * //jon: Barely.
+ * ```
+ */
 export function parseDialogueLines(source: string): DialogueLine[] {
 	const lines: DialogueLine[] = [];
 	const established: string[] = [];

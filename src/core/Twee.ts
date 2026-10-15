@@ -61,6 +61,40 @@ export interface TweeStory {
 	title?: string;
 }
 
+/**
+ * Parses Twee passages (`:: Name`, text lines, `[[links]]`) into a `TweeStory`: each passage a list
+ * of `say` commands closed by an `ask` when it has links. To play one on a scene, import the source
+ * with `importTwee` from `two-d/stage` (or `rpg`), which names that module's own script type.
+ *
+ * @example
+ * ```ts
+ * import { parseTwee } from '@datamoc/mw_games/core';
+ *
+ * const story = parseTwee(`:: Start
+ * You reach the gorge.
+ *
+ * [[Build a bridge->Build]]
+ * [[Turn back->Home]]
+ *
+ * :: Build
+ * The planks hold.
+ *
+ * :: Home
+ * You go home.
+ * `);
+ *
+ * function show(passage: string): void {
+ * 	for (const command of story.story[passage]) {
+ * 		if ('say' in command) console.log(command.say);
+ * 		else {
+ * 			console.log(command.ask); //the last text line doubles as the question
+ * 			for (const choice of command.choices) console.log(' -', choice.text, '->', choice.goto);
+ * 		}
+ * 	}
+ * }
+ * show(story.start);
+ * ```
+ */
 export function parseTwee(source: string): TweeStory {
 	const passages = splitPassages(source);
 	if (passages.length === 0) throw new Error('this twee source has no passages - passages start with ":: Name"');

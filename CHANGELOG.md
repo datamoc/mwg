@@ -7,6 +7,17 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- Function-level `@example`s where the examples used to sit on a file or an interface, so an
+  editor's hover shows them: `SaveSystem` (with a migration), `parseDialogueLines`,
+  `parseTwee` (walking a story), `motionDuration` (reduced motion on a slide and on a
+  meaningful bar) and `Theme` (a custom theme, `themeChanged`, the high-contrast swap).
+- `XpbdWorld` documents a bridge: a Warren truss with beams, a `tensionOnly` cable note and a
+  breaking load, tested to hold a light cart, break under a heavy one and repeat exactly.
+- `REFERENCE.md` records what subsetting the bundled bank costs (piano and drums 264 KB,
+  eight essential programs 421 KB, sixteen 585 KB) and what plays for a program the font lacks.
+
 ## [0.41.0] - 2026-10-16
 
 `microgm-opt` stays the default SoundFont, and a game that wants another one can now pick it:

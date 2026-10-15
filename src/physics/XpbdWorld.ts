@@ -111,6 +111,51 @@ export interface XpbdLink {
  * for (let i = 0; i < 120; i++) world.step();
  * console.log(world.links[rope].broken, world.nodes[weight].y > 0);
  * ```
+ *
+ * A bridge is a truss: beams are links, a cable is a link with `tensionOnly: true` (it pulls when
+ * stretched and goes slack when pushed), and a link with a `strength` breaks at that load. A bare
+ * chain of planks has no vertical stiffness and only sags like a rope, so the deck needs triangles.
+ *
+ * @example
+ * ```ts
+ * import { XpbdWorld } from '@datamoc/mw_games/physics/xpbd';
+ *
+ * //a Warren truss between two abutments, with a cart of `cartMass` at midspan
+ * function loadBridge(cartMass: number): { sag: number; broken: number; peakLoad: number } {
+ * 	const world = new XpbdWorld({ gravity: 520 });
+ * 	const spacing = 50;
+ * 	const bottom: number[] = [];
+ * 	for (let i = 0; i <= 6; i++) bottom.push(world.addNode({ x: i * spacing, y: 0, fixed: i === 0 || i === 6 }));
+ * 	const top: number[] = [];
+ * 	for (let i = 0; i < 6; i++) top.push(world.addNode({ x: i * spacing + spacing / 2, y: -45 }));
+ *
+ * 	const beam = (a: number, b: number): void => {
+ * 		world.addLink({ a, b, stiffness: 6e4, strength: 16000 });
+ * 	};
+ * 	for (let i = 0; i < 6; i++) beam(bottom[i], bottom[i + 1]); //the deck
+ * 	for (let i = 0; i < 5; i++) beam(top[i], top[i + 1]); //the upper chord
+ * 	for (let i = 0; i < 6; i++) {
+ * 		beam(bottom[i], top[i]); //the diagonals
+ * 		beam(top[i], bottom[i + 1]);
+ * 	}
+ *
+ * 	//the cart rests on the deck and the chord; without a `strength` its links cannot break
+ * 	const cart = world.addNode({ x: 150, y: -6, mass: cartMass });
+ * 	world.addLink({ a: cart, b: bottom[3], stiffness: 6e4 });
+ * 	world.addLink({ a: cart, b: top[2], stiffness: 6e4 });
+ *
+ * 	world.breaking = true;
+ * 	for (let i = 0; i < 360; i++) world.step();
+ * 	return {
+ * 		sag: Math.max(...bottom.map((node) => world.nodes[node].y)),
+ * 		broken: world.links.filter((link) => link.broken).length,
+ * 		peakLoad: Math.max(...world.links.map((link) => link.ratio)), //1 is the breaking point
+ * 	};
+ * }
+ *
+ * console.log(loadBridge(2)); //holds, a little sag
+ * console.log(loadBridge(20)); //too heavy: beams break
+ * ```
  */
 export class XpbdWorld {
 	readonly nodes: XpbdNode[] = [];

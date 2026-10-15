@@ -103,6 +103,37 @@ export interface SaveSystemOptions {
 	storage?: SaveStorage;
 }
 
+/**
+ * Named, versioned save slots over `localStorage` (an in-memory store where there is none),
+ * for plain JSON state. Bump `version` when the state's shape changes and give `migrations`
+ * the step from each older version: a slot saved by an earlier release is upgraded when it
+ * loads. `load` returns `null` for a slot that is missing or damaged, so a save-select screen
+ * never meets an exception.
+ *
+ * @example
+ * ```ts
+ * import { SaveSystem } from '@datamoc/mw_games/core';
+ *
+ * interface RunState {
+ * 	depth: number;
+ * 	gold: number;
+ * 	inventory: string[];
+ * }
+ *
+ * //version 2 added `inventory`: a slot saved at version 1 gets an empty one when it loads
+ * const saves = new SaveSystem<RunState>({
+ * 	namespace: 'my-game',
+ * 	version: 2,
+ * 	migrations: { 1: (old) => ({ ...(old as Omit<RunState, 'inventory'>), inventory: [] }) },
+ * });
+ *
+ * saves.save('auto', { depth: 3, gold: 40, inventory: ['rope'] }, 'Floor 3, 40 gold');
+ *
+ * const slot = saves.load('auto');
+ * if (slot) console.log(slot.state.inventory, slot.meta.preview); // ['rope'] 'Floor 3, 40 gold'
+ * saves.delete('auto');
+ * ```
+ */
 export class SaveSystem<T> {
 	private namespace: string;
 	private version: number;

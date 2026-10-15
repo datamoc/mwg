@@ -945,7 +945,10 @@ reach the compiled asset map without it.
   the programs explicitly, and with no shipped MIDI the font embeds whole because
   the usage is unknowable. The reference bank in `data/microgm-opt.sf2` (2.6 MB,
   WTFPL, shipped in the npm package for a game to copy into its assets) drops to
-  tens of kilobytes per game this way. It is the default bank. A game that wants another
+  tens of kilobytes per game this way: measured, piano and drums come to 264 KB, eight
+  essential programs (piano, guitar, bass, strings, brass, flute, synth lead, drums) to 421 KB,
+  sixteen to 585 KB. A program the font lacks plays the font's own piano (preset 0:0) and,
+  only when it has no piano either, the built-in synthesizer. It is the default bank. A game that wants another
   picks it from `data/soundfont-catalog.json` and fetches just its instruments with
   `mwg-soundfonts` (see [tools.md](tools.md)). A SoundFont 3 stays compressed all the way to
   the page (FluidR3's piano, guitar and drums: 2.7 MB, against 20 MB decoded to a SoundFont 2),

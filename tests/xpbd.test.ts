@@ -123,3 +123,45 @@ test('ground can be a height function, and a structure stands on it', () => {
 		assert.ok(node.y > 100 + node.x * 0.1 - 3, 'and resting on it');
 	}
 });
+
+/** the Warren truss from `XpbdWorld`'s documentation, with a cart of `cartMass` at midspan */
+function loadBridge(cartMass: number): { sag: number; broken: number; peakLoad: number } {
+	const world = new XpbdWorld({ gravity: 520 });
+	const spacing = 50;
+	const bottom: number[] = [];
+	for (let i = 0; i <= 6; i++) bottom.push(world.addNode({ x: i * spacing, y: 0, fixed: i === 0 || i === 6 }));
+	const top: number[] = [];
+	for (let i = 0; i < 6; i++) top.push(world.addNode({ x: i * spacing + spacing / 2, y: -45 }));
+	const beam = (a: number, b: number): void => {
+		world.addLink({ a, b, stiffness: 6e4, strength: 16000 });
+	};
+	for (let i = 0; i < 6; i++) beam(bottom[i], bottom[i + 1]);
+	for (let i = 0; i < 5; i++) beam(top[i], top[i + 1]);
+	for (let i = 0; i < 6; i++) {
+		beam(bottom[i], top[i]);
+		beam(top[i], bottom[i + 1]);
+	}
+	const cart = world.addNode({ x: 150, y: -6, mass: cartMass });
+	world.addLink({ a: cart, b: bottom[3], stiffness: 6e4 });
+	world.addLink({ a: cart, b: top[2], stiffness: 6e4 });
+	world.breaking = true;
+	for (let i = 0; i < 360; i++) world.step();
+	return {
+		sag: Math.max(...bottom.map((node) => world.nodes[node].y)),
+		broken: world.links.filter((link) => link.broken).length,
+		peakLoad: Math.max(...world.links.map((link) => link.ratio)),
+	};
+}
+
+test('the documented bridge holds a light cart, breaks under a heavy one, and does both the same way twice', () => {
+	const light = loadBridge(2);
+	assert.equal(light.broken, 0);
+	assert.ok(light.sag > 0 && light.sag < 100, `a small sag, got ${light.sag}`);
+	assert.ok(light.peakLoad < 0.7, 'well inside what the beams carry');
+
+	const heavy = loadBridge(20);
+	assert.ok(heavy.broken > 0, 'too heavy: beams give way');
+	assert.ok(heavy.peakLoad > 1);
+
+	assert.deepEqual(loadBridge(2), light, 'fixed steps and no randomness: the same bridge, the same result');
+});

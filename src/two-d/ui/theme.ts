@@ -8,6 +8,24 @@ import type { Texture2D } from '../render/Types2D.ts';
  * Widgets read from here rather than carrying their own colours, so a game restyles its
  * whole interface by assigning one object. Everything has a default that works, so a game
  * that does not care never has to think about it.
+ *
+ * @example
+ * ```ts
+ * import { highContrastTheme, setTheme, theme, themeChanged } from '@datamoc/mw_games/two-d/ui';
+ *
+ * //a custom theme: only what differs from the default needs stating (`font` and `color` merge too)
+ * setTheme({
+ * 	padding: 12,
+ * 	font: { family: 'Georgia, serif', size: 18, lineHeight: 1.4 },
+ * 	color: { ...theme().color, text: 0xfff1d0, selection: 0x3a5a8a },
+ * });
+ *
+ * //widgets read the theme once, when built: one that must restyle later listens
+ * themeChanged.add((next) => console.log('text colour is now', next.color.text));
+ *
+ * //an accessibility setting swaps the whole look at once
+ * setTheme(highContrastTheme);
+ * ```
  */
 export interface Theme {
 	/** the panel texture behind windows; without one, windows draw a flat rectangle */
