@@ -5226,6 +5226,12 @@
 		"declaringModule": "audio/Playable.d.ts"
 	},
 	{
+		"name": "decodeSoundFont",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/SoundFont.d.ts"
+	},
+	{
 		"name": "GridSubdivision",
 		"kind": "type",
 		"subpath": "./audio",
@@ -5326,6 +5332,12 @@
 		"kind": "interface",
 		"subpath": "./audio",
 		"declaringModule": "audio/Channels.d.ts"
+	},
+	{
+		"name": "loadSoundFont",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/SoundFont.d.ts"
 	},
 	{
 		"name": "LoopRegion",
@@ -5514,6 +5526,12 @@
 		"declaringModule": "audio/MidiRender.d.ts"
 	},
 	{
+		"name": "SampleDecodingContext",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/SampleDecoder.d.ts"
+	},
+	{
 		"name": "SavedBusTrack",
 		"kind": "interface",
 		"subpath": "./audio",
@@ -5554,6 +5572,12 @@
 		"kind": "interface",
 		"subpath": "./audio",
 		"declaringModule": "audio/SoundFont.d.ts"
+	},
+	{
+		"name": "SoundFontSampleDecoder",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/SampleDecoder.d.ts"
 	},
 	{
 		"name": "SoundFontVoice",
@@ -5620,6 +5644,12 @@
 		"kind": "type",
 		"subpath": "./audio",
 		"declaringModule": "audio/Synth.d.ts"
+	},
+	{
+		"name": "webAudioSampleDecoder",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/SampleDecoder.d.ts"
 	},
 	{
 		"name": "AttackDialog",

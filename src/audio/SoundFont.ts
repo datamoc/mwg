@@ -1,4 +1,6 @@
 import { scheduleMidi, type MidiFile } from './Midi.ts';
+import { webAudioSampleDecoder } from './SampleDecoder.ts';
+import type { SoundFontSampleDecoder } from './SampleDecoder.ts';
 
 /**
  * A SoundFont 2 reader: presets to instruments to sample zones, enough to play
@@ -129,7 +131,12 @@ interface SoundTables {
 	instBags: number[];
 	instGens: Generator[];
 	samples: RawSample[];
+	/** the sample chunk as bytes: Ogg Vorbis data for a SoundFont 3, 16-bit frames otherwise */
+	smplBytes: Uint8Array;
+	/** the sample chunk as 16-bit frames; empty for a SoundFont 3, whose samples are not frames */
 	smpl: Int16Array;
+	/** true for a SoundFont 3: every sample is an Ogg Vorbis byte range, its loop points relative to it */
+	compressed: boolean;
 	/** the verbatim INFO list, carried into a subset untouched when present */
 	info: Uint8Array | null;
 }
@@ -217,17 +224,19 @@ function readTables(bytes: Uint8Array): SoundTables {
 	}));
 
 	const smplChunk = chunks.get('smpl')!;
-	const smpl = new Int16Array(
-		bytes.buffer.slice(
-			bytes.byteOffset + smplChunk.at,
-			bytes.byteOffset + smplChunk.at + smplChunk.size - (smplChunk.size & 1),
-		),
-	);
-	if (samples.some((sample) => sample.type & 0x10)) {
-		throw new Error(
-			'SoundFont 3 (Ogg Vorbis samples) is not supported: convert it with "mwg-soundfonts convert <in.sf3> <out.sf2>"',
-		);
+	const smplBytes = bytes.slice(smplChunk.at, smplChunk.at + smplChunk.size);
+	//ROM and empty samples have no data here; the rest must agree on what their offsets count
+	const sampled = samples.filter((sample) => sample.end > sample.start && !(sample.type & 0x8000));
+	const compressed = sampled.some((sample) => sample.type & 0x10);
+	if (compressed && !sampled.every((sample) => sample.type & 0x10)) {
+		throw new Error('SoundFont mixes compressed and plain samples, which it cannot address consistently');
 	}
+	//the offsets come from the file, so a lying header must not reach beyond the sample data
+	const limit = compressed ? smplBytes.length : smplBytes.length >> 1;
+	if (sampled.some((sample) => sample.end > limit)) {
+		throw new Error('a sample points outside the sample data: the SoundFont is damaged');
+	}
+	const smpl = compressed ? new Int16Array(0) : new Int16Array(smplBytes.buffer, 0, smplBytes.length >> 1);
 	const info = lists.get('INFO') ?? null;
 	return {
 		bytes,
@@ -238,7 +247,9 @@ function readTables(bytes: Uint8Array): SoundTables {
 		instBags: bags('ibag'),
 		instGens: generators('igen'),
 		samples,
+		smplBytes,
 		smpl,
+		compressed,
 		info: info ? bytes.slice(info.at, info.at + 8 + info.size + (info.size & 1)) : null,
 	};
 }
@@ -303,6 +314,11 @@ function presetIndexOf(presets: Map<string, number>, bank: number, program: numb
  */
 export function parseSoundFont(data: ArrayBuffer | ArrayBufferView): SoundFont {
 	const tables = readTables(toBytes(data));
+	if (tables.compressed) {
+		throw new Error(
+			'SoundFont 3 (Ogg Vorbis samples) needs decoding first: use loadSoundFont() or decodeSoundFont(), or convert it with "mwg-soundfonts convert <in.sf3> <out.sf2>"',
+		);
+	}
 
 	const sampleCache = new Map<number, SoundFontSample | null>();
 	const tuning = new Map<number, { rootKey: number; correction: number }>();
@@ -496,6 +512,11 @@ function listBytes(type: string, subs: Uint8Array[]): Uint8Array {
  */
 export function mergeSoundFonts(fonts: readonly (ArrayBuffer | ArrayBufferView)[]): ArrayBuffer {
 	if (fonts.length === 0) throw new Error('mergeSoundFonts needs at least one SoundFont');
+	const sources = fonts.map((font) => readTables(toBytes(font)));
+	const compressed = sources[0].compressed;
+	if (sources.some((source) => source.compressed !== compressed)) {
+		throw new Error('cannot merge a SoundFont 3 with a SoundFont 2: decode it first with decodeSoundFont()');
+	}
 	const merged: SoundTables = {
 		bytes: new Uint8Array(0),
 		presets: [],
@@ -505,20 +526,22 @@ export function mergeSoundFonts(fonts: readonly (ArrayBuffer | ArrayBufferView)[
 		instBags: [],
 		instGens: [],
 		samples: [],
+		smplBytes: new Uint8Array(0),
 		smpl: new Int16Array(0),
-		info: null,
+		compressed,
+		info: sources[0].info,
 	};
-	const smplParts: Int16Array[] = [];
-	let smplLength = 0;
-	for (const data of fonts) {
-		const source = readTables(toBytes(data));
-		merged.info ??= source.info;
+	const parts: Uint8Array[] = [];
+	let smplLength = 0; //bytes so far
+	for (const source of sources) {
 		const instrumentBase = merged.instruments.length;
 		const sampleBase = merged.samples.length;
 		const presetBagBase = merged.presetBags.length;
 		const presetGenBase = merged.presetGens.length;
 		const instBagBase = merged.instBags.length;
 		const instGenBase = merged.instGens.length;
+		//a plain font's sample offsets count frames, a SoundFont 3's count bytes (and its loops stay relative)
+		const offsetBase = compressed ? smplLength : smplLength >> 1;
 		//each table ends in a terminal record that only the joined result keeps
 		merged.presets.push(
 			...source.presets.slice(0, -1).map((preset) => ({ ...preset, bag: preset.bag + presetBagBase })),
@@ -551,15 +574,17 @@ export function mergeSoundFonts(fonts: readonly (ArrayBuffer | ArrayBufferView)[
 		merged.samples.push(
 			...source.samples.slice(0, -1).map((sample) => ({
 				...sample,
-				start: sample.start + smplLength,
-				end: sample.end + smplLength,
-				loopStart: sample.loopStart + smplLength,
-				loopEnd: sample.loopEnd + smplLength,
+				start: sample.start + offsetBase,
+				end: sample.end + offsetBase,
+				loopStart: compressed ? sample.loopStart : sample.loopStart + offsetBase,
+				loopEnd: compressed ? sample.loopEnd : sample.loopEnd + offsetBase,
 				link: sample.link + sampleBase,
 			})),
 		);
-		smplParts.push(source.smpl);
-		smplLength += source.smpl.length;
+		//a plain font's chunk can end on an odd byte, which would shift every frame after it
+		const part = compressed ? source.smplBytes : source.smplBytes.subarray(0, source.smplBytes.length & ~1);
+		parts.push(part);
+		smplLength += part.length;
 	}
 	merged.presetBags.push(merged.presetGens.length);
 	merged.instBags.push(merged.instGens.length);
@@ -577,22 +602,117 @@ export function mergeSoundFonts(fonts: readonly (ArrayBuffer | ArrayBufferView)[
 		link: 0,
 		type: 0,
 	});
-	merged.smpl = new Int16Array(smplLength);
-	let at = 0;
-	for (const part of smplParts) {
-		merged.smpl.set(part, at);
-		at += part.length;
-	}
+	merged.smplBytes = concat(parts);
+	if (!compressed) merged.smpl = new Int16Array(merged.smplBytes.slice().buffer);
+	return writeSoundFont(merged, distinctPresets(merged));
+}
 
-	const firstOf = new Set<string>();
-	const usedPresets: number[] = [];
-	for (let index = 0; index < merged.presets.length - 1; index++) {
-		const key = `${merged.presets[index].bank}:${merged.presets[index].preset}`;
-		if (firstOf.has(key)) continue;
-		firstOf.add(key);
-		usedPresets.push(index);
+/** the presets of `tables` (indices) with each (bank, program) once, the first occurrence winning */
+function distinctPresets(tables: SoundTables): number[] {
+	const seen = new Set<string>();
+	const out: number[] = [];
+	for (let index = 0; index < tables.presets.length - 1; index++) {
+		const key = `${tables.presets[index].bank}:${tables.presets[index].preset}`;
+		if (seen.has(key)) continue;
+		seen.add(key);
+		out.push(index);
 	}
-	return writeSoundFont(merged, usedPresets);
+	return out;
+}
+
+/**
+ * Decodes a SoundFont 3 into a plain SoundFont 2: every Ogg Vorbis sample a preset reaches goes
+ * through `decode` (one call per sample, mono 16-bit frames at the rate the header states) into
+ * the sample chunk, and the loop points a SoundFont 3 states relative to its sample become the
+ * absolute ones SoundFont 2 uses. A SoundFont 2 comes back unchanged and `decode` is never called.
+ * The result feeds everything that takes SoundFont 2 bytes, `renderMidiToBufferAsync` included.
+ * A loop that ends past the decoded frames is cut to them.
+ *
+ * @example
+ * ```ts
+ * import { decodeSoundFont, webAudioSampleDecoder } from '@datamoc/mw_games/audio';
+ *
+ * declare const sf3Bytes: ArrayBuffer;
+ *
+ * const sf2 = await decodeSoundFont(sf3Bytes, webAudioSampleDecoder());
+ * console.log(sf2.byteLength);
+ * ```
+ */
+export async function decodeSoundFont(
+	data: ArrayBuffer | ArrayBufferView,
+	decode: SoundFontSampleDecoder,
+): Promise<ArrayBuffer> {
+	const bytes = toBytes(data);
+	const tables = readTables(bytes);
+	if (!tables.compressed) return bytes.slice().buffer as ArrayBuffer;
+
+	//prune first, so a sample no preset reaches is never decoded
+	const reachable = readTables(new Uint8Array(writeSoundFont(tables, distinctPresets(tables))));
+	const frames: Int16Array[] = [];
+	const placed = new Map<string, { start: number; length: number }>();
+	let total = 0;
+	const samples: RawSample[] = [];
+	for (const sample of reachable.samples) {
+		if (!(sample.end > sample.start) || sample.type & 0x8000) {
+			samples.push(sample);
+			continue;
+		}
+		const key = `${sample.start}:${sample.end}`;
+		let at = placed.get(key);
+		if (!at) {
+			const pcm = await decode(reachable.smplBytes.subarray(sample.start, sample.end), sample.rate);
+			at = { start: total, length: pcm.length };
+			placed.set(key, at);
+			frames.push(pcm);
+			total += pcm.length;
+		}
+		samples.push({
+			...sample,
+			start: at.start,
+			end: at.start + at.length,
+			loopStart: at.start + Math.min(sample.loopStart, at.length),
+			loopEnd: at.start + Math.min(sample.loopEnd, at.length),
+			type: sample.type & ~0x10,
+		});
+	}
+	const smpl = new Int16Array(total);
+	let offset = 0;
+	for (const pcm of frames) {
+		smpl.set(pcm, offset);
+		offset += pcm.length;
+	}
+	const plain: SoundTables = {
+		...reachable,
+		samples,
+		smpl,
+		smplBytes: new Uint8Array(smpl.buffer),
+		compressed: false,
+	};
+	return writeSoundFont(plain, distinctPresets(plain));
+}
+
+/**
+ * Reads a SoundFont 2 or 3 into layered preset voices: `parseSoundFont` for a plain font, and a
+ * SoundFont 3 decoded first through `decode`, `webAudioSampleDecoder()` (the browser) unless one
+ * is given. This is what a game calls on the bytes it ships, whichever kind they are.
+ *
+ * @example
+ * ```ts
+ * import { loadSoundFont, parseMidi, renderMidiToBuffer } from '@datamoc/mw_games/audio';
+ *
+ * declare const fontBytes: ArrayBuffer;
+ * declare const midiBytes: ArrayBuffer;
+ *
+ * const font = await loadSoundFont(fontBytes);
+ * const rendered = renderMidiToBuffer(parseMidi(midiBytes), { soundfont: font });
+ * console.log(rendered.duration);
+ * ```
+ */
+export async function loadSoundFont(
+	data: ArrayBuffer | ArrayBufferView,
+	options: { decode?: SoundFontSampleDecoder } = {},
+): Promise<SoundFont> {
+	return parseSoundFont(await decodeSoundFont(data, options.decode ?? webAudioSampleDecoder()));
 }
 
 /**
@@ -767,12 +887,24 @@ function writeSoundFont(tables: SoundTables, usedPresets: readonly number[]): Ar
 	const sampleData: number[] = [];
 	for (const old of sampleOrder) {
 		const header = tables.samples[old];
+		const self = sampleNew.get(old)!;
+		if (tables.compressed) {
+			//Ogg bytes copied as they are: offsets count bytes and the loop points stay relative to the sample
+			const start = sampleData.length;
+			for (let index = header.start; index < header.end; index++) sampleData.push(tables.smplBytes[index]);
+			newSamples.push({
+				...header,
+				start,
+				end: start + (header.end - header.start),
+				link: sampleNew.get(header.link) ?? self,
+			});
+			continue;
+		}
 		const start = sampleData.length / 2;
 		for (let index = header.start; index < header.end; index++) {
 			const word = tables.smpl[index];
 			sampleData.push(word & 0xff, (word >> 8) & 0xff);
 		}
-		const self = sampleNew.get(old)!;
 		newSamples.push({
 			...header,
 			start,

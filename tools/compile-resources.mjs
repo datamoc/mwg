@@ -41,9 +41,10 @@ export const DEFAULT_MIME = {
 	'.mid': 'audio/midi',
 	'.midi': 'audio/midi',
 	'.sf2': 'application/octet-stream',
+	'.sf3': 'application/octet-stream',
 };
 
-const isSoundFontKey = (key) => key.toLowerCase().endsWith('.sf2');
+const isSoundFontKey = (key) => /\.sf[23]$/i.test(key);
 const isMidiKey = (key) => /\.(mid|midi)$/i.test(key);
 
 /**
@@ -120,7 +121,7 @@ export async function* walk(dir) {
  *   pixel-art tileset's exact colours survive; set false only with `webpQuality` to opt into
  *   lossy re-encoding for photographic source art)
  * @param options.webpQuality 0-100, used only when `webpLossless` is false (default 90)
- * @param options.soundFont subset an embedded `.sf2` to the programs the embedded
+ * @param options.soundFont subset an embedded `.sf2` or `.sf3` to the programs the embedded
  *   `.mid`/`.midi` files use (default true); `false` embeds every SoundFont whole
  * @param options.soundFontUsage explicit `{ bank, program }` list to subset to, for a
  *   game that voices notes no shipped MIDI file requests; overrides the MIDI-derived list

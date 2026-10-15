@@ -916,25 +916,41 @@ reach the compiled asset map without it.
 - `parseSoundFont` - reads SoundFont 2 bytes into layered preset voices (key and velocity
   ranges, tuning, loops, envelopes, pan, attenuation); the font file itself stays the
   game's to ship and to license. A SoundFont 3 (Ogg Vorbis samples) is refused by name
-  rather than read as noise: `mwg-soundfonts convert` makes it a SoundFont 2.
+  rather than read as noise: `loadSoundFont` reads either kind.
+- `loadSoundFont` - reads a SoundFont 2 or 3 into layered preset voices: a plain font goes
+  straight to `parseSoundFont`, a SoundFont 3 is decoded first, through
+  `webAudioSampleDecoder()` in a browser unless `{ decode }` names another decoder. It
+  is what a game calls on the bytes it ships, whichever kind they are.
+- `decodeSoundFont` - a SoundFont 3 as plain SoundFont 2 bytes: every sample a preset reaches
+  goes through the decoder once (an unreachable one never does), and the loop points a
+  SoundFont 3 states relative to its sample become the absolute ones SoundFont 2 uses. A
+  SoundFont 2 comes back unchanged. The result feeds anything that takes SoundFont 2 bytes,
+  `renderMidiToBufferAsync` included.
+- `webAudioSampleDecoder`/`SoundFontSampleDecoder` - the decoder contract (Ogg bytes and the
+  sample's own rate in, mono 16-bit frames out, synchronous or not) and the browser
+  implementation of it over `decodeAudioData`: each sample decodes in a context created at its
+  own rate, so the browser never resamples it. A Node tool passes a decoder of its own.
 - `collectSoundFontUsage` - lists the (bank, program) pairs scheduled notes actually
   request across MIDI files, drums as bank 128, for the compile step to keep.
-- `mergeSoundFonts` - joins several SoundFont 2 files into one, presets in the order given
-  and the first font winning a shared (bank, program), which is how single-instrument files
-  (the per-program collection `mwg-soundfonts fetch` reads) become the one file a game ships.
-- `subsetSoundFont` - writes a smaller valid SoundFont 2 file carrying only the used
+- `mergeSoundFonts` - joins several SoundFont 2 files (or several SoundFont 3 files, the
+  Ogg bytes copied untouched) into one, presets in the order given and the first font winning
+  a shared (bank, program), which is how single-instrument files (the per-program collection
+  `mwg-soundfonts fetch` reads) become the one file a game ships.
+- `subsetSoundFont` - writes a smaller valid SoundFont 2 (or 3) file carrying only the used
   programs, zones and samples copied verbatim and indexes remapped, so a game ships
   megabytes instead of tens of megabytes with identical voices. The build does this
-  on its own: `compileResources` (and so `emitPage` and `mwgPage`) embeds `.mid` and
-  `.sf2` assets, and subsets every embedded SoundFont to the programs the embedded
+  on its own: `compileResources` (and so `emitPage` and `mwgPage`) embeds `.mid`,
+  `.sf2` and `.sf3` assets, and subsets every embedded SoundFont to the programs the embedded
   MIDI files use. `soundFont: false` embeds the font whole, `soundFontUsage` names
   the programs explicitly, and with no shipped MIDI the font embeds whole because
   the usage is unknowable. The reference bank in `data/microgm-opt.sf2` (2.6 MB,
   WTFPL, shipped in the npm package for a game to copy into its assets) drops to
   tens of kilobytes per game this way. It is the default bank. A game that wants another
   picks it from `data/soundfont-catalog.json` and fetches just its instruments with
-  `mwg-soundfonts` (see [tools.md](tools.md)); a SoundFont 2 is plain 16-bit PCM, several
-  times the size of the same font as SoundFont 3, so a fetched font is worth subsetting.
+  `mwg-soundfonts` (see [tools.md](tools.md)). A SoundFont 3 stays compressed all the way to
+  the page (FluidR3's piano, guitar and drums: 2.7 MB, against 20 MB decoded to a SoundFont 2),
+  and `loadSoundFont` decodes it at load, so prefer it over a SoundFont 2 for anything but the
+  smallest banks.
 - `Channel`/`AudioBus` - buffered WebAudio music: a `Channel` plays one looping track with
   volume, pitch, pan, a loop region and a seekable playhead, and an `AudioBus` wires two of
   them into independent BGM/BGS loops, ME jingles that suspend and resume the BGM,

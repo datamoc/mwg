@@ -42,17 +42,18 @@ export interface FetchSoundFontOptions {
 	source?: string;
 	/** required for a licence class that is not public-domain, permissive or attribution */
 	acceptLicence?: boolean;
-	/** Ogg Vorbis bytes to mono 16-bit frames; `ffmpeg` by default */
-	decode?: (ogg: Uint8Array) => Int16Array;
+	/** the decoded font is a SoundFont 2 (`ffmpeg` needed) instead of a SoundFont 3; `sf3` by default */
+	format?: 'sf2' | 'sf3';
+	/** Ogg Vorbis bytes to mono 16-bit frames, for `format: 'sf2'`; `ffmpeg` by default */
+	decode?: (ogg: Uint8Array, rate: number) => Int16Array | Promise<Int16Array>;
 	/** replaces the file reader, mainly for tests */
 	read?: (path: string) => Promise<Uint8Array | null>;
-	/** replaces `mergeSoundFonts` from the built package, mainly for tests that run before a build */
-	merge?: (fonts: Uint8Array[]) => ArrayBuffer;
 }
 
 export interface FetchedSoundFont {
-	/** one SoundFont 2 holding the found programs */
+	/** one font holding the found programs, in `format` */
 	bytes: Uint8Array;
+	format: 'sf2' | 'sf3';
 	found: SoundFontProgramRef[];
 	/** requested programs the collection does not carry */
 	missing: SoundFontProgramRef[];
@@ -65,9 +66,13 @@ export declare function readCatalog(path?: string): SoundFontCatalog;
 export declare function findFont(catalog: SoundFontCatalog, name: string): SoundFontCatalogEntry | undefined;
 /** `"0,24,128:0"`: a bare number is a program of bank 0, `bank:program` names both */
 export declare function parseProgramList(text: string): SoundFontProgramRef[];
+/** mono 16-bit frames from Ogg Vorbis bytes, through `ffmpeg` */
 export declare function ffmpegDecode(ogg: Uint8Array): Int16Array;
-/** SoundFont 3 to SoundFont 2 bytes, every Ogg Vorbis sample decoded into the sample chunk */
-export declare function sf3ToSf2(bytes: Uint8Array, decode?: (ogg: Uint8Array) => Int16Array): Buffer;
+/** a SoundFont 3 decoded into SoundFont 2 bytes (`ffmpeg` unless `decode` is given) */
+export declare function sf3ToSf2(
+	bytes: Uint8Array,
+	decode?: (ogg: Uint8Array, rate: number) => Int16Array | Promise<Int16Array>,
+): Promise<Uint8Array>;
 export declare function readCollectionFile(source: string, path: string): Promise<Uint8Array | null>;
 export declare function fetchSoundFont(options: FetchSoundFontOptions): Promise<FetchedSoundFont>;
 /** the credits note that travels beside a fetched font */

@@ -6,7 +6,8 @@ import { join } from 'node:path';
 import sharp from 'sharp';
 
 import { compileResources } from '../tools/compile-resources.mjs';
-import { parseSoundFont } from '../src/audio/SoundFont.ts';
+import { decodeSoundFont, mergeSoundFonts, parseSoundFont } from '../src/audio/SoundFont.ts';
+import { buildSf3, fakeDecode } from './helpers/soundfont3.ts';
 
 async function withDirs(fn: (from: string, to: string) => Promise<void>): Promise<void> {
 	const from = await mkdtemp(join(tmpdir(), 'mwg-compile-resources-from-'));
@@ -248,6 +249,38 @@ test('compileResources subsets an embedded SoundFont to the programs the embedde
 		assert.ok(font.voices(0, 40, 60, 100).length > 0, 'the violin program still voices');
 		assert.ok(font.voices(128, 0, 36, 100).length > 0, 'the drum kit still voices');
 		assert.equal(font.hasPreset(0, 73), false, 'an unused program is gone');
+	});
+});
+
+test('compileResources subsets an embedded SoundFont 3 without decoding it, the Ogg bytes riding along', async () => {
+	await withDirs(async (from, to) => {
+		const bank = Buffer.from(
+			mergeSoundFonts([
+				buildSf3(0, 0, Buffer.from([1, 1, 1])),
+				buildSf3(0, 40, Buffer.from([2, 2, 2])),
+				buildSf3(0, 73, Buffer.from([3, 3, 3])),
+				buildSf3(128, 0, Buffer.from([4, 4, 4])),
+			]),
+		);
+		await writeFile(join(from, 'bank.sf3'), bank);
+		await writeFile(join(from, 'song.mid'), usedProgramsMidi());
+
+		const result = await compileResources({ from, to, groupBy: () => 'assets' });
+		assert.equal(result.soundFonts[0].key, 'bank.sf3');
+		assert.equal(result.soundFonts[0].programs, 3);
+		assert.ok(result.soundFonts[0].embeddedBytes < bank.length, 'the unused program is gone');
+
+		const embedded = embeddedBytes(await readFile(join(to, 'assets.js'), 'utf8'), 'bank.sf3');
+		const decoded: number[] = [];
+		const font = parseSoundFont(
+			await decodeSoundFont(embedded, (ogg) => {
+				decoded.push(ogg[0]);
+				return fakeDecode(ogg);
+			}),
+		);
+		assert.deepEqual(decoded.sort(), [1, 2, 4], 'program 73 was not shipped, so it is not decoded');
+		assert.equal(font.presetCount, 3);
+		assert.equal(font.hasPreset(0, 73), false);
 	});
 });
 

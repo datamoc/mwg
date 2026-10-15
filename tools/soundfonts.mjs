@@ -8,13 +8,14 @@ import { fileURLToPath } from 'node:url';
  * `mwg-soundfonts`: the developer-side half of choosing a SoundFont. The package ships one
  * small bank (`data/microgm-opt.sf2`); a game that wants another picks it from the catalogue
  * (`data/soundfont-catalog.json`, a licence-classified snapshot of the marmooo free-soundfonts
- * collection), and this tool fetches only the instruments the game's MIDI files use, converts
- * them from SoundFont 3 and writes one SoundFont 2 file for the asset folder, where the build
- * subsets it again like any other font.
+ * collection), and this tool fetches only the instruments the game's MIDI files use and merges
+ * them into one font for the asset folder, where the build subsets it again like any other.
  *
- * Converting SoundFont 3 decodes Ogg Vorbis, which is `ffmpeg`'s job: it is needed on a
- * developer machine only, never by the player, and the tool names it when it is missing.
- * Nothing here runs in a browser.
+ * The merged font stays a SoundFont 3 (Ogg Vorbis samples, a fraction of the size) by default:
+ * nothing is decoded here, and the game decodes it where it runs with `loadSoundFont`.
+ * `--sf2` decodes it into a plain SoundFont 2 instead, which is `ffmpeg`'s job: needed on a
+ * developer machine only, never by the player, and named when missing. Nothing here runs in a
+ * browser.
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -22,6 +23,23 @@ export const CATALOG_PATH = join(HERE, '..', 'data', 'soundfont-catalog.json');
 
 /** licence classes a font may be fetched under without saying so */
 const FREE_TO_SHIP = new Set(['public-domain', 'permissive', 'attribution']);
+
+/**
+ * The SoundFont implementation lives in the library, not in this tool: in this repository it is
+ * the TypeScript source, in an installed package the built `dist/` it compiles to (the same
+ * lookup `compile-resources` makes).
+ */
+async function loadLibrary() {
+	try {
+		const [soundFont, midi] = await Promise.all([
+			import('../src/audio/SoundFont.ts'),
+			import('../src/audio/Midi.ts'),
+		]);
+		return { ...soundFont, ...midi };
+	} catch {
+		return import('../dist/audio/index.js');
+	}
+}
 
 /** the catalogue as parsed JSON: `{ source, default, bundled, fonts }` */
 export function readCatalog(path = CATALOG_PATH) {
@@ -58,10 +76,11 @@ export function parseProgramList(text) {
 }
 
 /**
- * mono 16-bit PCM from Ogg Vorbis bytes, through `ffmpeg`. The bytes come from a font file that
- * may have been downloaded, so they are not trusted: anything that does not start with the Ogg
- * magic is refused before a process is spawned, the demuxer is forced to Ogg rather than probed
- * (a probed "sample" could be read as a playlist naming local files), and only the `pipe` protocol
+ * mono 16-bit PCM from Ogg Vorbis bytes, through `ffmpeg`, at the rate the stream carries (the
+ * `rate` a font states for the sample is the same one). The bytes come from a font file that may
+ * have been downloaded, so they are not trusted: anything that does not start with the Ogg magic
+ * is refused before a process is spawned, the demuxer is forced to Ogg rather than probed (a
+ * probed "sample" could be read as a playlist naming local files), and only the `pipe` protocol
  * is allowed.
  */
 export function ffmpegDecode(ogg) {
@@ -88,125 +107,17 @@ export function ffmpegDecode(ogg) {
 		{ input: ogg, maxBuffer: 256 * 1024 * 1024 },
 	);
 	if (run.error?.code === 'ENOENT') {
-		throw new Error('ffmpeg was not found on PATH: install it to convert SoundFont 3 (developer machines only)');
+		throw new Error('ffmpeg was not found on PATH: install it to decode SoundFont 3 (developer machines only)');
 	}
 	if (run.status !== 0) throw new Error(`ffmpeg could not decode a sample: ${run.stderr}`);
 	const out = run.stdout;
 	return new Int16Array(out.buffer.slice(out.byteOffset, out.byteOffset + out.length - (out.length & 1)));
 }
 
-function riffChunks(bytes, start, end) {
-	const chunks = [];
-	for (let at = start; at + 8 <= end;) {
-		const size = bytes.readUInt32LE(at + 4);
-		const id = bytes.toString('latin1', at, at + 4);
-		chunks.push({ id, kind: id === 'LIST' ? bytes.toString('latin1', at + 8, at + 12) : null, at, size });
-		at += 8 + size + (size & 1);
-	}
-	return chunks;
-}
-
-function chunk(id, data) {
-	const head = Buffer.alloc(8);
-	head.write(id, 0, 'latin1');
-	head.writeUInt32LE(data.length, 4);
-	return Buffer.concat([head, data, Buffer.alloc(data.length & 1)]);
-}
-
-/**
- * SoundFont 3 bytes to SoundFont 2 bytes: every Ogg Vorbis sample is decoded (`decode` takes
- * the Ogg bytes and returns mono `Int16Array` frames, `ffmpeg` by default) into the `smpl`
- * chunk, and the sample headers are rewritten for it. SoundFont 3 states a compressed
- * sample's loop points relative to the sample, SoundFont 2 states them in the whole chunk,
- * and every sample is followed by the 46 zero frames the format requires. A SoundFont 2
- * input passes through with its samples copied the same way.
- */
-export function sf3ToSf2(bytes, decode = ffmpegDecode) {
-	const data = Buffer.from(bytes);
-	if (data.toString('latin1', 0, 4) !== 'RIFF' || data.toString('latin1', 8, 12) !== 'sfbk') {
-		throw new Error('not a SoundFont file');
-	}
-	const top = riffChunks(data, 12, data.length);
-	const info = top.find((entry) => entry.kind === 'INFO');
-	const sdta = top.find((entry) => entry.kind === 'sdta');
-	const pdta = top.find((entry) => entry.kind === 'pdta');
-	if (!sdta || !pdta) throw new Error('SoundFont is missing its sample or preset data');
-
-	const smplEntry = riffChunks(data, sdta.at + 12, sdta.at + 8 + sdta.size).find((entry) => entry.id === 'smpl');
-	if (!smplEntry) throw new Error('SoundFont is missing "smpl"');
-	const smpl = data.subarray(smplEntry.at + 8, smplEntry.at + 8 + smplEntry.size);
-	const tables = new Map(
-		riffChunks(data, pdta.at + 12, pdta.at + 8 + pdta.size).map((entry) => [
-			entry.id,
-			Buffer.from(data.subarray(entry.at + 8, entry.at + 8 + entry.size)),
-		]),
-	);
-	const shdr = tables.get('shdr');
-	if (!shdr) throw new Error('SoundFont is missing "shdr"');
-
-	const frames = [];
-	const decoded = new Map();
-	let position = 0;
-	const count = Math.floor(shdr.length / 46);
-	for (let index = 0; index < count; index++) {
-		const at = index * 46;
-		const type = shdr.readUInt16LE(at + 44);
-		const start = shdr.readUInt32LE(at + 20);
-		const end = shdr.readUInt32LE(at + 24);
-		const loopStart = shdr.readUInt32LE(at + 28);
-		const loopEnd = shdr.readUInt32LE(at + 32);
-		if (end === 0 && start === 0) {
-			//the terminal record, or an empty sample: nothing to copy
-			shdr.writeUInt32LE(position, at + 20);
-			shdr.writeUInt32LE(position, at + 24);
-			shdr.writeUInt32LE(position, at + 28);
-			shdr.writeUInt32LE(position, at + 32);
-			continue;
-		}
-		const compressed = Boolean(type & 0x10);
-		//offsets come from the file: a compressed sample is a byte range of the chunk, a plain one a frame range
-		const limit = compressed ? smpl.length : smpl.length >> 1;
-		if (start > end || end > limit) {
-			throw new Error(`sample ${index} points outside the sample data: the SoundFont is damaged`);
-		}
-		let pcm;
-		if (compressed) {
-			const key = `${start}:${end}`;
-			if (!decoded.has(key)) decoded.set(key, decode(smpl.subarray(start, end)));
-			pcm = decoded.get(key);
-		} else {
-			//a copy of just this sample's bytes, never a slice of the whole underlying buffer
-			pcm = new Int16Array(Uint8Array.prototype.slice.call(smpl, start * 2, end * 2).buffer);
-		}
-		const relativeStart = compressed ? loopStart : loopStart - start;
-		const relativeEnd = compressed ? loopEnd : loopEnd - start;
-		shdr.writeUInt32LE(position, at + 20);
-		shdr.writeUInt32LE(position + pcm.length, at + 24);
-		shdr.writeUInt32LE(position + Math.min(relativeStart, pcm.length), at + 28);
-		shdr.writeUInt32LE(position + Math.min(relativeEnd, pcm.length), at + 32);
-		shdr.writeUInt16LE(type & ~0x10, at + 44);
-		frames.push(Buffer.from(pcm.buffer, pcm.byteOffset, pcm.byteLength), Buffer.alloc(46 * 2));
-		position += pcm.length + 46;
-	}
-
-	const infoBody = info ? Buffer.from(data.subarray(info.at + 12, info.at + 8 + info.size)) : Buffer.alloc(0);
-	//an SF3 reports major version 3 in its `ifil` chunk, and what is written here is a 2
-	if (infoBody.toString('latin1', 0, 4) === 'ifil') infoBody.writeUInt16LE(2, 8);
-	const list = (kind, parts) => chunk('LIST', Buffer.concat([Buffer.from(kind, 'latin1'), ...parts]));
-	const order = ['phdr', 'pbag', 'pmod', 'pgen', 'inst', 'ibag', 'imod', 'igen', 'shdr'];
-	const body = Buffer.concat([
-		Buffer.from('sfbk', 'latin1'),
-		...(info ? [list('INFO', [infoBody])] : []),
-		list('sdta', [chunk('smpl', Buffer.concat(frames))]),
-		list(
-			'pdta',
-			order.filter((id) => tables.has(id)).map((id) => chunk(id, tables.get(id))),
-		),
-	]);
-	const head = Buffer.alloc(8);
-	head.write('RIFF', 0, 'latin1');
-	head.writeUInt32LE(body.length, 4);
-	return Buffer.concat([head, body]);
+/** a SoundFont 3 decoded into SoundFont 2 bytes (`decode` is `ffmpeg` unless given) */
+export async function sf3ToSf2(bytes, decode = ffmpegDecode) {
+	const { decodeSoundFont } = await loadLibrary();
+	return new Uint8Array(await decodeSoundFont(bytes, decode));
 }
 
 const pad = (value, width) => String(value).padStart(width, '0');
@@ -226,11 +137,13 @@ export async function readCollectionFile(source, path) {
 }
 
 /**
- * Fetches `programs` (`[{ bank, program }]`) of the catalogue font `name`, converts each from
- * SoundFont 3 and merges them into one SoundFont 2. Returns `{ bytes, found, missing, font }`:
- * `missing` lists the programs the collection does not carry (the renderer falls back for
- * them as it does for any font). A font whose licence class is not free to ship is refused
- * unless `acceptLicence` is set, and a font that is not in the catalogue is refused outright.
+ * Fetches `programs` (`[{ bank, program }]`) of the catalogue font `name` and merges them into
+ * one font: a SoundFont 3 with the compressed samples untouched, or with `format: 'sf2'` a
+ * SoundFont 2 decoded through `decode` (`ffmpeg` by default). Returns
+ * `{ bytes, format, found, missing, font }`: `missing` lists the programs the collection does
+ * not carry (the renderer falls back for them as it does for any font). A font whose licence
+ * class is not free to ship is refused unless `acceptLicence` is set, and a font that is not in
+ * the catalogue is refused outright.
  */
 export async function fetchSoundFont({
 	name,
@@ -238,9 +151,9 @@ export async function fetchSoundFont({
 	catalog = readCatalog(),
 	source,
 	acceptLicence = false,
+	format = 'sf3',
 	decode,
 	read,
-	merge,
 }) {
 	const font = catalog.fonts.find((entry) => entry.name === name);
 	if (!font) {
@@ -257,14 +170,15 @@ export async function fetchSoundFont({
 				'Pass --accept-licence once you have read its terms and are sure the game may ship it.',
 		);
 	}
+	if (format !== 'sf3' && format !== 'sf2') throw new Error(`unknown format "${format}": expected sf3 or sf2`);
 	if (programs.length === 0) throw new Error('no programs requested: pass --midi <files> or --programs <list>');
 	const origin = source ?? catalog.source;
 	const reader = read ?? ((path) => readCollectionFile(origin, path));
-	const mergeSoundFonts = merge ?? (await import('../dist/audio/index.js')).mergeSoundFonts;
+	const { mergeSoundFonts, decodeSoundFont } = await loadLibrary();
 
 	const found = [];
 	const missing = [];
-	const converted = [];
+	const files = [];
 	const seen = new Set();
 	for (const { bank, program } of programs) {
 		const key = `${bank}:${program}`;
@@ -275,11 +189,13 @@ export async function fetchSoundFont({
 			missing.push({ bank, program });
 			continue;
 		}
-		converted.push(new Uint8Array(sf3ToSf2(bytes, decode)));
+		files.push(bytes);
 		found.push({ bank, program });
 	}
-	if (converted.length === 0) throw new Error(`${name} carries none of the requested programs`);
-	return { bytes: new Uint8Array(mergeSoundFonts(converted)), found, missing, font };
+	if (files.length === 0) throw new Error(`${name} carries none of the requested programs`);
+	const merged = mergeSoundFonts(files);
+	const bytes = new Uint8Array(format === 'sf2' ? await decodeSoundFont(merged, decode ?? ffmpegDecode) : merged);
+	return { bytes, format, found, missing, font };
 }
 
 /** the credits note that travels beside a fetched font, so the licence is not lost */
@@ -299,8 +215,10 @@ export function creditsFor(font, programs) {
 
 const USAGE = `usage: mwg-soundfonts <command>
   list                                          the bundled bank and every catalogue font, with licence and size
-  fetch <font> (--midi <file>... | --programs <list>) [--out <file.sf2>] [--source <url|folder>] [--accept-licence]
-                                                one SoundFont 2 holding just those instruments (programs: 0,24,128:0)
+  fetch <font> (--midi <file>... | --programs <list>) [--out <file>] [--source <url|folder>] [--accept-licence] [--sf2]
+                                                one font holding just those instruments (programs: 0,24,128:0),
+                                                a SoundFont 3 the game decodes with loadSoundFont, or with --sf2
+                                                a decoded SoundFont 2 (needs ffmpeg on PATH)
   convert <in.sf3> <out.sf2>                    SoundFont 3 to SoundFont 2 (needs ffmpeg on PATH)`;
 
 function formatList(catalog) {
@@ -341,7 +259,7 @@ async function main(argv) {
 	} else if (command === 'convert') {
 		const [input, output] = rest;
 		if (!input || !output) throw new Error('usage: mwg-soundfonts convert <in.sf3> <out.sf2>');
-		writeFileSync(output, sf3ToSf2(readFileSync(input)));
+		writeFileSync(output, await sf3ToSf2(readFileSync(input)));
 		console.log(`wrote ${output}`);
 	} else if (command === 'fetch') {
 		const name = rest.find((arg) => !arg.startsWith('--'));
@@ -349,7 +267,7 @@ async function main(argv) {
 		const programs = flag('--programs') ? parseProgramList(flag('--programs')) : [];
 		const midiFiles = valuesAfter('--midi');
 		if (midiFiles.length > 0) {
-			const { parseMidi, collectSoundFontUsage } = await import('../dist/audio/index.js');
+			const { collectSoundFontUsage, parseMidi } = await loadLibrary();
 			programs.push(...collectSoundFontUsage(midiFiles.map((file) => parseMidi(readFileSync(file)))));
 		}
 		const result = await fetchSoundFont({
@@ -357,11 +275,12 @@ async function main(argv) {
 			programs,
 			source: flag('--source'),
 			acceptLicence: rest.includes('--accept-licence'),
+			format: rest.includes('--sf2') ? 'sf2' : 'sf3',
 		});
-		const out = resolve(flag('--out') ?? `${name}.sf2`);
+		const out = resolve(flag('--out') ?? `${name}.${result.format}`);
 		mkdirSync(dirname(out), { recursive: true });
 		writeFileSync(out, result.bytes);
-		writeFileSync(out.replace(/\.sf2$/, '') + '.credits.txt', creditsFor(result.font, result.found));
+		writeFileSync(out.replace(/\.sf[23]$/, '') + '.credits.txt', creditsFor(result.font, result.found));
 		console.log(`wrote ${out}: ${result.found.length} programs, ${(result.bytes.length / 1024).toFixed(0)} KB`);
 		if (result.missing.length > 0) {
 			console.log(

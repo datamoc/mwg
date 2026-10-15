@@ -6155,3 +6155,16 @@ example already draws.
   the additive overlay `Halo` provides, with colour, radius, intensity and flicker,
   honouring reduced motion by holding peak. The local-file WebGL check lights three signs
   with a screenshot. No global bloom.
+427. **SoundFont 3 at runtime** (2026-10-16). A game ships its SoundFont compressed and
+  decodes it where it runs. `subsetSoundFont` and `mergeSoundFonts` handle a SoundFont 3 without
+  decoding it (Ogg bytes copied untouched, loop points left relative), `compileResources`
+  embeds and subsets `.sf3` assets, `decodeSoundFont` turns one into SoundFont 2 bytes through a
+  decoder (an unreachable sample is never decoded), and `loadSoundFont` reads either kind.
+  `webAudioSampleDecoder` is the browser decoder: each sample decodes in a context created at
+  its own rate so `decodeAudioData` never resamples it. `mwg-soundfonts fetch` now writes a
+  SoundFont 3 by default (no `ffmpeg`), `--sf2` decodes. Verified in Chrome against `ffmpeg`:
+  identical frame counts, rates, loop points and render peak for FluidR3's piano, guitar and
+  drums, 2.7 MB shipped against 20 MB decoded, 0.5 s to decode. A font whose offsets lie is
+  refused. The async renderer takes the SoundFont 2 bytes `decodeSoundFont` returns. FLAC
+  inside a SoundFont 3 was weighed and left out: it is not what the format means, and it is
+  several times the size of Vorbis.

@@ -413,9 +413,7 @@ empty (branch `master` has no commits, so the work remains loose files on this d
 2026-09-20 and 2026-09-15 results stand as the last recorded run, this box stays open, and
 what this machine owed the line was the location - now recorded here.
 
-427. **SoundFont 3 at runtime.** `mwg-soundfonts` converts SoundFont 3 to SoundFont 2 on the
-developer machine, which makes a fetched font several times larger (FluidR3's piano, guitar and
-drums: 3.5 MB as sf3, 22 MB as sf2) because a SoundFont 2 is raw 16-bit PCM. Keeping the Ogg
-bytes in the shipped page and decoding them through `decodeAudioData` at load would cut that,
-at the price of an async decode step in the browser and no offline render in plain Node.
-Weigh it against a game's real MIDI usage before building it.
+Item 427 (SoundFont 3 at runtime) is implemented; see [CLOSED.md](CLOSED.md). Priority review,
+2026-10-16: nothing else open can be built from this repository. 401 waits for a port session
+on the consumer side, 412 is done and proven by the next release staging both packages, and
+every parked decision below still waits on what its note says (fixtures, weights, a consumer).

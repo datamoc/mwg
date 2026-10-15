@@ -25,7 +25,16 @@ export type {
 } from './Midi.ts';
 export { renderMidiToBuffer, renderMidiToBufferAsync } from './MidiRender.ts';
 export type { RenderMidiOptions, RenderMidiAsyncOptions, RenderedMidi } from './MidiRender.ts';
-export { collectSoundFontUsage, mergeSoundFonts, parseSoundFont, subsetSoundFont } from './SoundFont.ts';
+export {
+	collectSoundFontUsage,
+	decodeSoundFont,
+	loadSoundFont,
+	mergeSoundFonts,
+	parseSoundFont,
+	subsetSoundFont,
+} from './SoundFont.ts';
+export { webAudioSampleDecoder } from './SampleDecoder.ts';
+export type { SampleDecodingContext, SoundFontSampleDecoder } from './SampleDecoder.ts';
 export type { SoundFont, SoundFontProgram, SoundFontSample, SoundFontVoice } from './SoundFont.ts';
 export { Channel, AudioBus } from './Channels.ts';
 export { parseVorbisLoopTags, loopRegionFromTags } from './LoopTags.ts';

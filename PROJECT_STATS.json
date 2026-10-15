@@ -4,8 +4,8 @@
 	"version": "0.41.0",
 	"releaseDate": "2026-10-15",
 	"source": {
-		"files": 357,
-		"lines": 67677,
+		"files": 358,
+		"lines": 67894,
 		"modules": 20,
 		"breakdown": [
 			{
@@ -30,8 +30,8 @@
 			},
 			{
 				"name": "audio",
-				"files": 21,
-				"lines": 4858
+				"files": 22,
+				"lines": 5075
 			},
 			{
 				"name": "roguelike",
@@ -111,13 +111,13 @@
 		]
 	},
 	"tests": {
-		"files": 330,
-		"lines": 45199,
-		"cases": 3021
+		"files": 332,
+		"lines": 45429,
+		"cases": 3035
 	},
 	"tools": {
 		"files": 60,
-		"lines": 12340
+		"lines": 12260
 	},
 	"examples": {
 		"count": 27,
@@ -158,12 +158,12 @@
 		"percent": 96
 	},
 	"api": {
-		"declarationFiles": 357
+		"declarationFiles": 358
 	},
 	"bundle": {
-		"globalRaw": 1294396,
-		"globalGzip": 387251,
-		"distRaw": 4711471
+		"globalRaw": 1296841,
+		"globalGzip": 388056,
+		"distRaw": 4725675
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

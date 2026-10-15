@@ -10,8 +10,9 @@ the public API may still change between minor versions.
 ## [0.41.0] - 2026-10-15
 
 `microgm-opt` stays the default SoundFont, and a game that wants another one can now pick it:
-a licence-classified catalogue of a per-instrument collection and a tool that fetches only the
-instruments the game plays.
+a licence-classified catalogue of a per-instrument collection, a tool that fetches only the
+instruments the game plays, and SoundFont 3 support from the build to the browser, so the
+font reaches the page compressed and is decoded at load.
 
 ### Added
 
@@ -20,16 +21,27 @@ instruments the game plays.
   free-soundfonts collection with each licence classified (public domain, permissive and
   attribution fetch freely; share-alike, copyleft and unclear ones need `--accept-licence`;
   TimGM6mb is listed as GPL-2.0 where the collection says public domain). `fetch` takes the
-  instruments named by `--midi` files or `--programs`, converts each from SoundFont 3
-  (Ogg Vorbis decoded by `ffmpeg`, a developer-machine tool) and writes one SoundFont 2 with a
-  `.credits.txt` beside it. `convert` turns any SoundFont 3 into SoundFont 2.
-- `mergeSoundFonts` (`audio`): joins SoundFont 2 files into one, the first font winning a
-  shared (bank, program).
+  instruments named by `--midi` files or `--programs` and merges them into one SoundFont 3 with
+  a `.credits.txt` beside it: nothing is decoded, so no `ffmpeg`. `--sf2` and `convert` decode
+  to a plain SoundFont 2 instead (Ogg Vorbis through `ffmpeg`, a developer-machine tool), about
+  eight times larger.
+- `loadSoundFont`, `decodeSoundFont` and `webAudioSampleDecoder` (`audio`): a game reads the
+  SoundFont 2 or 3 it ships with `loadSoundFont`, a SoundFont 3 decoded once at load through
+  `decodeAudioData` (each sample in a context at its own rate, so no resampling), or through a
+  decoder the caller passes. Checked in Chrome against `ffmpeg`: the same frames, rates and
+  loop points, and the same render. `decodeSoundFont` returns the SoundFont 2 bytes for
+  anything that takes them.
+- `compileResources`, `emitPage` and `mwgPage` embed `.sf3` assets and subset them to the
+  programs the game's MIDI files use, the Ogg bytes copied untouched.
+- `mergeSoundFonts` (`audio`): joins SoundFont 2 files, or SoundFont 3 files with their Ogg
+  bytes untouched, into one, the first font winning a shared (bank, program).
 
 ### Fixed
 
-- `parseSoundFont` (and so `subsetSoundFont` and the asset compiler) refuses a SoundFont 3 by
-  name instead of reading its Ogg bytes as PCM and playing noise.
+- `parseSoundFont` refuses a SoundFont 3 by name (pointing at `loadSoundFont`) instead of
+  reading its Ogg bytes as PCM and playing noise.
+- A SoundFont whose sample offsets point outside its sample data is refused when read, rather
+  than read beyond it.
 - `mwg-soundfonts` treats the font as untrusted input: a sample whose offsets point outside the
   sample data is refused instead of copied from beyond it, and `ffmpeg` only ever receives bytes
   that start with the Ogg magic, with the demuxer forced to Ogg and only the `pipe` protocol

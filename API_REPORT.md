@@ -9140,6 +9140,10 @@ build instead.
 
     export declare function createAudio(path: string): Playable;
 
+### `decodeSoundFont` (function)
+
+    export declare function decodeSoundFont(data: ArrayBuffer | ArrayBufferView, decode: SoundFontSampleDecoder): Promise<ArrayBuffer>;
+
 ### `GridSubdivision` (type)
 
     export type GridSubdivision = '8n' | '16n' | '32n';
@@ -9280,6 +9284,11 @@ build instead.
         buffer: AudioBuffer;
         loop?: LoopRegion | null;
     }
+
+### `loadSoundFont` (function)
+
+    export declare function loadSoundFont(data: ArrayBuffer | ArrayBufferView, options?: {
+        decode?: SoundFontSampleDecoder;
 
 ### `LoopRegion` (interface)
 
@@ -9583,6 +9592,16 @@ build instead.
 
     export declare function renderMidiToBufferAsync(midi: ArrayBuffer | ArrayBufferView, options?: RenderMidiAsyncOptions): Promise<RenderedMidi>;
 
+### `SampleDecodingContext` (interface)
+
+    export interface SampleDecodingContext {
+        decodeAudioData(data: ArrayBuffer): Promise<{
+            sampleRate: number;
+            length: number;
+            getChannelData(channel: number): Float32Array;
+        }>;
+    }
+
 ### `SavedBusTrack` (interface)
 
     export interface SavedBusTrack {
@@ -9650,6 +9669,10 @@ build instead.
         loopStart: number;
         loopEnd: number;
     }
+
+### `SoundFontSampleDecoder` (type)
+
+    export type SoundFontSampleDecoder = (ogg: Uint8Array, rate: number) => Int16Array | Promise<Int16Array>;
 
 ### `SoundFontVoice` (interface)
 
@@ -9751,6 +9774,10 @@ build instead.
 ### `Waveform` (type)
 
     export type Waveform = 'square' | 'triangle' | 'sine' | 'noise';
+
+### `webAudioSampleDecoder` (function)
+
+    export declare function webAudioSampleDecoder(create?: (rate: number) => SampleDecodingContext): SoundFontSampleDecoder;
 
 ## `./battle`
 
