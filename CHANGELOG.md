@@ -7,6 +7,18 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.39.1] - 2026-10-15
+
+Fixes the 0.39.0 publish gate on Linux: the WebP skip-shrink test asserted one
+platform's encoder answer instead of the real guarantee, and failed where sharp
+genuinely shrinks the noise fixture.
+
+### Fixed
+
+- The WebP test embeds whichever encoding is smaller and asserts byte-exact output
+  with a lossless round-trip either way, instead of assuming the conversion always
+  loses on tiny noise.
+
 ## [0.39.0] - 2026-10-15
 
 The skeleton cluster (two-bone IK, joint limits, full clip channels, diagnostics, SVG
