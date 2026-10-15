@@ -7,7 +7,7 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
-## [0.41.0] - 2026-10-15
+## [0.41.0] - 2026-10-16
 
 `microgm-opt` stays the default SoundFont, and a game that wants another one can now pick it:
 a licence-classified catalogue of a per-instrument collection, a tool that fetches only the

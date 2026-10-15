@@ -2,7 +2,7 @@
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
 	"version": "0.41.0",
-	"releaseDate": "2026-10-15",
+	"releaseDate": "2026-10-16",
 	"source": {
 		"files": 358,
 		"lines": 67922,
