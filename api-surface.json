@@ -486,6 +486,18 @@
 		"declaringModule": "core/Clone.d.ts"
 	},
 	{
+		"name": "ClothSprite",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/ClothSprite.d.ts"
+	},
+	{
+		"name": "ClothSpriteOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/ClothSprite.d.ts"
+	},
+	{
 		"name": "Collection",
 		"kind": "class",
 		"subpath": ".",
@@ -628,6 +640,24 @@
 		"kind": "const",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/theme.d.ts"
+	},
+	{
+		"name": "DeformableSprite",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
+	},
+	{
+		"name": "DeformableSpriteOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
+	},
+	{
+		"name": "DeformPoint",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
 	},
 	{
 		"name": "deserializeReplay",
@@ -990,6 +1020,18 @@
 		"declaringModule": "core/Random.d.ts"
 	},
 	{
+		"name": "glowFalloff",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
+		"name": "GlowPaint",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
 		"name": "GlyphLayout",
 		"kind": "interface",
 		"subpath": ".",
@@ -1066,6 +1108,30 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/render/ColorTransformBatcher.d.ts"
+	},
+	{
+		"name": "hazeField",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
+	},
+	{
+		"name": "HazeLayer",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
+	},
+	{
+		"name": "HazeLayerOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
+	},
+	{
+		"name": "HazePaint",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
 	},
 	{
 		"name": "HelpScreen",
@@ -1398,6 +1464,12 @@
 		"declaringModule": "two-d/ui/ListView.d.ts"
 	},
 	{
+		"name": "LoadedSvgSkeleton",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SvgSkeleton.d.ts"
+	},
+	{
 		"name": "LoadedTiledMap",
 		"kind": "interface",
 		"subpath": ".",
@@ -1432,6 +1504,12 @@
 		"kind": "type",
 		"subpath": ".",
 		"declaringModule": "core/Loading.d.ts"
+	},
+	{
+		"name": "loadSvgSkeleton",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SvgSkeleton.d.ts"
 	},
 	{
 		"name": "LoadTask",
@@ -1740,6 +1818,18 @@
 		"declaringModule": "core/Grid.d.ts"
 	},
 	{
+		"name": "NeonGlow",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
+		"name": "NeonGlowOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
 		"name": "newlyRevealed",
 		"kind": "function",
 		"subpath": ".",
@@ -1822,6 +1912,18 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "two-d/render/FogLayer.d.ts"
+	},
+	{
+		"name": "paintGlowPixels",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
+		"name": "paintHazePixels",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
 	},
 	{
 		"name": "PaletteMapping",
@@ -1966,6 +2068,18 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
+		"name": "PinnedDeform",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
+	},
+	{
+		"name": "PinnedDeformOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
 	},
 	{
 		"name": "pixelToHex",
@@ -2832,6 +2946,18 @@
 		"declaringModule": "two-d/render/Viewport.d.ts"
 	},
 	{
+		"name": "SpringSprite",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SpringSprite.d.ts"
+	},
+	{
+		"name": "SpringSpriteOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SpringSprite.d.ts"
+	},
+	{
 		"name": "Sprite2D",
 		"kind": "class",
 		"subpath": ".",
@@ -3034,6 +3160,18 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/markup.d.ts"
+	},
+	{
+		"name": "SvgBoneBinding",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SvgSkeleton.d.ts"
+	},
+	{
+		"name": "SvgSkeletonOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SvgSkeleton.d.ts"
 	},
 	{
 		"name": "SyncGuard",
@@ -4800,6 +4938,12 @@
 		"declaringModule": "assets/binary.d.ts"
 	},
 	{
+		"name": "loadSvgParts",
+		"kind": "function",
+		"subpath": "./assets",
+		"declaringModule": "assets/SvgParts.d.ts"
+	},
+	{
 		"name": "OnByteProgress",
 		"kind": "type",
 		"subpath": "./assets",
@@ -4822,6 +4966,12 @@
 		"kind": "function",
 		"subpath": "./assets",
 		"declaringModule": "assets/binary.d.ts"
+	},
+	{
+		"name": "releaseSvgParts",
+		"kind": "function",
+		"subpath": "./assets",
+		"declaringModule": "assets/SvgParts.d.ts"
 	},
 	{
 		"name": "resolve",
@@ -4864,6 +5014,12 @@
 		"kind": "function",
 		"subpath": "./assets",
 		"declaringModule": "assets/svg.d.ts"
+	},
+	{
+		"name": "SvgPartsOptions",
+		"kind": "interface",
+		"subpath": "./assets",
+		"declaringModule": "assets/SvgParts.d.ts"
 	},
 	{
 		"name": "svgScaleVariants",
@@ -9210,6 +9366,18 @@
 		"declaringModule": "physics/PhysicsWorld.d.ts"
 	},
 	{
+		"name": "Cloth",
+		"kind": "class",
+		"subpath": "./physics",
+		"declaringModule": "physics/cloth/index.d.ts"
+	},
+	{
+		"name": "ClothOptions",
+		"kind": "interface",
+		"subpath": "./physics",
+		"declaringModule": "physics/cloth/index.d.ts"
+	},
+	{
 		"name": "ConstraintOptions",
 		"kind": "interface",
 		"subpath": "./physics",
@@ -9217,13 +9385,13 @@
 	},
 	{
 		"name": "PhysicsBody",
-		"kind": "type",
+		"kind": "interface",
 		"subpath": "./physics",
 		"declaringModule": "physics/PhysicsWorld.d.ts"
 	},
 	{
 		"name": "PhysicsConstraint",
-		"kind": "type",
+		"kind": "interface",
 		"subpath": "./physics",
 		"declaringModule": "physics/PhysicsWorld.d.ts"
 	},
@@ -9238,6 +9406,18 @@
 		"kind": "class",
 		"subpath": "./physics",
 		"declaringModule": "physics/PhysicsWorld.d.ts"
+	},
+	{
+		"name": "Spring",
+		"kind": "class",
+		"subpath": "./physics",
+		"declaringModule": "physics/spring/index.d.ts"
+	},
+	{
+		"name": "SpringOptions",
+		"kind": "interface",
+		"subpath": "./physics",
+		"declaringModule": "physics/spring/index.d.ts"
 	},
 	{
 		"name": "XpbdGround",
@@ -10608,6 +10788,18 @@
 		"declaringModule": "skeleton/index.d.ts"
 	},
 	{
+		"name": "advancePose",
+		"kind": "function",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "AffineMatrix",
+		"kind": "interface",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
 		"name": "Bone",
 		"kind": "interface",
 		"subpath": "./skeleton",
@@ -10698,8 +10890,32 @@
 		"declaringModule": "skeleton/index.d.ts"
 	},
 	{
+		"name": "sampleTransformPose",
+		"kind": "function",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
 		"name": "SkeletonBones",
 		"kind": "interface",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "solveTwoBoneIK",
+		"kind": "function",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "TransformPose",
+		"kind": "interface",
+		"subpath": "./skeleton",
+		"declaringModule": "skeleton/index.d.ts"
+	},
+	{
+		"name": "validatePose",
+		"kind": "function",
 		"subpath": "./skeleton",
 		"declaringModule": "skeleton/index.d.ts"
 	},
@@ -10780,6 +10996,12 @@
 		"kind": "interface",
 		"subpath": "./threads",
 		"declaringModule": "threads/spawn.d.ts"
+	},
+	{
+		"name": "./tools/asset-report",
+		"kind": "tool",
+		"subpath": "./tools/asset-report",
+		"declaringModule": "tools/asset-report.mjs"
 	},
 	{
 		"name": "./tools/audit-adoptions",
@@ -11274,6 +11496,18 @@
 		"declaringModule": "two-d/ui/MessageBox.d.ts"
 	},
 	{
+		"name": "ClothSprite",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/ClothSprite.d.ts"
+	},
+	{
+		"name": "ClothSpriteOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/ClothSprite.d.ts"
+	},
+	{
 		"name": "COLOR_BLINDNESS_MATRICES",
 		"kind": "const",
 		"subpath": "./two-d",
@@ -11362,6 +11596,24 @@
 		"kind": "const",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/theme.d.ts"
+	},
+	{
+		"name": "DeformableSprite",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
+	},
+	{
+		"name": "DeformableSpriteOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
+	},
+	{
+		"name": "DeformPoint",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
 	},
 	{
 		"name": "detectWebGpu",
@@ -11604,6 +11856,18 @@
 		"declaringModule": "two-d/Game.d.ts"
 	},
 	{
+		"name": "glowFalloff",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
+		"name": "GlowPaint",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
 		"name": "GlyphLayout",
 		"kind": "interface",
 		"subpath": "./two-d",
@@ -11674,6 +11938,30 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/ColorTransformBatcher.d.ts"
+	},
+	{
+		"name": "hazeField",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
+	},
+	{
+		"name": "HazeLayer",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
+	},
+	{
+		"name": "HazeLayerOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
+	},
+	{
+		"name": "HazePaint",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
 	},
 	{
 		"name": "HelpScreen",
@@ -11874,6 +12162,12 @@
 		"declaringModule": "two-d/ui/ListView.d.ts"
 	},
 	{
+		"name": "LoadedSvgSkeleton",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SvgSkeleton.d.ts"
+	},
+	{
 		"name": "LoadedTiledMap",
 		"kind": "interface",
 		"subpath": "./two-d",
@@ -11890,6 +12184,12 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/LoadingScreen.d.ts"
+	},
+	{
+		"name": "loadSvgSkeleton",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SvgSkeleton.d.ts"
 	},
 	{
 		"name": "loadTiledMap",
@@ -12096,6 +12396,18 @@
 		"declaringModule": "two-d/render/Autotile.d.ts"
 	},
 	{
+		"name": "NeonGlow",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
+		"name": "NeonGlowOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
 		"name": "newlyRevealed",
 		"kind": "function",
 		"subpath": "./two-d",
@@ -12148,6 +12460,18 @@
 		"kind": "function",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/FogLayer.d.ts"
+	},
+	{
+		"name": "paintGlowPixels",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
+		"name": "paintHazePixels",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
 	},
 	{
 		"name": "PaletteMapping",
@@ -12256,6 +12580,18 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/Particles.d.ts"
+	},
+	{
+		"name": "PinnedDeform",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
+	},
+	{
+		"name": "PinnedDeformOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
 	},
 	{
 		"name": "PositionedMarkupSpan",
@@ -12768,6 +13104,18 @@
 		"declaringModule": "two-d/render/Viewport.d.ts"
 	},
 	{
+		"name": "SpringSprite",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SpringSprite.d.ts"
+	},
+	{
+		"name": "SpringSpriteOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SpringSprite.d.ts"
+	},
+	{
 		"name": "Sprite2D",
 		"kind": "class",
 		"subpath": "./two-d",
@@ -12928,6 +13276,18 @@
 		"kind": "function",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/markup.d.ts"
+	},
+	{
+		"name": "SvgBoneBinding",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SvgSkeleton.d.ts"
+	},
+	{
+		"name": "SvgSkeletonOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SvgSkeleton.d.ts"
 	},
 	{
 		"name": "TabbedList",
@@ -13632,6 +13992,18 @@
 		"declaringModule": "two-d/render/ImageModifiers.d.ts"
 	},
 	{
+		"name": "ClothSprite",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/ClothSprite.d.ts"
+	},
+	{
+		"name": "ClothSpriteOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/ClothSprite.d.ts"
+	},
+	{
 		"name": "COLOR_BLINDNESS_MATRICES",
 		"kind": "const",
 		"subpath": "./two-d/render",
@@ -13684,6 +14056,24 @@
 		"kind": "function",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/ImageModifiers.d.ts"
+	},
+	{
+		"name": "DeformableSprite",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
+	},
+	{
+		"name": "DeformableSpriteOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
+	},
+	{
+		"name": "DeformPoint",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
 	},
 	{
 		"name": "detectWebGpu",
@@ -13758,6 +14148,18 @@
 		"declaringModule": "two-d/render/Particles.d.ts"
 	},
 	{
+		"name": "glowFalloff",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
+		"name": "GlowPaint",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
 		"name": "Gradient",
 		"kind": "const",
 		"subpath": "./two-d/render",
@@ -13804,6 +14206,30 @@
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/ColorTransformBatcher.d.ts"
+	},
+	{
+		"name": "hazeField",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
+	},
+	{
+		"name": "HazeLayer",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
+	},
+	{
+		"name": "HazeLayerOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
+	},
+	{
+		"name": "HazePaint",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
 	},
 	{
 		"name": "hexRotate",
@@ -13878,10 +14304,22 @@
 		"declaringModule": "two-d/render/LiquidLayer.d.ts"
 	},
 	{
+		"name": "LoadedSvgSkeleton",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SvgSkeleton.d.ts"
+	},
+	{
 		"name": "LoadedTiledMap",
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/TiledMap.d.ts"
+	},
+	{
+		"name": "loadSvgSkeleton",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SvgSkeleton.d.ts"
 	},
 	{
 		"name": "loadTiledMap",
@@ -13944,6 +14382,18 @@
 		"declaringModule": "two-d/render/Autotile.d.ts"
 	},
 	{
+		"name": "NeonGlow",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
+		"name": "NeonGlowOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
 		"name": "newlyRevealed",
 		"kind": "function",
 		"subpath": "./two-d/render",
@@ -13978,6 +14428,18 @@
 		"kind": "function",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/FogLayer.d.ts"
+	},
+	{
+		"name": "paintGlowPixels",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/NeonGlow.d.ts"
+	},
+	{
+		"name": "paintHazePixels",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/HazeLayer.d.ts"
 	},
 	{
 		"name": "PaletteMapping",
@@ -14068,6 +14530,18 @@
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/Particles.d.ts"
+	},
+	{
+		"name": "PinnedDeform",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
+	},
+	{
+		"name": "PinnedDeformOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SpriteDeform.d.ts"
 	},
 	{
 		"name": "Projectile",
@@ -14322,6 +14796,18 @@
 		"declaringModule": "two-d/render/Viewport.d.ts"
 	},
 	{
+		"name": "SpringSprite",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SpringSprite.d.ts"
+	},
+	{
+		"name": "SpringSpriteOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SpringSprite.d.ts"
+	},
+	{
 		"name": "Sprite2D",
 		"kind": "class",
 		"subpath": "./two-d/render",
@@ -14398,6 +14884,18 @@
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/StatusVisuals.d.ts"
+	},
+	{
+		"name": "SvgBoneBinding",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SvgSkeleton.d.ts"
+	},
+	{
+		"name": "SvgSkeletonOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SvgSkeleton.d.ts"
 	},
 	{
 		"name": "TerrainCondition",

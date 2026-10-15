@@ -125,8 +125,10 @@ export function splitSvgGroups(source: string): Record<string, string> {
 	const root = /^([\s\S]*?)<svg([^>]*)>/i.exec(inert);
 	const close = inert.lastIndexOf('</svg>');
 	if (!root || close < 0) throw new Error('SVG group split needs an <svg> root');
-	const body = inert.slice(root[0].length, close);
-	const parts: Record<string, string> = {};
+	const rawBody = inert.slice(root[0].length, close);
+	const shared = [...rawBody.matchAll(/<(defs|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi)].map((match) => match[0]).join('');
+	const body = rawBody.replace(/<(defs|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
+	const parts: Record<string, string> = Object.create(null);
 	let position = 0;
 	while (position < body.length) {
 		const open = /<g\b([^>]*?)(\/?)>/i.exec(body.slice(position));
@@ -138,7 +140,7 @@ export function splitSvgGroups(source: string): Record<string, string> {
 			//a self-closing group is an empty part, not a walk that never closes
 			if (!id) throw new Error('SVG group split refuses a group with no id');
 			if (id in parts) throw new Error(`SVG group split refuses a duplicate id ${id}`);
-			parts[id] = `${root[0]}</svg>`;
+			parts[id] = `${root[0]}${shared}${open[0]}</svg>`;
 			position = contentStart;
 			continue;
 		}
@@ -152,14 +154,15 @@ export function splitSvgGroups(source: string): Record<string, string> {
 			if (next[0]!.startsWith('</')) {
 				depth--;
 				if (depth === 0) closer = next[0]!;
-			} else depth++;
+			} else if (!/\/\s*>$/.test(next[0]!)) depth++;
 			cursor += next.index! + next[0].length;
 		}
+		if (depth !== 0) throw new Error(`SVG group ${id ?? '<unnamed>'} never closes`);
 		const content = body.slice(contentStart, cursor - closer.length);
 		position = cursor;
 		if (!id) throw new Error('SVG group split refuses a group with no id');
 		if (id in parts) throw new Error(`SVG group split refuses a duplicate id ${id}`);
-		parts[id] = `${root[0]}${content}</svg>`;
+		parts[id] = `${root[0]}${shared}${open[0]}${content}</g></svg>`;
 	}
 	if (Object.keys(parts).length === 0) throw new Error('SVG group split found no named groups');
 	return parts;

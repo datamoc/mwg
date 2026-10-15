@@ -1,10 +1,11 @@
-import { Container } from 'pixi.js';
+import { Container, Graphics, Matrix } from 'pixi.js';
 import {
 	advance as advanceMixer,
 	resolve,
 	type BoneTransform,
 	type Mixer,
 	type Pose,
+	type TransformPose,
 	type SkeletonBones,
 } from '../../skeleton/index.ts';
 import { TintedSprite } from './TintedSprite.ts';
@@ -47,6 +48,7 @@ export class SkeletalSprite extends Container {
 	private readonly skeleton: SkeletonBones;
 	private readonly parts = new Map<string, TintedSprite>();
 	private readonly mixer: Mixer | undefined;
+	private diagnostics?: Graphics;
 
 	constructor(skeleton: SkeletonBones, mixer?: Mixer) {
 		super();
@@ -68,13 +70,37 @@ export class SkeletalSprite extends Container {
 	}
 
 	/** apply a pose directly; `update` does this itself when a mixer was given */
-	apply(pose: Pose): void {
+	apply(pose: Pose | TransformPose): void {
 		const transforms = new Map(resolve(this.skeleton, pose).map((bone: BoneTransform) => [bone.name, bone]));
 		for (const [bone, sprite] of this.parts) {
 			const transform = transforms.get(bone);
 			if (!transform) throw new Error(`skeletal sprite binds no bone named ${bone}`);
-			sprite.position.set(transform.x, transform.y);
-			sprite.rotation = (transform.angle * Math.PI) / 180;
+			const { a, b, c, d } = transform.matrix;
+			sprite.setFromMatrix(new Matrix(a, b, c, d, transform.x, transform.y));
+		}
+		if (this.diagnostics) {
+			this.setChildIndex(this.diagnostics, this.children.length - 1);
+			const graphics = this.diagnostics.clear();
+			for (const bone of transforms.values()) {
+				graphics.moveTo(bone.x, bone.y).lineTo(bone.tipX, bone.tipY).stroke({ color: 0x00ffff, width: 2 });
+				graphics.circle(bone.x, bone.y, 4).fill(0xffdd00);
+				graphics.circle(bone.tipX, bone.tipY, 2).fill(0xff4488);
+				graphics
+					.moveTo(bone.x - 7, bone.y)
+					.lineTo(bone.x + 7, bone.y)
+					.moveTo(bone.x, bone.y - 7)
+					.lineTo(bone.x, bone.y + 7)
+					.stroke({ color: 0xffdd00, width: 1 });
+			}
+		}
+	}
+
+	/** Explicit development opt-in. Disabled rigs allocate no overlay and draw no diagnostics. */
+	setDiagnostics(enabled: boolean): void {
+		if (enabled && !this.diagnostics) this.diagnostics = this.addChild(new Graphics());
+		if (!enabled && this.diagnostics) {
+			this.diagnostics.destroy();
+			this.diagnostics = undefined;
 		}
 	}
 

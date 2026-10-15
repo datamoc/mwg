@@ -86,7 +86,7 @@ export interface XpbdLink {
  *
  * It is the engine of Pontifex (a bridge-building game), generalised: the vehicle, the water
  * and the levels stay in the game, and what is here is only nodes, links, forces and breaking.
- * Unlike `PhysicsWorld` it has no rigid bodies or collisions and no `matter-js` dependency.
+ * Unlike `PhysicsWorld` it has no rigid bodies or collisions: nodes and links only.
  *
  * @example
  * ```ts

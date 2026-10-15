@@ -76,3 +76,15 @@ test('group split refuses what it cannot prove by name', () => {
 	assert.throws(() => splitSvgGroups('<svg><rect/></svg>'), /no named groups/);
 	assert.throws(() => splitSvgGroups('<svg><script/></svg>'), /refused/);
 });
+
+test('SVG parts retain shared definitions, group transforms and nested empty groups', () => {
+	const parts = splitSvgGroups(
+		'<svg viewBox="0 0 20 20"><defs><linearGradient id="paint"/></defs><style>.car{fill:red}</style><g id="body" transform="translate(2 3)" opacity=".5"><g/><rect fill="url(#paint)"/></g><g id="wheel"/></svg>',
+	);
+	assert.ok(parts.body.includes('<defs>'));
+	assert.ok(parts.body.includes('<style>'));
+	assert.ok(parts.body.includes('transform="translate(2 3)" opacity=".5"'));
+	assert.ok(parts.body.includes('<g/>'));
+	assert.ok(parts.wheel.includes('<g id="wheel"/>'));
+	assert.throws(() => splitSvgGroups('<svg><g id="a"><g></g></svg>'), /never closes/);
+});

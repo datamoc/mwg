@@ -932,6 +932,67 @@ build instead.
 
     export declare function cloneData<T>(value: T, label: string): T;
 
+### `ClothSprite` (class)
+
+    export declare class ClothSprite extends MeshPlane {
+        private readonly cloth;
+        private readonly intent;
+        constructor(texture: Texture2D, options?: ClothSpriteOptions);
+
+        get segmentsX(): number;
+
+        get segmentsY(): number;
+
+        get pointCount(): number;
+
+        indexOf(column: number, row: number): number;
+
+        pointPosition(index: number): {
+            x: number;
+            y: number;
+        };
+
+        isPinned(index: number): boolean;
+
+        movedCount(): number;
+
+        pinPoint(index: number): void;
+
+        unpinPoint(index: number): void;
+
+        setWind(x: number, y: number): void;
+
+        setGravity(x: number, y: number): void;
+
+        update(dt: number): void;
+        private sync;
+    }
+
+### `ClothSpriteOptions` (interface)
+
+    export interface ClothSpriteOptions {
+
+        segmentsX?: number;
+
+        segmentsY?: number;
+
+        stiffness?: number;
+
+        damping?: number;
+
+        gravity?: {
+            x: number;
+            y: number;
+        };
+
+        wind?: {
+            x: number;
+            y: number;
+        };
+
+        intent?: MotionIntent;
+    }
+
 ### `Collection` (class)
 
     export declare class Collection {
@@ -1118,6 +1179,57 @@ build instead.
 ### `defaultTheme` (const)
 
     export declare const defaultTheme: Theme;
+
+### `DeformableSprite` (class)
+
+    export declare class DeformableSprite extends MeshPlane {
+        private readonly deform;
+        constructor(texture: Texture2D, options?: DeformableSpriteOptions);
+        private positionArray;
+        private sync;
+
+        get columns(): number;
+
+        get rows(): number;
+
+        get count(): number;
+
+        indexOf(column: number, row: number): number;
+
+        restAt(index: number): DeformPoint;
+
+        vertexAt(index: number): DeformPoint;
+
+        isMoved(index: number): boolean;
+
+        movedCount(): number;
+
+        dragVertex(index: number, x: number, y: number): void;
+
+        dragVertices(points: ReadonlyArray<DeformPoint & {
+            index: number;
+        }>): void;
+
+        nudgeVertex(index: number, dx: number, dy: number): void;
+
+        resetVertices(index?: number): void;
+    }
+
+### `DeformableSpriteOptions` (interface)
+
+    export interface DeformableSpriteOptions {
+
+        columns?: number;
+
+        rows?: number;
+    }
+
+### `DeformPoint` (interface)
+
+    export interface DeformPoint {
+        x: number;
+        y: number;
+    }
 
 ### `deserializeReplay` (function)
 
@@ -1743,6 +1855,21 @@ build instead.
         private rotl;
     }
 
+### `glowFalloff` (function)
+
+    export declare function glowFalloff(distance: number, radius: number): number;
+
+### `GlowPaint` (interface)
+
+    export interface GlowPaint {
+
+        color: number;
+
+        radius: number;
+
+        intensity: number;
+    }
+
 ### `GlyphLayout` (interface)
 
     export interface GlyphLayout {
@@ -1868,6 +1995,78 @@ build instead.
     export interface HasColorAdd {
 
         colorAdd?: number;
+    }
+
+### `hazeField` (function)
+
+    export declare function hazeField(x: number, y: number, time: number, seed: number): number;
+
+### `HazeLayer` (class)
+
+    export declare class HazeLayer extends Sprite {
+        private readonly context;
+        private readonly image;
+        private readonly cellsX;
+        private readonly cellsY;
+        private readonly drift;
+        private readonly seed;
+        private readonly intent;
+        private density;
+        private time;
+        constructor(options: HazeLayerOptions);
+
+        get elapsed(): number;
+
+        setDensity(density: number): void;
+
+        update(dt: number): void;
+        private refresh;
+
+        destroy(): void;
+    }
+
+### `HazeLayerOptions` (interface)
+
+    export interface HazeLayerOptions {
+
+        width: number;
+
+        height: number;
+
+        cellsX?: number;
+
+        cellsY?: number;
+
+        density?: number;
+
+        tint?: number;
+
+        opacity?: number;
+
+        drift?: {
+            x: number;
+            y: number;
+        };
+
+        seed?: number;
+
+        intent?: MotionIntent;
+    }
+
+### `HazePaint` (interface)
+
+    export interface HazePaint {
+
+        time: number;
+
+        density: number;
+
+        seed: number;
+
+        drift?: {
+            x: number;
+            y: number;
+        };
     }
 
 ### `HelpScreen` (class)
@@ -2489,6 +2688,14 @@ build instead.
         onToggle?: (item: ListItem, index: number, checked: boolean) => void;
     }
 
+### `LoadedSvgSkeleton` (interface)
+
+    export interface LoadedSvgSkeleton {
+        sprite: SkeletalSprite;
+
+        textures: Readonly<Record<string, Texture2D>>;
+    }
+
 ### `LoadedTiledMap` (interface)
 
     export interface LoadedTiledMap {
@@ -2568,6 +2775,10 @@ build instead.
 ### `LoadStatus` (type)
 
     export type LoadStatus = 'idle' | 'loading' | 'ready' | 'failed' | 'cancelled';
+
+### `loadSvgSkeleton` (function)
+
+    export declare function loadSvgSkeleton(source: string, options: SvgSkeletonOptions): Promise<LoadedSvgSkeleton>;
 
 ### `LoadTask` (interface)
 
@@ -3162,6 +3373,52 @@ build instead.
 
     export declare const NEIGHBOURS8: ReadonlyArray<readonly [number, number]>;
 
+### `NeonGlow` (class)
+
+    export declare class NeonGlow extends Sprite {
+        private canvas;
+        private color;
+        private radius;
+        private peak;
+        private readonly flickerAmount;
+        private readonly flickerFrequency;
+        private readonly intent;
+        private clock;
+        constructor(options: NeonGlowOptions);
+
+        get elapsed(): number;
+
+        setColor(color: number): void;
+
+        setRadius(radius: number): void;
+
+        setIntensity(intensity: number): void;
+
+        update(dt: number): void;
+        private static paintCanvas;
+        private repaint;
+
+        destroy(): void;
+    }
+
+### `NeonGlowOptions` (interface)
+
+    export interface NeonGlowOptions {
+
+        color: number;
+
+        radius: number;
+
+        intensity?: number;
+
+        flicker?: {
+            amount: number;
+            frequency: number;
+        };
+
+        intent?: MotionIntent;
+    }
+
 ### `newlyRevealed` (function)
 
     export declare function newlyRevealed(explored: ReadonlySet<number>, alreadyDrawn: ReadonlySet<number>): number[];
@@ -3264,6 +3521,14 @@ build instead.
 ### `paintFogPixels` (function)
 
     export declare function paintFogPixels(pixels: Uint8ClampedArray | Uint8Array, width: number, height: number, resolution: number, state: (x: number, y: number) => FogCell, palette: readonly FogColor[]): void;
+
+### `paintGlowPixels` (function)
+
+    export declare function paintGlowPixels(pixels: Uint8ClampedArray | Uint8Array, size: number, paint: GlowPaint): void;
+
+### `paintHazePixels` (function)
+
+    export declare function paintHazePixels(pixels: Uint8ClampedArray | Uint8Array, width: number, height: number, paint: HazePaint): void;
 
 ### `PaletteMapping` (interface)
 
@@ -3491,6 +3756,60 @@ build instead.
 ### `pickReplayFile` (function)
 
     export declare function pickReplayFile(accept?: string): Promise<Blob | null>;
+
+### `PinnedDeform` (class)
+
+    export declare class PinnedDeform {
+        readonly columns: number;
+        readonly rows: number;
+        readonly width: number;
+        readonly height: number;
+        private readonly rest;
+        private readonly offsets;
+        constructor(options: PinnedDeformOptions);
+
+        get count(): number;
+
+        indexOf(column: number, row: number): number;
+        private checkIndex;
+
+        restAt(index: number): DeformPoint;
+
+        at(index: number): DeformPoint;
+
+        isMoved(index: number): boolean;
+
+        movedCount(): number;
+
+        drag(index: number, x: number, y: number): void;
+
+        dragMany(points: ReadonlyArray<DeformPoint & {
+            index: number;
+        }>): void;
+
+        nudge(index: number, dx: number, dy: number): void;
+
+        reset(index?: number): void;
+
+        rebase(rest: Float32Array): void;
+
+        positions(): Float32Array;
+
+        writePositions(into: Float32Array): void;
+    }
+
+### `PinnedDeformOptions` (interface)
+
+    export interface PinnedDeformOptions {
+
+        columns: number;
+
+        rows: number;
+
+        width: number;
+
+        height: number;
+    }
 
 ### `pixelToHex` (function)
 
@@ -4801,13 +5120,16 @@ build instead.
         private readonly skeleton;
         private readonly parts;
         private readonly mixer;
+        private diagnostics?;
         constructor(skeleton: SkeletonBones, mixer?: Mixer);
 
         bind(bone: string, texture: Texture2D): TintedSprite;
 
         part(bone: string): TintedSprite | undefined;
 
-        apply(pose: Pose): void;
+        apply(pose: Pose | TransformPose): void;
+
+        setDiagnostics(enabled: boolean): void;
 
         update(_dt: number): void;
     }
@@ -5005,6 +5327,31 @@ build instead.
 
     export declare function splitScreenHalves(width: number, height: number): [{
         x: number;
+
+### `SpringSprite` (class)
+
+    export declare class SpringSprite extends Graphics {
+        private readonly spring;
+        private readonly color;
+        private readonly opacity;
+        private readonly lineWidth;
+        constructor(options: SpringSpriteOptions);
+
+        sync(): void;
+    }
+
+### `SpringSpriteOptions` (interface)
+
+    export interface SpringSpriteOptions {
+
+        spring: Spring;
+
+        color?: number;
+
+        alpha?: number;
+
+        lineWidth?: number;
+    }
 
 ### `Sprite2D` (class)
 
@@ -5433,6 +5780,36 @@ build instead.
 ### `stripMarkup` (function)
 
     export declare function stripMarkup(source: string, options?: MarkupOptions): string;
+
+### `SvgBoneBinding` (interface)
+
+    export interface SvgBoneBinding {
+        bone: string;
+
+        group?: string;
+
+        pivot?: {
+            x: number;
+            y: number;
+        };
+
+        rotation?: number;
+    }
+
+### `SvgSkeletonOptions` (interface)
+
+    export interface SvgSkeletonOptions {
+        skeleton: SkeletonBones;
+
+        bindings?: readonly SvgBoneBinding[];
+
+        pivots?: Readonly<Record<string, {
+            x: number;
+            y: number;
+        }>>;
+        resolution?: number;
+        mixer?: Mixer;
+    }
 
 ### `SyncGuard` (class)
 
@@ -6347,7 +6724,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.38.0";
+    export declare const version = "0.39.0";
 
 ### `VerticalLabel` (class)
 
@@ -8395,6 +8772,10 @@ build instead.
         fetch?: typeof globalThis.fetch;
     }
 
+### `loadSvgParts` (function)
+
+    export declare function loadSvgParts(source: string, options?: SvgPartsOptions): Promise<Readonly<Record<string, Texture2D>>>;
+
 ### `OnByteProgress` (type)
 
     export type OnByteProgress = (progress: ByteProgress) => void;
@@ -8410,6 +8791,10 @@ build instead.
 ### `releaseBinary` (function)
 
     export declare function releaseBinary(paths: string[]): void;
+
+### `releaseSvgParts` (function)
+
+    export declare function releaseSvgParts(parts: Readonly<Record<string, Texture2D>>): Promise<void>;
 
 ### `resolve` (function)
 
@@ -8443,6 +8828,15 @@ build instead.
 ### `svgDataUri` (function)
 
     export declare function svgDataUri(source: string): string;
+
+### `SvgPartsOptions` (interface)
+
+    export interface SvgPartsOptions {
+
+        resolution?: number;
+
+        groups?: readonly string[];
+    }
 
 ### `svgScaleVariants` (function)
 
@@ -14320,9 +14714,85 @@ build instead.
         friction?: number;
 
         density?: number;
+
         angle?: number;
 
         label?: string;
+    }
+
+### `Cloth` (class)
+
+    export declare class Cloth {
+        readonly segmentsX: number;
+        readonly segmentsY: number;
+        readonly stiffness: number;
+        readonly damping: number;
+        private gravity;
+        private wind;
+        private readonly rest;
+        private readonly positions;
+        private readonly previous;
+        private readonly pinned;
+        private readonly links;
+        constructor(options: ClothOptions);
+
+        get pointCount(): number;
+
+        indexOf(column: number, row: number): number;
+        private checkIndex;
+
+        pointPosition(index: number): {
+            x: number;
+            y: number;
+        };
+
+        isPinned(index: number): boolean;
+
+        pointLinks(): Array<readonly [number, number]>;
+
+        pinPoint(index: number): void;
+
+        unpinPoint(index: number): void;
+
+        setWind(x: number, y: number): void;
+
+        setGravity(x: number, y: number): void;
+
+        reset(): void;
+
+        movedCount(): number;
+
+        writePositions(into: Float32Array): void;
+
+        update(dt: number): void;
+        private relax;
+    }
+
+### `ClothOptions` (interface)
+
+    export interface ClothOptions {
+
+        width: number;
+
+        height: number;
+
+        segmentsX: number;
+
+        segmentsY: number;
+
+        stiffness?: number;
+
+        damping?: number;
+
+        gravity?: {
+            x: number;
+            y: number;
+        };
+
+        wind?: {
+            x: number;
+            y: number;
+        };
     }
 
 ### `ConstraintOptions` (interface)
@@ -14330,6 +14800,7 @@ build instead.
     export interface ConstraintOptions {
 
         stiffness?: number;
+
         damping?: number;
 
         length?: number;
@@ -14346,13 +14817,33 @@ build instead.
         maxStretch?: number;
     }
 
-### `PhysicsBody` (type)
+### `PhysicsBody` (interface)
 
-    export type PhysicsBody = Matter.Body;
+    export interface PhysicsBody {
 
-### `PhysicsConstraint` (type)
+        position: {
+            x: number;
+            y: number;
+        };
 
-    export type PhysicsConstraint = Matter.Constraint;
+        velocity: {
+            x: number;
+            y: number;
+        };
+
+        angle: number;
+
+        label: string;
+
+        readonly isStatic: boolean;
+    }
+
+### `PhysicsConstraint` (interface)
+
+    export interface PhysicsConstraint {
+
+        readonly length: number;
+    }
 
 ### `PhysicsOptions` (interface)
 
@@ -14371,7 +14862,6 @@ build instead.
 ### `PhysicsWorld` (class)
 
     export declare class PhysicsWorld {
-        readonly engine: Matter.Engine;
 
         readonly onContact: Signal<{
             a: PhysicsBody;
@@ -14383,7 +14873,11 @@ build instead.
             stretch: number;
         }>;
         private readonly stepper;
-        private readonly breakable;
+        private readonly gravity;
+        private readonly bodies_;
+        private readonly constraints_;
+        private touching;
+        private nextId;
         constructor(options?: PhysicsOptions);
         get bodies(): readonly PhysicsBody[];
         get constraints(): readonly PhysicsConstraint[];
@@ -14403,8 +14897,75 @@ build instead.
         stretchOf(constraint: PhysicsConstraint): number;
 
         update(dt: number): number;
+        private step;
+        private collide;
         private breakOverstretched;
         private add;
+    }
+
+### `Spring` (class)
+
+    export declare class Spring {
+        readonly stiffness: number;
+        readonly damping: number;
+        private readonly intent;
+        private readonly anchor;
+        private readonly bob;
+        private readonly velocity;
+        constructor(options: SpringOptions);
+
+        get anchorPosition(): {
+            x: number;
+            y: number;
+        };
+
+        get position(): {
+            x: number;
+            y: number;
+        };
+
+        setAnchor(x: number, y: number): void;
+
+        displace(dx: number, dy: number): void;
+
+        snap(): void;
+
+        offset(): {
+            x: number;
+            y: number;
+        };
+
+        length(): number;
+
+        settled(tolerance: number): boolean;
+
+        place(target: {
+            x: number;
+            y: number;
+        }): void;
+
+        update(dt: number): void;
+    }
+
+### `SpringOptions` (interface)
+
+    export interface SpringOptions {
+
+        stiffness: number;
+
+        damping: number;
+
+        anchor?: {
+            x: number;
+            y: number;
+        };
+
+        position?: {
+            x: number;
+            y: number;
+        };
+
+        intent?: MotionIntent;
     }
 
 ## `./physics/xpbd`
@@ -16815,6 +17376,19 @@ build instead.
 
     export declare function advancePlayback(playback: Playback, dt: number): Playback;
 
+### `advancePose` (function)
+
+    export declare function advancePose(mixer: Mixer, dt: number): TransformPose;
+
+### `AffineMatrix` (interface)
+
+    export interface AffineMatrix {
+        a: number;
+        b: number;
+        c: number;
+        d: number;
+    }
+
 ### `Bone` (interface)
 
     export interface Bone {
@@ -16831,6 +17405,11 @@ build instead.
         };
 
         rotation?: number;
+
+        limits?: {
+            min: number;
+            max: number;
+        };
     }
 
 ### `boneOrder` (function)
@@ -16846,6 +17425,11 @@ build instead.
         y: number;
 
         angle: number;
+
+        scaleX: number;
+        scaleY: number;
+
+        matrix: AffineMatrix;
 
         tipX: number;
         tipY: number;
@@ -16880,6 +17464,14 @@ build instead.
 
         time: number;
         rotations: Pose;
+        translations?: Record<string, {
+            x: number;
+            y: number;
+        }>;
+        scales?: Record<string, {
+            x: number;
+            y: number;
+        }>;
     }
 
 ### `Layer` (interface)
@@ -16928,17 +17520,44 @@ build instead.
 
 ### `resolve` (function)
 
-    export declare function resolve(skeleton: SkeletonBones, pose?: Pose): BoneTransform[];
+    export declare function resolve(skeleton: SkeletonBones, pose?: Pose | TransformPose): BoneTransform[];
 
 ### `samplePose` (function)
 
-    export declare function samplePose(clip: Clip, time: number): Record<string, number>;
+    export declare function samplePose(clip: Clip, time: number, skeleton?: SkeletonBones): Record<string, number>;
+
+### `sampleTransformPose` (function)
+
+    export declare function sampleTransformPose(clip: Clip, time: number, skeleton?: SkeletonBones): TransformPose;
 
 ### `SkeletonBones` (interface)
 
     export interface SkeletonBones {
         bones: readonly Bone[];
     }
+
+### `solveTwoBoneIK` (function)
+
+    export declare function solveTwoBoneIK(skeleton: SkeletonBones, first: string, second: string, target: {
+        x: number;
+
+### `TransformPose` (interface)
+
+    export interface TransformPose {
+        rotations: Pose;
+        translations?: Record<string, {
+            x: number;
+            y: number;
+        }>;
+        scales?: Record<string, {
+            x: number;
+            y: number;
+        }>;
+    }
+
+### `validatePose` (function)
+
+    export declare function validatePose(skeleton: SkeletonBones, pose: Pose): void;
 
 ## `./testing`
 
@@ -17734,6 +18353,67 @@ build instead.
         disabled?: boolean;
     }
 
+### `ClothSprite` (class)
+
+    export declare class ClothSprite extends MeshPlane {
+        private readonly cloth;
+        private readonly intent;
+        constructor(texture: Texture2D, options?: ClothSpriteOptions);
+
+        get segmentsX(): number;
+
+        get segmentsY(): number;
+
+        get pointCount(): number;
+
+        indexOf(column: number, row: number): number;
+
+        pointPosition(index: number): {
+            x: number;
+            y: number;
+        };
+
+        isPinned(index: number): boolean;
+
+        movedCount(): number;
+
+        pinPoint(index: number): void;
+
+        unpinPoint(index: number): void;
+
+        setWind(x: number, y: number): void;
+
+        setGravity(x: number, y: number): void;
+
+        update(dt: number): void;
+        private sync;
+    }
+
+### `ClothSpriteOptions` (interface)
+
+    export interface ClothSpriteOptions {
+
+        segmentsX?: number;
+
+        segmentsY?: number;
+
+        stiffness?: number;
+
+        damping?: number;
+
+        gravity?: {
+            x: number;
+            y: number;
+        };
+
+        wind?: {
+            x: number;
+            y: number;
+        };
+
+        intent?: MotionIntent;
+    }
+
 ### `COLOR_BLINDNESS_MATRICES` (const)
 
     export declare const COLOR_BLINDNESS_MATRICES: Record<ColorBlindnessType, ColorMatrix>;
@@ -17850,6 +18530,57 @@ build instead.
 ### `defaultTheme` (const)
 
     export declare const defaultTheme: Theme;
+
+### `DeformableSprite` (class)
+
+    export declare class DeformableSprite extends MeshPlane {
+        private readonly deform;
+        constructor(texture: Texture2D, options?: DeformableSpriteOptions);
+        private positionArray;
+        private sync;
+
+        get columns(): number;
+
+        get rows(): number;
+
+        get count(): number;
+
+        indexOf(column: number, row: number): number;
+
+        restAt(index: number): DeformPoint;
+
+        vertexAt(index: number): DeformPoint;
+
+        isMoved(index: number): boolean;
+
+        movedCount(): number;
+
+        dragVertex(index: number, x: number, y: number): void;
+
+        dragVertices(points: ReadonlyArray<DeformPoint & {
+            index: number;
+        }>): void;
+
+        nudgeVertex(index: number, dx: number, dy: number): void;
+
+        resetVertices(index?: number): void;
+    }
+
+### `DeformableSpriteOptions` (interface)
+
+    export interface DeformableSpriteOptions {
+
+        columns?: number;
+
+        rows?: number;
+    }
+
+### `DeformPoint` (interface)
+
+    export interface DeformPoint {
+        x: number;
+        y: number;
+    }
 
 ### `detectWebGpu` (function)
 
@@ -18324,6 +19055,21 @@ build instead.
         qualityScaling?: Omit<QualityScalerOptions, 'ceiling'> | null;
     }
 
+### `glowFalloff` (function)
+
+    export declare function glowFalloff(distance: number, radius: number): number;
+
+### `GlowPaint` (interface)
+
+    export interface GlowPaint {
+
+        color: number;
+
+        radius: number;
+
+        intensity: number;
+    }
+
 ### `GlyphLayout` (interface)
 
     export interface GlyphLayout {
@@ -18432,6 +19178,78 @@ build instead.
     export interface HasColorAdd {
 
         colorAdd?: number;
+    }
+
+### `hazeField` (function)
+
+    export declare function hazeField(x: number, y: number, time: number, seed: number): number;
+
+### `HazeLayer` (class)
+
+    export declare class HazeLayer extends Sprite {
+        private readonly context;
+        private readonly image;
+        private readonly cellsX;
+        private readonly cellsY;
+        private readonly drift;
+        private readonly seed;
+        private readonly intent;
+        private density;
+        private time;
+        constructor(options: HazeLayerOptions);
+
+        get elapsed(): number;
+
+        setDensity(density: number): void;
+
+        update(dt: number): void;
+        private refresh;
+
+        destroy(): void;
+    }
+
+### `HazeLayerOptions` (interface)
+
+    export interface HazeLayerOptions {
+
+        width: number;
+
+        height: number;
+
+        cellsX?: number;
+
+        cellsY?: number;
+
+        density?: number;
+
+        tint?: number;
+
+        opacity?: number;
+
+        drift?: {
+            x: number;
+            y: number;
+        };
+
+        seed?: number;
+
+        intent?: MotionIntent;
+    }
+
+### `HazePaint` (interface)
+
+    export interface HazePaint {
+
+        time: number;
+
+        density: number;
+
+        seed: number;
+
+        drift?: {
+            x: number;
+            y: number;
+        };
     }
 
 ### `HelpScreen` (class)
@@ -18875,6 +19693,14 @@ build instead.
         onToggle?: (item: ListItem, index: number, checked: boolean) => void;
     }
 
+### `LoadedSvgSkeleton` (interface)
+
+    export interface LoadedSvgSkeleton {
+        sprite: SkeletalSprite;
+
+        textures: Readonly<Record<string, Texture2D>>;
+    }
+
 ### `LoadedTiledMap` (interface)
 
     export interface LoadedTiledMap {
@@ -18918,6 +19744,10 @@ build instead.
         onRetry?: () => void;
         onCancel?: () => void;
     }
+
+### `loadSvgSkeleton` (function)
+
+    export declare function loadSvgSkeleton(source: string, options: SvgSkeletonOptions): Promise<LoadedSvgSkeleton>;
 
 ### `loadTiledMap` (function)
 
@@ -19335,6 +20165,52 @@ build instead.
         nw: boolean;
     }
 
+### `NeonGlow` (class)
+
+    export declare class NeonGlow extends Sprite {
+        private canvas;
+        private color;
+        private radius;
+        private peak;
+        private readonly flickerAmount;
+        private readonly flickerFrequency;
+        private readonly intent;
+        private clock;
+        constructor(options: NeonGlowOptions);
+
+        get elapsed(): number;
+
+        setColor(color: number): void;
+
+        setRadius(radius: number): void;
+
+        setIntensity(intensity: number): void;
+
+        update(dt: number): void;
+        private static paintCanvas;
+        private repaint;
+
+        destroy(): void;
+    }
+
+### `NeonGlowOptions` (interface)
+
+    export interface NeonGlowOptions {
+
+        color: number;
+
+        radius: number;
+
+        intensity?: number;
+
+        flicker?: {
+            amount: number;
+            frequency: number;
+        };
+
+        intent?: MotionIntent;
+    }
+
 ### `newlyRevealed` (function)
 
     export declare function newlyRevealed(explored: ReadonlySet<number>, alreadyDrawn: ReadonlySet<number>): number[];
@@ -19397,6 +20273,14 @@ build instead.
 ### `paintFogPixels` (function)
 
     export declare function paintFogPixels(pixels: Uint8ClampedArray | Uint8Array, width: number, height: number, resolution: number, state: (x: number, y: number) => FogCell, palette: readonly FogColor[]): void;
+
+### `paintGlowPixels` (function)
+
+    export declare function paintGlowPixels(pixels: Uint8ClampedArray | Uint8Array, size: number, paint: GlowPaint): void;
+
+### `paintHazePixels` (function)
+
+    export declare function paintHazePixels(pixels: Uint8ClampedArray | Uint8Array, width: number, height: number, paint: HazePaint): void;
 
 ### `PaletteMapping` (interface)
 
@@ -19598,6 +20482,60 @@ build instead.
         width: number;
 
         height?: number;
+    }
+
+### `PinnedDeform` (class)
+
+    export declare class PinnedDeform {
+        readonly columns: number;
+        readonly rows: number;
+        readonly width: number;
+        readonly height: number;
+        private readonly rest;
+        private readonly offsets;
+        constructor(options: PinnedDeformOptions);
+
+        get count(): number;
+
+        indexOf(column: number, row: number): number;
+        private checkIndex;
+
+        restAt(index: number): DeformPoint;
+
+        at(index: number): DeformPoint;
+
+        isMoved(index: number): boolean;
+
+        movedCount(): number;
+
+        drag(index: number, x: number, y: number): void;
+
+        dragMany(points: ReadonlyArray<DeformPoint & {
+            index: number;
+        }>): void;
+
+        nudge(index: number, dx: number, dy: number): void;
+
+        reset(index?: number): void;
+
+        rebase(rest: Float32Array): void;
+
+        positions(): Float32Array;
+
+        writePositions(into: Float32Array): void;
+    }
+
+### `PinnedDeformOptions` (interface)
+
+    export interface PinnedDeformOptions {
+
+        columns: number;
+
+        rows: number;
+
+        width: number;
+
+        height: number;
     }
 
 ### `PositionedMarkupSpan` (interface)
@@ -20321,13 +21259,16 @@ build instead.
         private readonly skeleton;
         private readonly parts;
         private readonly mixer;
+        private diagnostics?;
         constructor(skeleton: SkeletonBones, mixer?: Mixer);
 
         bind(bone: string, texture: Texture2D): TintedSprite;
 
         part(bone: string): TintedSprite | undefined;
 
-        apply(pose: Pose): void;
+        apply(pose: Pose | TransformPose): void;
+
+        setDiagnostics(enabled: boolean): void;
 
         update(_dt: number): void;
     }
@@ -20493,6 +21434,31 @@ build instead.
 
     export declare function splitScreenHalves(width: number, height: number): [{
         x: number;
+
+### `SpringSprite` (class)
+
+    export declare class SpringSprite extends Graphics {
+        private readonly spring;
+        private readonly color;
+        private readonly opacity;
+        private readonly lineWidth;
+        constructor(options: SpringSpriteOptions);
+
+        sync(): void;
+    }
+
+### `SpringSpriteOptions` (interface)
+
+    export interface SpringSpriteOptions {
+
+        spring: Spring;
+
+        color?: number;
+
+        alpha?: number;
+
+        lineWidth?: number;
+    }
 
 ### `Sprite2D` (class)
 
@@ -20852,6 +21818,36 @@ build instead.
 ### `stripMarkup` (function)
 
     export declare function stripMarkup(source: string, options?: MarkupOptions): string;
+
+### `SvgBoneBinding` (interface)
+
+    export interface SvgBoneBinding {
+        bone: string;
+
+        group?: string;
+
+        pivot?: {
+            x: number;
+            y: number;
+        };
+
+        rotation?: number;
+    }
+
+### `SvgSkeletonOptions` (interface)
+
+    export interface SvgSkeletonOptions {
+        skeleton: SkeletonBones;
+
+        bindings?: readonly SvgBoneBinding[];
+
+        pivots?: Readonly<Record<string, {
+            x: number;
+            y: number;
+        }>>;
+        resolution?: number;
+        mixer?: Mixer;
+    }
 
 ### `TabbedList` (class)
 
@@ -21911,12 +22907,24 @@ build instead.
         private coerce;
         private resolveProperties;
         private refresh;
+        private refreshButton;
+        private readValues;
+        private viewOf;
         private mount;
+        private wireButton;
+        private wireWindow;
         private reconcile;
         private token;
         private applyProperties;
+        private isVisible;
         private layout;
         private layoutNode;
+        private measureNode;
+        private defaultHeight;
+
+        private placeChildren;
+        private paintNode;
+        private anchorNode;
         private invoke;
         private isFocusable;
         private focusable;
@@ -22417,6 +23425,67 @@ build instead.
 
     export declare function channelSwapMatrix(sources: readonly ChannelSource[]): ColorMatrixFilter['matrix'];
 
+### `ClothSprite` (class)
+
+    export declare class ClothSprite extends MeshPlane {
+        private readonly cloth;
+        private readonly intent;
+        constructor(texture: Texture2D, options?: ClothSpriteOptions);
+
+        get segmentsX(): number;
+
+        get segmentsY(): number;
+
+        get pointCount(): number;
+
+        indexOf(column: number, row: number): number;
+
+        pointPosition(index: number): {
+            x: number;
+            y: number;
+        };
+
+        isPinned(index: number): boolean;
+
+        movedCount(): number;
+
+        pinPoint(index: number): void;
+
+        unpinPoint(index: number): void;
+
+        setWind(x: number, y: number): void;
+
+        setGravity(x: number, y: number): void;
+
+        update(dt: number): void;
+        private sync;
+    }
+
+### `ClothSpriteOptions` (interface)
+
+    export interface ClothSpriteOptions {
+
+        segmentsX?: number;
+
+        segmentsY?: number;
+
+        stiffness?: number;
+
+        damping?: number;
+
+        gravity?: {
+            x: number;
+            y: number;
+        };
+
+        wind?: {
+            x: number;
+            y: number;
+        };
+
+        intent?: MotionIntent;
+    }
+
 ### `COLOR_BLINDNESS_MATRICES` (const)
 
     export declare const COLOR_BLINDNESS_MATRICES: Record<ColorBlindnessType, ColorMatrix>;
@@ -22468,6 +23537,57 @@ build instead.
 ### `croppedTexture` (function)
 
     export declare function croppedTexture(texture: Texture, parsed: ParsedImagePath): Texture;
+
+### `DeformableSprite` (class)
+
+    export declare class DeformableSprite extends MeshPlane {
+        private readonly deform;
+        constructor(texture: Texture2D, options?: DeformableSpriteOptions);
+        private positionArray;
+        private sync;
+
+        get columns(): number;
+
+        get rows(): number;
+
+        get count(): number;
+
+        indexOf(column: number, row: number): number;
+
+        restAt(index: number): DeformPoint;
+
+        vertexAt(index: number): DeformPoint;
+
+        isMoved(index: number): boolean;
+
+        movedCount(): number;
+
+        dragVertex(index: number, x: number, y: number): void;
+
+        dragVertices(points: ReadonlyArray<DeformPoint & {
+            index: number;
+        }>): void;
+
+        nudgeVertex(index: number, dx: number, dy: number): void;
+
+        resetVertices(index?: number): void;
+    }
+
+### `DeformableSpriteOptions` (interface)
+
+    export interface DeformableSpriteOptions {
+
+        columns?: number;
+
+        rows?: number;
+    }
+
+### `DeformPoint` (interface)
+
+    export interface DeformPoint {
+        x: number;
+        y: number;
+    }
 
 ### `detectWebGpu` (function)
 
@@ -22585,6 +23705,21 @@ build instead.
     export type FollowTarget = Container | (() => {
         x: number;
 
+### `glowFalloff` (function)
+
+    export declare function glowFalloff(distance: number, radius: number): number;
+
+### `GlowPaint` (interface)
+
+    export interface GlowPaint {
+
+        color: number;
+
+        radius: number;
+
+        intensity: number;
+    }
+
 ### `Gradient` (const)
 
     export declare const Gradient: typeof FillGradient;
@@ -22647,6 +23782,78 @@ build instead.
     export interface HasColorAdd {
 
         colorAdd?: number;
+    }
+
+### `hazeField` (function)
+
+    export declare function hazeField(x: number, y: number, time: number, seed: number): number;
+
+### `HazeLayer` (class)
+
+    export declare class HazeLayer extends Sprite {
+        private readonly context;
+        private readonly image;
+        private readonly cellsX;
+        private readonly cellsY;
+        private readonly drift;
+        private readonly seed;
+        private readonly intent;
+        private density;
+        private time;
+        constructor(options: HazeLayerOptions);
+
+        get elapsed(): number;
+
+        setDensity(density: number): void;
+
+        update(dt: number): void;
+        private refresh;
+
+        destroy(): void;
+    }
+
+### `HazeLayerOptions` (interface)
+
+    export interface HazeLayerOptions {
+
+        width: number;
+
+        height: number;
+
+        cellsX?: number;
+
+        cellsY?: number;
+
+        density?: number;
+
+        tint?: number;
+
+        opacity?: number;
+
+        drift?: {
+            x: number;
+            y: number;
+        };
+
+        seed?: number;
+
+        intent?: MotionIntent;
+    }
+
+### `HazePaint` (interface)
+
+    export interface HazePaint {
+
+        time: number;
+
+        density: number;
+
+        seed: number;
+
+        drift?: {
+            x: number;
+            y: number;
+        };
     }
 
 ### `hexRotate` (function)
@@ -22782,6 +23989,14 @@ build instead.
         rippleDuration?: number;
     }
 
+### `LoadedSvgSkeleton` (interface)
+
+    export interface LoadedSvgSkeleton {
+        sprite: SkeletalSprite;
+
+        textures: Readonly<Record<string, Texture2D>>;
+    }
+
 ### `LoadedTiledMap` (interface)
 
     export interface LoadedTiledMap {
@@ -22792,6 +24007,10 @@ build instead.
             tileY: number;
         }>;
     }
+
+### `loadSvgSkeleton` (function)
+
+    export declare function loadSvgSkeleton(source: string, options: SvgSkeletonOptions): Promise<LoadedSvgSkeleton>;
 
 ### `loadTiledMap` (function)
 
@@ -22891,6 +24110,52 @@ build instead.
         nw: boolean;
     }
 
+### `NeonGlow` (class)
+
+    export declare class NeonGlow extends Sprite {
+        private canvas;
+        private color;
+        private radius;
+        private peak;
+        private readonly flickerAmount;
+        private readonly flickerFrequency;
+        private readonly intent;
+        private clock;
+        constructor(options: NeonGlowOptions);
+
+        get elapsed(): number;
+
+        setColor(color: number): void;
+
+        setRadius(radius: number): void;
+
+        setIntensity(intensity: number): void;
+
+        update(dt: number): void;
+        private static paintCanvas;
+        private repaint;
+
+        destroy(): void;
+    }
+
+### `NeonGlowOptions` (interface)
+
+    export interface NeonGlowOptions {
+
+        color: number;
+
+        radius: number;
+
+        intensity?: number;
+
+        flicker?: {
+            amount: number;
+            frequency: number;
+        };
+
+        intent?: MotionIntent;
+    }
+
 ### `newlyRevealed` (function)
 
     export declare function newlyRevealed(explored: ReadonlySet<number>, alreadyDrawn: ReadonlySet<number>): number[];
@@ -22915,6 +24180,14 @@ build instead.
 ### `paintFogPixels` (function)
 
     export declare function paintFogPixels(pixels: Uint8ClampedArray | Uint8Array, width: number, height: number, resolution: number, state: (x: number, y: number) => FogCell, palette: readonly FogColor[]): void;
+
+### `paintGlowPixels` (function)
+
+    export declare function paintGlowPixels(pixels: Uint8ClampedArray | Uint8Array, size: number, paint: GlowPaint): void;
+
+### `paintHazePixels` (function)
+
+    export declare function paintHazePixels(pixels: Uint8ClampedArray | Uint8Array, width: number, height: number, paint: HazePaint): void;
 
 ### `PaletteMapping` (interface)
 
@@ -23104,6 +24377,60 @@ build instead.
         width: number;
 
         height?: number;
+    }
+
+### `PinnedDeform` (class)
+
+    export declare class PinnedDeform {
+        readonly columns: number;
+        readonly rows: number;
+        readonly width: number;
+        readonly height: number;
+        private readonly rest;
+        private readonly offsets;
+        constructor(options: PinnedDeformOptions);
+
+        get count(): number;
+
+        indexOf(column: number, row: number): number;
+        private checkIndex;
+
+        restAt(index: number): DeformPoint;
+
+        at(index: number): DeformPoint;
+
+        isMoved(index: number): boolean;
+
+        movedCount(): number;
+
+        drag(index: number, x: number, y: number): void;
+
+        dragMany(points: ReadonlyArray<DeformPoint & {
+            index: number;
+        }>): void;
+
+        nudge(index: number, dx: number, dy: number): void;
+
+        reset(index?: number): void;
+
+        rebase(rest: Float32Array): void;
+
+        positions(): Float32Array;
+
+        writePositions(into: Float32Array): void;
+    }
+
+### `PinnedDeformOptions` (interface)
+
+    export interface PinnedDeformOptions {
+
+        columns: number;
+
+        rows: number;
+
+        width: number;
+
+        height: number;
     }
 
 ### `Projectile` (class)
@@ -23427,13 +24754,16 @@ build instead.
         private readonly skeleton;
         private readonly parts;
         private readonly mixer;
+        private diagnostics?;
         constructor(skeleton: SkeletonBones, mixer?: Mixer);
 
         bind(bone: string, texture: Texture2D): TintedSprite;
 
         part(bone: string): TintedSprite | undefined;
 
-        apply(pose: Pose): void;
+        apply(pose: Pose | TransformPose): void;
+
+        setDiagnostics(enabled: boolean): void;
 
         update(_dt: number): void;
     }
@@ -23446,6 +24776,31 @@ build instead.
 
     export declare function splitScreenHalves(width: number, height: number): [{
         x: number;
+
+### `SpringSprite` (class)
+
+    export declare class SpringSprite extends Graphics {
+        private readonly spring;
+        private readonly color;
+        private readonly opacity;
+        private readonly lineWidth;
+        constructor(options: SpringSpriteOptions);
+
+        sync(): void;
+    }
+
+### `SpringSpriteOptions` (interface)
+
+    export interface SpringSpriteOptions {
+
+        spring: Spring;
+
+        color?: number;
+
+        alpha?: number;
+
+        lineWidth?: number;
+    }
 
 ### `Sprite2D` (class)
 
@@ -23650,6 +25005,36 @@ build instead.
         strength?: number;
 
         pulseRate?: number;
+    }
+
+### `SvgBoneBinding` (interface)
+
+    export interface SvgBoneBinding {
+        bone: string;
+
+        group?: string;
+
+        pivot?: {
+            x: number;
+            y: number;
+        };
+
+        rotation?: number;
+    }
+
+### `SvgSkeletonOptions` (interface)
+
+    export interface SvgSkeletonOptions {
+        skeleton: SkeletonBones;
+
+        bindings?: readonly SvgBoneBinding[];
+
+        pivots?: Readonly<Record<string, {
+            x: number;
+            y: number;
+        }>>;
+        resolution?: number;
+        mixer?: Mixer;
     }
 
 ### `TerrainCondition` (interface)

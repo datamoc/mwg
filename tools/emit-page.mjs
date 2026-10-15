@@ -66,6 +66,7 @@ export async function emitPage({
 	dist,
 	assets,
 	groupBy,
+	assetFiles,
 	compress = true,
 	xz = false,
 	singleFile = false,
@@ -75,8 +76,17 @@ export async function emitPage({
 	csp = true,
 }) {
 	if (!dist) throw new Error('emitPage needs the dist folder of a vite build');
+	if (!assets && assetFiles?.length) throw new Error(`unknown asset file ${assetFiles[0]}: no assets folder`);
 	const compiled = assets
-		? await compileResources({ from: assets, to: join(dist, 'assets'), groupBy, toWebp, webpLossless, webpQuality })
+		? await compileResources({
+				from: assets,
+				to: join(dist, 'assets'),
+				groupBy,
+				assetFiles,
+				toWebp,
+				webpLossless,
+				webpQuality,
+			})
 		: { groups: [], rawBytes: 0, embeddedBytes: 0, webpConverted: 0 };
 
 	const html = await readFile(join(dist, 'index.html'), 'utf8');

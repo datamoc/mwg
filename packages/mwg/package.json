@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mwg",
-	"version": "0.38.0",
+	"version": "0.39.0",
 	"description": "The short name for @datamoc/mw_games: every entry point re-exports the same one there.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -14,7 +14,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@datamoc/mw_games": "0.38.0"
+		"@datamoc/mw_games": "0.39.0"
 	},
 	"exports": {
 		"./mwl/presentation": {
@@ -128,6 +128,10 @@
 		"./tools/audit-adoptions": {
 			"types": "./tools/audit-adoptions.d.mts",
 			"import": "./tools/audit-adoptions.mjs"
+		},
+		"./tools/asset-report": {
+			"types": "./tools/asset-report.d.mts",
+			"import": "./tools/asset-report.mjs"
 		},
 		"./tools/browser-driver": {
 			"types": "./tools/browser-driver.d.mts",

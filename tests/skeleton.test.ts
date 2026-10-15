@@ -29,6 +29,17 @@ test('a pose resolves through the tree: one number on one bone moves the chain',
 	assert.equal(tilted.find((bone) => bone.name === 'arm')!.angle, 90);
 });
 
+test('a bone starts at its parent tip plus its origin, and reaches from there', () => {
+	const still = Skeleton.resolve(puppet);
+	const arm = still.find((bone) => bone.name === 'arm')!;
+	assert.deepEqual([arm.x, arm.y], [10, 4]);
+	assert.deepEqual([arm.tipX, arm.tipY], [22, 4]);
+	const raised = Skeleton.resolve(puppet, { arm: 90 });
+	const raisedArm = raised.find((bone) => bone.name === 'arm')!;
+	assert.deepEqual([raisedArm.x, raisedArm.y], [10, 4]);
+	assert.deepEqual([raisedArm.tipX, raisedArm.tipY], [10, 16]);
+});
+
 test('a skeleton refuses duplicates and cycles by name', () => {
 	assert.throws(() => Skeleton.create([{ name: 'a' }, { name: 'a' }]), /duplicate/);
 	assert.throws(() => Skeleton.create([{ name: 'a' }, { name: 'b', parent: 'ghost' }]), /names no parent/);

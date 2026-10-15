@@ -34,6 +34,7 @@ by double-clicking. Run from the repo root.
 | `classic-html` | Rewrites a bundler build's `<script type="module">` entry tag to a classic deferred script, the shipped, reusable half of what `emit-page` does for this repo's own examples (item 306) | `import { toClassicScript } from '@datamoc/mw_games/tools/classic-html'` in a game's own build script, or `node tools/classic-html.mjs dist/index.html` here |
 | `compress-dist` | Writes `.gz`/`.br` siblings for large build outputs, into the folder it is handed, plus `.xz` where smaller behind the opt-in `xz` option (needs the system `xz` binary). Files compress in parallel over async `zlib`, `MWG_COMPRESS_JOBS` names the lane count, rows keep walk order | used by the packaging flow |
 | `single-file` | Inlines every `<script src>` an `emit-page` output loads into one additional standalone HTML file, no sibling `.js` at all; `compress: true` compresses each script first (gzip by default, or `algorithm: 'brotli'`), unpacked at load through the browser's own `DecompressionStream` behind a splash screen. Brotli needs `DecompressionStream('br')`, unsupported in a directly-tested current Chrome (153) as of this writing - gzip is the broadly-supported default, brotli an advanced option that degrades to a clear, catchable error rather than hanging (items 349, 350) | `node tools/single-file.mjs <dist folder> [--compress[=level]] [--brotli[=quality]] [--no-splash] [--output name.html]`, `emit-page --single-file [--single-file-compress[=level]] [--single-file-brotli[=quality]]`, or `buildSingleFile` from `@datamoc/mw_games/tools/single-file`. `output` is a file name written inside `dist`, not a path: one with a separator is refused |
+| `asset-report` | Lists every file a built page ships, with raw/gzip/brotli weights and each file's share of the compressed page, plus the embedded source assets with byte-identical duplicates grouped (item 422) | `mwg-assets dist [--assets=assets] [--json=report.json]`, or `assetReport(options)` from `@datamoc/mw_games/tools/asset-report` |
 
 ### Scenario verification contract
 
@@ -204,3 +205,11 @@ same build.
 | `ci-status` | Waits for every workflow run of `HEAD` and fails if any of them did | `npm run ci:status` |
 | `npm-audit` | Dependency audit that fails for high or critical advisories | `npm run audit` |
 | `sbom` | Two CycloneDX SBOMs, both reproducible (no timestamp, a content-derived serial). The lockfile SBOM of any npm project (`buildSbom`; `mwg-sbom [folder] [--out=] [--check]`; this repository's own committed `sbom.cdx.json`, gated in CI and now shipped in the package). And the SBOM of what a build ships (`buildArtifactSbom`, written as `dist/sbom.cdx.json` by `mwgPage()`): only the packages whose modules reached the bundle, from vite's module graph, plus each shipped file's SHA-256 (items 315, 380) | `npm run sbom`, `npm run sbom:check` here; `npx mwg-sbom` or `mwgPage()` in a game |
+
+### Selecting embedded assets
+
+The Vite plugin accepts `mwgPage({ assets: 'assets', assetFiles: ['hero.svg', 'levels/one.json'] })`.
+Paths are relative to the asset folder. Omission embeds every supported file as before; an
+empty list embeds none. Unknown files and unsupported formats named explicitly fail the build.
+The same `assetFiles` option is available on `emitPage` and `compileResources`. Dev serving is
+unchanged. Include `credits.json` in an explicit list to generate its `CREDITS.txt` attribution.

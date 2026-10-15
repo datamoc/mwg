@@ -1,25 +1,25 @@
 # Project statistics
 
-Generated for **mwg 0.38.0** on 2026-10-14.
+Generated for **mwg 0.39.0** on 2026-10-15.
 
 | Area | Statistics |
 | --- | ---: |
-| Source | 347 TypeScript files, 65,198 lines, 20 modules |
-| Tests | 319 files, 2,943 test cases, 43,705 lines |
-| Tools | 52 files, 10,990 lines |
-| Examples | 25 runnable examples |
-| Roadmap | 411/413 items complete, 2 open |
-| API | 347 declaration files |
-| Bundle | 1234.8 kB raw, 370.0 kB gzip |
-| Published dist | 4444.9 kB excluding source maps |
+| Source | 357 TypeScript files, 67,456 lines, 20 modules |
+| Tests | 329 files, 3,002 test cases, 44,737 lines |
+| Tools | 59 files, 11,785 lines |
+| Examples | 27 runnable examples |
+| Roadmap | 411/426 items complete, 15 open |
+| API | 357 declaration files |
+| Bundle | 1262.3 kB raw, 377.6 kB gzip |
+| Published dist | 4585.3 kB excluding source maps |
 | Test-to-source ratio | 0.7x by line count |
 
 ## Source modules
 
 | Module | Files | Lines |
 | --- | ---: | ---: |
-| two-d | 100 | 21,464 |
-| mwl | 23 | 7,773 |
+| two-d | 106 | 22,731 |
+| mwl | 23 | 7,786 |
 | core | 52 | 7,370 |
 | board | 12 | 5,355 |
 | audio | 21 | 4,730 |
@@ -29,13 +29,13 @@ Generated for **mwg 0.38.0** on 2026-10-14.
 | i18n | 10 | 1,879 |
 | ai | 7 | 1,686 |
 | simulation | 9 | 1,463 |
+| physics | 6 | 1,209 |
 | battle | 15 | 1,156 |
-| assets | 7 | 765 |
+| assets | 9 | 854 |
 | three-d | 9 | 756 |
 | world | 7 | 603 |
-| physics | 4 | 481 |
+| skeleton | 1 | 441 |
 | threads | 3 | 297 |
-| skeleton | 1 | 280 |
 | testing | 2 | 219 |
 | headless | 1 | 86 |
 

@@ -11,7 +11,10 @@ import { buildArtifactSbom, serialize, shippedFiles } from './sbom.mjs';
  * It sets the configuration that target needs (a classic IIFE bundle named `game.js`, relative
  * urls through `base: './'`, no inlined or copied assets since they are compiled instead) and
  * serves `assets` (default `'assets'`, `false` for none) as the public folder, so an asset path reads the same in `vite` dev as in the
- * build. At the end of the build it runs `emitPage` over the output folder with the same
+ * build. `assetFiles: ['characters/hero.svg', 'music/theme.ogg']` embeds only those paths;
+ * omit it for all assets, or pass [] for none. An unknown entry fails by name. Filtering
+ * affects the build only, so the dev server still serves the asset folder normally.
+ * At the end of the build it runs `emitPage` over the output folder with the same
  * options. A setting the game's own config gives explicitly still wins, since vite merges a
  * plugin's `config` result under the user's.
  *

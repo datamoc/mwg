@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.38.0",
+	"version": "0.39.0",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -35,6 +35,7 @@
 	],
 	"bin": {
 		"mwg-bench": "tools/benchmark-browser.mjs",
+		"mwg-assets": "tools/asset-report.mjs",
 		"mwg-audit-adoptions": "tools/audit-adoptions.mjs",
 		"mwg-emit": "tools/emit-page.mjs",
 		"mwg-extract-rgssad": "tools/extract-rgssad.mjs",
@@ -58,6 +59,8 @@
 		"dist",
 		"tools/compile-resources.mjs",
 		"tools/compile-resources.d.mts",
+		"tools/asset-report.mjs",
+		"tools/asset-report.d.mts",
 		"tools/webp-convert.mjs",
 		"tools/webp-convert.d.mts",
 		"tools/extract-html.mjs",
@@ -225,6 +228,7 @@
 		},
 		"./tools/benchmark-browser": "./tools/benchmark-browser.mjs",
 		"./tools/audit-adoptions": "./tools/audit-adoptions.mjs",
+		"./tools/asset-report": "./tools/asset-report.mjs",
 		"./tools/browser-driver": "./tools/browser-driver.mjs",
 		"./tools/benchmark-history": "./tools/benchmark-history.mjs",
 		"./tools/browser-smoke": "./tools/browser-smoke.mjs",
@@ -328,6 +332,10 @@
 		"example:multi-turn-beam:build": "vite build --config examples/multi-turn-beam/vite.config.ts && node tools/emit-page.mjs examples/multi-turn-beam --assets=examples/assets",
 		"example:chess": "vite --config examples/chess/vite.config.ts",
 		"example:chess:build": "vite build --config examples/chess/vite.config.ts && node tools/emit-page.mjs examples/chess --assets=examples/assets",
+		"example:cloth": "vite --config examples/cloth/vite.config.ts",
+		"example:cloth:build": "vite build --config examples/cloth/vite.config.ts && node tools/emit-page.mjs examples/cloth --assets=examples/assets",
+		"example:spring": "vite --config examples/spring/vite.config.ts",
+		"example:spring:build": "vite build --config examples/spring/vite.config.ts && node tools/emit-page.mjs examples/spring --assets=examples/assets",
 		"example:tower-defense": "vite --config examples/tower-defense/vite.config.ts",
 		"example:tower-defense:build": "vite build --config examples/tower-defense/vite.config.ts && node tools/emit-page.mjs examples/tower-defense --assets=examples/assets",
 		"example:3d": "vite --config examples/three-d/vite.config.ts",
@@ -399,7 +407,6 @@
 		"@babylonjs/core": "^9.25.0",
 		"@babylonjs/loaders": "^9.25.0",
 		"@capacitor/core": "^8.5.2",
-		"matter-js": "^0.20.0",
 		"pixi.js": "^8.20.1",
 		"playwright-core": "^1.62.1",
 		"ws": "^8.21.3"
@@ -422,9 +429,6 @@
 		},
 		"ws": {
 			"optional": true
-		},
-		"matter-js": {
-			"optional": true
 		}
 	},
 	"devDependencies": {
@@ -434,10 +438,8 @@
 		"@capacitor/cli": "^8.5.2",
 		"@capacitor/core": "^8.5.2",
 		"@capacitor/ios": "^8.5.2",
-		"@types/matter-js": "^0.20.2",
 		"@types/node": "^26.4.1",
 		"@types/ws": "^8.18.1",
-		"matter-js": "^0.20.0",
 		"multithreading": "^0.3.52",
 		"pixi.js": "^8.20.1",
 		"playwright-core": "^1.62.1",

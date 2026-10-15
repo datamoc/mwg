@@ -27,3 +27,6 @@ export { AssetStream } from './Streaming.ts';
 export type { AssetBundle, AssetStreamOptions } from './Streaming.ts';
 export { fetchWithByteProgress } from './ByteProgress.ts';
 export type { ByteProgress, OnByteProgress } from './ByteProgress.ts';
+
+export { loadSvgParts, releaseSvgParts } from './SvgParts.ts';
+export type { SvgPartsOptions } from './SvgParts.ts';

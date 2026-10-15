@@ -7,6 +7,49 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-10-15
+
+The skeleton cluster (two-bone IK, joint limits, full clip channels, diagnostics, SVG
+parts loading), the asset and deformation cluster (pinned deformation, SVG skeletons,
+asset filtering and the embedded assets report), and the effects cluster (cloth, spring,
+haze and neon glow, each with a stated frame budget and reduced-motion handling).
+`PhysicsWorld` leaves `matter-js` behind for an in-repo solver, so the dependency is gone.
+
+### Added
+
+- Pinned sprite deformation with atomic vertex batches and one GPU upload per batch, checked
+  against a local Pontifex bird with fixed attachments and unchanged UVs.
+- `loadSvgSkeleton`: SVG limb extraction, authored/manifest pivots, rest-angle normalization
+  and automatic `SkeletalSprite` binding, including nested parts without duplicate drawing.
+- `assetFiles` on `mwgPage`, `emitPage` and `compileResources`: exact embedding lists with
+  named failures for unknown entries and unchanged defaults when omitted.
+- `mwg-assets` (`assetReport`): per-file raw/gzip/brotli weights with each share of
+  the compressed page, plus the embedded source inventory with byte-identical
+  duplicates grouped by hash.
+
+- Two-bone skeleton IK with named unreachable-target failures, absolute local joint limits,
+  and translation/scale clip channels through `sampleTransformPose` and `advancePose`.
+- Explicit `SkeletalSprite.setDiagnostics` overlay for bones, pivots, joints and tips.
+- `loadSvgParts` / `releaseSvgParts`: named SVG group textures with resolution-aware caching,
+  compiled local-file asset support and a browser check against a local Pontifex vehicle.
+
+- Pinned-point cloth (`Cloth` Verlet mesh plus textured `ClothSprite` on the 414 mesh
+  path) with gravity, wind, damping and a browser drape check; a damped 2D chase
+  `Spring` for secondary motion with a stated O(1) frame budget, plus a `SpringSprite`
+  debug line.
+- `HazeLayer` (with `hazeField` / `paintHazePixels`): drifting atmospheric sheets on
+  stacked depth planes, checked in the browser over a painted harbour; `NeonGlow`
+  (with `glowFalloff` / `paintGlowPixels`): additive neon light with colour, radius,
+  intensity and flicker, checked in the browser over a dark lane of signs.
+
+### Removed
+
+- The `matter-js` (and `@types/matter-js`) dependency: `PhysicsWorld` is recoded in TypeScript in this repo (semi-implicit Euler, impulse contacts, projected distance joints) with the same options, methods and signals. Bodies no longer spin: `angle` stays a display offset. The dropped `engine` field exposed the whole matter engine; nothing in this repo used it.
+### Fixed
+
+- SVG group splitting retains group transforms, shared definitions and styles, and handles
+  nested self-closing groups. Skeleton creation reports cycles instead of overflowing the stack.
+
 ## [0.38.0] - 2026-10-14
 
 Optional MWL scene and UI composition with its bridge-editor example, the

@@ -58,6 +58,9 @@ export async function* walk(dir) {
  * @param options.from folder holding the assets
  * @param options.to folder to write the generated scripts into
  * @param options.mime extension to MIME type, merged over the defaults
+ * @param options.assetFiles exact paths relative to `from` to embed; omit for all, [] for none.
+ *   Unknown paths and explicitly selected unsupported formats fail before replacing output.
+ *   credits.json is converted to CREDITS.txt only when selected (or when no list is given).
  * @param options.groupBy how to name the script an asset lands in; defaults to its top folder
  * @param options.toWebp convert `.png`/`.jpg`/`.jpeg` assets to WebP before embedding
  *   (default false - see `tools/webp-convert.mjs`). The asset's *key* never changes (a game
@@ -81,6 +84,7 @@ export async function compileResources({
 	to,
 	mime = {},
 	groupBy,
+	assetFiles,
 	toWebp: convertToWebp = false,
 	webpLossless = true,
 	webpQuality = 90,
@@ -89,6 +93,22 @@ export async function compileResources({
 
 	const types = { ...DEFAULT_MIME, ...mime };
 	const group = groupBy ?? ((key) => (key.includes('/') ? key.slice(0, key.indexOf('/')) : 'assets'));
+
+	const files = [];
+	for await (const file of walk(from)) files.push(file);
+	const keyOf = (file) => relative(from, file).split(sep).join('/');
+	const selected =
+		assetFiles === undefined
+			? undefined
+			: new Set(assetFiles.map((key) => key.replaceAll('\\', '/').replace(/^\.\//, '')));
+	if (selected) {
+		const known = new Set(files.map(keyOf));
+		for (const key of selected) {
+			if (!known.has(key)) throw new Error(`unknown asset file ${key}`);
+			if (key !== 'credits.json' && !types[extname(key).toLowerCase()])
+				throw new Error(`unsupported asset file ${key}`);
+		}
+	}
 
 	await rm(to, { recursive: true, force: true });
 	await mkdir(to, { recursive: true });
@@ -106,7 +126,8 @@ export async function compileResources({
 	const creditsFile = join(from, 'credits.json');
 	let credits = null;
 
-	for await (const file of walk(from)) {
+	for (const file of files) {
+		if (selected && !selected.has(keyOf(file))) continue;
 		if (file === creditsFile) {
 			credits = creditsText(JSON.parse(await readFile(file, 'utf8')));
 			continue;
@@ -118,7 +139,7 @@ export async function compileResources({
 			continue;
 		}
 
-		const key = relative(from, file).split(sep).join('/');
+		const key = keyOf(file);
 		const data = await readFile(file);
 
 		let mimeType = type;

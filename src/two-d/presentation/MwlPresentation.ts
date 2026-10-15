@@ -17,6 +17,13 @@ import type {
 	PresentationValue,
 } from '../../mwl/presentation.ts';
 
+/** Fallback widget sizes, shared by construction and layout so the two cannot drift. */
+const DEFAULT_BUTTON_WIDTH = 160;
+const DEFAULT_BUTTON_HEIGHT = 32;
+const DEFAULT_BAR_HEIGHT = 12;
+const DEFAULT_WINDOW_WIDTH = 300;
+const DEFAULT_WINDOW_HEIGHT = 200;
+
 export type PresentationState = Readonly<Record<string, PresentationValue | readonly PresentationItem[]>>;
 export interface PresentationAdapterContext {
 	readonly tokens: Readonly<Record<string, number>>;
@@ -165,15 +172,15 @@ export class MwlPresentation<Id extends string = string> {
 		const context = this.data.contexts[this.context];
 		const definition = this.data.themes[context?.theme ?? this.baseTheme];
 		this.tokens = { ...definition.tokens, ...context?.tokens };
-		const p = definition.properties;
+		const props = definition.properties;
 		setTheme({
 			...this.previousTheme,
-			padding: Number(p.padding ?? this.previousTheme.padding),
-			spacing: Number(p.spacing ?? this.previousTheme.spacing),
+			padding: Number(props.padding ?? this.previousTheme.padding),
+			spacing: Number(props.spacing ?? this.previousTheme.spacing),
 			font: {
 				...this.previousTheme.font,
-				family: p.font_family ?? this.previousTheme.font.family,
-				size: Number(p.font_size ?? this.previousTheme.font.size),
+				family: props.font_family ?? this.previousTheme.font.family,
+				size: Number(props.font_size ?? this.previousTheme.font.size),
 			},
 			color: {
 				...this.previousTheme.color,
@@ -281,39 +288,18 @@ export class MwlPresentation<Id extends string = string> {
 			this.mount(node);
 			changed = true;
 		}
-		if (node.view!.visible !== visible) {
-			node.view!.visible = visible;
+		const view = this.viewOf(node);
+		if (view.visible !== visible) {
+			view.visible = visible;
 			changed = true;
 		}
-		if (node.view instanceof Button) {
-			const disabled = this.read(node, 'disabled', false) as boolean;
-			const selected = this.read(node, 'selected', false) as boolean;
-			if (disabled !== node.view.disabled) {
-				node.view.setDisabled(disabled);
-				changed = true;
-			}
-			if (selected !== node.view.selected) {
-				node.view.setSelected(selected);
-				changed = true;
-			}
-			if (disabled) node.state = 'disabled';
-			else if (selected) node.state = 'selected';
-			else if (node === this.focused) node.state = 'focused';
-			else if (['disabled', 'selected', 'focused'].includes(node.state)) node.state = 'idle';
-		}
+		if (view instanceof Button) changed = this.refreshButton(node, view) || changed;
 		const properties = this.resolveProperties(node);
 		if (!equalProperties(node.properties, properties)) {
 			node.properties = properties;
 			changed = true;
 		}
-		const values: Record<string, PresentationValue> = { visible, alpha: Number(properties.alpha ?? 1) };
-		if (node.view instanceof Button || node.view instanceof Label) values.text = this.read(node, 'text', '');
-		if (node.view instanceof Window) values.title = this.read(node, 'title', '');
-		if (node.view instanceof Bar) {
-			values.value = this.read(node, 'value', 1);
-			values.max = this.read(node, 'max', 1);
-			values.color = this.read(node, 'color', this.token(properties.color_token, 'accent'));
-		}
+		const values = this.readValues(node, properties, visible);
 		if (!equalProperties(node.values, values)) {
 			node.values = values;
 			changed = true;
@@ -327,35 +313,81 @@ export class MwlPresentation<Id extends string = string> {
 		return changed;
 	}
 
+	private refreshButton(node: MountedNode, view: Button): boolean {
+		let changed = false;
+		const disabled = this.read(node, 'disabled', false) as boolean;
+		const selected = this.read(node, 'selected', false) as boolean;
+		if (disabled !== view.disabled) {
+			view.setDisabled(disabled);
+			changed = true;
+		}
+		if (selected !== view.selected) {
+			view.setSelected(selected);
+			changed = true;
+		}
+		if (disabled) node.state = 'disabled';
+		else if (selected) node.state = 'selected';
+		else if (node === this.focused) node.state = 'focused';
+		else if (['disabled', 'selected', 'focused'].includes(node.state)) node.state = 'idle';
+		return changed;
+	}
+
+	private readValues(
+		node: MountedNode,
+		properties: PresentationProperties,
+		visible: boolean,
+	): Record<string, PresentationValue> {
+		const view = this.viewOf(node);
+		const values: Record<string, PresentationValue> = { visible, alpha: Number(properties.alpha ?? 1) };
+		if (view instanceof Button || view instanceof Label) values.text = this.read(node, 'text', '');
+		if (view instanceof Window) values.title = this.read(node, 'title', '');
+		if (view instanceof Bar) {
+			values.value = this.read(node, 'value', 1);
+			values.max = this.read(node, 'max', 1);
+			values.color = this.read(node, 'color', this.token(properties.color_token, 'accent'));
+		}
+		return values;
+	}
+
+	private viewOf(node: MountedNode): Container {
+		const view = node.view;
+		if (!view) throw new Error(`${node.path}: missing view`);
+		return view;
+	}
+
 	private mount(node: MountedNode): void {
-		const p = this.resolveProperties(node);
-		const width = Number(p.width ?? 160),
-			height = Number(p.height ?? 32);
+		const props = this.resolveProperties(node);
+		const width = Number(props.width ?? DEFAULT_BUTTON_WIDTH),
+			height = Number(props.height ?? DEFAULT_BUTTON_HEIGHT);
 		switch (node.definition.kind) {
 			case 'ui_label':
-				node.view = new Label({ text: '', color: this.token(p.color_token, 'text') });
+				node.view = new Label({ text: '', color: this.token(props.color_token, 'text') });
 				break;
 			case 'ui_button':
 				node.view = new Button({ width, height, text: '' });
 				break;
 			case 'ui_bar':
-				node.view = new Bar({ width, height: Number(p.height ?? 12) });
+				node.view = new Bar({ width, height: Number(props.height ?? DEFAULT_BAR_HEIGHT) });
 				break;
 			case 'ui_window':
 				node.view = new Window({
-					width,
-					height: Number(p.height ?? 200),
+					width: Number(props.width ?? DEFAULT_WINDOW_WIDTH),
+					height: Number(props.height ?? DEFAULT_WINDOW_HEIGHT),
 					title: '',
-					modal: p.modal !== 'false',
-					closable: p.closable !== 'false',
+					modal: props.modal !== 'false',
+					closable: props.closable !== 'false',
 					closeButton: true,
 					blocker: true,
-					anchor: (p.anchor ?? 'center') as 'center' | 'top' | 'bottom',
+					anchor: (props.anchor ?? 'center') as 'center' | 'top' | 'bottom',
 				});
 				break;
 			default: {
-				if (p.adapter) {
-					node.adapter = this.options.adapters![p.adapter]({ tokens: this.tokens, properties: p });
+				if (props.adapter) {
+					const adapters = this.options.adapters;
+					const create =
+						adapters && Object.hasOwn(adapters, props.adapter) ? adapters[props.adapter] : undefined;
+					if (!create) throw new Error(`${node.path}: missing presentation adapter "${props.adapter}"`);
+					node.adapter = create({ tokens: this.tokens, properties: props });
 					node.view = node.adapter.view;
 				} else node.view = new Container();
 			}
@@ -365,41 +397,43 @@ export class MwlPresentation<Id extends string = string> {
 		if (node.definition.kind !== 'ui_repeat')
 			for (const child of node.definition.children)
 				node.children.push(this.createRecord(child, `${node.path}/${child.id}`, childParent, node.item));
-		if (node.view instanceof Button) {
-			const button = node.view;
-			const click = () => {
-				this.setFocus(node);
-				this.invoke(node.definition.properties.action, node.item);
-				if (!this.destroyed) this.update();
+		if (node.view instanceof Button) this.wireButton(node, node.view);
+		if (node.view instanceof Window) this.wireWindow(node, node.view);
+	}
+
+	private wireButton(node: MountedNode, button: Button): void {
+		const click = () => {
+			this.setFocus(node);
+			this.invoke(node.definition.properties.action, node.item);
+			if (!this.destroyed) this.update();
+		};
+		button.onClick.add(click);
+		node.cleanups.push(() => button.onClick.remove(click));
+		for (const [event, state] of [
+			['pointerover', 'hover'],
+			['pointerout', 'idle'],
+			['pointerdown', 'pressed'],
+			['pointerup', 'hover'],
+		] as const) {
+			const listener = () => {
+				node.state = state;
+				this.update();
 			};
-			button.onClick.add(click);
-			node.cleanups.push(() => button.onClick.remove(click));
-			for (const [event, state] of [
-				['pointerover', 'hover'],
-				['pointerout', 'idle'],
-				['pointerdown', 'pressed'],
-				['pointerup', 'hover'],
-			] as const) {
-				const listener = () => {
-					node.state = state;
-					this.update();
-				};
-				button.on(event, listener);
-				node.cleanups.push(() => button.off(event, listener));
-			}
+			button.on(event, listener);
+			node.cleanups.push(() => button.off(event, listener));
 		}
-		if (node.view instanceof Window) {
-			const window = node.view;
-			window.delegate = { handleAction: (action) => this.navigate(action, node) };
-			const close = () => {
-				node.closed = true;
-				this.unmount(node, false);
-				this.invoke(node.definition.properties.close_action, node.item);
-			};
-			window.onClose.add(close);
-			node.cleanups.push(() => window.onClose.remove(close));
-			this.windows.push(window);
-		}
+	}
+
+	private wireWindow(node: MountedNode, window: Window): void {
+		window.delegate = { handleAction: (action) => this.navigate(action, node) };
+		const close = () => {
+			node.closed = true;
+			this.unmount(node, false);
+			this.invoke(node.definition.properties.close_action, node.item);
+		};
+		window.onClose.add(close);
+		node.cleanups.push(() => window.onClose.remove(close));
+		this.windows.push(window);
 	}
 
 	private reconcile(node: MountedNode): boolean {
@@ -427,7 +461,8 @@ export class MwlPresentation<Id extends string = string> {
 			const prefix = `${node.path}/${encodeURIComponent(String(item[p.key]))}`;
 			const template = node.definition.children[0];
 			const child =
-				existing.get(prefix) ?? this.createRecord(template, `${prefix}/${template.id}`, node.view!, item);
+				existing.get(prefix) ??
+				this.createRecord(template, `${prefix}/${template.id}`, this.viewOf(node), item);
 			if (!existing.has(prefix)) changed = true;
 			existing.delete(prefix);
 			child.item = item;
@@ -446,16 +481,16 @@ export class MwlPresentation<Id extends string = string> {
 		return this.tokens[name ?? fallback];
 	}
 	private applyProperties(node: MountedNode): void {
-		const view = node.view!,
-			p = node.properties,
+		const view = this.viewOf(node),
+			props = node.properties,
 			values = node.values;
 		view.alpha = values.alpha as number;
 		if (node.definition.kind === 'scene_layer' && !node.adapter) {
-			if (p.image) {
+			if (props.image) {
 				if (!node.image) {
-					node.image = new Sprite(texture(p.image));
+					node.image = new Sprite(texture(props.image));
 					view.addChildAt(node.image, 0);
-				} else node.image.texture = texture(p.image);
+				} else node.image.texture = texture(props.image);
 			} else {
 				node.image?.destroy();
 				node.image = undefined;
@@ -464,10 +499,10 @@ export class MwlPresentation<Id extends string = string> {
 		if (
 			['ui_container', 'ui_row', 'ui_column', 'ui_grid', 'ui_mount', 'ui_repeat'].includes(node.definition.kind)
 		) {
-			if (p.background_token && !node.background) {
+			if (props.background_token && !node.background) {
 				node.background = new Graphics();
 				view.addChildAt(node.background, 0);
-			} else if (!p.background_token && node.background) {
+			} else if (!props.background_token && node.background) {
 				node.background.destroy();
 				node.background = undefined;
 			}
@@ -475,34 +510,38 @@ export class MwlPresentation<Id extends string = string> {
 		const translate = this.options.translate ?? ((text: string) => text);
 		if (view instanceof Label) {
 			view.setText(translate(values.text as string));
-			view.setColor(this.token(p.color_token, 'text'));
+			view.setColor(this.token(props.color_token, 'text'));
 		}
 		if (view instanceof Button) {
 			view.setText(translate(values.text as string));
 			view.setColors({
-				text: this.token(p.color_token, 'text'),
-				disabledText: this.token(p.color_token, 'text'),
-				background: this.token(p.background_token, 'panel'),
-				border: this.token(p.border_token, 'accent'),
+				text: this.token(props.color_token, 'text'),
+				disabledText: this.token(props.color_token, 'text'),
+				background: this.token(props.background_token, 'panel'),
+				border: this.token(props.border_token, 'accent'),
 				selection: node.definition.states[node.state]?.background_token
-					? this.token(p.background_token, 'selection')
+					? this.token(props.background_token, 'selection')
 					: this.tokens.selection,
 			});
 		}
 		if (view instanceof Bar) {
 			view.setValue(values.value as number, values.max as number);
 			view.setColor(values.color as number);
-			view.setBackground(this.token(p.background_token, 'panel'));
+			view.setBackground(this.token(props.background_token, 'panel'));
 		}
 		if (view instanceof Window) {
 			view.setTitle(translate(values.title as string));
 			view.setColors({
-				background: this.token(p.background_token, 'panel'),
-				border: this.token(p.border_token, 'accent'),
-				title: this.token(p.color_token, 'accent'),
+				background: this.token(props.background_token, 'panel'),
+				border: this.token(props.border_token, 'accent'),
+				title: this.token(props.color_token, 'accent'),
 			});
 		}
-		node.adapter?.restyle?.({ tokens: this.tokens, properties: p });
+		node.adapter?.restyle?.({ tokens: this.tokens, properties: props });
+	}
+
+	private isVisible(node: MountedNode): node is MountedNode & { view: Container } {
+		return Boolean(node.view?.visible);
 	}
 
 	private layout(): void {
@@ -519,63 +558,93 @@ export class MwlPresentation<Id extends string = string> {
 	private layoutNode(node: MountedNode, bounds: LayoutRect): void {
 		const view = node.view;
 		if (!view || !view.visible) return;
-		const p = node.properties;
-		const kind = node.definition.kind;
-		const defaultWidth = view instanceof Button || view instanceof Bar ? 160 : bounds.width;
-		let width = Math.min(Number(p.width ?? defaultWidth), bounds.width);
-		let height = Number(
-			p.height ??
-				(view instanceof Button
-					? 32
-					: view instanceof Bar
-						? 12
-						: view instanceof Label
-							? view.height
-							: bounds.height),
-		);
+		const { width, height: measured } = this.measureNode(node, view, bounds);
+		const props = node.properties;
+		const padding = Number(props.padding ?? 0),
+			gap = Number(props.gap ?? 0);
+		const inner = {
+			x: 0,
+			y: 0,
+			width: Math.max(0, width - padding * 2),
+			height: Math.max(0, measured - padding * 2),
+		};
 		if (view instanceof Window) {
-			width = Math.max(0, Math.min(Number(p.width ?? 300), this.viewport.width - theme().padding * 2));
-			height = Math.max(0, Math.min(Number(p.height ?? 200), this.viewport.height - theme().padding * 2));
+			inner.width = view.contentWidth;
+			inner.height = view.contentHeight;
+		}
+		const visible = node.children.filter((child) => this.isVisible(child));
+		for (const child of visible) this.layoutNode(child, inner);
+		const auto = this.placeChildren(node, visible, inner, padding, gap);
+		const height = auto ?? measured;
+		node.width = width;
+		node.height = height;
+		this.paintNode(node, width, height);
+		this.anchorNode(node, view, bounds, width, height);
+		node.adapter?.resize?.(width, height);
+	}
+
+	private measureNode(node: MountedNode, view: Container, bounds: LayoutRect): { width: number; height: number } {
+		const props = node.properties;
+		const defaultWidth = view instanceof Button || view instanceof Bar ? DEFAULT_BUTTON_WIDTH : bounds.width;
+		let width = Math.min(Number(props.width ?? defaultWidth), bounds.width);
+		let height = Number(props.height ?? this.defaultHeight(view, bounds));
+		if (view instanceof Window) {
+			width = Math.max(
+				0,
+				Math.min(Number(props.width ?? DEFAULT_WINDOW_WIDTH), this.viewport.width - theme().padding * 2),
+			);
+			height = Math.max(
+				0,
+				Math.min(Number(props.height ?? DEFAULT_WINDOW_HEIGHT), this.viewport.height - theme().padding * 2),
+			);
 			view.resize(width, height);
 		} else if (view instanceof Button || view instanceof Bar) view.resize(width, height);
 		else if (view instanceof Label) {
 			view.setWrapWidth(width);
 			height = view.height;
 		}
-		const padding = Number(p.padding ?? 0),
-			gap = Number(p.gap ?? 0);
-		const inner = {
-			x: 0,
-			y: 0,
-			width: Math.max(0, width - padding * 2),
-			height: Math.max(0, height - padding * 2),
-		};
-		if (view instanceof Window) {
-			inner.width = view.contentWidth;
-			inner.height = view.contentHeight;
-		}
-		const visible = node.children.filter((child) => child.view?.visible);
-		for (const child of visible) this.layoutNode(child, inner);
+		return { width, height };
+	}
+
+	private defaultHeight(view: Container, bounds: LayoutRect): number {
+		if (view instanceof Button) return DEFAULT_BUTTON_HEIGHT;
+		if (view instanceof Bar) return DEFAULT_BAR_HEIGHT;
+		if (view instanceof Label) return view.height;
+		return bounds.height;
+	}
+
+	/** Positions visible children; returns the content height when the node sizes to fit. */
+	private placeChildren(
+		node: MountedNode,
+		visible: Array<MountedNode & { view: Container }>,
+		inner: LayoutRect,
+		padding: number,
+		gap: number,
+	): number | undefined {
+		const props = node.properties;
+		const kind = node.definition.kind;
 		if (['ui_row', 'ui_repeat'].includes(kind)) {
 			const total = visible.reduce((sum, child) => sum + child.width, 0) + gap * Math.max(0, visible.length - 1);
 			const result = flowLayout(
 				visible,
-				kind === 'ui_row' && p.wrap === 'false' ? Math.max(total, inner.width) : inner.width,
-				{ gap, align: p.align as 'start' | 'center' | 'end' | undefined },
+				kind === 'ui_row' && props.wrap === 'false' ? Math.max(total, inner.width) : inner.width,
+				{ gap, align: props.align as 'start' | 'center' | 'end' | undefined },
 			);
 			visible.forEach((child, i) => {
-				child.view!.position.set(padding + result.positions[i].x, padding + result.positions[i].y);
+				child.view.position.set(padding + result.positions[i].x, padding + result.positions[i].y);
 			});
-			if (p.height === undefined) height = result.height + padding * 2;
-		} else if (kind === 'ui_column') {
+			return props.height === undefined ? result.height + padding * 2 : undefined;
+		}
+		if (kind === 'ui_column') {
 			let y = padding;
 			for (const child of visible) {
-				child.view!.position.set(padding, y);
+				child.view.position.set(padding, y);
 				y += child.height + gap;
 			}
-			if (p.height === undefined) height = Math.max(0, y - gap + padding);
-		} else if (kind === 'ui_grid') {
-			const columns = Number(p.columns),
+			return props.height === undefined ? Math.max(0, y - gap + padding) : undefined;
+		}
+		if (kind === 'ui_grid') {
+			const columns = Number(props.columns),
 				rows = Math.ceil(visible.length / columns);
 			const grid = new Grid({
 				columns: Array.from({ length: columns }, () => ({ grow: 1 })),
@@ -588,35 +657,44 @@ export class MwlPresentation<Id extends string = string> {
 				const cell = grid.rect(Math.floor(i / columns), i % columns, inner);
 				this.layoutNode(child, { ...cell, x: cell.x + padding, y: cell.y + padding });
 			});
-			if (p.height === undefined)
-				height =
+			if (props.height === undefined)
+				return (
 					grid.rowSizes(inner.height).reduce((sum, size) => sum + size, 0) +
 					gap * Math.max(0, rows - 1) +
-					padding * 2;
-		} else if (['ui_container', 'ui_mount'].includes(kind) && p.height === undefined) {
-			height = Math.max(0, ...visible.map((child) => child.view!.y + child.height)) + padding * 2;
+					padding * 2
+				);
+			return undefined;
 		}
-		node.width = width;
-		node.height = height;
+		if (['ui_container', 'ui_mount'].includes(kind) && props.height === undefined)
+			return Math.max(0, ...visible.map((child) => child.view.y + child.height)) + padding * 2;
+		return undefined;
+	}
+
+	private paintNode(node: MountedNode, width: number, height: number): void {
+		const props = node.properties;
 		if (node.background) {
-			node.background.clear().rect(0, 0, width, height).fill(this.token(p.background_token, 'panel'));
-			if (p.border_token) node.background.stroke({ color: this.token(p.border_token, 'accent'), width: 1 });
+			node.background.clear().rect(0, 0, width, height).fill(this.token(props.background_token, 'panel'));
+			if (props.border_token)
+				node.background.stroke({ color: this.token(props.border_token, 'accent'), width: 1 });
 		}
-		if (node.parent === this.camera.world) view.position.set(Number(p.x ?? 0), Number(p.y ?? 0));
+	}
+
+	private anchorNode(node: MountedNode, view: Container, bounds: LayoutRect, width: number, height: number): void {
+		const props = node.properties;
+		if (node.parent === this.camera.world) view.position.set(Number(props.x ?? 0), Number(props.y ?? 0));
 		else if (!(view instanceof Window)) {
 			const placed = resolveAnchor(
 				{
-					anchor: (p.anchor ?? 'top-left') as Parameters<typeof resolveAnchor>[0]['anchor'],
+					anchor: (props.anchor ?? 'top-left') as Parameters<typeof resolveAnchor>[0]['anchor'],
 					width,
 					height,
-					offsetX: Number(p.x ?? 0),
-					offsetY: Number(p.y ?? 0),
+					offsetX: Number(props.x ?? 0),
+					offsetY: Number(props.y ?? 0),
 				},
 				bounds,
 			);
 			view.position.set(placed.x, placed.y);
 		}
-		node.adapter?.resize?.(width, height);
 	}
 
 	private invoke(action: string | undefined, item?: PresentationItem): void {

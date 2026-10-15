@@ -32,6 +32,8 @@ export type {
 export { AnimatedSprite, Animation } from './AnimatedSprite.ts';
 export type { AnimationFrame, AnimationFrameInput, AnimationOptions } from './AnimatedSprite.ts';
 export { SpriteGroup, isOnScreen } from './SpriteGroup.ts';
+export { PinnedDeform, DeformableSprite } from './SpriteDeform.ts';
+export type { DeformPoint, PinnedDeformOptions, DeformableSpriteOptions } from './SpriteDeform.ts';
 export { SkeletalSprite, ArticulatedChain, ChainRig } from './SkeletalSprite.ts';
 export type { ChainOptions } from './SkeletalSprite.ts';
 export type { SpriteGroupMember } from './SpriteGroup.ts';
@@ -86,6 +88,17 @@ export { StatusVisuals } from './StatusVisuals.ts';
 export type { TintTarget, StatusVisualStyle, StatusVisualsOptions } from './StatusVisuals.ts';
 export { SpriteMotion } from './SpriteMotion.ts';
 export type { MotionTarget, MotionHandle, SpriteMotionOptions } from './SpriteMotion.ts';
+export { ClothSprite } from './ClothSprite.ts';
+export type { ClothSpriteOptions } from './ClothSprite.ts';
+
+export { SpringSprite } from './SpringSprite.ts';
+export type { SpringSpriteOptions } from './SpringSprite.ts';
+
+export { HazeLayer, hazeField, paintHazePixels } from './HazeLayer.ts';
+export type { HazeLayerOptions, HazePaint } from './HazeLayer.ts';
+
+export { NeonGlow, glowFalloff, paintGlowPixels } from './NeonGlow.ts';
+export type { NeonGlowOptions, GlowPaint } from './NeonGlow.ts';
 
 export { blobIndex, autotileFrames, BLOB_SHAPES } from './Autotile.ts';
 export type { NeighborMask } from './Autotile.ts';
@@ -164,3 +177,6 @@ export type {
 	TiledObject,
 	TiledLayer,
 } from './TiledMap.ts';
+
+export { loadSvgSkeleton } from './SvgSkeleton.ts';
+export type { SvgBoneBinding, SvgSkeletonOptions, LoadedSvgSkeleton } from './SvgSkeleton.ts';

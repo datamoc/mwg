@@ -6092,3 +6092,66 @@ example already draws.
      checkpoint compiled into `window.__MWG_ASSETS__`, and the two shipped tiers already cover
      the game use case. `HumanizerFactory` keeps refusing `'magenta'` by name. Un-parks with a
      consumer that needs neural humanization and accepts the peer weight and checkpoint size.
+
+417. **Two-bone inverse kinematics** (2026-10-14). `skeleton.solveTwoBoneIK` returns local
+  angles for a named connected chain and world target, with explicit bend direction, rest
+  rotation and rotated-parent support. Arithmetic tests cover both bends, reach boundaries,
+  determinism and named unreachable errors without stretching.
+418. **Joint limits and bend direction** (2026-10-14). Absolute local `Bone.limits` include
+  the rest rotation. Samples can validate against a skeleton; mixers and resolution always
+  validate. A wrong-direction knee pose is refused by name, with boundary acceptance tests.
+419. **Translations and scales in clips** (2026-10-14). `TransformPose`, `sampleTransformPose`
+  and `advancePose` carry all channels through one interpolation, loop, hold, layer and
+  crossfade path. `SkeletalSprite` consumes full poses; legacy rotation helpers remain compatible.
+420. **Skeleton diagnostic display** (2026-10-14). Explicit `setDiagnostics(true)` draws bone
+  lines, pivot crosses, joints and tips over the GPU-rendered character. Disabled instances
+  allocate no diagnostic display. Browser screenshots verify enabled and cleaned-up states.
+421. **General SVG parts loading** (2026-10-14). `loadSvgParts` slices named groups into
+  borrowed textures with separate resolution caches and `releaseSvgParts` cleanup. Group
+  transforms, shared defs and styles survive splitting. The local-file WebGL check passed
+  against Pontifex's local `assets/common/car.svg` (wheels, body, engine, hood); no consumer
+  art is committed. The tool also ships a generated fixture for portable repeat runs.
+
+414. **Sprite deformation with pinned points** (2026-10-14). `PinnedDeform` and
+  `DeformableSprite` move selected vertices while the rest remain pinned. Atomic
+  `dragMany` / `dragVertices` batches validate before mutation and upload once. The local-file
+  WebGL check passed against Pontifex's local `bird_swallow.svg`: both wings bend downward,
+  attachments stay bit-identical, UVs stay unchanged and whole-sprite rotation remains zero.
+415. **Articulated SVG character loading** (2026-10-14). `loadSvgSkeleton` extracts named limbs,
+  reads authored or supplied pivots, removes separately bound descendants and normalizes art
+  to rest angles before binding `SkeletalSprite`. The local-file WebGL check passed against a
+  local Pontifex walker and a generated rest-angle fixture, with screenshots of rest and arm
+  poses. No consumer artwork or manifest is committed.
+416. **Asset filtering in mwgPage** (2026-10-14). `assetFiles` flows through `mwgPage`,
+  `emitPage` and `compileResources`. An explicit list embeds exactly its named supported
+  files; [] embeds none; omission preserves all supported files. Unknown/unsupported entries
+  fail by name before replacing compiled assets. Tests inspect emitted scripts and the
+  decoded standalone page from a real Vite build.
+422. **Embedded assets report** (2026-10-14). `mwg-assets` (`assetReport`) lists every
+  file a built page ships with raw, gzip and brotli weights plus each share of the
+  compressed page, and inventories embedded source assets with byte-identical
+  duplicates grouped by hash. Deterministic output asserted exact by a test the way
+  416 asserts the page itself; completes the filtering 416 starts.
+423. **Deformable cloth mesh** (2026-10-14). `Cloth` integrates a pinned-point grid
+  with Verlet plus two relaxation passes over structural links only: gravity, wind,
+  damping, pin and unpin, deterministic for fixed update sequences at O(points + links)
+  per step. `ClothSprite` drives a textured mesh on the 414 path with the top edge
+  pinned, UVs untouched and rotation zero. The local-file WebGL check drapes a generated
+  chequered fixture below rest with a bit-identical waistband, then blows it downwind;
+  screenshots of rest and gust. No consumer garment is committed.
+424. **Damped spring for secondary motion** (2026-10-14). `Spring` chases a teleporting
+  anchor with semi-implicit Euler: lag, overshoot and settle at O(1) per update, about a
+  dozen flops, deterministic for fixed sequences, honouring reduced motion by snapping.
+  `place(target)` parks a follower on the bob; `SpringSprite` draws the anchor-to-bob
+  debug line through an explicit `sync`. Tested as arithmetic: chase direction, settle
+  tolerance, stiffness ordering, an undamped swing that never settles, and snap.
+425. **Atmospheric haze layer** (2026-10-14). `hazeField` value-noise wisps plus
+  `paintHazePixels` over RGBA, tinted through the sprite; `HazeLayer` repaints a small
+  canvas scaled up linear, with drift, density and seed per plane, honouring reduced
+  motion by holding still. The local-file WebGL check layers two planes over a painted
+  harbour with screenshots. Weather and mood only, distinct from `FogLayer` fog of war.
+426. **Soft neon glow from a shape or mask** (2026-10-14). `glowFalloff` radial easing
+  plus `paintGlowPixels`; `NeonGlow` bakes the falloff once and flickers through alpha on
+  the additive overlay `Halo` provides, with colour, radius, intensity and flicker,
+  honouring reduced motion by holding peak. The local-file WebGL check lights three signs
+  with a screenshot. No global bloom.

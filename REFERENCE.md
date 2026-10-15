@@ -537,6 +537,21 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   transform through a `Tweener` (item 404). Effects compose from the rest pose captured at
   construction, never drift, return a `MotionHandle` (`done`, `cancel()`), and follow
   `setReducedMotion`; `destroy` restores the rest pose, flips included.
+- `ClothSprite` - a `physics` `Cloth` mesh drawn as a textured sprite on the 414 mesh
+  path (item 423): owns the simulation, `update(dt)` steps it and re-uploads the vertex
+  buffer, the top edge starts pinned, UVs are never rewritten. `setWind`/`pinPoint`/
+  `unpinPoint` tune it, and it honours `setReducedMotion`.
+- `Spring` - a damped 2D chase spring for secondary motion (item 424): the anchor
+  teleports, the bob lags, overshoots and settles through pure arithmetic, O(1) per
+  update, deterministic for a fixed `update(dt)` sequence. `place(target)` parks a
+  follower on the bob; honours `setReducedMotion`. `SpringSprite` draws the
+  anchor-to-bob line, redrawn by an explicit `sync()` after stepping.
+- `HazeLayer`/`hazeField`/`paintHazePixels` - an atmospheric haze sheet, never fog of war:
+  translucent drifting weather with soft edges, density and per-plane wind, on a small
+  canvas scaled up with linear filtering. `paintHazePixels` is the same shading as a pure
+  function over an RGBA buffer, which is how it is tested without a renderer.
+- `NeonGlow`/`glowFalloff`/`paintGlowPixels` - a soft additive halo baked from a shape or
+  mask, with colour, radius, intensity and flicker; a global bloom stays optional.
 - `loadTiledMap`/`TiledMapData`/`TiledTilesetData`/`TilesetSheet`/`LoadedTiledMap` - loads
   Tiled JSON maps into a `TileMap`: orthogonal, isometric and staggered orientations, multiple
   tilesets (embedded or external `.tsx`). Lives here rather than in `rpg` because what it
@@ -870,16 +885,16 @@ reach the compiled asset map without it.
   a `Sound` placed at a point, and `audioGain`/`audioPan` turning distance and heading into a
   volume and a stereo position. `SoundSource.playFor` applies the distance gain through
   `Sound.play`; panning is reported for a backend that has a panner. `Music` stays global.
-- `XpbdWorld` (`@datamoc/mw_games/physics/xpbd`, no `matter-js`) - a deterministic structure solver
+- `XpbdWorld` (`@datamoc/mw_games/physics/xpbd`) - a deterministic structure solver
   (extended position-based dynamics): `addNode`/`addLink` (stiffness, `tensionOnly` cables, `strength`/
   `tensionStrength`), `applyForce`, `step()` on fixed substeps, the load of every link read back
   (`force`, smoothed `ratio`, `peakRatio`) and `onBreak` when a link passes its strength; `ground` (a height or a function of x) holds nodes
   on a surface with `groundFriction`. The engine of
   Pontifex, generalised: bridges, trusses, cranes, anything where the question is which beam fails.
-- `PhysicsWorld` (`@datamoc/mw_games/physics`, optional peer `matter-js`) - rigid bodies and constraints
-  stepped on a `FixedStepper`: `addBox`/`addCircle`/`addConstraint`/`remove`, `update(dt)` from
+- `PhysicsWorld` (`@datamoc/mw_games/physics`) - rigid bodies and constraints in plain TypeScript, no engine
+  dependency: `addBox`/`addCircle`/`addConstraint`/`remove`, `update(dt)` from
   `Scene.update`, `onContact`, `alpha` for interpolation. A constraint with `maxStretch` breaks when pulled
-  that far past its rest length (`onBreak`, `stretchOf`). The bodies stay plain matter-js objects.
+  that far past its rest length (`onBreak`, `stretchOf`). Bodies never spin; `angle` is a display offset.
 - `synthesizeTone`/`synthesizeSound`/`playTone`/`Waveform` - a runtime square/triangle/sine/noise
   waveform synth for a procedural tone or SFX, no sample library; `synthesizeSound` returns a
   pooled `Sound` over the tone.
@@ -1936,3 +1951,56 @@ is `actor` or `controller`, `provider` is `javascript` or `lua`, `algorithm` can
 and `evaluate` identify search limits and game-owned operations. A game resolves those names
 to JavaScript behaviours or Lua functions and supplies the actual state, legal moves and
 evaluation.
+
+### Skeleton extensions (417-421)
+
+- `skeleton.solveTwoBoneIK(skeleton, first, second, target, bend, pose)` solves a connected
+  two-bone chain in world coordinates. `bend` is +1 or -1; positive bends clockwise on screen.
+  Positive finite lengths and a zero origin on the second bone are required. Unreachable
+  targets throw with the chain names. Rest rotations and rotated ancestors are supported.
+- `Bone.limits: { min, max }` bounds the absolute local rotation in degrees, including rest
+  rotation. `skeleton.validatePose` checks an authored pose; `samplePose` and
+  `sampleTransformPose` accept an optional skeleton for validation. Mixers and `resolve`
+  validate automatically. Use a nonnegative or nonpositive interval to constrain bend direction.
+- `Keyframe.translations` and `Keyframe.scales` map bone names to `{ x, y }` channels.
+  `skeleton.sampleTransformPose` and `skeleton.advancePose` return a `TransformPose`, with
+  `rotations`, `translations` and `scales`. Missing channels interpolate toward zero translation
+  or unit scale. Looping, reverse playback, holding, priority layers and crossfades share the
+  rotation timeline. Legacy `samplePose` and `advance` return rotations only.
+- `SkeletalSprite.apply` accepts either rotation poses or `TransformPose`; its mixer uses
+  `advancePose` automatically. `setDiagnostics(true)` explicitly enables bone lines, pivot
+  crosses, joint circles and tips. Omit it in release builds; disabled rigs allocate no overlay.
+- `assets.loadSvgParts(sourceOrPath, { resolution, groups })` returns borrowed textures keyed
+  by top-level SVG group name. It preserves the full SVG canvas, group attributes, shared defs
+  and styles. Repeated loads reuse textures; resolutions have separate cache entries. Compiled
+  asset paths decode directly from data URIs under `file://`. Unknown groups and invalid
+  resolutions throw by name. `releaseSvgParts(parts)` unloads them once no sprite uses them.
+- `node tools/check-skeleton-extensions-browser.mjs [local-vehicle.svg]` builds a classic
+  local-file page, verifies WebGL rendering, texture reuse, resolution isolation and diagnostic
+  cleanup, and writes screenshots under `benchmark-results/skeleton-extensions/`. The default
+  vehicle is generated; passing a local consumer SVG embeds it only into ignored scratch output.
+
+### Deformation, articulated SVG loading and asset filtering (414-416)
+
+- `PinnedDeform` / `DeformableSprite` expose pinned control points. `dragVertex`, `nudgeVertex`
+  and `resetVertices` change GPU vertex positions without changing UVs or rotating the sprite.
+  `dragVertices([{ index, x, y }, ...])` validates a batch before applying it and uploads once;
+  the pure `PinnedDeform.dragMany` performs the same batch operation without a renderer.
+- `loadSvgSkeleton(sourceOrPath, { skeleton, bindings?, pivots?, resolution?, mixer? })` returns
+  `{ sprite, textures }`. `sprite` is a `SkeletalSprite` with named SVG groups already bound.
+  By default matching groups bind in SVG document order. Explicit `bindings` provide draw order,
+  group-to-bone mapping and optional pivot/rest-angle overrides. Pivots come from `data-pivot-x`
+  and `data-pivot-y` (root SVG user coordinates), or a `pivots` map keyed by group id. Missing
+  pivots, groups, bones and duplicate bindings fail by name. Separately bound descendants are
+  removed from parent textures; ancestor transforms, shared styles and defs survive. Artwork is
+  normalized against each bone's rest angle so poses rotate the correct limbs about their pivots.
+  Browser DOMParser/XMLSerializer are required. Compiled paths work under `file://`. Destroy the
+  sprite with `{ children: true }`, then call `releaseSvgParts(textures)` when all users are done.
+- `mwgPage({ assetFiles: ['hero.svg', 'music/theme.ogg'] })` embeds only those asset-folder paths.
+  Omit `assetFiles` to keep all supported assets; `[]` embeds none. Unknown or unsupported named
+  entries fail before replacing compiled asset scripts. Both `emitPage` and `compileResources`
+  accept the same option. `credits.json` generates `CREDITS.txt` when selected, or with no filter.
+- Browser checks: `node tools/check-sprite-deform-browser.mjs [local-bird.svg]` and
+  `node tools/check-svg-skeleton-browser.mjs [local-character.svg] [local-manifest.json]` build
+  local-file WebGL pages and save rest/posed screenshots under `benchmark-results/`. Defaults
+  use generated art; consumer inputs remain in ignored scratch output only.

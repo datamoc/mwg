@@ -66,19 +66,40 @@ while waiting for a scene answer; frame-time claims still require consumer measu
 collision, `DropdownView`, `mwg-init`, `CREDITS.txt`, the alias package generated into
 `packages/mwg`). Registry verification on 2026-10-14 confirms `@datamoc/mwg@0.37.0`
 is public and depends on `@datamoc/mw_games@0.37.0`, so initial publication is done.
-What remains is verifying its npm trusted-publisher entry through a successful alias
-staging run. The workflow contains the alias step, but the latest successful run
-(`38475918563`) predates that step and only proves main-package staging. Do not publish
-the existing version again or infer the alias's OIDC configuration from its registry presence.
+What remains is the alias's own npm trusted-publisher entry. The v0.38.0 release
+forced the answer: its publish run (`38515954976`) staged `@datamoc/mw_games@0.38.0`
+fine, then the alias step failed `E401`, so npmjs.org listed no OIDC identity for
+`@datamoc/mwg` at all. The owner has since added it (this repository, `publish-npm.yml`,
+`npm stage publish` only, mirroring the main package). The 0.38.0 alias stays unpublished
+by decision - no hand publish, no workflow rerun (re-staging the now-public main package
+would fail before reaching the alias step). The next release stages both packages normally.
 
 Item 413's optional MWL scene and UI composition shipped in `mwl/presentation` and
 `two-d/presentation` with the `mwl-presentation` example and its browser smoke check;
 its record is in [CLOSED.md](CLOSED.md).
 
-Priority review, 2026-10-14 (close-out): 413 shipped above; 412 keeps its order and
-blocker (alias staging still waits on a successful CI run), 393 is parked below until fixture files turn up,
+blocker (its trusted-publisher entry is now added; the next release proves it by staging
+both packages), 393 is parked below until fixture files turn up,
 394 is parked below as too expensive,
 and 401 stays parked with the port. Nothing is promoted.
+
+Items 414-416 are implemented; see [CLOSED.md](CLOSED.md). Priority review,
+2026-10-14: the requested asset/deformation cluster is complete through the embedded
+report 422. Keep the remaining effects in their existing order; browser evidence and
+frame-time cost still decide when a workload is ready to ship.
+
+Items 417-426, added 2026-10-14 out of Pontifex's second feedback round, sit at the end at
+low priority the same way: 417-421 extend the skeleton cluster (399, 400, 415 and the
+Skeleton.resolve origin fix), 422 completes the asset story 416 starts, and 423-426 cover
+effects against what already ships (`SpriteMotion`, `FogLayer`, `Halo`). Pontifex's stated
+priority leads with joint limits (418) once the skeleton cluster is picked up; everything else
+waits behind a real consumer case the way 414-416 do. The effects items respect the
+reduced-motion setting and carry an adjustable quality level for modest devices.
+
+Items 417-426 are implemented; see [CLOSED.md](CLOSED.md). Priority review, 2026-10-14:
+the requested effects cluster (cloth, spring, haze, glow) is complete with stated frame
+budgets and reduced-motion handling, and the asset pipeline ends with the embedded
+report 422.
 
 ### Parked decisions
 

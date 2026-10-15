@@ -7,6 +7,8 @@ export interface CompileResourcesOptions {
 	to: string;
 	mime?: Record<string, string>;
 	groupBy?: (key: string) => string;
+	/** Exact paths relative to the asset folder to embed. Omit to include all; [] includes none. Unknown entries fail by name. */
+	assetFiles?: readonly string[];
 	toWebp?: boolean;
 	webpLossless?: boolean;
 	webpQuality?: number;

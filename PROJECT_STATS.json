@@ -1,22 +1,22 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.38.0",
-	"releaseDate": "2026-10-14",
+	"version": "0.39.0",
+	"releaseDate": "2026-10-15",
 	"source": {
-		"files": 347,
-		"lines": 65198,
+		"files": 357,
+		"lines": 67456,
 		"modules": 20,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 100,
-				"lines": 21464
+				"files": 106,
+				"lines": 22731
 			},
 			{
 				"name": "mwl",
 				"files": 23,
-				"lines": 7773
+				"lines": 7786
 			},
 			{
 				"name": "core",
@@ -64,14 +64,19 @@
 				"lines": 1463
 			},
 			{
+				"name": "physics",
+				"files": 6,
+				"lines": 1209
+			},
+			{
 				"name": "battle",
 				"files": 15,
 				"lines": 1156
 			},
 			{
 				"name": "assets",
-				"files": 7,
-				"lines": 765
+				"files": 9,
+				"lines": 854
 			},
 			{
 				"name": "three-d",
@@ -84,19 +89,14 @@
 				"lines": 603
 			},
 			{
-				"name": "physics",
-				"files": 4,
-				"lines": 481
+				"name": "skeleton",
+				"files": 1,
+				"lines": 441
 			},
 			{
 				"name": "threads",
 				"files": 3,
 				"lines": 297
-			},
-			{
-				"name": "skeleton",
-				"files": 1,
-				"lines": 280
 			},
 			{
 				"name": "testing",
@@ -111,20 +111,21 @@
 		]
 	},
 	"tests": {
-		"files": 319,
-		"lines": 43705,
-		"cases": 2943
+		"files": 329,
+		"lines": 44737,
+		"cases": 3002
 	},
 	"tools": {
-		"files": 52,
-		"lines": 10990
+		"files": 59,
+		"lines": 11785
 	},
 	"examples": {
-		"count": 25,
+		"count": 27,
 		"names": [
 			"audio",
 			"battle",
 			"chess",
+			"cloth",
 			"colour-transform",
 			"dialogue",
 			"dungeon",
@@ -142,6 +143,7 @@
 			"neural",
 			"pacman",
 			"save-load",
+			"spring",
 			"string-editor",
 			"three-d",
 			"tower-defense",
@@ -150,18 +152,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 413,
+		"items": 426,
 		"completed": 411,
-		"open": 2,
-		"percent": 100
+		"open": 15,
+		"percent": 96
 	},
 	"api": {
-		"declarationFiles": 347
+		"declarationFiles": 357
 	},
 	"bundle": {
-		"globalRaw": 1264485,
-		"globalGzip": 378908,
-		"distRaw": 4551626
+		"globalRaw": 1292545,
+		"globalGzip": 386687,
+		"distRaw": 4695383
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

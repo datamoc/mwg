@@ -9,6 +9,8 @@ export interface EmitPageOptions {
 	assets?: string;
 	/** maps an asset path to its script's name; defaults to one script per top-level folder */
 	groupBy?: (key: string) => string;
+	/** Exact paths relative to the asset folder to embed. Omit to include all; [] includes none. Unknown entries fail by name. */
+	assetFiles?: readonly string[];
 	/** write `.gz`/`.br` siblings for a server to negotiate; default true */
 	compress?: boolean;
 	/** also write `.xz`, where the system `xz` binary exists */

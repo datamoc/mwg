@@ -208,6 +208,9 @@ const bindingTypes: Record<string, PresentationScalarType> = {
 	disabled_binding: 'boolean',
 };
 const semanticTokens = ['panel', 'text', 'accent', 'success', 'warning', 'danger', 'selection'];
+/** WCAG AA floor for body text, and for danger/selection indicators, against the panel. */
+const MIN_TEXT_CONTRAST = 4.5;
+const MIN_INDICATOR_CONTRAST = 3;
 
 /**
  * Compiles optional scene/UI definitions, validating every reference against the game's manifest.
@@ -237,6 +240,24 @@ export function compilePresentation(
 		);
 	};
 	const keyOf = (tag: string, id: string) => `${tag}:${id}`;
+	const checkReferences = (
+		node: MwlCompiledNode,
+		attributes: Record<string, string>,
+		fields?: PresentationCollection['fields'],
+	): void => {
+		if (attributes.variant) find(node, 'component_variant', attributes.variant);
+		for (const name of ['action', 'close_action'])
+			if (attributes[name] && !manifest.actions.includes(attributes[name]))
+				fail(node, `unknown action "${attributes[name]}"`);
+		if (attributes.adapter && !manifest.adapters?.includes(attributes.adapter))
+			fail(node, `unknown adapter "${attributes.adapter}"`);
+		for (const [name, expected] of Object.entries(bindingTypes)) {
+			const binding = attributes[name];
+			if (!binding) continue;
+			const actual = binding.startsWith('item.') ? fields?.[binding.slice(5)] : manifest.values[binding];
+			if (actual !== expected) fail(node, `binding "${binding}" for ${name} must be ${expected}`);
+		}
+	};
 	for (const node of roots) {
 		if (node.attributes.id === '__proto__') fail(node, 'reserved definition id "__proto__"');
 		if (
@@ -317,18 +338,7 @@ export function compilePresentation(
 				sources.set(source, node);
 				validateStyle(node);
 				const attributes = node.attributes;
-				if (attributes.variant) find(node, 'component_variant', attributes.variant);
-				for (const name of ['action', 'close_action'])
-					if (attributes[name] && !manifest.actions.includes(attributes[name]))
-						fail(node, `unknown action "${attributes[name]}"`);
-				if (attributes.adapter && !manifest.adapters?.includes(attributes.adapter))
-					fail(node, `unknown adapter "${attributes.adapter}"`);
-				for (const [name, expected] of Object.entries(bindingTypes)) {
-					const binding = attributes[name];
-					if (!binding) continue;
-					const actual = binding.startsWith('item.') ? fields?.[binding.slice(5)] : manifest.values[binding];
-					if (actual !== expected) fail(node, `binding "${binding}" for ${name} must be ${expected}`);
-				}
+				checkReferences(node, attributes, fields);
 				const states: Record<string, PresentationProperties> = Object.create(null);
 				for (const state of node.children.filter((child) => child.tag === 'ui_state')) {
 					if (Object.hasOwn(states, state.attributes.state))
@@ -397,7 +407,8 @@ export function compilePresentation(
 		for (const override of node.children.filter((child) => child.tag === 'ui_override')) {
 			const target = override.attributes.target;
 			if (!sources.has(target)) fail(override, `unknown override target "${target}"`);
-			if (override.attributes.image && !['scene_layer', 'ui_adapter'].includes(sources.get(target)!.tag))
+			const targetNode = sources.get(target) as MwlCompiledNode;
+			if (override.attributes.image && !['scene_layer', 'ui_adapter'].includes(targetNode.tag))
 				fail(override, 'image overrides require a scene layer or adapter');
 			if (Object.hasOwn(overrides, target)) fail(override, `duplicate override target "${target}"`);
 			validateStyle(override);
@@ -413,9 +424,11 @@ export function compilePresentation(
 		for (const use of tokenUses)
 			if (!Object.hasOwn(tokens, use.token))
 				fail(use.node, `unknown theme token "${use.token}" in ${node.attributes.id}`);
-		if (contrastRatio(tokens.text, tokens.panel) < 4.5) fail(node, 'text/panel contrast must reach 4.5');
+		if (contrastRatio(tokens.text, tokens.panel) < MIN_TEXT_CONTRAST)
+			fail(node, 'text/panel contrast must reach 4.5');
 		for (const token of ['danger', 'selection'])
-			if (contrastRatio(tokens[token], tokens.panel) < 3) fail(node, `${token}/panel contrast must reach 3`);
+			if (contrastRatio(tokens[token], tokens.panel) < MIN_INDICATOR_CONTRAST)
+				fail(node, `${token}/panel contrast must reach 3`);
 	};
 	for (const node of roots.filter((node) => node.tag === 'theme_definition'))
 		checkPalette(node, themes[node.attributes.id].tokens);
