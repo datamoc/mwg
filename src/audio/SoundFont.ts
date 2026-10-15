@@ -223,6 +223,11 @@ function readTables(bytes: Uint8Array): SoundTables {
 			bytes.byteOffset + smplChunk.at + smplChunk.size - (smplChunk.size & 1),
 		),
 	);
+	if (samples.some((sample) => sample.type & 0x10)) {
+		throw new Error(
+			'SoundFont 3 (Ogg Vorbis samples) is not supported: convert it with "mwg-soundfonts convert <in.sf3> <out.sf2>"',
+		);
+	}
 	const info = lists.get('INFO') ?? null;
 	return {
 		bytes,
@@ -472,6 +477,125 @@ function listBytes(type: string, subs: Uint8Array[]): Uint8Array {
 }
 
 /**
+ * Joins several SoundFont 2 files into one, presets in the order given. When two files
+ * carry the same (bank, program) the first wins and the other's preset, instruments
+ * and samples are dropped, so the result never holds a voice nothing can reach. This is
+ * how single-instrument files (a per-program font collection) become the one file a game
+ * ships; `subsetSoundFont` then trims it like any other.
+ *
+ * @example
+ * ```ts
+ * import { mergeSoundFonts, parseSoundFont } from '@datamoc/mw_games/audio';
+ *
+ * declare const pianoBytes: ArrayBuffer;
+ * declare const drumsBytes: ArrayBuffer;
+ *
+ * const merged = mergeSoundFonts([pianoBytes, drumsBytes]);
+ * console.log(parseSoundFont(merged).presetCount);
+ * ```
+ */
+export function mergeSoundFonts(fonts: readonly (ArrayBuffer | ArrayBufferView)[]): ArrayBuffer {
+	if (fonts.length === 0) throw new Error('mergeSoundFonts needs at least one SoundFont');
+	const merged: SoundTables = {
+		bytes: new Uint8Array(0),
+		presets: [],
+		presetBags: [],
+		presetGens: [],
+		instruments: [],
+		instBags: [],
+		instGens: [],
+		samples: [],
+		smpl: new Int16Array(0),
+		info: null,
+	};
+	const smplParts: Int16Array[] = [];
+	let smplLength = 0;
+	for (const data of fonts) {
+		const source = readTables(toBytes(data));
+		merged.info ??= source.info;
+		const instrumentBase = merged.instruments.length;
+		const sampleBase = merged.samples.length;
+		const presetBagBase = merged.presetBags.length;
+		const presetGenBase = merged.presetGens.length;
+		const instBagBase = merged.instBags.length;
+		const instGenBase = merged.instGens.length;
+		//each table ends in a terminal record that only the joined result keeps
+		merged.presets.push(
+			...source.presets.slice(0, -1).map((preset) => ({ ...preset, bag: preset.bag + presetBagBase })),
+		);
+		merged.presetBags.push(...source.presetBags.slice(0, -1).map((gen) => gen + presetGenBase));
+		merged.presetGens.push(
+			...source.presetGens
+				.slice(0, source.presetBags[source.presetBags.length - 1])
+				.map((generator) =>
+					generator.oper === GENERATORS.instrument
+						? { ...generator, amount: generator.amount + instrumentBase }
+						: generator,
+				),
+		);
+		merged.instruments.push(
+			...source.instruments
+				.slice(0, -1)
+				.map((instrument) => ({ ...instrument, bag: instrument.bag + instBagBase })),
+		);
+		merged.instBags.push(...source.instBags.slice(0, -1).map((gen) => gen + instGenBase));
+		merged.instGens.push(
+			...source.instGens
+				.slice(0, source.instBags[source.instBags.length - 1])
+				.map((generator) =>
+					generator.oper === GENERATORS.sampleId
+						? { ...generator, amount: generator.amount + sampleBase }
+						: generator,
+				),
+		);
+		merged.samples.push(
+			...source.samples.slice(0, -1).map((sample) => ({
+				...sample,
+				start: sample.start + smplLength,
+				end: sample.end + smplLength,
+				loopStart: sample.loopStart + smplLength,
+				loopEnd: sample.loopEnd + smplLength,
+				link: sample.link + sampleBase,
+			})),
+		);
+		smplParts.push(source.smpl);
+		smplLength += source.smpl.length;
+	}
+	merged.presetBags.push(merged.presetGens.length);
+	merged.instBags.push(merged.instGens.length);
+	merged.presets.push({ name: 'EOS', preset: 0, bank: 0, bag: merged.presetBags.length - 1 });
+	merged.instruments.push({ name: 'EOS', bag: merged.instBags.length - 1 });
+	merged.samples.push({
+		name: 'EOS',
+		start: 0,
+		end: 0,
+		loopStart: 0,
+		loopEnd: 0,
+		rate: 0,
+		rootKey: 0,
+		correction: 0,
+		link: 0,
+		type: 0,
+	});
+	merged.smpl = new Int16Array(smplLength);
+	let at = 0;
+	for (const part of smplParts) {
+		merged.smpl.set(part, at);
+		at += part.length;
+	}
+
+	const firstOf = new Set<string>();
+	const usedPresets: number[] = [];
+	for (let index = 0; index < merged.presets.length - 1; index++) {
+		const key = `${merged.presets[index].bank}:${merged.presets[index].preset}`;
+		if (firstOf.has(key)) continue;
+		firstOf.add(key);
+		usedPresets.push(index);
+	}
+	return writeSoundFont(merged, usedPresets);
+}
+
+/**
  * Writes a smaller, valid SoundFont 2 file carrying only the used programs: their
  * presets (names kept), instruments and samples, with zones, ranges, tuning,
  * envelopes and sample loops copied verbatim and every index remapped. Zones that
@@ -511,7 +635,11 @@ export function subsetSoundFont(data: ArrayBuffer | ArrayBufferView, usage: read
 		}
 	}
 	usedPresets.sort((a, b) => a - b);
+	return writeSoundFont(tables, usedPresets);
+}
 
+/** writes the presets of `tables` listed in `usedPresets` (indices) with everything they reach, remapped */
+function writeSoundFont(tables: SoundTables, usedPresets: readonly number[]): ArrayBuffer {
 	const usableSample = (id: number): boolean => {
 		const header = tables.samples[id];
 		return !!header && header.end > header.start && !(header.type & 0x8000);

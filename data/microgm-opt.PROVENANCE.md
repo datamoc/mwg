@@ -5,6 +5,9 @@ supplied for this repository as the smallest usable GM bank found so far. Its IN
 chunk names the bank `microgm-opt`, the engineer `michael`, the sound engine
 `EMU8000`, the comment `gm soundfont for tiny devices`, and the tool `Polyphone`.
 
+Source: https://musical-artifacts.com/artifacts/2529 (the page refused an automated read
+when this note was written, so it was not re-checked there).
+
 Licence: WTFPL (Do What The F*** You Want To Public License,
 https://www.wtfpl.net/), confirmed by the project owner in October 2026. The
 file's own INFO chunk states no licence, so this note is the record of that

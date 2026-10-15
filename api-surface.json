@@ -5340,6 +5340,12 @@
 		"declaringModule": "audio/LoopTags.d.ts"
 	},
 	{
+		"name": "mergeSoundFonts",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/SoundFont.d.ts"
+	},
+	{
 		"name": "MidiControlEvent",
 		"kind": "interface",
 		"subpath": "./audio",
@@ -11146,6 +11152,12 @@
 		"kind": "tool",
 		"subpath": "./tools/single-file",
 		"declaringModule": "tools/single-file.mjs"
+	},
+	{
+		"name": "./tools/soundfonts",
+		"kind": "tool",
+		"subpath": "./tools/soundfonts",
+		"declaringModule": "tools/soundfonts.mjs"
 	},
 	{
 		"name": "./tools/verify-scenarios",

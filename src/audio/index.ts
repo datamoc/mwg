@@ -25,7 +25,7 @@ export type {
 } from './Midi.ts';
 export { renderMidiToBuffer, renderMidiToBufferAsync } from './MidiRender.ts';
 export type { RenderMidiOptions, RenderMidiAsyncOptions, RenderedMidi } from './MidiRender.ts';
-export { collectSoundFontUsage, parseSoundFont, subsetSoundFont } from './SoundFont.ts';
+export { collectSoundFontUsage, mergeSoundFonts, parseSoundFont, subsetSoundFont } from './SoundFont.ts';
 export type { SoundFont, SoundFontProgram, SoundFontSample, SoundFontVoice } from './SoundFont.ts';
 export { Channel, AudioBus } from './Channels.ts';
 export { parseVorbisLoopTags, loopRegionFromTags } from './LoopTags.ts';

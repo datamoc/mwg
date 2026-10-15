@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mwg",
-	"version": "0.40.1",
+	"version": "0.41.0",
 	"description": "The short name for @datamoc/mw_games: every entry point re-exports the same one there.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -41,7 +41,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@datamoc/mw_games": "0.40.1"
+		"@datamoc/mw_games": "0.41.0"
 	},
 	"exports": {
 		"./mwl/presentation": {
@@ -235,6 +235,10 @@
 		"./tools/sbom": {
 			"types": "./tools/sbom.d.mts",
 			"import": "./tools/sbom.mjs"
+		},
+		"./tools/soundfonts": {
+			"types": "./tools/soundfonts.d.mts",
+			"import": "./tools/soundfonts.mjs"
 		},
 		"./tools/make-example-assets": {
 			"types": "./tools/make-example-assets.d.mts",

@@ -1,0 +1,183 @@
+{
+	"description": "SoundFont collections mwg-soundfonts can fetch per instrument. Snapshot of marmooo/free-soundfonts list.json (sf3 sizes in MB) with each licence classified; classes other than public-domain, permissive and attribution need --accept-licence.",
+	"source": "https://soundfonts.pages.dev",
+	"default": "microgm-opt",
+	"bundled": [
+		{
+			"name": "microgm-opt",
+			"file": "data/microgm-opt.sf2",
+			"licence": "WTFPL",
+			"licenceClass": "permissive",
+			"web": "https://musical-artifacts.com/artifacts/2529",
+			"programs": 137,
+			"fullMB": 2.6
+		}
+	],
+	"fonts": [
+		{
+			"name": "005.6mg_Aspirin_Stereo_V1.2_Bank",
+			"licence": "Public Domain",
+			"licenceClass": "public-domain",
+			"programs": 191,
+			"gmMB": 9,
+			"fullMB": 15
+		},
+		{
+			"name": "32MbGMStereo",
+			"licence": "see source page",
+			"licenceClass": "check",
+			"web": "http://ntonyx.com/05_sf_01.html#008",
+			"programs": 137,
+			"gmMB": 15,
+			"fullMB": 15,
+			"note": "No licence stated by the collection: check the source page."
+		},
+		{
+			"name": "90's_Retro_Vintage_v1.05",
+			"licence": "Public Domain",
+			"licenceClass": "public-domain",
+			"web": "https://musical-artifacts.com/artifacts/1386",
+			"programs": 470,
+			"gmMB": 59,
+			"fullMB": 155
+		},
+		{
+			"name": "Airfont_320_neo",
+			"licence": "Public Domain",
+			"licenceClass": "public-domain",
+			"web": "https://musical-artifacts.com/artifacts/634",
+			"programs": 325,
+			"gmMB": 6,
+			"fullMB": 10
+		},
+		{
+			"name": "Airfont_330",
+			"licence": "CC-BY-3.0",
+			"licenceClass": "attribution",
+			"web": "https://musical-artifacts.com/artifacts/874",
+			"programs": 218,
+			"gmMB": 20,
+			"fullMB": 22
+		},
+		{
+			"name": "Airfont_340",
+			"licence": "Public Domain",
+			"licenceClass": "public-domain",
+			"web": "https://musical-artifacts.com/artifacts/633",
+			"programs": 326,
+			"gmMB": 14,
+			"fullMB": 18
+		},
+		{
+			"name": "Airfont_380_final",
+			"licence": "Public Domain",
+			"licenceClass": "public-domain",
+			"web": "https://musical-artifacts.com/artifacts/635",
+			"programs": 138,
+			"gmMB": 38,
+			"fullMB": 38
+		},
+		{
+			"name": "Alex's_gm_v1.3",
+			"licence": "CC-BY-3.0",
+			"licenceClass": "attribution",
+			"web": "https://musical-artifacts.com/artifacts/1390",
+			"programs": 137,
+			"gmMB": 60,
+			"fullMB": 60
+		},
+		{
+			"name": "Aspirin_160_GMGS_2015",
+			"licence": "Public Domain",
+			"licenceClass": "public-domain",
+			"programs": 207,
+			"gmMB": 13,
+			"fullMB": 24
+		},
+		{
+			"name": "ColomboGMGS2_V16.0",
+			"licence": "CC-BY-SA-4.0",
+			"licenceClass": "share-alike",
+			"web": "https://musical-artifacts.com/artifacts/1234",
+			"programs": 886,
+			"gmMB": 120,
+			"fullMB": 378
+		},
+		{
+			"name": "FatBoy_v0.790",
+			"licence": "see source page",
+			"licenceClass": "check",
+			"web": "https://fatboy.site/",
+			"programs": 281,
+			"gmMB": 50,
+			"fullMB": 72,
+			"note": "No licence stated by the collection: ask the author."
+		},
+		{
+			"name": "FluidR3_v3.1",
+			"licence": "MIT",
+			"licenceClass": "permissive",
+			"web": "https://launchpad.net/ubuntu/+source/fluid-soundfont",
+			"programs": 222,
+			"gmMB": 70,
+			"fullMB": 78
+		},
+		{
+			"name": "GeneralUser_GS_v1.472",
+			"licence": "see source page",
+			"licenceClass": "check",
+			"web": "http://www.schristiancollins.com/generaluser.php",
+			"programs": 269,
+			"gmMB": 17,
+			"fullMB": 34,
+			"note": "Its own licence (schristiancollins.com): read it before shipping."
+		},
+		{
+			"name": "GeneralUser_GS_v2.0.3",
+			"licence": "see source page",
+			"licenceClass": "check",
+			"web": "http://www.schristiancollins.com/generaluser.php",
+			"programs": 287,
+			"gmMB": 19,
+			"fullMB": 38,
+			"note": "Its own licence (schristiancollins.com): read it before shipping."
+		},
+		{
+			"name": "LiteGM_v1.03",
+			"licence": "CC-BY-SA-4.0",
+			"licenceClass": "share-alike",
+			"web": "https://musical-artifacts.com/artifacts/3677",
+			"programs": 137,
+			"gmMB": 10,
+			"fullMB": 10
+		},
+		{
+			"name": "SGM-V2.01",
+			"licence": "CC-BY-4.0",
+			"licenceClass": "attribution",
+			"web": "https://archive.org/details/SGM-V2.01",
+			"programs": 409,
+			"gmMB": 66,
+			"fullMB": 162
+		},
+		{
+			"name": "SGM-v2.01-NicePianosGuitarsBass-V1.2",
+			"licence": "CC-BY-3.0",
+			"licenceClass": "attribution",
+			"web": "https://musical-artifacts.com/artifacts/855",
+			"programs": 285,
+			"gmMB": 98,
+			"fullMB": 225
+		},
+		{
+			"name": "TimGM6mb",
+			"licence": "GPL-2.0",
+			"licenceClass": "copyleft",
+			"web": "http://www.timbrechbill.com/saxguru/Timidity.php",
+			"programs": 136,
+			"gmMB": 5,
+			"fullMB": 5,
+			"note": "The collection lists Public Domain, but Debian and Alpine list GPL-2.0 (some samples are public domain, others GPL-2.0)."
+		}
+	]
+}

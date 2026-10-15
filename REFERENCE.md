@@ -915,9 +915,13 @@ reach the compiled asset map without it.
   render because both call the same function. `soundFontBytes` takes raw SoundFont 2 data.
 - `parseSoundFont` - reads SoundFont 2 bytes into layered preset voices (key and velocity
   ranges, tuning, loops, envelopes, pan, attenuation); the font file itself stays the
-  game's to ship and to license.
+  game's to ship and to license. A SoundFont 3 (Ogg Vorbis samples) is refused by name
+  rather than read as noise: `mwg-soundfonts convert` makes it a SoundFont 2.
 - `collectSoundFontUsage` - lists the (bank, program) pairs scheduled notes actually
   request across MIDI files, drums as bank 128, for the compile step to keep.
+- `mergeSoundFonts` - joins several SoundFont 2 files into one, presets in the order given
+  and the first font winning a shared (bank, program), which is how single-instrument files
+  (the per-program collection `mwg-soundfonts fetch` reads) become the one file a game ships.
 - `subsetSoundFont` - writes a smaller valid SoundFont 2 file carrying only the used
   programs, zones and samples copied verbatim and indexes remapped, so a game ships
   megabytes instead of tens of megabytes with identical voices. The build does this
@@ -927,7 +931,10 @@ reach the compiled asset map without it.
   the programs explicitly, and with no shipped MIDI the font embeds whole because
   the usage is unknowable. The reference bank in `data/microgm-opt.sf2` (2.6 MB,
   WTFPL, shipped in the npm package for a game to copy into its assets) drops to
-  tens of kilobytes per game this way.
+  tens of kilobytes per game this way. It is the default bank. A game that wants another
+  picks it from `data/soundfont-catalog.json` and fetches just its instruments with
+  `mwg-soundfonts` (see [tools.md](tools.md)); a SoundFont 2 is plain 16-bit PCM, several
+  times the size of the same font as SoundFont 3, so a fetched font is worth subsetting.
 - `Channel`/`AudioBus` - buffered WebAudio music: a `Channel` plays one looping track with
   volume, pitch, pan, a loop region and a seekable playhead, and an `AudioBus` wires two of
   them into independent BGM/BGS loops, ME jingles that suspend and resume the BGM,

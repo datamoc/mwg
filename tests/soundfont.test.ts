@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { parseMidi } from '../src/audio/Midi.ts';
 import { renderMidiToBuffer, renderMidiToBufferAsync } from '../src/audio/MidiRender.ts';
-import { collectSoundFontUsage, parseSoundFont, subsetSoundFont } from '../src/audio/SoundFont.ts';
+import { collectSoundFontUsage, mergeSoundFonts, parseSoundFont, subsetSoundFont } from '../src/audio/SoundFont.ts';
 import type { SoundFont, SoundFontVoice } from '../src/audio/SoundFont.ts';
 
 function ascii(text: string): number[] {
@@ -400,4 +400,31 @@ test('a subset of a subset voices the same notes', () => {
 	const once = parseSoundFont(subsetSoundFont(fullBytes, usage));
 	const twice = parseSoundFont(subsetSoundFont(subsetSoundFont(fullBytes, usage), usage));
 	assert.deepEqual(allVoices(twice, 0, 5), allVoices(once, 0, 5));
+});
+
+// ------------------------------------------------------------------- SoundFont 3 and merge
+
+test('a SoundFont 3 is refused by name instead of read as sample noise', () => {
+	const bytes = buildFont();
+	const header = [...bytes].findIndex((_, at) => String.fromCharCode(...bytes.slice(at, at + 4)) === 'shdr');
+	bytes[header + 8 + 44] = 0x11; //mono and Ogg Vorbis compressed
+	assert.throws(() => parseSoundFont(bytes), /SoundFont 3.*mwg-soundfonts convert/);
+});
+
+test('merging fonts keeps every preset with identical voices, the first font winning a shared program', () => {
+	const single = parseSoundFont(buildFont());
+	const two = parseSoundFont(buildTwoPresetFont());
+	const merged = parseSoundFont(mergeSoundFonts([buildFont(), buildTwoPresetFont()]));
+	assert.equal(merged.presetCount, 2); //program 5 appears in both, program 7 only in the second
+	assert.deepEqual(merged.voices(0, 5, 69, 100), single.voices(0, 5, 69, 100));
+	assert.deepEqual(merged.voices(0, 7, 30, 100), two.voices(0, 7, 30, 100));
+	assert.equal(merged.hasPreset(0, 7), true);
+});
+
+test('merging the same font twice is the font itself, and merging none is an error', () => {
+	const once = parseSoundFont(mergeSoundFonts([buildFont()]));
+	const twice = parseSoundFont(mergeSoundFonts([buildFont(), buildFont()]));
+	assert.equal(twice.presetCount, 1);
+	assert.deepEqual(twice.voices(0, 5, 69, 100), once.voices(0, 5, 69, 100));
+	assert.throws(() => mergeSoundFonts([]), /at least one/);
 });

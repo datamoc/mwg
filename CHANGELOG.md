@@ -7,6 +7,30 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.41.0] - 2026-10-15
+
+`microgm-opt` stays the default SoundFont, and a game that wants another one can now pick it:
+a licence-classified catalogue of a per-instrument collection and a tool that fetches only the
+instruments the game plays.
+
+### Added
+
+- `mwg-soundfonts` (`list`, `fetch`, `convert`, and `@datamoc/mw_games/tools/soundfonts`):
+  `data/soundfont-catalog.json` lists the bundled bank and 18 fonts of the marmooo
+  free-soundfonts collection with each licence classified (public domain, permissive and
+  attribution fetch freely; share-alike, copyleft and unclear ones need `--accept-licence`;
+  TimGM6mb is listed as GPL-2.0 where the collection says public domain). `fetch` takes the
+  instruments named by `--midi` files or `--programs`, converts each from SoundFont 3
+  (Ogg Vorbis decoded by `ffmpeg`, a developer-machine tool) and writes one SoundFont 2 with a
+  `.credits.txt` beside it. `convert` turns any SoundFont 3 into SoundFont 2.
+- `mergeSoundFonts` (`audio`): joins SoundFont 2 files into one, the first font winning a
+  shared (bank, program).
+
+### Fixed
+
+- `parseSoundFont` (and so `subsetSoundFont` and the asset compiler) refuses a SoundFont 3 by
+  name instead of reading its Ogg bytes as PCM and playing noise.
+
 ## [0.40.1] - 2026-10-15
 
 The published package now carries its documentation the way npm expects to find it: a

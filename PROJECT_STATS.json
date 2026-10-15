@@ -1,11 +1,11 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.40.1",
+	"version": "0.41.0",
 	"releaseDate": "2026-10-15",
 	"source": {
 		"files": 357,
-		"lines": 67549,
+		"lines": 67677,
 		"modules": 20,
 		"breakdown": [
 			{
@@ -31,7 +31,7 @@
 			{
 				"name": "audio",
 				"files": 21,
-				"lines": 4730
+				"lines": 4858
 			},
 			{
 				"name": "roguelike",
@@ -111,13 +111,13 @@
 		]
 	},
 	"tests": {
-		"files": 329,
-		"lines": 44914,
-		"cases": 3007
+		"files": 330,
+		"lines": 45175,
+		"cases": 3019
 	},
 	"tools": {
-		"files": 59,
-		"lines": 11958
+		"files": 60,
+		"lines": 12310
 	},
 	"examples": {
 		"count": 27,
@@ -152,18 +152,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 426,
+		"items": 427,
 		"completed": 411,
-		"open": 15,
+		"open": 16,
 		"percent": 96
 	},
 	"api": {
 		"declarationFiles": 357
 	},
 	"bundle": {
-		"globalRaw": 1292521,
-		"globalGzip": 386668,
-		"distRaw": 4704038
+		"globalRaw": 1294396,
+		"globalGzip": 387251,
+		"distRaw": 4711471
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

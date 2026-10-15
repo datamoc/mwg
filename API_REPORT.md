@@ -6724,7 +6724,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.40.1";
+    export declare const version = "0.41.0";
 
 ### `VerticalLabel` (class)
 
@@ -9291,6 +9291,10 @@ build instead.
 ### `loopRegionFromTags` (function)
 
     export declare function loopRegionFromTags(tags: VorbisLoopTags | null, sampleRate: number, duration: number): LoopRegion | null;
+
+### `mergeSoundFonts` (function)
+
+    export declare function mergeSoundFonts(fonts: readonly (ArrayBuffer | ArrayBufferView)[]): ArrayBuffer;
 
 ### `MidiControlEvent` (interface)
 
