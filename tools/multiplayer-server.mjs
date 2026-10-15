@@ -187,6 +187,10 @@ export function createLockstepServer(options = {}) {
 //realpath, since an npm `bin` shim reaches this file through a symlink
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
 	const args = process.argv.slice(2);
+	if (args.includes('--help') || args.includes('-h')) {
+		console.log('usage: mwg-lockstep-server [port] [--host=<address>]');
+		process.exit(0);
+	}
 	const port = Number(args.find((arg) => !arg.startsWith('--')) ?? 8787);
 	const host = args.find((arg) => arg.startsWith('--host='))?.slice(7) ?? '127.0.0.1';
 	const server = createLockstepServer({ port, host });

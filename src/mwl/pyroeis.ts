@@ -33,6 +33,9 @@ export function luaToJs(source: string, options: LuaToJsOptions = {}): LuaToJsRe
 	return pyroeis.PyroeisVm.toJs(source, options);
 }
 
+/**
+ * Per-call limits for the sandboxed Lua host. `instructionLimit` defaults to 100,000 VM instructions per call; `seed` fixes `math.random`.
+ */
 export interface PyroeisScriptHostOptions {
 	readonly instructionLimit?: number;
 	/** bytes of string and buffer data one call may allocate; defaults to 32 MB */

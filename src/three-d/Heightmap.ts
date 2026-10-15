@@ -12,6 +12,9 @@ export interface HeightmapSource {
 	height: number;
 }
 
+/**
+ * Terrain size and relief. Pixel brightness maps linearly onto `minHeight` to `maxHeight` (0 and 1 when omitted).
+ */
 export interface HeightmapTerrain3DOptions {
 	/** world-space size along X; defaults to 10 */
 	width?: number;

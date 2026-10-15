@@ -99,6 +99,10 @@ function measureFramework(root) {
 }
 
 function main(argv) {
+	if (argv.includes('--help') || argv.includes('-h')) {
+		console.log('usage: mwg-size <dist folder> [--baseline=<file>] [--tolerance=0.02] [--update]');
+		return;
+	}
 	const tolerance = Number(
 		argv.find((a) => a.startsWith('--tolerance='))?.slice(12) ?? process.env.MWG_SIZE_TOLERANCE ?? 0.02,
 	);

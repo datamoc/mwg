@@ -1,5 +1,26 @@
 import { reducedMotion, type MotionIntent } from '../../core/Motion.ts';
 
+/** Tuning and starting state for `Spring`; positions are in world units. */
+export interface SpringOptions {
+	/** pull per unit of displacement, per second squared; must be finite and above 0 */
+	stiffness: number;
+	/** velocity lost per unit of velocity, per second; must be finite and at least 0 */
+	damping: number;
+	/** where the anchor starts; default `{ x: 0, y: 0 }` */
+	anchor?: { x: number; y: number };
+	/** where the bob starts; default at the anchor, at rest */
+	position?: { x: number; y: number };
+	/** what the lag is for under reduced motion; default `decorative`, which snaps to the anchor */
+	intent?: MotionIntent;
+}
+
+function assertPoint(value: { x: number; y: number }, name: string): { x: number; y: number } {
+	if (!Number.isFinite(value.x) || !Number.isFinite(value.y)) {
+		throw new RangeError(`a spring ${name} needs finite coordinates, saw (${value.x}, ${value.y})`);
+	}
+	return { x: value.x, y: value.y };
+}
+
 /**
  * A damped chase spring for secondary motion: one bob pulled toward a moving anchor,
  * the spring-damper complement to `SpriteMotion` (roadmap 424). Hair, hems, accessories
@@ -23,26 +44,6 @@ import { reducedMotion, type MotionIntent } from '../../core/Motion.ts';
  * console.log(hair.settled(0.01)); // true - a damped spring comes to rest at its anchor
  * ```
  */
-export interface SpringOptions {
-	/** pull per unit of displacement, per second squared; must be finite and above 0 */
-	stiffness: number;
-	/** velocity lost per unit of velocity, per second; must be finite and at least 0 */
-	damping: number;
-	/** where the anchor starts; default `{ x: 0, y: 0 }` */
-	anchor?: { x: number; y: number };
-	/** where the bob starts; default at the anchor, at rest */
-	position?: { x: number; y: number };
-	/** what the lag is for under reduced motion; default `decorative`, which snaps to the anchor */
-	intent?: MotionIntent;
-}
-
-function assertPoint(value: { x: number; y: number }, name: string): { x: number; y: number } {
-	if (!Number.isFinite(value.x) || !Number.isFinite(value.y)) {
-		throw new RangeError(`a spring ${name} needs finite coordinates, saw (${value.x}, ${value.y})`);
-	}
-	return { x: value.x, y: value.y };
-}
-
 export class Spring {
 	readonly stiffness: number;
 	readonly damping: number;

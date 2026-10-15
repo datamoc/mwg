@@ -2,9 +2,13 @@ import { compileSources, type MwlCompiledNode, type MwlSourceFile } from './comp
 import { schema10, type MwlTagSchema } from './schema.ts';
 import { contrastRatio } from '../two-d/ui/contrast.ts';
 
+/** The scalar types a manifest value or collection field can declare. */
 export type PresentationScalarType = 'string' | 'number' | 'boolean';
+/** A resolved scalar the game state supplies for a manifest value. */
 export type PresentationValue = string | number | boolean;
+/** One row of a repeated collection: field name to scalar, read by `item.<field>` bindings. */
 export type PresentationItem = Readonly<Record<string, PresentationValue>>;
+/** A manifest value that is a list of rows, each with the named, typed `fields`. */
 export interface PresentationCollection {
 	readonly type: 'items';
 	readonly fields: Readonly<Record<string, PresentationScalarType>>;
@@ -16,7 +20,9 @@ export interface PresentationManifest {
 	readonly adapters?: readonly string[];
 	readonly assets?: readonly string[];
 }
+/** Authored attributes of a node, theme, variant or override, kept as their source strings. */
 export type PresentationProperties = Readonly<Record<string, string>>;
+/** One validated presentation element: its `kind` (the MWL tag), per-state overrides and compiled children. */
 export interface PresentationNode {
 	readonly kind: string;
 	readonly id: string;
@@ -26,19 +32,29 @@ export interface PresentationNode {
 	readonly states: Readonly<Record<string, PresentationProperties>>;
 	readonly children: readonly PresentationNode[];
 }
+/**
+ * A compiled `theme_definition`: 24-bit color `tokens` (the required semantic ones all present) plus shared style `properties`.
+ */
 export interface PresentationTheme {
 	readonly tokens: Readonly<Record<string, number>>;
 	readonly properties: PresentationProperties;
 }
+/**
+ * A compiled `presentation_context`: token values layered over its `theme`, and per-target property `overrides` keyed by node `source`.
+ */
 export interface PresentationContext {
 	readonly theme: string;
 	readonly tokens: Readonly<Record<string, number>>;
 	readonly overrides: Readonly<Record<string, PresentationProperties>>;
 }
+/** A compiled `scene_definition`: the `theme` it starts under and its top-level nodes. */
 export interface PresentationScene {
 	readonly theme: string;
 	readonly children: readonly PresentationNode[];
 }
+/**
+ * The checked, JSON-shaped output of `compilePresentation`. `ids` lists every node path (a `*` segment stands for a repeated item) and `assets`/`messages` collect what the authored data references, both sorted.
+ */
 export interface CompiledPresentation {
 	readonly scenes: Readonly<Record<string, PresentationScene>>;
 	readonly themes: Readonly<Record<string, PresentationTheme>>;

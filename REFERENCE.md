@@ -122,7 +122,8 @@ Three rules the whole API follows, so a name means one thing everywhere:
 [core](#core) · [two-d](#two-d) · [render](#two-drender) · [ui](#two-dui) · [stage](#two-dstage) ·
 [assets](#assets) · [audio](#audio) · [battle](#battle) · [board](#board) ·
 [actors](#actors) · [roguelike](#roguelike) · [rpg](#rpg) · [simulation](#simulation) ·
-[three-d](#three-d-optional) · [world](#world) · [i18n](#i18n) · [mwl](#mwl) · [ai](#ai) ·
+[three-d](#three-d-optional) · [world](#world) · [i18n](#i18n) · [mwl](#mwl) · [mwl/pyroeis](#mwlpyroeis) ·
+[skeleton](#skeleton) · [physics](#physics) · [ai](#ai) ·
 [testing](#testing) · [threads](#threads) · [headless](#headless)
 
 ## `core`
@@ -1419,6 +1420,66 @@ live game loop.
   `SaveSystem`'s. The world is opaque, so an `MwlWorld`, a `Level` or a game's own scenario object
   all fit.
 
+## `skeleton`
+
+Skeletal pose math, renderer-free: a bone tree, keyframed clips and layered blending, as
+pure data and arithmetic so it loads headless and tests without a renderer. Clips are plain
+JSON-shaped data a game authors itself. `import * as Skeleton from '@datamoc/mw_games/skeleton'`.
+
+- `create(bones)` - builds a `SkeletonBones` from `Bone`s (`name`, `parent`, `length`,
+  `origin`, `rest` `rotation` in degrees, optional `limits`), throwing by name on a duplicate
+  bone, a cycle, a missing parent or inverted joint limits. `boneOrder` lists names parents
+  first.
+- `resolve(skeleton, pose?)` - walks the tree and returns one `BoneTransform` per bone (world
+  `x`/`y`, `angle`, composed scale, a 2D `matrix`, and the `tipX`/`tipY` the children start
+  from). A `Pose` is one rotation per bone name; a `TransformPose` adds per-bone translations
+  and scales.
+- `samplePose`/`sampleTransformPose(clip, time, skeleton?)` - a `Clip` (`duration`, `loop`,
+  ascending `Keyframe`s) interpolated at a time: a looping clip wraps, a one-shot holds its
+  last frame. Passing the skeleton validates the result.
+- `advancePlayback`/`createMixer`/`crossfadeTo`/`advance`/`advancePose` - a `Mixer` holds a base
+  `Playback` plus weighted, prioritised additive `Layer`s. `advance(mixer, dt)` ticks every
+  playhead, folds in a running crossfade and the layers, and returns rotations;
+  `advancePose` returns the full `TransformPose`. `mixPoses` blends rotation poses by layer
+  priority and weight.
+- `validatePose` - refuses non-finite rotations and angles outside a bone's `limits`.
+- `solveTwoBoneIK(skeleton, first, second, target, bend?, pose?)` - solves a connected
+  two-bone chain toward a world target without stretching; throws for an unreachable target
+  or a second bone with a non-zero origin.
+
+## `physics`
+
+Small deterministic simulations, renderer-free, with no third-party engine. Three entry
+points: `@datamoc/mw_games/physics` (rigid bodies, cloth, spring) and
+`@datamoc/mw_games/physics/xpbd` (a structure solver). Everything is plain arithmetic, so a
+game's headless tests run the same world.
+
+- `PhysicsWorld` - rigid circles and axis-aligned boxes (never rotating: `angle` is a display
+  offset), stepped on a `FixedStepper` so results do not depend on the display refresh rate.
+  Semi-implicit Euler, impulse contacts with restitution and friction, and distance joints.
+  `addBox`/`addCircle` return a plain `PhysicsBody` (`position`, `velocity`, `angle`, `label`,
+  `isStatic`); `connect` joins two bodies or a body and a world point
+  (`ConstraintOptions`: `stiffness`, `damping`, `length`, attachment points, and `maxStretch`
+  to make the joint breakable); `remove` takes a body or constraint; `stretchOf` reads a
+  joint's strain; `update(dt)` runs the fixed steps it covers and returns their count.
+  `onContact` and `onBreak` are `Signal`s.
+- `XpbdWorld` (`physics/xpbd`) - point masses (`addNode`, `fixed` anchors) joined by springs
+  (`addLink`: `stiffness`, `rest`, `tensionOnly` cables, `strength`/`tensionStrength`),
+  solved with extended position-based dynamics and the force in each link read back, so a link
+  breaks at a real load. Fixed steps and no randomness make a replay identical on every
+  machine. `step()` advances one frame; `applyForce` pushes a node for one step; `ground` is a
+  height or a function of x; `breaking` gates breaking so a structure can settle first;
+  `onBreak` fires per broken link and `peakRatio` is a strain gauge. It has no rigid bodies or
+  collisions, which is what `PhysicsWorld` is for.
+- `Cloth` - a pinned-point Verlet grid (top row pinned) with structural links only, no
+  allocation per step. `indexOf`/`pointPosition`/`pointLinks`/`writePositions` read it back;
+  `pinPoint`/`unpinPoint`, `setWind`/`setGravity`, `reset` and `update(dt)` drive it.
+  `two-d`'s `ClothSprite` draws one as a mesh on the GPU path.
+- `Spring` - a damped chase spring for secondary motion (hair, hems, panels): `setAnchor`
+  moves the target, `displace` shoves the bob, `offset`/`length`/`settled(tolerance)` read the
+  lag, `place(target)` positions a display object, `update(dt)` steps it. Under reduced motion
+  it follows `SpringOptions.intent` (`decorative` snaps to the anchor).
+
 ## `testing`
 
 Test doubles for the seams mwg takes by injection (item 388), so a game's tests and this
@@ -1872,6 +1933,24 @@ The executable [`mwl-content` example](../examples/view.html?ex=mwl-content) sho
 path: authored content, generated catalog and manifests, then a small game reading the result
 at runtime. A Wesnoth adapter can convert native `.cfg` files to the same MWL input model
 before invoking this build step.
+
+## `mwl/pyroeis`
+
+The optional Lua 5.4 entry point, `@datamoc/mw_games/mwl/pyroeis`, kept off the `mwl` barrel
+so the Pyroeis VM (the optional `@datamoc/pyroeis` dependency) loads only when a game imports
+it. The `mwl` section above describes its behaviour in full; the exports are:
+
+- `createPyroeisScriptHost(options?)` - a sandboxed `ScriptHost` (`PyroeisScriptHostOptions`:
+  `instructionLimit`, `memoryLimit`, `seed`). Only the base, coroutine, math, string, table and
+  utf8 libraries are opened, `load` is removed, `math.random` is seeded, and every call is
+  bounded; globals persist per host.
+- `createPyroeisRuntime(options?)` - a `PyroeisRuntime` for synchronous host calls and live
+  state: `run`, `call`, `get`/`set` on dotted paths, `reference`, `defineFunction`,
+  `defineYieldingFunction`, `createTable` (live proxy tables), `coroutine` and `dispose`.
+  Types: `PyroeisValue`, `PyroeisReference`, `PyroeisCoroutine`, `PyroeisTableBinding`,
+  `PyroeisRuntimeOptions`.
+- `luaToJs(source, options?)` - translates Lua to readable JavaScript without running it
+  (`LuaToJsOptions`/`LuaToJsResult` are re-exported).
 
 ## `ai`
 

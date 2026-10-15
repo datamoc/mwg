@@ -7,6 +7,32 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.40.1] - 2026-10-15
+
+The published package now carries its documentation the way npm expects to find it: a
+homepage that opens the documentation site, the reference and the tools guide inside the
+tarball, declared Node support, and a `--help` on every command line tool.
+
+### Added
+
+- `package.json` declares `homepage` (the documentation site, so `npm docs` opens it
+  instead of the GitHub README), `bugs` and `engines` (`node >=20.19.0`), and exports
+  `./package.json` so a tool can read an installed module's metadata. `@datamoc/mwg`
+  inherits all of them, plus the keywords it lacked.
+- `REFERENCE.md` and `tools.md` ship in the tarball, so the README's relative links
+  resolve offline from `node_modules`.
+- `REFERENCE.md` sections for `skeleton`, `physics` and `mwl/pyroeis`.
+- JSDoc on the exported symbols of the least documented entry points
+  (`mwl/presentation`, `ai/lua`, `physics/xpbd`, `two-d/presentation`, `3d`, `mwl/pyroeis`,
+  `physics`).
+
+### Fixed
+
+- `mwg-bench`, `mwg-size`, `mwg-sbom`, `mwg-lockstep-server`, `mwg-mwl`, `mwg-uci` now print
+  their usage for `--help` instead of running. `mwg-init --help` no longer creates a folder
+  named `--help`, `mwg-scenarios --help` no longer hangs, and `mwg-placeholder-assets --help`
+  no longer rewrites the assets.
+
 ## [0.40.0] - 2026-10-15
 
 A game that plays sampled MIDI no longer ships a whole SoundFont: the asset

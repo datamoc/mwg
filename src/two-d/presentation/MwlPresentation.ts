@@ -24,7 +24,11 @@ const DEFAULT_BAR_HEIGHT = 12;
 const DEFAULT_WINDOW_WIDTH = 300;
 const DEFAULT_WINDOW_HEIGHT = 200;
 
+/** The game state a controller exposes each frame: a scalar per manifest value, or the rows of a collection. */
 export type PresentationState = Readonly<Record<string, PresentationValue | readonly PresentationItem[]>>;
+/**
+ * What an adapter factory receives, and `restyle` again after a context switch: the effective theme `tokens` and the adapter node's own `properties`.
+ */
 export interface PresentationAdapterContext {
 	readonly tokens: Readonly<Record<string, number>>;
 	readonly properties: PresentationProperties;
@@ -37,6 +41,9 @@ export interface PresentationAdapter {
 	restyle?(context: PresentationAdapterContext): void;
 	destroy?(): void;
 }
+/**
+ * Wiring for `MwlPresentation`. `state` is polled on every update; `actions` and `adapters` must cover every name the manifest declares or construction throws. `translate` maps message ids to display text (identity when omitted).
+ */
 export interface PresentationRuntimeOptions {
 	readonly parent: Container;
 	readonly state: () => PresentationState;

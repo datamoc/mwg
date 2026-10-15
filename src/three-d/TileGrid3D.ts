@@ -9,6 +9,9 @@ import type { Scene } from '@babylonjs/core/scene.js';
 import { gridPoint3D } from './Grid.ts';
 import type { GridCell3D, GridShape3D } from './Grid.ts';
 
+/**
+ * `tileSize`, `heightStep` (world units per height level) and `origin` offset default to 1, 1 and the world origin; `tileThickness` is 0.12. Colors are 24-bit RGB.
+ */
 export interface TileGrid3DOptions {
 	shape: GridShape3D;
 	tileSize?: number;
@@ -19,6 +22,9 @@ export interface TileGrid3DOptions {
 	origin?: readonly [number, number, number];
 }
 
+/**
+ * The built meshes. `columns` is null when no cell is raised or sunken. `dispose` frees the meshes and their materials.
+ */
 export interface TileGrid3DMeshes {
 	tiles: Mesh;
 	columns: Mesh | null;

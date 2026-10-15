@@ -21,6 +21,9 @@ export interface PyroeisReference {
 	dispose(): void;
 }
 
+/**
+ * A Lua thread driven by the host: `resume` runs it until it yields or returns (`done`), and `values` are what it yielded or returned.
+ */
 export interface PyroeisCoroutine {
 	readonly status: 'suspended' | 'running' | 'dead';
 	resume(args?: readonly PyroeisValue[]): { readonly done: boolean; readonly values: readonly PyroeisValue[] };
@@ -36,6 +39,7 @@ export interface PyroeisTableBinding {
 	length?(): number;
 }
 
+/** Script-host limits plus the `require` module table and an optional wall-clock budget. */
 export interface PyroeisRuntimeOptions extends PyroeisScriptHostOptions {
 	/** Exact module IDs mapped to embedded text sources; never filesystem or network paths. */
 	readonly modules?: Readonly<Record<string, string>>;
@@ -43,6 +47,9 @@ export interface PyroeisRuntimeOptions extends PyroeisScriptHostOptions {
 	readonly timeLimit?: number;
 }
 
+/**
+ * A Lua 5.4 state the host drives directly: run chunks, call and bind functions, hold references, and resume coroutines. Dotted `path` arguments address globals and nested tables. Call `dispose` to release the VM.
+ */
 export interface PyroeisRuntime {
 	run(source: string, chunkName?: string): PyroeisValue;
 	call(target: string | PyroeisReference, args?: readonly PyroeisValue[]): PyroeisValue;

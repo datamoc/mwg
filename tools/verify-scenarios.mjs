@@ -105,9 +105,13 @@ export async function verifyScenarios({ file, turns = 3, timeoutMs = 120000, onl
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
 	const [file, ...args] = process.argv.slice(2);
 	const options = { file };
+	const usage = 'usage: mwg-scenarios <built index.html> [--turns N] [--timeout-ms N] [--only prefix]';
+	if (file === '--help' || file === '-h') {
+		console.log(usage);
+		process.exit(0);
+	}
 	try {
-		if (!file)
-			throw new Error('usage: mwg-scenarios <built index.html> [--turns N] [--timeout-ms N] [--only prefix]');
+		if (!file) throw new Error(usage);
 		for (let i = 0; i < args.length; i += 2) {
 			const name = { '--turns': 'turns', '--timeout-ms': 'timeoutMs', '--only': 'only' }[args[i]];
 			if (!name || args[i + 1] === undefined) throw new Error(`invalid option: ${args[i]}`);

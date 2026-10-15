@@ -1,22 +1,4 @@
-/**
- * A small pinned-point cloth mesh: Verlet integration over a grid of points joined by
- * structural distance constraints, the top row pinned by default. Renderer-free arithmetic
- * (roadmap 423): no physics engine, no allocations per step, deterministic for a fixed
- * `update(dt)` sequence, so a frame budget is exact rather than hoped for - one update
- * costs O(points + links), two relaxation passes over structural links only, never shear
- * or bend constraints and never a full cloth simulator. A skirt, tunic or scarf follows
- * its character with a slight lag; `ClothSprite` draws the mesh on the GPU path 414 ships.
- *
- * @example
- * ```ts
- * import { Cloth } from '@datamoc/mw_games/physics';
- *
- * const scarf = new Cloth({ width: 60, height: 20, segmentsX: 6, segmentsY: 2, gravity: { x: 0, y: 900 } });
- * for (let i = 0; i < 60; i++) scarf.update(1 / 60); // one fixed second
- * console.log(scarf.pointPosition(scarf.indexOf(3, 2)).y > 20); // true - the free end sags down
- * console.log(scarf.pointPosition(scarf.indexOf(0, 0))); // { x: 0, y: 0 } - the pinned edge never moves
- * ```
- */
+/** Grid size and dynamics for `Cloth`. The top row is the pinned attachment edge. */
 export interface ClothOptions {
 	/** rest width in world units; must be finite and above 0 */
 	width: number;
@@ -44,6 +26,25 @@ function assertFinitePair(value: { x: number; y: number } | undefined, name: str
 	return { x: pair.x, y: pair.y };
 }
 
+/**
+ * A small pinned-point cloth mesh: Verlet integration over a grid of points joined by
+ * structural distance constraints, the top row pinned by default. Renderer-free arithmetic
+ * (roadmap 423): no physics engine, no allocations per step, deterministic for a fixed
+ * `update(dt)` sequence, so a frame budget is exact rather than hoped for - one update
+ * costs O(points + links), two relaxation passes over structural links only, never shear
+ * or bend constraints and never a full cloth simulator. A skirt, tunic or scarf follows
+ * its character with a slight lag; `ClothSprite` draws the mesh on the GPU path 414 ships.
+ *
+ * @example
+ * ```ts
+ * import { Cloth } from '@datamoc/mw_games/physics';
+ *
+ * const scarf = new Cloth({ width: 60, height: 20, segmentsX: 6, segmentsY: 2, gravity: { x: 0, y: 900 } });
+ * for (let i = 0; i < 60; i++) scarf.update(1 / 60); // one fixed second
+ * console.log(scarf.pointPosition(scarf.indexOf(3, 2)).y > 20); // true - the free end sags down
+ * console.log(scarf.pointPosition(scarf.indexOf(0, 0))); // { x: 0, y: 0 } - the pinned edge never moves
+ * ```
+ */
 export class Cloth {
 	readonly segmentsX: number;
 	readonly segmentsY: number;

@@ -1,22 +1,22 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.40.0",
+	"version": "0.40.1",
 	"releaseDate": "2026-10-15",
 	"source": {
 		"files": 357,
-		"lines": 67456,
+		"lines": 67549,
 		"modules": 20,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 106,
-				"lines": 22731
+				"lines": 22738
 			},
 			{
 				"name": "mwl",
 				"files": 23,
-				"lines": 7786
+				"lines": 7812
 			},
 			{
 				"name": "core",
@@ -56,7 +56,7 @@
 			{
 				"name": "ai",
 				"files": 7,
-				"lines": 1686
+				"lines": 1702
 			},
 			{
 				"name": "simulation",
@@ -66,7 +66,7 @@
 			{
 				"name": "physics",
 				"files": 6,
-				"lines": 1209
+				"lines": 1225
 			},
 			{
 				"name": "battle",
@@ -81,7 +81,7 @@
 			{
 				"name": "three-d",
 				"files": 9,
-				"lines": 756
+				"lines": 784
 			},
 			{
 				"name": "world",
@@ -112,12 +112,12 @@
 	},
 	"tests": {
 		"files": 329,
-		"lines": 44904,
+		"lines": 44914,
 		"cases": 3007
 	},
 	"tools": {
 		"files": 59,
-		"lines": 11917
+		"lines": 11958
 	},
 	"examples": {
 		"count": 27,
@@ -162,8 +162,8 @@
 	},
 	"bundle": {
 		"globalRaw": 1292521,
-		"globalGzip": 386670,
-		"distRaw": 4695359
+		"globalGzip": 386668,
+		"distRaw": 4704038
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

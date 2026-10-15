@@ -301,6 +301,10 @@ async function readJson(path) {
  * `application`, anything else as a `library`. `--check` compares instead of writing, for CI.
  */
 async function main(argv) {
+	if (argv.includes('--help') || argv.includes('-h')) {
+		console.log('usage: mwg-sbom [project folder] [--out=<file>] [--check]');
+		return;
+	}
 	const root = resolve(argv.find((arg) => !arg.startsWith('--')) ?? '.');
 	const out = resolve(root, argv.find((arg) => arg.startsWith('--out='))?.slice(6) ?? OUTPUT);
 	const packageJson = await readJson(join(root, 'package.json'));

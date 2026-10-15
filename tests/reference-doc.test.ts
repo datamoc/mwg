@@ -26,6 +26,9 @@ import * as aiLua from '../src/ai/lua.ts';
 import * as testing from '../src/testing/index.ts';
 import * as threads from '../src/threads/index.ts';
 import * as headless from '../src/headless/index.ts';
+import * as skeleton from '../src/skeleton/index.ts';
+import * as physics from '../src/physics/index.ts';
+import * as xpbd from '../src/physics/xpbd.ts';
 
 /**
  * REFERENCE.md is hand-written and nothing generates it, so it drifts silently the moment an
@@ -63,6 +66,9 @@ const MODULES: Record<string, Record<string, unknown>> = {
 	testing,
 	threads,
 	headless,
+	skeleton,
+	physics,
+	'physics/xpbd': xpbd,
 };
 
 /** every identifier appearing inside a backticked span anywhere in the document */

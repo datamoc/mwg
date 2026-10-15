@@ -1,6 +1,7 @@
 import { FixedStepper } from '../core/FixedStepper.ts';
 import { Signal } from '../core/Signal.ts';
 
+/** Construction options for `PhysicsWorld`. */
 export interface PhysicsOptions {
 	/** gravity strength per axis; y grows downward. The default matches matter-js's historical default pull */
 	gravity?: { x: number; y: number };
@@ -10,6 +11,7 @@ export interface PhysicsOptions {
 	maxSubsteps?: number;
 }
 
+/** Per-body material and identity options for `addBox`/`addCircle`. */
 export interface BodyOptions {
 	/** an immovable body: ground, anchors */
 	isStatic?: boolean;
@@ -24,6 +26,7 @@ export interface BodyOptions {
 	label?: string;
 }
 
+/** Joint options for `PhysicsWorld.addConstraint`. Lengths and points are in world units. */
 export interface ConstraintOptions {
 	/** 0 to 1, how rigidly the ends are held: 1 is a rod, a small value a spring; 1 when omitted */
 	stiffness?: number;

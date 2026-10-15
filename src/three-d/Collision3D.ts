@@ -55,6 +55,9 @@ export function heightAt(
 	return index.has(key) ? index.get(key)! : null;
 }
 
+/**
+ * Inputs to `resolveCapsuleAgainstGrid`; `tileSize` (default 1) and `shape` must match the grid the heights were built from.
+ */
 export interface CapsuleGridMoveOptions {
 	shape: GridShape3D;
 	/** from `buildHeightIndex` */
@@ -66,6 +69,7 @@ export interface CapsuleGridMoveOptions {
 	steps?: number;
 }
 
+/** Where the move ended: `to` when open, otherwise the last sampled position that was still allowed. */
 export interface CapsuleGridMoveResult {
 	x: number;
 	z: number;

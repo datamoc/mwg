@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mwg",
-	"version": "0.40.0",
+	"version": "0.40.1",
 	"description": "The short name for @datamoc/mw_games: every entry point re-exports the same one there.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -8,13 +8,40 @@
 		"url": "git+https://github.com/datamoc/mwg.git",
 		"directory": "packages/mwg"
 	},
+	"homepage": "https://datamoc.github.io/mwg/",
+	"bugs": {
+		"url": "https://github.com/datamoc/mwg/issues"
+	},
+	"keywords": [
+		"game-framework",
+		"game-engine",
+		"2d-game-engine",
+		"html5-games",
+		"pixijs",
+		"babylonjs",
+		"typescript",
+		"tile-map",
+		"top-down",
+		"rpg",
+		"roguelike",
+		"dungeon-crawler",
+		"turn-based",
+		"dialogue-system",
+		"capacitor",
+		"offline-first",
+		"no-server",
+		"local-file"
+	],
+	"engines": {
+		"node": ">=20.19.0"
+	},
 	"type": "module",
 	"sideEffects": false,
 	"publishConfig": {
 		"access": "public"
 	},
 	"dependencies": {
-		"@datamoc/mw_games": "0.40.0"
+		"@datamoc/mw_games": "0.40.1"
 	},
 	"exports": {
 		"./mwl/presentation": {
@@ -256,7 +283,8 @@
 		"./headless": {
 			"types": "./headless.d.ts",
 			"import": "./headless.js"
-		}
+		},
+		"./package.json": "./package.json"
 	},
 	"files": [
 		"*.js",

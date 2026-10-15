@@ -171,6 +171,10 @@ const isMain = process.argv[1] && realpathSync(process.argv[1]) === fileURLToPat
 
 if (isMain) {
 	const args = process.argv.slice(2);
+	if (args.includes('--help') || args.includes('-h')) {
+		console.log('usage: mwg-uci [--book <book.json>] [--tables <dir>] [--depth N]');
+		process.exit(0);
+	}
 	const flag = (name) => {
 		const at = args.indexOf(name);
 		return at === -1 ? undefined : args[at + 1];

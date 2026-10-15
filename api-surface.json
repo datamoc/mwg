@@ -9360,6 +9360,12 @@
 		"declaringModule": "mwl/pyroeis-runtime.d.ts"
 	},
 	{
+		"name": "./package.json",
+		"kind": "data",
+		"subpath": "./package.json",
+		"declaringModule": "package.json"
+	},
+	{
 		"name": "BodyOptions",
 		"kind": "interface",
 		"subpath": "./physics",

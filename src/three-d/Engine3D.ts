@@ -5,12 +5,14 @@ import { Color4 } from '@babylonjs/core/Maths/math.color.js';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { Scene } from '@babylonjs/core/scene.js';
 
+/** `clearColor` is RGBA in 0 to 1 (alpha 1 when omitted, default a dark blue); `antialias` defaults to true. */
 export interface Engine3DOptions {
 	canvas: HTMLCanvasElement;
 	antialias?: boolean;
 	clearColor?: readonly [number, number, number, number?];
 }
 
+/** Per-frame callback, run before the scene renders; `deltaSeconds` is the time since the previous frame. */
 export type Frame3D = (deltaSeconds: number) => void;
 
 /** Owns Babylon's WebGL engine, scene, default camera, lighting, and render loop. */

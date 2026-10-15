@@ -49,6 +49,9 @@ export interface AIAction {
 	readonly [key: string]: AIValue;
 }
 
+/**
+ * What one `decide` call receives. `perception` is the game-built snapshot; `state` overrides the agent's stored state for this call; `signal` cancels; the budget and `seed` fields override the runner's defaults.
+ */
 export interface AIDecisionInput {
 	readonly perception: AIValue;
 	readonly state?: AIState;
@@ -66,6 +69,9 @@ export interface AIDecisionContext {
 	emit(name: string, payload?: AIValue): void;
 }
 
+/**
+ * The result of one `decide` call. `status` says why `action` is or is not set; `steps` counts budget checkpoints used and `behavior` names the behaviour that decided, when one did.
+ */
 export interface AIDecision {
 	readonly agent: string;
 	readonly action: AIAction | null;
@@ -91,6 +97,9 @@ export interface AIBehavior {
 	readonly decide: (context: AIDecisionContext) => AIAction | null;
 }
 
+/**
+ * A registered agent: behaviours tried in declaration order, plus optional `scope` and search hints (`algorithm`, `depth`, `maxNodes`) that the runner itself does not act on: a game, converter or score view reads them.
+ */
 export interface AIAgentDefinition {
 	readonly id: string;
 	readonly behaviors: readonly AIBehavior[];
@@ -100,6 +109,7 @@ export interface AIAgentDefinition {
 	readonly maxNodes?: number;
 }
 
+/** The versioned, JSON-shaped save format of `exportState`/`importState`: per-agent state keyed by agent id. */
 export interface AIStateEnvelope {
 	readonly version: 1;
 	readonly agents: Readonly<Record<string, AIState>>;

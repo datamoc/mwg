@@ -130,7 +130,9 @@ export function initProject(folder) {
 //no top-level await: this module is also imported, and the real path covers an npm bin symlink
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
 	const folder = process.argv[2];
-	if (!folder) {
+	if (folder === '--help' || folder === '-h') {
+		console.log('usage: mwg-init <new folder>');
+	} else if (!folder) {
 		console.error('usage: mwg-init <new folder>');
 		process.exitCode = 2;
 	} else {

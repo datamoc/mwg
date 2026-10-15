@@ -136,6 +136,12 @@ export async function measurePage({
  * `benchmark-results/<page>.json`, named by the page so two pages keep separate histories.
  */
 async function main(argv) {
+	if (argv.includes('--help') || argv.includes('-h')) {
+		console.log(
+			'usage: mwg-bench <page.html | dist folder> [--frames=180] [--min-fps=45] [--max-p95=40] [--history=<file>]',
+		);
+		return;
+	}
 	const value = (name, env, fallback) =>
 		argv.find((a) => a.startsWith(`--${name}=`))?.split('=')[1] ?? process.env[env] ?? fallback;
 	const target = argv.find((arg) => !arg.startsWith('--')) ?? 'examples/dungeon/dist/index.html';

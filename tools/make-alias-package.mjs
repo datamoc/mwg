@@ -43,12 +43,14 @@ export function aliasFiles(main) {
 				repository: { ...main.repository, directory: 'packages/mwg' },
 				homepage: main.homepage,
 				bugs: main.bugs,
+				keywords: main.keywords,
+				engines: main.engines,
 				type: 'module',
 				sideEffects: false,
 				//a scoped package is private by default, which npm only allows on a paid plan
 				publishConfig: { access: 'public' },
 				dependencies: { [SOURCE]: main.version },
-				exports,
+				exports: { ...exports, './package.json': './package.json' },
 				files: ['*.js', '*.mjs', '*.d.ts', '*.d.mts', '**/*.js', '**/*.mjs', '**/*.d.ts', '**/*.d.mts'],
 			},
 			null,
@@ -59,7 +61,7 @@ export function aliasFiles(main) {
 		'```\nnpm install @datamoc/mwg\n```\n\n' +
 		`\`import { Game } from '${NAME}/two-d'\` is the same module as \`import { Game } from '${SOURCE}/two-d'\`. ` +
 		`The \`mwg-*\` command line tools are installed by \`${SOURCE}\`; run them with ` +
-		`\`npx -p ${SOURCE} mwg-emit\`. Documentation: https://github.com/datamoc/mwg\n`;
+		`\`npx -p ${SOURCE} mwg-emit\`. Documentation: ${main.homepage}\n`;
 	return files;
 }
 

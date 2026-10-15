@@ -6,17 +6,24 @@ import '@babylonjs/core/Meshes/thinInstanceMesh.js';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
 import type { Scene } from '@babylonjs/core/scene.js';
 
+/** Model extent in voxels along each axis. */
 export interface VoxSize {
 	x: number;
 	y: number;
 	z: number;
 }
+/**
+ * One filled cell. `color` is a 1-based index into the model palette; `z` is up in the VOX file (mapped to world Y on build).
+ */
 export interface Voxel {
 	x: number;
 	y: number;
 	z: number;
 	color: number;
 }
+/**
+ * A parsed VOX model. `palette` holds 256 little-endian RGBA entries (the default grayscale ramp when the file has none).
+ */
 export interface VoxModel {
 	size: VoxSize;
 	voxels: readonly Voxel[];

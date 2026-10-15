@@ -1,5 +1,8 @@
 import { Signal } from '../core/Signal.ts';
 
+/**
+ * Construction options for `XpbdWorld`. Units are the game's own: gravity, stiffness and strength share one scale.
+ */
 export interface XpbdOptions {
 	/** downward acceleration in units per second squared; 520 when omitted (a 1-unit-per-pixel scale) */
 	gravity?: number;
@@ -20,6 +23,7 @@ export interface XpbdOptions {
 /** the ground a node cannot sink below: a height (y grows downward), or a height at each x */
 export type XpbdGround = number | ((x: number) => number);
 
+/** What `XpbdWorld.addNode` takes: a position in world units and an optional mass. */
 export interface XpbdNodeSpec {
 	x: number;
 	y: number;
@@ -29,6 +33,7 @@ export interface XpbdNodeSpec {
 	mass?: number;
 }
 
+/** What `XpbdWorld.addLink` takes. `a` and `b` are node indices as returned by `addNode`. */
 export interface XpbdLinkSpec {
 	a: number;
 	b: number;
@@ -46,6 +51,9 @@ export interface XpbdLinkSpec {
 	tensionStrength?: number;
 }
 
+/**
+ * A live point mass in `XpbdWorld.nodes`. Mutate `x`/`y` between steps to drag a node; velocity is in units per second.
+ */
 export interface XpbdNode {
 	x: number;
 	y: number;
@@ -56,6 +64,9 @@ export interface XpbdNode {
 	w: number;
 }
 
+/**
+ * A live spring in `XpbdWorld.links`: its spec, resolved (`rest` filled in) and the load state the last step left. A `broken` link carries no load but keeps its index.
+ */
 export interface XpbdLink {
 	a: number;
 	b: number;

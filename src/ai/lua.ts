@@ -3,6 +3,9 @@ import type { ScriptHost } from '../mwl/scripts.ts';
 import { type AIDecision, type AIDecisionInput, type AIStateEnvelope } from './index.ts';
 import { alphaBetaSearch, type AlphaBetaOptions, type AlphaBetaResult, type LuaAlphaBetaFunctions } from './search.ts';
 
+/**
+ * A Lua-scripted agent. `source` is executed once on first use; `functionName` (default `decide`) is then called with `(perception, state)`. `search` renames the Lua functions `LuaAI.search` calls.
+ */
 export interface LuaAIAgentDefinition {
 	readonly id: string;
 	readonly source: string;
@@ -10,6 +13,9 @@ export interface LuaAIAgentDefinition {
 	readonly search?: LuaAlphaBetaFunctions;
 }
 
+/**
+ * `maxSteps` (alias of `instructionLimit`) caps VM instructions per decision, reported as `budget-exceeded`. `seed` is the default for `mwg_seed`. `host` replaces the Pyroeis VM, e.g. with a test fake.
+ */
 export interface LuaAIOptions extends PyroeisScriptHostOptions {
 	readonly host?: ScriptHost;
 	readonly maxSteps?: number;

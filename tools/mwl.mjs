@@ -65,6 +65,13 @@ const assetRoot = assetRootFlag === -1 ? undefined : args[assetRootFlag + 1];
 const targetFlag = args.indexOf('--to');
 const target = targetFlag === -1 ? undefined : args[targetFlag + 1];
 
+if (args.includes('--help') || args.includes('-h')) {
+	console.log(
+		'usage: mwg-mwl <validate|compile|format|migrate|extract-i18n|assets|report|diagnostics|ci|hooks|build> input.mwl [-o output] [--to 1.0] [--manifest hooks.json] [--asset-root directory]',
+	);
+	process.exit(0);
+}
+
 if (!command || !input || !commands.includes(command)) {
 	console.error(
 		'Usage: mwl <validate|compile|format|migrate|extract-i18n|assets|report|diagnostics|ci|hooks|build> input.mwl [-o output] [--to 1.0] [--manifest hooks.json] [--asset-root directory]',

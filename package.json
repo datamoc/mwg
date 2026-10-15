@@ -1,11 +1,18 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.40.0",
+	"version": "0.40.1",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
+	"homepage": "https://datamoc.github.io/mwg/",
+	"bugs": {
+		"url": "https://github.com/datamoc/mwg/issues"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/datamoc/mwg.git"
+	},
+	"engines": {
+		"node": ">=20.19.0"
 	},
 	"keywords": [
 		"game-framework",
@@ -120,10 +127,13 @@
 		"LICENSE",
 		"CHANGELOG.md",
 		"README.md",
+		"REFERENCE.md",
+		"tools.md",
 		"MWG - Deep Code and Architecture Review.md",
 		"MWG - Best Practices.md"
 	],
 	"exports": {
+		"./package.json": "./package.json",
 		"./mwl/presentation": {
 			"types": "./dist/mwl/presentation.d.ts",
 			"import": "./dist/mwl/presentation.js"

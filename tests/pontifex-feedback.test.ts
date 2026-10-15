@@ -152,7 +152,11 @@ test('packages/mwg, the @datamoc/mwg alias, is what the generator writes and re-
 	assert.equal(alias.name, '@datamoc/mwg');
 	assert.equal(alias.dependencies['@datamoc/mw_games'], main.version, 'pinned to the exact matching version');
 	assert.ok(alias.exports['./two-d'] && alias.exports['.'] && alias.exports['./tools/vite']);
-	for (const [key, entry] of Object.entries(alias.exports) as [string, { import: string }][]) {
+	for (const [key, entry] of Object.entries(alias.exports) as [string, { import: string } | string][]) {
+		if (typeof entry === 'string') {
+			assert.ok(key in main.exports, `${key} exists in the main package`);
+			continue;
+		}
 		const specifier = key === '.' ? '@datamoc/mw_games' : `@datamoc/mw_games/${key.slice(2)}`;
 		assert.equal(files[entry.import.slice(2)], `export * from '${specifier}';\n`);
 		assert.ok(key === '.' || key in main.exports, `${key} exists in the main package`);

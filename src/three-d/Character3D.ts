@@ -10,6 +10,7 @@ import type { Scene } from '@babylonjs/core/scene.js';
 
 import { resolve } from '../assets/paths.ts';
 
+/** Options for `Character3D.billboard`. `width` and `height` are world units (1 and 1.5 when omitted). */
 export interface Billboard3DOptions {
 	/**
 	 * An asset path (resolved through `mwg/assets`) or an already-resolved `data:`/`blob:`
@@ -27,13 +28,6 @@ function resolveSource(source: string): string {
 }
 
 /**
- * Moves either a billboard sprite or imported mesh through continuous 3D world space, and -
- * for an imported mesh - plays back whichever animation clips came baked into it.
- * `loadModel3D` already loads a glTF's own `animationGroups` as part of its import result;
- * this is what turns one of them into something a game can actually trigger, the way a walk
- * cycle baked into a mesh needs to be, rather than leaving them loaded but unreachable.
- */
-/**
  * Clamps one frame's intended horizontal move to wherever collision actually allows - the
  * hook `mwg/3d`'s own grid collision (`resolveCapsuleAgainstGrid`) plugs into. `blocked`,
  * when the resolver reports it (`resolveCapsuleAgainstGrid` always does), tells `update`
@@ -46,6 +40,13 @@ export type CollideXZ = (
 	to: { x: number; z: number },
 ) => { x: number; z: number; blocked?: boolean };
 
+/**
+ * Moves either a billboard sprite or imported mesh through continuous 3D world space, and -
+ * for an imported mesh - plays back whichever animation clips came baked into it.
+ * `loadModel3D` already loads a glTF's own `animationGroups` as part of its import result;
+ * this is what turns one of them into something a game can actually trigger, the way a walk
+ * cycle baked into a mesh needs to be, rather than leaving them loaded but unreachable.
+ */
 export class Character3D {
 	readonly node: TransformNode;
 	private target: Vector3 | null = null;

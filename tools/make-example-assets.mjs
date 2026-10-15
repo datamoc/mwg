@@ -717,6 +717,10 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
 	const args = process.argv.slice(2);
 	const folder = args.find((arg) => !arg.startsWith('--'));
 	const inRepository = existsSync(join(here, '..', 'examples'));
+	if (args.includes('--help') || args.includes('-h')) {
+		console.log('usage: mwg-placeholder-assets <folder> [--force]');
+		process.exit(0);
+	}
 	if (!folder && !inRepository) {
 		console.error('usage: mwg-placeholder-assets <folder> [--force]');
 		process.exit(1);

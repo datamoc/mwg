@@ -1,25 +1,25 @@
 # Project statistics
 
-Generated for **mwg 0.40.0** on 2026-10-15.
+Generated for **mwg 0.40.1** on 2026-10-15.
 
 | Area | Statistics |
 | --- | ---: |
-| Source | 357 TypeScript files, 67,456 lines, 20 modules |
-| Tests | 329 files, 3,007 test cases, 44,904 lines |
-| Tools | 59 files, 11,917 lines |
+| Source | 357 TypeScript files, 67,549 lines, 20 modules |
+| Tests | 329 files, 3,007 test cases, 44,914 lines |
+| Tools | 59 files, 11,958 lines |
 | Examples | 27 runnable examples |
 | Roadmap | 411/426 items complete, 15 open |
 | API | 357 declaration files |
 | Bundle | 1262.2 kB raw, 377.6 kB gzip |
-| Published dist | 4585.3 kB excluding source maps |
+| Published dist | 4593.8 kB excluding source maps |
 | Test-to-source ratio | 0.7x by line count |
 
 ## Source modules
 
 | Module | Files | Lines |
 | --- | ---: | ---: |
-| two-d | 106 | 22,731 |
-| mwl | 23 | 7,786 |
+| two-d | 106 | 22,738 |
+| mwl | 23 | 7,812 |
 | core | 52 | 7,370 |
 | board | 12 | 5,355 |
 | audio | 21 | 4,730 |
@@ -27,12 +27,12 @@ Generated for **mwg 0.40.0** on 2026-10-15.
 | actors | 24 | 2,454 |
 | rpg | 14 | 2,072 |
 | i18n | 10 | 1,879 |
-| ai | 7 | 1,686 |
+| ai | 7 | 1,702 |
 | simulation | 9 | 1,463 |
-| physics | 6 | 1,209 |
+| physics | 6 | 1,225 |
 | battle | 15 | 1,156 |
 | assets | 9 | 854 |
-| three-d | 9 | 756 |
+| three-d | 9 | 784 |
 | world | 7 | 603 |
 | skeleton | 1 | 441 |
 | threads | 3 | 297 |
