@@ -5430,6 +5430,18 @@
 		"declaringModule": "audio/Midi.d.ts"
 	},
 	{
+		"name": "MissingProgram",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/SoundFont.d.ts"
+	},
+	{
+		"name": "missingSoundFontPrograms",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/SoundFont.d.ts"
+	},
+	{
 		"name": "Music",
 		"kind": "class",
 		"subpath": "./audio",
@@ -5557,6 +5569,12 @@
 	},
 	{
 		"name": "SoundFont",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/SoundFont.d.ts"
+	},
+	{
+		"name": "SoundFontOptions",
 		"kind": "interface",
 		"subpath": "./audio",
 		"declaringModule": "audio/SoundFont.d.ts"
@@ -11188,6 +11206,12 @@
 		"kind": "tool",
 		"subpath": "./tools/soundfonts",
 		"declaringModule": "tools/soundfonts.mjs"
+	},
+	{
+		"name": "./tools/svg-optimise",
+		"kind": "tool",
+		"subpath": "./tools/svg-optimise",
+		"declaringModule": "tools/svg-optimise.mjs"
 	},
 	{
 		"name": "./tools/verify-scenarios",

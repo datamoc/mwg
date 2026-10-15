@@ -71,6 +71,7 @@
 			<nav class="site-nav">
 				<a href="../examples/index.html">Examples</a>
 				<a href="../getting-started/index.html">Getting started</a>
+				<a href="../tutorials/bridge/index.html">Bridge tutorial</a>
 				<a href="../documentation/index.html">Documentation</a>
 				<a href="../design/index.html">Design</a>
 				<a href="./index.html" aria-current="page">Features</a>
@@ -341,6 +342,28 @@ barrier.absorb(15);     // drains the ward first, then the shield</code></pre>
 							independent of who acted this turn. Kept as two small types instead of one
 							overloaded one.
 						</p>
+					</article>
+
+					<article class="panel feature-card">
+						<p class="module-tag">mwg/physics/xpbd</p>
+						<h2>A bridge that breaks at a real load, and replays the same way twice</h2>
+						<p>
+							A bridge game needs the force in every beam, not only where the nodes end up, so a
+							beam can break when it carries more than it can take. It also needs the same
+							build to give the same result on every machine, or a replay proves nothing.
+						</p>
+						<p class="the-trick">
+							<code>XpbdWorld</code> solves nodes and links with fixed steps and no randomness,
+							and reads each link's load back as a <code>ratio</code> (1 is the breaking
+							point). Record the player's build actions with <code>core.Recorder</code>,
+							replay them with <code>Player</code>, and the two results are deep-equal.
+							<a href="../tutorials/bridge/index.html">Build the bridge game</a>.
+						</p>
+						<pre><code>world.addLink({ a, b, stiffness: 3e5,
+  strength: 16000, tensionOnly: true });
+world.breaking = true;
+world.step();
+const { ratio, broken } = world.links[0];</code></pre>
 					</article>
 
 				</div>

@@ -29,7 +29,7 @@ import { withContentSecurityPolicy } from './csp.mjs';
  * usage: mwg-emit <project folder> [--dist=<dir>] [--assets=<dir>] [--no-csp] [--connect=<origin>]...
  *                 [--no-compress] [--xz]
  *                 [--single-file] [--single-file-compress[=level]]
- *                 [--single-file-brotli[=quality]] [--to-webp] [--webp-lossy[=quality]]
+ *                 [--single-file-brotli[=quality]] [--to-webp] [--webp-lossy[=quality]] [--svgo]
  *                 [--no-soundfont-subset] [--soundfont-usage=bank:program,...]
  *
  * `--dist` defaults to `<project folder>/dist` and `--assets` to `<project folder>/assets`; with
@@ -53,6 +53,9 @@ import { withContentSecurityPolicy } from './csp.mjs';
  * `--to-webp` converts `.png`/`.jpg`/`.jpeg` example assets to WebP before embedding (see
  * `tools/webp-convert.mjs`), lossless by default; `--webp-lossy[=quality]` opts into lossy
  * re-encoding instead. Needs the optional `sharp` devDependency installed.
+ *
+ * `--svgo` minifies embedded `.svg` assets (see `tools/svg-optimise.mjs`), keeping the `viewBox` and
+ * every id. Needs the optional `svgo` package installed.
  */
 
 /**
@@ -74,6 +77,7 @@ export async function emitPage({
 	toWebp = false,
 	webpLossless = true,
 	webpQuality = 90,
+	svgo = false,
 	soundFont = true,
 	soundFontUsage,
 	csp = true,
@@ -89,10 +93,11 @@ export async function emitPage({
 				toWebp,
 				webpLossless,
 				webpQuality,
+				svgo,
 				soundFont,
 				soundFontUsage,
 			})
-		: { groups: [], rawBytes: 0, embeddedBytes: 0, webpConverted: 0, soundFonts: [] };
+		: { groups: [], rawBytes: 0, embeddedBytes: 0, webpConverted: 0, svgOptimised: 0, soundFonts: [] };
 
 	const html = await readFile(join(dist, 'index.html'), 'utf8');
 	const classic = toClassicScript(html);
@@ -162,6 +167,7 @@ async function main(argv) {
 		toWebp: argv.includes('--to-webp'),
 		webpLossless: !webpLossyFlag,
 		webpQuality: webpLossyFlag?.includes('=') ? Number(webpLossyFlag.split('=')[1]) : 90,
+		svgo: argv.includes('--svgo'),
 		soundFont: !argv.includes('--no-soundfont-subset'),
 		soundFontUsage,
 		csp: argv.includes('--no-csp')
@@ -179,12 +185,19 @@ async function main(argv) {
 				`${kb(result.rawBytes)} -> ${kb(result.embeddedBytes)} embedded`,
 		);
 	}
+	if (argv.includes('--svgo')) console.log(`  ${result.svgOptimised} SVG(s) optimised`);
 	for (const font of result.soundFonts ?? []) {
 		console.log(
 			font.programs === null
 				? `  ${font.key}: SoundFont embedded whole (${kb(font.rawBytes)}), no shipped MIDI to subset against`
 				: `  ${font.key}: SoundFont subset to ${font.programs} program(s), ${kb(font.rawBytes)} -> ${kb(font.embeddedBytes)}`,
 		);
+		if (font.missing?.length > 0) {
+			console.log(
+				`  warning: ${font.key} does not carry ${font.missing.map(({ bank, program }) => `${bank}:${program}`).join(', ')}: ` +
+					"they play the font's piano, or the built-in synthesizer with `missingProgram: 'synth'`",
+			);
+		}
 	}
 	console.log('  open index.html directly - no server needed');
 	if (result.compressed) {

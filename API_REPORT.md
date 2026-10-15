@@ -9287,7 +9287,7 @@ build instead.
 
 ### `loadSoundFont` (function)
 
-    export declare function loadSoundFont(data: ArrayBuffer | ArrayBufferView, options?: {
+    export declare function loadSoundFont(data: ArrayBuffer | ArrayBufferView, options?: SoundFontOptions & {
         decode?: SoundFontSampleDecoder;
 
 ### `LoopRegion` (interface)
@@ -9437,6 +9437,14 @@ build instead.
         bend?: number;
     }
 
+### `MissingProgram` (type)
+
+    export type MissingProgram = 'piano' | 'synth';
+
+### `missingSoundFontPrograms` (function)
+
+    export declare function missingSoundFontPrograms(data: ArrayBuffer | ArrayBufferView, usage: readonly SoundFontProgram[]): SoundFontProgram[];
+
 ### `Music` (class)
 
     export declare class Music {
@@ -9520,7 +9528,7 @@ build instead.
 
 ### `parseSoundFont` (function)
 
-    export declare function parseSoundFont(data: ArrayBuffer | ArrayBufferView): SoundFont;
+    export declare function parseSoundFont(data: ArrayBuffer | ArrayBufferView, options?: SoundFontOptions): SoundFont;
 
 ### `parseVorbisLoopTags` (function)
 
@@ -9563,6 +9571,8 @@ build instead.
     export interface RenderMidiAsyncOptions {
 
         soundFontBytes?: ArrayBuffer | ArrayBufferView;
+
+        missingProgram?: MissingProgram;
 
         sampleRate?: number;
 
@@ -9652,6 +9662,13 @@ build instead.
         voices(bank: number, program: number, key: number, velocity: number): SoundFontVoice[];
         hasPreset(bank: number, program: number): boolean;
         readonly presetCount: number;
+    }
+
+### `SoundFontOptions` (interface)
+
+    export interface SoundFontOptions {
+
+        missingProgram?: MissingProgram;
     }
 
 ### `SoundFontProgram` (interface)

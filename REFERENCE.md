@@ -3,7 +3,9 @@
 A one-line-per-export index of `@datamoc/mw_games`'s public API - what exists and where,
 not how to use it. The published Documentation page is this file rendered as HTML; the
 full generated API (every parameter, every doc comment) lives beside it at
-`webpage/documentation/api/` (both from `npm run webpage:docs`). For *why* the framework
+`webpage/documentation/api/`, with an examples index beside it at
+`webpage/documentation/examples.html` listing every `@example` per module (all from
+`npm run webpage:docs`). For *why* the framework
 is shaped this way and what it's for, see `README.md`'s capability spec. For architecture
 and build commands, see `DEVELOPMENT.md`. For the order things shipped in and the reasoning
 behind it, see `CLOSED.md`; for what's still open, see `ROADMAP.md`.
@@ -822,7 +824,8 @@ The `file://` story: a compiled build resolves paths through a `data:` URI map; 
 serves them normally. Load once per scene; everything after is synchronous. The compiler side
 of this (`tools/compile-resources.mjs`, `tools/emit-page.mjs`, `tools/single-file.mjs`) offers
 independent build options on top of that one story - multi-file vs. single-file output,
-compression (gzip or brotli, single-file only), and WebP image conversion - documented in
+compression (gzip or brotli, single-file only), WebP image conversion and SVG optimisation
+(`svgo: true`, ids and `viewBox` kept, only when smaller) - documented in
 `DEVELOPMENT.md`'s "Build options" section and `tools.md`'s tool reference; none of them
 change what a game calls to load an asset.
 
@@ -932,6 +935,10 @@ reach the compiled asset map without it.
   own rate, so the browser never resamples it. A Node tool passes a decoder of its own.
 - `collectSoundFontUsage` - lists the (bank, program) pairs scheduled notes actually
   request across MIDI files, drums as bank 128, for the compile step to keep.
+- `missingSoundFontPrograms` - the pairs of a usage list a font does not carry (the bank 0
+  fallback counts as carried, a drum kit needs that exact kit), on a SoundFont 2 or 3. The
+  build runs it for you: each embedded font's result lists its `missing` programs and
+  `mwg-emit` warns.
 - `mergeSoundFonts` - joins several SoundFont 2 files (or several SoundFont 3 files, the
   Ogg bytes copied untouched) into one, presets in the order given and the first font winning
   a shared (bank, program), which is how single-instrument files (the per-program collection
@@ -948,7 +955,10 @@ reach the compiled asset map without it.
   tens of kilobytes per game this way: measured, piano and drums come to 264 KB, eight
   essential programs (piano, guitar, bass, strings, brass, flute, synth lead, drums) to 421 KB,
   sixteen to 585 KB. A program the font lacks plays the font's own piano (preset 0:0) and,
-  only when it has no piano either, the built-in synthesizer. It is the default bank. A game that wants another
+  only when it has no piano either, the built-in synthesizer; `parseSoundFont(data, { missingProgram:
+  'synth' })` (also on `loadSoundFont` and `renderMidiToBufferAsync`) hands those instruments to
+  the synthesizer instead of a piano line, and a bank missing the program or a drum kit still falls
+  back to bank 0 or the standard kit, never to a melodic preset. It is the default bank. A game that wants another
   picks it from `data/soundfont-catalog.json` and fetches just its instruments with
   `mwg-soundfonts` (see [tools.md](tools.md)). A SoundFont 3 stays compressed all the way to
   the page (FluidR3's piano, guitar and drums: 2.7 MB, against 20 MB decoded to a SoundFont 2),

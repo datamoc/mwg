@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { writeExampleIndex } from './build-example-index.mjs';
 
 /**
  * Builds the Documentation page into `webpage/documentation/`:
@@ -48,7 +49,10 @@ execFileSync('node', ['node_modules/typedoc/bin/typedoc', '--options', 'typedoc.
 console.log('rendering REFERENCE.md into webpage/documentation/index.html...');
 writeReferencePage();
 
-console.log('\nwebpage/documentation/ now holds the module guide and generated API.');
+console.log('indexing the code examples into webpage/documentation/examples.html...');
+writeExampleIndex({ root });
+
+console.log('\nwebpage/documentation/ now holds the module guide, generated API and examples index.');
 
 /**
  * Heading ids that match REFERENCE.md's own Contents anchors (`#render` for

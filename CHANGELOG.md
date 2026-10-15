@@ -17,6 +17,34 @@ the public API may still change between minor versions.
   breaking load, tested to hold a light cart, break under a heavy one and repeat exactly.
 - `REFERENCE.md` records what subsetting the bundled bank costs (piano and drums 264 KB,
   eight essential programs 421 KB, sixteen 585 KB) and what plays for a program the font lacks.
+- `svgo: true` on `compileResources`, `emitPage` and `mwgPage` (and `--svgo` on `mwg-emit`) minifies
+  embedded `.svg` assets through the optional `svgo` package, version 4 or newer, imported only when
+  used. Ids and the `viewBox` are left alone, a file is embedded optimised only when that is smaller,
+  and one svgo cannot parse fails the build by name. On the repository's own 30 SVGs: 13.6%
+  smaller, worst rendered pixel difference 1 in 255. `@datamoc/mw_games/tools/svg-optimise` is the
+  standalone half.
+- `missingProgram: 'piano' | 'synth'` on `parseSoundFont`, `loadSoundFont` and
+  `renderMidiToBufferAsync`: what plays for a program the font lacks, the font's own piano as
+  before or the built-in synthesizer, so a game with a trimmed bank hears the synthesizer's timbre
+  for an instrument it did not ship instead of a piano line.
+- `missingSoundFontPrograms` (`audio`) lists the programs a MIDI usage asks for that a SoundFont 2 or
+  3 does not carry. The asset compiler runs it: each embedded font's result has a `missing` list and
+  `mwg-emit` and `compile-resources` warn about them.
+- `examples/bridge` and the "Build a bridge game" tutorial (`webpage/tutorials/bridge`): a playable
+  truss builder on `XpbdWorld` (three levels, a budget, cables, beams coloured by load, breaking),
+  a deterministic replay of the player's build through `Recorder`/`Player`, best results through
+  `SaveSystem`, reduced motion and the high-contrast theme. The simulation is renderer-free and
+  tested, every tutorial snippet is checked to appear verbatim in the example, and the interface
+  step points at `examples/mwl-presentation` for HUD and windows described as MWL content.
+- An examples index (`tools/build-example-index.mjs`, written by `npm run webpage:docs` to
+  `documentation/examples.html`): for each public module every exported symbol with an `@example`,
+  its first lines and a link to its API page, plus the runnable examples that import the module.
+
+### Fixed
+
+- A request for a drum kit the font lacks falls back to the standard kit, never to a melodic
+  preset: it used to take the same program number from bank 0, so a font with a piano and no drums
+  played the piano where the kick should be.
 
 ## [0.41.0] - 2026-10-16
 

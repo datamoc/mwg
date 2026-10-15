@@ -121,6 +121,10 @@ export async function* walk(dir) {
  *   pixel-art tileset's exact colours survive; set false only with `webpQuality` to opt into
  *   lossy re-encoding for photographic source art)
  * @param options.webpQuality 0-100, used only when `webpLossless` is false (default 90)
+ * @param options.svgo minify embedded `.svg` assets through the optional `svgo` package (default
+ *   false - see `tools/svg-optimise.mjs`). The key never changes, only the embedded bytes, and
+ *   only when the optimised file is actually smaller. A file svgo cannot parse fails the build by
+ *   name rather than shipping unoptimised in silence.
  * @param options.soundFont subset an embedded `.sf2` or `.sf3` to the programs the embedded
  *   `.mid`/`.midi` files use (default true); `false` embeds every SoundFont whole
  * @param options.soundFontUsage explicit `{ bank, program }` list to subset to, for a
@@ -141,6 +145,7 @@ export async function compileResources({
 	toWebp: convertToWebp = false,
 	webpLossless = true,
 	webpQuality = 90,
+	svgo: optimiseSvgFiles = false,
 	soundFont = true,
 	soundFontUsage,
 } = {}) {
@@ -205,10 +210,12 @@ export async function compileResources({
 	let rawBytes = 0;
 	let embeddedBytes = 0;
 	let webpConverted = 0;
+	let svgOptimised = 0;
 
 	// only paid when toWebp is actually used, so a build that never asks for it never imports
 	// (or requires installing) sharp
 	const toWebp = convertToWebp ? (await import('./webp-convert.mjs')).toWebp : null;
+	const optimiseSvg = optimiseSvgFiles ? (await import('./svg-optimise.mjs')).optimiseSvg : null;
 
 	const creditsFile = join(from, 'credits.json');
 	let credits = null;
@@ -240,6 +247,19 @@ export async function compileResources({
 			}
 		}
 
+		if (optimiseSvg && ext === '.svg') {
+			let optimised;
+			try {
+				optimised = await optimiseSvg(data);
+			} catch (error) {
+				throw new Error(`cannot optimise SVG asset ${key}: ${error.message ?? error}`);
+			}
+			if (optimised.length < data.length) {
+				bytes = optimised;
+				svgOptimised++;
+			}
+		}
+
 		if (isSoundFontKey(key)) {
 			if (usage !== undefined && soundFontTools) {
 				try {
@@ -247,7 +267,14 @@ export async function compileResources({
 				} catch (error) {
 					throw new Error(`cannot subset SoundFont asset ${key}: ${error.message ?? error}`);
 				}
-				soundFonts.push({ key, programs: usage.length, rawBytes: data.length, embeddedBytes: bytes.length });
+				soundFonts.push({
+					key,
+					programs: usage.length,
+					rawBytes: data.length,
+					embeddedBytes: bytes.length,
+					//the programs the MIDI files ask for that this font does not carry
+					missing: soundFontTools.missingSoundFontPrograms(data, usage),
+				});
 			} else {
 				soundFonts.push({ key, programs: null, rawBytes: data.length, embeddedBytes: data.length });
 			}
@@ -273,7 +300,7 @@ export async function compileResources({
 
 	if (credits) await writeFile(join(to, 'CREDITS.txt'), credits, 'utf8');
 
-	return { groups: written, rawBytes, embeddedBytes, webpConverted, skipped, credits, soundFonts };
+	return { groups: written, rawBytes, embeddedBytes, webpConverted, svgOptimised, skipped, credits, soundFonts };
 }
 
 /** the plain-text credits for a manifest, one block per entry; throws on an entry that cannot be attributed */
@@ -302,7 +329,7 @@ async function runCli() {
 	const [from, to] = args.filter((a) => !a.startsWith('--'));
 	if (!from || !to) {
 		console.error(
-			'usage: node compile-resources.mjs <asset folder> <output folder> [--to-webp] [--webp-lossy[=quality]] [--no-soundfont-subset] [--soundfont-usage=bank:program,...]',
+			'usage: node compile-resources.mjs <asset folder> <output folder> [--to-webp] [--webp-lossy[=quality]] [--svgo] [--no-soundfont-subset] [--soundfont-usage=bank:program,...]',
 		);
 		process.exit(1);
 	}
@@ -315,17 +342,19 @@ async function runCli() {
 		args.find((a) => a.startsWith('--soundfont-usage='))?.slice('--soundfont-usage='.length),
 	);
 
-	const { groups, rawBytes, embeddedBytes, webpConverted, skipped, soundFonts } = await compileResources({
-		from,
-		to,
-		//a flat folder has no subdirectories to group by, so everything lands in one file
-		groupBy: (key) => (key.includes('/') ? key.slice(0, key.indexOf('/')) : 'assets'),
-		toWebp,
-		webpLossless,
-		webpQuality,
-		soundFont: !args.includes('--no-soundfont-subset'),
-		soundFontUsage,
-	});
+	const { groups, rawBytes, embeddedBytes, webpConverted, svgOptimised, skipped, soundFonts } =
+		await compileResources({
+			from,
+			to,
+			//a flat folder has no subdirectories to group by, so everything lands in one file
+			groupBy: (key) => (key.includes('/') ? key.slice(0, key.indexOf('/')) : 'assets'),
+			toWebp,
+			webpLossless,
+			webpQuality,
+			svgo: args.includes('--svgo'),
+			soundFont: !args.includes('--no-soundfont-subset'),
+			soundFontUsage,
+		});
 
 	const kb = (n) => (n / 1024).toFixed(1).padStart(8) + ' KB';
 	for (const { name, count, size } of groups) {
@@ -338,7 +367,14 @@ async function runCli() {
 				? `  ${font.key}: SoundFont embedded whole (${kb(font.rawBytes)}), no shipped MIDI to subset against`
 				: `  ${font.key}: SoundFont subset to ${font.programs} program(s), ${kb(font.rawBytes)} -> ${kb(font.embeddedBytes)}`,
 		);
+		if (font.missing?.length > 0) {
+			console.log(
+				`  warning: ${font.key} does not carry ${font.missing.map(({ bank, program }) => `${bank}:${program}`).join(', ')}: ` +
+					"they play the font's piano, or the built-in synthesizer with `missingProgram: 'synth'`",
+			);
+		}
 	}
+	if (args.includes('--svgo')) console.log(`  ${svgOptimised} SVG(s) optimised`);
 	if (toWebp) {
 		console.log(
 			`  ${webpConverted} image(s) converted to WebP (${webpLossless ? 'lossless' : `lossy, quality ${webpQuality}`}), ` +

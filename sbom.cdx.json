@@ -1,7 +1,7 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
-  "serialNumber": "urn:uuid:7beea397-6b3f-5407-9845-ff23cf264305",
+  "serialNumber": "urn:uuid:98c54441-2d50-51d6-98d4-956f902ed4b1",
   "version": 1,
   "metadata": {
     "tools": {
@@ -2091,6 +2091,27 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:npm/boolbase@1.0.0",
+      "name": "boolbase",
+      "version": "1.0.0",
+      "purl": "pkg:npm/boolbase@1.0.0",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "25939203b328f6c34607cf948d283374bb68916024cb5cdbced3375912c26d9ef4ff771300d99098e751ef2da0f89d1ed965f2c32d724b8ebcb58f88aeea84c3"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:npm/bplist-creator@0.1.0",
       "name": "bplist-creator",
       "version": "0.1.0",
@@ -2259,6 +2280,27 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:npm/commander@11.1.0",
+      "name": "commander",
+      "version": "11.1.0",
+      "purl": "pkg:npm/commander@11.1.0",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "c8f55abdfc82711866a2b0bbad69641e7d796f8c03560566040ee457841506c17b92fffd4ca2406c05d54f1bd39f03fc1c72a34422430a529b7228984bba740d"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:npm/commander@12.1.0",
       "name": "commander",
       "version": "12.1.0",
@@ -2289,6 +2331,111 @@
         {
           "alg": "SHA-512",
           "content": "b95d903963f69d6ceccb668ca7c69189b862f5d9731791e0879487681f4e893184c834e2249cb1d2ecb9d505ddc966ed00736e6b85c9cd429c6b73b3294777bc"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/css-select@6.0.0",
+      "name": "css-select",
+      "version": "6.0.0",
+      "purl": "pkg:npm/css-select@6.0.0",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "ad965548b95ef2fd3e118f100240d6aca86982de920393ad1ec8019ec8fa65a2dbe5d98354e5940ed422b5df72771c6f12385ec0db9d4ba793554eee3b2cef5f"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/css-tree@2.2.1",
+      "name": "css-tree",
+      "version": "2.2.1",
+      "purl": "pkg:npm/css-tree@2.2.1",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "380d2620bcc67359023824897ab39ea83c434381ce87e1bc35b38914e4e0382ce9c3b7c206e6e4d1f132c69f0080e2ff8ef2e0600fee57470c6dee3712517524"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/css-tree@3.2.1",
+      "name": "css-tree",
+      "version": "3.2.1",
+      "purl": "pkg:npm/css-tree@3.2.1",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5fbb2343371e521bb5bbb63fca5ad1645536152e8b462155a7aaca2cf836df2df1ddcdc338a030b97183a7e3c01a387a0929c28d8780ba5f29713f1b025fa548"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/css-what@7.0.0",
+      "name": "css-what",
+      "version": "7.0.0",
+      "purl": "pkg:npm/css-what@7.0.0",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "c03e68cf9c626cc38f1f3cb5dc2c869a8801de985dbdc0da079b745bf36be59d8efda81c07c6303b3e9ed8bb29d74a4d0f30680cef6755add11acff606db691d"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/csso@5.0.5",
+      "name": "csso",
+      "version": "5.0.5",
+      "purl": "pkg:npm/csso@5.0.5",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "d0baeb4ad3ce7498fe48f082ac6873af2c9c2e3c1c81448706dc4d03c6880f17f418bb1187570a621074d06775943392e32187ebdf92367d77f9359b54711315"
         }
       ],
       "licenses": [
@@ -2364,6 +2511,90 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:npm/dom-serializer@2.0.0",
+      "name": "dom-serializer",
+      "version": "2.0.0",
+      "purl": "pkg:npm/dom-serializer@2.0.0",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "c08900af28aab7f9d5e4440aa90a68dd24e848e57d2740e76c9ab02bb5affd3adcf76cc801867816532ef893c55b50df185b7cd594c21a00c469b7df5de2f226"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/domelementtype@2.3.0",
+      "name": "domelementtype",
+      "version": "2.3.0",
+      "purl": "pkg:npm/domelementtype@2.3.0",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "38b113063eb0d0eb1a801c1d5e73dd37472731f17da2937af5ca3eed9adb7cf1ab7693d5341523d36b298ba07537bc0284b4223e7e02487ff326f5f0e7a8261f"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/domhandler@5.0.3",
+      "name": "domhandler",
+      "version": "5.0.3",
+      "purl": "pkg:npm/domhandler@5.0.3",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "720c25bffd621508859d4f7a5d78113a1f314de7adb272620ec4dced36022c577dfbf58d908a8f4f188cffca5277c548ae15c64dfd4dcb5ab586ab95a83241e7"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/domutils@3.2.2",
+      "name": "domutils",
+      "version": "3.2.2",
+      "purl": "pkg:npm/domutils@3.2.2",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "ea464ac946a3943baa9472955f5c3b832b258fd30f217cc8162cffac6bb7e6e0b5c0c8be90c850c06865e25b7dba70bd55bf4836763d677fd9037f8584048b6b"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:npm/earcut@3.2.4",
       "name": "earcut",
       "version": "3.2.4",
@@ -2421,6 +2652,27 @@
         {
           "license": {
             "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/entities@4.5.0",
+      "name": "entities",
+      "version": "4.5.0",
+      "purl": "pkg:npm/entities@4.5.0",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5748631f87463e1f40a39a74328458e8156ab700a3873eaf2392d3f00279e47fb883dff8bdb1f1d48e787d2d17b9c94b8431c0acf40288c8c3c6368bf1f3f187"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause"
           }
         }
       ]
@@ -3162,6 +3414,48 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:npm/mdn-data@2.0.28",
+      "name": "mdn-data",
+      "version": "2.0.28",
+      "purl": "pkg:npm/mdn-data@2.0.28",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6b294873b67dcb8cb31d800936e1121b785f842fb421ba7f30032268e66036fe29984745c9f6618619f2e0c36201f59d050d5143699f0d698cd71f12bc6ca9f2"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "CC0-1.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/mdn-data@2.27.1",
+      "name": "mdn-data",
+      "version": "2.27.1",
+      "purl": "pkg:npm/mdn-data@2.27.1",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "f58b9b9edddef00d0e2b0c58497ca12f29865b8b02b9f70b1ba55d88375419590f869a8bc65bcfe6f975f7cde0423265deda9baccef7d668da65a3faf00828b1"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "CC0-1.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:npm/minimatch@10.2.6",
       "name": "minimatch",
       "version": "10.2.6",
@@ -3303,6 +3597,27 @@
         {
           "license": {
             "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/nth-check@2.1.1",
+      "name": "nth-check",
+      "version": "2.1.1",
+      "purl": "pkg:npm/nth-check@2.1.1",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "96a8eb8e668ea009d67cc9813cbf97367ca7661dbeb30c625f7594134b38c841c8ea6f80c2b2b65193a2988465dd7ff841cb55a92f008998c5ab2386acc5dbff"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause"
           }
         }
       ]
@@ -3750,6 +4065,27 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:npm/sax@1.6.1",
+      "name": "sax",
+      "version": "1.6.1",
+      "purl": "pkg:npm/sax@1.6.1",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "e36b415702d69da42f5b9cdce076d9ad3b9671c1020997c18bdd850eec2dab16ac1fe25b3c1dff14e29bd66db6d8ae364785b1bb1cf332c4ecc1fce0b52bbae1"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BlueOak-1.0.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:npm/semver@7.8.5",
       "name": "semver",
       "version": "7.8.5",
@@ -4053,6 +4389,27 @@
         {
           "alg": "SHA-512",
           "content": "637f153d21dcaa416b0a916743dbee4979aabaebf9a1738aa46793e9a1abaf7a3719cf409556ba2417d448e0a76f1186645fbfd28a08ecaacfb944b3b54754e4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/svgo@4.1.0",
+      "name": "svgo",
+      "version": "4.1.0",
+      "purl": "pkg:npm/svgo@4.1.0",
+      "scope": "excluded",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6e4c674e0d64494d20ba12019a26c0e94521ad098f540d57b102cdfb294277e516cdb9cb93248e717a729359ab974e5ffa971a0b1d9e1dbfaca7a060319597f9"
         }
       ],
       "licenses": [
@@ -4619,6 +4976,7 @@
         "pkg:npm/prettier@3.9.10",
         "pkg:npm/rot-js@2.2.1",
         "pkg:npm/sharp@0.35.5",
+        "pkg:npm/svgo@4.1.0",
         "pkg:npm/typescript@7.0.2",
         "pkg:npm/vite@8.3.4",
         "pkg:npm/ws@8.22.0"
@@ -5079,6 +5437,10 @@
       "dependsOn": []
     },
     {
+      "ref": "pkg:npm/boolbase@1.0.0",
+      "dependsOn": []
+    },
+    {
       "ref": "pkg:npm/bplist-creator@0.1.0",
       "dependsOn": [
         "pkg:npm/stream-buffers@2.2.0"
@@ -5121,6 +5483,10 @@
       "dependsOn": []
     },
     {
+      "ref": "pkg:npm/commander@11.1.0",
+      "dependsOn": []
+    },
+    {
       "ref": "pkg:npm/commander@12.1.0",
       "dependsOn": []
     },
@@ -5130,6 +5496,40 @@
         "pkg:npm/path-key@3.1.1",
         "pkg:npm/shebang-command@2.0.0",
         "pkg:npm/which@2.0.2"
+      ]
+    },
+    {
+      "ref": "pkg:npm/css-select@6.0.0",
+      "dependsOn": [
+        "pkg:npm/boolbase@1.0.0",
+        "pkg:npm/css-what@7.0.0",
+        "pkg:npm/domhandler@5.0.3",
+        "pkg:npm/domutils@3.2.2",
+        "pkg:npm/nth-check@2.1.1"
+      ]
+    },
+    {
+      "ref": "pkg:npm/css-tree@2.2.1",
+      "dependsOn": [
+        "pkg:npm/mdn-data@2.0.28",
+        "pkg:npm/source-map-js@1.2.2"
+      ]
+    },
+    {
+      "ref": "pkg:npm/css-tree@3.2.1",
+      "dependsOn": [
+        "pkg:npm/mdn-data@2.27.1",
+        "pkg:npm/source-map-js@1.2.2"
+      ]
+    },
+    {
+      "ref": "pkg:npm/css-what@7.0.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/csso@5.0.5",
+      "dependsOn": [
+        "pkg:npm/css-tree@2.2.1"
       ]
     },
     {
@@ -5147,6 +5547,32 @@
       "dependsOn": []
     },
     {
+      "ref": "pkg:npm/dom-serializer@2.0.0",
+      "dependsOn": [
+        "pkg:npm/domelementtype@2.3.0",
+        "pkg:npm/domhandler@5.0.3",
+        "pkg:npm/entities@4.5.0"
+      ]
+    },
+    {
+      "ref": "pkg:npm/domelementtype@2.3.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/domhandler@5.0.3",
+      "dependsOn": [
+        "pkg:npm/domelementtype@2.3.0"
+      ]
+    },
+    {
+      "ref": "pkg:npm/domutils@3.2.2",
+      "dependsOn": [
+        "pkg:npm/dom-serializer@2.0.0",
+        "pkg:npm/domelementtype@2.3.0",
+        "pkg:npm/domhandler@5.0.3"
+      ]
+    },
+    {
       "ref": "pkg:npm/earcut@3.2.4",
       "dependsOn": []
     },
@@ -5158,6 +5584,10 @@
     },
     {
       "ref": "pkg:npm/emoji-regex@8.0.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/entities@4.5.0",
       "dependsOn": []
     },
     {
@@ -5338,6 +5768,14 @@
       "dependsOn": []
     },
     {
+      "ref": "pkg:npm/mdn-data@2.0.28",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/mdn-data@2.27.1",
+      "dependsOn": []
+    },
+    {
       "ref": "pkg:npm/minimatch@10.2.6",
       "dependsOn": [
         "pkg:npm/brace-expansion@5.0.12"
@@ -5379,6 +5817,12 @@
         "pkg:npm/through2@4.0.2",
         "pkg:npm/tslib@2.8.1",
         "pkg:npm/yauzl@2.10.0"
+      ]
+    },
+    {
+      "ref": "pkg:npm/nth-check@2.1.1",
+      "dependsOn": [
+        "pkg:npm/boolbase@1.0.0"
       ]
     },
     {
@@ -5520,6 +5964,10 @@
       "dependsOn": []
     },
     {
+      "ref": "pkg:npm/sax@1.6.1",
+      "dependsOn": []
+    },
+    {
       "ref": "pkg:npm/semver@7.8.5",
       "dependsOn": []
     },
@@ -5624,6 +6072,18 @@
       "ref": "pkg:npm/strip-ansi@6.0.1",
       "dependsOn": [
         "pkg:npm/ansi-regex@5.0.1"
+      ]
+    },
+    {
+      "ref": "pkg:npm/svgo@4.1.0",
+      "dependsOn": [
+        "pkg:npm/commander@11.1.0",
+        "pkg:npm/css-select@6.0.0",
+        "pkg:npm/css-tree@3.2.1",
+        "pkg:npm/css-what@7.0.0",
+        "pkg:npm/csso@5.0.5",
+        "pkg:npm/picocolors@1.1.1",
+        "pkg:npm/sax@1.6.1"
       ]
     },
     {

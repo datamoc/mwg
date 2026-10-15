@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Build a bridge game - mwg</title>
+	<meta name="description" content="Build a bridge-building game with mwg: a truss solver, levels as data, a deterministic replay, saved best results and reduced motion, from the examples/bridge source." />
+	<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+	<link rel="stylesheet" href="../../assets/site.css" />
+
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="mwg" />
+	<meta property="og:url" content="https://datamoc.github.io/mwg/tutorials/bridge/index.html" />
+	<meta property="og:title" content="Build a bridge game - mwg" />
+	<meta property="og:description" content="A truss solver, levels as data, a deterministic replay and saved best results, step by step from a real example." />
+	<meta property="og:image" content="https://datamoc.github.io/mwg/assets/og-image.png" />
+	<meta property="og:image:width" content="1080" />
+	<meta property="og:image:height" content="567" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Build a bridge game - mwg" />
+	<meta name="twitter:description" content="A truss solver, levels as data, a deterministic replay and saved best results, step by step from a real example." />
+	<meta name="twitter:image" content="https://datamoc.github.io/mwg/assets/og-image.png" />
+
+	<style>
+		.step {
+			margin: 2.5rem 0;
+		}
+
+		pre {
+			tab-size: 2;
+		}
+
+		.step h3 {
+			display: flex;
+			align-items: baseline;
+			gap: 0.6rem;
+		}
+
+		.step h3 .n {
+			font-family: var(--font-display);
+			color: var(--add);
+			font-size: 0.85rem;
+		}
+	</style>
+</head>
+<body>
+	<header class="site-header">
+		<div class="wrap">
+			<a class="brand" href="../../index.html"><img src="../../assets/logo.svg" alt="mwg" /></a>
+			<nav class="site-nav">
+				<a href="../../examples/index.html">Examples</a>
+				<a href="../../getting-started/index.html">Getting started</a>
+				<a href="./index.html" aria-current="page">Bridge tutorial</a>
+				<a href="../../documentation/index.html">Documentation</a>
+				<a href="../../design/index.html">Design</a>
+				<a href="../../features/index.html">Features</a>
+				<a href="../../faq/index.html">FAQ</a>
+				<a href="https://github.com/datamoc/mwg">GitHub</a>
+			</nav>
+		</div>
+	</header>
+
+	<main>
+		<section style="padding-bottom: 1rem">
+			<div class="wrap">
+				<p class="eyebrow">tutorial</p>
+				<h1>Build a bridge game</h1>
+				<p class="lede">
+					Drag beams between joints, press Run, and watch a vehicle cross while every beam
+					turns from green toward red as it takes load. Everything below is quoted from
+					<code>examples/bridge</code>, a working game of about 500 lines: a renderer-free
+					simulation in <code>sim.ts</code>, a Pixi scene in <code>main.ts</code>, and a test
+					that proves the replay of a build gives the same result to the last decimal.
+				</p>
+				<p>
+					Run it with <code>npm run example:bridge</code> in a clone of the repository, or
+					build it once with <code>npm run example:bridge:build</code> and open
+					<code>examples/bridge/dist/index.html</code> by double-clicking it: no server. This
+					tutorial assumes you have been through <a href="../../getting-started/index.html">Getting started</a>.
+				</p>
+			</div>
+		</section>
+
+		<section style="border-bottom: none">
+			<div class="wrap">
+				<article class="step">
+					<h3><span class="n">01</span> Why a truss</h3>
+					<p>
+						<code>XpbdWorld</code> (<code>@datamoc/mw_games/physics/xpbd</code>) is a
+						deterministic structure solver: nodes are point masses, links are springs, and
+						after every step each link reports the load it carries. The first thing it
+						teaches is a lesson about bridges. A chain of planks laid end to end has no
+						vertical stiffness at all: under a vehicle it only sags, like a rope. What gives
+						a deck its stiffness is triangles, so the game's answer key is a Warren truss: a
+						chord along the deck, a chord above, and diagonals that zigzag between them.
+					</p>
+					<pre class="from-source"><code>export function warrenBeams(level: Level): Beam[] {
+	const spans = level.deck.length - 1;
+	const top = (i: number): number =&gt; level.deck.length + i;
+	const beams: Beam[] = [];
+	for (let i = 0; i &lt; spans; i++) beams.push([i, i + 1], [i, top(i)], [top(i), i + 1]);
+	for (let i = 0; i &lt; spans - 1; i++) beams.push([top(i), top(i + 1)]);
+	return beams;
+}</code></pre>
+					<p>
+						Joints <code>0</code> to <code>spans</code> are the deck, the joints after them
+						are the row above, and <code>top(i)</code> sits halfway along bay <code>i</code>.
+						The level hands the player these joints and nothing else; finding the triangles is
+						the game.
+					</p>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">02</span> The world and the nodes</h3>
+					<p>
+						The simulation never sees a pixel. A joint becomes a node, a beam becomes a link,
+						and <code>buildBridge</code> is the whole translation. The two banks are
+						<code>fixed</code> nodes that never move; every other joint is free to sag.
+					</p>
+					<pre class="from-source"><code>export function buildBridge(level: Level, beams: readonly Beam[]): Bridge {
+	const world = new XpbdWorld({ gravity: GRAVITY });
+	for (const joint of level.joints) world.addNode({ x: joint.x, y: joint.y, fixed: joint.fixed });
+	const links = beams.map(([a, b, cable]) =&gt; world.addLink({ a, b, tensionOnly: cable === true, ...BEAM }));
+	return { world, links };
+}</code></pre>
+					<p>
+						<code>stiffness</code> is force per unit of stretch, so a higher number is a
+						more rigid beam; <code>strength</code> is the load at which the link breaks.
+						Because the steps are fixed and nothing is random, the same beams always give the
+						same bridge on every machine, which step 08 relies on.
+					</p>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">03</span> Levels as data, and a budget</h3>
+					<p>
+						A level is a plain object: joints, which of them the vehicle drives over, a budget,
+						a price per metre of beam, the vehicle's mass, and how far the deck may drop before
+						the vehicle falls through. Nothing in it is code, so a level could as well be a JSON
+						file.
+					</p>
+					<pre class="from-source"><code>export interface Level {
+	name: string;
+	joints: Joint[];
+	/** the joints the vehicle drives over, left to right */
+	deck: number[];
+	budget: number;
+	costPerMetre: number;
+	/** the vehicle's mass; its weight is mass times gravity, spread over the deck under it */
+	vehicleMass: number;
+	/** how far the deck may drop under the vehicle before the vehicle falls through */
+	maxSag: number;
+}</code></pre>
+					<p>The three levels are a short span, a wide gorge, and a gap with a pier in the middle:</p>
+					<pre class="from-source"><code>export const LEVELS: Level[] = [
+	gapLevel('Short span', 6, 1200, 2),
+	gapLevel('Wide gorge', 8, 1600, 2.5),
+	gapLevel('The pier', 10, 1850, 8, [5]),
+];</code></pre>
+					<p>
+						The budget is what turns a puzzle with one answer into a design problem. A beam
+						costs its length in metres times the price per metre, and a placement is refused
+						when it would break the budget, run too long, repeat a beam or join nothing:
+					</p>
+					<pre class="from-source"><code>export function beamCost(level: Level, beam: Beam): number {
+	const price = (beamLength(level, beam) / UNITS_PER_METRE) * level.costPerMetre;
+	return Math.round(beam[2] ? price / 2 : price);
+}</code></pre>
+					<pre class="from-source"><code>export function beamProblem(level: Level, beams: readonly Beam[], beam: Beam): string | null {
+	const [a, b] = beam;
+	if (a === b || !level.joints[a] || !level.joints[b]) return 'a beam joins two different joints';
+	if (beams.some(([c, d]) =&gt; (c === a &amp;&amp; d === b) || (c === b &amp;&amp; d === a))) return 'that beam is already there';
+	if (beamLength(level, beam) &gt; LONGEST_BEAM) return 'too long for one beam';
+	if (totalCost(level, beams) + beamCost(level, beam) &gt; level.budget) return 'over budget';
+	return null;
+}</code></pre>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">04</span> Building with the pointer</h3>
+					<p>
+						<code>Input.attachPointer</code> turns a canvas into down, move and drag signals.
+						Its <code>toWorld</code> hook maps CSS pixels into the game's own units, here by
+						undoing the stage's scale and offset, so everything after it is in bridge
+						coordinates. Pressing on a joint starts a beam, releasing on another one places it:
+					</p>
+					<pre class="from-source"><code>const toWorld = (x: number, y: number): { x: number; y: number } =&gt; ({
+	x: (x - this.stage.x) / this.stage.scale.x - this.world.x,
+	y: (y - this.stage.y) / this.stage.scale.y - this.world.y,
+});
+const pointer = Input.attachPointer(Game.current.app.canvas, { toWorld });
+pointer.down.add((p) =&gt; {
+	this.from = this.jointAt(p.worldX, p.worldY);
+});
+pointer.move.add((p) =&gt; {
+	this.cursor = { x: p.worldX, y: p.worldY };
+});
+pointer.up.add((p) =&gt; this.drop(this.jointAt(p.worldX, p.worldY)));</code></pre>
+					<pre class="from-source"><code>private drop(to: number | null): void {
+	const from = this.from;
+	this.from = null;
+	if (from === null || to === null || from === to) return;
+	const problem = beamProblem(this.level, this.beams, [from, to]);
+	if (problem) this.say(`Cannot place that beam: ${problem}`);
+	else this.dispatch(`${this.cables ? 'cable' : 'beam'}:${from}:${to}`);
+}</code></pre>
+					<p>
+						<code>drop</code> does not change the bridge itself. It asks <code>sim.ts</code>
+						whether the beam is allowed, then dispatches an action string. The next step
+						shows why every change goes through a string.
+					</p>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">05</span> Running a crossing, and reading <code>ratio</code></h3>
+					<p>
+						A <code>Crossing</code> drives a vehicle over the deck one frame at a time. The
+						vehicle is a downward force on the two deck joints under it, shared by how far
+						along the segment it is; <code>world.step()</code> then moves everything and
+						updates each link's <code>ratio</code>, the smoothed load as a fraction of its
+						strength. It breaks above 1.
+					</p>
+					<pre class="from-source"><code>step(): void {
+	const world = this.bridge.world;
+	this.frames++;
+	world.breaking = this.frames &gt; SETTLE_STEPS;
+	if (world.breaking) {
+		const { index, t } = this.where();
+		const weight = this.level.vehicleMass * GRAVITY;
+		world.applyForce(this.level.deck[index], 0, weight * (1 - t));
+		world.applyForce(this.level.deck[index + 1], 0, weight * t);
+		if (!this.fell) this.distance += VEHICLE_SPEED / 60;
+	}
+	world.step();
+	this.peakLoad = Math.max(this.peakLoad, world.peakRatio);
+	this.level.deck.forEach((joint, i) =&gt; {
+		if (!this.fell) this.sag = Math.max(this.sag, world.nodes[joint].y - this.restY[i]);
+	});
+	if (world.breaking &amp;&amp; this.sag &gt; this.level.maxSag) this.fell = true;
+	if (this.fell) this.collapse++;
+}</code></pre>
+					<p>
+						<code>ratio</code> is the number a strain gauge wants, so the game paints each
+						beam with it: green when idle, yellow past half, red at the breaking point.
+					</p>
+					<pre class="from-source"><code>export function ratioColour(ratio: number): number {
+	const t = Math.min(1, Math.max(0, ratio));
+	const red = Math.round(80 + 175 * Math.min(1, t * 2));
+	const green = Math.round(200 - 140 * Math.max(0, t * 2 - 1));
+	return (red &lt;&lt; 16) | (green &lt;&lt; 8) | 70;
+}</code></pre>
+					<pre class="from-source"><code>this.crossing.beams.forEach(([a, b, cable], i) =&gt; {
+	const link = world.links[links[i]];
+	if (link.broken) return;
+	const stroke = { color: ratioColour(link.ratio), width: cable ? 2.5 : 5 };
+	gfx.moveTo(world.nodes[a].x, world.nodes[a].y).lineTo(world.nodes[b].x, world.nodes[b].y).stroke(stroke);
+});</code></pre>
+					<p>
+						The scene advances the crossing in fixed 1/60 s steps whatever the display's
+						frame rate, so the picture you watch is the same computation the tests run
+						through <code>cross()</code>.
+					</p>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">06</span> Cables: <code>tensionOnly</code></h3>
+					<p>
+						A link with <code>tensionOnly: true</code> is a cable. It pulls when stretched and
+						goes slack, without pushing, when compressed. In the game the player's pen has two
+						modes (the Beams button toggles it), and a cable costs half as much:
+					</p>
+					<pre class="from-source"><code>return Math.round(beam[2] ? price / 2 : price);</code></pre>
+					<p>
+						The beam tuple carries the flag, and <code>buildBridge</code> from step 02 turns it
+						into <code>tensionOnly</code>. The lesson is in where a cable can go. The deck of a
+						sagging bridge is in tension, so a cable there carries the same vehicle for less
+						money. The top chord is in compression, so a cable there just goes slack and the
+						bridge sags. The test file checks both.
+					</p>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">07</span> Breaking</h3>
+					<p>
+						Links break only while <code>world.breaking</code> is true. The crossing leaves it
+						off for the first 60 frames so the bridge can settle under its own weight, then
+						turns it on as the vehicle starts (look at the top of <code>step</code> above).
+						When a link passes its strength it stops carrying load, stays in
+						<code>world.links</code> with <code>broken: true</code>, and fires
+						<code>onBreak</code> once with where it went:
+					</p>
+					<pre class="from-source"><code>this.crossing.bridge.world.onBreak.add((spot) =&gt; {
+	this.breaks.push(spot);
+});</code></pre>
+					<p>
+						The scene draws a red ring at each break and skips broken links. A bridge that
+						sags past the level's limit keeps simulating for another 90 frames, so you can see
+						the collapse and which beams gave way instead of the picture freezing at the
+						moment of failure.
+					</p>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">08</span> A deterministic replay</h3>
+					<p>
+						Everything the player does is one of four strings:
+						<code>beam:a:b</code>, <code>cable:a:b</code>, <code>clear</code> and
+						<code>run</code>. That is what makes the game replayable. A
+						<code>core.Recorder</code> listens to a signal of actions and stamps each with the
+						current tick; here the tick is one per action, so a replay runs briskly instead of
+						waiting through every pause the player took:
+					</p>
+					<pre class="from-source"><code>private readonly actions = new Signal&lt;string&gt;();
+private readonly ticks = new Signal&lt;number&gt;();
+private recorder = new Recorder(this.actions, this.ticks);</code></pre>
+					<pre class="from-source"><code>private dispatch(action: string): void {
+	if (this.running || this.player) return;
+	this.actions.dispatch(action);
+	this.ticks.dispatch(this.recorder.frame);
+}</code></pre>
+					<p>
+						To replay, serialise the recording, clear the bridge and let a
+						<code>Player</code> re-dispatch the events on its own clock into the same
+						<code>perform</code> the live game uses. Each time a replayed crossing finishes, the
+						scene compares its result with the one the live run produced:
+					</p>
+					<pre class="from-source"><code>private replay(): void {
+	if (this.running || this.runs.length === 0) return;
+	const saved = serializeReplay(this.recorder.toJSON());
+	this.beams = [];
+	this.perform('clear');
+	this.replayRun = 0;
+	this.player = new Player(deserializeReplay(saved), (action) =&gt; this.perform(action), this.replayClock);
+}</code></pre>
+					<pre class="from-source"><code>if (this.player &amp;&amp; !this.running &amp;&amp; (this.replayAt += dt) &gt;= 0.3) {
+	this.replayAt = 0;
+	this.replayClock.dispatch(0);
+	if (this.player.done &amp;&amp; !this.running) this.player = null;
+}</code></pre>
+					<p>
+						The Replay button shows the line
+						<em>Replay: the result is identical, down to the last decimal.</em> It is not a
+						trick: the solver is deterministic, so the same actions give the same bridge, the
+						same sag and the same peak load. <code>tests/bridge-example.test.ts</code> proves it
+						with a plain <code>deepEqual</code> on the two results.
+					</p>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">09</span> Saving the best result</h3>
+					<p>
+						<code>SaveSystem</code> keeps named, versioned slots over <code>localStorage</code>
+						(an in-memory store where there is none, which is also what a test gets). The game
+						keeps one slot per level, holding the cheapest crossing so far:
+					</p>
+					<pre class="from-source"><code>const saves = new SaveSystem&lt;{ cost: number; sag: number }&gt;({ namespace: 'bridge', version: 1 });</code></pre>
+					<pre class="from-source"><code>this.runs.push(result);
+const best = saves.load(`best-${this.levelIndex}`)?.state;
+if (result.crossed &amp;&amp; (!best || result.cost &lt; best.cost)) saves.save(`best-${this.levelIndex}`, result);
+this.say(describe(this.level, result));</code></pre>
+					<p>
+						The state is plain JSON. <code>load</code> returns <code>null</code> for a missing
+						or damaged slot, so the HUD can ask for the best result without a try block.
+						Under <code>file://</code> Chromium shares one <code>localStorage</code> between
+						local pages; the <code>bridge</code> namespace keeps this game's slots its own.
+					</p>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">10</span> Reduced motion and the theme</h3>
+					<p>
+						The only decorative motion in the game is the result line fading in.
+						<code>motionDuration</code> answers how long a motion should take given the
+						player's operating-system preference (or the game's own setting): it returns the
+						duration you asked for, or <code>0</code> when reduced motion is on, in which case the
+						text simply appears. Motion that carries meaning, like the vehicle crossing, is
+						the game itself and is not touched.
+					</p>
+					<pre class="from-source"><code>//decorative: the message fades in; with reduced motion it simply appears
+this.message.age += dt;
+const fade = motionDuration(0.4);
+this.labels.message.alpha = fade === 0 ? 1 : Math.min(1, this.message.age / fade);</code></pre>
+					<p>
+						Colours come from the interface theme rather than being hard-coded, so one
+						<code>setTheme</code> call restyles the HUD. The labels read the theme each
+						frame, and the Contrast button swaps in the built-in high-contrast theme:
+					</p>
+					<pre class="from-source"><code>private paintLabels(): void {
+	const { color } = theme();
+	const best = saves.load(`best-${this.levelIndex}`)?.state;
+	const spent = totalCost(this.level, this.beams);
+	this.labels.title.setText(`Level ${this.levelIndex + 1}: ${this.level.name}`);
+	this.labels.title.setColor(color.textHighlight);
+	this.labels.budget.setText(`Budget ${spent} / ${this.level.budget}  (${this.beams.length} beams)`);
+	this.labels.budget.setColor(color.text);
+	this.labels.best.setText(best ? `Best: cost ${best.cost}, sag ${best.sag}` : 'Best: none yet');
+	this.labels.best.setColor(color.textDim);
+	this.labels.message.setText(this.message.text || ' ');
+	this.labels.message.setColor(this.failed ? 0xff6a5a : color.textHighlight);
+}</code></pre>
+					<pre class="from-source"><code>['Contrast', () =&gt; setTheme(theme() === highContrastTheme ? {} : highContrastTheme)],</code></pre>
+					<p>
+						Colour alone does not carry the result: a failed crossing says so in words, and a
+						break is marked with a red ring, not only a red beam.
+					</p>
+				</article>
+
+				<article class="step">
+					<h3><span class="n">11</span> The interface as content</h3>
+					<p>
+						The HUD here is a handful of labels and buttons built in code, which is the right
+						size for a small game. A larger game usually wants its windows, lists and message
+						boxes described as data instead, so a designer can change them without touching
+						TypeScript. <code>examples/mwl-presentation</code> does exactly that: a HUD,
+						buttons, windows and themes written as MWL content and read by the same
+						framework. Start there when your screens outgrow a page of constructor calls.
+					</p>
+					<p>
+						Build everything for <code>file://</code> the same way as in Getting started, step
+						10: <code>npm run example:bridge:build</code> runs the example's Vite build and
+						<code>tools/emit-page.mjs</code>, and the result opens by double-clicking
+						<code>dist/index.html</code>.
+					</p>
+					<p>
+						Ideas for the next change: a fourth level with a river that rises, a second
+						vehicle, a price per beam material (stronger and dearer), or a leaderboard of
+						replay files that other players can load and watch.
+					</p>
+				</article>
+			</div>
+		</section>
+	</main>
+
+	<footer class="site-footer">
+		<div class="wrap">
+			<p>mwg is licensed under the MPL-2.0.</p>
+		</div>
+	</footer>
+</body>
+</html>

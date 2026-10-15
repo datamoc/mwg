@@ -237,7 +237,13 @@ test('compileResources subsets an embedded SoundFont to the programs the embedde
 		const result = await compileResources({ from, to, groupBy: () => 'assets' });
 		assert.equal(result.skipped, 0);
 		assert.deepEqual(result.soundFonts, [
-			{ key: 'bank.sf2', programs: 3, rawBytes: bank.length, embeddedBytes: result.soundFonts[0].embeddedBytes },
+			{
+				key: 'bank.sf2',
+				programs: 3,
+				rawBytes: bank.length,
+				embeddedBytes: result.soundFonts[0].embeddedBytes,
+				missing: [],
+			},
 		]);
 		assert.ok(result.soundFonts[0].embeddedBytes < bank.length / 5, 'only three programs of 137 survive');
 
@@ -341,5 +347,82 @@ test('compileResources fails the build on an unreadable MIDI or SoundFont instea
 			() => compileResources({ from, to, soundFontUsage: [{ bank: 0, program: 200 }] }),
 			/soundFontUsage\[0\]/,
 		);
+	});
+});
+
+// ------------------------------------------------------------------------- svgo
+
+const SLOPPY_SVG = `<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with an editor -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 20 20" width="20" height="20">
+  <metadata>editor junk</metadata>
+  <defs><path id="shape" d="M 0.000 0.000 L 10.0000 0 L 10 10 Z" fill="#000000"/></defs>
+  <use xlink:href="#shape" x="2" y="2"/>
+</svg>
+`;
+
+test('compileResources with svgo: true embeds a smaller SVG under the same key, keeping the viewBox and every id', async () => {
+	await withDirs(async (from, to) => {
+		await writeFile(join(from, 'shape.svg'), SLOPPY_SVG);
+		const result = await compileResources({ from, to, groupBy: () => 'assets', svgo: true });
+		assert.equal(result.svgOptimised, 1);
+		assert.ok(result.embeddedBytes < result.rawBytes);
+
+		const js = await readFile(join(to, 'assets.js'), 'utf8');
+		const uri = extractAssetMap(js)['shape.svg'];
+		assert.match(uri, /^data:image\/svg\+xml;base64,/, 'the key and the MIME type are unchanged');
+		const svg = Buffer.from(uri.split(',')[1], 'base64').toString('utf8');
+		assert.match(svg, /viewBox="0 0 20 20"/, 'a game scales a texture by its viewBox');
+		assert.match(svg, /id="shape"/, 'an id a <use> or the game names is never minified away');
+		assert.doesNotMatch(svg, /<metadata|<!--/);
+	});
+});
+
+test('compileResources leaves SVG alone by default, and never embeds an optimised file that is larger', async () => {
+	await withDirs(async (from, to) => {
+		await writeFile(join(from, 'shape.svg'), SLOPPY_SVG);
+		const result = await compileResources({ from, to, groupBy: () => 'assets' });
+		assert.equal(result.svgOptimised, 0);
+		assert.equal(result.embeddedBytes, result.rawBytes);
+		assert.deepEqual(
+			embeddedBytes(await readFile(join(to, 'assets.js'), 'utf8'), 'shape.svg'),
+			Buffer.from(SLOPPY_SVG),
+		);
+	});
+	await withDirs(async (from, to) => {
+		const tiny = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"/>';
+		await writeFile(join(from, 'tiny.svg'), tiny);
+		const result = await compileResources({ from, to, groupBy: () => 'assets', svgo: true });
+		assert.ok(result.embeddedBytes <= result.rawBytes, 'never larger than the original');
+	});
+});
+
+test('compileResources with svgo: true fails the build by name on a file that is not SVG', async () => {
+	await withDirs(async (from, to) => {
+		await writeFile(join(from, 'bad.svg'), '<svg><g></svg>');
+		await assert.rejects(
+			() => compileResources({ from, to, groupBy: () => 'assets', svgo: true }),
+			/cannot optimise SVG asset bad.svg/,
+		);
+	});
+});
+
+test('a subset SoundFont reports the programs the game asks for that the font does not carry', async () => {
+	await withDirs(async (from, to) => {
+		const bank = Buffer.from(
+			mergeSoundFonts([buildSf3(0, 0, Buffer.from([1, 1])), buildSf3(128, 0, Buffer.from([2, 2]))]),
+		);
+		await writeFile(join(from, 'bank.sf3'), bank);
+		const result = await compileResources({
+			from,
+			to,
+			groupBy: () => 'assets',
+			soundFontUsage: [
+				{ bank: 0, program: 0 },
+				{ bank: 0, program: 99 },
+				{ bank: 128, program: 0 },
+			],
+		});
+		assert.deepEqual(result.soundFonts[0].missing, [{ bank: 0, program: 99 }]);
 	});
 });

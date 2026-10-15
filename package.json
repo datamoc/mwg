@@ -71,6 +71,8 @@
 		"tools/asset-report.d.mts",
 		"tools/webp-convert.mjs",
 		"tools/webp-convert.d.mts",
+		"tools/svg-optimise.mjs",
+		"tools/svg-optimise.d.mts",
 		"tools/extract-html.mjs",
 		"tools/extract-html.d.mts",
 		"tools/compress-dist.mjs",
@@ -270,6 +272,7 @@
 		"./tools/single-file": "./tools/single-file.mjs",
 		"./tools/vite": "./tools/vite.mjs",
 		"./tools/webp-convert": "./tools/webp-convert.mjs",
+		"./tools/svg-optimise": "./tools/svg-optimise.mjs",
 		"./two-d": {
 			"types": "./dist/two-d/index.d.ts",
 			"import": "./dist/two-d/index.js"
@@ -351,6 +354,9 @@
 		"example:chess:build": "vite build --config examples/chess/vite.config.ts && node tools/emit-page.mjs examples/chess --assets=examples/assets",
 		"example:cloth": "vite --config examples/cloth/vite.config.ts",
 		"example:cloth:build": "vite build --config examples/cloth/vite.config.ts && node tools/emit-page.mjs examples/cloth --assets=examples/assets",
+		"example:bridge": "vite --config examples/bridge/vite.config.ts",
+		"example:bridge:build": "vite build --config examples/bridge/vite.config.ts && node tools/emit-page.mjs examples/bridge --assets=examples/assets",
+		"visual:smoke:bridge": "npm run example:bridge:build && node tools/visual-smoke.mjs examples/bridge/dist/index.html",
 		"example:spring": "vite --config examples/spring/vite.config.ts",
 		"example:spring:build": "vite build --config examples/spring/vite.config.ts && node tools/emit-page.mjs examples/spring --assets=examples/assets",
 		"example:tower-defense": "vite --config examples/tower-defense/vite.config.ts",
@@ -462,6 +468,7 @@
 		"playwright-core": "^1.62.1",
 		"prettier": "^3.9.6",
 		"sharp": "^0.35.4",
+		"svgo": "^4.1.0",
 		"typescript": "^7.0.2",
 		"vite": "^8.2.2",
 		"ws": "^8.21.3"

@@ -288,12 +288,30 @@ function generatorOf(zone: Zone, oper: number): Generator | null {
 	return zone.gens.get(oper) ?? zone.global?.get(oper) ?? null;
 }
 
-function presetIndexOf(presets: Map<string, number>, bank: number, program: number): number | undefined {
+/**
+ * What plays for a (bank, program) the font does not carry. A bank missing the program falls back to
+ * bank 0 and a missing drum kit to the standard kit (never to a melodic preset) whatever the policy; past that, `'piano'` (the
+ * default, how most players behave) voices the font's own preset 0:0, and `'synth'` voices nothing, so
+ * the renderer's built-in synthesizer plays the instrument instead. A game with a trimmed bank picks
+ * `'synth'` to hear the synthesizer's timbre for an instrument it did not ship rather than a piano line.
+ */
+export type MissingProgram = 'piano' | 'synth';
+
+export interface SoundFontOptions {
+	/** what plays for a program the font lacks; `'piano'` when omitted */
+	missingProgram?: MissingProgram;
+}
+
+function presetIndexOf(
+	presets: Map<string, number>,
+	bank: number,
+	program: number,
+	missing: MissingProgram = 'piano',
+): number | undefined {
 	return (
 		presets.get(`${bank}:${program}`) ??
-		presets.get(`0:${program}`) ??
-		(bank === 128 ? presets.get('128:0') : undefined) ??
-		presets.get('0:0')
+		(bank === 128 ? presets.get('128:0') : presets.get(`0:${program}`)) ??
+		(missing === 'piano' ? presets.get('0:0') : undefined)
 	);
 }
 
@@ -312,7 +330,7 @@ function presetIndexOf(presets: Map<string, number>, bank: number, program: numb
  * console.log(font.presetCount, rendered.duration);
  * ```
  */
-export function parseSoundFont(data: ArrayBuffer | ArrayBufferView): SoundFont {
+export function parseSoundFont(data: ArrayBuffer | ArrayBufferView, options: SoundFontOptions = {}): SoundFont {
 	const tables = readTables(toBytes(data));
 	if (tables.compressed) {
 		throw new Error(
@@ -354,7 +372,7 @@ export function parseSoundFont(data: ArrayBuffer | ArrayBufferView): SoundFont {
 
 	//Zones that sound for (bank, program, key, velocity), each with the resolved playback recipe.
 	function voices(bank: number, program: number, key: number, velocity: number): SoundFontVoice[] {
-		const presetIndex = presetIndexOf(presets, bank, program);
+		const presetIndex = presetIndexOf(presets, bank, program, options.missingProgram);
 		if (presetIndex === undefined) return [];
 		const out: SoundFontVoice[] = [];
 		const within = (zone: Zone, oper: number, value: number): boolean => {
@@ -447,6 +465,47 @@ export function collectSoundFontUsage(files: readonly MidiFile[]): SoundFontProg
 		}
 	}
 	return out;
+}
+
+/**
+ * The programs of `usage` the font does not carry, so a game can tell at build time which of the
+ * instruments its MIDI files ask for would be missing. A bank without the program counts as carried
+ * when bank 0 has it (the fallback every player makes), a drum kit only when the font has that exact
+ * kit. What plays for a missing one is the `missingProgram` policy of `parseSoundFont`. Works on a
+ * SoundFont 2 or 3.
+ *
+ * @example
+ * ```ts
+ * import { missingSoundFontPrograms, parseMidi, collectSoundFontUsage } from '@datamoc/mw_games/audio';
+ *
+ * declare const soundfontBytes: ArrayBuffer;
+ * declare const midiBytes: ArrayBuffer;
+ *
+ * const usage = collectSoundFontUsage([parseMidi(midiBytes)]);
+ * for (const { bank, program } of missingSoundFontPrograms(soundfontBytes, usage)) {
+ * 	console.log(`bank ${bank} program ${program} is not in the font`);
+ * }
+ * ```
+ */
+export function missingSoundFontPrograms(
+	data: ArrayBuffer | ArrayBufferView,
+	usage: readonly SoundFontProgram[],
+): SoundFontProgram[] {
+	const carried = new Set(
+		readTables(toBytes(data))
+			.presets.slice(0, -1)
+			.map((preset) => `${preset.bank}:${preset.preset}`),
+	);
+	const seen = new Set<string>();
+	const missing: SoundFontProgram[] = [];
+	for (const { bank, program } of usage) {
+		const key = `${bank}:${program}`;
+		if (seen.has(key)) continue;
+		seen.add(key);
+		if (carried.has(key) || (bank !== 128 && carried.has(`0:${program}`))) continue;
+		missing.push({ bank, program });
+	}
+	return missing;
 }
 
 function u16le(value: number): number[] {
@@ -722,9 +781,9 @@ export async function decodeSoundFont(
  */
 export async function loadSoundFont(
 	data: ArrayBuffer | ArrayBufferView,
-	options: { decode?: SoundFontSampleDecoder } = {},
+	options: SoundFontOptions & { decode?: SoundFontSampleDecoder } = {},
 ): Promise<SoundFont> {
-	return parseSoundFont(await decodeSoundFont(data, options.decode ?? webAudioSampleDecoder()));
+	return parseSoundFont(await decodeSoundFont(data, options.decode ?? webAudioSampleDecoder()), options);
 }
 
 /**

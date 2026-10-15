@@ -1,5 +1,5 @@
 import { midiLoopStart, noteToFrequency, parseMidi, scheduleMidi, type MidiFile, type ScheduledNote } from './Midi.ts';
-import { parseSoundFont, type SoundFont, type SoundFontVoice } from './SoundFont.ts';
+import { parseSoundFont, type MissingProgram, type SoundFont, type SoundFontVoice } from './SoundFont.ts';
 import { spawn } from '../threads/index.ts';
 
 /**
@@ -46,6 +46,8 @@ export interface RenderedMidi {
 export interface RenderMidiAsyncOptions {
 	/** raw SoundFont 2 bytes: parsed on this thread, voiced on the worker */
 	soundFontBytes?: ArrayBuffer | ArrayBufferView;
+	/** what plays for a program the font lacks, as for `parseSoundFont`; `'piano'` when omitted */
+	missingProgram?: MissingProgram;
 	/** output sample rate in Hz */
 	sampleRate?: number;
 	/** master level, 0 to 1 */
@@ -125,7 +127,9 @@ export async function renderMidiToBufferAsync(
 	options: RenderMidiAsyncOptions = {},
 ): Promise<RenderedMidi> {
 	const file = parseMidi(midi);
-	const soundfont = options.soundFontBytes ? parseSoundFont(options.soundFontBytes) : null;
+	const soundfont = options.soundFontBytes
+		? parseSoundFont(options.soundFontBytes, { missingProgram: options.missingProgram })
+		: null;
 	const task = prepare(file, {
 		soundfont,
 		sampleRate: options.sampleRate,

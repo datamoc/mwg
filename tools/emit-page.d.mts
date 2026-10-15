@@ -20,6 +20,8 @@ export interface EmitPageOptions {
 	toWebp?: boolean;
 	webpLossless?: boolean;
 	webpQuality?: number;
+	/** minify embedded `.svg` assets through the optional `svgo` package; false by default */
+	svgo?: boolean;
 	/** Subset an embedded `.sf2` to the programs the embedded `.mid`/`.midi` files use. Default true; `false` embeds every SoundFont whole. */
 	soundFont?: boolean;
 	/** Explicit `{ bank, program }` list to subset a SoundFont to, overriding the MIDI-derived list. */
@@ -42,6 +44,7 @@ export interface EmitPageResult {
 	rawBytes: number;
 	embeddedBytes: number;
 	webpConverted: number;
+	svgOptimised: number;
 	/** one entry per embedded `.sf2`: the programs kept (null when embedded whole) and the byte saving */
 	soundFonts: SoundFontEmbed[];
 	compressed: CompressRow[] | null;

@@ -427,19 +427,6 @@ files use (264 to 585 KB for the essentials, measured). What was real is below, 
 after the documentation fixes shipped (function-level examples, the bridge example, the measured
 sizes).
 
-428. **SVG optimisation in `compileResources`.** An opt-in `svgo` option that minifies embedded
-`.svg` assets through the optional `svgo` dev dependency, imported only when used, the way `sharp`
-is for `toWebp`; keeps `viewBox`, never strips what a `<use>` or CSS selector in the game still
-names, and falls back to the original bytes when an optimised file would be larger.
-
-429. **A policy for a program the SoundFont lacks.** Today it plays the font's own piano and the
-built-in synthesizer only when the font has no piano. A `missingProgram: 'piano' | 'synth'` render
-option would let a game with a trimmed bank hear the synthesizer's timbre for an instrument it did
-not ship instead of a piano line, and `mwg-soundfonts` could warn which of a game's programs the
-chosen font does not carry.
-
-430. **Tutorials and an example index.** A "build a bridge game" tutorial on the `XpbdWorld` path
-(levels, a vehicle, breaking, a replay through `core.Recorder`), an MWL interface example (HUD and
-windows described as content, themed through `setTheme`), and a per-module example index on the
-documentation site that points at each `@example`. These need browser verification and a screenshot per
-page, which is why they wait behind the cheaper fixes above.
+Items 428-430 are implemented; see [CLOSED.md](CLOSED.md). Nothing else is open and buildable from
+this repository: 401 still waits for a port session, and every parked decision still waits on what its
+note says.

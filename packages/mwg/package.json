@@ -260,6 +260,10 @@
 			"types": "./tools/webp-convert.d.mts",
 			"import": "./tools/webp-convert.mjs"
 		},
+		"./tools/svg-optimise": {
+			"types": "./tools/svg-optimise.d.mts",
+			"import": "./tools/svg-optimise.mjs"
+		},
 		"./two-d": {
 			"types": "./two-d.d.ts",
 			"import": "./two-d.js"

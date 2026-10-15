@@ -30,12 +30,20 @@ export {
 	decodeSoundFont,
 	loadSoundFont,
 	mergeSoundFonts,
+	missingSoundFontPrograms,
 	parseSoundFont,
 	subsetSoundFont,
 } from './SoundFont.ts';
 export { webAudioSampleDecoder } from './SampleDecoder.ts';
 export type { SampleDecodingContext, SoundFontSampleDecoder } from './SampleDecoder.ts';
-export type { SoundFont, SoundFontProgram, SoundFontSample, SoundFontVoice } from './SoundFont.ts';
+export type {
+	MissingProgram,
+	SoundFont,
+	SoundFontOptions,
+	SoundFontProgram,
+	SoundFontSample,
+	SoundFontVoice,
+} from './SoundFont.ts';
 export { Channel, AudioBus } from './Channels.ts';
 export { parseVorbisLoopTags, loopRegionFromTags } from './LoopTags.ts';
 export type { VorbisLoopTags } from './LoopTags.ts';

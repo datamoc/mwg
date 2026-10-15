@@ -6168,3 +6168,26 @@ example already draws.
   refused. The async renderer takes the SoundFont 2 bytes `decodeSoundFont` returns. FLAC
   inside a SoundFont 3 was weighed and left out: it is not what the format means, and it is
   several times the size of Vorbis.
+428. **SVG optimisation in `compileResources`** (2026-10-16). An opt-in `svgo` option, `--svgo` on
+  `mwg-emit`, through the optional `svgo` 4 package imported only when used, with ids and the
+  `viewBox` left alone and an optimised file kept only when smaller; a file svgo cannot parse fails
+  the build by name. Run over the repository's 30 SVGs it saved 13.6% and changed no rendered pixel
+  by more than 1 in 255. A first draft configured `removeViewBox`, which svgo 4's default preset no
+  longer has, and warned on every run: the viewBox now stays because the preset no longer removes it,
+  which is why svgo 4 is required.
+429. **A policy for a program the SoundFont lacks** (2026-10-16). `missingProgram: 'piano' | 'synth'`
+  on `parseSoundFont`, `loadSoundFont` and `renderMidiToBufferAsync`, and
+  `missingSoundFontPrograms`, which the asset compiler runs to list each embedded font's missing
+  programs and `mwg-emit` warns about. Writing the test found an older bug: a drum kit the font lacked
+  fell back to the same program number of bank 0, a melodic preset, so a font with a piano and no drums
+  played the piano as the kick. A missing kit now falls back to the standard kit only.
+430. **Tutorials and an example index** (2026-10-16). `examples/bridge` is a playable truss builder on
+  `XpbdWorld` (levels, a budget, tension-only cables, load colours, breaking, a `Recorder`/`Player`
+  replay that must give the identical result, `SaveSystem` best results, reduced motion, high
+  contrast), with a renderer-free tested simulation and a screenshot-verified build; the tutorial at
+  `webpage/tutorials/bridge` quotes real code from it and a test fails if a snippet drifts. The MWL
+  interface half of the item was already shipped as `examples/mwl-presentation` (HUD, windows and
+  themes as MWL content), which the tutorial points at rather than rebuilding. The index is
+  `tools/build-example-index.mjs`, part of `webpage:docs`: per module, every symbol with an
+  `@example` linked to its typedoc page (775 of about 800 resolve; the first version guessed the
+  page names wrongly and linked none, which checking the real typedoc output caught).

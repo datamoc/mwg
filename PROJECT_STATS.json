@@ -5,7 +5,7 @@
 	"releaseDate": "2026-10-16",
 	"source": {
 		"files": 358,
-		"lines": 68095,
+		"lines": 68166,
 		"modules": 20,
 		"breakdown": [
 			{
@@ -31,7 +31,7 @@
 			{
 				"name": "audio",
 				"files": 22,
-				"lines": 5103
+				"lines": 5174
 			},
 			{
 				"name": "roguelike",
@@ -111,19 +111,20 @@
 		]
 	},
 	"tests": {
-		"files": 332,
-		"lines": 45511,
-		"cases": 3038
+		"files": 335,
+		"lines": 46054,
+		"cases": 3066
 	},
 	"tools": {
-		"files": 60,
-		"lines": 12260
+		"files": 62,
+		"lines": 12949
 	},
 	"examples": {
-		"count": 27,
+		"count": 28,
 		"names": [
 			"audio",
 			"battle",
+			"bridge",
 			"chess",
 			"cloth",
 			"colour-transform",
@@ -161,9 +162,9 @@
 		"declarationFiles": 358
 	},
 	"bundle": {
-		"globalRaw": 1297409,
-		"globalGzip": 388210,
-		"distRaw": 4739981
+		"globalRaw": 1297776,
+		"globalGzip": 388314,
+		"distRaw": 4744025
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

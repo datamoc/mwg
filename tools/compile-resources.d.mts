@@ -12,6 +12,8 @@ export interface CompileResourcesOptions {
 	toWebp?: boolean;
 	webpLossless?: boolean;
 	webpQuality?: number;
+	/** minify embedded `.svg` assets through the optional `svgo` package (version 4 or newer); false by default */
+	svgo?: boolean;
 	/** Subset an embedded `.sf2` to the programs the embedded `.mid`/`.midi` files use. Default true; `false` embeds every SoundFont whole. */
 	soundFont?: boolean;
 	/** Explicit `{ bank, program }` list to subset a SoundFont to, overriding the MIDI-derived list. */
@@ -29,6 +31,8 @@ export interface CompileResourcesResult {
 	rawBytes: number;
 	embeddedBytes: number;
 	webpConverted: number;
+	/** SVG assets embedded smaller than their source because of `svgo` */
+	svgOptimised: number;
 	skipped: number;
 	/** the `CREDITS.txt` text when the asset folder holds a `credits.json`, else null */
 	credits: string | null;
@@ -50,6 +54,8 @@ export interface SoundFontEmbed {
 	programs: number | null;
 	rawBytes: number;
 	embeddedBytes: number;
+	/** the programs the game's MIDI files ask for that this font does not carry; empty when none */
+	missing: SoundFontUsage[];
 }
 
 /** parses a `--soundfont-usage=bank:program,...` CLI value; undefined when the flag is absent */
