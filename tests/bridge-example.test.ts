@@ -8,6 +8,7 @@ import {
 	beamProblem,
 	cross,
 	describe,
+	isBetter,
 	ratioColour,
 	totalCost,
 	warrenBeams,
@@ -173,4 +174,21 @@ test('every code block in the tutorial is real code from the example', () => {
 	for (const [, code] of blocks) {
 		assert.ok(normalise(source).includes(normalise(unescape(code))), `not found in examples/bridge:\n${code}`);
 	}
+});
+
+test('a result replaces the best only when it crosses and costs less, or costs the same and sags less', () => {
+	const level = LEVELS[0];
+	const run = (cost: number, sag: number, crossed = true) => ({
+		...cross(level, warrenBeams(level)),
+		cost,
+		sag,
+		crossed,
+	});
+	const best = run(100, 5);
+	assert.equal(isBetter(run(100, 5), undefined), true);
+	assert.equal(isBetter(run(90, 9), best), true, 'cheaper wins even when it sags more');
+	assert.equal(isBetter(run(100, 3), best), true, 'the same cost with less sag wins');
+	assert.equal(isBetter(run(100, 7), best), false);
+	assert.equal(isBetter(run(120, 1), best), false);
+	assert.equal(isBetter(run(10, 0, false), best), false, 'a failed crossing never counts');
 });

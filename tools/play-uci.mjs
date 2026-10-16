@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 import { fileURLToPath } from 'node:url';
-import { readFileSync, readdirSync, realpathSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { createInterface } from 'node:readline';
-import { applyMove, cloneChess, legalMoves, parseFen, squareName, startingChess } from '../src/board/chess.ts';
-import { parseUciMove, probeBook } from '../src/board/openings.ts';
-import { searchTourney } from '../src/board/tourney.ts';
-import { loadTablebaseEnding, probeTablebase } from '../src/board/tablebase.ts';
+//the framework's own modules: the TypeScript sources inside this repository, the built `dist` inside an
+//installed package, which ships no `src`
+const fromSource = existsSync(new URL('../src/board/chess.ts', import.meta.url));
+const load = (path) => import(fromSource ? `../src/${path}.ts` : `../dist/${path}.js`);
+const { applyMove, cloneChess, legalMoves, parseFen, squareName, startingChess } = await load('board/chess');
+const { parseUciMove, probeBook } = await load('board/openings');
+const { searchTourney } = await load('board/tourney');
+const { loadTablebaseEnding, probeTablebase } = await load('board/tablebase');
 
 /**
  * A UCI adapter over the tournament engine: `position`/`go` on stdin, `bestmove`

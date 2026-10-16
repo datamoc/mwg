@@ -361,12 +361,12 @@ function findOnPath(names) {
 }
 
 /**
- * Locates a browser executable without a driver install: the `CHROME_PATH` /
- * `FIREFOX_PATH` override first, then well-known install locations. Returns null
+ * Locates a browser executable without a driver install: `CHROME_PATH` (or `CHROME`) /
+ * `FIREFOX_PATH` overrides first, then well-known install locations. Returns null
  * when neither yields anything, so callers skip rather than fail.
  */
 export function findBrowser(kind) {
-	const override = process.env[kind === 'chrome' ? 'CHROME_PATH' : 'FIREFOX_PATH'];
+	const override = kind === 'chrome' ? process.env.CHROME_PATH || process.env.CHROME : process.env.FIREFOX_PATH;
 	if (override) return override;
 	const onPath = findOnPath(kind === 'chrome' ? ['chrome', 'chromium', 'google-chrome'] : ['firefox']);
 	if (onPath) return onPath;

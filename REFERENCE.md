@@ -895,11 +895,17 @@ reach the compiled asset map without it.
   (`force`, smoothed `ratio`, `peakRatio`) and `onBreak` when a link passes its strength; `ground` (a height or a function of x) holds nodes
   on a surface with `groundFriction`. The engine of
   Pontifex, generalised: bridges, trusses, cranes, anything where the question is which beam fails.
+  `XpbdWorld<T>`/`XpbdLink<T>`/`XpbdLinkSpec<T>` carry game-owned link `data` without
+  affecting the solver. `breakLink(index)` dispatches rupture once. `linksInBox` includes
+  segment crossings; `linksNear` orders nearby unbroken segments by distance. `snapshot()`
+  returns positions, velocities, load state and queued forces as detached arrays; `hash()`
+  compares their exact numeric bits for runs with the same configuration. Payloads and ground
+  callbacks are excluded. The bridge example applies a moving vehicle's weight with `applyForce`.
 - `PhysicsWorld` (`@datamoc/mw_games/physics`) - rigid bodies and constraints in plain TypeScript, no engine
   dependency: `addBox`/`addCircle`/`addConstraint`/`remove`, `update(dt)` from
   `Scene.update`, `onContact`, `alpha` for interpolation. A constraint with `maxStretch` breaks when pulled
   that far past its rest length (`onBreak`, `stretchOf`). Bodies never spin; `angle` is a display offset.
-- `synthesizeTone`/`synthesizeSound`/`playTone`/`Waveform` - a runtime square/triangle/sine/noise
+- `synthesizeTone`/`synthesizeSound`/`playTone`/`Waveform` - a runtime square/triangle/sine/noise/sawtooth
   waveform synth for a procedural tone or SFX, no sample library; `synthesizeSound` returns a
   pooled `Sound` over the tone.
 - `parseMidi`/`scheduleMidi`/`midiLoopStart`/`noteToFrequency`/`MidiPlayer` - a small `.mid` file player
@@ -964,6 +970,15 @@ reach the compiled asset map without it.
   the page (FluidR3's piano, guitar and drums: 2.7 MB, against 20 MB decoded to a SoundFont 2),
   and `loadSoundFont` decodes it at load, so prefer it over a SoundFont 2 for anything but the
   smallest banks.
+- `createAudioLoader`/`AudioLoaderOptions` - a cached loader for embedded audio and MIDI,
+  shared by all `AudioBus` lifetimes. MIDI is detected by header and rendered on a worker;
+  other files use `decodeAudioData`. Options select SoundFont/render settings or a byte source.
+  `AudioBus` uses this loader by default, so `playBgm` and `playSe` accept asset paths with
+  the same volume, pitch and pan fields. BGM/BGS loop; ME/SE play once.
+- `MusicPlayer`/`MusicPlayerOptions`/`MusicPlayOptions` - one loaded `AudioBuffer` or
+  `RenderedMidi`, with play, pause, resume, seek, position, volume and an `onEnded` signal.
+  Call `update()` each frame to dispatch track completion and choose the next track.
+  `toAudioBuffer(context, rendered)` copies rendered stereo samples into an `AudioBuffer`.
 - `Channel`/`AudioBus` - buffered WebAudio music: a `Channel` plays one looping track with
   volume, pitch, pan, a loop region and a seekable playhead, and an `AudioBus` wires two of
   them into independent BGM/BGS loops, ME jingles that suspend and resume the BGM,
@@ -1528,6 +1543,8 @@ nothing here reaches a shipped game unless a test imports it.
 - `memoryStorage` - a `SaveStorage` held in memory, for `SaveSystem`, `Settings`, `Collection`,
   `PlayerStats` and the other stored values; the same class `core` falls back to where
   `localStorage` is missing.
+- `exposeForTests(name, object)` - publishes inspectable game state under
+  `window.__mwg_test__[name]` for browser tests; does nothing outside a browser.
 - `fakeAudio`/`fakeAudioWithEnded`/`FakePlayable` - a `Playable` for `Sound`/`Music`'s `create`
   that counts its plays; the second also has the `onended` slot a backend reporting track ends
   has.
@@ -1747,6 +1764,11 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   `id=rebels` validates) keys `world.sides` and `world.gold`, marks a map keep (`rebels Kh`), and
   is what `unit.side`, `MwlMessage.side` and every `side`/`side_filter` filter hold. `MwlSideRef`
   is just that id.
+- `nodesToObjects`/`MwlObject` - converts compiled nodes to JSON objects using the tag
+  schema: declared numbers and booleans become typed fields, child tags become ordered
+  arrays, and a `cardinality.max` of 1 selects a single object. Missing optional fields stay
+  absent. Check the returned diagnostics for conversion errors and field collisions.
+  Attributes not listed in `MwlTagSchema.required` are optional; use `number`, not `number?`.
 - `readAttributes` / `readChildren` - shared typed readers for compiled nodes. They coerce
   scalars and lists and return source-located diagnostics instead of silently guessing.
 - `MwlNode.attributeLocations` / `valueLocations` - parsed JSON5 nodes retain the exact key and
@@ -1769,6 +1791,9 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   absent cell omits the key), and `emitTableTypes` emits one named row interface plus one
   typed accessor per table for a game's build script to write and import, so a changed
   column type or a removed column fails type-checking at every use.
+  `emitTableTypes(tables, { literalColumns: ['id', 'sprite'] })` also exports sorted,
+  deduplicated readonly value lists and literal unions such as `VehiclesSprite` from the
+  current string-column values. Regenerate them with the catalog to catch stale game ids.
 - `MwlValidationOptions.tableReferences`/`MwlTableReference` (item 362) - declarative
   cross-table checks, so no game hand-rolls one validator per table: a column declares
   `references: { table, column }` or `oneOf: [...]`, and `validateCatalog` checks every cell

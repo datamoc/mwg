@@ -30,6 +30,23 @@ export async function waitForGame(page, url, pageErrors = []) {
 }
 
 /**
+ * Waits for the page to draw a few frames instead of sleeping a fixed time: a software renderer can need
+ * far longer than any fixed pause, and a fast one far less. Capped, since a hidden tab throttles frames.
+ */
+async function settle(page, frames = 3, capMs = 5000) {
+	await page.evaluate(
+		([count, cap]) =>
+			new Promise((done) => {
+				const timer = setTimeout(done, cap);
+				const next = (left) =>
+					left === 0 ? (clearTimeout(timer), done()) : requestAnimationFrame(() => next(left - 1));
+				next(count);
+			}),
+		[frames, capMs],
+	);
+}
+
+/**
  * Opens a built page from `file://` in headless Chrome and asserts it actually rendered.
  *
  * Shared by the per-pull-request visual smoke and the published-package smoke so both judge
@@ -76,11 +93,11 @@ export async function smokePage({
 		await waitForGame(page, url, pageErrors);
 
 		//let the scene finish its first frames before reading pixels back
-		await page.waitForTimeout(250);
+		await settle(page);
 		if (keyToPress) {
 			await page.keyboard.press(keyToPress);
 			//give whatever the key opened time to lay itself out and draw
-			await page.waitForTimeout(250);
+			await settle(page);
 		}
 		if (after) await after(page);
 

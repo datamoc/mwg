@@ -1,6 +1,20 @@
 {
 	"$schema": "https://typedoc.org/schema.json",
-	"entryPoints": ["../../src/index.ts", "../../src/mwl/presentation.ts", "../../src/two-d/presentation/index.ts"],
+	"entryPoints": [
+		"../../src/index.ts",
+		"../../src/mwl/presentation.ts",
+		"../../src/two-d/presentation/index.ts",
+		"../../src/three-d/index.ts",
+		"../../src/three-d/Models.ts",
+		"../../src/physics/index.ts",
+		"../../src/physics/xpbd.ts",
+		"../../src/ai/lua.ts",
+		"../../src/mwl/pyroeis.ts",
+		"../../src/testing/index.ts",
+		"../../src/threads/index.ts",
+		"../../src/headless/index.ts",
+		"../../src/assets/binary.ts"
+	],
 	"tsconfig": "../../tsconfig.json",
 	"out": "../../webpage/documentation/api",
 	"name": "mwg API",

@@ -464,3 +464,25 @@ function renderNotes(task: MidiRenderTask): RenderedMidi {
 	}
 	return { sampleRate, left, right, loopStart, loopEnd: duration, duration };
 }
+
+/**
+ * Copies a rendered MIDI track into a stereo `AudioBuffer` of the given context. The frames are
+ * written through `getChannelData`, so the `Float32Array` views a render hands back need no
+ * conversion first.
+ *
+ * @example
+ * ```ts
+ * import { parseMidi, renderMidiToBuffer, toAudioBuffer } from '@datamoc/mw_games/audio';
+ *
+ * declare const context: AudioContext;
+ * declare const midiBytes: ArrayBuffer;
+ *
+ * const buffer = toAudioBuffer(context, renderMidiToBuffer(parseMidi(midiBytes)));
+ * ```
+ */
+export function toAudioBuffer(context: BaseAudioContext, rendered: RenderedMidi): AudioBuffer {
+	const buffer = context.createBuffer(2, Math.max(1, rendered.left.length), rendered.sampleRate);
+	buffer.getChannelData(0).set(rendered.left);
+	buffer.getChannelData(1).set(rendered.right);
+	return buffer;
+}

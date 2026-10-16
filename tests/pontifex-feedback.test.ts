@@ -278,6 +278,13 @@ test('mwg-init writes a buildable starter that uses the published package names 
 		);
 		const pkg = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8'));
 		assert.equal(pkg.name, 'my-game');
+		assert.equal(pkg.scripts.test, 'node --test');
+		assert.equal(pkg.scripts['hooks:install'], 'git config core.hooksPath .githooks');
+		assert.match(readFileSync(join(target, '.gitignore'), 'utf8'), /\.opencode\/\n\.coord-session\n/);
+		assert.equal(
+			readFileSync(join(target, '.githooks/pre-commit'), 'utf8'),
+			'#!/bin/sh\nset -e\nnpm run check\nnpm test\n',
+		);
 		assert.match(pkg.dependencies['@datamoc/mw_games'], /^\^\d+\.\d+\.\d+$/);
 		assert.match(readFileSync(join(target, 'vite.config.mts'), 'utf8'), /mwgPage/);
 		assert.match(initFiles('x')['src/main.ts'], /@datamoc\/mw_games\/two-d/);

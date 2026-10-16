@@ -8980,6 +8980,7 @@ build instead.
 
     export interface AudioBusOptions {
         destination?: AudioNode;
+
         load?: BusLoader;
     }
 
@@ -9012,6 +9013,15 @@ build instead.
         });
         moveTo(x: number, y: number): void;
         face(radians: number): void;
+    }
+
+### `AudioLoaderOptions` (interface)
+
+    export interface AudioLoaderOptions {
+
+        midi?: RenderMidiAsyncOptions;
+
+        read?: (path: string) => Promise<ArrayBuffer>;
     }
 
 ### `audioPan` (function)
@@ -9140,9 +9150,13 @@ build instead.
 
     export declare function createAudio(path: string): Playable;
 
+### `createAudioLoader` (function)
+
+    export declare function createAudioLoader(context: BaseAudioContext, options?: AudioLoaderOptions): BusLoader;
+
 ### `decodeSoundFont` (function)
 
-    export declare function decodeSoundFont(data: ArrayBuffer | ArrayBufferView, decode: SoundFontSampleDecoder): Promise<ArrayBuffer>;
+    export declare function decodeSoundFont(data: ArrayBuffer | ArrayBufferView, decode: SoundFontSampleDecoder, limits?: SoundFontLimits): Promise<ArrayBuffer>;
 
 ### `GridSubdivision` (type)
 
@@ -9485,6 +9499,64 @@ build instead.
         create?: (path: string) => Playable;
     }
 
+### `MusicPlayer` (class)
+
+    export declare class MusicPlayer {
+
+        readonly onEnded: Signal<void>;
+        private readonly context;
+        private readonly channel;
+        private buffer;
+        private loop;
+        private repeat;
+        private playing;
+        private paused;
+        private resumeAt;
+        private volume_;
+        constructor(context: AudioContext, options?: MusicPlayerOptions);
+
+        load(track: RenderedMidi | AudioBuffer): void;
+
+        play(options?: MusicPlayOptions): void;
+        pause(): void;
+        resume(): void;
+
+        togglePause(): void;
+
+        stop(): void;
+        get isPlaying(): boolean;
+        get isPaused(): boolean;
+
+        get duration(): number;
+
+        position(): number;
+
+        seek(pos: number): void;
+        get volume(): number;
+        set volume(level: number);
+
+        update(): void;
+        private start;
+    }
+
+### `MusicPlayerOptions` (interface)
+
+    export interface MusicPlayerOptions {
+
+        volume?: number;
+
+        destination?: AudioNode;
+    }
+
+### `MusicPlayOptions` (interface)
+
+    export interface MusicPlayOptions {
+
+        pos?: number;
+
+        repeat?: boolean;
+    }
+
 ### `noteToFrequency` (function)
 
     export declare function noteToFrequency(note: number): number;
@@ -9645,6 +9717,8 @@ build instead.
         private caption?;
         private suspended_;
         volume: number;
+
+        plays: number;
         constructor(path: string, options?: SoundOptions);
 
         play(gain?: number, pitch?: number): void;
@@ -9662,6 +9736,15 @@ build instead.
         voices(bank: number, program: number, key: number, velocity: number): SoundFontVoice[];
         hasPreset(bank: number, program: number): boolean;
         readonly presetCount: number;
+    }
+
+### `SoundFontLimits` (interface)
+
+    export interface SoundFontLimits {
+
+        sampleFrames?: number;
+
+        totalFrames?: number;
     }
 
 ### `SoundFontOptions` (interface)
@@ -9763,6 +9846,10 @@ build instead.
 
     export declare function synthesizeTone(options?: ToneOptions): string;
 
+### `toAudioBuffer` (function)
+
+    export declare function toAudioBuffer(context: BaseAudioContext, rendered: RenderedMidi): AudioBuffer;
+
 ### `ToneOptions` (interface)
 
     export interface ToneOptions {
@@ -9790,11 +9877,11 @@ build instead.
 
 ### `Waveform` (type)
 
-    export type Waveform = 'square' | 'triangle' | 'sine' | 'noise';
+    export type Waveform = 'square' | 'triangle' | 'sine' | 'sawtooth' | 'noise';
 
 ### `webAudioSampleDecoder` (function)
 
-    export declare function webAudioSampleDecoder(create?: (rate: number) => SampleDecodingContext): SoundFontSampleDecoder;
+    export declare function webAudioSampleDecoder(create?: (rate: number) => SampleDecodingContext, limits?: SoundFontLimits): SoundFontSampleDecoder;
 
 ## `./battle`
 
@@ -13406,6 +13493,8 @@ build instead.
     export interface EmitTableTypesOptions {
 
         readonly header?: string;
+
+        readonly literalColumns?: readonly string[];
     }
 
 ### `encodeSave` (function)
@@ -13985,6 +14074,12 @@ build instead.
         readonly gettext?: readonly string[];
     }
 
+### `MwlObject` (interface)
+
+    export interface MwlObject {
+        [key: string]: string | number | boolean | MwlObject | MwlObject[];
+    }
+
 ### `MwlPersistenceOptions` (interface)
 
     export interface MwlPersistenceOptions {
@@ -14445,6 +14540,10 @@ build instead.
 
         random?: readonly [number, number, number, number];
     }
+
+### `nodesToObjects` (function)
+
+    export declare function nodesToObjects(nodes: readonly MwlCompiledNode[], schemas: Readonly<Record<string, MwlTagSchema>>): MwlReadResult<MwlObject[]>;
 
 ### `parse` (function)
 
@@ -15024,7 +15123,7 @@ build instead.
 
 ### `XpbdLink` (interface)
 
-    export interface XpbdLink {
+    export interface XpbdLink<T = undefined> {
         a: number;
         b: number;
         stiffness: number;
@@ -15037,11 +15136,13 @@ build instead.
         force: number;
 
         ratio: number;
+
+        data: T | undefined;
     }
 
 ### `XpbdLinkSpec` (interface)
 
-    export interface XpbdLinkSpec {
+    export interface XpbdLinkSpec<T = undefined> {
         a: number;
         b: number;
 
@@ -15056,6 +15157,8 @@ build instead.
         strength?: number;
 
         tensionStrength?: number;
+
+        data?: T;
     }
 
 ### `XpbdNode` (interface)
@@ -15102,9 +15205,9 @@ build instead.
 
 ### `XpbdWorld` (class)
 
-    export declare class XpbdWorld {
+    export declare class XpbdWorld<T = undefined> {
         readonly nodes: XpbdNode[];
-        readonly links: XpbdLink[];
+        readonly links: XpbdLink<T>[];
 
         readonly onBreak: Signal<{
             link: number;
@@ -15132,7 +15235,21 @@ build instead.
 
         addNode(spec: XpbdNodeSpec): number;
 
-        addLink(spec: XpbdLinkSpec): number;
+        addLink(spec: XpbdLinkSpec<T>): number;
+
+        breakLink(index: number): void;
+
+        linksInBox(left: number, top: number, right: number, bottom: number): number[];
+
+        linksNear(x: number, y: number, radius: number): number[];
+
+        snapshot(): {
+            nodes: number[][];
+            links: number[][];
+            forces: number[][];
+        };
+
+        hash(): string;
 
         applyForce(node: number, fx: number, fy: number): void;
 
@@ -17612,6 +17729,10 @@ build instead.
 ### `createSceneControls` (function)
 
     export declare function createSceneControls(): SceneControls;
+
+### `exposeForTests` (function)
+
+    export declare function exposeForTests(name: string, value: unknown): void;
 
 ### `fakeAudio` (function)
 

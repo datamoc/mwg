@@ -32,6 +32,26 @@ import type { BrowserDriver, DriveOptions } from '../tools/browser-driver.d.mts'
 
 const ROOT = resolvePath(new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
 
+test('browser discovery accepts CHROME and gives CHROME_PATH precedence in both drivers', async () => {
+	const { findChrome } = await import('../tools/find-chrome.mjs');
+	const chrome = process.env.CHROME;
+	const chromePath = process.env.CHROME_PATH;
+	try {
+		delete process.env.CHROME_PATH;
+		process.env.CHROME = 'custom-chrome';
+		assert.equal(findBrowser('chrome'), 'custom-chrome');
+		assert.equal(await findChrome(), 'custom-chrome');
+		process.env.CHROME_PATH = 'preferred-chrome';
+		assert.equal(findBrowser('chrome'), 'preferred-chrome');
+		assert.equal(await findChrome(), 'preferred-chrome');
+	} finally {
+		if (chrome === undefined) delete process.env.CHROME;
+		else process.env.CHROME = chrome;
+		if (chromePath === undefined) delete process.env.CHROME_PATH;
+		else process.env.CHROME_PATH = chromePath;
+	}
+});
+
 test('a free port is actually free', async () => {
 	const { createServer } = await import('node:net');
 	const port = await pickFreePort();
@@ -182,7 +202,10 @@ async function verifyDriver(
 
 		assert.equal(await page.evaluate('window.__TAPS'), 0);
 		await page.tap(0.5, 0.5);
-		await new Promise((tick) => setTimeout(tick, 300));
+		//poll for the tap rather than sleeping a fixed time: a loaded machine can take a while to deliver it
+		for (let waited = 0; waited < 10000 && (await page.evaluate('window.__TAPS')) !== 1; waited += 100) {
+			await new Promise((tick) => setTimeout(tick, 100));
+		}
 		assert.equal(await page.evaluate('window.__TAPS'), 1, 'the full pointer sequence taps the canvas');
 
 		assert.equal(

@@ -28,6 +28,21 @@ export const MIN_SAMPLE_RATE = 400;
 export const MAX_SAMPLE_RATE = 200000;
 export const MAX_SAMPLE_FRAMES = 1 << 24;
 
+/**
+ * How much a SoundFont 3 may decode to, in frames. The defaults (`MAX_SAMPLE_FRAMES` for one sample, 128
+ * million, 256 MB of 16-bit audio, for the whole font) suit a game font; raise them for a very large one
+ * you trust, since each frame is two bytes of memory and a damaged font can ask for any number.
+ */
+export interface SoundFontLimits {
+	/** frames one decoded sample may have */
+	sampleFrames?: number;
+	/** frames all the decoded samples of one font may have */
+	totalFrames?: number;
+}
+
+/** the whole-font default of {@link SoundFontLimits} */
+export const MAX_TOTAL_FRAMES = 1 << 27;
+
 function toInt16(frames: Float32Array): Int16Array {
 	const out = new Int16Array(frames.length);
 	for (let index = 0; index < frames.length; index++) {
@@ -37,9 +52,9 @@ function toInt16(frames: Float32Array): Int16Array {
 }
 
 /** linear resampling, only for the rare sample whose rate a context cannot be created at */
-function resample(frames: Float32Array, from: number, to: number): Float32Array {
+function resample(frames: Float32Array, from: number, to: number, maxFrames: number): Float32Array {
 	const length = Math.max(1, Math.round((frames.length * to) / from));
-	if (length > MAX_SAMPLE_FRAMES) throw new Error('a decoded sample is longer than a SoundFont sample may be');
+	if (length > maxFrames) throw new Error('a decoded sample is longer than a SoundFont sample may be');
 	const out = new Float32Array(length);
 	for (let index = 0; index < out.length; index++) {
 		const at = (index * from) / to;
@@ -61,7 +76,8 @@ function offlineContext(rate: number): SampleDecodingContext {
  * A decoder over WebAudio's `decodeAudioData`, for a browser: each sample decodes in a context
  * created at the sample's own rate, so the browser does not resample it and the loop points keep
  * meaning what the font wrote. A rate outside what a context accepts (8 to 96 kHz) decodes at
- * the nearest accepted rate and is resampled back. `create` replaces the context factory.
+ * the nearest accepted rate and is resampled back. `create` replaces the context factory and `limits`
+ * the longest sample it will return.
  *
  * @example
  * ```ts
@@ -75,7 +91,9 @@ function offlineContext(rate: number): SampleDecodingContext {
  */
 export function webAudioSampleDecoder(
 	create: (rate: number) => SampleDecodingContext = offlineContext,
+	limits: SoundFontLimits = {},
 ): SoundFontSampleDecoder {
+	const maxFrames = limits.sampleFrames ?? MAX_SAMPLE_FRAMES;
 	return async (ogg, rate) => {
 		if (!(rate >= MIN_SAMPLE_RATE && rate <= MAX_SAMPLE_RATE)) {
 			throw new Error(`a sample rate of ${rate} Hz is not one a SoundFont can state`);
@@ -84,9 +102,8 @@ export function webAudioSampleDecoder(
 		//decodeAudioData detaches what it is given, and `ogg` is a view into the caller's font
 		const copy = ogg.slice().buffer as ArrayBuffer;
 		const decoded = await create(contextRate).decodeAudioData(copy);
-		if (decoded.length > MAX_SAMPLE_FRAMES)
-			throw new Error('a decoded sample is longer than a SoundFont sample may be');
+		if (decoded.length > maxFrames) throw new Error('a decoded sample is longer than a SoundFont sample may be');
 		const channel = decoded.getChannelData(0);
-		return toInt16(decoded.sampleRate === rate ? channel : resample(channel, decoded.sampleRate, rate));
+		return toInt16(decoded.sampleRate === rate ? channel : resample(channel, decoded.sampleRate, rate, maxFrames));
 	};
 }

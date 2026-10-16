@@ -28,6 +28,8 @@ export interface CompileResourcesGroup {
 
 export interface CompileResourcesResult {
 	groups: CompileResourcesGroup[];
+	/** the asset path of every embedded file, as game code passes it to `load()` */
+	keys: string[];
 	rawBytes: number;
 	embeddedBytes: number;
 	webpConverted: number;

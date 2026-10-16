@@ -30,7 +30,19 @@ export interface VoxModel {
 	palette: Uint32Array;
 }
 
-/** Reads one MagicaVoxel VOX model, including an optional RGBA palette chunk. */
+/**
+ * Reads one MagicaVoxel VOX model, including an optional RGBA palette chunk.
+ *
+ * @example
+ * ```ts
+ * import { parseVox } from '@datamoc/mw_games/3d';
+ *
+ * declare const voxBytes: ArrayBuffer;
+ *
+ * const model = parseVox(voxBytes);
+ * console.log(model.size, model.voxels.length);
+ * ```
+ */
 export function parseVox(data: ArrayBuffer | ArrayBufferView): VoxModel {
 	const bytes =
 		data instanceof ArrayBuffer

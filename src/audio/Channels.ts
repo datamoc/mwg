@@ -12,6 +12,8 @@
  * Tests hand in fakes for both, the same way `Sound` and `Music` take `create()`.
  */
 
+import { createAudioLoader } from './AudioLoader.ts';
+
 /** seconds within a buffer: the region a looping track repeats */
 export interface LoopRegion {
 	start: number;
@@ -278,6 +280,7 @@ export interface BusMixerLevel {
 
 export interface AudioBusOptions {
 	destination?: AudioNode;
+	/** Defaults to embedded asset loading, including worker-rendered MIDI; customize with `createAudioLoader`. */
 	load?: BusLoader;
 }
 
@@ -327,7 +330,7 @@ export class AudioBus {
 	constructor(context: AudioContext, options: AudioBusOptions = {}) {
 		this.context = context;
 		this.destination = options.destination ?? context.destination;
-		this.load = options.load ?? (async () => null);
+		this.load = options.load ?? createAudioLoader(context);
 		const kindGain = (): GainNode => {
 			const gain = context.createGain();
 			gain.connect(this.destination);

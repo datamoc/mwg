@@ -158,3 +158,24 @@ export function fakeGamepad(index: number, buttons: number[] = [], axes: number[
 
 export { createSceneControls } from './SceneControls.ts';
 export type { SceneControls, SceneStep } from './SceneControls.ts';
+
+/**
+ * Publishes a game's inspectable state on `window.__mwg_test__[name]`, where a browser test
+ * (`BrowserDriver.evaluate`) can reach it. One fixed place replaces a hook each game invents;
+ * a no-op outside a browser.
+ *
+ * @example
+ * ```ts
+ * import { exposeForTests } from '@datamoc/mw_games/testing';
+ *
+ * declare const scene: unknown;
+ * declare const hitSound: unknown;
+ * exposeForTests('game', { scene, hitSound });
+ * // in the test: await driver.evaluate(() => window.__mwg_test__.game.hitSound.plays);
+ * ```
+ */
+export function exposeForTests(name: string, value: unknown): void {
+	const host = globalThis as { __mwg_test__?: Record<string, unknown> };
+	if (typeof window === 'undefined') return;
+	(host.__mwg_test__ ??= {})[name] = value;
+}

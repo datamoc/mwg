@@ -159,9 +159,46 @@ test('emitTableTypes with no tables emits the header alone', () => {
 	assert.equal(emitTableTypes([], { header: 'custom' }), '// custom\n');
 });
 
+test('emitTableTypes derives sorted unique literal unions from requested string columns', () => {
+	const output = emitTableTypes(
+		[
+			{
+				id: 'vehicles',
+				columns: [
+					{ name: 'sprite', type: 'string' },
+					{ name: 'id', type: 'string' },
+				],
+				rows: [
+					{ id: 'car', sprite: 'wheel' },
+					{ id: 'boat', sprite: 'hull' },
+					{ id: 'train', sprite: 'wheel' },
+				],
+			},
+		],
+		{ literalColumns: ['id', 'sprite'] },
+	);
+	assert.match(output, /export const VehiclesSpriteValues = \["hull","wheel"\] as const;/);
+	assert.match(output, /export type VehiclesSprite = typeof VehiclesSpriteValues\[number\];/);
+	assert.match(output, /export const VehiclesIdValues = \["boat","car","train"\] as const;/);
+	assert.throws(
+		() =>
+			emitTableTypes(
+				[
+					{
+						id: 'costs',
+						columns: [{ name: 'cost', type: 'number' }],
+						rows: [{ cost: 3 }],
+					},
+				],
+				{ literalColumns: ['cost'] },
+			),
+		/costs.cost.*string/,
+	);
+});
+
 test('emitted modules compile against the real public import paths', () => {
 	const game = compileSources([{ file: 'content.mwl', source: `[${gearSource}]` }]);
-	const output = emitTableTypes(contentCatalog(game).tables);
+	const output = emitTableTypes(contentCatalog(game).tables, { literalColumns: ['name'] });
 	const scratch = join(ROOT, '.example-check');
 	mkdirSync(scratch, { recursive: true });
 	const dir = mkdtempSync(join(scratch, 'table-types-'));
@@ -171,7 +208,7 @@ test('emitted modules compile against the real public import paths', () => {
 		writeFileSync(generated, output, 'utf8');
 		writeFileSync(
 			use,
-			`import { gearRows } from './tables.gen.ts';\nimport type { GearRow } from './tables.gen.ts';\ndeclare const catalog: Parameters<typeof gearRows>[0];\nconst rows: GearRow[] = gearRows(catalog);\nconst cost: number | undefined = rows[0]?.cost;\nconsole.log(cost);\n`,
+			`import { gearRows } from './tables.gen.ts';\nimport type { GearRow, GearName } from './tables.gen.ts';\ndeclare const catalog: Parameters<typeof gearRows>[0];\nconst rows: GearRow[] = gearRows(catalog);\nconst cost: number | undefined = rows[0]?.cost;\nconst name: GearName = 'sword';\n// @ts-expect-error absent from the generated catalog\nconst stale: GearName = 'removed';\nconsole.log(cost, name, stale);\n`,
 			'utf8',
 		);
 		const pathMap = publicPathMap();

@@ -175,9 +175,18 @@ test('a sample header cannot make the decoder allocate without bound', async () 
 	//a few Ogg bytes that decode to a very long sound
 	await assert.rejects(
 		() => decodeSoundFont(font, () => new Int16Array(MAX_SAMPLE_FRAMES + 1)),
-		/larger than a SoundFont may hold/,
+		/larger than the limits allow/,
 	);
 	assert.equal((await decodeSoundFont(font, () => new Int16Array(MAX_SAMPLE_FRAMES))).byteLength > 0, true);
+});
+
+test('limits raise or lower what a font may decode to', async () => {
+	const font = buildSf3(0, 5, Buffer.from([1, 0]));
+	const pcm = () => new Int16Array(MAX_SAMPLE_FRAMES + 1);
+	const decoded = await decodeSoundFont(font, pcm, { sampleFrames: MAX_SAMPLE_FRAMES + 1 });
+	assert.ok(decoded.byteLength > MAX_SAMPLE_FRAMES * 2, 'a sample over the default now decodes');
+	await assert.rejects(() => decodeSoundFont(font, () => new Int16Array(100), { sampleFrames: 10 }), /limits/);
+	await assert.rejects(() => decodeSoundFont(font, () => new Int16Array(100), { totalFrames: 50 }), /limits/);
 });
 
 test('the WebAudio decoder refuses a rate no SoundFont states and a decoded sound with no bound', async () => {

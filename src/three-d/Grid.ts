@@ -17,7 +17,18 @@ export interface Point3D {
 	z: number;
 }
 
-/** Converts the framework's integer square or odd-q hex coordinate to 3D world space. */
+/**
+ * Converts the framework's integer square or odd-q hex coordinate to 3D world space.
+ *
+ * @example
+ * ```ts
+ * import { gridPoint3D } from '@datamoc/mw_games/3d';
+ *
+ * //cell (3, 2), one level up, on a grid of 2-unit tiles with 0.5-unit levels
+ * const point = gridPoint3D('square', 3, 2, 2, 1, 0.5);
+ * console.log(point); // { x: 6, y: 0.5, z: 4 }
+ * ```
+ */
 export function gridPoint3D(
 	shape: GridShape3D,
 	x: number,

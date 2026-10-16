@@ -18,6 +18,7 @@ import {
 	applyAction,
 	beamProblem,
 	describe,
+	isBetter,
 	ratioColour,
 	totalCost,
 	warrenBeams,
@@ -202,7 +203,7 @@ class BridgeScene extends Scene2D {
 		}
 		this.runs.push(result);
 		const best = saves.load(`best-${this.levelIndex}`)?.state;
-		if (result.crossed && (!best || result.cost < best.cost)) saves.save(`best-${this.levelIndex}`, result);
+		if (isBetter(result, best)) saves.save(`best-${this.levelIndex}`, result);
 		this.say(describe(this.level, result));
 	}
 

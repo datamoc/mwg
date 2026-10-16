@@ -34,7 +34,7 @@ export interface XpbdNodeSpec {
 }
 
 /** What `XpbdWorld.addLink` takes. `a` and `b` are node indices as returned by `addNode`. */
-export interface XpbdLinkSpec {
+export interface XpbdLinkSpec<T = undefined> {
 	a: number;
 	b: number;
 	/** spring stiffness: force per unit of stretch ratio. Higher is more rigid */
@@ -49,6 +49,8 @@ export interface XpbdLinkSpec {
 	strength?: number;
 	/** the load it carries in tension before breaking, when that differs from `strength` */
 	tensionStrength?: number;
+	/** the game's own payload for this link (a material, a source index), kept on `XpbdLink.data` */
+	data?: T;
 }
 
 /**
@@ -67,7 +69,7 @@ export interface XpbdNode {
 /**
  * A live spring in `XpbdWorld.links`: its spec, resolved (`rest` filled in) and the load state the last step left. A `broken` link carries no load but keeps its index.
  */
-export interface XpbdLink {
+export interface XpbdLink<T = undefined> {
 	a: number;
 	b: number;
 	stiffness: number;
@@ -80,6 +82,8 @@ export interface XpbdLink {
 	force: number;
 	/** smoothed load as a fraction of what it can carry; it breaks above 1 */
 	ratio: number;
+	/** the payload given to `addLink`, untouched by the solver */
+	data: T | undefined;
 }
 
 /**
@@ -157,9 +161,9 @@ export interface XpbdLink {
  * console.log(loadBridge(20)); //too heavy: beams break
  * ```
  */
-export class XpbdWorld {
+export class XpbdWorld<T = undefined> {
 	readonly nodes: XpbdNode[] = [];
-	readonly links: XpbdLink[] = [];
+	readonly links: XpbdLink<T>[] = [];
 	/** fires once for a link that passed its strength, which has already stopped carrying load */
 	readonly onBreak = new Signal<{ link: number; x: number; y: number }>();
 	/** links break only while this is true, so a structure can settle under its own weight first */
@@ -202,7 +206,7 @@ export class XpbdWorld {
 	}
 
 	/** adds a link between two existing nodes and returns its index */
-	addLink(spec: XpbdLinkSpec): number {
+	addLink(spec: XpbdLinkSpec<T>): number {
 		const a = this.nodes[spec.a];
 		const b = this.nodes[spec.b];
 		if (!a || !b) throw new Error('a link needs two existing nodes');
@@ -223,11 +227,71 @@ export class XpbdWorld {
 			broken: false,
 			force: 0,
 			ratio: 0,
+			data: spec.data,
 		});
 		this.lambda.push(0);
 		this.accumulated.push(0);
 		this.refreshInverseMass();
 		return this.links.length - 1;
+	}
+
+	/** breaks a link now, as if it had passed its strength: it stops carrying load and `onBreak` fires. A broken link is left alone */
+	breakLink(index: number): void {
+		const link = this.links[index];
+		if (!link || link.broken) return;
+		link.broken = true;
+		const p = this.nodes[link.a];
+		const q = this.nodes[link.b];
+		this.onBreak.dispatch({ link: index, x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 });
+	}
+
+	/** indices of the unbroken links with an endpoint or a crossing inside the box (a ship's hull, a blast area) */
+	linksInBox(left: number, top: number, right: number, bottom: number): number[] {
+		const hits: number[] = [];
+		this.links.forEach((link, i) => {
+			if (link.broken) return;
+			const p = this.nodes[link.a];
+			const q = this.nodes[link.b];
+			if (segmentCrossesBox(p.x, p.y, q.x, q.y, left, top, right, bottom)) hits.push(i);
+		});
+		return hits;
+	}
+
+	/** indices of the unbroken links whose segment passes within `radius` of a point, nearest first */
+	linksNear(x: number, y: number, radius: number): number[] {
+		const hits: { index: number; distance: number }[] = [];
+		this.links.forEach((link, index) => {
+			if (link.broken) return;
+			const p = this.nodes[link.a];
+			const q = this.nodes[link.b];
+			const dx = q.x - p.x;
+			const dy = q.y - p.y;
+			const t = Math.max(0, Math.min(1, ((x - p.x) * dx + (y - p.y) * dy) / (dx * dx + dy * dy || 1)));
+			const distance = Math.hypot(p.x + dx * t - x, p.y + dy * t - y);
+			if (distance <= radius) hits.push({ index, distance });
+		});
+		return hits.sort((m, n) => m.distance - n.distance || m.index - n.index).map((hit) => hit.index);
+	}
+
+	/** Dynamic solver state and queued forces, for comparing runs with the same configuration. Game payloads and the ground callback are not captured. */
+	snapshot(): { nodes: number[][]; links: number[][]; forces: number[][] } {
+		return {
+			nodes: this.nodes.map((node) => [node.x, node.y, node.vx, node.vy, node.w, node.fixed ? 1 : 0]),
+			links: this.links.map((link) => [link.broken ? 1 : 0, link.force, link.ratio]),
+			forces: this.forces.map((force) => [force.x, force.y]),
+		};
+	}
+
+	/** a 32-bit FNV-1a hash of `snapshot()`'s exact bits: equal for equal states, whatever the machine */
+	hash(): string {
+		const { nodes, links, forces } = this.snapshot();
+		const view = new DataView(new ArrayBuffer(8));
+		let h = 0x811c9dc5;
+		for (const value of [nodes.length, links.length, ...nodes.flat(), ...links.flat(), ...forces.flat()]) {
+			view.setFloat64(0, value);
+			for (let i = 0; i < 8; i++) h = Math.imul(h ^ view.getUint8(i), 0x01000193);
+		}
+		return (h >>> 0).toString(16).padStart(8, '0');
 	}
 
 	/** an external force on a node for the next `step` only (a wheel's weight, wind) */
@@ -324,13 +388,41 @@ export class XpbdWorld {
 			const instant = limit === undefined ? 0 : Math.abs(link.force) / limit;
 			link.ratio += (instant - link.ratio) * blend;
 			peak = Math.max(peak, link.ratio);
-			if (this.breaking && link.ratio > 1) {
-				link.broken = true;
-				const p = this.nodes[link.a];
-				const q = this.nodes[link.b];
-				this.onBreak.dispatch({ link: i, x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 });
-			}
+			if (this.breaking && link.ratio > 1) this.breakLink(i);
 		});
 		this.peakRatio = peak;
 	}
+}
+
+/** Liang-Barsky: does the segment touch the axis-aligned box */
+function segmentCrossesBox(
+	x0: number,
+	y0: number,
+	x1: number,
+	y1: number,
+	left: number,
+	top: number,
+	right: number,
+	bottom: number,
+): boolean {
+	let enter = 0;
+	let leave = 1;
+	const dx = x1 - x0;
+	const dy = y1 - y0;
+	for (const [p, q] of [
+		[-dx, x0 - left],
+		[dx, right - x0],
+		[-dy, y0 - top],
+		[dy, bottom - y0],
+	]) {
+		if (p === 0) {
+			if (q < 0) return false;
+			continue;
+		}
+		const t = q / p;
+		if (p < 0) enter = Math.max(enter, t);
+		else leave = Math.min(leave, t);
+		if (enter > leave) return false;
+	}
+	return true;
 }

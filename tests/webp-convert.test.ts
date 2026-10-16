@@ -33,14 +33,20 @@ test('toWebp with lossless (the default) round-trips pixel-for-pixel', async () 
 
 test('toWebp with lossless: false and a low quality produces a smaller, lossy result', async () => {
 	// Random noise is the case lossless compression can least exploit (no smooth gradient or
-	// flat region to predict), so it reliably makes lossy's size advantage show up.
+	// flat region to predict), so it reliably makes lossy's size advantage show up. Seeded, so a run
+	// that fails fails the same way again.
 	const width = 128;
 	const height = 128;
 	const pixels = Buffer.alloc(width * height * 4);
+	let seed = 12345;
+	const random = () => {
+		seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+		return seed / 2 ** 32;
+	};
 	for (let i = 0; i < pixels.length; i += 4) {
-		pixels[i] = Math.floor(Math.random() * 256);
-		pixels[i + 1] = Math.floor(Math.random() * 256);
-		pixels[i + 2] = Math.floor(Math.random() * 256);
+		pixels[i] = Math.floor(random() * 256);
+		pixels[i + 1] = Math.floor(random() * 256);
+		pixels[i + 2] = Math.floor(random() * 256);
 		pixels[i + 3] = 255;
 	}
 	const png = await makePng(width, height, pixels);

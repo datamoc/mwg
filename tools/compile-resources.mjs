@@ -219,6 +219,7 @@ export async function compileResources({
 
 	const creditsFile = join(from, 'credits.json');
 	let credits = null;
+	const keys = [];
 
 	for (const file of files) {
 		if (selected && !selected.has(keyOf(file))) continue;
@@ -283,6 +284,7 @@ export async function compileResources({
 		const name = group(key);
 		if (!groups.has(name)) groups.set(name, {});
 		groups.get(name)[key] = `data:${mimeType};base64,${bytes.toString('base64')}`;
+		keys.push(key);
 		rawBytes += data.length;
 		embeddedBytes += bytes.length;
 	}
@@ -300,7 +302,17 @@ export async function compileResources({
 
 	if (credits) await writeFile(join(to, 'CREDITS.txt'), credits, 'utf8');
 
-	return { groups: written, rawBytes, embeddedBytes, webpConverted, svgOptimised, skipped, credits, soundFonts };
+	return {
+		groups: written,
+		keys,
+		rawBytes,
+		embeddedBytes,
+		webpConverted,
+		svgOptimised,
+		skipped,
+		credits,
+		soundFonts,
+	};
 }
 
 /** the plain-text credits for a manifest, one block per entry; throws on an entry that cannot be attributed */

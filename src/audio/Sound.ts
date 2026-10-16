@@ -33,6 +33,8 @@ export class Sound {
 	private caption?: string;
 	private suspended_ = false;
 	volume: number;
+	/** how many times `play` actually started a clip (not counting calls made while suspended), for a test to assert on without a microphone */
+	plays = 0;
 
 	constructor(path: string, options: SoundOptions = {}) {
 		const size = Math.max(1, options.poolSize ?? 4);
@@ -56,6 +58,7 @@ export class Sound {
 	 */
 	play(gain = 1, pitch = 1): void {
 		if (this.suspended_) return;
+		this.plays++;
 		const audio = this.pool[this.next];
 		this.next = (this.next + 1) % this.pool.length;
 

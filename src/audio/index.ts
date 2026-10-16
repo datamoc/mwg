@@ -1,4 +1,6 @@
 export { Sound } from './Sound.ts';
+export { createAudioLoader } from './AudioLoader.ts';
+export type { AudioLoaderOptions } from './AudioLoader.ts';
 export type { SoundOptions } from './Sound.ts';
 export { onCaption } from './Captions.ts';
 export type { CaptionEvent } from './Captions.ts';
@@ -23,7 +25,9 @@ export type {
 	ScheduledNote,
 	MidiPlayerOptions,
 } from './Midi.ts';
-export { renderMidiToBuffer, renderMidiToBufferAsync } from './MidiRender.ts';
+export { renderMidiToBuffer, renderMidiToBufferAsync, toAudioBuffer } from './MidiRender.ts';
+export { MusicPlayer } from './MusicPlayer.ts';
+export type { MusicPlayerOptions, MusicPlayOptions } from './MusicPlayer.ts';
 export type { RenderMidiOptions, RenderMidiAsyncOptions, RenderedMidi } from './MidiRender.ts';
 export {
 	collectSoundFontUsage,
@@ -35,7 +39,7 @@ export {
 	subsetSoundFont,
 } from './SoundFont.ts';
 export { webAudioSampleDecoder } from './SampleDecoder.ts';
-export type { SampleDecodingContext, SoundFontSampleDecoder } from './SampleDecoder.ts';
+export type { SampleDecodingContext, SoundFontLimits, SoundFontSampleDecoder } from './SampleDecoder.ts';
 export type {
 	MissingProgram,
 	SoundFont,

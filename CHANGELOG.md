@@ -7,6 +7,43 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `limits` (`SoundFontLimits`: `sampleFrames`, `totalFrames`) on `decodeSoundFont`, `loadSoundFont` and
+  `webAudioSampleDecoder` raises or lowers what a SoundFont 3 may decode to, instead of the fixed 16 M
+  frames per sample and 128 M per font. The sample-rate bounds stay: the format itself stops at 50 kHz.
+- `@example`s for the `3d` functions that need no renderer (`gridPoint3D`, `cellAt`, `heightAt`,
+  `buildHeightIndex`, `resolveCapsuleAgainstGrid`, `parseVox`). The generated API reference now covers
+  the subpaths the root barrel does not re-export (`3d`, `physics`, `ai/lua`, `mwl/pyroeis`, `testing`,
+  `threads`, `headless`, `assets/binary`), so the examples index links 803 of 813 symbols to a page.
+- `npm run build:bridge-tutorial` regenerates the bridge tutorial from `tools/templates` and the example's
+  own source. `npm run bins:smoke` packs the project, installs it in an empty folder and runs every `mwg-*`
+  bin with `--help`; CI runs it, with the library build, on Node 20.19.0, the floor `engines` claims.
+- `.gitattributes` (`* text=auto eol=lf`) ends the CRLF warnings on Windows checkouts.
+- An optional, reproducible 314 KB SoundFont subset covering six essential presets,
+  with provenance and synthetic fallback for the instruments outside it.
+- `AudioBus` loads embedded audio and MIDI by default through `createAudioLoader`, with
+  shared decoding, worker MIDI rendering and optional SoundFont settings across lifetimes.
+- `MusicPlayer` controls rendered MIDI or decoded buffers with pause, resume, seek,
+  volume and a track-completion signal; `toAudioBuffer` copies rendered stereo samples
+  into a Web Audio buffer. The README shows the supplied SoundFont and worker playback path.
+- Page byte budgets and potentially unused asset reports in the standalone build pipeline.
+- XPBD link payloads, explicit rupture, geometric queries and state comparison helpers.
+- Schema-directed `nodesToObjects` conversion and optional literal unions generated from
+  MWL table columns. Optional attributes are documented alongside the schema.
+- Generated starter projects include a pre-commit hook for typecheck and tests, an activation
+  command and ignores for local agent state.
+- Sawtooth sound synthesis, playback attempt counts and a shared browser test exposure hook.
+
+### Fixed
+
+- `mwg-uci`, `mwg-openings` and `mwg-tablebases` imported `../src/...`, which the package does not ship, so
+  they failed in every installed copy; they load `dist` there, as the other tools already did.
+- The bridge example keeps a saved best only when the new crossing costs less, or costs the same and sags
+  less, instead of replacing it by any cheaper one.
+- Fixed waits that failed on a loaded machine: the browser smoke waits for drawn frames instead of 250 ms,
+  the driver test polls for its tap instead of sleeping 300 ms, and the WebP noise test is seeded.
+
 ## [0.42.0] - 2026-10-16
 
 The documentation and asset follow-ups to 0.41.0: SVG minification, a policy for the instruments a

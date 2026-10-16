@@ -82,6 +82,8 @@ export function typedRows<const Columns extends readonly MwlTableColumn[]>(table
 export interface EmitTableTypesOptions {
 	/** comment lines opening the generated module; defaults to a do-not-edit note */
 	readonly header?: string;
+	/** String columns whose current values also become exported literal unions and readonly value lists (for example `['id', 'sprite']`). */
+	readonly literalColumns?: readonly string[];
 }
 
 /**
@@ -115,6 +117,22 @@ export function emitTableTypes(tables: readonly MwlTableDefinition[], options: E
 	const taken = new Set<string>();
 	for (const table of tables) {
 		const base = typeName(table.id, taken);
+		for (const column of table.columns) {
+			if (!options.literalColumns?.includes(column.name)) continue;
+			if (column.type !== 'string')
+				throw new Error(`literal column "${table.id}.${column.name}" must be a string`);
+			const values = [
+				...new Set(table.rows.map((row) => row[column.name]).filter((value) => value !== undefined)),
+			];
+			if (values.some((value) => typeof value !== 'string'))
+				throw new Error(`literal column "${table.id}.${column.name}" contains a non-string value`);
+			const name = typeName(`${base}_${column.name}`, taken);
+			lines.push(
+				'',
+				`export const ${name}Values = ${JSON.stringify(values.sort())} as const;`,
+				`export type ${name} = typeof ${name}Values[number];`,
+			);
+		}
 		lines.push(
 			'',
 			`const ${base}Columns = [${table.columns.map((column) => `{ name: ${JSON.stringify(column.name)}, type: ${JSON.stringify(column.type)} }`).join(', ')}] as const;`,

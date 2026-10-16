@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { Sound } from '../src/audio/Sound.ts';
 import { Music } from '../src/audio/Music.ts';
 import { SaveSystem } from '../src/core/Save.ts';
-import { fakeAudio, fakeAudioWithEnded, memoryStorage } from '../src/testing/index.ts';
+import { exposeForTests, fakeAudio, fakeAudioWithEnded, memoryStorage } from '../src/testing/index.ts';
 
 test('Sound cycles through its pool round-robin, so overlapping plays do not steal the same instance', () => {
 	const instances: ReturnType<typeof fakeAudio>[] = [];
@@ -242,4 +242,29 @@ test('importExternal runs the normalized state through migrations, the same as a
 	assert.equal(loaded?.state.gold, 5);
 	assert.equal(loaded?.state.gems, 0);
 	assert.equal(loaded?.meta.version, 2);
+});
+
+test('Sound counts the plays it started, and not the ones swallowed by suspend', () => {
+	const sound = new Sound('sounds/hit.mp3', { create: () => fakeAudio() });
+	sound.play();
+	sound.play(0.5, 1.2);
+	sound.suspend();
+	sound.play();
+	sound.resume();
+	sound.play();
+	assert.equal(sound.plays, 3);
+});
+
+test('exposeForTests publishes under window.__mwg_test__ in a browser and does nothing in Node', () => {
+	const target = globalThis as { window?: unknown; __mwg_test__?: Record<string, unknown> };
+	exposeForTests('scene', { a: 1 });
+	assert.equal(target.__mwg_test__, undefined);
+	target.window = target;
+	try {
+		exposeForTests('scene', { a: 1 });
+		assert.deepEqual(target.__mwg_test__, { scene: { a: 1 } });
+	} finally {
+		delete target.window;
+		delete target.__mwg_test__;
+	}
 });

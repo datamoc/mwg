@@ -16,7 +16,20 @@ import type { GridCell3D, GridShape3D } from './Grid.ts';
  * `createTileGrid3D` builds columns from, which has no such query at all.
  */
 
-/** looks up a cell's height by its integer grid coordinate in O(1) rather than scanning `cells` on every query */
+/**
+ * looks up a cell's height by its integer grid coordinate in O(1) rather than scanning `cells` on every query
+ *
+ * @example
+ * ```ts
+ * import { buildHeightIndex, heightAt } from '@datamoc/mw_games/3d';
+ *
+ * const heights = buildHeightIndex([
+ * 	{ x: 0, y: 0 },
+ * 	{ x: 1, y: 0, height: 2 },
+ * ]);
+ * console.log(heightAt(heights, 'square', 1.2, 0.1)); // 2
+ * ```
+ */
 export function buildHeightIndex(cells: readonly GridCell3D[]): Map<string, number> {
 	const index = new Map<string, number>();
 	for (const cell of cells) index.set(cellKey(cell.x, cell.y), cell.height ?? 0);
@@ -32,6 +45,13 @@ function cellKey(x: number, y: number): string {
  * Nearest-cell rounding, not an exact point-in-hexagon test for the hex shape: consistent
  * with `rpg.Collision`'s own choice of simple axis sweeps over a full polygon solver, since
  * every tile a capsule actually stands on is far larger than the rounding error near an edge.
+ *
+ * @example
+ * ```ts
+ * import { cellAt } from '@datamoc/mw_games/3d';
+ *
+ * console.log(cellAt('square', 3.4, 1.6, 2)); // { x: 2, y: 1 }
+ * ```
  */
 export function cellAt(shape: GridShape3D, x: number, z: number, tileSize = 1): { x: number; y: number } {
 	if (!(tileSize > 0)) throw new Error('3D grid collision tileSize must be positive');
@@ -42,7 +62,17 @@ export function cellAt(shape: GridShape3D, x: number, z: number, tileSize = 1): 
 	return { x: cellX, y: cellY };
 }
 
-/** a cell's own `height` (grid-height units, before `heightStep` scaling), or `null` for a world position with no cell at all - a hole in the grid, blocking just like a wall would */
+/**
+ * a cell's own `height` (grid-height units, before `heightStep` scaling), or `null` for a world position with no cell at all - a hole in the grid, blocking just like a wall would
+ *
+ * @example
+ * ```ts
+ * import { buildHeightIndex, heightAt } from '@datamoc/mw_games/3d';
+ *
+ * const heights = buildHeightIndex([{ x: 0, y: 0, height: 1 }]);
+ * console.log(heightAt(heights, 'square', 0, 0), heightAt(heights, 'square', 5, 5)); // 1 null
+ * ```
+ */
 export function heightAt(
 	index: ReadonlyMap<string, number>,
 	shape: GridShape3D,
@@ -85,6 +115,20 @@ export interface CapsuleGridMoveResult {
  * across both `createTileGrid3D` shapes without hex-edge-specific geometry: exactly the
  * `resolveAabbAgainstTiles`-style trade-off `rpg.Collision`'s own doc comment already makes,
  * scaled to a grid that is not always axis-aligned.
+ *
+ * @example
+ * ```ts
+ * import { buildHeightIndex, resolveCapsuleAgainstGrid } from '@datamoc/mw_games/3d';
+ *
+ * const heights = buildHeightIndex([
+ * 	{ x: 0, y: 0 },
+ * 	{ x: 1, y: 0 },
+ * 	{ x: 2, y: 0, height: 3 },
+ * ]);
+ * //a step of 3 levels is more than the capsule can climb, so it stops on the cell before the column
+ * const moved = resolveCapsuleAgainstGrid({ x: 0, z: 0 }, { x: 2, z: 0 }, { shape: 'square', heights, maxStepUp: 1 });
+ * console.log(moved.blocked, moved.x < 1.5); // true true
+ * ```
  */
 export function resolveCapsuleAgainstGrid(
 	from: { x: number; z: number },

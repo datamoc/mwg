@@ -219,6 +219,12 @@ export function ratioColour(ratio: number): number {
 	return (red << 16) | (green << 8) | 70;
 }
 
+/** a crossing that got over beats the saved best when it costs less, or costs the same and sags less */
+export function isBetter(result: CrossingResult, best?: Pick<CrossingResult, 'cost' | 'sag'>): boolean {
+	if (!result.crossed) return false;
+	return !best || result.cost < best.cost || (result.cost === best.cost && result.sag < best.sag);
+}
+
 /** one line for the player: how the crossing went */
 export function describe(level: Level, result: CrossingResult): string {
 	const load = `peak load ${Math.round(result.peakLoad * 100)}%`;

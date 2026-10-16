@@ -1,6 +1,12 @@
 import { scheduleMidi, type MidiFile } from './Midi.ts';
-import { MAX_SAMPLE_FRAMES, MAX_SAMPLE_RATE, MIN_SAMPLE_RATE, webAudioSampleDecoder } from './SampleDecoder.ts';
-import type { SoundFontSampleDecoder } from './SampleDecoder.ts';
+import {
+	MAX_SAMPLE_FRAMES,
+	MAX_SAMPLE_RATE,
+	MAX_TOTAL_FRAMES,
+	MIN_SAMPLE_RATE,
+	webAudioSampleDecoder,
+} from './SampleDecoder.ts';
+import type { SoundFontLimits, SoundFontSampleDecoder } from './SampleDecoder.ts';
 
 /**
  * A SoundFont 2 reader: presets to instruments to sample zones, enough to play
@@ -679,16 +685,14 @@ function distinctPresets(tables: SoundTables): number[] {
 	return out;
 }
 
-/** decoded frames one font may hold in all: 256 MB of 16-bit audio */
-const MAX_DECODED_FRAMES = 1 << 27;
-
 /**
  * Decodes a SoundFont 3 into a plain SoundFont 2: every Ogg Vorbis sample a preset reaches goes
  * through `decode` (one call per sample, mono 16-bit frames at the rate the header states) into
  * the sample chunk, and the loop points a SoundFont 3 states relative to its sample become the
  * absolute ones SoundFont 2 uses. A SoundFont 2 comes back unchanged and `decode` is never called.
  * The result feeds everything that takes SoundFont 2 bytes, `renderMidiToBufferAsync` included.
- * A loop that ends past the decoded frames is cut to them.
+ * A loop that ends past the decoded frames is cut to them. `limits` raises or lowers what a sample and
+ * the whole font may decode to (see `SoundFontLimits`).
  *
  * @example
  * ```ts
@@ -703,7 +707,10 @@ const MAX_DECODED_FRAMES = 1 << 27;
 export async function decodeSoundFont(
 	data: ArrayBuffer | ArrayBufferView,
 	decode: SoundFontSampleDecoder,
+	limits: SoundFontLimits = {},
 ): Promise<ArrayBuffer> {
+	const maxSample = limits.sampleFrames ?? MAX_SAMPLE_FRAMES;
+	const maxTotal = limits.totalFrames ?? MAX_TOTAL_FRAMES;
 	const bytes = toBytes(data);
 	const tables = readTables(bytes);
 	if (!tables.compressed) return bytes.slice().buffer as ArrayBuffer;
@@ -727,9 +734,9 @@ export async function decodeSoundFont(
 			}
 			const pcm = await decode(reachable.smplBytes.subarray(sample.start, sample.end), sample.rate);
 			//what a decoder returns is bounded too: a few bytes of Ogg can name a very long sound
-			if (pcm.length > MAX_SAMPLE_FRAMES || total + pcm.length > MAX_DECODED_FRAMES) {
+			if (pcm.length > maxSample || total + pcm.length > maxTotal) {
 				throw new Error(
-					'the decoded sample data is larger than a SoundFont may hold: subset the font before shipping it',
+					'the decoded sample data is larger than the limits allow: subset the font, or raise `limits`',
 				);
 			}
 			at = { start: total, length: pcm.length };
@@ -781,9 +788,10 @@ export async function decodeSoundFont(
  */
 export async function loadSoundFont(
 	data: ArrayBuffer | ArrayBufferView,
-	options: SoundFontOptions & { decode?: SoundFontSampleDecoder } = {},
+	options: SoundFontOptions & { decode?: SoundFontSampleDecoder; limits?: SoundFontLimits } = {},
 ): Promise<SoundFont> {
-	return parseSoundFont(await decodeSoundFont(data, options.decode ?? webAudioSampleDecoder()), options);
+	const decode = options.decode ?? webAudioSampleDecoder(undefined, options.limits);
+	return parseSoundFont(await decodeSoundFont(data, decode, options.limits), options);
 }
 
 /**

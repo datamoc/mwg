@@ -4,6 +4,14 @@
 	"default": "microgm-opt",
 	"bundled": [
 		{
+			"name": "microgm-essential",
+			"file": "data/microgm-essential.sf2",
+			"licence": "WTFPL",
+			"licenceClass": "permissive",
+			"programs": 6,
+			"fullMB": 0.314384
+		},
+		{
 			"name": "microgm-opt",
 			"file": "data/microgm-opt.sf2",
 			"licence": "WTFPL",

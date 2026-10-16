@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { applyMove, legalMoves, positionKey, sq, squareName, startingChess } from '../src/board/chess.ts';
-import { parseUciMove } from '../src/board/openings.ts';
+//the framework's own modules: the TypeScript sources inside this repository, the built `dist` inside an
+//installed package, which ships no `src`
+const fromSource = existsSync(new URL('../src/board/chess.ts', import.meta.url));
+const load = (path) => import(fromSource ? `../src/${path}.ts` : `../dist/${path}.js`);
+const { applyMove, legalMoves, positionKey, sq, squareName, startingChess } = await load('board/chess');
+const { parseUciMove } = await load('board/openings');
 
 /**
  * Compiles opening tables (`eco`, `name`, `pgn` TSV rows, one per line after the header)

@@ -35,6 +35,7 @@ const TYPEDOC_DIR = {
 	var: 'variables',
 	type: 'types',
 	enum: 'enums',
+	namespace: 'modules',
 };
 
 /**
@@ -65,14 +66,23 @@ function typedocPage(pages, kind, name, module) {
 	const candidates = (pages.get(name) ?? []).filter((page) => page.dir === dir);
 	if (candidates.length === 0) return null;
 	//a separate entry point (`mwl/presentation`) names its pages after itself
-	const own = candidates.filter((page) => page.entry === module.name.replaceAll('/', '_'));
+	const entry = module.src
+		.replace(/^src\//, '')
+		.replace(/(\/index)?\.ts$/, '')
+		.replaceAll('/', '_');
+	const own = candidates.filter((page) => page.entry === entry);
 	if (own.length > 0) return `${dir}/${own[0].file}`;
 	const root = candidates.filter((page) => page.entry === 'index');
 	if (root.length === 1) return `${dir}/${root[0].file}`;
 	//the same name on the root barrel in two namespaces: the module's own namespace wins
 	const plain = (text) => text.toLowerCase().replace(/[^a-z0-9]/g, '');
 	const space = root.find((page) => page.namespace && plain(page.namespace) === plain(module.name.split('/')[0]));
-	return space ? `${dir}/${space.file}` : null;
+	if (space) return `${dir}/${space.file}`;
+	//a module the root barrel flattens (two-d/stage) has the one page that sits in no namespace
+	const flat = root.filter((page) => !page.namespace);
+	if (flat.length === 1) return `${dir}/${flat[0].file}`;
+	//a module re-exporting another entry's symbol (`assets` and `assets/binary`) points at the only page
+	return candidates.length === 1 ? `${dir}/${candidates[0].file}` : null;
 }
 
 const read = (file) => readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
@@ -190,7 +200,14 @@ function createExportReader() {
 				const source = from ? { file: from, name: orig.trim() } : imports.get(orig.trim());
 				if (from || source) {
 					const target = source ? exportsOf(source.file).get(source.name) : null;
-					if (target) table.set(name, target);
+					//an alias (`Hook as BattleHook`) has no typedoc page of its own: remember what it points at
+					if (target)
+						table.set(
+							name,
+							name === orig.trim()
+								? target
+								: { ...target, declaredName: target.declaredName ?? orig.trim() },
+						);
 				} else if (declared.has(orig.trim())) table.set(name, declared.get(orig.trim()));
 			}
 		}
@@ -400,7 +417,7 @@ export function buildExampleIndex({ root = defaultRoot, apiDir = null, reference
 			const code = exampleOf(entry.doc);
 			if (!code) continue;
 			const lines = code.split('\n');
-			const apiPage = typedocPage(pages, entry.kind, name, module);
+			const apiPage = typedocPage(pages, entry.kind, entry.declaredName ?? name, module);
 			symbols.push({
 				name,
 				kind: entry.kind,

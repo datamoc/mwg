@@ -99,3 +99,13 @@ test('playTone hands the generated URI to create() and plays the result', () => 
 	assert.equal(playable, fake);
 	assert.equal(fake.playCount, 1);
 });
+
+test('sawtooth ramps up through a cycle and then drops, unlike the triangle', () => {
+	const options = { frequency: 100, duration: 0.02, sampleRate: 4000, decay: 0 } as const;
+	const saw = decodeWav(synthesizeTone({ ...options, waveform: 'sawtooth' })).samples;
+	const triangle = decodeWav(synthesizeTone({ ...options, waveform: 'triangle' })).samples;
+	assert.notDeepEqual([...saw], [...triangle]);
+	//one cycle is 40 samples: rising for 39 of them, then a single drop back to the bottom
+	for (let i = 1; i < 40; i++) assert.ok(saw[i] > saw[i - 1], `sample ${i} should rise`);
+	assert.ok(saw[40] < saw[39] - 1, 'the wrap is a hard drop');
+});

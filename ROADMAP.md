@@ -23,6 +23,11 @@ checklist below.
 
 ### Open items
 
+Priority review, 2026-10-16 (Pontifex evening feedback): complete the concrete consumer
+gaps in music playback, asset weight guards, XPBD queries and MWL data conversion before
+revisiting parked rendering or worker proposals. The existing GPU rendering paths remain
+unchanged. Consumer migrations still belong to the games themselves.
+
 Priority review, 2026-10-02: keep the existing order. Item 395 shipped with courier and
 maze chase workloads with headless training and browser frame-time checks, meeting its
 initial scope; its record, along with the run-persistence and replay-AI pair 396-397 (both

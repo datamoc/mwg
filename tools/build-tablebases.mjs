@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { huffEncode } from '../src/board/tablebase.ts';
-import { spawn } from '../src/threads/spawn.ts';
+//the framework's own modules: the TypeScript sources inside this repository, the built `dist` inside an
+//installed package, which ships no `src`
+const fromSource = existsSync(new URL('../src/board/tablebase.ts', import.meta.url));
+const load = (path) => import(fromSource ? `../src/${path}.ts` : `../dist/${path}.js`);
+const { huffEncode } = await load('board/tablebase');
+const { spawn } = await load('threads/spawn');
 
 /**
  * Generates pawnless endgame tablebases (WDL plus distance-to-mate) and ships

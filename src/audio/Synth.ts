@@ -7,7 +7,7 @@ import { Sound, type SoundOptions } from './Sound.ts';
  * sounds, exposed here as something a running game can call itself to generate a tone or a
  * procedural SFX on the fly, rather than only ever play a pre-baked clip.
  */
-export type Waveform = 'square' | 'triangle' | 'sine' | 'noise';
+export type Waveform = 'square' | 'triangle' | 'sine' | 'sawtooth' | 'noise';
 
 export interface ToneOptions {
 	waveform?: Waveform;
@@ -106,6 +106,10 @@ function waveSample(waveform: Waveform, phase: number, seed: number, index: numb
 			return Math.sin(phase);
 		case 'square':
 			return Math.sin(phase) >= 0 ? 1 : -1;
+		case 'sawtooth': {
+			const cycles = phase / (2 * Math.PI);
+			return 2 * (cycles - Math.floor(cycles)) - 1;
+		}
 		case 'triangle': {
 			const cycles = phase / (2 * Math.PI);
 			const f = cycles - Math.floor(cycles);

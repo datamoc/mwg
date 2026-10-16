@@ -26,7 +26,13 @@ export function initFiles(name) {
 					private: true,
 					version: '0.0.0',
 					type: 'module',
-					scripts: { dev: 'vite', build: 'vite build', check: 'tsc --noEmit' },
+					scripts: {
+						dev: 'vite',
+						build: 'vite build',
+						check: 'tsc --noEmit',
+						test: 'node --test',
+						'hooks:install': 'git config core.hooksPath .githooks',
+					},
 					dependencies: { '@datamoc/mw_games': `^${PACKAGE_VERSION}`, 'pixi.js': '^8.20.1' },
 					devDependencies: { typescript: '^7.0.2', vite: '^8.2.2' },
 				},
@@ -101,7 +107,9 @@ export function initFiles(name) {
 			'',
 		].join('\n'),
 		'assets/.gitkeep': '',
-		'README.md': `# ${name}\n\n\`npm install\`, then \`npm run dev\` to play it while you edit, \`npm run build\` to write \`dist/\`.\nOpen \`dist/index.html\` (or \`dist/standalone.html\`) by double-clicking it: no server needed.\n\nPut images and sounds under \`assets/\`; the build compiles them into the page. An \`assets/credits.json\`\n(\`[{ "name": "...", "license": "...", "author": "...", "url": "..." }]\`) becomes \`dist/CREDITS.txt\`.\n`,
+		'.gitignore': 'node_modules/\ndist/\n.opencode/\n.coord-session\n',
+		'.githooks/pre-commit': '#!/bin/sh\nset -e\nnpm run check\nnpm test\n',
+		'README.md': `# ${name}\n\n\`npm install\`, then \`npm run dev\` to play it while you edit, \`npm run build\` to write \`dist/\`.\nOpen \`dist/index.html\` (or \`dist/standalone.html\`) by double-clicking it: no server needed.\n\nPut images and sounds under \`assets/\`; the build compiles them into the page. An \`assets/credits.json\`\n(\`[{ "name": "...", "license": "...", "author": "...", "url": "..." }]\`) becomes \`dist/CREDITS.txt\`.\n\nAfter \`git init\`, run \`npm run hooks:install\` to enable the included pre-commit hook.\nIt runs \`npm run check\` and \`npm test\`; add your tests under \`tests/\`.\n`,
 	};
 }
 
@@ -121,7 +129,7 @@ export function initProject(folder) {
 	)) {
 		const file = join(target, path);
 		mkdirSync(dirname(file), { recursive: true });
-		writeFileSync(file, content, 'utf8');
+		writeFileSync(file, content, { encoding: 'utf8', mode: path === '.githooks/pre-commit' ? 0o755 : 0o644 });
 		written.push(path);
 	}
 	return { folder: target, files: written };

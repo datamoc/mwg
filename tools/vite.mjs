@@ -80,7 +80,15 @@ export function mwgPage(options = {}) {
 			const { assets: _assets, sbom = true, ...emitOptions } = options;
 			const source = assets ? resolve(root, assets) : undefined;
 			const dist = resolve(root, outDir);
-			await emitPage({ ...emitOptions, dist, assets: source && existsSync(source) ? source : undefined });
+			const page = await emitPage({
+				...emitOptions,
+				dist,
+				assets: source && existsSync(source) ? source : undefined,
+			});
+			if (page.unusedAssets.length > 0)
+				console.warn(
+					`mwg-page: ${page.unusedAssets.length} embedded asset(s) are never named in the game code: ${page.unusedAssets.join(', ')}`,
+				);
 			if (sbom) {
 				const manifest = join(root, 'package.json');
 				const packageJson = existsSync(manifest)

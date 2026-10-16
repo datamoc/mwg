@@ -58,7 +58,7 @@ export function parseTableColumns(value: string): MwlTableColumn[] {
 export interface MwlTagSchema {
 	/** fixed attributes, name -> value type */
 	readonly attributes?: Readonly<Record<string, MwlAttributeType>>;
-	/** attributes required on every occurrence of this tag */
+	/** attributes required on every occurrence of this tag; every other declared attribute is optional, and there is no `'number?'` type */
 	readonly required?: readonly string[];
 	/**
 	 * When set, any attribute name is accepted on this tag and every value is

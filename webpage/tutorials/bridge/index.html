@@ -356,7 +356,7 @@ private recorder = new Recorder(this.actions, this.ticks);</code></pre>
 					<pre class="from-source"><code>const saves = new SaveSystem&lt;{ cost: number; sag: number }&gt;({ namespace: 'bridge', version: 1 });</code></pre>
 					<pre class="from-source"><code>this.runs.push(result);
 const best = saves.load(`best-${this.levelIndex}`)?.state;
-if (result.crossed &amp;&amp; (!best || result.cost &lt; best.cost)) saves.save(`best-${this.levelIndex}`, result);
+if (isBetter(result, best)) saves.save(`best-${this.levelIndex}`, result);
 this.say(describe(this.level, result));</code></pre>
 					<p>
 						The state is plain JSON. <code>load</code> returns <code>null</code> for a missing

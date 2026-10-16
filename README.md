@@ -8,6 +8,10 @@ events, quests, stats and turn order underneath are the same either way.
 Licensed under the [MPL-2.0](LICENSE): games built with `mwg` carry no licence obligation
 of their own; improvements to `mwg`'s own files are shared back.
 
+The canonical npm package is `@datamoc/mw_games`; use that name for installation, imports,
+tools and bundled data such as `data/microgm-opt.sf2`. `@datamoc/mwg` remains a compatible
+re-export package for existing projects. The recipes here consistently use the canonical name.
+
 **[Live examples and API docs](https://datamoc.github.io/mwg/)**: every example below,
 playable in the browser with no download, plus the generated API reference.
 
@@ -15,7 +19,7 @@ playable in the browser with no download, plus the generated API reference.
 planning or porting a demanding game with mwg, with links to the [mwg reference](https://github.com/datamoc/mwg/blob/main/REFERENCE.md)
 and the [mwg Pixel Dungeon study](https://datamoc.github.io/mwg-pixel-dungeon/).
 
-> **Status: pre-alpha (v0.36).** Every module in the shared floor below, plus optional
+> **Status: pre-alpha.** Every module in the shared floor below, plus optional
 > 3D, mobile (Capacitor) and desktop (WebView2) packaging, is built and tested - see
 > [ROADMAP.md](https://github.com/datamoc/mwg/blob/main/ROADMAP.md) for open work, and
 > [CLOSED.md](https://github.com/datamoc/mwg/blob/main/CLOSED.md) for the full, numbered shipped history.
@@ -183,6 +187,63 @@ rejects a tampered slot rather than loading it, item 372), but no checksum can m
 private or trustworthy, since the page that rewrites a save can recompute any checksum too. So
 never put a secret in a save or in settings (an account token, a password, a licence key), and
 treat a save as the player's own editable file, which it is.
+
+## Loading assets and input
+
+`await load(['vehicles/car.svg'], { resolution: 2 })` rasterizes SVG assets at twice
+their logical resolution, keeping them sharp when a camera zooms in. Import `load` from
+`@datamoc/mw_games/assets`. `loadSvgParts(path, { resolution: 2 })` loads top-level SVG
+groups as textures in their authored stacking order.
+
+Input events live under the `Input` namespace: import `{ Input }` from
+`@datamoc/mw_games/core` and subscribe with `Input.onAction.add(...)`. `onAction` is not a
+direct core export. `Input.attachPointer` supplies pointer and drag events for mouse and touch.
+
+## Audio
+
+Use `AudioBus` for one playback API across ordinary audio and MIDI assets. Its default
+loader reads embedded assets, detects MIDI by its header and renders it on a worker.
+`playBgm`/`playBgs` loop, while `playMe`/`playSe` play once; all take the same
+`{ name, volume, pitch, pan }` fields (volume 0-100, pitch 100 unchanged, pan -100 to 100).
+Pass `load: createAudioLoader(context, { midi: { soundFontBytes, missingProgram: 'synth' } })`
+to use a SoundFont. `Sound` remains useful for pooled HTML audio effects and `MusicPlayer`
+for a seekable jukebox.
+
+`Sound` pools short effects. `sound.play(0.7, 1.1)` sets gain and pitch for that play;
+`synthesizeSound({ waveform: 'sawtooth', frequency: 110, duration: 0.2 })` makes a pooled
+effect without an asset file. `Sound.plays` counts started playback attempts for browser tests.
+
+For MIDI music, copy the supplied `data/microgm-opt.sf2` from the installed package into
+your assets folder alongside the `.mid` files. `mwgPage({ assets: 'assets' })` automatically
+reduces the embedded SoundFont to the programs those MIDI files use. Load both through
+`loadBinary`, then render once on a worker and play the resulting buffer:
+
+For a smaller starting bank, `data/microgm-essential.sf2` supplies piano, guitar, violin,
+trumpet, flute and standard drums in 314 KB. Use it instead of the full bank below, with
+`missingProgram: 'synth'` for the remaining instruments. Both banks retain their WTFPL licence.
+
+```ts
+import { loadBinary, getBinary } from '@datamoc/mw_games/assets';
+import { MusicPlayer, renderMidiToBufferAsync } from '@datamoc/mw_games/audio';
+
+const player = new MusicPlayer(new AudioContext(), { volume: 0.7 });
+await loadBinary(['music/theme.mid', 'soundfonts/microgm-opt.sf2']);
+player.load(await renderMidiToBufferAsync(getBinary('music/theme.mid'), {
+  soundFontBytes: getBinary('soundfonts/microgm-opt.sf2'),
+  missingProgram: 'synth',
+}));
+player.play({ repeat: true });
+```
+
+Start playback from a player gesture. Call `player.update()` each frame to dispatch
+`onEnded` for a nonrepeating track; that signal lets the game choose its next track.
+`pause()`, `resume()`, `position()` and `seek(seconds)` share the same playhead.
+`toAudioBuffer(context, rendered)` also converts a render for direct `Channel` use.
+`missingProgram: 'synth'` voices instruments absent from the font with the built-in synth.
+
+To catch page growth, set `mwgPage({ maxPageBytes: 1_500_000 })`. Its build report lists
+embedded paths not found literally in the generated game script as potentially unused;
+paths assembled at runtime need manual review. `assetFiles` selects exact asset paths to embed.
 
 ## Capability spec
 

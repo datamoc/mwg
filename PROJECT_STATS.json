@@ -4,8 +4,8 @@
 	"version": "0.42.0",
 	"releaseDate": "2026-10-16",
 	"source": {
-		"files": 358,
-		"lines": 68166,
+		"files": 361,
+		"lines": 68749,
 		"modules": 20,
 		"breakdown": [
 			{
@@ -15,8 +15,8 @@
 			},
 			{
 				"name": "mwl",
-				"files": 23,
-				"lines": 7812
+				"files": 24,
+				"lines": 7924
 			},
 			{
 				"name": "core",
@@ -24,14 +24,14 @@
 				"lines": 7480
 			},
 			{
+				"name": "audio",
+				"files": 24,
+				"lines": 5465
+			},
+			{
 				"name": "board",
 				"files": 12,
 				"lines": 5355
-			},
-			{
-				"name": "audio",
-				"files": 22,
-				"lines": 5174
 			},
 			{
 				"name": "roguelike",
@@ -66,7 +66,7 @@
 			{
 				"name": "physics",
 				"files": 6,
-				"lines": 1270
+				"lines": 1362
 			},
 			{
 				"name": "battle",
@@ -81,7 +81,7 @@
 			{
 				"name": "three-d",
 				"files": 9,
-				"lines": 784
+				"lines": 851
 			},
 			{
 				"name": "world",
@@ -101,7 +101,7 @@
 			{
 				"name": "testing",
 				"files": 2,
-				"lines": 219
+				"lines": 240
 			},
 			{
 				"name": "headless",
@@ -111,13 +111,13 @@
 		]
 	},
 	"tests": {
-		"files": 335,
-		"lines": 46054,
-		"cases": 3066
+		"files": 339,
+		"lines": 46589,
+		"cases": 3092
 	},
 	"tools": {
-		"files": 62,
-		"lines": 12962
+		"files": 65,
+		"lines": 13199
 	},
 	"examples": {
 		"count": 28,
@@ -159,12 +159,12 @@
 		"percent": 96
 	},
 	"api": {
-		"declarationFiles": 358
+		"declarationFiles": 361
 	},
 	"bundle": {
-		"globalRaw": 1297776,
-		"globalGzip": 388314,
-		"distRaw": 4744025
+		"globalRaw": 1301880,
+		"globalGzip": 389485,
+		"distRaw": 4779503
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

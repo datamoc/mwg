@@ -17,9 +17,11 @@ async function playwright() {
 /**
  * The browser to drive: the platform's usual Chrome (or, on Windows, Edge), then a Chromium that
  * Playwright itself installed (`PLAYWRIGHT_BROWSERS_PATH`, common in CI images and containers),
- * then whatever is on PATH. `CHROME_PATH` overrides all of them in `launchChrome`.
+ * then whatever is on PATH. `CHROME_PATH` or `CHROME` overrides all of them.
  */
 export async function findChrome() {
+	const override = process.env.CHROME_PATH || process.env.CHROME;
+	if (override) return override;
 	const candidates =
 		process.platform === 'win32'
 			? [
@@ -93,7 +95,7 @@ async function playwrightChromium() {
  * page setup and assertions; this is the launch they all had in common.
  */
 export async function launchChrome({ argsEnv = 'MWG_BENCHMARK_CHROME_ARGS' } = {}) {
-	const executablePath = process.env.CHROME_PATH ?? (await findChrome());
+	const executablePath = await findChrome();
 	const extraArgs = (process.env[argsEnv] ?? '').split(' ').filter(Boolean);
 	const { chromium } = await playwright();
 	return chromium.launch({

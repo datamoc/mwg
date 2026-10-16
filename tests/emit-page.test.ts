@@ -13,6 +13,37 @@ function scratch(): string {
 	return mkdtempSync(join(tmpdir(), 'mwg-emit-'));
 }
 
+test('page budget counts the shipped scripts and reports potentially unused embedded paths', async () => {
+	const dir = scratch();
+	try {
+		const dist = join(dir, 'dist');
+		const assets = join(dir, 'assets');
+		mkdirSync(dist);
+		mkdirSync(assets);
+		writeFileSync(join(assets, 'used.txt'), 'used');
+		writeFileSync(join(assets, 'unused.txt'), 'unused');
+		writeFileSync(join(dist, 'game.js'), 'console.log("used.txt");');
+		const emit = (maxPageBytes?: number, singleFile = false) => {
+			writeFileSync(join(dist, 'index.html'), VITE_HTML);
+			return emitPage({ dist, assets, compress: false, maxPageBytes, singleFile });
+		};
+		const result = await emit();
+		assert.deepEqual(result.unusedAssets, ['unused.txt']);
+		const expected = ['index.html', 'game.js', 'assets/assets.js'].reduce(
+			(bytes, file) => bytes + readFileSync(join(dist, file)).byteLength,
+			0,
+		);
+		assert.equal(result.pageBytes, expected);
+		assert.equal((await emit(expected)).pageBytes, expected);
+		await assert.rejects(emit(expected - 1), /over the .* budget.*unused.txt/);
+		const single = await emit(undefined, true);
+		assert.equal(single.pageBytes, readFileSync(join(dist, 'standalone.html')).byteLength);
+		await assert.rejects(emit(single.pageBytes - 1, true), /maxPageBytes/);
+	} finally {
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
 test('emitPage compiles assets and puts their scripts before a classic, deferred entry', async () => {
 	const dir = scratch();
 	try {

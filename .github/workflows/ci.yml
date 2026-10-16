@@ -203,6 +203,23 @@ jobs:
           path: benchmark-results/package-smoke/
           if-no-files-found: warn
 
+  # `engines.node` claims the oldest Node the package supports, and nothing else runs on it: the suite
+  # strips types, which Node 20 cannot, so this builds the library on the floor version and runs every
+  # shipped `mwg-*` bin from an installed tarball (no src, no devDependencies) with --help.
+  node-floor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '20.19.0'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run bins:smoke
+
   # Every example page, not just the ones the benchmarks and the smoke happen to name: a
   # broken vite config or an emit-page/compile-resources regression in any other example
   # would otherwise ship unnoticed, since `npm run check` only typechecks them.

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFile, writeFile, rm, stat } from 'node:fs/promises';
+import { readFile, readdir, writeFile, rm, stat } from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
 import { join, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -81,6 +81,7 @@ export async function emitPage({
 	soundFont = true,
 	soundFontUsage,
 	csp = true,
+	maxPageBytes,
 }) {
 	if (!dist) throw new Error('emitPage needs the dist folder of a vite build');
 	if (!assets && assetFiles?.length) throw new Error(`unknown asset file ${assetFiles[0]}: no assets folder`);
@@ -97,7 +98,7 @@ export async function emitPage({
 				soundFont,
 				soundFontUsage,
 			})
-		: { groups: [], rawBytes: 0, embeddedBytes: 0, webpConverted: 0, svgOptimised: 0, soundFonts: [] };
+		: { groups: [], keys: [], rawBytes: 0, embeddedBytes: 0, webpConverted: 0, svgOptimised: 0, soundFonts: [] };
 
 	const html = await readFile(join(dist, 'index.html'), 'utf8');
 	const classic = toClassicScript(html);
@@ -124,7 +125,38 @@ export async function emitPage({
 		const standalone = await readFile(single.path, 'utf8');
 		await writeFile(single.path, withContentSecurityPolicy(standalone, { ...cspOptions, scripts }), 'utf8');
 	}
-	return { dist, entry: classic.src, ...compiled, compressed, single };
+	const unusedAssets = await unreferencedAssets(dist, classic.src, compiled.keys);
+	const pageBytes = await pageWeight(dist, single, compiled.groups);
+	if (maxPageBytes !== undefined && pageBytes > maxPageBytes) {
+		throw new Error(
+			`the page weighs ${kb(pageBytes)}, over the ${kb(maxPageBytes)} budget (maxPageBytes)` +
+				(unusedAssets.length
+					? `; ${unusedAssets.length} embedded asset(s) are never named in the game code: ${unusedAssets.slice(0, 5).join(', ')}`
+					: ''),
+		);
+	}
+	return { dist, entry: classic.src, ...compiled, compressed, single, unusedAssets, pageBytes };
+}
+
+/** the embedded assets whose path appears nowhere in the game's script: a hint (a path built at run time is not seen), never an error */
+async function unreferencedAssets(dist, entry, keys) {
+	if (keys.length === 0) return [];
+	const code = await readFile(join(dist, entry), 'utf8').catch(() => '');
+	return keys.filter((key) => !code.includes(key)).sort();
+}
+
+/** the bytes a player downloads to open the page: the single file when there is one, else the page, the game script and the asset scripts */
+async function pageWeight(dist, single, groups) {
+	const files = single
+		? [single.path]
+		: [
+				join(dist, 'index.html'),
+				...(await readdir(dist)).filter((name) => name.endsWith('.js')).map((name) => join(dist, name)),
+				...groups.map((g) => join(dist, 'assets', `${g.name}.js`)),
+			];
+	let total = 0;
+	for (const file of files) total += (await stat(file)).size;
+	return total;
 }
 
 const kb = (n) => (n / 1024).toFixed(1) + ' KB';
@@ -170,6 +202,7 @@ async function main(argv) {
 		svgo: argv.includes('--svgo'),
 		soundFont: !argv.includes('--no-soundfont-subset'),
 		soundFontUsage,
+		maxPageBytes: value('max-page-bytes') ? Number(value('max-page-bytes')) : undefined,
 		csp: argv.includes('--no-csp')
 			? false
 			: { connect: argv.filter((a) => a.startsWith('--connect=')).map((a) => a.slice('--connect='.length)) },
@@ -186,6 +219,13 @@ async function main(argv) {
 		);
 	}
 	if (argv.includes('--svgo')) console.log(`  ${result.svgOptimised} SVG(s) optimised`);
+	console.log(`  page weight ${kb(result.pageBytes)}`);
+	if (result.unusedAssets.length > 0) {
+		console.log(
+			`  warning: ${result.unusedAssets.length} embedded asset(s) are never named in the game code, ` +
+				`so they only add weight (a path built at run time is not seen): ${result.unusedAssets.join(', ')}`,
+		);
+	}
 	for (const font of result.soundFonts ?? []) {
 		console.log(
 			font.programs === null

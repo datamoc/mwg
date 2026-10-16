@@ -28,6 +28,8 @@ export interface EmitPageOptions {
 	soundFontUsage?: readonly SoundFontUsage[];
 	/** the page's Content-Security-Policy: on by default, `false` to leave it out */
 	csp?: boolean | CspOptions;
+	/** fails the build when the page a player downloads (the standalone file, else the page and its scripts) is larger than this many bytes */
+	maxPageBytes?: number;
 }
 
 export interface CspOptions {
@@ -49,6 +51,10 @@ export interface EmitPageResult {
 	soundFonts: SoundFontEmbed[];
 	compressed: CompressRow[] | null;
 	single: SingleFileResult | null;
+	/** embedded assets whose path is never named in the game's script: a hint, since a path built at run time is not seen */
+	unusedAssets: string[];
+	/** bytes a player downloads to open the page */
+	pageBytes: number;
 }
 
 /** finishes a vite build as a page that opens from `file://` */

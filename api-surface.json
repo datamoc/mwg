@@ -5148,6 +5148,12 @@
 		"declaringModule": "audio/Positional.d.ts"
 	},
 	{
+		"name": "AudioLoaderOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioLoader.d.ts"
+	},
+	{
 		"name": "audioPan",
 		"kind": "function",
 		"subpath": "./audio",
@@ -5224,6 +5230,12 @@
 		"kind": "function",
 		"subpath": "./audio",
 		"declaringModule": "audio/Playable.d.ts"
+	},
+	{
+		"name": "createAudioLoader",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioLoader.d.ts"
 	},
 	{
 		"name": "decodeSoundFont",
@@ -5454,6 +5466,24 @@
 		"declaringModule": "audio/Music.d.ts"
 	},
 	{
+		"name": "MusicPlayer",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/MusicPlayer.d.ts"
+	},
+	{
+		"name": "MusicPlayerOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/MusicPlayer.d.ts"
+	},
+	{
+		"name": "MusicPlayOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/MusicPlayer.d.ts"
+	},
+	{
 		"name": "noteToFrequency",
 		"kind": "function",
 		"subpath": "./audio",
@@ -5574,6 +5604,12 @@
 		"declaringModule": "audio/SoundFont.d.ts"
 	},
 	{
+		"name": "SoundFontLimits",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/SampleDecoder.d.ts"
+	},
+	{
 		"name": "SoundFontOptions",
 		"kind": "interface",
 		"subpath": "./audio",
@@ -5644,6 +5680,12 @@
 		"kind": "function",
 		"subpath": "./audio",
 		"declaringModule": "audio/Synth.d.ts"
+	},
+	{
+		"name": "toAudioBuffer",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiRender.d.ts"
 	},
 	{
 		"name": "ToneOptions",
@@ -8910,6 +8952,12 @@
 		"declaringModule": "mwl/grammar.d.ts"
 	},
 	{
+		"name": "MwlObject",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/objects.d.ts"
+	},
+	{
 		"name": "MwlPersistenceOptions",
 		"kind": "interface",
 		"subpath": "./mwl",
@@ -9088,6 +9136,12 @@
 		"kind": "interface",
 		"subpath": "./mwl",
 		"declaringModule": "mwl/runtime.d.ts"
+	},
+	{
+		"name": "nodesToObjects",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/objects.d.ts"
 	},
 	{
 		"name": "parse",
@@ -10984,6 +11038,12 @@
 		"kind": "function",
 		"subpath": "./testing",
 		"declaringModule": "testing/SceneControls.d.ts"
+	},
+	{
+		"name": "exposeForTests",
+		"kind": "function",
+		"subpath": "./testing",
+		"declaringModule": "testing/index.d.ts"
 	},
 	{
 		"name": "fakeAudio",

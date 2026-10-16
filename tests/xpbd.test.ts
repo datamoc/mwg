@@ -165,3 +165,64 @@ test('the documented bridge holds a light cart, breaks under a heavy one, and do
 
 	assert.deepEqual(loadBridge(2), light, 'fixed steps and no randomness: the same bridge, the same result');
 });
+
+test('breakLink breaks a link on demand, fires onBreak once and ignores a broken link', () => {
+	const world = new XpbdWorld<{ material: string }>();
+	const wall = world.addNode({ x: 0, y: 0, fixed: true });
+	const weight = world.addNode({ x: 40, y: 0 });
+	const rope = world.addLink({ a: wall, b: weight, stiffness: 2e4, data: { material: 'wood' } });
+	const events: number[] = [];
+	world.onBreak.add((e) => {
+		events.push(e.link);
+	});
+	assert.equal(world.links[rope].data?.material, 'wood');
+	world.breakLink(rope);
+	world.breakLink(rope);
+	assert.equal(world.links[rope].broken, true);
+	assert.deepEqual(events, [rope]);
+});
+
+test('linksInBox and linksNear find unbroken links geometrically', () => {
+	const world = new XpbdWorld();
+	const a = world.addNode({ x: 0, y: 0, fixed: true });
+	const b = world.addNode({ x: 100, y: 0, fixed: true });
+	const c = world.addNode({ x: 100, y: 100, fixed: true });
+	const flat = world.addLink({ a, b, stiffness: 1e4 });
+	const drop = world.addLink({ a: b, b: c, stiffness: 1e4 });
+	assert.deepEqual(world.linksInBox(40, -5, 60, 5), [flat]);
+	assert.deepEqual(world.linksInBox(90, 40, 110, 60), [drop]);
+	assert.deepEqual(world.linksInBox(200, 200, 300, 300), []);
+	assert.deepEqual(world.linksNear(50, 8, 10), [flat]);
+	assert.deepEqual(world.linksNear(100, 0, 1), [flat, drop]);
+	world.breakLink(flat);
+	assert.deepEqual(world.linksInBox(40, -5, 60, 5), []);
+});
+
+test('hash is equal for two identical runs and differs once the state does', () => {
+	const run = (): XpbdWorld => {
+		const world = new XpbdWorld();
+		const wall = world.addNode({ x: 0, y: 0, fixed: true });
+		const weight = world.addNode({ x: 40, y: 0 });
+		world.addLink({ a: wall, b: weight, stiffness: 2e4 });
+		for (let i = 0; i < 30; i++) world.step();
+		return world;
+	};
+	const first = run();
+	assert.equal(first.hash(), run().hash());
+	assert.deepEqual(first.snapshot(), run().snapshot());
+	first.step();
+	assert.notEqual(first.hash(), run().hash());
+});
+
+test('snapshot and hash include forces queued for the next step and return detached arrays', () => {
+	const world = new XpbdWorld();
+	const node = world.addNode({ x: 0, y: 0 });
+	const before = world.snapshot();
+	const hash = world.hash();
+	world.applyForce(node, 5, -10);
+	assert.notEqual(world.hash(), hash);
+	assert.deepEqual(before.forces, [[0, 0]]);
+	assert.deepEqual(world.snapshot().forces, [[5, -10]]);
+	world.step();
+	assert.deepEqual(world.snapshot().forces, [[0, 0]]);
+});
