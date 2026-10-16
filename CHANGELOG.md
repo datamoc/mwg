@@ -7,6 +7,13 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.42.0] - 2026-10-16
+
+The documentation and asset follow-ups to 0.41.0: SVG minification, a policy for the instruments a
+SoundFont lacks, a playable bridge game with its tutorial, an examples index, and function-level
+examples. One behaviour changes: a drum kit a font lacks now falls back to the standard kit instead of
+a melodic preset.
+
 ### Added
 
 - Function-level `@example`s where the examples used to sit on a file or an interface, so an

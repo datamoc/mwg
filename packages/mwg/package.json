@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mwg",
-	"version": "0.41.0",
+	"version": "0.42.0",
 	"description": "The short name for @datamoc/mw_games: every entry point re-exports the same one there.",
 	"license": "MPL-2.0",
 	"repository": {
@@ -41,7 +41,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@datamoc/mw_games": "0.41.0"
+		"@datamoc/mw_games": "0.42.0"
 	},
 	"exports": {
 		"./mwl/presentation": {
