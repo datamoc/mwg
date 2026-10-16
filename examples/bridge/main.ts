@@ -62,11 +62,16 @@ class BridgeScene extends Scene2D {
 
 	private readonly world = new Container();
 	private readonly gfx = new Shape2D();
+	//the sky is the design rectangle, not an oversized one: the stage's bounds are what a screenshot or a
+	//smoke test extracts, and a software renderer cannot extract a texture thousands of pixels wide
+	private readonly sky = new Shape2D();
 	private labels = {} as Record<'title' | 'budget' | 'message' | 'best', Label>;
 	private message = { text: '', age: 0 };
 	private cableButton!: Button;
 
 	override create(): void {
+		this.sky.rect(0, 0, WIDTH, HEIGHT).fill(0x101820);
+		this.stage.addChild(this.sky);
 		this.stage.addChild(this.world);
 		this.world.addChild(this.gfx);
 		Object.entries({ title: 10, budget: 36, message: 62, best: 88 }).forEach(([key, y]) => {
@@ -241,8 +246,7 @@ class BridgeScene extends Scene2D {
 		const { color } = theme();
 		const left = level.joints[0].x;
 		const right = level.joints[level.deck[level.deck.length - 1]].x;
-		//the sky fills the whole canvas, so the smoke test (and a screenshot) sees a painted scene
-		gfx.clear().rect(-3000, -3000, 6000, 6000).fill(0x101820);
+		gfx.clear();
 		gfx.rect(left, 130, right - left, 70).fill(0x2a5d86);
 		gfx.rect(left - 400, 0, 400, 200)
 			.fill(GROUND)
