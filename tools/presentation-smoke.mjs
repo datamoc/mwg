@@ -4,6 +4,10 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { smokePage } from './browser-smoke.mjs';
 
+//a runner with no GPU draws through software GL, where this page (it times its own frames just before)
+//can take longer than playwright's 30 s default to hand back one frame
+const SCREENSHOT_TIMEOUT_MS = 120_000;
+
 const folder = resolve('benchmark-results/mwl-presentation');
 await mkdir(folder, { recursive: true });
 const report = await smokePage({
@@ -101,7 +105,7 @@ const report = await smokePage({
 			result.p95FrameSubmissionMs < 30,
 			`submitted game frames cost ${result.p95FrameSubmissionMs} ms at p95`,
 		);
-		await page.screenshot({ path: resolve(folder, 'desktop.png') });
+		await page.screenshot({ path: resolve(folder, 'desktop.png'), timeout: SCREENSHOT_TIMEOUT_MS });
 		await page.setViewportSize({ width: 390, height: 700 });
 		await page.waitForTimeout(100);
 		const narrow = await page.evaluate(() => {
@@ -129,9 +133,9 @@ const report = await smokePage({
 				`off-screen vertically: ${JSON.stringify(bounds)}`,
 			);
 		}
-		await page.screenshot({ path: resolve(folder, 'narrow.png') });
+		await page.screenshot({ path: resolve(folder, 'narrow.png'), timeout: SCREENSHOT_TIMEOUT_MS });
 		await page.evaluate(() => window.__MWG_PRESENTATION__.open());
-		await page.screenshot({ path: resolve(folder, 'modal.png') });
+		await page.screenshot({ path: resolve(folder, 'modal.png'), timeout: SCREENSHOT_TIMEOUT_MS });
 		const addPoint = await page.evaluate(() => {
 			const r = window.__MWG_PRESENTATION__.ui.get('bridge/hud/controls/toolbar/add').getBounds();
 			return { x: r.x + r.width / 2, y: r.y + r.height / 2, beams: window.__MWG_PRESENTATION__.snapshot().beams };
