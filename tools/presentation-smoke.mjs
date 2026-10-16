@@ -107,7 +107,16 @@ const report = await smokePage({
 		);
 		await page.screenshot({ path: resolve(folder, 'desktop.png'), timeout: SCREENSHOT_TIMEOUT_MS });
 		await page.setViewportSize({ width: 390, height: 700 });
-		await page.waitForTimeout(100);
+		//wait for the layout to answer the resize rather than for a fixed time: a software renderer can
+		//take several frames to handle it
+		await page.waitForFunction(
+			() => {
+				const ui = window.__MWG_PRESENTATION__.ui;
+				return ui.get('bridge/hud/controls/toolbar/open').y > ui.get('bridge/hud/controls/toolbar/add').y;
+			},
+			undefined,
+			{ timeout: SCREENSHOT_TIMEOUT_MS },
+		);
 		const narrow = await page.evaluate(() => {
 			const ui = window.__MWG_PRESENTATION__.ui;
 			const add = ui.get('bridge/hud/controls/toolbar/add');
