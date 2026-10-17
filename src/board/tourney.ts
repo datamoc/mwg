@@ -1,6 +1,7 @@
 import { bitboardFromChess, bitboardMoves, makeMove } from './bitboard.ts';
 import type { BitboardMove, BitboardState } from './bitboard.ts';
 import type { ChessState } from './chess.ts';
+import { defaultSearchJobs } from './Engine.ts';
 import { spawn } from '../threads/index.ts';
 
 export interface TourneyOptions {
@@ -932,27 +933,6 @@ export function searchTourney(state: ChessState | BitboardState, options: Tourne
 	});
 }
 
-/** hardware threads for a root split, capped: twenty opening moves need lanes, not a storm */
-function defaultTourneyJobs(): number {
-	const scope = globalThis as {
-		navigator?: { hardwareConcurrency?: unknown };
-		process?: { getBuiltinModule?: (id: string) => { availableParallelism?: () => unknown } | undefined };
-	};
-	const concurrent = scope.navigator?.hardwareConcurrency;
-	if (typeof concurrent === 'number' && Number.isInteger(concurrent) && concurrent > 0) {
-		return Math.min(concurrent, 8);
-	}
-	try {
-		const parallelism = scope.process?.getBuiltinModule?.('node:os')?.availableParallelism?.();
-		if (typeof parallelism === 'number' && Number.isInteger(parallelism) && parallelism > 0) {
-			return Math.min(parallelism, 8);
-		}
-	} catch {
-		//a search must never fail for lack of a hint about its own host
-	}
-	return 4;
-}
-
 /**
  * Chooses a move the way `searchTourney` does, but thinks on worker threads through
  * `threads.spawn`, so a deep search does not drop the caller's frames. Each root move
@@ -978,7 +958,7 @@ export async function searchTourneyAsync(
 ): Promise<TourneyResult> {
 	const depth = Math.max(1, Math.floor(options.depth ?? 3));
 	const maxNodes = options.maxNodes === undefined ? 500_000 : Math.max(1, Math.floor(options.maxNodes));
-	const jobs = options.jobs ?? defaultTourneyJobs();
+	const jobs = options.jobs ?? defaultSearchJobs();
 	if (!Number.isInteger(jobs) || jobs < 1) throw new RangeError('jobs must be a positive integer');
 	if (options.signal?.aborted) throw options.signal.reason;
 	const root = toBitboard(state);

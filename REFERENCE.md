@@ -530,10 +530,12 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   `sequence(steps)` (item 302) chains fade/hold/flash steps end to end as one call, for the
   hold-then-fade-back transition the four individual methods cannot express alone; `update`
   keeps returning false at every step boundary, true only once the whole sequence finishes.
-- `SceneTransition`/`TransitionOptions`/`TransitionRunner` + `tileShrink`, `shrink`, `pop`, `grow`, `slide`, `iris`
+- `SceneTransition`/`TransitionOptions`/`TransitionRunner`/`TransitionDisposition` + `transitionDisposition`, `tileShrink`, `shrink`, `pop`, `grow`, `slide`, `iris`
   and `dissolve` - screen transitions: `Game.switchScene(Next, { transition, duration, easing })` photographs the
   outgoing scene and animates it away (or grows the new one over it), `Scene2D.transitionTo(swap, options)` does
-  the same for a scene changing its own content, `Game.transitioning` tells a scene to ignore input, and
+  the same for a scene changing its own content, `Game.transitioning` tells a scene to ignore input, a second
+  transition requested while one plays is ignored unless its options say `queue: true` or `interrupt: true`
+  (`transitionDisposition` is that rule as a plain function), and
   reduced motion skips it. `tileDelays`, `tileProgress`, `popScale`, `openAnimationFrame` and `resolveEasing` are the
   timing as plain functions.
 - `ActorAnimator` - an idle/move/action animation state machine with one interruption rule.
@@ -705,11 +707,13 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
 - `DropdownView`/`DropdownViewOptions` - the widget over a `Dropdown` model: a button showing the choice
   that opens a column of `Button`s on an opaque backdrop, the highlighted one marked with
   `Button.setSelected`. `maxVisibleRows` makes a long list scroll (wheel, touch, keys, scrollbar) and it opens with
-  the chosen row in view; `autoWidth` fits the longest label; `handleKey` (arrows, Page, Home/End, Enter,
+  the chosen row in view; `autoWidth` fits the longest label, `maxWidth` caps that widening, and `resize(width)`
+  re-lays the button and list in place; `handleKey` (arrows, Page, Home/End, Enter,
   Escape) and `handleOutsideClick` are what the scene forwards from its own input; `fitBelow` limits the
   rows to what the viewport leaves under the button.
 - `Dropdown`/`DropdownOption`/`DropdownOptions` - a renderer-free option button: a selected entry,
-  an open list, a highlight that starts on the selection and skips disabled options.
+  an open list, a highlight that starts on the selection and skips disabled options. `setHighlight(i)`
+  opens the list on that row, so `setHighlight(i); confirm()` is a whole programmatic pick.
 - `TextModel`/`TextModelOptions` - the editing state behind a text field, fed by `core.Input`'s
   `onText`: caret, anchor, selection-replacing edits, a length cap and a mask. Renderer-free.
   `multiline` keeps real newlines with row navigation (`lineCount`, `caretLine`, `lineRange`,
@@ -743,11 +747,12 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   `scrollOffset` is the clamping rule the wheel, `scrollBy` and `scrollIntoView` all share. `touch: true` lets a
   finger drag the content (a drag cancels the tap on the row under it) and coast on release, `handleKey`
   scrolls by line, page and to either end, the thumb drags and the track jumps, and `autoHeight` sizes the
-  viewport to the content up to `height`. `update(dt)` drives the coasting.
+  viewport to the content up to `height`. The box owns its `hitArea` (its viewport, kept current by `resize` and
+  `setContentHeight`), so the wheel reaches it without a row under the pointer. `update(dt)` drives the coasting.
 - `ScrollDrag` - touch scrolling as plain numbers (`start`/`move`/`end`/`step`): how far the content follows a
   finger and how it coasts after release, with no pointer events or clock of its own.
 - `ScrollText`/`ScrollTextOptions` - a wrapped `Label` in a self-sizing `ScrollBox`: as tall as the text up to
-  `maxHeight`, scrolling beyond it, re-measured by `setText`.
+  `maxHeight`, scrolling beyond it, re-measured by `setText` and re-wrapped in place by `resize(width)`.
 - `MarqueeLabel`/`MarqueeLabelOptions` + `marqueeOffset` - one line that stays on one line: a long text slides
   back and forth in a clipped window (and holds still, cut short, under reduced motion).
 - `ellipsize` and `truncateLines` - cut a text to a width or a number of lines, ending in an ellipsis, with the
@@ -1012,6 +1017,57 @@ reach the compiled asset map without it.
   overlapping SE one-shots, save and replay with playheads, and plain-data snapshots.
   `AudioBus.setMixer(kind, { volume, muted })` scales a whole kind on top of each track's
   own volume, without changing what snapshots report.
+- `MidiSynth`/`MidiSynthFactory`/`MidiSynthRequest` + `registerMidiSynth`, `unregisterMidiSynth`,
+  `midiSynthNames`, `resolveMidiSynth`, `renderMidiThroughSynth`, `renderMidiStems`,
+  `onMidiSynthFallback` and `INTERNAL_MIDI_ENGINES` - the named-engine contract for MIDI:
+  a package registers a synth under a name (`retro:mt32`), content asks for it by name, and
+  resolution walks the request, then the internal names (`gm-soundfont`, `builtin`), firing
+  `onMidiSynthFallback` whenever another engine voices the file instead. `timedMidiMessages`
+  is the raw timed message stream a synth is driven by.
+- `StreamPlayable`/`StreamChannel` - the streaming half of the `Playable` contract: seek and
+  `currentTime` on a synthesised stream, `playbackRate` by resampling, and a playhead counted
+  in frames, so endless formats (NSF, SID) play without a whole-track render.
+- `TrackCache`/`createBudgetedLoader`/`BusBudgetPolicy` + `bufferBytes` - bus render budgets:
+  an LRU cache of decoded tracks under a megabyte and entry cap, with `maxSeconds`, mono or
+  half-rate rendering for ambience through `fitToBudget` and `resampleStereo`.
+- `DEFAULT_DECODER_LIMITS`/`decoderLimits`/`DecodeBudgetError`/`InstructionBudget` +
+  `assertInputSize`, `guardBlockSource` and `inflateBounded` - the decoder guards for
+  untrusted retro formats: input and inflate ceilings, an instruction budget per second of
+  sound, and one named error per breach instead of a hang.
+- `SfxBank`/`SfxSound`/`SfxArbiter` + `sfxSeed` - data sound effects: synthesised chip
+  effects with a deterministic seed, arbitrated against the `se` bus by priority, firing
+  captions like a file effect.
+- `AudioSettings`/`AudioSettingsData`/`AudioRegion`/`OutputStage` + `regionPlaybackRate`,
+  `softenCutoff` and `dynamicsLimit` - the player-facing audio settings in one plain-data
+  object: volume per bus (applied to an `AudioBus` by `applyToBus`), the preferred MIDI
+  engine name, PAL or NTSC region (a tune authored for one runs slower or faster on the
+  other, `regionPlaybackRate`), a faithful or clean output stage, caption display, a
+  dynamics control (a soft limiter, `dynamicsLimit`) and bright-sound softening (a falling
+  low-pass cutoff, `softenCutoff`). A CPU and underrun indicator reads `AudioCoreHost`'s
+  stats and `onAudioUnderrun`.
+- `waveformEnvelope`/`channelEnvelopes`/`WaveformBucket` and
+  `trackerPattern`/`trackerNoteName`/`TrackerRow` - the data cores of the audio views: a
+  waveform as per-bucket min/max pairs per channel (what an oscilloscope draws), and a
+  MIDI file as tracker rows, one column per channel on the file's own tick grid. A game
+  draws them with its own widgets; the reduction and the grid live here and are tested as
+  arithmetic.
+- `SyxBank`/`SyxPatch` + `splitSysex` and `dx7PatchNames` - a `.syx` bank a player drops:
+  its whole sysex messages, the patch names of every checksummed DX7 32-voice bulk dump in
+  it (another maker's bank names nothing rather than guessing), and an `audition` that
+  loads a patch into a `MidiSynth` and renders one note through it for a settings screen.
+- `connectWebMidi`/`requestWebMidiInput`/`WebMidiConnection` - live Web MIDI into a
+  `MidiSynth`: every input port of a `MIDIAccess` is wired to the synth (channel messages
+  to `event`, sysex to `sysex`, transport dropped), and `requestWebMidiInput` is the
+  browser entry that returns null where Web MIDI does not exist or was refused.
+- `AdaptiveMusic` - adaptive tracks: mute and unmute stems of a running track with a fade,
+  and switch between two versions at the same frame position; `loopRegionFromFile` reads
+  the loop region a file declares as the default.
+- `AudioCoreHost` + `onAudioUnderrun` - the off-main-thread audio host: a synthesis core in
+  a worker behind the same `Playable` facade, with a main-thread fallback and an underrun
+  signal feeding bounded telemetry.
+- `encodeWav`/`decodeWav`/`wavInfo` and `spectralDistance` - WAVE as plain bytes (the
+  `mwg-audio` tool's convert and compare verbs over the same code), and a spectral distance
+  between two renders for a listening check that can be automated.
 - `parseVorbisLoopTags`/`loopRegionFromTags` - read the `LOOPSTART`/`LOOPLENGTH` comments an
   Ogg Vorbis file carries (a bounded walk of the first pages, null on anything malformed) and
   turn them into the seconds-based `LoopRegion` a `Channel` or the bus loader hands back.
@@ -1575,6 +1631,12 @@ nothing here reaches a shipped game unless a test imports it.
 - `fakeAudio`/`fakeAudioWithEnded`/`FakePlayable` - a `Playable` for `Sound`/`Music`'s `create`
   that counts its plays; the second also has the `onended` slot a backend reporting track ends
   has.
+- `FakeAudioContext`/`FakeBuffer`/`FakeBufferSource`/`FakeGain`/`FakeBlockSource` - a fake
+  WebAudio graph for the audio tests: sources, gains and buffers a test can inspect, and a
+  block source for a `StreamChannel`, with no real `AudioContext` anywhere.
+- `FakeRetroPlayer` - a `MidiSynth` double for a retro engine: it records every message it
+  was driven with and renders a flat level while a note is on, so a renderer test reads what
+  was sent and what sounded, with `FakeAudioContext.advance()` as the clock it moves by hand.
 - `FakeSocket` - a `WebSocketLike` for `LockstepClient`'s `create`: `sent`, `receive(message)`,
   `receiveRaw(text)`, `close()`.
 - `fakeFetch`/`FakeFetchCall` - a `fetch` for every `HttpTransport` client, answering with a
@@ -1593,6 +1655,10 @@ a module worker loaded from `file://` fails CORS whatever the policy says), and
 spawns a worker pays nothing for it, and imports `@datamoc/mw_games/threads` when it
 wants one.
 
+- `openWorker(source, events)` - opens a long-lived worker from a self-contained script
+  (blob worker in a browser, `node:worker_threads` in Node, null where neither exists) and
+  returns its message link; `spawn` is the one-task use of it, a service such as the audio
+  core host keeps its worker and talks to it.
 - `spawn(fn, args?, options?)` - runs `fn` on a worker and resolves with its value. The
   task is serialized with `Function.prototype.toString`, so it must be self-contained:
   no closures over module scope, no imports, no bound or native functions - everything it
@@ -1861,6 +1927,16 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   `emitHooksDeclaration`, `emitModule`, `emitTableTypes`, `encodeSave`, `evaluateExpression`,
   `execute`,
   `extractCatalog`, `hookTypes`, `inventoryItem`, `isGettext`, `isMwlId`, `itemDefinition`,
+  `PACKAGE_TAGS`, `PACKAGE_ASSET_KINDS`, `PACKAGE_MEDIA_KINDS`, `PACKAGE_SCRIPT_ACTIONS`,
+  `KNOWN_PACKAGE_CAPABILITIES`, `DEFAULT_PACKAGE_LIMITS`, `PackageError`, `PackageFormatError`,
+  `PackageIntegrityError`, `PackageLimitError`, `PackagePathError`, `PackageConflictError`,
+  `encodePackage`, `decodePackage`, `verifyPackage`, `loadPackage`, `mergePackage`,
+  `compilePackages`, `packageContent`, `packageRef`, `parsePackageRef`, `parsePackageDocument`,
+  `checkPackagePath`, `checkPackagePolicy`, `checkConditionSyntax`, `compareVersions`,
+  `satisfiesVersionRange`, `requestedCapabilities`, `detectRomImage`, `registerRomDigest`,
+  `generateCredits` and `sha256Hex` (self-contained `.mwp` content packages: one compressed
+  container with per-entry digests and declared limits, a capability policy the game accepts
+  or refuses, `id@version` namespaces in saves, and a ROM-image refusal with generated credits),
   `parseExpression`, `parseHookReference`, `parseMapFile`, `parseTerrain`, `parseValue`, `preprocess`,
   `schema01`, `typedRows`, `validateCatalogNodes`, `validateHookReferences`, `loadContent`, and `validateWorld`.
 - `parseMapFile`/`MwlMapFile` (item 284) - reads a Wesnoth-shaped `.map`: the `key=value` header

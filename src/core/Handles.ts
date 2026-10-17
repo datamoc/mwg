@@ -42,15 +42,16 @@ export interface Handles<T> {
 export function createHandles<T>(): Handles<T> {
 	let next = 1;
 	const values = new Map<number, T>();
+	function put(value: T): number {
+		const id = next++;
+		values.set(id, value);
+		return id;
+	}
 	return {
 		get size(): number {
 			return values.size;
 		},
-		put(value: T): number {
-			const id = next++;
-			values.set(id, value);
-			return id;
-		},
+		put,
 		get(id: number): T {
 			const value = values.get(id);
 			if (value === undefined) throw new Error(`unknown handle ${id}`);
@@ -63,8 +64,7 @@ export function createHandles<T>(): Handles<T> {
 			values.clear();
 		},
 		with<R>(value: T, body: (id: number) => R): R {
-			const id = next++;
-			values.set(id, value);
+			const id = put(value);
 			try {
 				return body(id);
 			} finally {

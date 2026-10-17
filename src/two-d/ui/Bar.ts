@@ -1,4 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
+import { clamp } from '../../core/Math.ts';
 import { theme, themeChanged } from './theme.ts';
 import type { Texture2D } from '../render/Types2D.ts';
 
@@ -77,7 +78,7 @@ export class Bar extends Container {
 		this.height_ = options.height;
 		this.explicitColor = options.color !== undefined;
 		this.fillColor = options.color ?? theme().color.textHighlight;
-		this.fraction = clamp((options.value ?? 1) / (options.max ?? 1));
+		this.fraction = clamp((options.value ?? 1) / (options.max ?? 1), 0, 1);
 		this.fillTexture = options.fillTexture;
 		this.backgroundTexture = options.backgroundTexture;
 		this.background_ = options.background;
@@ -96,7 +97,7 @@ export class Bar extends Container {
 	}
 
 	setValue(value: number, max = 1): void {
-		this.fraction = clamp(max > 0 ? value / max : 0);
+		this.fraction = clamp(max > 0 ? value / max : 0, 0, 1);
 		this.draw();
 	}
 
@@ -166,8 +167,4 @@ export class Bar extends Container {
 		themeChanged.remove(this.themeListener);
 		super.destroy(options);
 	}
-}
-
-function clamp(fraction: number): number {
-	return Math.max(0, Math.min(1, fraction));
 }

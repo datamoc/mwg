@@ -256,8 +256,13 @@ function parseHexColor(value: string | undefined): number | undefined {
 	return Number.isFinite(num) ? num : undefined;
 }
 
-/** Apply the renderer-neutral subset supported by the Pixi backend. */
+function appendFilter(sprite: Sprite, filter: ColorMatrixFilter): void {
+	sprite.filters = [...(sprite.filters ?? []), filter];
+}
+
 /**
+ * Apply the renderer-neutral subset supported by the Pixi backend.
+ *
  * @example
  * ```ts
  * import { Sprite } from 'pixi.js';
@@ -280,7 +285,7 @@ export function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, sca
 	if (imageModifier(parsed, 'GS')) {
 		const filter = new ColorMatrixFilter();
 		filter.greyscale(1, false);
-		sprite.filters = [...(sprite.filters ?? []), filter];
+		appendFilter(sprite, filter);
 	}
 	const shift = imageModifier(parsed, 'CS');
 	if (shift) {
@@ -288,7 +293,7 @@ export function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, sca
 		if (values.length === 3 && values.every((value) => Number.isFinite(value))) {
 			const filter = new ColorMatrixFilter();
 			filter.matrix = colorShiftMatrix(values[0], values[1], values[2]);
-			sprite.filters = [...(sprite.filters ?? []), filter];
+			appendFilter(sprite, filter);
 		}
 	}
 	const rScale = imageModifier(parsed, 'R');
@@ -304,7 +309,7 @@ export function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, sca
 			green: Number.isFinite(green) ? green : undefined,
 			blue: Number.isFinite(blue) ? blue : undefined,
 		});
-		sprite.filters = [...(sprite.filters ?? []), filter];
+		appendFilter(sprite, filter);
 	}
 	//~BLEND and ~ROTATE are NOT handled here: Wesnoth's ~BLEND is a per-pixel colour blend and
 	//its ~ROTATE rotates the source pixels and expands the surface, neither of which a sprite
@@ -317,12 +322,12 @@ export function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, sca
 		const sources = chan.args.map((arg) => arg.trim().toUpperCase()) as ChannelSource[];
 		const filter = new ColorMatrixFilter();
 		filter.matrix = channelSwapMatrix(sources);
-		sprite.filters = [...(sprite.filters ?? []), filter];
+		appendFilter(sprite, filter);
 	}
 	const opacity = imageModifier(parsed, 'O');
 	if (opacity) {
 		const ratio = parsePercentOrRatio(opacity.args[0]);
-		if (ratio !== undefined) sprite.alpha *= Math.min(1, Math.max(0, ratio));
+		if (ratio !== undefined) sprite.alpha *= clamp(ratio, 0, 1);
 	}
 }
 
@@ -356,8 +361,9 @@ export function applyAllImageModifiers(
 	applyImageModifiers(sprite, parsed, scale);
 }
 
-/** Make a cropped view without mutating the shared source texture. */
 /**
+ * Make a cropped view without mutating the shared source texture.
+ *
  * @example
  * ```ts
  * import { Texture } from 'pixi.js';
@@ -658,7 +664,7 @@ export function maskPixels(
  * ```
  */
 export function blendPixels(pixels: Uint8ClampedArray, color: number, ratio: number): Uint8ClampedArray {
-	const clamped = Math.min(1, Math.max(0, ratio));
+	const clamped = clamp(ratio, 0, 1);
 	const r = (color >> 16) & 0xff;
 	const g = (color >> 8) & 0xff;
 	const b = color & 0xff;

@@ -7,6 +7,42 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.44.0] - 2026-10-17
+
+Retro-audio integration contracts (a MIDI engine registry, streaming playback, budgets, content packages and a command line tool), player-facing audio settings, and the interface follow-ups of the last Pontifex round. The parked items 393, 394, Syzygy and NNUE are closed rather than waiting on files or weights that will not arrive, and a simplification pass over the whole tree removes duplicated code.
+
+### Added
+
+- Pontifex follow-up points 51-54 (roadmap 443-446): `ScrollBox` now owns its `hitArea`
+  (its viewport, kept current by `resize`/`setContentHeight`, with a `viewportWidth`
+  getter); `DropdownView` and `ScrollText` gain `resize(width)`, and `DropdownViewOptions`
+  gains `maxWidth` capping `autoWidth`; a transition requested while one is playing is
+  ignored by default, with `queue: true` / `interrupt: true` in `TransitionOptions` and the
+  `transitionDisposition` rule exported, `Game.transitioning` also reporting a queued
+  transition; and `Dropdown.setHighlight` now opens the list as documented, so
+  `setHighlight(i); confirm()` picks a row and the next opening shows it.
+- Retro-audio integration (roadmap 431-442): a named `MidiSynth` engine
+  registry with fallback diagnostics, the streaming `Playable` contract, bus render budgets
+  and decoder guards, `.mwp` content packages with capability policy and ROM refusal, data
+  sound effects, an off-main-thread audio host, adaptive music, the `mwg-audio` tool, and
+  the `testing` doubles (`FakeRetroPlayer`, fake WebAudio graph) - documented in the
+  README's "Retro audio" section, REFERENCE and `docs/listening-protocol.md`. Player-facing
+  settings (`AudioSettings` with PAL/NTSC, dynamics and softening rules), live Web MIDI
+  (`connectWebMidi`), dropped `.syx` banks with DX7 patch names and audition (`SyxBank`),
+  and the oscilloscope/tracker data cores (`waveformEnvelope`, `trackerPattern`) complete
+  item 441.
+
+### Changed
+
+- Simplification pass over the tree, with no change to the public API: one shared radix-2 FFT
+  in `audio`, `HexSkirmish.reachableCosts` built on `core`'s `weightedFlood` (a negative
+  terrain move cost is now ignored instead of accepted), `tourney` and `Tactics` using the
+  `Engine` job default and `core`'s `cellInside`, a single byte-joining helper in the
+  `mwl` package container, and hand-written clamps replaced by `core`'s `clamp` across
+  `ui`, `render`, `battle`, `physics` and `audio`.
+- Roadmap: items 393 (Ableton and Reaper groove formats), 394 (the Magenta humanizer tier),
+  Syzygy and NNUE are closed; 401 is the only numbered item left, waiting on a port session.
+
 ## [0.43.0] - 2026-10-17
 
 Scrolling, tooltips and screen transitions for interface-heavy games, a MIDI music player and

@@ -1,3 +1,4 @@
+import { clamp } from '../core/Math.ts';
 import { Signal } from '../core/Signal.ts';
 
 /**
@@ -266,7 +267,7 @@ export class XpbdWorld<T = undefined> {
 			const q = this.nodes[link.b];
 			const dx = q.x - p.x;
 			const dy = q.y - p.y;
-			const t = Math.max(0, Math.min(1, ((x - p.x) * dx + (y - p.y) * dy) / (dx * dx + dy * dy || 1)));
+			const t = clamp(((x - p.x) * dx + (y - p.y) * dy) / (dx * dx + dy * dy || 1), 0, 1);
 			const distance = Math.hypot(p.x + dx * t - x, p.y + dy * t - y);
 			if (distance <= radius) hits.push({ index, distance });
 		});

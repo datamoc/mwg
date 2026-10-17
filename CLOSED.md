@@ -6083,15 +6083,18 @@ example already draws.
     from `file://` with measured costs (presentation updates under 8 ms at p95,
     submitted frames under 30 ms at p95). Physics tests unchanged; the runtime
     stays optional and on the GPU path.
-393. ~~Ableton `.agr` and Reaper groove formats for `GrooveConverter`.~~ Parked for lack of
-     fixtures: both formats are proprietary and undocumented, so the converter keeps throwing
+393. ~~Ableton `.agr` and Reaper groove formats for `GrooveConverter`.~~ Closed (2026-10-17) rather
+     than parked: both formats are proprietary and undocumented, so the converter keeps throwing
      a named error for them, and writing against a description of the format is not acceptable.
-     Un-parks when real files exported from Live and Reaper arrive to keep as test fixtures.
+     A game that needs them converts its grooves to a supported format first.
 394. ~~`MagentaAIHumanizer`, the third humanizer tier.~~ Closed as too expensive: a real tier
      needs `@magenta/music` (about 18 MB) as an optional peer plus its `PerformanceRNN`
      checkpoint compiled into `window.__MWG_ASSETS__`, and the two shipped tiers already cover
-     the game use case. `HumanizerFactory` keeps refusing `'magenta'` by name. Un-parks with a
-     consumer that needs neural humanization and accepts the peer weight and checkpoint size.
+     the game use case. `HumanizerFactory` keeps refusing `'magenta'` by name. Closed for good (2026-10-17).
+     Syzygy 6-7-piece probing and NNUE evaluation, the two parked chess items, are closed the
+     same day: the tables are hundreds of megabytes a shipped game can neither fetch nor read
+     from `file://`, and NNUE needs in-house weights and a measured inference budget that do not
+     exist. Classical evaluation stays the target.
 
 417. **Two-bone inverse kinematics** (2026-10-14). `skeleton.solveTwoBoneIK` returns local
   angles for a named connected chain and world target, with explicit bend direction, rest
@@ -6191,3 +6194,84 @@ example already draws.
   `tools/build-example-index.mjs`, part of `webpage:docs`: per module, every symbol with an
   `@example` linked to its typedoc page (775 of about 800 resolve; the first version guessed the
   page names wrongly and linked none, which checking the real typedoc output caught).
+
+443. **ScrollBox owns its hitArea** (2026-10-17, Pontifex point 51). `ScrollBox` sets its own
+  `hitArea` to its viewport (kept current in `draw`, hence in `resize` and `setContentHeight`),
+  so the wheel reaches the box without a row under the pointer; `DropdownView.scroller` and
+  `ScrollText.box` inherit it. A `viewportWidth` getter joins `viewportHeight`.
+444. **resize(width) on DropdownView and ScrollText, maxWidth on autoWidth** (point 52).
+  Both widgets resize in place (`DropdownView` re-lays the head button and rebuilds an open
+  list; `ScrollText` re-wraps via `Label.setWrapWidth` and re-measures), and
+  `DropdownViewOptions.maxWidth` caps `autoWidth` widening and a later `resize`.
+445. **A defined rule for input during a transition** (point 53). A transition requested
+  while one is playing is ignored by default (its swap never runs, its `onDone` never
+  fires); `queue: true` in `TransitionOptions` plays it after the running one finishes,
+  `interrupt: true` finishes the running one at once and plays the new one (interrupt wins
+  when both are set). `transitionDisposition` is the rule as a plain function, and
+  `Game.transitioning` also reports a queued transition.
+446. **DropdownView opens on the chosen row** (point 54). Reproduced first: the model's
+  `setHighlight` documented "opens the list" but did not open it, so a following `confirm()`
+  returned false, the pick was lost and the next opening reset the highlight to row 0.
+  `setHighlight` now opens (a no-op while open, refused for disabled or out-of-range rows),
+  making `setHighlight(i); confirm()` a whole programmatic pick, and the next opening
+  scrolls the chosen row into view as documented.
+431. **A MidiSynth contract and a named engine registry** (2026-10-17). `MidiSynth`
+  (`event`/`sysex`/`render`/`reset`/`sampleRate`) is mwg's contract, with
+  `registerMidiSynth`/`unregisterMidiSynth`/`midiSynthNames`/`resolveMidiSynth`, the
+  internal names `gm-soundfont` and `builtin`, a fallback chain that fires
+  `onMidiSynthFallback`, and `renderMidiThroughSynth`/`renderMidiStems` voicing a file
+  through a synth; one SMF plays the same note at the same pitch through every engine and
+  an unknown engine falls back instead of throwing.
+432. **The streaming contract of Playable** (2026-10-17). `StreamPlayable`/`StreamChannel`:
+  `currentTime` and seek on a synthesised stream, `playbackRate` by resampling, a playhead
+  counted in frames and the render sample rate carried by the stream itself.
+433. **Bus render budgets and a streaming mode** (2026-10-17). `TrackCache` (LRU under a
+  megabyte and entry cap), `createBudgetedLoader` with `maxSeconds`, mono and half-rate
+  rendering (`fitToBudget`, `resampleStereo`), and streaming playback for endless tracks.
+434. **Decoder guards for retro formats** (2026-10-17). `decoderLimits` over
+  `DEFAULT_DECODER_LIMITS`, `assertInputSize`, `inflateBounded`, `guardBlockSource` and
+  `InstructionBudget`, every breach one `DecodeBudgetError` naming its limit.
+435. **Self-contained content packages (.mwp)** (2026-10-17). `encodePackage`/`decodePackage`/
+  `verifyPackage`/`loadPackage`/`mergePackage`/`compilePackages` with per-entry sha256
+  (`sha256Hex`), declared limits (`DEFAULT_PACKAGE_LIMITS`), a capability policy
+  (`KNOWN_PACKAGE_CAPABILITIES`, `checkPackagePolicy`) a game accepts or refuses, package
+  script actions bounded to the MWL event vocabulary (`checkConditionSyntax`), and
+  `id@version` references (`packageRef`, `compareVersions`, `satisfiesVersionRange`).
+436. **No ROM images, and credits for every medium** (2026-10-17). `detectRomImage` with
+  `registerRomDigest` refuses a recognised instrument ROM image at build time, and
+  `generateCredits` turns mandatory licence and source data into `CREDITS.txt`.
+437. **Data sound effects, subtitles and audio in saves** (2026-10-17). `SfxBank`/`SfxSound`
+  with a deterministic `sfxSeed`, `SfxArbiter` sharing priority with the `se` bus, captions
+  fired as by a file effect, and bus snapshots carrying content id, frame position and
+  engine. The stated rule stands: audio is not in the lockstep state, its triggers are
+  deterministic, and A/V sync follows a game frame counter, not the wall clock.
+438. **An off-main-thread audio host** (2026-10-17). `AudioCoreHost` over `threads.openWorker`
+  with a main-thread fallback behind the same `Playable` facade, underruns counted and
+  reported (`onAudioUnderrun`) into bounded telemetry.
+439. **Adaptive music** (2026-10-17). `AdaptiveMusic` mutes and unmutes stems of a running
+  track with a fade and switches between two versions at the same frame position;
+  `loopRegionFromFile` makes a file's own loop region the default.
+440. **A mwg-audio tool** (2026-10-17). `tools/audio.mjs` (`mwg-audio` in `package.json`'s
+  `bin`, described in `tools.md`): `inspect`, `convert`, `render`, `budget` and `compare`
+  (spectral distance), with the package alias regenerated to re-export it.
+442. **Tests, example, docs and a listening protocol** (2026-10-17). `FakeRetroPlayer` and
+  the fake WebAudio graph (`FakeAudioContext`, whose `advance()` is the hand-moved audio
+  clock) in `testing`; the `retro-audio` example voicing one tune through two registered
+  engines and the internal path; browser end-to-end checks as
+  `npm run visual:smoke:retro-audio` (the tap gesture starts the context, an engine change
+  re-voices the tune, an absent engine announces its fallback, no page errors: all verified
+  in headless Chrome against the `file://` build); a "Retro audio" section in the README,
+  the contracts in REFERENCE and `API_REPORT.md`; and the A/B listening protocol with its
+  verdict table in `docs/listening-protocol.md` (no listening session has been run yet, so
+  no verdict is recorded there).
+441. **Player-facing audio settings** (2026-10-17). `AudioSettings`: volume per bus applied
+  to an `AudioBus` by `applyToBus`, the preferred MIDI engine name, PAL or NTSC through
+  `regionPlaybackRate`, a faithful or clean output stage, caption display, a dynamics
+  control (`dynamicsLimit`, a soft limiter) and bright-sound softening (`softenCutoff`), all
+  clamped plain data with snapshot/restore; a CPU and underrun indicator reads
+  `AudioCoreHost` stats and `onAudioUnderrun`. The later list followed in the same pass:
+  live Web MIDI into a `MidiSynth` (`connectWebMidi`/`requestWebMidiInput`), a dropped
+  `.syx` bank with patch names and audition (`SyxBank`, `dx7PatchNames`), and the data
+  cores of the per-channel oscilloscope and tracker views (`waveformEnvelope`,
+  `channelEnvelopes`, `trackerPattern`). The drop target and the drawing are the game's
+  own widgets over those cores, the way every view in the framework is drawn.

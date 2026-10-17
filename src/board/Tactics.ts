@@ -1,3 +1,4 @@
+import { cellInside } from '../core/Grid.ts';
 import { hexDistance, hexNeighbors } from '../core/Hex.ts';
 
 /**
@@ -116,7 +117,7 @@ export function startingTactics(width: number, height: number, shape: TacticalSh
  * ```
  */
 export function canPlaceTacticalUnit(state: TacticalState, x: number, y: number): boolean {
-	return tacticalInside(state, x, y) && !occupied(state, x, y);
+	return cellInside(state.width, state.height, x, y) && !occupied(state, x, y);
 }
 
 /**
@@ -321,9 +322,6 @@ function getUnit(state: TacticalState, id: string): TacticalUnit {
 function occupied(state: TacticalState, x: number, y: number): boolean {
 	return state.units.some((unit) => unit.x === x && unit.y === y);
 }
-function tacticalInside(state: TacticalState, x: number, y: number): boolean {
-	return x >= 0 && y >= 0 && x < state.width && y < state.height;
-}
 function tacticalNeighbours(state: TacticalState, x: number, y: number): { x: number; y: number }[] {
 	return state.shape === 'hex'
 		? hexNeighbors(x, y)
@@ -382,7 +380,7 @@ function tacticalPathCost(
 		for (const next of tacticalNeighbours(state, current.x, current.y)) {
 			const key = `${next.x},${next.y}`;
 			if (
-				!tacticalInside(state, next.x, next.y) ||
+				!cellInside(state.width, state.height, next.x, next.y) ||
 				seen.has(key) ||
 				!state.cells[next.y * state.width + next.x].passable ||
 				(occupied(state, next.x, next.y) && !(next.x === targetX && next.y === targetY))

@@ -1,4 +1,5 @@
 import { Container, Graphics, Matrix } from 'pixi.js';
+import { clamp } from '../../core/Math.ts';
 import {
 	advance as advanceMixer,
 	resolve,
@@ -150,7 +151,7 @@ export class ArticulatedChain {
 		if (options.segments < 2) throw new Error('an articulated chain needs at least two segments');
 		if (options.length <= 0) throw new Error('an articulated chain needs a positive length');
 		this.length = options.length;
-		this.stiffness = Math.max(0, Math.min(1, options.stiffness ?? 1));
+		this.stiffness = clamp(options.stiffness ?? 1, 0, 1);
 		this.bendLimit = (options.bendLimit ?? 90) * (Math.PI / 180);
 		for (let index = 0; index < options.segments; index++) {
 			this.points.push({ x: -index * options.length, y: 0 });

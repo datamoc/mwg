@@ -1,5 +1,6 @@
-import { hexNeighbors, hexDistance } from '../core/Hex.ts';
-import { cellInside } from '../core/Grid.ts';
+import { hexNeighbors, hexDistance, type HexCoord } from '../core/Hex.ts';
+import { cellInside, cellKey } from '../core/Grid.ts';
+import { weightedFlood } from '../core/Pathfinding.ts';
 import * as Random from '../core/Random.ts';
 
 /**
@@ -352,72 +353,22 @@ function moveCostOf(state: SkirmishState, x: number, y: number): number {
 //board.Tactics' uniform one-step cost. A blocked cell is never walked through, so it is relaxed
 //from nobody; `skirmishMoves` reaches a blocked target from an adjacent free cell. The moving
 //unit is not blocked (it is leaving its own cell), only the other units are.
-//The frontier is a binary min-heap, so the cheapest cell pops in O(log n) rather than the whole
-//frontier being re-sorted every step.
 function reachableCosts(
 	state: SkirmishState,
 	unit: SkirmishUnit,
 	budget: number,
 	blocked: ReadonlySet<string>,
 ): Map<string, number> {
-	type FrontierCell = { x: number; y: number; cost: number };
-	const frontier: FrontierCell[] = [];
-	const swap = (i: number, j: number): void => {
-		[frontier[i], frontier[j]] = [frontier[j], frontier[i]];
-	};
-	const push = (cell: FrontierCell): void => {
-		frontier.push(cell);
-		let index = frontier.length - 1;
-		while (index > 0) {
-			const parent = (index - 1) >> 1;
-			if (frontier[parent].cost <= frontier[index].cost) break;
-			swap(index, parent);
-			index = parent;
-		}
-	};
-	const pop = (): FrontierCell | undefined => {
-		if (frontier.length === 0) return undefined;
-		const top = frontier[0];
-		const last = frontier.pop()!;
-		if (frontier.length > 0) {
-			frontier[0] = last;
-			let index = 0;
-			for (;;) {
-				const left = index * 2 + 1;
-				const right = left + 1;
-				let smallest = index;
-				if (left < frontier.length && frontier[left].cost < frontier[smallest].cost) smallest = left;
-				if (right < frontier.length && frontier[right].cost < frontier[smallest].cost) smallest = right;
-				if (smallest === index) break;
-				swap(index, smallest);
-				index = smallest;
-			}
-		}
-		return top;
-	};
-
-	const costs = new Map<string, number>([[`${unit.x},${unit.y}`, 0]]);
-	push({ x: unit.x, y: unit.y, cost: 0 });
-	while (true) {
-		const current = pop();
-		if (current === undefined) break;
-		const key = `${current.x},${current.y}`;
-		//a lazy heap can hold a stale, costlier copy of a cell already relaxed to a cheaper one;
-		//skipping it (rather than marking the cell settled) keeps a later, cheaper pop valid
-		if (current.cost > (costs.get(key) ?? Infinity)) continue;
-		for (const next of hexNeighbors(current.x, current.y)) {
-			if (!inside(state, next.x, next.y)) continue;
-			const stepCost = moveCostOf(state, next.x, next.y);
-			if (stepCost === Infinity) continue;
-			if (blocked.has(`${next.x},${next.y}`)) continue;
-			const total = current.cost + stepCost;
-			if (total > budget) continue;
-			const nextKey = `${next.x},${next.y}`;
-			if (total < (costs.get(nextKey) ?? Infinity)) {
-				costs.set(nextKey, total);
-				push({ x: next.x, y: next.y, cost: total });
-			}
-		}
-	}
-	return costs;
+	const reached = weightedFlood<HexCoord, string>(
+		{ x: unit.x, y: unit.y },
+		{
+			key: (cell) => cellKey(cell.x, cell.y),
+			neighbors: (cell) => hexNeighbors(cell.x, cell.y).filter((next) => inside(state, next.x, next.y)),
+			cost: (_from, to) => moveCostOf(state, to.x, to.y),
+			canEnter: (cell) => !blocked.has(cellKey(cell.x, cell.y)),
+			//weightedFlood reaches nothing under a non-finite ceiling, where an unlimited mover reaches everything
+			maxCost: Number.isFinite(budget) ? budget : Number.MAX_VALUE,
+		},
+	);
+	return new Map([...reached].map(([key, cell]) => [key, cell.cost]));
 }

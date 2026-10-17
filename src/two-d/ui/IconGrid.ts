@@ -1,6 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import type { Action } from '../../core/Input.ts';
 import { Label } from './Label.ts';
+import { scrollOffset } from './ScrollBox.ts';
 import { SelectionModel } from './SelectionModel.ts';
 import { theme, themeChanged } from './theme.ts';
 import type { Container2D } from '../render/Types2D.ts';
@@ -395,7 +396,7 @@ export class IconGrid extends Container {
 		} else if (selectedRow >= this.scrollRow + visible) {
 			this.scrollRow = selectedRow - visible + 1;
 		}
-		this.scrollRow = Math.max(0, Math.min(this.scrollRow, Math.max(0, this.rows - visible)));
+		this.scrollRow = scrollOffset(this.scrollRow, this.rows, visible);
 
 		this.cellsLayer.y = -this.scrollRow * this.cellSize;
 

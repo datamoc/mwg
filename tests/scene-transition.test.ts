@@ -251,3 +251,22 @@ test('a slide window ends where it was placed', () => {
 	assert.equal(window.y, 40);
 	assert.equal(window.x, 30);
 });
+
+test('transitionDisposition ignores a second transition by default, queues or interrupts on request', async () => {
+	const { transitionDisposition, dissolve } = await import('../src/two-d/render/SceneTransition.ts');
+	assert.equal(transitionDisposition({ transition: dissolve() }, false), 'apply');
+	assert.equal(transitionDisposition(undefined, false), 'apply');
+	assert.equal(transitionDisposition({ transition: dissolve() }, true), 'ignore');
+	assert.equal(transitionDisposition({ transition: dissolve(), queue: true }, true), 'queue');
+	assert.equal(transitionDisposition({ transition: dissolve(), interrupt: true }, true), 'interrupt');
+	assert.equal(
+		transitionDisposition({ transition: dissolve(), queue: true, interrupt: true }, true),
+		'interrupt',
+		'interrupt wins',
+	);
+	assert.equal(
+		transitionDisposition(undefined, true),
+		'interrupt',
+		'a plain request finishes the running transition',
+	);
+});

@@ -58,9 +58,8 @@ export function canAfford(stats: StatBlock, cost: ResourceCost | readonly Resour
  * this returns false. A zero cost is always affordable and deducts nothing.
  */
 export function spend(stats: StatBlock, cost: ResourceCost | readonly ResourceCost[]): boolean {
-	const combined = totals(all(cost));
-	if (![...combined].every(([stat, amount]) => stats.base(stat) >= amount)) return false;
-	for (const [stat, amount] of combined) stats.setBase(stat, stats.base(stat) - amount);
+	if (!canAfford(stats, cost)) return false;
+	for (const [stat, amount] of totals(all(cost))) stats.setBase(stat, stats.base(stat) - amount);
 	return true;
 }
 

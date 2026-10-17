@@ -8,7 +8,7 @@ import { fitResolution } from './ResolutionFit.ts';
 import { QualityScaler, type QualityScalerOptions } from './QualityScaler.ts';
 import * as Input from '../core/Input.ts';
 import { reducedMotion } from '../core/Motion.ts';
-import { TransitionRunner, type TransitionOptions } from './render/SceneTransition.ts';
+import { TransitionRunner, transitionDisposition, type TransitionOptions } from './render/SceneTransition.ts';
 
 const PIXEL_ART_CLASS = 'mwg-pixel-art';
 
@@ -171,6 +171,8 @@ export class Game {
 
 	private stack = new SceneStack<Scene2D>();
 	private pending: SceneRequest[] = [];
+	/** transition requests held by `queue: true` until the running transition finishes */
+	private queued: SceneRequest[] = [];
 	private running: { runner: TransitionRunner; wrapper: Container } | null = null;
 	private options: Required<GameOptions>;
 	private started = false;
@@ -317,15 +319,17 @@ export class Game {
 	 * Changes what the current scene shows under a transition: `swap` runs at the start of the next
 	 * frame, once the outgoing picture has been photographed, and the transition then plays over the
 	 * result. For a scene that replaces its decor, level or layout in place rather than switching scenes;
-	 * `Scene2D.transitionTo` is the same call from inside the scene.
+	 * `Scene2D.transitionTo` is the same call from inside the scene. While a transition is
+	 * already playing this one is ignored unless its options say `queue: true` (play after
+	 * it) or `interrupt: true` (finish it at once and play this one); see `TransitionOptions`.
 	 */
 	transition(swap: () => void, options: TransitionOptions): void {
 		this.pending.push({ kind: 'swap', swap, transition: options });
 	}
 
-	/** true while a transition is playing, for a scene that should ignore input until it ends */
+	/** true while a transition is playing or one is held by `queue: true`, for a scene that should ignore input until it ends */
 	get transitioning(): boolean {
-		return this.running !== null;
+		return this.running !== null || this.queued.length > 0;
 	}
 
 	/**
@@ -466,14 +470,8 @@ export class Game {
 	private frame(deltaSeconds: number): void {
 		//queued scene changes run first, in order, so a frame never updates a
 		//scene that was already asked to leave
-		if (this.pending.length > 0) this.endTransition();
-		for (const request of this.pending) {
-			if (request.kind === 'switch') this.applySwitch(request.next, request.transition);
-			else if (request.kind === 'swap') this.applySwap(request.swap, request.transition);
-			else if (request.kind === 'push') this.applyPush(request.next);
-			else this.applyPop(request.result);
-		}
-		this.pending.length = 0;
+		const requests = this.pending.splice(0);
+		for (const request of requests) this.applyRequest(request);
 
 		if (this.hitStopRemaining > 0 && !this.suspended_) {
 			//counts down in real time, not scaled time, or a hit-stop would extend itself
@@ -482,7 +480,11 @@ export class Game {
 		}
 
 		//a transition counts real time, and may hold the scene still while it plays
-		if (this.running && this.running.runner.update(deltaSeconds)) this.endTransition();
+		if (this.running && this.running.runner.update(deltaSeconds)) {
+			this.endTransition();
+			//a queued transition starts on the next frame, once this one is fully done
+			if (this.queued.length > 0) this.pending.push(...this.queued.splice(0));
+		}
 		const frozen = this.running?.runner.pause === true;
 
 		this.elapsed = frozen ? 0 : Math.min(deltaSeconds, this.options.maxDelta) * this.timeScale;
@@ -535,6 +537,27 @@ export class Game {
 		this.app.stage.removeChildren();
 		this.app.stage.addChild(...scenes);
 		running.wrapper.destroy();
+	}
+
+	/**
+	 * Applies one queued scene change. While a transition is playing, a request carrying a
+	 * transition is ignored by default (its swap never runs), held by `queue: true` until
+	 * the running one finishes, or finishes it at once with `interrupt: true`; a request
+	 * with no transition finishes the running one and applies, as it always has.
+	 */
+	private applyRequest(request: SceneRequest): void {
+		const options = request.kind === 'switch' || request.kind === 'swap' ? request.transition : undefined;
+		const disposition = transitionDisposition(options, this.running !== null);
+		if (disposition === 'ignore') return;
+		if (disposition === 'queue') {
+			this.queued.push(request);
+			return;
+		}
+		if (disposition === 'interrupt') this.endTransition();
+		if (request.kind === 'switch') this.applySwitch(request.next, request.transition);
+		else if (request.kind === 'swap') this.applySwap(request.swap, request.transition);
+		else if (request.kind === 'push') this.applyPush(request.next);
+		else this.applyPop(request.result);
 	}
 
 	private applySwap(swap: () => void, options: TransitionOptions): void {

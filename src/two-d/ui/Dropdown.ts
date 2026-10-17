@@ -125,9 +125,15 @@ export class Dropdown {
 		}
 	}
 
-	/** opens the list and highlights `index`, if it is enabled */
+	/**
+	 * Opens the list and highlights `index`, if it is enabled, so `setHighlight(i)` then
+	 * `confirm()` is a whole programmatic pick. While already open it only moves the
+	 * highlight; a disabled dropdown does not open.
+	 */
 	setHighlight(index: number): void {
 		if (index < 0 || index >= this.options_.length || this.options_[index].disabled) return;
+		this.open();
+		if (!this.open_) return;
 		this.highlight_ = index;
 	}
 

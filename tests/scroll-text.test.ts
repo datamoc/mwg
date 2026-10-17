@@ -85,3 +85,13 @@ test('under reduced motion a MarqueeLabel holds still, cut short', () => {
 		setReducedMotion(null);
 	}
 });
+
+test('ScrollText.resize re-wraps and resizes its box in place', () => {
+	const hint = new FixedText({ width: 200, maxHeight: 40 });
+	hint.resize(90);
+	assert.equal(hint.viewWidth, 90);
+	assert.equal(hint.box.viewportWidth, 90);
+	assert.equal((hint.box.hitArea as unknown as { width: number }).width, 90);
+	hint.resize(320);
+	assert.equal(hint.box.viewportWidth, 320);
+});

@@ -1,4 +1,5 @@
 import type { StatBlock, Modifier } from '../actors/StatBlock.ts';
+import { clamp } from '../core/Math.ts';
 
 /**
  * A bounded, symmetric stage ladder over a `StatBlock` stat - the Swords Dance/Screech
@@ -59,7 +60,7 @@ export class StatStages {
 	 */
 	change(stat: string, delta: number): number {
 		const current = this.get(stat);
-		const next = Math.max(-this.max, Math.min(this.max, current + delta));
+		const next = clamp(current + delta, -this.max, this.max);
 		const applied = next - current;
 		if (applied === 0) return 0;
 

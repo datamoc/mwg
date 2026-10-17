@@ -83,10 +83,9 @@ Item 413's optional MWL scene and UI composition shipped in `mwl/presentation` a
 `two-d/presentation` with the `mwl-presentation` example and its browser smoke check;
 its record is in [CLOSED.md](CLOSED.md).
 
-blocker (its trusted-publisher entry is now added; the next release proves it by staging
-both packages), 393 is parked below until fixture files turn up,
-394 is parked below as too expensive,
-and 401 stays parked with the port. Nothing is promoted.
+Item 412's trusted-publisher entry is now added; the next release proves it by staging both
+packages. 393 and 394 are closed (2026-10-17), and 401 stays parked with the port. Nothing is
+promoted.
 
 Items 414-416 are implemented; see [CLOSED.md](CLOSED.md). Priority review,
 2026-10-14: the requested asset/deformation cluster is complete through the embedded
@@ -129,29 +128,6 @@ standing intentions.
 - **Item 41: board-game semantics beyond the generic piece.** `BoardGrid`/`BoardPiece`
   shipped the primitive shape. What "owned", "captured" and "promoted" should mean is
   tied to whichever board game item 30 eventually picks, so it un-parks together with 28/30.
-- **Syzygy 6-7-piece support: blocked on shipping, not on engineering.** Probing needs
-  hundreds of megabytes of table files with random access, which a shipped game can
-  neither fetch (assets are generated, never downloaded) nor read (`fetch` is blocked
-  from `file://`). Un-parks for a Node-only consumer willing to point at its own local
-  table directory, never for the browser bundle.
-- **NNUE evaluation: blocked on weights and budget.** The weights are tens of megabytes
-  that must come from somewhere (training needs datasets this project cannot fetch,
-  third-party weights bring third-party terms), and dependency-free JS inference costs
-  frame time the rendering policy weighs. Classical evaluation is the target; un-parks
-  with in-house weights and a measured inference budget.
-- **Item 393: Ableton `.agr` and Reaper groove formats, parked for lack of fixtures (2026-10-14).**
-  Both formats are proprietary and undocumented, so the converter keeps throwing a named error
-  for them. Writing against a description of the format is not acceptable; un-parks when real
-  files exported from Live and Reaper arrive to keep as test fixtures, with best effort on
-  round-trip and failures reported rather than tolerated silently.
-
-- **Item 394: `MagentaAIHumanizer`, closed as too expensive (2026-10-14).** A real third
-  humanizer tier needs `@magenta/music` (about 18 MB) as an optional peer plus its
-  `PerformanceRNN` checkpoint compiled into `window.__MWG_ASSETS__`, and the two shipped
-  tiers already cover the game use case, so the cost buys nothing a game asks for.
-  `HumanizerFactory` keeps refusing `'magenta'` by name. Un-parks with a consumer that
-  needs neural humanization and accepts the peer weight and checkpoint size.
-
 - **The Wesnoth port's non-adoption review (2026-09-12).** The counterpart to the reports that
   became items 316-321 and 327: a walk of the surfaces MWG offers, naming the ones the port
   deliberately keeps local and why. Nothing in it is a request, and the reasons live here so a
@@ -435,3 +411,30 @@ sizes).
 Items 428-430 are implemented; see [CLOSED.md](CLOSED.md). Nothing else is open and buildable from
 this repository: 401 still waits for a port session, and every parked decision still waits on what its
 note says.
+
+Priority review, 2026-10-17: the list was re-read end to end. Every numbered item buildable from
+this repository is closed. 401 (a port session) is the one numbered item left; 393, 394, Syzygy
+and NNUE were closed on the same day. The order is unchanged and nothing is promoted. The audio additions cost bundle size
+(global bundle +5 %, `dist` +8 %), accepted and recorded in `tools/bundle-size.json`; no render path
+changed.
+
+Items 431-446 came from the retro-audio package proposal (`C:\Users\miche\dev\mwg-retro-audio\docs`:
+`MWG-REQUIREMENTS.md`, `MWL-PROPOSAL.md`, `MWA.md`), in that document's own order (its steps A to F). All of
+them are implemented; their records are in [CLOSED.md](CLOSED.md). The package keeps formats, chips,
+ROM-free synthesisers and data sound effects; mwg owns the integration contracts, budgets, safety, content
+packages and tools. They built on the CSP default (374), decoder fuzzing (376), bounded telemetry (378), the
+SBOM (380), `threads.spawn`, `AudioBus`/`BusLoader`, `mwl` and `mwg-i18n`.
+
+Open questions recorded by the documents, answered by the 431-446 pass as built (their
+records are in [CLOSED.md](CLOSED.md)): `MidiSynth` is mwg's contract; a streamed track
+got its own path beside `Channel` (`StreamChannel`); package ids live in the package's own
+`id@version` namespace recorded in saves; a package asking for `script` is refused unless
+the game's capability policy accepts it; and synthesised content is listed by
+`generateCredits` like any other medium. The questions as recorded:
+whether `MidiSynth` is mwg's contract or the package's; whether a streamed track fits `AudioBus`
+(which works on `AudioBuffer`) or needs a second path beside `Channel`; who owns the package id
+namespace; the default policy for a package asking for `script` (refuse, ask the player, or a
+network-less Worker); and whether synthesised PCM waves count as generated content or as derived
+data to list in `CREDITS.txt`.
+
+Items 443-446 are implemented; see [CLOSED.md](CLOSED.md).

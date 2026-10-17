@@ -1,22 +1,27 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.43.0",
+	"version": "0.44.0",
 	"releaseDate": "2026-10-17",
 	"source": {
-		"files": 363,
-		"lines": 70300,
+		"files": 386,
+		"lines": 76386,
 		"modules": 20,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 108,
-				"lines": 24307
+				"lines": 24447
 			},
 			{
 				"name": "mwl",
-				"files": 24,
-				"lines": 7924
+				"files": 29,
+				"lines": 9987
+			},
+			{
+				"name": "audio",
+				"files": 41,
+				"lines": 9120
 			},
 			{
 				"name": "core",
@@ -24,14 +29,9 @@
 				"lines": 7480
 			},
 			{
-				"name": "audio",
-				"files": 24,
-				"lines": 5465
-			},
-			{
 				"name": "board",
 				"files": 12,
-				"lines": 5355
+				"lines": 5284
 			},
 			{
 				"name": "roguelike",
@@ -41,7 +41,7 @@
 			{
 				"name": "actors",
 				"files": 24,
-				"lines": 2454
+				"lines": 2453
 			},
 			{
 				"name": "rpg",
@@ -66,12 +66,12 @@
 			{
 				"name": "physics",
 				"files": 6,
-				"lines": 1362
+				"lines": 1364
 			},
 			{
 				"name": "battle",
 				"files": 15,
-				"lines": 1156
+				"lines": 1157
 			},
 			{
 				"name": "assets",
@@ -89,6 +89,11 @@
 				"lines": 603
 			},
 			{
+				"name": "testing",
+				"files": 3,
+				"lines": 510
+			},
+			{
 				"name": "skeleton",
 				"files": 1,
 				"lines": 441
@@ -96,12 +101,7 @@
 			{
 				"name": "threads",
 				"files": 3,
-				"lines": 297
-			},
-			{
-				"name": "testing",
-				"files": 2,
-				"lines": 240
+				"lines": 324
 			},
 			{
 				"name": "headless",
@@ -111,16 +111,16 @@
 		]
 	},
 	"tests": {
-		"files": 345,
-		"lines": 47347,
-		"cases": 3138
+		"files": 360,
+		"lines": 50168,
+		"cases": 3279
 	},
 	"tools": {
-		"files": 65,
-		"lines": 13199
+		"files": 67,
+		"lines": 13849
 	},
 	"examples": {
-		"count": 28,
+		"count": 29,
 		"names": [
 			"audio",
 			"battle",
@@ -143,6 +143,7 @@
 			"mwl-presentation",
 			"neural",
 			"pacman",
+			"retro-audio",
 			"save-load",
 			"spring",
 			"string-editor",
@@ -153,18 +154,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 430,
+		"items": 446,
 		"completed": 411,
-		"open": 19,
-		"percent": 96
+		"open": 35,
+		"percent": 92
 	},
 	"api": {
-		"declarationFiles": 363
+		"declarationFiles": 386
 	},
 	"bundle": {
-		"globalRaw": 1316862,
-		"globalGzip": 394145,
-		"distRaw": 4873815
+		"globalRaw": 1383575,
+		"globalGzip": 416013,
+		"distRaw": 5251895
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

@@ -1,6 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import type { Action } from '../../core/Input.ts';
 import { Label } from './Label.ts';
+import { scrollOffset } from './ScrollBox.ts';
 import { SelectionModel } from './SelectionModel.ts';
 import { theme, themeChanged } from './theme.ts';
 import type { Container2D } from '../render/Types2D.ts';
@@ -387,7 +388,7 @@ export class ListView extends Container {
 		} else if (index >= this.scroll + visible) {
 			this.scroll = index - visible + 1;
 		}
-		this.scroll = Math.max(0, Math.min(this.scroll, Math.max(0, length - visible)));
+		this.scroll = scrollOffset(this.scroll, length, visible);
 
 		this.rowsLayer.y = -this.scroll * this.rowHeight;
 

@@ -15,14 +15,14 @@ export { Container as Container2D };
  */
 export { Texture as Texture2D };
 
-/** Explicit value-position escape hatch for rectangle construction through the facade. */
 /**
+ * Explicit value-position escape hatch for rectangle construction through the facade.
  * Renderer facade class, usable in both type and value positions.
  *
  * @example
  * ```ts
  * import { Rectangle2D } from '@datamoc/mw_games/two-d/render';
-
+ *
  * const hitArea = new Rectangle2D(0, 0, 32, 32);
  * console.log(hitArea.width); // 32
  * ```

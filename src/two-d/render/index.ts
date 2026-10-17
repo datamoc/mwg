@@ -195,6 +195,7 @@ export {
 	tileDelays,
 	tileProgress,
 	tileShrink,
+	transitionDisposition,
 } from './SceneTransition.ts';
 export type {
 	OpenAnimationKind,
@@ -202,6 +203,7 @@ export type {
 	TileOrder,
 	TileShrinkOptions,
 	TransitionContext,
+	TransitionDisposition,
 	TransitionOptions,
 	TransitionPoint,
 	TransitionRuntime,

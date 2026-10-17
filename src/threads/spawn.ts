@@ -9,20 +9,22 @@ export interface SpawnOptions {
 	signal?: AbortSignal;
 }
 
-/** one worker, alive for exactly one task: construction differs per environment, everything else is shared */
-interface TaskWorker {
-	post(message: WorkerRequest, transfer: Transferable[]): void;
+/** one open worker: post to it, terminate it */
+export interface WorkerLink {
+	post(message: unknown, transfer?: Transferable[]): void;
 	terminate(): void;
 }
 
-interface WorkerHostEvents {
-	reply: (reply: WorkerReply) => void;
-	fail: (error: Error) => void;
+export interface WorkerLinkEvents {
+	/** a message the worker posted */
+	message(data: unknown): void;
+	/** the worker failed, died or sent something that could not be read */
+	fail(error: Error): void;
 }
 
-type WorkerHost = (events: WorkerHostEvents) => TaskWorker | null;
+type WorkerHost = (source: string, events: WorkerLinkEvents) => WorkerLink | null;
 
-const browserWorker: WorkerHost = (events) => {
+const browserWorker: WorkerHost = (source, events) => {
 	if (
 		typeof Worker === 'undefined' ||
 		typeof Blob === 'undefined' ||
@@ -33,7 +35,7 @@ const browserWorker: WorkerHost = (events) => {
 	}
 	//a blob worker, because the shipped file:// page allows worker-src blob: and because a
 	//file:// module worker is blocked by CORS whatever the policy says
-	const url = URL.createObjectURL(new Blob([`(${workerMain.toString()})()`], { type: 'text/javascript' }));
+	const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
 	let worker: Worker;
 	try {
 		worker = new Worker(url);
@@ -41,11 +43,11 @@ const browserWorker: WorkerHost = (events) => {
 		URL.revokeObjectURL(url);
 		throw error;
 	}
-	worker.onmessage = (event) => events.reply(event.data as WorkerReply);
+	worker.onmessage = (event) => events.message(event.data);
 	worker.onerror = (event) => events.fail(new Error(event.message || 'the worker failed to run'));
 	worker.onmessageerror = () => events.fail(new Error('the worker sent a reply that could not be deserialized'));
 	return {
-		post: (message, transfer) => worker.postMessage(message, transfer),
+		post: (message, transfer = []) => worker.postMessage(message, transfer),
 		terminate: () => {
 			worker.terminate();
 			URL.revokeObjectURL(url);
@@ -53,22 +55,47 @@ const browserWorker: WorkerHost = (events) => {
 	};
 };
 
-const nodeWorker: WorkerHost = (events) => {
+const nodeWorker: WorkerHost = (source, events) => {
 	const threads = nodeThreads();
 	if (!threads) return null;
 	//the same source string as the browser path, executed as CJS by Node's eval mode
-	const worker = new threads.Worker(`(${workerMain.toString()})()`, { eval: true });
-	worker.on('message', (reply) => events.reply(reply));
+	const worker = new threads.Worker(source, { eval: true });
+	worker.on('message', (reply) => events.message(reply));
 	worker.on('error', (error) => events.fail(error instanceof Error ? error : new Error(String(error))));
 	worker.on('messageerror', () => events.fail(new Error('the worker sent a reply that could not be deserialized')));
 	//a task that kills its worker without answering must reject rather than hang forever -
 	//the failure the multithreading package's pool never reports (T161)
 	worker.on('exit', (code) => events.fail(new Error(`the worker exited with code ${code} before answering`)));
 	return {
-		post: (message, transfer) => worker.postMessage(message, transfer),
+		post: (message, transfer = []) => worker.postMessage(message as WorkerRequest, transfer),
 		terminate: () => void worker.terminate(),
 	};
 };
+
+/**
+ * Opens a worker running a classic script, in a browser (a blob worker, which the shipped
+ * `file://` page's policy allows) or in Node (`worker_threads` in eval mode), and returns null
+ * where neither exists. `spawn` is the one-task-per-worker use of this; a long-lived service
+ * such as the audio core host keeps its worker and talks to it with messages.
+ *
+ * The script must be self-contained for the same reason a `spawn` task must: it runs with
+ * nothing but its own text in scope.
+ *
+ * @example
+ * ```ts
+ * import { openWorker } from '@datamoc/mw_games/threads';
+ *
+ * const link = openWorker('globalThis.onmessage = (event) => globalThis.postMessage(event.data * 2);', {
+ * 	message: (value) => console.log(value),
+ * 	fail: (error) => console.warn(error.message),
+ * });
+ * link?.post(21);
+ * ```
+ */
+export function openWorker(source: string, events: WorkerLinkEvents): WorkerLink | null {
+	//each host returns null when its environment is absent, so they are tried in order
+	return browserWorker(source, events) ?? nodeWorker(source, events);
+}
 
 /** the error a failed reply carries, with the worker-side stack where there was one */
 function taskError(reply: { message: string; stack?: string }): Error {
@@ -121,7 +148,7 @@ export function spawn<Args extends readonly unknown[], Result>(
 
 		let settled = false;
 		let timer: ReturnType<typeof setTimeout> | undefined;
-		let worker: TaskWorker | null | undefined;
+		let worker: WorkerLink | null | undefined;
 		const settle = (finish: () => void): void => {
 			if (settled) return;
 			settled = true;
@@ -135,17 +162,17 @@ export function spawn<Args extends readonly unknown[], Result>(
 			settle(() => reject(options.signal!.reason));
 		}
 
-		const events: WorkerHostEvents = {
-			reply: (reply) =>
+		const events: WorkerLinkEvents = {
+			message: (data) =>
 				settle(() => {
+					const reply = data as WorkerReply;
 					if (reply.ok) resolve(reply.value as Awaited<Result>);
 					else reject(taskError(reply));
 				}),
 			fail: (error) => settle(() => reject(error)),
 		};
 		try {
-			//each host returns null when its environment is absent, so they are tried in order
-			worker = browserWorker(events) ?? nodeWorker(events);
+			worker = openWorker(`(${workerMain.toString()})()`, events);
 		} catch (error) {
 			reject(error);
 			return;

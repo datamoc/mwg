@@ -114,3 +114,36 @@ test('fitBelow limits the rows to what the viewport leaves under the button', ()
 	assert.equal(dropdown.fitBelow(100, 600), 8);
 	assert.equal(dropdown.fitBelow(595, 600), 1);
 });
+
+test('a pick made with setHighlight and confirm before opening is in view on the next opening', () => {
+	const dropdown = view({ maxVisibleRows: 5 });
+	dropdown.model.setHighlight(20);
+	assert.equal(dropdown.model.confirm(), true);
+	assert.equal(dropdown.model.selectedIndex, 20);
+	dropdown.model.open();
+	dropdown.refresh();
+	const offset = dropdown.scroller?.offset ?? -1;
+	assert.ok(offset <= 20 * 20 && offset + 100 >= 21 * 20, `row 20 is inside the window (offset ${offset})`);
+	assert.ok(offset > 0, 'the list did not stay at the top');
+});
+
+test('resize sets the width in place and rebuilds an open list at it', () => {
+	const dropdown = view({ maxVisibleRows: 5 });
+	dropdown.resize(240);
+	assert.equal(dropdown.viewWidth, 240);
+	dropdown.model.open();
+	dropdown.refresh();
+	dropdown.resize(90);
+	assert.equal(dropdown.viewWidth, 90);
+	assert.equal(dropdown.scroller?.viewportWidth, 90);
+});
+
+test('maxWidth caps how far autoWidth widens, and caps a later resize', () => {
+	const options = [{ label: 'Short' }, { label: '3. Le Fleuve profond  (verrouillé)' }];
+	const capped = new FixedWidth({ width: 120, options, autoWidth: true, maxWidth: 200 });
+	assert.equal(capped.viewWidth, 200);
+	capped.resize(500);
+	assert.equal(capped.viewWidth, 200, 'resize is capped too');
+	const plain = new FixedWidth({ width: 120, options, maxWidth: 200 });
+	assert.equal(plain.viewWidth, 120, 'maxWidth alone does not shrink a fixed width');
+});

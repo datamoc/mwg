@@ -1,4 +1,5 @@
 import { FixedStepper } from '../core/FixedStepper.ts';
+import { clamp } from '../core/Math.ts';
 import { Signal } from '../core/Signal.ts';
 
 /** Construction options for `PhysicsWorld`. */
@@ -365,7 +366,7 @@ class DistanceJoint implements PhysicsConstraint {
 		//radial oscillation leaves through velocity, or a spring would ring forever
 		const nx = dx / distance;
 		const ny = dy / distance;
-		const kill = Math.min(1, Math.max(0, this.stiffness + this.damping));
+		const kill = clamp(this.stiffness + this.damping, 0, 1);
 		if (kill === 0) return;
 		const va = this.a.velocity;
 		const vb = this.b ? this.b.velocity : { x: 0, y: 0 };
@@ -434,8 +435,8 @@ function circleBox(
 	const hh = box.height / 2;
 	const dx = ball.position.x - boxBody.position.x;
 	const dy = ball.position.y - boxBody.position.y;
-	const cx = Math.max(-hw, Math.min(hw, dx));
-	const cy = Math.max(-hh, Math.min(hh, dy));
+	const cx = clamp(dx, -hw, hw);
+	const cy = clamp(dy, -hh, hh);
 	const px = dx - cx;
 	const py = dy - cy;
 	const distance = Math.hypot(px, py);

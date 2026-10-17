@@ -125,3 +125,59 @@ export { createExpressionScriptHost } from './scripts.ts';
 export type { ScriptContext, ScriptEmit, ScriptHost, ScriptValue } from './scripts.ts';
 export { evaluateCondition } from './conditions.ts';
 export type { MwlConditionContext, MwlConditionHelper, MwlConditionOptions, MwlConditionValue } from './conditions.ts';
+export { checkConditionSyntax } from './conditions.ts';
+export {
+	checkPackagePath,
+	decodePackage,
+	DEFAULT_PACKAGE_LIMITS,
+	encodePackage,
+	PackageError,
+	PackageFormatError,
+	PackageIntegrityError,
+	PackageLimitError,
+	PackagePathError,
+	sha256Hex,
+} from './package-container.ts';
+export type { DecodedPackage, PackageDirectoryEntry, PackageFile, PackageLimits } from './package-container.ts';
+export {
+	compareVersions,
+	KNOWN_PACKAGE_CAPABILITIES,
+	PACKAGE_ASSET_KINDS,
+	PACKAGE_MEDIA_KINDS,
+	PACKAGE_SCRIPT_ACTIONS,
+	PACKAGE_TAGS,
+	parsePackageDocument,
+	satisfiesVersionRange,
+} from './package-document.ts';
+export type {
+	PackageAction,
+	PackageAnimation,
+	PackageAsset,
+	PackageAssetKind,
+	PackageCharacter,
+	PackageDocument,
+	PackageImport,
+	PackageMeta,
+	PackageMusic,
+	PackageRequires,
+	PackageScript,
+	PackageSoundEffect,
+	PackageValue,
+} from './package-document.ts';
+export {
+	checkPackagePolicy,
+	compilePackages,
+	generateCredits,
+	loadPackage,
+	mergePackage,
+	packageContent,
+	PackageConflictError,
+	packageRef,
+	parsePackageRef,
+	requestedCapabilities,
+} from './package.ts';
+export type { LoadedPackage, PackageContent, PackagePolicy, PackageSet } from './package.ts';
+export { detectRomImage, registerRomDigest } from './package-rom.ts';
+export type { RomDetection } from './package-rom.ts';
+export { verifyPackage } from './package-verify.ts';
+export type { PackageReport, VerifyPackageOptions } from './package-verify.ts';

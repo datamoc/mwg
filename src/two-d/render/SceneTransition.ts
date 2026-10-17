@@ -50,8 +50,48 @@ export interface TransitionOptions {
 	easing?: keyof typeof Easing | EasingFunction;
 	/** hold the scene still while the transition plays; false when omitted */
 	pause?: boolean;
+	/**
+	 * What happens when this transition is requested while another is already playing:
+	 * by default the new request is ignored (its swap never runs and its `onDone` never
+	 * fires). `queue: true` holds it until the running transition finishes, then plays it;
+	 * `interrupt: true` finishes the running one at once (its `onDone` fires) and plays
+	 * this one instead. `interrupt` wins when both are set.
+	 */
+	queue?: boolean;
+	/** see `queue`: finish the running transition at once and play this one instead */
+	interrupt?: boolean;
 	/** runs once, the frame the transition ends */
 	onDone?: () => void;
+}
+
+/** what `Game` does with a scene change requested while a transition may already be playing */
+export type TransitionDisposition = 'apply' | 'ignore' | 'queue' | 'interrupt';
+
+/**
+ * The rule for a request that arrives while a transition is playing: it applies at once
+ * when nothing is playing; while one is playing, a request with no transition finishes it
+ * and applies (`interrupt`, the historical behaviour), a transition request is ignored by
+ * default, held by `queue: true`, or interrupts with `interrupt: true` (which wins when
+ * both are set).
+ *
+ * @example
+ * ```ts
+ * import { transitionDisposition, dissolve } from '@datamoc/mw_games/two-d/render';
+ *
+ * console.log(transitionDisposition({ transition: dissolve() }, true)); // 'ignore'
+ * console.log(transitionDisposition({ transition: dissolve(), queue: true }, true)); // 'queue'
+ * console.log(transitionDisposition({ transition: dissolve() }, false)); // 'apply'
+ * ```
+ */
+export function transitionDisposition(
+	options: TransitionOptions | undefined,
+	transitioning: boolean,
+): TransitionDisposition {
+	if (!transitioning) return 'apply';
+	if (!options) return 'interrupt';
+	if (options.interrupt) return 'interrupt';
+	if (options.queue) return 'queue';
+	return 'ignore';
 }
 
 /** where a transition starts from or aims at, in screen pixels; the screen's centre when omitted */

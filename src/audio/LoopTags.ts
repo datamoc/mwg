@@ -85,6 +85,30 @@ export function loopRegionFromTags(
 	return start >= 0 && end > start && start < duration ? { start, end: Math.min(end, duration) } : null;
 }
 
+/**
+ * The loop region a track's own file declares, as the default when the game gives none: the
+ * region from `loopStartSeconds` to the end (or to `loopEndSeconds` when the file has one),
+ * null when the file declares no loop or the declaration falls outside the track. Retro formats
+ * such as MWA carry their loop point this way, so a game need not repeat it.
+ *
+ * @example
+ * ```ts
+ * import { loopRegionFromFile } from '@datamoc/mw_games/audio';
+ *
+ * console.log(loopRegionFromFile({ loopStartSeconds: 8, durationSeconds: 60 })); // { start: 8, end: 60 }
+ * ```
+ */
+export function loopRegionFromFile(file: {
+	loopStartSeconds?: number | null;
+	loopEndSeconds?: number | null;
+	durationSeconds: number;
+}): LoopRegion | null {
+	const start = file.loopStartSeconds;
+	if (start === undefined || start === null || !(start >= 0)) return null;
+	const end = Math.min(file.loopEndSeconds ?? file.durationSeconds, file.durationSeconds);
+	return end > start && start < file.durationSeconds ? { start, end } : null;
+}
+
 /** the first packet starting with the Vorbis comment marker, reassembled across Ogg pages */
 function findCommentPacket(data: Uint8Array): Uint8Array | null {
 	const marker = [3, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73];

@@ -1,3 +1,5 @@
+import { clamp } from '../core/Math.ts';
+
 export interface PreviewCombatant {
 	hp: number;
 	maxHp?: number;
@@ -64,22 +66,24 @@ export class AttackPreview {
 	private readonly defenderHp0: number;
 
 	constructor(options: AttackPreviewOptions) {
-		this.chanceToHit = clamp01(options.chanceToHit ?? 1);
+		const damage = Math.max(0, options.damage);
+		this.chanceToHit = clamp(options.chanceToHit ?? 1, 0, 1);
 		this.strikeDuration = Math.max(0, options.strikeDuration ?? 0);
-		this.totalDamage = Math.max(0, options.damage) * Math.max(0, options.strikes);
+		this.totalDamage = damage * Math.max(0, options.strikes);
 		this.expectedDamage = this.totalDamage * this.chanceToHit;
 		this.defenderHp0 = options.defender.hp;
 
 		const frames: AttackFrame[] = [];
 		let defenderHp = options.defender.hp;
 		for (let strike = 0; strike <= options.strikes; strike++) {
-			if (strike > 0 && (options.hits?.[strike - 1] ?? true)) defenderHp -= Math.max(0, options.damage);
+			if (strike > 0 && (options.hits?.[strike - 1] ?? true)) defenderHp -= damage;
+			const shownHp = Math.max(0, defenderHp);
 			frames.push({
 				strike,
 				time: strike * this.strikeDuration,
 				attackerHp: options.attacker.hp,
-				defenderHp: Math.max(0, defenderHp),
-				defenderDamage: this.defenderHp0 - Math.max(0, defenderHp),
+				defenderHp: shownHp,
+				defenderDamage: this.defenderHp0 - shownHp,
 			});
 		}
 		this.frames = frames;
@@ -108,8 +112,4 @@ export class AttackPreview {
 		}
 		return this.frames[index];
 	}
-}
-
-function clamp01(value: number): number {
-	return Math.max(0, Math.min(1, value));
 }

@@ -245,6 +245,28 @@ To catch page growth, set `mwgPage({ maxPageBytes: 1_500_000 })`. Its build repo
 embedded paths not found literally in the generated game script as potentially unused;
 paths assembled at runtime need manual review. `assetFiles` selects exact asset paths to embed.
 
+### Retro audio
+
+A retro-instrument package (an MT-32, OPL or chip synth of its own) plugs into mwg through
+contracts mwg owns, so the core never depends on the package. It registers a `MidiSynth`
+under a name with `registerMidiSynth('retro:mt32', factory)`; content then asks for that
+name and `resolveMidiSynth` walks the request, the SoundFont and the built-in synth in
+order, firing `onMidiSynthFallback` whenever a different engine ends up voicing the file.
+Endless or machine-code formats (NSF, SID, SPC) play through the streaming `Playable`
+contract (`StreamPlayable`, `StreamChannel`) under named decoder guards
+(`decoderLimits`, `DecodeBudgetError`): input ceilings, an instruction budget per second
+of sound, and bounded inflation, so untrusted files fail by name instead of hanging.
+Rendered tracks are budgeted (`TrackCache`, `createBudgetedLoader`): a five-minute stereo
+render is about 100 MB, so the bus caps decoded megabytes rather than keeping every track
+forever. Synthesised effects are data, not files: `SfxBank` builds them from definitions
+with a fixed seed, so audio never disturbs a lockstep simulation (its triggers are
+deterministic; the audio itself is not in the lockstep state, and A/V sync follows the
+game frame counter, not the wall clock). The `mwg-audio` tool inspects, converts, renders,
+budgets and compares these formats from the command line, and `spectralDistance` gives a
+first automated check between two renders. What no automation settles is whether a render
+sounds right: the A/B listening protocol in `docs/listening-protocol.md` is the place to
+record those verdicts.
+
 ## Capability spec
 
 The definition of done for 1.0, drawn from what each of the nine references actually

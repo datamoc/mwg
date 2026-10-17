@@ -1,5 +1,6 @@
 import { Container } from 'pixi.js';
 import { Label } from './Label.ts';
+import { clamp } from '../../core/Math.ts';
 import { reducedMotion } from '../../core/Motion.ts';
 
 export interface FloatingTextOptions {
@@ -131,7 +132,7 @@ export class FloatingText extends Container {
 
 		this.duration = options.duration ?? 0.8;
 		this.rise = options.rise ?? 24;
-		this.hold = Math.min(1, Math.max(0, options.hold ?? 0));
+		this.hold = clamp(options.hold ?? 0, 0, 1);
 
 		const label = new Label({ text: options.text, color: options.color, size: options.size });
 		label.anchor.set(0.5);

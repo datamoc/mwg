@@ -13,6 +13,8 @@ export interface DropdownViewOptions extends DropdownOptions {
 	maxVisibleRows?: number;
 	/** widens the view to fit the longest label instead of cutting it off at `width` */
 	autoWidth?: boolean;
+	/** caps how wide `autoWidth` (and a later `resize`) may grow the view */
+	maxWidth?: number;
 }
 
 /**
@@ -23,7 +25,10 @@ export interface DropdownViewOptions extends DropdownOptions {
  *
  * The list sits on an opaque backdrop, shows at most `maxVisibleRows` rows and scrolls (wheel,
  * touch drag, keys, scrollbar) beyond that, opening with the chosen row in view. `autoWidth`
- * measures the labels so none is cut off. The keyboard goes through `handleKey` (arrows, Page,
+ * measures the labels so none is cut off (`maxWidth` caps that widening), and `resize(width)`
+ * re-lays the button and list in place. Opening scrolls to the model's current selection:
+ * `model.setHighlight(i); model.confirm()` is a whole programmatic pick, after which the
+ * next opening shows that row. The keyboard goes through `handleKey` (arrows, Page,
  * Home, End, Enter, Escape) and a click elsewhere through `handleOutsideClick`, which the owning
  * scene forwards from its own input, since the view does not own the stage.
  *
@@ -48,6 +53,8 @@ export interface DropdownViewOptions extends DropdownOptions {
 export class DropdownView extends Container {
 	readonly model: Dropdown;
 	private width_: number;
+	private readonly autoWidth: boolean;
+	private readonly maxWidth: number | undefined;
 	private readonly rowHeight: number;
 	private readonly maxRows: number;
 	private readonly head: Button;
@@ -62,8 +69,12 @@ export class DropdownView extends Container {
 		this.model = new Dropdown(options);
 		this.rowHeight = options.rowHeight ?? 28;
 		this.maxRows = Math.max(1, options.maxVisibleRows ?? 8);
-		this.width_ = options.autoWidth
-			? Math.max(options.width, ...this.model.options.map((option) => this.labelWidth(option.label)))
+		this.autoWidth = options.autoWidth ?? false;
+		this.maxWidth = options.maxWidth;
+		this.width_ = this.autoWidth
+			? this.capWidth(
+					Math.max(options.width, ...this.model.options.map((option) => this.labelWidth(option.label))),
+				)
 			: options.width;
 		this.head = new Button({
 			width: this.width_,
@@ -100,6 +111,21 @@ export class DropdownView extends Container {
 	/** the view's current width: `width`, or what the longest label needed with `autoWidth` */
 	get viewWidth(): number {
 		return this.width_;
+	}
+
+	private capWidth(width: number): number {
+		return this.maxWidth === undefined ? width : Math.min(width, this.maxWidth);
+	}
+
+	/**
+	 * Sets the view's width (capped at `maxWidth` when one was given) and redraws the closed
+	 * button and, when open, the list at the new width, so a layout change resizes the widget
+	 * in place instead of rebuilding it.
+	 */
+	resize(width: number): void {
+		this.width_ = this.capWidth(width);
+		this.head.resize(this.width_, this.rowHeight);
+		this.refresh();
 	}
 
 	/** how many rows the open list shows at once (fewer than `maxVisibleRows` for a short list) */

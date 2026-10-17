@@ -12,7 +12,24 @@ export { Orchestrator } from './Orchestrator.ts';
 export type { OrchestratorState } from './Orchestrator.ts';
 export { synthesizeTone, synthesizeSound, playTone } from './Synth.ts';
 export type { Waveform, ToneOptions } from './Synth.ts';
-export { parseMidi, scheduleMidi, noteToFrequency, midiLoopStart, MidiPlayer } from './Midi.ts';
+export { parseMidi, scheduleMidi, timedMidiMessages, noteToFrequency, midiLoopStart, MidiPlayer } from './Midi.ts';
+export {
+	INTERNAL_MIDI_ENGINES,
+	midiSynthNames,
+	onMidiSynthFallback,
+	registerMidiSynth,
+	renderMidiThroughSynth,
+	resolveMidiSynth,
+	unregisterMidiSynth,
+} from './MidiSynth.ts';
+export type {
+	MidiSynth,
+	MidiSynthFactory,
+	MidiSynthFallback,
+	MidiSynthRequest,
+	RenderThroughSynthOptions,
+	ResolvedMidiSynth,
+} from './MidiSynth.ts';
 export type {
 	MidiFile,
 	MidiEvent,
@@ -24,8 +41,9 @@ export type {
 	MidiVoice,
 	ScheduledNote,
 	MidiPlayerOptions,
+	TimedMidiMessage,
 } from './Midi.ts';
-export { renderMidiToBuffer, renderMidiToBufferAsync, toAudioBuffer } from './MidiRender.ts';
+export { renderMidiStems, renderMidiToBuffer, renderMidiToBufferAsync, toAudioBuffer } from './MidiRender.ts';
 export { MusicPlayer } from './MusicPlayer.ts';
 export type { MusicPlayerOptions, MusicPlayOptions } from './MusicPlayer.ts';
 export type { RenderMidiOptions, RenderMidiAsyncOptions, RenderedMidi } from './MidiRender.ts';
@@ -49,11 +67,51 @@ export type {
 	SoundFontVoice,
 } from './SoundFont.ts';
 export { Channel, AudioBus } from './Channels.ts';
-export { parseVorbisLoopTags, loopRegionFromTags } from './LoopTags.ts';
+export { parseVorbisLoopTags, loopRegionFromFile, loopRegionFromTags } from './LoopTags.ts';
 export type { VorbisLoopTags } from './LoopTags.ts';
 export type { LoopRegion, ChannelPlayOptions, ChannelState, BusMixerLevel } from './Channels.ts';
+export {
+	DEFAULT_DECODER_LIMITS,
+	DecodeBudgetError,
+	InstructionBudget,
+	assertInputSize,
+	decoderLimits,
+	guardBlockSource,
+	inflateBounded,
+} from './DecoderGuard.ts';
+export type { DecoderLimitName, DecoderLimits, GuardOptions } from './DecoderGuard.ts';
+export { decodeWav, encodeWav, wavInfo } from './Wav.ts';
+export type { WavInfo } from './Wav.ts';
+export { spectralDistance } from './SpectralDistance.ts';
+export type { SpectralDistanceOptions, SpectralDistanceResult } from './SpectralDistance.ts';
+export { AudioSettings, dynamicsLimit, regionPlaybackRate, softenCutoff } from './Settings.ts';
+export { connectWebMidi, requestWebMidiInput } from './WebMidi.ts';
+export { SyxBank, dx7PatchNames, splitSysex } from './SyxBank.ts';
+export { channelEnvelopes, trackerNoteName, trackerPattern, waveformEnvelope } from './AudioViews.ts';
+export type { TrackerRow, WaveformBucket } from './AudioViews.ts';
+export type { SyxPatch } from './SyxBank.ts';
+export type { WebMidiAccess, WebMidiConnection, WebMidiInputPort } from './WebMidi.ts';
+export type { AudioRegion, AudioSettingsData, OutputStage } from './Settings.ts';
+export { AdaptiveMusic } from './AdaptiveMusic.ts';
+export type { AdaptiveLoadOptions, AdaptiveMusicOptions, AdaptivePlayOptions, StemSet } from './AdaptiveMusic.ts';
+export { AudioCoreHost } from './CoreHost.ts';
+export type { AudioCore, AudioCoreHostOptions, AudioCoreStats } from './CoreHost.ts';
+export { onAudioUnderrun } from './Underrun.ts';
+export type { AudioUnderrun } from './Underrun.ts';
+export { StreamChannel } from './StreamChannel.ts';
+export type { BlockSource, StreamChannelOptions, StreamPlayOptions } from './StreamChannel.ts';
+export { StreamPlayable } from './StreamPlayable.ts';
+export type { StreamPlayableOptions } from './StreamPlayable.ts';
+export { TrackCache, bufferBytes, createBudgetedLoader } from './BusBudget.ts';
+export type { BudgetedLoader, BusBudgetPolicy, TrackCacheStats } from './BusBudget.ts';
+export { fitToBudget, resampleStereo } from './Resample.ts';
+export type { RenderBudget, StereoFrames } from './Resample.ts';
 export type {
 	BusKind,
+	BusLoadContext,
+	BusLoadProgress,
+	StreamedTrack,
+	StreamLoader,
 	BusTrack,
 	SavedBusTrack,
 	LoadedTrack,
@@ -61,8 +119,10 @@ export type {
 	BusSnapshot,
 	AudioBusOptions,
 } from './Channels.ts';
+export { SfxArbiter, SfxBank, SfxSound, sfxSeed } from './Sfx.ts';
+export type { SfxBackend, SfxDefinition, SfxGrant, SfxPlayOptions, SfxSoundOptions, SfxVoice } from './Sfx.ts';
 export { AudioListener, SoundSource, audioGain, audioPan } from './Positional.ts';
-export type { AudioPoint, AudioFalloff, SoundSourceOptions } from './Positional.ts';
+export type { AudioPoint, AudioFalloff, PositionalSound, SoundSourceOptions } from './Positional.ts';
 export { subdivisionCount, assertGrooveTemplate } from './humanize/Groove.ts';
 export type { GridSubdivision, GrooveOffset, GrooveTemplate } from './humanize/Groove.ts';
 export { LiteHumanizer } from './humanize/LiteHumanizer.ts';

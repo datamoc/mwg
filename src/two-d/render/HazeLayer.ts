@@ -1,4 +1,5 @@
 import { Sprite, Texture } from 'pixi.js';
+import { clamp } from '../../core/Math.ts';
 import { reducedMotion, type MotionIntent } from '../../core/Motion.ts';
 
 /** the default breeze, in field cells per second, behind a bare `time` with no layer drift */
@@ -19,7 +20,7 @@ function octave(x: number, y: number, seed: number): number {
 	const sy = fy * fy * (3 - 2 * fy);
 	const top = lattice(x0, y0, seed) + (lattice(x0 + 1, y0, seed) - lattice(x0, y0, seed)) * sx;
 	const bottom = lattice(x0, y0 + 1, seed) + (lattice(x0 + 1, y0 + 1, seed) - lattice(x0, y0 + 1, seed)) * sx;
-	return Math.min(1, Math.max(0, top + (bottom - top) * sy));
+	return clamp(top + (bottom - top) * sy, 0, 1);
 }
 
 /**

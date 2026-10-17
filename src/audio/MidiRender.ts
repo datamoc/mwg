@@ -1,6 +1,7 @@
 import { midiLoopStart, noteToFrequency, parseMidi, scheduleMidi, type MidiFile, type ScheduledNote } from './Midi.ts';
 import { parseSoundFont, type MissingProgram, type SoundFont, type SoundFontVoice } from './SoundFont.ts';
 import { spawn } from '../threads/index.ts';
+import { onMidiSynthFallback, renderMidiThroughSynth, resolveMidiSynth, type MidiSynthRequest } from './MidiSynth.ts';
 
 /**
  * A Standard MIDI File rendered to stereo PCM frames, the same bridge the RPG Maker
@@ -21,8 +22,16 @@ import { spawn } from '../threads/index.ts';
  */
 
 export interface RenderMidiOptions {
+	/**
+	 * voices the file through a `MidiSynth` instead: a registered engine name (`'retro:mt32'`), a
+	 * factory, or an ordered list tried until one works. Takes precedence over `soundfont`, which
+	 * stays the next choice when the synth cannot be used (see `onMidiSynthFallback`).
+	 */
+	synth?: MidiSynthRequest;
 	/** voices every note from these samples; without one the built-in synth plays */
 	soundfont?: SoundFont | null;
+	/** voices only these channels (0 to 15) and drops the rest, to render one stem of a file */
+	channels?: readonly number[];
 	/** output sample rate in Hz */
 	sampleRate?: number;
 	/** master level, 0 to 1 */
@@ -44,10 +53,14 @@ export interface RenderedMidi {
 }
 
 export interface RenderMidiAsyncOptions {
+	/** a `MidiSynth` request as for `renderMidiToBuffer`; a synth lives on this thread, so such a render does not go to the worker */
+	synth?: MidiSynthRequest;
 	/** raw SoundFont 2 bytes: parsed on this thread, voiced on the worker */
 	soundFontBytes?: ArrayBuffer | ArrayBufferView;
 	/** what plays for a program the font lacks, as for `parseSoundFont`; `'piano'` when omitted */
 	missingProgram?: MissingProgram;
+	/** voices only these channels (0 to 15), as for `renderMidiToBuffer` */
+	channels?: readonly number[];
 	/** output sample rate in Hz */
 	sampleRate?: number;
 	/** master level, 0 to 1 */
@@ -95,7 +108,39 @@ interface MidiRenderTask {
  * ```
  */
 export function renderMidiToBuffer(file: MidiFile, options: RenderMidiOptions = {}): RenderedMidi {
-	return renderNotes(prepare(file, options));
+	return renderThroughRequestedSynth(file, options) ?? renderNotes(prepare(file, options));
+}
+
+/** the channels of 0 to 15 that are not in the list */
+function otherChannels(channels: readonly number[]): number[] {
+	return Array.from({ length: 16 }, (_, channel) => channel).filter((channel) => !channels.includes(channel));
+}
+
+/** the render through `options.synth`, or null when no synth was asked for or none could be used, in which case the internal path voices the file */
+function renderThroughRequestedSynth(file: MidiFile, options: RenderMidiOptions): RenderedMidi | null {
+	if (!options.synth) return null;
+	const { synth } = resolveMidiSynth(
+		options.synth,
+		options.sampleRate ?? DEFAULT_SAMPLE_RATE,
+		options.soundfont ? 'gm-soundfont' : 'builtin',
+	);
+	if (!synth) return null;
+	try {
+		return renderMidiThroughSynth(file, synth, {
+			maxDuration: options.maxDuration,
+			mutedChannels: options.channels ? otherChannels(options.channels) : undefined,
+		});
+	} catch (error) {
+		if ((error as Error).message === 'MIDI file has no notes') throw error;
+		//a synth that fails mid-render must not take the game's music down with it
+		onMidiSynthFallback.dispatch({
+			requested: 'custom',
+			used: options.soundfont ? 'gm-soundfont' : 'builtin',
+			reason: 'failed',
+			message: (error as Error).message,
+		});
+		return null;
+	}
 }
 
 /**
@@ -130,8 +175,11 @@ export async function renderMidiToBufferAsync(
 	const soundfont = options.soundFontBytes
 		? parseSoundFont(options.soundFontBytes, { missingProgram: options.missingProgram })
 		: null;
+	const viaSynth = renderThroughRequestedSynth(file, { ...options, soundfont });
+	if (viaSynth) return viaSynth;
 	const task = prepare(file, {
 		soundfont,
+		channels: options.channels,
 		sampleRate: options.sampleRate,
 		gain: options.gain,
 		maxDuration: options.maxDuration,
@@ -152,7 +200,8 @@ function prepare(file: MidiFile, options: RenderMidiOptions): MidiRenderTask {
 	if (!(master >= 0)) throw new Error('render gain must not be negative');
 	if (!(maxDuration > 0)) throw new Error('render max duration must be positive');
 
-	const notes = scheduleMidi(file).filter((note) => note.time < maxDuration);
+	const only = options.channels ? new Set(options.channels) : null;
+	const notes = scheduleMidi(file).filter((note) => note.time < maxDuration && (!only || only.has(note.channel)));
 	if (notes.length === 0) throw new Error('MIDI file has no notes');
 	const soundfont = options.soundfont ?? null;
 	const voiceCache = new Map<string, SoundFontVoice[]>();
@@ -463,6 +512,53 @@ function renderNotes(task: MidiRenderTask): RenderedMidi {
 		}
 	}
 	return { sampleRate, left, right, loopStart, loopEnd: duration, duration };
+}
+
+/**
+ * Renders one file as several stems that line up: each named group of channels is rendered on its
+ * own, and every stem is padded with silence to the length of the longest, so they start together,
+ * loop together and can be mixed by level for adaptive music (`AdaptiveMusic`). A group with no
+ * notes in the file comes out silent rather than failing, since an arrangement may leave a layer
+ * empty. All options of `renderMidiToBuffer` apply, `channels` excepted.
+ *
+ * @example
+ * ```ts
+ * import { parseMidi, renderMidiStems } from '@datamoc/mw_games/audio';
+ *
+ * declare const midiBytes: ArrayBuffer;
+ *
+ * const stems = renderMidiStems(parseMidi(midiBytes), { rhythm: [9], melody: [0, 1], pads: [2] });
+ * console.log(stems.rhythm.duration === stems.melody.duration); // true
+ * ```
+ */
+export function renderMidiStems(
+	file: MidiFile,
+	groups: Record<string, readonly number[]>,
+	options: Omit<RenderMidiOptions, 'channels'> = {},
+): Record<string, RenderedMidi> {
+	const scheduled = scheduleMidi(file);
+	const rendered: Record<string, RenderedMidi | null> = {};
+	for (const [name, channels] of Object.entries(groups)) {
+		const wanted = new Set(channels);
+		const hasNotes = scheduled.some((note) => wanted.has(note.channel));
+		rendered[name] = hasNotes ? renderMidiToBuffer(file, { ...options, channels }) : null;
+	}
+	const frames = Math.max(1, ...Object.values(rendered).map((stem) => stem?.left.length ?? 0));
+	const sampleRate =
+		Object.values(rendered).find((stem) => stem)?.sampleRate ?? options.sampleRate ?? DEFAULT_SAMPLE_RATE;
+	const duration = frames / sampleRate;
+	const loopStart = Math.min(midiLoopStart(file) ?? 0, Math.max(0, duration - 0.1));
+	const stems: Record<string, RenderedMidi> = {};
+	for (const [name, stem] of Object.entries(rendered)) {
+		const left = new Float32Array(frames);
+		const right = new Float32Array(frames);
+		if (stem) {
+			left.set(stem.left);
+			right.set(stem.right);
+		}
+		stems[name] = { sampleRate, left, right, loopStart, loopEnd: duration, duration };
+	}
+	return stems;
 }
 
 /**

@@ -19,6 +19,7 @@ import { parseTwee } from '../../src/core/Twee.ts';
 import { parseDialogueText } from '../../src/rpg/dialogue-text.ts';
 import { deserializeReplay } from '../../src/core/Replay.ts';
 import { parseInbound } from '../../src/core/Sanitize.ts';
+import { parseMidi, scheduleMidi } from '../../src/audio/Midi.ts';
 import { parseFTL } from '../../src/i18n/Fluent.ts';
 import { parsePo } from '../../src/i18n/Po.ts';
 import { SaveSystem } from '../../src/core/Save.ts';
@@ -99,6 +100,13 @@ export const TARGETS: Record<string, Target> = {
 		corpus: ['msgid "greeting"\nmsgstr "Bonjour"\n\nmsgid "two\\nlines"\nmsgstr "a\\tb"\n'],
 		syntax: '"\\ntmsgidstr#',
 		run: (input) => parsePo('fr', input),
+	},
+	//a format 0 file: one program change, a note and the end of track
+	midi: {
+		corpus: ['MThd\0\0\0\x06\0\0\0\x01\0\x60MTrk\0\0\0\x0f\0\xc0\x05\0\x90\x45\x64\x60\x80\x45\0\0\xff\x2f\0'],
+		bytes: true,
+		syntax: '\x80\x90\xb0\xc0\xe0\xff\x2f\x51\x7f\0',
+		run: (input) => scheduleMidi(parseMidi(Uint8Array.from(input, (c) => c.charCodeAt(0) & 255))),
 	},
 	saveImport: {
 		corpus: ['{"meta":{"version":1,"savedAt":1700000000000,"preview":"F3"},"state":{"gold":3,"bag":["key"]}}'],

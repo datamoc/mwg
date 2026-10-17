@@ -1,4 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
+import { clamp } from '../../core/Math.ts';
 import { Easing } from '../../core/Tween.ts';
 import { reducedMotion } from '../../core/Motion.ts';
 
@@ -171,7 +172,7 @@ export class ScreenEffects extends Container {
 		this.phase = 'idle';
 		this.elapsed = 0;
 		this.overlay.tint = color;
-		this.overlay.alpha = Math.max(0, Math.min(1, alpha));
+		this.overlay.alpha = clamp(alpha, 0, 1);
 	}
 
 	/** clears the overlay outright, running effect, sequence and held tint alike */

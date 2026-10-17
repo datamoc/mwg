@@ -12,7 +12,10 @@
  * Tests hand in fakes for both, the same way `Sound` and `Music` take `create()`.
  */
 
+import { Signal } from '../core/Signal.ts';
 import { createAudioLoader } from './AudioLoader.ts';
+import type { SfxArbiter } from './Sfx.ts';
+import { StreamChannel, type BlockSource } from './StreamChannel.ts';
 
 /** seconds within a buffer: the region a looping track repeats */
 export interface LoopRegion {
@@ -243,6 +246,14 @@ export interface BusTrack {
 	pitch?: number;
 	pan?: number;
 	pos?: number;
+	/** identity of the content behind a synthesised track, `id@version#sha256`, so a save replays the same bytes or says it cannot */
+	contentId?: string;
+	/** the engine that voiced it (`'retro:mt32'`), so a restore picks the same one when it can */
+	engine?: string;
+	/** playhead in source frames, exact where `pos` in seconds is not; a restore skips to it */
+	frame?: number;
+	/** for `playSe` only: asks the shared `SfxArbiter` for a voice at this priority; 0 when omitted */
+	priority?: number;
 }
 
 /** a resolved track request: every parameter filled in, ready to store or restore */
@@ -252,6 +263,9 @@ export interface SavedBusTrack {
 	pitch: number;
 	pan: number;
 	pos: number;
+	contentId?: string;
+	engine?: string;
+	frame?: number;
 }
 
 /** a decoded track: its buffer plus the region it repeats, if any */
@@ -260,8 +274,43 @@ export interface LoadedTrack {
 	loop?: LoopRegion | null;
 }
 
+/** what a loader may use while it works: a signal that says the request was replaced, and a way to report how far along it is */
+export interface BusLoadContext {
+	/** aborted when a newer request for the same kind replaces this one, so a long render can stop early */
+	signal: AbortSignal;
+	/** reports progress from 0 to 1; `AudioBus.onLoadProgress` forwards it */
+	progress(fraction: number): void;
+	/** the request being loaded, including the content id, engine and frame a restored save carries */
+	track: SavedBusTrack;
+}
+
 /** turns a kind and a name into a decoded buffer, or null when it cannot */
-export type BusLoader = (kind: BusKind, name: string) => Promise<LoadedTrack | null>;
+export type BusLoader = (kind: BusKind, name: string, context?: BusLoadContext) => Promise<LoadedTrack | null>;
+
+/** a track played by pulling frames instead of holding a decoded buffer */
+export interface StreamedTrack {
+	source: BlockSource;
+	/** region the repeat wraps inside, in seconds; the whole source when omitted */
+	loop?: LoopRegion | null;
+	/** stop an endless source after this many seconds, fading out over `endFadeSeconds` (2 when omitted) */
+	endAfterSeconds?: number;
+	endFadeSeconds?: number;
+}
+
+/** turns a kind and a name into a streamed source, or null to let the buffer loader answer instead */
+export type StreamLoader = (
+	kind: 'bgm' | 'bgs',
+	name: string,
+	context: BusLoadContext,
+) => Promise<StreamedTrack | null>;
+
+/** how far a track's load has got */
+export interface BusLoadProgress {
+	kind: BusKind;
+	name: string;
+	/** 0 to 1 */
+	fraction: number;
+}
 
 /** plain-data bus state for saves and transfers: tracks plus memorized ones */
 export interface BusSnapshot {
@@ -282,6 +331,13 @@ export interface AudioBusOptions {
 	destination?: AudioNode;
 	/** Defaults to embedded asset loading, including worker-rendered MIDI; customize with `createAudioLoader`. */
 	load?: BusLoader;
+	/**
+	 * asked first for BGM and BGS: a source it returns plays through a `StreamChannel`, so a long
+	 * or endless track never becomes a whole `AudioBuffer`; null falls through to `load`
+	 */
+	stream?: StreamLoader;
+	/** the voice limit shared with `SfxSound`s: `playSe` asks it for a slot at `BusTrack.priority` */
+	arbiter?: SfxArbiter;
 }
 
 function clampBus(value: number | undefined, low: number, high: number, fallback: number): number {
@@ -310,6 +366,12 @@ export class AudioBus {
 	private readonly context: AudioContext;
 	private readonly destination: AudioNode;
 	private readonly load: BusLoader;
+	private readonly streamLoader: StreamLoader | null;
+	private readonly arbiter: SfxArbiter | null;
+	private readonly streams: Record<'bgm' | 'bgs', StreamChannel>;
+	private readonly aborts: Record<'bgm' | 'bgs', AbortController | null> = { bgm: null, bgs: null };
+	/** told as a loader reports progress, for a loading bar over a long render */
+	readonly onLoadProgress = new Signal<BusLoadProgress>();
 	private readonly bgmChannel: Channel;
 	private readonly bgsChannel: Channel;
 	private readonly tracks: { bgm: SavedBusTrack | null; bgs: SavedBusTrack | null } = { bgm: null, bgs: null };
@@ -339,6 +401,44 @@ export class AudioBus {
 		this.kindGains = { bgm: kindGain(), bgs: kindGain(), me: kindGain(), se: kindGain() };
 		this.bgmChannel = new Channel(context, this.kindGains.bgm);
 		this.bgsChannel = new Channel(context, this.kindGains.bgs);
+		this.streamLoader = options.stream ?? null;
+		this.arbiter = options.arbiter ?? null;
+		this.streams = {
+			bgm: new StreamChannel(context, this.kindGains.bgm),
+			bgs: new StreamChannel(context, this.kindGains.bgs),
+		};
+	}
+
+	/** the streaming voice of a loop kind, for underrun reports and its own controls */
+	streamChannel(kind: 'bgm' | 'bgs'): StreamChannel {
+		return this.streams[kind];
+	}
+
+	/** a newer request, or a stop, replaces whatever a loop kind is still loading */
+	private cancelLoad(kind: 'bgm' | 'bgs'): void {
+		this.requests[kind]++;
+		this.aborts[kind]?.abort();
+		this.aborts[kind] = null;
+	}
+
+	private stopLoop(kind: 'bgm' | 'bgs', fadeSeconds = 0): void {
+		(kind === 'bgm' ? this.bgmChannel : this.bgsChannel).stop(fadeSeconds);
+		this.streams[kind].stop(fadeSeconds);
+	}
+
+	private loopPlaying(kind: 'bgm' | 'bgs'): boolean {
+		return (kind === 'bgm' ? this.bgmChannel : this.bgsChannel).isPlaying || this.streams[kind].isPlaying;
+	}
+
+	private loopPosition(kind: 'bgm' | 'bgs'): number {
+		return this.streams[kind].isPlaying
+			? this.streams[kind].position()
+			: (kind === 'bgm' ? this.bgmChannel : this.bgsChannel).position();
+	}
+
+	/** a stream's playhead in source frames, undefined for a buffered track which has only seconds */
+	private loopFrame(kind: 'bgm' | 'bgs'): number | undefined {
+		return this.streams[kind].isPlaying ? this.streams[kind].positionFrames() : undefined;
 	}
 
 	/**
@@ -369,37 +469,41 @@ export class AudioBus {
 	}
 
 	stopBgm(): void {
-		this.requests.bgm++;
+		this.cancelLoad('bgm');
 		this.tracks.bgm = null;
 		this.suspendedBgm = null;
-		this.bgmChannel.stop();
+		this.stopLoop('bgm');
 	}
 
 	stopBgs(): void {
-		this.requests.bgs++;
+		this.cancelLoad('bgs');
 		this.tracks.bgs = null;
-		this.bgsChannel.stop();
+		this.stopLoop('bgs');
 	}
 
 	fadeOutBgm(seconds = 1): void {
-		this.requests.bgm++;
+		this.cancelLoad('bgm');
 		this.tracks.bgm = null;
 		this.suspendedBgm = null;
-		this.bgmChannel.stop(Math.max(0, seconds));
+		this.stopLoop('bgm', Math.max(0, seconds));
 	}
 
 	fadeOutBgs(seconds = 1): void {
-		this.requests.bgs++;
+		this.cancelLoad('bgs');
 		this.tracks.bgs = null;
-		this.bgsChannel.stop(Math.max(0, seconds));
+		this.stopLoop('bgs', Math.max(0, seconds));
 	}
 
 	/** the intended track with its live playhead, or the one an ME suspended */
 	currentTrack(kind: 'bgm' | 'bgs'): SavedBusTrack | null {
 		const track = this.tracks[kind];
 		if (track) {
-			const channel = kind === 'bgm' ? this.bgmChannel : this.bgsChannel;
-			return { ...track, pos: channel.isPlaying ? channel.position() : track.pos };
+			const frame = this.loopFrame(kind);
+			return {
+				...track,
+				pos: this.loopPlaying(kind) ? this.loopPosition(kind) : track.pos,
+				...(frame === undefined ? {} : { frame }),
+			};
 		}
 		return kind === 'bgm' ? this.suspendedBgm : null;
 	}
@@ -440,8 +544,8 @@ export class AudioBus {
 		const remembered = this.currentTrack('bgm');
 		if (remembered) {
 			this.suspendedBgm = remembered;
-			this.requests.bgm++;
-			this.bgmChannel.stop();
+			this.cancelLoad('bgm');
+			this.stopLoop('bgm');
 			this.tracks.bgm = null;
 		}
 		const { source } = wireVoice(
@@ -471,6 +575,16 @@ export class AudioBus {
 		if (!se.name) return;
 		const loaded = await this.load('se', se.name);
 		if (!loaded) return;
+		let node: { source: AudioBufferSourceNode } | null = null;
+		const grant =
+			this.arbiter?.request(
+				Math.floor(Number(track.priority) || 0),
+				() => {
+					if (node) this.cutSe(node);
+				},
+				() => !node || this.seNodes.has(node),
+			) ?? null;
+		if (this.arbiter && !grant) return;
 		const { source } = wireVoice(
 			this.context,
 			this.kindGains.se,
@@ -479,12 +593,23 @@ export class AudioBus {
 			se.pitch / 100,
 			se.pan / 100,
 		);
-		const node = { source };
+		node = { source };
 		this.seNodes.add(node);
 		source.onended = () => {
-			this.seNodes.delete(node);
+			this.seNodes.delete(node!);
+			grant?.release();
 		};
 		source.start(0);
+	}
+
+	private cutSe(node: { source: AudioBufferSourceNode }): void {
+		node.source.onended = null;
+		this.seNodes.delete(node);
+		try {
+			node.source.stop();
+		} catch {
+			//already ended
+		}
 	}
 
 	stopSe(): void {
@@ -500,13 +625,13 @@ export class AudioBus {
 	}
 
 	stopAll(): void {
-		this.requests.bgm++;
-		this.requests.bgs++;
+		this.cancelLoad('bgm');
+		this.cancelLoad('bgs');
 		this.tracks.bgm = null;
 		this.tracks.bgs = null;
 		this.suspendedBgm = null;
-		this.bgmChannel.stop();
-		this.bgsChannel.stop();
+		this.stopLoop('bgm');
+		this.stopLoop('bgs');
 		this.stopMeNodes();
 		this.stopSe();
 	}
@@ -537,47 +662,74 @@ export class AudioBus {
 			pitch: clampBus(track?.pitch, 10, 400, 100),
 			pan: clampBus(track?.pan, -100, 100, 0),
 			pos: Math.max(0, Number(track?.pos) || 0),
+			...(typeof track?.contentId === 'string' ? { contentId: track.contentId } : {}),
+			...(typeof track?.engine === 'string' ? { engine: track.engine } : {}),
+			...(Number.isFinite(track?.frame) ? { frame: Math.max(0, Math.floor(track.frame!)) } : {}),
 		};
 	}
 
 	private async playLoop(kind: 'bgm' | 'bgs', input: BusTrack): Promise<void> {
-		const channel = kind === 'bgm' ? this.bgmChannel : this.bgsChannel;
 		const wanted = AudioBus.normalize(input);
 		if (!wanted.name) {
-			this.requests[kind]++;
+			this.cancelLoad(kind);
 			this.tracks[kind] = null;
 			if (kind === 'bgm') this.suspendedBgm = null;
-			channel.stop();
+			this.stopLoop(kind);
 			return;
 		}
 		const current = this.tracks[kind];
 		//Replaying the current track only retunes it, even while it still loads.
 		if (current && current.name === wanted.name && !(wanted.pos > 0)) {
 			this.tracks[kind] = { ...wanted, pos: 0 };
-			channel.update({ volume: wanted.volume / 100, pitch: wanted.pitch / 100, pan: wanted.pan / 100 });
+			const retune = { volume: wanted.volume / 100, pitch: wanted.pitch / 100, pan: wanted.pan / 100 };
+			(kind === 'bgm' ? this.bgmChannel : this.bgsChannel).update(retune);
+			this.streams[kind].update(retune);
 			return;
 		}
 		//A BGM requested mid-jingle replaces the suspended one instead of racing it.
 		if (kind === 'bgm' && this.me) {
-			this.requests.bgm++;
+			this.cancelLoad('bgm');
 			this.suspendedBgm = wanted;
 			this.tracks.bgm = null;
-			channel.stop();
+			this.stopLoop('bgm');
 			return;
 		}
-		const request = ++this.requests[kind];
-		channel.stop();
+		this.cancelLoad(kind);
+		const request = this.requests[kind];
+		const abort = new AbortController();
+		this.aborts[kind] = abort;
+		const context: BusLoadContext = {
+			track: wanted,
+			signal: abort.signal,
+			progress: (fraction) => {
+				if (request === this.requests[kind])
+					this.onLoadProgress.dispatch({ kind, name: wanted.name, fraction });
+			},
+		};
+		this.stopLoop(kind);
 		this.tracks[kind] = { ...wanted, pos: 0 };
-		const loaded = await this.load(kind, wanted.name);
+		const params = { volume: wanted.volume / 100, pitch: wanted.pitch / 100, pan: wanted.pan / 100 };
+		const streamed = this.streamLoader ? await this.streamLoader(kind, wanted.name, context) : null;
+		if (request !== this.requests[kind]) return;
+		if (streamed) {
+			this.streams[kind].play(streamed.source, {
+				...params,
+				pos: wanted.pos,
+				repeat: true,
+				loop: streamed.loop,
+				endAfterSeconds: streamed.endAfterSeconds,
+				endFadeSeconds: streamed.endFadeSeconds,
+			});
+			return;
+		}
+		const loaded = await this.load(kind, wanted.name, context);
 		if (request !== this.requests[kind]) return;
 		if (!loaded) {
 			this.tracks[kind] = null;
 			return;
 		}
-		channel.play(loaded.buffer, {
-			volume: wanted.volume / 100,
-			pitch: wanted.pitch / 100,
-			pan: wanted.pan / 100,
+		(kind === 'bgm' ? this.bgmChannel : this.bgsChannel).play(loaded.buffer, {
+			...params,
 			pos: wanted.pos,
 			loop: loaded.loop ?? null,
 		});

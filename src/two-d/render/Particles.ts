@@ -1,4 +1,5 @@
 import { Container, Sprite } from 'pixi.js';
+import { clamp } from '../../core/Math.ts';
 import * as Random from '../../core/Random.ts';
 import { reducedMotion } from '../../core/Motion.ts';
 import type { Texture2D } from './Types2D.ts';
@@ -270,7 +271,7 @@ export class ParticleEmitter extends Container {
 		this.gravityY = options.gravity?.y ?? 0;
 		this.scaleOf = curveOf(options.scale ?? [1, 1]);
 		this.alphaOf = curveOf(options.alpha ?? [1, 0]);
-		this.flicker = Math.min(1, Math.max(0, options.flicker ?? 0));
+		this.flicker = clamp(options.flicker ?? 0, 0, 1);
 		this.spin = options.spin ?? 0;
 		this.tintRange = options.tint ?? 0xffffff;
 		this.frames = options.frames;

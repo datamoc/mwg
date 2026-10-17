@@ -104,8 +104,8 @@ export interface ScrollTextOptions {
 /**
  * A wrapped `Label` in a `ScrollBox` that sizes itself: the box is as tall as the text up to
  * `maxHeight`, and scrolls (wheel, touch, keys, scrollbar) beyond it, so a long hint, credit list or
- * result message never spills over what is around it. `setText` re-measures; the caller no longer
- * measures the label and feeds `setContentHeight` by hand.
+ * result message never spills over what is around it. `setText` re-measures and `resize(width)`
+ * re-wraps in place; the caller no longer measures the label and feeds `setContentHeight` by hand.
  *
  * @example
  * ```ts
@@ -119,9 +119,13 @@ export interface ScrollTextOptions {
 export class ScrollText extends Container {
 	readonly box: ScrollBox;
 	private readonly body: Label;
+	private readonly maxHeight: number;
+	private width_: number;
 
 	constructor(options: ScrollTextOptions) {
 		super();
+		this.width_ = options.width;
+		this.maxHeight = options.maxHeight;
 		this.body = new Label({ ...options.label, text: options.text ?? '', wrapWidth: options.width - 10 });
 		this.box = new ScrollBox({
 			width: options.width,
@@ -142,6 +146,22 @@ export class ScrollText extends Container {
 
 	private measure(): void {
 		this.box.setContentHeight(this.measureHeight());
+	}
+
+	/** the current width, what `resize` last set it to */
+	get viewWidth(): number {
+		return this.width_;
+	}
+
+	/**
+	 * Sets the width in place: the text re-wraps at the new width and the box resizes and
+	 * re-measures, so a layout change does not rebuild the widget.
+	 */
+	resize(width: number): void {
+		this.width_ = width;
+		this.body.setWrapWidth(width - 10);
+		this.box.resize(width, this.maxHeight);
+		this.measure();
 	}
 
 	setText(text: string): void {

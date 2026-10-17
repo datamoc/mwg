@@ -1375,6 +1375,8 @@ build instead.
     export declare class DropdownView extends Container {
         readonly model: Dropdown;
         private width_;
+        private readonly autoWidth;
+        private readonly maxWidth;
         private readonly rowHeight;
         private readonly maxRows;
         private readonly head;
@@ -1389,6 +1391,9 @@ build instead.
         private labelWidth;
 
         get viewWidth(): number;
+        private capWidth;
+
+        resize(width: number): void;
 
         get visibleRows(): number;
 
@@ -1415,6 +1420,8 @@ build instead.
         maxVisibleRows?: number;
 
         autoWidth?: boolean;
+
+        maxWidth?: number;
     }
 
 ### `Easing` (const)
@@ -1796,6 +1803,8 @@ build instead.
         private hitStopScale;
         private stack;
         private pending;
+
+        private queued;
         private running;
         private options;
         private started;
@@ -1847,6 +1856,8 @@ build instead.
         private beginTransition;
 
         private endTransition;
+
+        private applyRequest;
         private applySwap;
 
         private applySwitch;
@@ -5013,6 +5024,7 @@ build instead.
         readonly onChange: Signal<number>;
 
         readonly content: Container<import("pixi.js").ContainerChild>;
+        private readonly hit;
         private maskShape;
         private track;
         private thumb;
@@ -5030,6 +5042,8 @@ build instead.
         constructor(options: ScrollBoxOptions);
         get offset(): number;
         get contentHeight(): number;
+
+        get viewportWidth(): number;
         get viewportHeight(): number;
 
         private fit;
@@ -5126,10 +5140,16 @@ build instead.
     export declare class ScrollText extends Container {
         readonly box: ScrollBox;
         private readonly body;
+        private readonly maxHeight;
+        private width_;
         constructor(options: ScrollTextOptions);
 
         protected measureHeight(): number;
         private measure;
+
+        get viewWidth(): number;
+
+        resize(width: number): void;
         setText(text: string): void;
 
         update(dt: number): void;
@@ -6904,6 +6924,14 @@ build instead.
         over: Container2D;
     }
 
+### `transitionDisposition` (function)
+
+    export declare function transitionDisposition(options: TransitionOptions | undefined, transitioning: boolean): TransitionDisposition;
+
+### `TransitionDisposition` (type)
+
+    export type TransitionDisposition = 'apply' | 'ignore' | 'queue' | 'interrupt';
+
 ### `TransitionOptions` (interface)
 
     export interface TransitionOptions {
@@ -6914,6 +6942,10 @@ build instead.
         easing?: keyof typeof Easing | EasingFunction;
 
         pause?: boolean;
+
+        queue?: boolean;
+
+        interrupt?: boolean;
 
         onDone?: () => void;
     }
@@ -7122,7 +7154,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.43.0";
+    export declare const version = "0.44.0";
 
 ### `VerticalLabel` (class)
 
@@ -9329,9 +9361,78 @@ build instead.
 
 ## `./audio`
 
+### `AdaptiveLoadOptions` (interface)
+
+    export interface AdaptiveLoadOptions {
+
+        groups?: Readonly<Record<string, readonly string[]>>;
+
+        loop?: LoopRegion | null;
+    }
+
+### `AdaptiveMusic` (class)
+
+    export declare class AdaptiveMusic {
+        private readonly context;
+        private readonly destination;
+        private readonly defaultFade;
+        private readonly versions;
+        private running;
+        private startedAt;
+        private offsetFrames;
+        private levels_;
+        constructor(context: AudioContext, options?: AdaptiveMusicOptions);
+        get isPlaying(): boolean;
+
+        get version(): string | null;
+
+        load(name: string, stems: StemSet, options?: AdaptiveLoadOptions): void;
+
+        play(options?: AdaptivePlayOptions): void;
+
+        setLevel(target: string, level: number, fadeSeconds?: number): void;
+
+        levels(): Record<string, number>;
+
+        positionFrames(): number;
+        position(): number;
+
+        switchVersion(name: string, fadeSeconds?: number): void;
+
+        stop(fadeSeconds?: number): void;
+        private startVersion;
+        private membersOf;
+        private ramp;
+        private stopAt;
+    }
+
+### `AdaptiveMusicOptions` (interface)
+
+    export interface AdaptiveMusicOptions {
+        destination?: AudioNode;
+
+        fadeSeconds?: number;
+    }
+
+### `AdaptivePlayOptions` (interface)
+
+    export interface AdaptivePlayOptions {
+
+        version?: string;
+
+        pos?: number;
+
+        levels?: Readonly<Record<string, number>>;
+    }
+
 ### `assertGrooveTemplate` (function)
 
     export declare function assertGrooveTemplate(template: GrooveTemplate): void;
+
+### `assertInputSize` (function)
+
+    export declare function assertInputSize(input: {
+        byteLength: number;
 
 ### `AudioBus` (class)
 
@@ -9339,6 +9440,12 @@ build instead.
         private readonly context;
         private readonly destination;
         private readonly load;
+        private readonly streamLoader;
+        private readonly arbiter;
+        private readonly streams;
+        private readonly aborts;
+
+        readonly onLoadProgress: Signal<BusLoadProgress>;
         private readonly bgmChannel;
         private readonly bgsChannel;
         private readonly tracks;
@@ -9351,6 +9458,15 @@ build instead.
         private readonly mixerLevels;
         private readonly kindGains;
         constructor(context: AudioContext, options?: AudioBusOptions);
+
+        streamChannel(kind: 'bgm' | 'bgs'): StreamChannel;
+
+        private cancelLoad;
+        private stopLoop;
+        private loopPlaying;
+        private loopPosition;
+
+        private loopFrame;
 
         setMixer(kind: BusKind, level: {
             volume?: number;
@@ -9380,6 +9496,7 @@ build instead.
         stopMe(resume?: boolean): void;
 
         playSe(track: BusTrack): Promise<void>;
+        private cutSe;
         stopSe(): void;
         stopAll(): void;
 
@@ -9398,6 +9515,89 @@ build instead.
         destination?: AudioNode;
 
         load?: BusLoader;
+
+        stream?: StreamLoader;
+
+        arbiter?: SfxArbiter;
+    }
+
+### `AudioCore` (type)
+
+    export type AudioCore = MidiSynth;
+
+### `AudioCoreHost` (class)
+
+    export declare class AudioCoreHost implements BlockSource {
+        readonly sampleRate: number;
+
+        readonly onUnderrun: Signal<number>;
+        private readonly factorySource;
+        private readonly blockFrames;
+        private readonly queueFrames;
+        private readonly requested;
+        private link;
+        private runner;
+        private mode_;
+        private fallbackReason;
+        private warm;
+
+        private failure;
+        private disposed;
+        private readFrame;
+        private requestedUntil;
+        private blocks;
+        private underruns;
+        private load;
+        constructor(options: AudioCoreHostOptions);
+
+        get mode(): 'worker' | 'inline';
+        stats(): AudioCoreStats;
+
+        event(status: number, data1: number, data2: number, atFrame?: number): void;
+        sysex(bytes: Uint8Array, atFrame?: number): void;
+
+        reset(): void;
+
+        seek(frame: number): void;
+
+        pump(needed?: number): void;
+
+        read(left: Float32Array, right: Float32Array, start: number, count: number): number;
+
+        dispose(): void;
+        private openWorker;
+        private goInline;
+        private onWorkerMessage;
+        private noteLoad;
+        private send;
+        private post;
+    }
+
+### `AudioCoreHostOptions` (interface)
+
+    export interface AudioCoreHostOptions {
+
+        factory: (sampleRate: number) => AudioCore;
+        sampleRate: number;
+
+        mode?: 'auto' | 'worker' | 'inline';
+
+        blockFrames?: number;
+
+        queueSeconds?: number;
+    }
+
+### `AudioCoreStats` (interface)
+
+    export interface AudioCoreStats {
+        mode: 'worker' | 'inline';
+
+        fallbackReason?: string;
+        underruns: number;
+
+        queuedFrames: number;
+
+        load: number;
     }
 
 ### `AudioFalloff` (interface)
@@ -9438,6 +9638,8 @@ build instead.
         midi?: RenderMidiAsyncOptions;
 
         read?: (path: string) => Promise<ArrayBuffer>;
+
+        budget?: BusBudgetPolicy;
     }
 
 ### `audioPan` (function)
@@ -9452,13 +9654,116 @@ build instead.
         y: number;
     }
 
+### `AudioRegion` (type)
+
+    export type AudioRegion = 'pal' | 'ntsc';
+
+### `AudioSettings` (class)
+
+    export declare class AudioSettings {
+        private data;
+        constructor(initial?: Partial<AudioSettingsData>);
+
+        snapshot(): AudioSettingsData;
+
+        restore(data: Partial<AudioSettingsData>): void;
+        setBusVolume(kind: BusKind, volume: number): void;
+
+        applyToBus(bus: AudioBus): void;
+
+        playbackRate(authored?: AudioRegion): number;
+
+        cutoff(sampleRate: number): number;
+
+        limit(sample: number): number;
+    }
+
+### `AudioSettingsData` (interface)
+
+    export interface AudioSettingsData {
+
+        busVolumes: Record<BusKind, number>;
+
+        preferredEngine: string | null;
+        region: AudioRegion;
+        outputStage: OutputStage;
+
+        captions: boolean;
+
+        dynamics: number;
+
+        soften: number;
+    }
+
+### `AudioUnderrun` (interface)
+
+    export interface AudioUnderrun {
+
+        source: 'stream' | 'core';
+
+        lateSeconds: number;
+    }
+
+### `BlockSource` (interface)
+
+    export interface BlockSource {
+        readonly sampleRate: number;
+
+        readonly length?: number;
+
+        read(left: Float32Array, right: Float32Array, start: number, count: number): number;
+
+        seek(frame: number): void;
+    }
+
+### `BudgetedLoader` (interface)
+
+    export interface BudgetedLoader extends BusLoader {
+        readonly cache: TrackCache;
+    }
+
+### `bufferBytes` (function)
+
+    export declare function bufferBytes(buffer: Pick<AudioBuffer, 'length' | 'numberOfChannels'>): number;
+
+### `BusBudgetPolicy` (interface)
+
+    export interface BusBudgetPolicy {
+
+        maxMegabytes?: number;
+
+        maxEntries?: number;
+
+        render?: RenderBudget;
+    }
+
 ### `BusKind` (type)
 
     export type BusKind = 'bgm' | 'bgs' | 'me' | 'se';
 
+### `BusLoadContext` (interface)
+
+    export interface BusLoadContext {
+
+        signal: AbortSignal;
+
+        progress(fraction: number): void;
+
+        track: SavedBusTrack;
+    }
+
 ### `BusLoader` (type)
 
-    export type BusLoader = (kind: BusKind, name: string) => Promise<LoadedTrack | null>;
+    export type BusLoader = (kind: BusKind, name: string, context?: BusLoadContext) => Promise<LoadedTrack | null>;
+
+### `BusLoadProgress` (interface)
+
+    export interface BusLoadProgress {
+        kind: BusKind;
+        name: string;
+
+        fraction: number;
+    }
 
 ### `BusMixerLevel` (interface)
 
@@ -9485,6 +9790,14 @@ build instead.
         pitch?: number;
         pan?: number;
         pos?: number;
+
+        contentId?: string;
+
+        engine?: string;
+
+        frame?: number;
+
+        priority?: number;
     }
 
 ### `CaptionEvent` (interface)
@@ -9532,6 +9845,10 @@ build instead.
         private clearNodes;
     }
 
+### `channelEnvelopes` (function)
+
+    export declare function channelEnvelopes(left: Float32Array, right: Float32Array, buckets: number): [WaveformBucket[], WaveformBucket[]];
+
 ### `ChannelPlayOptions` (interface)
 
     export interface ChannelPlayOptions {
@@ -9562,6 +9879,10 @@ build instead.
 
     export declare function collectSoundFontUsage(files: readonly MidiFile[]): SoundFontProgram[];
 
+### `connectWebMidi` (function)
+
+    export declare function connectWebMidi(access: WebMidiAccess, synth: MidiSynth): WebMidiConnection;
+
 ### `createAudio` (function)
 
     export declare function createAudio(path: string): Playable;
@@ -9570,9 +9891,70 @@ build instead.
 
     export declare function createAudioLoader(context: BaseAudioContext, options?: AudioLoaderOptions): BusLoader;
 
+### `createBudgetedLoader` (function)
+
+    export declare function createBudgetedLoader(inner: BusLoader, policy: BusBudgetPolicy): BudgetedLoader;
+
+### `DecodeBudgetError` (class)
+
+    export declare class DecodeBudgetError extends Error {
+        readonly limit: DecoderLimitName;
+        constructor(limit: DecoderLimitName, message: string);
+    }
+
+### `DecoderLimitName` (type)
+
+    export type DecoderLimitName = keyof DecoderLimits;
+
+### `decoderLimits` (function)
+
+    export declare function decoderLimits(overrides?: Partial<DecoderLimits>): DecoderLimits;
+
+### `DecoderLimits` (interface)
+
+    export interface DecoderLimits {
+
+        maxInputBytes: number;
+
+        maxOutputBytes: number;
+
+        maxInstructionsPerSecond: number;
+
+        maxSeconds: number;
+
+        maxRealtimeRatio: number;
+
+        maxStarvedReads: number;
+    }
+
 ### `decodeSoundFont` (function)
 
     export declare function decodeSoundFont(data: ArrayBuffer | ArrayBufferView, decode: SoundFontSampleDecoder, limits?: SoundFontLimits): Promise<ArrayBuffer>;
+
+### `decodeWav` (function)
+
+    export declare function decodeWav(bytes: Uint8Array): StereoFrames;
+
+### `DEFAULT_DECODER_LIMITS` (const)
+
+    export declare const DEFAULT_DECODER_LIMITS: Readonly<DecoderLimits>;
+
+### `dx7PatchNames` (function)
+
+    export declare function dx7PatchNames(bytes: Uint8Array): SyxPatch[];
+
+### `dynamicsLimit` (function)
+
+    export declare function dynamicsLimit(sample: number, dynamics: number): number;
+
+### `encodeWav` (function)
+
+    export declare function encodeWav(frames: StereoFrames, format?: 'pcm16' | 'float32'): Uint8Array;
+
+### `fitToBudget` (function)
+
+    export declare function fitToBudget<T extends StereoFrames & {
+        loopStart?: number;
 
 ### `GridSubdivision` (type)
 
@@ -9652,6 +10034,17 @@ build instead.
         offsets: GrooveOffset[];
     }
 
+### `guardBlockSource` (function)
+
+    export declare function guardBlockSource(source: BlockSource, overrides?: Partial<DecoderLimits>, options?: GuardOptions): BlockSource;
+
+### `GuardOptions` (interface)
+
+    export interface GuardOptions {
+
+        now?: () => number;
+    }
+
 ### `HumanizationOptions` (interface)
 
     export interface HumanizationOptions {
@@ -9698,6 +10091,25 @@ build instead.
 
     export type HumanizeStyle = 'jazz' | 'rock' | 'classical' | 'funk';
 
+### `inflateBounded` (function)
+
+    export declare function inflateBounded(packed: Uint8Array, limits?: Partial<DecoderLimits>, format?: 'deflate-raw' | 'deflate' | 'gzip'): Promise<Uint8Array>;
+
+### `InstructionBudget` (class)
+
+    export declare class InstructionBudget {
+        private left;
+        constructor(allowance: number);
+
+        static forSeconds(seconds: number, limits?: Partial<DecoderLimits>): InstructionBudget;
+        get remaining(): number;
+        spend(count?: number): void;
+    }
+
+### `INTERNAL_MIDI_ENGINES` (const)
+
+    export declare const INTERNAL_MIDI_ENGINES: readonly string[];
+
 ### `LiteHumanizer` (class)
 
     export declare class LiteHumanizer implements MidiHumanizerEngine {
@@ -9726,6 +10138,11 @@ build instead.
         start: number;
         end: number;
     }
+
+### `loopRegionFromFile` (function)
+
+    export declare function loopRegionFromFile(file: {
+        loopStartSeconds?: number | null;
 
 ### `loopRegionFromTags` (function)
 
@@ -9805,6 +10222,8 @@ build instead.
         private readonly playFn;
         private readonly waveform;
         private readonly volume;
+        private readonly synth?;
+        private readonly messages;
         private elapsed;
         private index;
         private playing;
@@ -9818,6 +10237,8 @@ build instead.
         update(dt: number): void;
         get isPlaying(): boolean;
 
+        private silenceSynth;
+
         get duration(): number;
     }
 
@@ -9827,6 +10248,8 @@ build instead.
         waveform?: Waveform;
 
         volume?: number;
+
+        synth?: MidiSynth;
 
         play?: (options: ToneOptions) => Playable;
 
@@ -9842,6 +10265,44 @@ build instead.
 
         program: number;
     }
+
+### `MidiSynth` (interface)
+
+    export interface MidiSynth {
+
+        readonly sampleRate: number;
+
+        event(status: number, data1: number, data2: number): void;
+
+        sysex(bytes: Uint8Array): void;
+
+        render(left: Float32Array, right: Float32Array, start: number, count: number): void;
+
+        reset(): void;
+    }
+
+### `MidiSynthFactory` (type)
+
+    export type MidiSynthFactory = (sampleRate: number) => MidiSynth;
+
+### `MidiSynthFallback` (interface)
+
+    export interface MidiSynthFallback {
+
+        requested: string;
+
+        used: string;
+        reason: 'unknown' | 'failed';
+        message?: string;
+    }
+
+### `midiSynthNames` (function)
+
+    export declare function midiSynthNames(): string[];
+
+### `MidiSynthRequest` (type)
+
+    export type MidiSynthRequest = string | MidiSynthFactory | readonly (string | MidiSynthFactory)[];
 
 ### `MidiTempoEvent` (interface)
 
@@ -9977,9 +10438,17 @@ build instead.
 
     export declare function noteToFrequency(note: number): number;
 
+### `onAudioUnderrun` (const)
+
+    export declare const onAudioUnderrun: Signal<AudioUnderrun>;
+
 ### `onCaption` (const)
 
     export declare const onCaption: Signal<CaptionEvent>;
+
+### `onMidiSynthFallback` (const)
+
+    export declare const onMidiSynthFallback: Signal<MidiSynthFallback>;
 
 ### `Orchestrator` (class)
 
@@ -10009,6 +10478,10 @@ build instead.
         track: string;
         fadeDuration?: number;
     }
+
+### `OutputStage` (type)
+
+    export type OutputStage = 'faithful' | 'clean';
 
 ### `parseMidi` (function)
 
@@ -10040,6 +10513,33 @@ build instead.
 
     export declare function playTone(options?: ToneOptions, create?: (dataUri: string) => Playable): Playable;
 
+### `PositionalSound` (interface)
+
+    export interface PositionalSound {
+        play(gain?: number, pitch?: number, pan?: number): unknown;
+    }
+
+### `regionPlaybackRate` (function)
+
+    export declare function regionPlaybackRate(region: AudioRegion, authored?: AudioRegion): number;
+
+### `registerMidiSynth` (function)
+
+    export declare function registerMidiSynth(name: string, factory: MidiSynthFactory): void;
+
+### `RenderBudget` (interface)
+
+    export interface RenderBudget {
+
+        maxSeconds?: number;
+
+        fadeSeconds?: number;
+
+        mono?: boolean;
+
+        halfRate?: boolean;
+    }
+
 ### `RenderedMidi` (interface)
 
     export interface RenderedMidi {
@@ -10058,9 +10558,13 @@ build instead.
 
     export interface RenderMidiAsyncOptions {
 
+        synth?: MidiSynthRequest;
+
         soundFontBytes?: ArrayBuffer | ArrayBufferView;
 
         missingProgram?: MissingProgram;
+
+        channels?: readonly number[];
 
         sampleRate?: number;
 
@@ -10073,7 +10577,11 @@ build instead.
 
     export interface RenderMidiOptions {
 
+        synth?: MidiSynthRequest;
+
         soundfont?: SoundFont | null;
+
+        channels?: readonly number[];
 
         sampleRate?: number;
 
@@ -10082,6 +10590,14 @@ build instead.
         maxDuration?: number;
     }
 
+### `renderMidiStems` (function)
+
+    export declare function renderMidiStems(file: MidiFile, groups: Record<string, readonly number[]>, options?: Omit<RenderMidiOptions, 'channels'>): Record<string, RenderedMidi>;
+
+### `renderMidiThroughSynth` (function)
+
+    export declare function renderMidiThroughSynth(file: MidiFile, synth: MidiSynth, options?: RenderThroughSynthOptions): RenderedMidi;
+
 ### `renderMidiToBuffer` (function)
 
     export declare function renderMidiToBuffer(file: MidiFile, options?: RenderMidiOptions): RenderedMidi;
@@ -10089,6 +10605,42 @@ build instead.
 ### `renderMidiToBufferAsync` (function)
 
     export declare function renderMidiToBufferAsync(midi: ArrayBuffer | ArrayBufferView, options?: RenderMidiAsyncOptions): Promise<RenderedMidi>;
+
+### `RenderThroughSynthOptions` (interface)
+
+    export interface RenderThroughSynthOptions {
+
+        maxDuration?: number;
+
+        tail?: number;
+
+        gain?: number;
+
+        mutedChannels?: Iterable<number>;
+
+        blockSize?: number;
+    }
+
+### `requestWebMidiInput` (function)
+
+    export declare function requestWebMidiInput(synth: MidiSynth): Promise<WebMidiConnection | null>;
+
+### `resampleStereo` (function)
+
+    export declare function resampleStereo<T extends StereoFrames>(frames: T, sampleRate: number): T;
+
+### `ResolvedMidiSynth` (interface)
+
+    export interface ResolvedMidiSynth {
+
+        synth: MidiSynth | null;
+
+        name: string;
+    }
+
+### `resolveMidiSynth` (function)
+
+    export declare function resolveMidiSynth(request: MidiSynthRequest, sampleRate: number, internalName: 'gm-soundfont' | 'builtin'): ResolvedMidiSynth;
 
 ### `SampleDecodingContext` (interface)
 
@@ -10108,6 +10660,9 @@ build instead.
         pitch: number;
         pan: number;
         pos: number;
+        contentId?: string;
+        engine?: string;
+        frame?: number;
     }
 
 ### `ScheduledNote` (interface)
@@ -10124,6 +10679,126 @@ build instead.
 ### `scheduleMidi` (function)
 
     export declare function scheduleMidi(file: MidiFile): ScheduledNote[];
+
+### `SfxArbiter` (class)
+
+    export declare class SfxArbiter {
+        private readonly maxVoices;
+        private readonly voices;
+        constructor(options?: {
+            maxVoices?: number;
+        });
+        get active(): number;
+
+        request(priority: number, stop: () => void, active?: () => boolean): SfxGrant | null;
+    }
+
+### `SfxBackend` (interface)
+
+    export interface SfxBackend {
+
+        play(definition: SfxDefinition, options: SfxPlayOptions): SfxVoice | null;
+    }
+
+### `SfxBank` (class)
+
+    export declare class SfxBank {
+        private readonly definitions;
+        constructor(definitions?: Iterable<SfxDefinition>);
+        define(definition: SfxDefinition): void;
+        has(id: string): boolean;
+        get(id: string): SfxDefinition;
+        ids(): string[];
+    }
+
+### `SfxDefinition` (interface)
+
+    export interface SfxDefinition {
+        id: string;
+
+        priority?: number;
+
+        retrigger?: 'restart' | 'ignore' | 'layer';
+
+        caption?: string;
+        [backendData: string]: unknown;
+    }
+
+### `SfxGrant` (interface)
+
+    export interface SfxGrant {
+        release(): void;
+    }
+
+### `SfxPlayOptions` (interface)
+
+    export interface SfxPlayOptions {
+
+        gain: number;
+
+        pan: number;
+
+        pitch: number;
+
+        seed: number;
+    }
+
+### `sfxSeed` (function)
+
+    export declare function sfxSeed(id: string, frame: number, ordinal?: number): number;
+
+### `SfxSound` (class)
+
+    export declare class SfxSound {
+        volume: number;
+
+        plays: number;
+        private readonly backend;
+        private readonly definition;
+        private readonly options;
+        private readonly live;
+        private suspended_;
+        private lastFrame;
+        private ordinal;
+        constructor(backend: SfxBackend, effect: SfxDefinition | string, options?: SfxSoundOptions);
+        get isSuspended(): boolean;
+
+        get activeVoices(): number;
+
+        play(gain?: number, pitch?: number, pan?: number): boolean;
+        stopAll(): void;
+        suspend(): void;
+        resume(): void;
+
+        private prune;
+    }
+
+### `SfxSoundOptions` (interface)
+
+    export interface SfxSoundOptions {
+
+        bank?: SfxBank;
+
+        arbiter?: SfxArbiter;
+
+        frame?: () => number;
+
+        caption?: string;
+
+        volume?: number;
+    }
+
+### `SfxVoice` (interface)
+
+    export interface SfxVoice {
+        stop(): void;
+
+        readonly active: boolean;
+    }
+
+### `softenCutoff` (function)
+
+    export declare function softenCutoff(soften: number, sampleRate: number): number;
 
 ### `Sound` (class)
 
@@ -10229,14 +10904,16 @@ build instead.
         y: number;
         private readonly sound;
         private readonly falloff;
-        constructor(sound: Sound, options?: SoundSourceOptions);
+        constructor(sound: PositionalSound, options?: SoundSourceOptions);
         moveTo(x: number, y: number): void;
         gainTo(listener: AudioPoint): number;
         panTo(listener: AudioPoint & {
             facing: number;
         }): number;
 
-        playFor(listener: AudioPoint): number;
+        playFor(listener: AudioPoint | (AudioPoint & {
+            facing: number;
+        })): number;
     }
 
 ### `SoundSourceOptions` (interface)
@@ -10244,6 +10921,224 @@ build instead.
     export interface SoundSourceOptions extends AudioFalloff {
         x?: number;
         y?: number;
+    }
+
+### `spectralDistance` (function)
+
+    export declare function spectralDistance(a: StereoFrames, b: StereoFrames, options?: SpectralDistanceOptions): SpectralDistanceResult;
+
+### `SpectralDistanceOptions` (interface)
+
+    export interface SpectralDistanceOptions {
+
+        windowSize?: number;
+
+        hop?: number;
+
+        floorDb?: number;
+    }
+
+### `SpectralDistanceResult` (interface)
+
+    export interface SpectralDistanceResult {
+
+        decibels: number;
+
+        windows: number;
+    }
+
+### `splitSysex` (function)
+
+    export declare function splitSysex(bytes: Uint8Array): Uint8Array[];
+
+### `StemSet` (type)
+
+    export type StemSet = Readonly<Record<string, AudioBuffer>>;
+
+### `StereoFrames` (interface)
+
+    export interface StereoFrames {
+        sampleRate: number;
+        left: Float32Array;
+        right: Float32Array;
+    }
+
+### `StreamChannel` (class)
+
+    export declare class StreamChannel {
+
+        readonly onEnded: Signal<void>;
+
+        readonly onUnderrun: Signal<number>;
+
+        readonly onError: Signal<Error>;
+        private readonly context;
+        private readonly destination;
+        private readonly chunkSeconds;
+        private readonly lookahead;
+        private readonly pumpMs;
+        private readonly schedule;
+        private readonly unschedule;
+        private timer;
+        private source;
+        private gainNode;
+        private pannerNode;
+        private params;
+        private repeat;
+        private loopStart;
+        private loopEnd;
+        private endAfterFrames;
+        private endFadeFrames;
+        private chunks;
+        private nextWhen;
+        private active;
+        private drained;
+        private lastTimeline;
+        private outputFrames;
+        private underruns;
+        private pendingLeft;
+        private pendingRight;
+        private pendingLength;
+        private cursor;
+        private readFrame;
+        private timeline;
+        private sourceEnded;
+        constructor(context: AudioContext, destination?: AudioNode, options?: StreamChannelOptions);
+        get isPlaying(): boolean;
+
+        get underrunCount(): number;
+
+        get duration(): number;
+
+        play(source: BlockSource, options?: StreamPlayOptions): void;
+
+        update(params?: {
+            volume?: number;
+            pitch?: number;
+            pan?: number;
+        }): void;
+
+        stop(fadeSeconds?: number): void;
+
+        position(): number;
+
+        positionFrames(): number;
+
+        seek(seconds: number): void;
+
+        pump(): void;
+        private wire;
+        private cancelTimer;
+        private begin;
+
+        private timelineAt;
+        private queueChunk;
+
+        private finish;
+
+        private fill;
+
+        private readMore;
+        private ensureCapacity;
+
+        private compact;
+    }
+
+### `StreamChannelOptions` (interface)
+
+    export interface StreamChannelOptions {
+
+        chunkSeconds?: number;
+
+        lookaheadSeconds?: number;
+
+        pumpMs?: number;
+
+        schedule?: (callback: () => void, ms: number) => unknown;
+
+        unschedule?: (handle: unknown) => void;
+    }
+
+### `StreamedTrack` (interface)
+
+    export interface StreamedTrack {
+        source: BlockSource;
+
+        loop?: LoopRegion | null;
+
+        endAfterSeconds?: number;
+        endFadeSeconds?: number;
+    }
+
+### `StreamLoader` (type)
+
+    export type StreamLoader = (kind: 'bgm' | 'bgs', name: string, context: BusLoadContext) => Promise<StreamedTrack | null>;
+
+### `StreamPlayable` (class)
+
+    export declare class StreamPlayable implements Playable {
+        onended: ((event: Event) => unknown) | null;
+
+        readonly channel: StreamChannel;
+        private readonly context;
+        private readonly source;
+        private readonly options;
+        private volume_;
+        private loop_;
+        private rate_;
+        private position_;
+        private paused_;
+        private ended_;
+        constructor(context: AudioContext, source: BlockSource, options?: StreamPlayableOptions);
+
+        get duration(): number;
+        get paused(): boolean;
+        get ended(): boolean;
+        get currentTime(): number;
+        set currentTime(seconds: number);
+        get volume(): number;
+        set volume(level: number);
+        get loop(): boolean;
+        set loop(value: boolean);
+        get playbackRate(): number;
+        set playbackRate(rate: number);
+        play(): Promise<void>;
+        pause(): void;
+        private start;
+    }
+
+### `StreamPlayableOptions` (interface)
+
+    export interface StreamPlayableOptions {
+        destination?: AudioNode;
+
+        channel?: StreamChannelOptions;
+
+        loopRegion?: LoopRegion | null;
+
+        endAfterSeconds?: number;
+        endFadeSeconds?: number;
+    }
+
+### `StreamPlayOptions` (interface)
+
+    export interface StreamPlayOptions {
+
+        volume?: number;
+
+        pitch?: number;
+
+        pan?: number;
+
+        pos?: number;
+
+        repeat?: boolean;
+
+        loop?: LoopRegion | null;
+
+        endAfterSeconds?: number;
+
+        endFadeSeconds?: number;
     }
 
 ### `subdivisionCount` (function)
@@ -10261,6 +11156,42 @@ build instead.
 ### `synthesizeTone` (function)
 
     export declare function synthesizeTone(options?: ToneOptions): string;
+
+### `SyxBank` (class)
+
+    export declare class SyxBank {
+
+        readonly messages: Uint8Array[];
+
+        readonly patches: SyxPatch[];
+        constructor(bytes: Uint8Array);
+
+        audition(synth: MidiSynth, patch: SyxPatch, note?: number, seconds?: number): RenderedMidi;
+    }
+
+### `SyxPatch` (interface)
+
+    export interface SyxPatch {
+        name: string;
+
+        message: number;
+
+        voice: number;
+    }
+
+### `TimedMidiMessage` (interface)
+
+    export interface TimedMidiMessage {
+        time: number;
+
+        status: number;
+        data1: number;
+        data2: number;
+    }
+
+### `timedMidiMessages` (function)
+
+    export declare function timedMidiMessages(file: MidiFile): TimedMidiMessage[];
 
 ### `toAudioBuffer` (function)
 
@@ -10283,6 +11214,56 @@ build instead.
         seed?: number;
     }
 
+### `TrackCache` (class)
+
+    export declare class TrackCache {
+        private readonly entries;
+        private readonly policy;
+        private hits;
+        private misses;
+        private evictions;
+        constructor(policy?: BusBudgetPolicy);
+
+        load(key: string, make: () => Promise<LoadedTrack | null>): Promise<LoadedTrack | null>;
+
+        evict(key: string): boolean;
+        clear(): void;
+        stats(): TrackCacheStats;
+
+        private enforce;
+    }
+
+### `TrackCacheStats` (interface)
+
+    export interface TrackCacheStats {
+        entries: number;
+        bytes: number;
+        hits: number;
+        misses: number;
+        evictions: number;
+    }
+
+### `trackerNoteName` (function)
+
+    export declare function trackerNoteName(note: number): string;
+
+### `trackerPattern` (function)
+
+    export declare function trackerPattern(file: MidiFile, stepsPerQuarter?: number): TrackerRow[];
+
+### `TrackerRow` (interface)
+
+    export interface TrackerRow {
+        step: number;
+
+        time: number;
+        notes: (string | null)[];
+    }
+
+### `unregisterMidiSynth` (function)
+
+    export declare function unregisterMidiSynth(name: string): boolean;
+
 ### `VorbisLoopTags` (interface)
 
     export interface VorbisLoopTags {
@@ -10295,9 +11276,60 @@ build instead.
 
     export type Waveform = 'square' | 'triangle' | 'sine' | 'sawtooth' | 'noise';
 
+### `WaveformBucket` (interface)
+
+    export interface WaveformBucket {
+        min: number;
+        max: number;
+    }
+
+### `waveformEnvelope` (function)
+
+    export declare function waveformEnvelope(samples: Float32Array, buckets: number): WaveformBucket[];
+
+### `wavInfo` (function)
+
+    export declare function wavInfo(bytes: Uint8Array): WavInfo;
+
+### `WavInfo` (interface)
+
+    export interface WavInfo {
+        channels: number;
+        sampleRate: number;
+        bitsPerSample: number;
+
+        encoding: 'pcm' | 'float';
+        frames: number;
+        seconds: number;
+    }
+
 ### `webAudioSampleDecoder` (function)
 
     export declare function webAudioSampleDecoder(create?: (rate: number) => SampleDecodingContext, limits?: SoundFontLimits): SoundFontSampleDecoder;
+
+### `WebMidiAccess` (interface)
+
+    export interface WebMidiAccess {
+        readonly inputs: ReadonlyMap<string, WebMidiInputPort>;
+    }
+
+### `WebMidiConnection` (interface)
+
+    export interface WebMidiConnection {
+
+        readonly ports: number;
+
+        disconnect(): void;
+    }
+
+### `WebMidiInputPort` (interface)
+
+    export interface WebMidiInputPort {
+        readonly name?: string | null;
+        onmidimessage: ((event: {
+            data: Uint8Array | null;
+        }) => void) | null;
+    }
 
 ## `./battle`
 
@@ -13812,6 +14844,18 @@ build instead.
 
     export declare function carryoverIntoScenario(carryover: MwlCarryover, declaredGold: number): number;
 
+### `checkConditionSyntax` (function)
+
+    export declare function checkConditionSyntax(source: string): string[];
+
+### `checkPackagePath` (function)
+
+    export declare function checkPackagePath(path: string): string;
+
+### `checkPackagePolicy` (function)
+
+    export declare function checkPackagePolicy(document: PackageDocument, policy: PackagePolicy): string[];
+
 ### `coerceTableValue` (function)
 
     export declare function coerceTableValue(raw: string, type: CsvColumnType, column: string, listDelimiter?: string, mapDelimiter?: string): unknown;
@@ -13824,6 +14868,10 @@ build instead.
 
     export type CommandHook = (world: HookWorld, emit: Emit, context: HookContext) => void;
 
+### `compareVersions` (function)
+
+    export declare function compareVersions(a: string, b: string): number;
+
 ### `compile` (function)
 
     export declare function compile(source: string, options?: MwlCompileOptions): MwlCompiledGame;
@@ -13835,6 +14883,10 @@ build instead.
 ### `compileNodes` (function)
 
     export declare function compileNodes(nodes: readonly MwlNode[], options?: MwlCompileOptions): MwlCompiledGame;
+
+### `compilePackages` (function)
+
+    export declare function compilePackages(set: PackageSet): MwlCompiledGame;
 
 ### `compileSources` (function)
 
@@ -13860,6 +14912,19 @@ build instead.
 
     export declare function createWorld(): MwlWorld;
 
+### `DecodedPackage` (interface)
+
+    export interface DecodedPackage {
+
+        readonly main: string;
+        readonly entries: readonly PackageDirectoryEntry[];
+        readonly files: readonly PackageFile[];
+    }
+
+### `decodePackage` (function)
+
+    export declare function decodePackage(bytes: Uint8Array, overrides?: Partial<PackageLimits>): Promise<DecodedPackage>;
+
 ### `decodeSave` (function)
 
     export declare function decodeSave(snapshot: string, options: MwlPersistenceOptions): MwlWorld;
@@ -13867,6 +14932,14 @@ build instead.
 ### `decodeSaveEnvelope` (function)
 
     export declare function decodeSaveEnvelope(snapshot: string, options: MwlPersistenceOptions): MwlSaveEnvelope;
+
+### `DEFAULT_PACKAGE_LIMITS` (const)
+
+    export declare const DEFAULT_PACKAGE_LIMITS: PackageLimits;
+
+### `detectRomImage` (function)
+
+    export declare function detectRomImage(bytes: Uint8Array, name?: string): Promise<RomDetection | null>;
 
 ### `effectToModifier` (function)
 
@@ -13913,6 +14986,11 @@ build instead.
         readonly literalColumns?: readonly string[];
     }
 
+### `encodePackage` (function)
+
+    export declare function encodePackage(files: readonly PackageFile[], options?: {
+        readonly main?: string;
+
 ### `encodeSave` (function)
 
     export declare function encodeSave(world: MwlWorld, options: MwlPersistenceOptions, hookState?: Readonly<Record<string, unknown>>, journal?: readonly ActionJournalEntry<unknown, unknown>[]): string;
@@ -13936,6 +15014,10 @@ build instead.
 ### `extractCatalog` (function)
 
     export declare function extractCatalog(game: MwlCompiledGame, options?: MwlCatalogOptions): MwlCatalog;
+
+### `generateCredits` (function)
+
+    export declare function generateCredits(documents: readonly PackageDocument[]): string;
 
 ### `GeneratorHook` (type)
 
@@ -14021,9 +15103,32 @@ build instead.
 
     export declare function itemDefinition(item: MwlItemDefinition, context?: MwlExpressionContext): MwlActorItem;
 
+### `KNOWN_PACKAGE_CAPABILITIES` (const)
+
+    export declare const KNOWN_PACKAGE_CAPABILITIES: readonly string[];
+
 ### `loadContent` (function)
 
     export declare function loadContent(files: readonly MwlSourceFile[], options?: MwlCompileOptions): MwlContentLoadReport;
+
+### `LoadedPackage` (interface)
+
+    export interface LoadedPackage {
+        readonly document: PackageDocument;
+
+        readonly main: string;
+        readonly files: readonly PackageFile[];
+
+        readonly hash: string;
+    }
+
+### `loadPackage` (function)
+
+    export declare function loadPackage(bytes: Uint8Array, limits?: Partial<PackageLimits>): Promise<LoadedPackage>;
+
+### `mergePackage` (function)
+
+    export declare function mergePackage(pkg: LoadedPackage, into?: PackageSet): PackageSet;
 
 ### `MigrationHook` (type)
 
@@ -14961,6 +16066,289 @@ build instead.
 
     export declare function nodesToObjects(nodes: readonly MwlCompiledNode[], schemas: Readonly<Record<string, MwlTagSchema>>): MwlReadResult<MwlObject[]>;
 
+### `PACKAGE_ASSET_KINDS` (const)
+
+    export declare const PACKAGE_ASSET_KINDS: readonly PackageAssetKind[];
+
+### `PACKAGE_MEDIA_KINDS` (const)
+
+    export declare const PACKAGE_MEDIA_KINDS: readonly PackageAssetKind[];
+
+### `PACKAGE_SCRIPT_ACTIONS` (const)
+
+    export declare const PACKAGE_SCRIPT_ACTIONS: readonly string[];
+
+### `PACKAGE_TAGS` (const)
+
+    export declare const PACKAGE_TAGS: readonly ['package', 'asset', 'character', 'animation', 'sound_effect', 'music', 'script', 'import'];
+
+### `PackageAction` (interface)
+
+    export interface PackageAction {
+        readonly tag: string;
+        readonly attributes: Readonly<Record<string, string | number | boolean>>;
+    }
+
+### `PackageAnimation` (interface)
+
+    export interface PackageAnimation {
+        readonly id: string;
+        readonly frames: readonly number[];
+        readonly fps?: number;
+        readonly loop?: boolean;
+
+        readonly events: Readonly<Record<string, {
+            readonly sound: string;
+        }>>;
+    }
+
+### `PackageAsset` (interface)
+
+    export interface PackageAsset {
+        readonly id: string;
+        readonly kind: PackageAssetKind;
+        readonly path: string;
+        readonly mime?: string;
+        readonly sha256?: string;
+        readonly license?: string;
+        readonly source?: string;
+    }
+
+### `PackageAssetKind` (type)
+
+    export type PackageAssetKind = 'image' | 'audio' | 'music' | 'font' | 'data' | 'synth-patch';
+
+### `PackageCharacter` (interface)
+
+    export interface PackageCharacter {
+        readonly id: string;
+        readonly name?: string;
+        readonly description?: string;
+        readonly portrait?: string;
+        readonly sprite?: {
+            readonly image: string;
+            readonly frame?: readonly [number, number];
+        };
+        readonly theme?: string;
+
+        readonly animations: Readonly<Record<string, string>>;
+
+        readonly sounds: Readonly<Record<string, string>>;
+        readonly scripts: readonly string[];
+
+        readonly stats: Readonly<Record<string, string | number | boolean>>;
+    }
+
+### `PackageConflictError` (class)
+
+    export declare class PackageConflictError extends PackageError {
+        constructor(message: string);
+    }
+
+### `packageContent` (function)
+
+    export declare function packageContent(set: PackageSet): PackageContent;
+
+### `PackageContent` (interface)
+
+    export interface PackageContent {
+        readonly assets: Readonly<Record<string, Owned<PackageAsset>>>;
+        readonly characters: Readonly<Record<string, Owned<PackageCharacter>>>;
+        readonly animations: Readonly<Record<string, Owned<PackageAnimation>>>;
+        readonly soundEffects: Readonly<Record<string, Owned<PackageSoundEffect>>>;
+        readonly music: Readonly<Record<string, Owned<PackageMusic>>>;
+        readonly scripts: Readonly<Record<string, Owned<PackageScript>>>;
+    }
+
+### `PackageDirectoryEntry` (interface)
+
+    export interface PackageDirectoryEntry {
+        readonly path: string;
+
+        readonly size: number;
+
+        readonly packed: number;
+
+        readonly offset: number;
+
+        readonly sha256: string;
+    }
+
+### `PackageDocument` (interface)
+
+    export interface PackageDocument {
+        readonly meta: PackageMeta;
+        readonly assets: readonly PackageAsset[];
+        readonly characters: readonly PackageCharacter[];
+        readonly animations: readonly PackageAnimation[];
+        readonly soundEffects: readonly PackageSoundEffect[];
+        readonly music: readonly PackageMusic[];
+        readonly scripts: readonly PackageScript[];
+        readonly imports: readonly PackageImport[];
+
+        readonly messages: readonly string[];
+    }
+
+### `PackageError` (class)
+
+    export declare class PackageError extends Error {
+        constructor(message: string);
+    }
+
+### `PackageFile` (interface)
+
+    export interface PackageFile {
+
+        readonly path: string;
+        readonly data: Uint8Array;
+    }
+
+### `PackageFormatError` (class)
+
+    export declare class PackageFormatError extends PackageError {
+        constructor(message: string);
+    }
+
+### `PackageImport` (interface)
+
+    export interface PackageImport {
+
+        readonly src?: string;
+
+        readonly package?: string;
+        readonly version?: string;
+
+        readonly as?: string;
+    }
+
+### `PackageIntegrityError` (class)
+
+    export declare class PackageIntegrityError extends PackageError {
+        constructor(message: string);
+    }
+
+### `PackageLimitError` (class)
+
+    export declare class PackageLimitError extends PackageError {
+        constructor(message: string);
+    }
+
+### `PackageLimits` (interface)
+
+    export interface PackageLimits {
+
+        readonly maxPackageBytes: number;
+
+        readonly maxTotalBytes: number;
+        readonly maxEntries: number;
+        readonly maxEntryBytes: number;
+
+        readonly maxAudioSeconds: number;
+
+        readonly maxImageWidth: number;
+        readonly maxImageHeight: number;
+    }
+
+### `PackageMeta` (interface)
+
+    export interface PackageMeta {
+        readonly id: string;
+        readonly version: string;
+        readonly author?: string;
+        readonly license?: string;
+        readonly requires: PackageRequires;
+    }
+
+### `PackageMusic` (interface)
+
+    export interface PackageMusic {
+        readonly id: string;
+
+        readonly src: string;
+        readonly loop?: boolean;
+        readonly region?: readonly [number, number];
+
+        readonly fallback?: string;
+    }
+
+### `PackagePathError` (class)
+
+    export declare class PackagePathError extends PackageError {
+        constructor(message: string);
+    }
+
+### `PackagePolicy` (interface)
+
+    export interface PackagePolicy {
+
+        readonly allow: readonly string[];
+
+        readonly refuseUnknown?: boolean;
+
+        readonly provides?: {
+            readonly mwg?: string;
+            readonly retroAudio?: string;
+        };
+    }
+
+### `packageRef` (function)
+
+    export declare function packageRef(pkg: LoadedPackage): string;
+
+### `PackageReport` (interface)
+
+    export interface PackageReport {
+
+        readonly ok: boolean;
+        readonly errors: readonly string[];
+        readonly warnings: readonly string[];
+
+        readonly ref?: string;
+
+        readonly capabilities: readonly string[];
+    }
+
+### `PackageRequires` (interface)
+
+    export interface PackageRequires {
+
+        readonly mwg?: string;
+
+        readonly retroAudio?: string;
+        readonly capabilities: readonly string[];
+    }
+
+### `PackageScript` (interface)
+
+    export interface PackageScript {
+        readonly id: string;
+        readonly on: string;
+
+        readonly when?: string;
+        readonly do: readonly PackageAction[];
+
+        readonly code?: string;
+    }
+
+### `PackageSet` (interface)
+
+    export interface PackageSet {
+        readonly packages: readonly LoadedPackage[];
+    }
+
+### `PackageSoundEffect` (interface)
+
+    export interface PackageSoundEffect {
+        readonly id: string;
+
+        readonly definition: Readonly<Record<string, PackageValue>>;
+    }
+
+### `PackageValue` (type)
+
+    export type PackageValue = null | boolean | number | string | PackageValue[] | {
+        [key: string]: PackageValue;
+
 ### `parse` (function)
 
     export declare function parse(source: string, file?: string): MwlNode[];
@@ -14977,6 +16365,16 @@ build instead.
 ### `parseMapFile` (function)
 
     export declare function parseMapFile(text: string): MwlMapFile;
+
+### `parsePackageDocument` (function)
+
+    export declare function parsePackageDocument(source: string, options?: MwlPreprocessOptions & {
+        readonly files?: Readonly<Record<string, string>>;
+
+### `parsePackageRef` (function)
+
+    export declare function parsePackageRef(ref: string): {
+        id: string;
 
 ### `parseTableColumns` (function)
 
@@ -15015,6 +16413,29 @@ build instead.
 
     export declare function readTableMap<Row extends Record<string, unknown>, Value = Row>(rows: readonly Row[], options: MwlTableMapOptions<Row, Value>): Map<string, Value>;
 
+### `registerRomDigest` (function)
+
+    export declare function registerRomDigest(sha256: string, label: string): void;
+
+### `requestedCapabilities` (function)
+
+    export declare function requestedCapabilities(document: PackageDocument): string[];
+
+### `RomDetection` (interface)
+
+    export interface RomDetection {
+
+        readonly reason: 'digest' | 'extension' | 'size';
+
+        readonly label?: string;
+
+        readonly message: string;
+    }
+
+### `satisfiesVersionRange` (function)
+
+    export declare function satisfiesVersionRange(version: string, range: string): boolean;
+
 ### `schema01` (const)
 
     export declare const schema01: Readonly<Record<string, MwlTagSchema>>;
@@ -15044,6 +16465,10 @@ build instead.
 
     export type ScriptValue = null | boolean | number | string | ScriptValue[] | {
         readonly [key: string]: ScriptValue;
+
+### `sha256Hex` (function)
+
+    export declare function sha256Hex(bytes: Uint8Array): Promise<string>;
 
 ### `sideVisionGroups` (function)
 
@@ -15085,6 +16510,18 @@ build instead.
 ### `validAttributeValue` (function)
 
     export declare function validAttributeValue(value: string, type: MwlAttributeType): boolean;
+
+### `verifyPackage` (function)
+
+    export declare function verifyPackage(bytes: Uint8Array, options?: VerifyPackageOptions): Promise<PackageReport>;
+
+### `VerifyPackageOptions` (interface)
+
+    export interface VerifyPackageOptions {
+        readonly limits?: Partial<PackageLimits>;
+
+        readonly policy?: PackagePolicy;
+    }
 
 ## `./mwl/presentation`
 
@@ -18154,9 +19591,100 @@ build instead.
 
     export declare function fakeAudio(): FakePlayable;
 
+### `FakeAudioContext` (class)
+
+    export declare class FakeAudioContext {
+        currentTime: number;
+        readonly sampleRate: number;
+        state: 'running' | 'suspended';
+        readonly destination: {
+            connect(): void;
+        };
+
+        readonly sources: FakeBufferSource[];
+        resumes: number;
+        constructor(sampleRate?: number);
+        createBuffer(channels: number, length: number, sampleRate: number): FakeBuffer;
+        createBufferSource(): FakeBufferSource;
+        createGain(): FakeGain;
+        createStereoPanner(): {
+            pan: {
+                value: number;
+            };
+            connect(): void;
+        };
+        resume(): Promise<void>;
+
+        advance(seconds: number): void;
+
+        asContext(): AudioContext;
+    }
+
 ### `fakeAudioWithEnded` (function)
 
     export declare function fakeAudioWithEnded(): FakePlayable;
+
+### `FakeBlockSource` (class)
+
+    export declare class FakeBlockSource implements BlockSource {
+        readonly sampleRate: number;
+        readonly length?: number;
+        position: number;
+        reads: number;
+        seeks: number[];
+        private readonly ramp;
+        private readonly level;
+        constructor(options?: FakeBlockSourceOptions);
+        read(left: Float32Array, right: Float32Array, start: number, count: number): number;
+        seek(frame: number): void;
+    }
+
+### `FakeBlockSourceOptions` (interface)
+
+    export interface FakeBlockSourceOptions {
+
+        seconds?: number;
+        sampleRate?: number;
+
+        ramp?: boolean;
+        level?: number;
+    }
+
+### `FakeBuffer` (class)
+
+    export declare class FakeBuffer {
+        readonly length: number;
+        readonly numberOfChannels: number;
+        readonly sampleRate: number;
+        private readonly data;
+        constructor(channels: number, length: number, sampleRate: number);
+        get duration(): number;
+        getChannelData(channel: number): Float32Array;
+    }
+
+### `FakeBufferSource` (class)
+
+    export declare class FakeBufferSource {
+        buffer: FakeBuffer | null;
+        loop: boolean;
+        loopStart: number;
+        loopEnd: number;
+        readonly playbackRate: {
+            value: number;
+        };
+        onended: (() => void) | null;
+        startedAt: number | null;
+
+        offset: number;
+
+        stoppedAt: number | null;
+        stopped: boolean;
+        ended: boolean;
+        get duration(): number;
+        connect(): void;
+        start(when?: number, offset?: number): void;
+        stop(when?: number): void;
+    }
 
 ### `fakeFetch` (function)
 
@@ -18170,6 +19698,23 @@ build instead.
         init?: RequestInit;
     }
 
+### `FakeGain` (class)
+
+    export declare class FakeGain {
+        readonly ramps: {
+            value: number;
+            time: number;
+        }[];
+        readonly gain: {
+            value: number;
+            setTargetAtTime: (value: number) => void;
+            setValueAtTime: (value: number) => void;
+            cancelScheduledValues: () => void;
+            linearRampToValueAtTime: (value: number, time: number) => void;
+        };
+        connect(): void;
+    }
+
 ### `fakeGamepad` (function)
 
     export declare function fakeGamepad(index: number, buttons?: number[], axes?: number[]): Gamepad;
@@ -18179,6 +19724,26 @@ build instead.
     export interface FakePlayable extends Playable {
         playCount: number;
         paused: boolean;
+    }
+
+### `FakeRetroPlayer` (class)
+
+    export declare class FakeRetroPlayer implements MidiSynth {
+        readonly sampleRate: number;
+
+        readonly events: [number, number, number][];
+
+        readonly sysexMessages: Uint8Array[];
+        resets: number;
+        renders: number;
+        private readonly sounding;
+        constructor(sampleRate?: number);
+
+        get notesOn(): number;
+        event(status: number, data1: number, data2: number): void;
+        sysex(bytes: Uint8Array): void;
+        render(left: Float32Array, right: Float32Array, start: number, count: number): void;
+        reset(): void;
     }
 
 ### `FakeSocket` (class)
@@ -18221,6 +19786,10 @@ build instead.
 
 ## `./threads`
 
+### `openWorker` (function)
+
+    export declare function openWorker(source: string, events: WorkerLinkEvents): WorkerLink | null;
+
 ### `spawn` (function)
 
     export declare function spawn<Args extends readonly unknown[], Result>(fn: (...args: Args) => Result, args?: Args, options?: SpawnOptions): Promise<Awaited<Result>>;
@@ -18234,6 +19803,22 @@ build instead.
         timeout?: number;
 
         signal?: AbortSignal;
+    }
+
+### `WorkerLink` (interface)
+
+    export interface WorkerLink {
+        post(message: unknown, transfer?: Transferable[]): void;
+        terminate(): void;
+    }
+
+### `WorkerLinkEvents` (interface)
+
+    export interface WorkerLinkEvents {
+
+        message(data: unknown): void;
+
+        fail(error: Error): void;
     }
 
 ## `./two-d`
@@ -19287,6 +20872,8 @@ build instead.
     export declare class DropdownView extends Container {
         readonly model: Dropdown;
         private width_;
+        private readonly autoWidth;
+        private readonly maxWidth;
         private readonly rowHeight;
         private readonly maxRows;
         private readonly head;
@@ -19301,6 +20888,9 @@ build instead.
         private labelWidth;
 
         get viewWidth(): number;
+        private capWidth;
+
+        resize(width: number): void;
 
         get visibleRows(): number;
 
@@ -19327,6 +20917,8 @@ build instead.
         maxVisibleRows?: number;
 
         autoWidth?: boolean;
+
+        maxWidth?: number;
     }
 
 ### `ellipsize` (function)
@@ -19619,6 +21211,8 @@ build instead.
         private hitStopScale;
         private stack;
         private pending;
+
+        private queued;
         private running;
         private options;
         private started;
@@ -19670,6 +21264,8 @@ build instead.
         private beginTransition;
 
         private endTransition;
+
+        private applyRequest;
         private applySwap;
 
         private applySwitch;
@@ -21831,6 +23427,7 @@ build instead.
         readonly onChange: Signal<number>;
 
         readonly content: Container<import("pixi.js").ContainerChild>;
+        private readonly hit;
         private maskShape;
         private track;
         private thumb;
@@ -21848,6 +23445,8 @@ build instead.
         constructor(options: ScrollBoxOptions);
         get offset(): number;
         get contentHeight(): number;
+
+        get viewportWidth(): number;
         get viewportHeight(): number;
 
         private fit;
@@ -21944,10 +23543,16 @@ build instead.
     export declare class ScrollText extends Container {
         readonly box: ScrollBox;
         private readonly body;
+        private readonly maxHeight;
+        private width_;
         constructor(options: ScrollTextOptions);
 
         protected measureHeight(): number;
         private measure;
+
+        get viewWidth(): number;
+
+        resize(width: number): void;
         setText(text: string): void;
 
         update(dt: number): void;
@@ -23459,6 +25064,14 @@ build instead.
         over: Container2D;
     }
 
+### `transitionDisposition` (function)
+
+    export declare function transitionDisposition(options: TransitionOptions | undefined, transitioning: boolean): TransitionDisposition;
+
+### `TransitionDisposition` (type)
+
+    export type TransitionDisposition = 'apply' | 'ignore' | 'queue' | 'interrupt';
+
 ### `TransitionOptions` (interface)
 
     export interface TransitionOptions {
@@ -23469,6 +25082,10 @@ build instead.
         easing?: keyof typeof Easing | EasingFunction;
 
         pause?: boolean;
+
+        queue?: boolean;
+
+        interrupt?: boolean;
 
         onDone?: () => void;
     }
@@ -26450,6 +28067,14 @@ build instead.
         over: Container2D;
     }
 
+### `transitionDisposition` (function)
+
+    export declare function transitionDisposition(options: TransitionOptions | undefined, transitioning: boolean): TransitionDisposition;
+
+### `TransitionDisposition` (type)
+
+    export type TransitionDisposition = 'apply' | 'ignore' | 'queue' | 'interrupt';
+
 ### `TransitionOptions` (interface)
 
     export interface TransitionOptions {
@@ -26460,6 +28085,10 @@ build instead.
         easing?: keyof typeof Easing | EasingFunction;
 
         pause?: boolean;
+
+        queue?: boolean;
+
+        interrupt?: boolean;
 
         onDone?: () => void;
     }
@@ -27179,6 +28808,8 @@ build instead.
     export declare class DropdownView extends Container {
         readonly model: Dropdown;
         private width_;
+        private readonly autoWidth;
+        private readonly maxWidth;
         private readonly rowHeight;
         private readonly maxRows;
         private readonly head;
@@ -27193,6 +28824,9 @@ build instead.
         private labelWidth;
 
         get viewWidth(): number;
+        private capWidth;
+
+        resize(width: number): void;
 
         get visibleRows(): number;
 
@@ -27219,6 +28853,8 @@ build instead.
         maxVisibleRows?: number;
 
         autoWidth?: boolean;
+
+        maxWidth?: number;
     }
 
 ### `ellipsize` (function)
@@ -28343,6 +29979,7 @@ build instead.
         readonly onChange: Signal<number>;
 
         readonly content: Container<import("pixi.js").ContainerChild>;
+        private readonly hit;
         private maskShape;
         private track;
         private thumb;
@@ -28360,6 +29997,8 @@ build instead.
         constructor(options: ScrollBoxOptions);
         get offset(): number;
         get contentHeight(): number;
+
+        get viewportWidth(): number;
         get viewportHeight(): number;
 
         private fit;
@@ -28456,10 +30095,16 @@ build instead.
     export declare class ScrollText extends Container {
         readonly box: ScrollBox;
         private readonly body;
+        private readonly maxHeight;
+        private width_;
         constructor(options: ScrollTextOptions);
 
         protected measureHeight(): number;
         private measure;
+
+        get viewWidth(): number;
+
+        resize(width: number): void;
         setText(text: string): void;
 
         update(dt: number): void;

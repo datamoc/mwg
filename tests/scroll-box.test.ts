@@ -77,3 +77,17 @@ test('growing the viewport and shrinking the content both pull the offset back i
 	box.resize(100, 100);
 	assert.equal(box.offset, 0, 'the viewport now fits all of it');
 });
+
+test('the box owns a hitArea the size of its viewport, kept current by resize and setContentHeight', () => {
+	const box = new ScrollBox({ width: 100, height: 50, contentHeight: 200 });
+	const area = box.hitArea as unknown as { x: number; y: number; width: number; height: number };
+	assert.deepEqual([area.x, area.y, area.width, area.height], [0, 0, 100, 50]);
+	assert.equal(box.viewportWidth, 100);
+	box.resize(80, 70);
+	assert.deepEqual([area.width, area.height], [80, 70], 'resize moves the hitArea with the viewport');
+	const auto = new ScrollBox({ width: 60, height: 90, contentHeight: 30, autoHeight: true });
+	const autoArea = auto.hitArea as unknown as { width: number; height: number };
+	assert.equal(autoArea.height, 30, 'an autoHeight box is only as tall as its content');
+	auto.setContentHeight(45);
+	assert.equal(autoArea.height, 45, 'setContentHeight moves the hitArea with the fitted height');
+});

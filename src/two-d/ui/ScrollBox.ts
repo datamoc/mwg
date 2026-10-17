@@ -1,4 +1,4 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Rectangle } from 'pixi.js';
 import { Signal } from '../../core/Signal.ts';
 import { theme, themeChanged } from './theme.ts';
 
@@ -120,6 +120,9 @@ export type ScrollKey = 'ArrowUp' | 'ArrowDown' | 'PageUp' | 'PageDown' | 'Home'
  * A clipped viewport with a scrollbar: put rows in `content` and they scroll inside the box,
  * everything outside it hidden by a mask. The scrollbar is drawn from the theme; the wheel,
  * `scrollBy` and `scrollIntoView` all run through `scrollOffset`, so they clamp the same way.
+ * The box owns its `hitArea` (its viewport, kept current by `resize` and `setContentHeight`),
+ * so a wheel over the empty part of the viewport reaches it instead of needing a row under
+ * the pointer to bubble from.
  *
  * `touch: true` lets a finger drag the content (a drag ends the tap on the rows under it) and coast
  * on release, `keyboard: true` makes `handleKey` scroll by line, page and to the ends, the scrollbar's
@@ -141,6 +144,7 @@ export class ScrollBox extends Container {
 	/** add the rows to scroll here */
 	readonly content = new Container();
 
+	private readonly hit = new Rectangle(0, 0, 0, 0);
 	private maskShape = new Graphics();
 	private track = new Graphics();
 	private thumb = new Graphics();
@@ -213,6 +217,11 @@ export class ScrollBox extends Container {
 
 	get contentHeight(): number {
 		return this.contentHeight_;
+	}
+
+	/** the viewport's width, the other half of the box's `hitArea` */
+	get viewportWidth(): number {
+		return this.width_;
 	}
 
 	get viewportHeight(): number {
@@ -368,6 +377,9 @@ export class ScrollBox extends Container {
 	};
 
 	private draw(): void {
+		this.hit.width = this.width_;
+		this.hit.height = this.height_;
+		this.hitArea = this.hit;
 		const t = theme();
 		this.content.y = -this.offset_;
 

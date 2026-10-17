@@ -1,4 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
+import { clamp } from '../../core/Math.ts';
 import { Signal } from '../../core/Signal.ts';
 import { theme, themeChanged } from './theme.ts';
 
@@ -31,7 +32,7 @@ export interface SliderOptions {
  */
 export function sliderFraction(value: number, min = 0, max = 1): number {
 	if (!(max > min)) return 0;
-	return Math.max(0, Math.min(1, (value - min) / (max - min)));
+	return clamp((value - min) / (max - min), 0, 1);
 }
 
 /**
@@ -47,8 +48,7 @@ export function sliderFraction(value: number, min = 0, max = 1): number {
  * ```
  */
 export function sliderValueAt(fraction: number, min = 0, max = 1, step = 0): number {
-	const clamped = Math.max(0, Math.min(1, fraction));
-	const raw = min + clamped * (max - min);
+	const raw = min + clamp(fraction, 0, 1) * (max - min);
 	if (!(step > 0)) return raw;
 	const decimals = (String(step).split('.')[1] ?? '').length;
 	const snapped = min + Math.round((raw - min) / step) * step;
@@ -169,7 +169,7 @@ export class Slider extends Container {
 	}
 
 	private fractionAt(localX: number): number {
-		return this.trackLength > 0 ? Math.max(0, Math.min(1, (localX - this.knobSize / 2) / this.trackLength)) : 0;
+		return this.trackLength > 0 ? clamp((localX - this.knobSize / 2) / this.trackLength, 0, 1) : 0;
 	}
 
 	private readonly handleDown = (event: { global: { x: number; y: number } }): void => {

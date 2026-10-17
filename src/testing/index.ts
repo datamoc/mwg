@@ -157,6 +157,15 @@ export function fakeGamepad(index: number, buttons: number[] = [], axes: number[
 }
 
 export { createSceneControls } from './SceneControls.ts';
+export {
+	FakeAudioContext,
+	FakeBlockSource,
+	FakeBuffer,
+	FakeBufferSource,
+	FakeGain,
+	FakeRetroPlayer,
+} from './FakeAudio.ts';
+export type { FakeBlockSourceOptions } from './FakeAudio.ts';
 export type { SceneControls, SceneStep } from './SceneControls.ts';
 
 /**

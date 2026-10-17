@@ -166,7 +166,7 @@ export async function searchAsync(
 }
 
 /** hardware threads for a root split, capped: twenty opening moves need lanes, not a storm */
-function defaultSearchJobs(): number {
+export function defaultSearchJobs(): number {
 	const scope = globalThis as {
 		navigator?: { hardwareConcurrency?: unknown };
 		process?: { getBuiltinModule?: (id: string) => { availableParallelism?: () => unknown } | undefined };

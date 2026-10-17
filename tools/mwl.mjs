@@ -8,15 +8,24 @@ import {
 	collectHookReferences,
 	compile,
 	compileAndEmitSources,
+	compilePackages,
 	compileSources,
 	contentReport,
+	decodePackage,
+	emitArtifacts,
 	emitHooksDeclaration,
 	emitModule,
+	encodePackage,
 	extractCatalog,
+	generateCredits,
+	loadPackage,
+	mergePackage,
+	packageContent,
 	parse,
 	preprocess,
 	validate,
 	validateHookReferences,
+	verifyPackage,
 } from '../dist/mwl/index.js';
 
 /**
@@ -54,6 +63,9 @@ const commands = [
 	'ci',
 	'hooks',
 	'build',
+	'pack',
+	'unpack',
+	'verify',
 ];
 const [command, input] = args;
 const outputFlag = args.indexOf('-o');
@@ -67,16 +79,18 @@ const target = targetFlag === -1 ? undefined : args[targetFlag + 1];
 
 if (args.includes('--help') || args.includes('-h')) {
 	console.log(
-		'usage: mwg-mwl <validate|compile|format|migrate|extract-i18n|assets|report|diagnostics|ci|hooks|build> input.mwl [-o output] [--to 1.0] [--manifest hooks.json] [--asset-root directory]',
+		'usage: mwg-mwl <validate|compile|format|migrate|extract-i18n|assets|report|diagnostics|ci|hooks|build|pack|unpack|verify> input.mwl|input.mwp|directory [-o output] [--to 1.0] [--manifest hooks.json] [--asset-root directory] [--audio-converter module] [--allow capabilities] [--json]',
 	);
 	process.exit(0);
 }
 
 if (!command || !input || !commands.includes(command)) {
 	console.error(
-		'Usage: mwl <validate|compile|format|migrate|extract-i18n|assets|report|diagnostics|ci|hooks|build> input.mwl [-o output] [--to 1.0] [--manifest hooks.json] [--asset-root directory]',
+		'Usage: mwl <validate|compile|format|migrate|extract-i18n|assets|report|diagnostics|ci|hooks|build|pack|unpack|verify> input.mwl|input.mwp|directory [-o output] [--to 1.0] [--manifest hooks.json] [--asset-root directory] [--audio-converter module] [--allow capabilities] [--json]',
 	);
 	process.exitCode = 2;
+} else if (command === 'pack' || command === 'unpack' || command === 'verify' || /.mwp$/i.test(input)) {
+	process.exitCode = await packageCommand();
 } else {
 	const files = fs.statSync(input).isDirectory()
 		? collectSources(input)
@@ -321,4 +335,132 @@ async function hooks(files) {
 	} finally {
 		fs.rmSync(entryFile, { force: true });
 	}
+}
+
+/**
+ * `pack <dir> -o x.mwp` writes a folder (`content.mwl` plus its media) as one package, refusing to
+ * write one that `verify` would reject. `unpack x.mwp -o dir` writes the files back. `verify x.mwp`
+ * checks digests, limits, schema, references, licences, ROM images and the capabilities requested
+ * (`--allow audio,script` applies a game policy, `--json` prints the report). Any other command
+ * given a `.mwp` runs on the content the package's characters expand to.
+ *
+ * Audio conversion to MWA belongs to the retro-audio package, not to mwg: `--audio-converter module`
+ * names an ES module whose default export is `(path, bytes) => { path, data } | undefined`, called
+ * for chip-music files (.ym .vgm .nsf .sid .dro .imf .cmf). Without it those files are packed as
+ * they are, with a warning.
+ */
+async function packageCommand() {
+	const flag = (name) => {
+		const at = args.indexOf(name);
+		return at === -1 ? undefined : args[at + 1];
+	};
+	if (command === 'pack') {
+		const root = path.resolve(input);
+		const converter = flag('--audio-converter');
+		const convert = converter ? (await import(pathToFileURL(path.resolve(converter)).href)).default : undefined;
+		if (converter && typeof convert !== 'function') throw new Error(`${converter} must default-export a function`);
+		const files = [];
+		const visit = (directory) => {
+			for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+				if (entry.name.startsWith('.')) continue;
+				const full = path.join(directory, entry.name);
+				if (entry.isDirectory()) visit(full);
+				else
+					files.push({
+						path: path.relative(root, full).split(path.sep).join('/'),
+						data: new Uint8Array(fs.readFileSync(full)),
+					});
+			}
+		};
+		visit(root);
+		const chip = /.(?:ym|vgm|nsf|sid|dro|imf|cmf)$/i;
+		const packed = [];
+		for (const file of files) {
+			if (!chip.test(file.path)) {
+				packed.push(file);
+				continue;
+			}
+			if (!convert)
+				console.error(`warning: ${file.path} is packed as it is; pass --audio-converter to store it as MWA`);
+			packed.push((convert && (await convert(file.path, file.data))) || file);
+		}
+		const bytes = await encodePackage(packed, { main: flag('--main') });
+		const report = await verifyPackage(bytes);
+		for (const warning of report.warnings) console.error(`warning: ${warning}`);
+		if (!report.ok) {
+			for (const error of report.errors) console.error(`error: ${error}`);
+			console.error('nothing was written');
+			return 1;
+		}
+		const target = path.resolve(output ?? `${root}.mwp`);
+		fs.mkdirSync(path.dirname(target), { recursive: true });
+		fs.writeFileSync(target, bytes);
+		console.log(`packed ${packed.length} file(s) into ${target} (${report.ref})`);
+		return 0;
+	}
+	const bytes = new Uint8Array(fs.readFileSync(input));
+	if (command === 'verify') {
+		const allow = flag('--allow');
+		const report = await verifyPackage(
+			bytes,
+			allow === undefined ? {} : { policy: { allow: allow.split(',').filter(Boolean) } },
+		);
+		if (args.includes('--json')) console.log(JSON.stringify(report, null, '	'));
+		else {
+			for (const warning of report.warnings) console.error(`warning: ${warning}`);
+			for (const error of report.errors) console.error(`error: ${error}`);
+			if (report.ok)
+				console.log(
+					`${input}: valid package ${report.ref} (capabilities: ${report.capabilities.join(', ') || 'none'})`,
+				);
+		}
+		return report.ok ? 0 : 1;
+	}
+	if (command === 'unpack') {
+		const decoded = await decodePackage(bytes);
+		const target = path.resolve(output ?? input.replace(/.mwp$/i, ''));
+		for (const file of decoded.files) {
+			const destination = path.resolve(target, file.path);
+			if (!destination.startsWith(target + path.sep))
+				throw new Error(`${file.path} escapes the output directory`);
+			fs.mkdirSync(path.dirname(destination), { recursive: true });
+			fs.writeFileSync(destination, file.data);
+		}
+		console.log(`unpacked ${decoded.files.length} file(s) into ${target}`);
+		return 0;
+	}
+	if (!['validate', 'compile', 'extract-i18n', 'assets', 'report', 'build'].includes(command)) {
+		console.error(`mwl ${command} does not take a package; unpack it first`);
+		return 2;
+	}
+	const loaded = await loadPackage(bytes);
+	const set = mergePackage(loaded);
+	const game = compilePackages(set);
+	if (command === 'validate') {
+		console.log(`${input}: valid package`);
+		return 0;
+	}
+	if (command === 'build') {
+		const directory = path.resolve(output ?? 'generated');
+		fs.mkdirSync(directory, { recursive: true });
+		const content = JSON.stringify(packageContent(set), null, '	');
+		for (const artifact of emitArtifacts(game, {
+			artifacts: {
+				'package-content.json': `${content}
+`,
+			},
+		}))
+			fs.writeFileSync(path.join(directory, artifact.name), artifact.content);
+		const credits = generateCredits([loaded.document]);
+		if (credits) fs.writeFileSync(path.join(directory, 'CREDITS.txt'), credits);
+		console.log(`built package ${loaded.document.meta.id} into ${directory}`);
+		return 0;
+	}
+	const values =
+		command === 'extract-i18n' ? extractCatalog(game) : command === 'assets' ? game.assets : contentReport(game);
+	const text = `${JSON.stringify(values, null, '	')}
+`;
+	if (output) fs.writeFileSync(output, text);
+	else process.stdout.write(text);
+	return 0;
 }

@@ -97,3 +97,29 @@ test('disabling a dropdown closes it, and it will not open again', () => {
 	dropdown.open();
 	assert.equal(dropdown.isOpen, false);
 });
+
+test('setHighlight opens the list, so setHighlight then confirm is a whole pick', () => {
+	const dropdown = new Dropdown({ options });
+	const seen: string[] = [];
+	dropdown.onChange.add(({ option }) => {
+		seen.push(option.id ?? option.label);
+	});
+	dropdown.setHighlight(2);
+	assert.equal(dropdown.isOpen, true, 'setHighlight opened it, as its doc comment promises');
+	assert.equal(dropdown.highlight, 2);
+	assert.equal(dropdown.confirm(), true);
+	assert.equal(dropdown.selected?.id, 'insane');
+	assert.deepEqual(seen, ['insane']);
+});
+
+test('setHighlight on an out-of-range or disabled row, or a disabled dropdown, opens nothing', () => {
+	const dropdown = new Dropdown({ options });
+	dropdown.setHighlight(99);
+	assert.equal(dropdown.isOpen, false);
+	dropdown.setHighlight(1);
+	assert.equal(dropdown.isOpen, false, 'a disabled row cannot be highlighted');
+	const off = new Dropdown({ options, disabled: true });
+	off.setHighlight(2);
+	assert.equal(off.isOpen, false);
+	assert.equal(off.confirm(), false);
+});

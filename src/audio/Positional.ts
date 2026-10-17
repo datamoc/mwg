@@ -1,4 +1,7 @@
-import type { Sound } from './Sound.ts';
+/** anything a `SoundSource` can play at a mix: a `Sound`, or an `SfxSound` that also takes a pan */
+export interface PositionalSound {
+	play(gain?: number, pitch?: number, pan?: number): unknown;
+}
 
 /** A point in the same 2D space the game's camera works in, in world units. */
 export interface AudioPoint {
@@ -149,10 +152,10 @@ export class SoundSource implements AudioPoint {
 	x: number;
 	y: number;
 
-	private readonly sound: Sound;
+	private readonly sound: PositionalSound;
 	private readonly falloff: AudioFalloff;
 
-	constructor(sound: Sound, options: SoundSourceOptions = {}) {
+	constructor(sound: PositionalSound, options: SoundSourceOptions = {}) {
 		this.sound = sound;
 		this.x = options.x ?? 0;
 		this.y = options.y ?? 0;
@@ -176,11 +179,14 @@ export class SoundSource implements AudioPoint {
 		return audioPan(listener, this);
 	}
 
-	/** Plays the source at the gain the listener hears it; returns the gain actually used. */
-	playFor(listener: AudioPoint): number {
+	/**
+	 * Plays the source at the gain the listener hears it; returns the gain actually used. A listener
+	 * with a `facing` also pans the sound, for a sound that takes a pan (a `Sound` ignores it).
+	 */
+	playFor(listener: AudioPoint | (AudioPoint & { facing: number })): number {
 		const gain = this.gainTo(listener);
 		if (gain <= 0) return 0;
-		this.sound.play(gain);
+		this.sound.play(gain, 1, 'facing' in listener ? this.panTo(listener) : 0);
 		return gain;
 	}
 }

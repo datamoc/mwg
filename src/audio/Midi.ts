@@ -1,5 +1,6 @@
 import { playTone, type ToneOptions, type Waveform } from './Synth.ts';
 import type { Playable } from './Playable.ts';
+import type { MidiSynth } from './MidiSynth.ts';
 import { humanizeMidi, type HumanizeRequest } from './humanize/HumanizerFactory.ts';
 
 /**
@@ -361,6 +362,60 @@ export function scheduleMidi(file: MidiFile): ScheduledNote[] {
 	return notes.sort((a, b) => a.time - b.time);
 }
 
+/** one channel message of a file placed in seconds, in the raw status and data bytes a hardware synth would receive */
+export interface TimedMidiMessage {
+	time: number;
+	/** status byte: message type in the high nibble, channel in the low one */
+	status: number;
+	data1: number;
+	data2: number;
+}
+
+/**
+ * Every channel message of a file (notes, program changes, controllers, pitch bend) as raw MIDI
+ * bytes at its playback time, in file order. The sampled renderer works from `scheduleMidi`'s
+ * paired notes; a `MidiSynth` is driven by these instead, since a hardware-style synth wants the
+ * messages as they were written.
+ *
+ * @example
+ * ```ts
+ * import { timedMidiMessages, type MidiFile } from '@datamoc/mw_games/audio';
+ *
+ * declare const file: MidiFile;
+ *
+ * console.log(timedMidiMessages(file)[0]?.status); // 0x90 for a first note-on, say
+ * ```
+ */
+export function timedMidiMessages(file: MidiFile): TimedMidiMessage[] {
+	const map = tempoMap(file);
+	const messages: TimedMidiMessage[] = [];
+	for (const event of file.events) {
+		if (event.type === 'tempo') continue;
+		const time = tickToSeconds(map, file.ticksPerQuarter, event.tick);
+		const channel = event.channel & 0x0f;
+		switch (event.type) {
+			case 'noteOn':
+				messages.push({ time, status: 0x90 | channel, data1: event.note, data2: event.velocity });
+				break;
+			case 'noteOff':
+				messages.push({ time, status: 0x80 | channel, data1: event.note, data2: event.velocity });
+				break;
+			case 'program':
+				messages.push({ time, status: 0xc0 | channel, data1: event.program, data2: 0 });
+				break;
+			case 'control':
+				messages.push({ time, status: 0xb0 | channel, data1: event.controller, data2: event.value });
+				break;
+			case 'pitchBend': {
+				const value = event.value + 8192;
+				messages.push({ time, status: 0xe0 | channel, data1: value & 0x7f, data2: (value >> 7) & 0x7f });
+				break;
+			}
+		}
+	}
+	return messages;
+}
+
 /** MIDI note 69 (A4) is 440 Hz; each semitone is a twelfth root of two step */
 export function noteToFrequency(note: number): number {
 	return 440 * 2 ** ((note - 69) / 12);
@@ -370,6 +425,12 @@ export interface MidiPlayerOptions {
 	waveform?: Waveform;
 	/** peak volume; scaled per note by that note's own MIDI velocity */
 	volume?: number;
+	/**
+	 * sends the file's raw messages to this synth as time passes instead of playing a tone per
+	 * note; the synth's own output is pulled by whoever owns its `render` (an audio node, a
+	 * worker host), so `play`, `waveform` and `volume` do not apply
+	 */
+	synth?: MidiSynth;
 	/** voices one scheduled note; defaults to `audio.playTone` */
 	play?: (options: ToneOptions) => Playable;
 	/**
@@ -385,6 +446,8 @@ export class MidiPlayer {
 	private readonly playFn: (options: ToneOptions) => Playable;
 	private readonly waveform: Waveform;
 	private readonly volume: number;
+	private readonly synth?: MidiSynth;
+	private readonly messages: readonly TimedMidiMessage[] = [];
 
 	private elapsed = 0;
 	private index = 0;
@@ -395,6 +458,10 @@ export class MidiPlayer {
 		this.playFn = options.play ?? playTone;
 		this.waveform = options.waveform ?? 'square';
 		this.volume = options.volume ?? 0.2;
+		if (options.synth) {
+			this.synth = options.synth;
+			this.messages = timedMidiMessages(file);
+		}
 	}
 
 	/**
@@ -419,11 +486,12 @@ export class MidiPlayer {
 	}
 
 	play(): void {
-		this.playing = this.index < this.notes.length;
+		this.playing = this.index < (this.synth ? this.messages : this.notes).length;
 	}
 
 	pause(): void {
 		this.playing = false;
+		this.silenceSynth();
 	}
 
 	/** stops and rewinds to the beginning */
@@ -431,11 +499,21 @@ export class MidiPlayer {
 		this.playing = false;
 		this.elapsed = 0;
 		this.index = 0;
+		this.synth?.reset();
 	}
 
 	update(dt: number): void {
 		if (!this.playing) return;
 		this.elapsed += dt;
+
+		if (this.synth) {
+			while (this.index < this.messages.length && this.messages[this.index].time <= this.elapsed) {
+				const { status, data1, data2 } = this.messages[this.index++];
+				this.synth.event(status, data1, data2);
+			}
+			if (this.index >= this.messages.length) this.playing = false;
+			return;
+		}
 
 		while (this.index < this.notes.length && this.notes[this.index].time <= this.elapsed) {
 			const note = this.notes[this.index];
@@ -455,8 +533,15 @@ export class MidiPlayer {
 		return this.playing;
 	}
 
+	/** all-notes-off on every channel: what a held key needs when the player stops sending */
+	private silenceSynth(): void {
+		if (!this.synth) return;
+		for (let channel = 0; channel < 16; channel++) this.synth.event(0xb0 | channel, 123, 0);
+	}
+
 	/** total playback length in seconds, from the last scheduled note's own end */
 	get duration(): number {
+		if (this.synth) return this.messages.at(-1)?.time ?? 0;
 		const last = this.notes.at(-1);
 		return last ? last.time + last.duration : 0;
 	}

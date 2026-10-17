@@ -3612,6 +3612,18 @@
 		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
+		"name": "transitionDisposition",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionDisposition",
+		"kind": "type",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "TransitionOptions",
 		"kind": "interface",
 		"subpath": ".",
@@ -5316,10 +5328,40 @@
 		"declaringModule": "assets/paths.d.ts"
 	},
 	{
+		"name": "AdaptiveLoadOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/AdaptiveMusic.d.ts"
+	},
+	{
+		"name": "AdaptiveMusic",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/AdaptiveMusic.d.ts"
+	},
+	{
+		"name": "AdaptiveMusicOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/AdaptiveMusic.d.ts"
+	},
+	{
+		"name": "AdaptivePlayOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/AdaptiveMusic.d.ts"
+	},
+	{
 		"name": "assertGrooveTemplate",
 		"kind": "function",
 		"subpath": "./audio",
 		"declaringModule": "audio/humanize/Groove.d.ts"
+	},
+	{
+		"name": "assertInputSize",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/DecoderGuard.d.ts"
 	},
 	{
 		"name": "AudioBus",
@@ -5332,6 +5374,30 @@
 		"kind": "interface",
 		"subpath": "./audio",
 		"declaringModule": "audio/Channels.d.ts"
+	},
+	{
+		"name": "AudioCore",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/CoreHost.d.ts"
+	},
+	{
+		"name": "AudioCoreHost",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/CoreHost.d.ts"
+	},
+	{
+		"name": "AudioCoreHostOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/CoreHost.d.ts"
+	},
+	{
+		"name": "AudioCoreStats",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/CoreHost.d.ts"
 	},
 	{
 		"name": "AudioFalloff",
@@ -5370,14 +5436,74 @@
 		"declaringModule": "audio/Positional.d.ts"
 	},
 	{
+		"name": "AudioRegion",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/Settings.d.ts"
+	},
+	{
+		"name": "AudioSettings",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/Settings.d.ts"
+	},
+	{
+		"name": "AudioSettingsData",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Settings.d.ts"
+	},
+	{
+		"name": "AudioUnderrun",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Underrun.d.ts"
+	},
+	{
+		"name": "BlockSource",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/StreamChannel.d.ts"
+	},
+	{
+		"name": "BudgetedLoader",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/BusBudget.d.ts"
+	},
+	{
+		"name": "bufferBytes",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/BusBudget.d.ts"
+	},
+	{
+		"name": "BusBudgetPolicy",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/BusBudget.d.ts"
+	},
+	{
 		"name": "BusKind",
 		"kind": "type",
 		"subpath": "./audio",
 		"declaringModule": "audio/Channels.d.ts"
 	},
 	{
+		"name": "BusLoadContext",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Channels.d.ts"
+	},
+	{
 		"name": "BusLoader",
 		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/Channels.d.ts"
+	},
+	{
+		"name": "BusLoadProgress",
+		"kind": "interface",
 		"subpath": "./audio",
 		"declaringModule": "audio/Channels.d.ts"
 	},
@@ -5412,6 +5538,12 @@
 		"declaringModule": "audio/Channels.d.ts"
 	},
 	{
+		"name": "channelEnvelopes",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioViews.d.ts"
+	},
+	{
 		"name": "ChannelPlayOptions",
 		"kind": "interface",
 		"subpath": "./audio",
@@ -5430,6 +5562,12 @@
 		"declaringModule": "audio/SoundFont.d.ts"
 	},
 	{
+		"name": "connectWebMidi",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/WebMidi.d.ts"
+	},
+	{
 		"name": "createAudio",
 		"kind": "function",
 		"subpath": "./audio",
@@ -5442,10 +5580,76 @@
 		"declaringModule": "audio/AudioLoader.d.ts"
 	},
 	{
+		"name": "createBudgetedLoader",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/BusBudget.d.ts"
+	},
+	{
+		"name": "DecodeBudgetError",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/DecoderGuard.d.ts"
+	},
+	{
+		"name": "DecoderLimitName",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/DecoderGuard.d.ts"
+	},
+	{
+		"name": "decoderLimits",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/DecoderGuard.d.ts"
+	},
+	{
+		"name": "DecoderLimits",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/DecoderGuard.d.ts"
+	},
+	{
 		"name": "decodeSoundFont",
 		"kind": "function",
 		"subpath": "./audio",
 		"declaringModule": "audio/SoundFont.d.ts"
+	},
+	{
+		"name": "decodeWav",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Wav.d.ts"
+	},
+	{
+		"name": "DEFAULT_DECODER_LIMITS",
+		"kind": "const",
+		"subpath": "./audio",
+		"declaringModule": "audio/DecoderGuard.d.ts"
+	},
+	{
+		"name": "dx7PatchNames",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/SyxBank.d.ts"
+	},
+	{
+		"name": "dynamicsLimit",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Settings.d.ts"
+	},
+	{
+		"name": "encodeWav",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Wav.d.ts"
+	},
+	{
+		"name": "fitToBudget",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Resample.d.ts"
 	},
 	{
 		"name": "GridSubdivision",
@@ -5502,6 +5706,18 @@
 		"declaringModule": "audio/humanize/Groove.d.ts"
 	},
 	{
+		"name": "guardBlockSource",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/DecoderGuard.d.ts"
+	},
+	{
+		"name": "GuardOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/DecoderGuard.d.ts"
+	},
+	{
 		"name": "HumanizationOptions",
 		"kind": "interface",
 		"subpath": "./audio",
@@ -5538,6 +5754,24 @@
 		"declaringModule": "audio/humanize/Humanize.d.ts"
 	},
 	{
+		"name": "inflateBounded",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/DecoderGuard.d.ts"
+	},
+	{
+		"name": "InstructionBudget",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/DecoderGuard.d.ts"
+	},
+	{
+		"name": "INTERNAL_MIDI_ENGINES",
+		"kind": "const",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiSynth.d.ts"
+	},
+	{
 		"name": "LiteHumanizer",
 		"kind": "class",
 		"subpath": "./audio",
@@ -5560,6 +5794,12 @@
 		"kind": "interface",
 		"subpath": "./audio",
 		"declaringModule": "audio/Channels.d.ts"
+	},
+	{
+		"name": "loopRegionFromFile",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/LoopTags.d.ts"
 	},
 	{
 		"name": "loopRegionFromTags",
@@ -5634,6 +5874,36 @@
 		"declaringModule": "audio/Midi.d.ts"
 	},
 	{
+		"name": "MidiSynth",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiSynth.d.ts"
+	},
+	{
+		"name": "MidiSynthFactory",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiSynth.d.ts"
+	},
+	{
+		"name": "MidiSynthFallback",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiSynth.d.ts"
+	},
+	{
+		"name": "midiSynthNames",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiSynth.d.ts"
+	},
+	{
+		"name": "MidiSynthRequest",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiSynth.d.ts"
+	},
+	{
 		"name": "MidiTempoEvent",
 		"kind": "interface",
 		"subpath": "./audio",
@@ -5694,10 +5964,22 @@
 		"declaringModule": "audio/Midi.d.ts"
 	},
 	{
+		"name": "onAudioUnderrun",
+		"kind": "const",
+		"subpath": "./audio",
+		"declaringModule": "audio/Underrun.d.ts"
+	},
+	{
 		"name": "onCaption",
 		"kind": "const",
 		"subpath": "./audio",
 		"declaringModule": "audio/Captions.d.ts"
+	},
+	{
+		"name": "onMidiSynthFallback",
+		"kind": "const",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiSynth.d.ts"
 	},
 	{
 		"name": "Orchestrator",
@@ -5710,6 +5992,12 @@
 		"kind": "interface",
 		"subpath": "./audio",
 		"declaringModule": "audio/Orchestrator.d.ts"
+	},
+	{
+		"name": "OutputStage",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/Settings.d.ts"
 	},
 	{
 		"name": "parseMidi",
@@ -5742,6 +6030,30 @@
 		"declaringModule": "audio/Synth.d.ts"
 	},
 	{
+		"name": "PositionalSound",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Positional.d.ts"
+	},
+	{
+		"name": "regionPlaybackRate",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Settings.d.ts"
+	},
+	{
+		"name": "registerMidiSynth",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiSynth.d.ts"
+	},
+	{
+		"name": "RenderBudget",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Resample.d.ts"
+	},
+	{
 		"name": "RenderedMidi",
 		"kind": "interface",
 		"subpath": "./audio",
@@ -5760,6 +6072,18 @@
 		"declaringModule": "audio/MidiRender.d.ts"
 	},
 	{
+		"name": "renderMidiStems",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiRender.d.ts"
+	},
+	{
+		"name": "renderMidiThroughSynth",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiSynth.d.ts"
+	},
+	{
 		"name": "renderMidiToBuffer",
 		"kind": "function",
 		"subpath": "./audio",
@@ -5770,6 +6094,36 @@
 		"kind": "function",
 		"subpath": "./audio",
 		"declaringModule": "audio/MidiRender.d.ts"
+	},
+	{
+		"name": "RenderThroughSynthOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiSynth.d.ts"
+	},
+	{
+		"name": "requestWebMidiInput",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/WebMidi.d.ts"
+	},
+	{
+		"name": "resampleStereo",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Resample.d.ts"
+	},
+	{
+		"name": "ResolvedMidiSynth",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiSynth.d.ts"
+	},
+	{
+		"name": "resolveMidiSynth",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiSynth.d.ts"
 	},
 	{
 		"name": "SampleDecodingContext",
@@ -5794,6 +6148,72 @@
 		"kind": "function",
 		"subpath": "./audio",
 		"declaringModule": "audio/Midi.d.ts"
+	},
+	{
+		"name": "SfxArbiter",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/Sfx.d.ts"
+	},
+	{
+		"name": "SfxBackend",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Sfx.d.ts"
+	},
+	{
+		"name": "SfxBank",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/Sfx.d.ts"
+	},
+	{
+		"name": "SfxDefinition",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Sfx.d.ts"
+	},
+	{
+		"name": "SfxGrant",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Sfx.d.ts"
+	},
+	{
+		"name": "SfxPlayOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Sfx.d.ts"
+	},
+	{
+		"name": "sfxSeed",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Sfx.d.ts"
+	},
+	{
+		"name": "SfxSound",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/Sfx.d.ts"
+	},
+	{
+		"name": "SfxSoundOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Sfx.d.ts"
+	},
+	{
+		"name": "SfxVoice",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Sfx.d.ts"
+	},
+	{
+		"name": "softenCutoff",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Settings.d.ts"
 	},
 	{
 		"name": "Sound",
@@ -5862,6 +6282,84 @@
 		"declaringModule": "audio/Positional.d.ts"
 	},
 	{
+		"name": "spectralDistance",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/SpectralDistance.d.ts"
+	},
+	{
+		"name": "SpectralDistanceOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/SpectralDistance.d.ts"
+	},
+	{
+		"name": "SpectralDistanceResult",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/SpectralDistance.d.ts"
+	},
+	{
+		"name": "splitSysex",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/SyxBank.d.ts"
+	},
+	{
+		"name": "StemSet",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/AdaptiveMusic.d.ts"
+	},
+	{
+		"name": "StereoFrames",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Resample.d.ts"
+	},
+	{
+		"name": "StreamChannel",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/StreamChannel.d.ts"
+	},
+	{
+		"name": "StreamChannelOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/StreamChannel.d.ts"
+	},
+	{
+		"name": "StreamedTrack",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Channels.d.ts"
+	},
+	{
+		"name": "StreamLoader",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/Channels.d.ts"
+	},
+	{
+		"name": "StreamPlayable",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/StreamPlayable.d.ts"
+	},
+	{
+		"name": "StreamPlayableOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/StreamPlayable.d.ts"
+	},
+	{
+		"name": "StreamPlayOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/StreamChannel.d.ts"
+	},
+	{
 		"name": "subdivisionCount",
 		"kind": "function",
 		"subpath": "./audio",
@@ -5886,6 +6384,30 @@
 		"declaringModule": "audio/Synth.d.ts"
 	},
 	{
+		"name": "SyxBank",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/SyxBank.d.ts"
+	},
+	{
+		"name": "SyxPatch",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/SyxBank.d.ts"
+	},
+	{
+		"name": "TimedMidiMessage",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Midi.d.ts"
+	},
+	{
+		"name": "timedMidiMessages",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Midi.d.ts"
+	},
+	{
 		"name": "toAudioBuffer",
 		"kind": "function",
 		"subpath": "./audio",
@@ -5896,6 +6418,42 @@
 		"kind": "interface",
 		"subpath": "./audio",
 		"declaringModule": "audio/Synth.d.ts"
+	},
+	{
+		"name": "TrackCache",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/BusBudget.d.ts"
+	},
+	{
+		"name": "TrackCacheStats",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/BusBudget.d.ts"
+	},
+	{
+		"name": "trackerNoteName",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioViews.d.ts"
+	},
+	{
+		"name": "trackerPattern",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioViews.d.ts"
+	},
+	{
+		"name": "TrackerRow",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioViews.d.ts"
+	},
+	{
+		"name": "unregisterMidiSynth",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiSynth.d.ts"
 	},
 	{
 		"name": "VorbisLoopTags",
@@ -5910,10 +6468,52 @@
 		"declaringModule": "audio/Synth.d.ts"
 	},
 	{
+		"name": "WaveformBucket",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioViews.d.ts"
+	},
+	{
+		"name": "waveformEnvelope",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioViews.d.ts"
+	},
+	{
+		"name": "wavInfo",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Wav.d.ts"
+	},
+	{
+		"name": "WavInfo",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Wav.d.ts"
+	},
+	{
 		"name": "webAudioSampleDecoder",
 		"kind": "function",
 		"subpath": "./audio",
 		"declaringModule": "audio/SampleDecoder.d.ts"
+	},
+	{
+		"name": "WebMidiAccess",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/WebMidi.d.ts"
+	},
+	{
+		"name": "WebMidiConnection",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/WebMidi.d.ts"
+	},
+	{
+		"name": "WebMidiInputPort",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/WebMidi.d.ts"
 	},
 	{
 		"name": "AttackDialog",
@@ -8592,6 +9192,24 @@
 		"declaringModule": "mwl/carryover.d.ts"
 	},
 	{
+		"name": "checkConditionSyntax",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/conditions.d.ts"
+	},
+	{
+		"name": "checkPackagePath",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
+	},
+	{
+		"name": "checkPackagePolicy",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
+	},
+	{
 		"name": "coerceTableValue",
 		"kind": "function",
 		"subpath": "./mwl",
@@ -8610,6 +9228,12 @@
 		"declaringModule": "mwl/hooks.d.ts"
 	},
 	{
+		"name": "compareVersions",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
 		"name": "compile",
 		"kind": "function",
 		"subpath": "./mwl",
@@ -8626,6 +9250,12 @@
 		"kind": "function",
 		"subpath": "./mwl",
 		"declaringModule": "mwl/compiler.d.ts"
+	},
+	{
+		"name": "compilePackages",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
 	},
 	{
 		"name": "compileSources",
@@ -8664,6 +9294,18 @@
 		"declaringModule": "mwl/runtime.d.ts"
 	},
 	{
+		"name": "DecodedPackage",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
+	},
+	{
+		"name": "decodePackage",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
+	},
+	{
 		"name": "decodeSave",
 		"kind": "function",
 		"subpath": "./mwl",
@@ -8674,6 +9316,18 @@
 		"kind": "function",
 		"subpath": "./mwl",
 		"declaringModule": "mwl/persistence.d.ts"
+	},
+	{
+		"name": "DEFAULT_PACKAGE_LIMITS",
+		"kind": "const",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
+	},
+	{
+		"name": "detectRomImage",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-rom.d.ts"
 	},
 	{
 		"name": "effectToModifier",
@@ -8718,6 +9372,12 @@
 		"declaringModule": "mwl/tables.d.ts"
 	},
 	{
+		"name": "encodePackage",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
+	},
+	{
 		"name": "encodeSave",
 		"kind": "function",
 		"subpath": "./mwl",
@@ -8752,6 +9412,12 @@
 		"kind": "function",
 		"subpath": "./mwl",
 		"declaringModule": "mwl/compiler.d.ts"
+	},
+	{
+		"name": "generateCredits",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
 	},
 	{
 		"name": "GeneratorHook",
@@ -8826,10 +9492,34 @@
 		"declaringModule": "mwl/actors.d.ts"
 	},
 	{
+		"name": "KNOWN_PACKAGE_CAPABILITIES",
+		"kind": "const",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
 		"name": "loadContent",
 		"kind": "function",
 		"subpath": "./mwl",
 		"declaringModule": "mwl/report.d.ts"
+	},
+	{
+		"name": "LoadedPackage",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
+	},
+	{
+		"name": "loadPackage",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
+	},
+	{
+		"name": "mergePackage",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
 	},
 	{
 		"name": "MigrationHook",
@@ -9348,6 +10038,198 @@
 		"declaringModule": "mwl/objects.d.ts"
 	},
 	{
+		"name": "PACKAGE_ASSET_KINDS",
+		"kind": "const",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PACKAGE_MEDIA_KINDS",
+		"kind": "const",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PACKAGE_SCRIPT_ACTIONS",
+		"kind": "const",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PACKAGE_TAGS",
+		"kind": "const",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PackageAction",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PackageAnimation",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PackageAsset",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PackageAssetKind",
+		"kind": "type",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PackageCharacter",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PackageConflictError",
+		"kind": "class",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
+	},
+	{
+		"name": "packageContent",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
+	},
+	{
+		"name": "PackageContent",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
+	},
+	{
+		"name": "PackageDirectoryEntry",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
+	},
+	{
+		"name": "PackageDocument",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PackageError",
+		"kind": "class",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
+	},
+	{
+		"name": "PackageFile",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
+	},
+	{
+		"name": "PackageFormatError",
+		"kind": "class",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
+	},
+	{
+		"name": "PackageImport",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PackageIntegrityError",
+		"kind": "class",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
+	},
+	{
+		"name": "PackageLimitError",
+		"kind": "class",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
+	},
+	{
+		"name": "PackageLimits",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
+	},
+	{
+		"name": "PackageMeta",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PackageMusic",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PackagePathError",
+		"kind": "class",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
+	},
+	{
+		"name": "PackagePolicy",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
+	},
+	{
+		"name": "packageRef",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
+	},
+	{
+		"name": "PackageReport",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-verify.d.ts"
+	},
+	{
+		"name": "PackageRequires",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PackageScript",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PackageSet",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
+	},
+	{
+		"name": "PackageSoundEffect",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "PackageValue",
+		"kind": "type",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
 		"name": "parse",
 		"kind": "function",
 		"subpath": "./mwl",
@@ -9370,6 +10252,18 @@
 		"kind": "function",
 		"subpath": "./mwl",
 		"declaringModule": "mwl/MapFile.d.ts"
+	},
+	{
+		"name": "parsePackageDocument",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
+		"name": "parsePackageRef",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
 	},
 	{
 		"name": "parseTableColumns",
@@ -9426,6 +10320,30 @@
 		"declaringModule": "mwl/readers.d.ts"
 	},
 	{
+		"name": "registerRomDigest",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-rom.d.ts"
+	},
+	{
+		"name": "requestedCapabilities",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package.d.ts"
+	},
+	{
+		"name": "RomDetection",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-rom.d.ts"
+	},
+	{
+		"name": "satisfiesVersionRange",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-document.d.ts"
+	},
+	{
 		"name": "schema01",
 		"kind": "const",
 		"subpath": "./mwl",
@@ -9460,6 +10378,12 @@
 		"kind": "type",
 		"subpath": "./mwl",
 		"declaringModule": "mwl/scripts.d.ts"
+	},
+	{
+		"name": "sha256Hex",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-container.d.ts"
 	},
 	{
 		"name": "sideVisionGroups",
@@ -9520,6 +10444,18 @@
 		"kind": "function",
 		"subpath": "./mwl",
 		"declaringModule": "mwl/schema.d.ts"
+	},
+	{
+		"name": "verifyPackage",
+		"kind": "function",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-verify.d.ts"
+	},
+	{
+		"name": "VerifyPackageOptions",
+		"kind": "interface",
+		"subpath": "./mwl",
+		"declaringModule": "mwl/package-verify.d.ts"
 	},
 	{
 		"name": "CompiledPresentation",
@@ -11256,10 +12192,40 @@
 		"declaringModule": "testing/index.d.ts"
 	},
 	{
+		"name": "FakeAudioContext",
+		"kind": "class",
+		"subpath": "./testing",
+		"declaringModule": "testing/FakeAudio.d.ts"
+	},
+	{
 		"name": "fakeAudioWithEnded",
 		"kind": "function",
 		"subpath": "./testing",
 		"declaringModule": "testing/index.d.ts"
+	},
+	{
+		"name": "FakeBlockSource",
+		"kind": "class",
+		"subpath": "./testing",
+		"declaringModule": "testing/FakeAudio.d.ts"
+	},
+	{
+		"name": "FakeBlockSourceOptions",
+		"kind": "interface",
+		"subpath": "./testing",
+		"declaringModule": "testing/FakeAudio.d.ts"
+	},
+	{
+		"name": "FakeBuffer",
+		"kind": "class",
+		"subpath": "./testing",
+		"declaringModule": "testing/FakeAudio.d.ts"
+	},
+	{
+		"name": "FakeBufferSource",
+		"kind": "class",
+		"subpath": "./testing",
+		"declaringModule": "testing/FakeAudio.d.ts"
 	},
 	{
 		"name": "fakeFetch",
@@ -11274,6 +12240,12 @@
 		"declaringModule": "testing/index.d.ts"
 	},
 	{
+		"name": "FakeGain",
+		"kind": "class",
+		"subpath": "./testing",
+		"declaringModule": "testing/FakeAudio.d.ts"
+	},
+	{
 		"name": "fakeGamepad",
 		"kind": "function",
 		"subpath": "./testing",
@@ -11284,6 +12256,12 @@
 		"kind": "interface",
 		"subpath": "./testing",
 		"declaringModule": "testing/index.d.ts"
+	},
+	{
+		"name": "FakeRetroPlayer",
+		"kind": "class",
+		"subpath": "./testing",
+		"declaringModule": "testing/FakeAudio.d.ts"
 	},
 	{
 		"name": "FakeSocket",
@@ -11310,6 +12288,12 @@
 		"declaringModule": "testing/SceneControls.d.ts"
 	},
 	{
+		"name": "openWorker",
+		"kind": "function",
+		"subpath": "./threads",
+		"declaringModule": "threads/spawn.d.ts"
+	},
+	{
 		"name": "spawn",
 		"kind": "function",
 		"subpath": "./threads",
@@ -11322,10 +12306,28 @@
 		"declaringModule": "threads/spawn.d.ts"
 	},
 	{
+		"name": "WorkerLink",
+		"kind": "interface",
+		"subpath": "./threads",
+		"declaringModule": "threads/spawn.d.ts"
+	},
+	{
+		"name": "WorkerLinkEvents",
+		"kind": "interface",
+		"subpath": "./threads",
+		"declaringModule": "threads/spawn.d.ts"
+	},
+	{
 		"name": "./tools/asset-report",
 		"kind": "tool",
 		"subpath": "./tools/asset-report",
 		"declaringModule": "tools/asset-report.mjs"
+	},
+	{
+		"name": "./tools/audio",
+		"kind": "tool",
+		"subpath": "./tools/audio",
+		"declaringModule": "tools/audio.mjs"
 	},
 	{
 		"name": "./tools/audit-adoptions",
@@ -14028,6 +15030,18 @@
 		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
+		"name": "transitionDisposition",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionDisposition",
+		"kind": "type",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "TransitionOptions",
 		"kind": "interface",
 		"subpath": "./two-d",
@@ -15680,6 +16694,18 @@
 	{
 		"name": "TransitionContext",
 		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "transitionDisposition",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionDisposition",
+		"kind": "type",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},

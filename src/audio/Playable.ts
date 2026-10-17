@@ -5,6 +5,13 @@ import * as Resources from '../assets/paths.ts';
  * already provides, named here so a test (or a game with its own audio backend) can supply
  * a fake without a real `Audio` element existing, which nothing outside a browser can
  * create.
+ *
+ * A backend that synthesises its sound instead of decoding a file (see `StreamPlayable`) has to
+ * answer the questions `HTMLAudioElement` answers implicitly: `currentTime` reads and seeks the
+ * playhead and holds the duration once a track that does not loop has ended; `playbackRate` is
+ * honoured (by resampling) or ignored but never throws; `onended` fires once at the end of a
+ * track that does not loop and never for one that does; and `play()` may return a promise that
+ * settles when the audio is allowed to start.
  */
 export interface Playable {
 	play(): void | Promise<void>;

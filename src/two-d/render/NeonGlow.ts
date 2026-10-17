@@ -1,4 +1,5 @@
 import { Sprite, Texture } from 'pixi.js';
+import { clamp } from '../../core/Math.ts';
 import { reducedMotion, type MotionIntent } from '../../core/Motion.ts';
 
 /** split a hex colour number into 0..255 channels; throws a RangeError outside `0x000000`-`0xffffff` */
@@ -194,7 +195,7 @@ export class NeonGlow extends Sprite {
 		}
 		if (!reducedMotion() || this.intent !== 'decorative') this.clock += dt;
 		const wave = 1 + this.flickerAmount * Math.sin(2 * Math.PI * this.flickerFrequency * this.clock);
-		this.alpha = Math.min(1, Math.max(0, this.peak * wave));
+		this.alpha = clamp(this.peak * wave, 0, 1);
 	}
 
 	private static paintCanvas(color: number, radius: number): HTMLCanvasElement {

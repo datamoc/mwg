@@ -17,6 +17,8 @@
  * refusing to find one where there is none.
  */
 
+import { fft } from '../Fft.ts';
+
 const FRAME = 256;
 const HOP = 64;
 /** frames either side of a peak that make up its local mean and spread */
@@ -40,54 +42,6 @@ const ENERGY_RISE = 0.05;
 const MIN_GAP_FRAMES = 4;
 /** where a Hann window's derivative puts the flux peak behind the hit: FRAME/4 + HOP/2 */
 const FLUX_PEAK_DELAY = FRAME / 4 + HOP / 2;
-
-/** in-place iterative radix-2 FFT; `real` and `imaginary` must be a power of two long */
-function fft(real: Float64Array, imaginary: Float64Array): void {
-	const length = real.length;
-
-	let j = 0;
-	for (let i = 1; i < length; i++) {
-		let bit = length >> 1;
-		while (j & bit) {
-			j ^= bit;
-			bit >>= 1;
-		}
-		j ^= bit;
-		if (i < j) {
-			let swap = real[i];
-			real[i] = real[j];
-			real[j] = swap;
-			swap = imaginary[i];
-			imaginary[i] = imaginary[j];
-			imaginary[j] = swap;
-		}
-	}
-
-	for (let size = 2; size <= length; size <<= 1) {
-		const angle = (-2 * Math.PI) / size;
-		const stepReal = Math.cos(angle);
-		const stepImaginary = Math.sin(angle);
-		const half = size >> 1;
-		for (let start = 0; start < length; start += size) {
-			let weightReal = 1;
-			let weightImaginary = 0;
-			for (let k = 0; k < half; k++) {
-				const even = start + k;
-				const odd = even + half;
-				const oddReal = real[odd] * weightReal - imaginary[odd] * weightImaginary;
-				const oddImaginary = real[odd] * weightImaginary + imaginary[odd] * weightReal;
-				real[odd] = real[even] - oddReal;
-				imaginary[odd] = imaginary[even] - oddImaginary;
-				real[even] += oddReal;
-				imaginary[even] += oddImaginary;
-
-				const nextReal = weightReal * stepReal - weightImaginary * stepImaginary;
-				weightImaginary = weightReal * stepImaginary + weightImaginary * stepReal;
-				weightReal = nextReal;
-			}
-		}
-	}
-}
 
 /**
  * When each onset in a mono signal happens, in seconds from its start.
