@@ -1,4 +1,4 @@
-import { Application, TextureSource } from 'pixi.js';
+import { Application, Container, TextureSource } from 'pixi.js';
 import type { Scene2D } from './Scene2D.ts';
 import type { SceneClass } from '../core/Scene.ts';
 import { SceneStack } from '../core/SceneStack.ts';
@@ -7,6 +7,8 @@ import { Logger } from '../core/Log.ts';
 import { fitResolution } from './ResolutionFit.ts';
 import { QualityScaler, type QualityScalerOptions } from './QualityScaler.ts';
 import * as Input from '../core/Input.ts';
+import { reducedMotion } from '../core/Motion.ts';
+import { TransitionRunner, type TransitionOptions } from './render/SceneTransition.ts';
 
 const PIXEL_ART_CLASS = 'mwg-pixel-art';
 
@@ -14,7 +16,8 @@ const log = new Logger('renderer');
 
 /** one queued scene change, applied in order at the start of the next frame */
 type SceneRequest =
-	| { kind: 'switch'; next: SceneClass<Scene2D> }
+	| { kind: 'switch'; next: SceneClass<Scene2D>; transition?: TransitionOptions }
+	| { kind: 'swap'; swap: () => void; transition: TransitionOptions }
 	| { kind: 'push'; next: SceneClass<Scene2D> }
 	| { kind: 'pop'; result: unknown };
 
@@ -168,6 +171,7 @@ export class Game {
 
 	private stack = new SceneStack<Scene2D>();
 	private pending: SceneRequest[] = [];
+	private running: { runner: TransitionRunner; wrapper: Container } | null = null;
 	private options: Required<GameOptions>;
 	private started = false;
 	private stopWatchingDpr: (() => void) | null = null;
@@ -212,6 +216,11 @@ export class Game {
 
 	get height(): number {
 		return this.app.renderer.screen.height;
+	}
+
+	/** the running game, or null before one exists, for code that works with or without one */
+	static get active(): Game | null {
+		return Game.instance;
 	}
 
 	/** the running game, for the few places that genuinely need a global */
@@ -300,8 +309,23 @@ export class Game {
 	 * The whole stack goes: every scene is destroyed, suspended or not, and the
 	 * new one starts alone. For a scene that returns, push it instead.
 	 */
-	switchScene(next: SceneClass<Scene2D>): void {
-		this.pending.push({ kind: 'switch', next });
+	switchScene(next: SceneClass<Scene2D>, options?: TransitionOptions): void {
+		this.pending.push({ kind: 'switch', next, transition: options });
+	}
+
+	/**
+	 * Changes what the current scene shows under a transition: `swap` runs at the start of the next
+	 * frame, once the outgoing picture has been photographed, and the transition then plays over the
+	 * result. For a scene that replaces its decor, level or layout in place rather than switching scenes;
+	 * `Scene2D.transitionTo` is the same call from inside the scene.
+	 */
+	transition(swap: () => void, options: TransitionOptions): void {
+		this.pending.push({ kind: 'swap', swap, transition: options });
+	}
+
+	/** true while a transition is playing, for a scene that should ignore input until it ends */
+	get transitioning(): boolean {
+		return this.running !== null;
 	}
 
 	/**
@@ -442,8 +466,10 @@ export class Game {
 	private frame(deltaSeconds: number): void {
 		//queued scene changes run first, in order, so a frame never updates a
 		//scene that was already asked to leave
+		if (this.pending.length > 0) this.endTransition();
 		for (const request of this.pending) {
-			if (request.kind === 'switch') this.applySwitch(request.next);
+			if (request.kind === 'switch') this.applySwitch(request.next, request.transition);
+			else if (request.kind === 'swap') this.applySwap(request.swap, request.transition);
 			else if (request.kind === 'push') this.applyPush(request.next);
 			else this.applyPop(request.result);
 		}
@@ -455,7 +481,11 @@ export class Game {
 			this.timeScale = this.hitStopRemaining > 0 ? this.hitStopScale : 1;
 		}
 
-		this.elapsed = Math.min(deltaSeconds, this.options.maxDelta) * this.timeScale;
+		//a transition counts real time, and may hold the scene still while it plays
+		if (this.running && this.running.runner.update(deltaSeconds)) this.endTransition();
+		const frozen = this.running?.runner.pause === true;
+
+		this.elapsed = frozen ? 0 : Math.min(deltaSeconds, this.options.maxDelta) * this.timeScale;
 		//a parked clock reads 0, which is always inside budget - observing it would ratchet
 		//the ratio back up while hidden or hit-stopped, so only real frames count
 		const scaler = this.suspended_ || this.elapsed <= 0 ? null : this.scaler;
@@ -480,8 +510,43 @@ export class Game {
 		this.applySwitch(next);
 	}
 
+	/** a picture of everything on screen now, or null when there is nothing to show or motion is reduced */
+	private snapshot(options: TransitionOptions | undefined) {
+		if (!options || reducedMotion()) return null;
+		return this.app.renderer.generateTexture(this.app.stage);
+	}
+
+	/** puts what is on the stage into a container the transition may move, between its two layers */
+	private beginTransition(options: TransitionOptions, snapshot: ReturnType<Game['snapshot']>): void {
+		const wrapper = new Container();
+		wrapper.addChild(...this.app.stage.removeChildren());
+		const runner = new TransitionRunner(options, { width: this.width, height: this.height }, snapshot, wrapper);
+		this.app.stage.addChild(runner.under, wrapper, runner.over);
+		this.running = { runner, wrapper };
+	}
+
+	/** finishes a transition that is still playing and puts the scenes back on the stage */
+	private endTransition(): void {
+		const running = this.running;
+		if (!running) return;
+		this.running = null;
+		running.runner.finish();
+		const scenes = running.wrapper.removeChildren();
+		this.app.stage.removeChildren();
+		this.app.stage.addChild(...scenes);
+		running.wrapper.destroy();
+	}
+
+	private applySwap(swap: () => void, options: TransitionOptions): void {
+		const snapshot = this.snapshot(options);
+		swap();
+		if (snapshot) this.beginTransition(options, snapshot);
+		else options.onDone?.();
+	}
+
 	/** a new scene alone: everything else is destroyed, the clocks restart */
-	private applySwitch(next: SceneClass<Scene2D>): void {
+	private applySwitch(next: SceneClass<Scene2D>, transition?: TransitionOptions): void {
+		const snapshot = this.snapshot(transition);
 		const scene = new next();
 		this.stack.replace(scene);
 		this.app.stage.removeChildren();
@@ -492,6 +557,8 @@ export class Game {
 		this.timeScale = 1;
 
 		scene.resize(this.width, this.height);
+		if (snapshot && transition) this.beginTransition(transition, snapshot);
+		else transition?.onDone?.();
 	}
 
 	/** a new scene over the current one, which suspends but survives underneath */

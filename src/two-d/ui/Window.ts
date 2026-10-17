@@ -1,5 +1,7 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { Signal } from '../../core/Signal.ts';
+import { reducedMotion } from '../../core/Motion.ts';
+import { openAnimationFrame, type OpenAnimationKind } from '../render/SceneTransition.ts';
 import type { Action } from '../../core/Input.ts';
 import { NinePatch } from './NinePatch.ts';
 import { Label } from './Label.ts';
@@ -10,6 +12,15 @@ export interface WindowColors {
 	background?: number;
 	border?: number;
 	title?: number;
+}
+
+/** how a window opens or closes: `pop` (springs out), `grow`, `slide` (up from below) or `fade` */
+export interface WindowAnimation {
+	animation: OpenAnimationKind;
+	/** where `pop` and `grow` come from and go back to, in the window's parent space; the window's centre when omitted */
+	from?: { x: number; y: number };
+	/** seconds; 0.25 when omitted */
+	duration?: number;
 }
 
 export interface WindowOptions {
@@ -105,6 +116,12 @@ export class Window extends Container {
 
 	private readonly themeListener = () => this.restyle();
 	private isClosed = false;
+	private motion: {
+		options: WindowAnimation;
+		elapsed: number;
+		closing: boolean;
+		base: { x: number; y: number };
+	} | null = null;
 	private colors: WindowColors;
 
 	constructor(options: WindowOptions) {
@@ -258,17 +275,69 @@ export class Window extends Container {
 	}
 
 	/** called each frame while this window is the top of the stack */
-	update(_dt: number): void {
-		//most windows are static and need nothing here
+	update(dt: number): void {
+		const motion = this.motion;
+		if (!motion) return;
+		motion.elapsed += dt;
+		const duration = motion.options.duration ?? 0.25;
+		const progress = Math.min(1, motion.elapsed / duration);
+		this.applyMotion(motion.closing ? 1 - progress : progress, motion);
+		if (progress < 1) return;
+		this.motion = null;
+		if (motion.closing) this.close();
+		else this.applyMotion(1, motion);
+	}
+
+	/** puts the window at `progress` of its animation: scaled about the origin, faded, pushed down by a slide */
+	private applyMotion(progress: number, motion: NonNullable<Window['motion']>): void {
+		const frame = openAnimationFrame(motion.options.animation, progress, motion.closing);
+		const origin = motion.options.from ?? {
+			x: motion.base.x + this.currentWidth / 2,
+			y: motion.base.y + this.currentHeight / 2,
+		};
+		this.scale.set(frame.scale);
+		this.alpha = frame.alpha;
+		this.position.set(
+			origin.x + (motion.base.x - origin.x) * frame.scale,
+			origin.y + (motion.base.y - origin.y) * frame.scale + frame.offset,
+		);
+	}
+
+	/**
+	 * Plays the opening animation from the window's current position. The stack calls `update(dt)`
+	 * on its top window, which drives it. Under reduced motion the window simply appears.
+	 *
+	 * @example
+	 * ```ts
+	 * import { Window } from '@datamoc/mw_games/two-d/ui';
+	 *
+	 * const window = new Window({ width: 240, height: 120, title: 'Result' });
+	 * window.open({ animation: 'pop' });
+	 * window.update(0.25); // normally the WindowStack's update does this
+	 * console.log(window.scale.x); // 1
+	 * ```
+	 */
+	open(animation?: WindowAnimation): void {
+		if (!animation || reducedMotion() || this.isClosed) return;
+		this.motion = { options: animation, elapsed: 0, closing: false, base: { x: this.x, y: this.y } };
+		this.applyMotion(0, this.motion);
 	}
 
 	/**
 	 * Announces the close and frees this window and its contents. Idempotent, so a second
 	 * `close()` (a `pop()` racing a `cancel`, a `closeAll()` after a manual close) is a no-op
 	 * rather than a second `destroy`. The instance is spent afterwards; see `closed`.
+	 *
+	 * With `animation` it plays the opening backwards first and closes when it ends (driven by
+	 * `update(dt)`), unless reduced motion is on, when it closes at once.
 	 */
-	close(): void {
+	close(animation?: WindowAnimation): void {
 		if (this.isClosed) return;
+		if (animation && !reducedMotion()) {
+			const base = this.motion?.base ?? { x: this.x, y: this.y };
+			this.motion = { options: animation, elapsed: 0, closing: true, base };
+			return;
+		}
 		this.isClosed = true;
 		this.onClose.dispatch();
 		this.parent?.removeChild(this);

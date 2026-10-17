@@ -1,7 +1,7 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
-  "serialNumber": "urn:uuid:d84e1ae6-4f60-52e2-ba6e-2d20240cc411",
+  "serialNumber": "urn:uuid:d2bfd68a-616e-5c0a-83a9-346fa009ae66",
   "version": 1,
   "metadata": {
     "tools": {
@@ -10,16 +10,16 @@
           "type": "application",
           "group": "datamoc",
           "name": "tools/sbom.mjs",
-          "version": "0.42.0"
+          "version": "0.43.0"
         }
       ]
     },
     "component": {
       "type": "library",
-      "bom-ref": "pkg:npm/%40datamoc/mw_games@0.42.0",
+      "bom-ref": "pkg:npm/%40datamoc/mw_games@0.43.0",
       "name": "@datamoc/mw_games",
-      "version": "0.42.0",
-      "purl": "pkg:npm/%40datamoc/mw_games@0.42.0",
+      "version": "0.43.0",
+      "purl": "pkg:npm/%40datamoc/mw_games@0.43.0",
       "description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
       "licenses": [
         {
@@ -96,15 +96,15 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40capacitor/cli@8.5.3",
+      "bom-ref": "pkg:npm/%40capacitor/cli@8.4.3",
       "name": "@capacitor/cli",
-      "version": "8.5.3",
-      "purl": "pkg:npm/%40capacitor/cli@8.5.3",
+      "version": "8.4.3",
+      "purl": "pkg:npm/%40capacitor/cli@8.4.3",
       "scope": "excluded",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "fc6eb1c276bea78192de5b6149d58ddce4e1087d85f393b4524772f2bbf7a005ef80431ec8580f1080373cc012fbe2241f052e05804028e4099d97dcae1d67d3"
+          "content": "13727b17a81d65204c230074fd65671d9e52f945c93e0bdd9f2aadc2bc9c702191464219df86f9b2061831ad888f86a08a691470ca1270093e2bf82b4ed2f55e"
         }
       ],
       "licenses": [
@@ -159,15 +159,15 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/%40datamoc/pyroeis@0.9.0",
+      "bom-ref": "pkg:npm/%40datamoc/pyroeis@0.9.1",
       "name": "@datamoc/pyroeis",
-      "version": "0.9.0",
-      "purl": "pkg:npm/%40datamoc/pyroeis@0.9.0",
+      "version": "0.9.1",
+      "purl": "pkg:npm/%40datamoc/pyroeis@0.9.1",
       "scope": "optional",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "22c2104fc4df7b87209157a3168afb143eefd46abdb5b4f92c45125244c26265badca578a81b78be2bc6c5f59c29973b5b20dc0b940143aa00016abebed6da22"
+          "content": "e5e9ddb5a14c66d60edf1b9a83769a987483804718c7b71bb7a4b6e3f0efbc9c2618658da7a9e59afe7eb7ff38b7ad3aaf43d7dbf307dc71f51e365c8fc442e0"
         }
       ],
       "licenses": [
@@ -2112,48 +2112,6 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/bplist-creator@0.1.0",
-      "name": "bplist-creator",
-      "version": "0.1.0",
-      "purl": "pkg:npm/bplist-creator@0.1.0",
-      "scope": "excluded",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "b17687662732104998f3a5b2b9e2d341eb1b7a81ff9aabaf6ab25a40d6e3b8e40efbb81b15c0c45aa2a671603870e4cbcc595f82f922571a259359396c12299a"
-        }
-      ],
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT"
-          }
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:npm/bplist-parser@0.3.1",
-      "name": "bplist-parser",
-      "version": "0.3.1",
-      "purl": "pkg:npm/bplist-parser@0.3.1",
-      "scope": "excluded",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "3f227188db40e53d8f94b21e068b7895ba7bae3e0e69dce39cc643fc6e73b8136df1e8bfc8253bfb05b48766da83dbebf1cfbf5ae456992c5ba8097d84bd6b04"
-        }
-      ],
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT"
-          }
-        }
-      ]
-    },
-    {
-      "type": "library",
       "bom-ref": "pkg:npm/bplist-parser@0.3.2",
       "name": "bplist-parser",
       "version": "0.3.2",
@@ -3939,27 +3897,6 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/readline-sync@1.4.10",
-      "name": "readline-sync",
-      "version": "1.4.10",
-      "purl": "pkg:npm/readline-sync@1.4.10",
-      "scope": "optional",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "80dbdaf3fe9401ef1061ea48407fe3436aa7f75423d01f6c62330106cdd0381f05d825dc2a02f141a2513fbeac595450b7e414fbc7c09026c2be38cc16eed873"
-        }
-      ],
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT"
-          }
-        }
-      ]
-    },
-    {
-      "type": "library",
       "bom-ref": "pkg:npm/rimraf@6.1.3",
       "name": "rimraf",
       "version": "6.1.3",
@@ -4191,27 +4128,6 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/simple-plist@1.3.1",
-      "name": "simple-plist",
-      "version": "1.3.1",
-      "purl": "pkg:npm/simple-plist@1.3.1",
-      "scope": "excluded",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "88c4b0e62d17b1e327ae1b48cd16fb5e94045dea5af71856c465288c704be37488a50b834248775a9cbaed96c3cd956be842b1bf0542867569765f211152c38b"
-        }
-      ],
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT"
-          }
-        }
-      ]
-    },
-    {
-      "type": "library",
       "bom-ref": "pkg:npm/sisteransi@1.0.5",
       "name": "sisteransi",
       "version": "1.0.5",
@@ -4290,48 +4206,6 @@
         {
           "license": {
             "id": "ISC"
-          }
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:npm/sprintf-js@1.1.3",
-      "name": "sprintf-js",
-      "version": "1.1.3",
-      "purl": "pkg:npm/sprintf-js@1.1.3",
-      "scope": "optional",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "3a8fb4444155e7dfebcf781f24d2908819707c7692112975a5c1b200142c9e721f58e16de89363e600a883653a30b67ffc81980fe9c0f2723e9934a144445e68"
-        }
-      ],
-      "licenses": [
-        {
-          "license": {
-            "id": "BSD-3-Clause"
-          }
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:npm/stream-buffers@2.2.0",
-      "name": "stream-buffers",
-      "version": "2.2.0",
-      "purl": "pkg:npm/stream-buffers@2.2.0",
-      "scope": "excluded",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "bb240afe6c794231ee9fcd052c94df69613b26dc1f44c2812e43277bab9d60e9af1f409ac28b556bb4df8181f3027a69867e3e4f0788c7540a3274486e2a6652"
-        }
-      ],
-      "licenses": [
-        {
-          "license": {
-            "id": "Unlicense"
           }
         }
       ]
@@ -4506,27 +4380,6 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/tmp@0.2.7",
-      "name": "tmp",
-      "version": "0.2.7",
-      "purl": "pkg:npm/tmp@0.2.7",
-      "scope": "optional",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "7b4be8b48a69e14a36009612cd51d5eb109c6b0ba27b3dc3cea0c06eb4dcdd8c4192994de9ef9d335dd97887199c383f4294ae536cdf677af3c18f2e9049da5f"
-        }
-      ],
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT"
-          }
-        }
-      ]
-    },
-    {
-      "type": "library",
       "bom-ref": "pkg:npm/tree-kill@1.2.2",
       "name": "tree-kill",
       "version": "1.2.2",
@@ -4674,27 +4527,6 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/uuid@7.0.3",
-      "name": "uuid",
-      "version": "7.0.3",
-      "purl": "pkg:npm/uuid@7.0.3",
-      "scope": "excluded",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "0cf4a47b4a57853660a05fddf964add9068a3021527f1ed07a0c44593f893ae1c5e5a5ab2849f41beced8ee260fe01bcfc8b4afab6cf083ff236ff32ca287a0a"
-        }
-      ],
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT"
-          }
-        }
-      ]
-    },
-    {
-      "type": "library",
       "bom-ref": "pkg:npm/vite@8.3.4",
       "name": "vite",
       "version": "8.3.4",
@@ -4773,27 +4605,6 @@
         {
           "license": {
             "id": "MIT"
-          }
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:npm/xcode@3.0.1",
-      "name": "xcode",
-      "version": "3.0.1",
-      "purl": "pkg:npm/xcode@3.0.1",
-      "scope": "excluded",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "902cf993b27b5db26d8c004ebe47399499a488387c5618d5086362a9d282b1c995a5d554a440325efd719822e4409e5db07ab1dc83cee175be3530e153f7dab4"
-        }
-      ],
-      "licenses": [
-        {
-          "license": {
-            "id": "Apache-2.0"
           }
         }
       ]
@@ -4923,7 +4734,7 @@
       ]
     },
     {
-      "ref": "pkg:npm/%40capacitor/cli@8.5.3",
+      "ref": "pkg:npm/%40capacitor/cli@8.4.3",
       "dependsOn": [
         "pkg:npm/%40ionic/cli-framework-output@2.2.8",
         "pkg:npm/%40ionic/utils-subprocess@3.0.1",
@@ -4941,7 +4752,6 @@
         "pkg:npm/semver@7.8.5",
         "pkg:npm/tar@7.5.22",
         "pkg:npm/tslib@2.8.1",
-        "pkg:npm/xcode@3.0.1",
         "pkg:npm/xml2js@0.6.2"
       ]
     },
@@ -4958,15 +4768,15 @@
       ]
     },
     {
-      "ref": "pkg:npm/%40datamoc/mw_games@0.42.0",
+      "ref": "pkg:npm/%40datamoc/mw_games@0.43.0",
       "dependsOn": [
         "pkg:npm/%40babylonjs/core@9.31.0",
         "pkg:npm/%40babylonjs/loaders@9.31.0",
         "pkg:npm/%40capacitor/android@8.5.3",
-        "pkg:npm/%40capacitor/cli@8.5.3",
+        "pkg:npm/%40capacitor/cli@8.4.3",
         "pkg:npm/%40capacitor/core@8.5.3",
         "pkg:npm/%40capacitor/ios@8.5.3",
-        "pkg:npm/%40datamoc/pyroeis@0.9.0",
+        "pkg:npm/%40datamoc/pyroeis@0.9.1",
         "pkg:npm/%40types/node@26.6.5",
         "pkg:npm/%40types/ws@8.18.2",
         "pkg:npm/json5@2.2.3",
@@ -4983,12 +4793,8 @@
       ]
     },
     {
-      "ref": "pkg:npm/%40datamoc/pyroeis@0.9.0",
-      "dependsOn": [
-        "pkg:npm/readline-sync@1.4.10",
-        "pkg:npm/sprintf-js@1.1.3",
-        "pkg:npm/tmp@0.2.7"
-      ]
+      "ref": "pkg:npm/%40datamoc/pyroeis@0.9.1",
+      "dependsOn": []
     },
     {
       "ref": "pkg:npm/%40emnapi/runtime@1.11.3",
@@ -5439,18 +5245,6 @@
     {
       "ref": "pkg:npm/boolbase@1.0.0",
       "dependsOn": []
-    },
-    {
-      "ref": "pkg:npm/bplist-creator@0.1.0",
-      "dependsOn": [
-        "pkg:npm/stream-buffers@2.2.0"
-      ]
-    },
-    {
-      "ref": "pkg:npm/bplist-parser@0.3.1",
-      "dependsOn": [
-        "pkg:npm/big-integer@1.6.52"
-      ]
     },
     {
       "ref": "pkg:npm/bplist-parser@0.3.2",
@@ -5919,10 +5713,6 @@
       ]
     },
     {
-      "ref": "pkg:npm/readline-sync@1.4.10",
-      "dependsOn": []
-    },
-    {
       "ref": "pkg:npm/rimraf@6.1.3",
       "dependsOn": [
         "pkg:npm/glob@13.0.6",
@@ -6019,14 +5809,6 @@
       "dependsOn": []
     },
     {
-      "ref": "pkg:npm/simple-plist@1.3.1",
-      "dependsOn": [
-        "pkg:npm/bplist-creator@0.1.0",
-        "pkg:npm/bplist-parser@0.3.1",
-        "pkg:npm/plist@3.1.1"
-      ]
-    },
-    {
       "ref": "pkg:npm/sisteransi@1.0.5",
       "dependsOn": []
     },
@@ -6044,14 +5826,6 @@
     },
     {
       "ref": "pkg:npm/split2@4.2.0",
-      "dependsOn": []
-    },
-    {
-      "ref": "pkg:npm/sprintf-js@1.1.3",
-      "dependsOn": []
-    },
-    {
-      "ref": "pkg:npm/stream-buffers@2.2.0",
       "dependsOn": []
     },
     {
@@ -6114,10 +5888,6 @@
       ]
     },
     {
-      "ref": "pkg:npm/tmp@0.2.7",
-      "dependsOn": []
-    },
-    {
       "ref": "pkg:npm/tree-kill@1.2.2",
       "dependsOn": []
     },
@@ -6167,10 +5937,6 @@
       "dependsOn": []
     },
     {
-      "ref": "pkg:npm/uuid@7.0.3",
-      "dependsOn": []
-    },
-    {
       "ref": "pkg:npm/vite@8.3.4",
       "dependsOn": [
         "pkg:npm/%40types/node@26.6.5",
@@ -6199,13 +5965,6 @@
     {
       "ref": "pkg:npm/ws@8.22.0",
       "dependsOn": []
-    },
-    {
-      "ref": "pkg:npm/xcode@3.0.1",
-      "dependsOn": [
-        "pkg:npm/simple-plist@1.3.1",
-        "pkg:npm/uuid@7.0.3"
-      ]
     },
     {
       "ref": "pkg:npm/xml2js@0.6.2",

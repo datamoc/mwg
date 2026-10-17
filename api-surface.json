@@ -684,6 +684,12 @@
 		"declaringModule": "two-d/stage/DialogueStage.d.ts"
 	},
 	{
+		"name": "dissolve",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "distance",
 		"kind": "function",
 		"subpath": ".",
@@ -748,6 +754,12 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "core/Settings.d.ts"
+	},
+	{
+		"name": "ellipsize",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
 	},
 	{
 		"name": "EMPTY",
@@ -1080,6 +1092,12 @@
 		"declaringModule": "two-d/ui/Layout.d.ts"
 	},
 	{
+		"name": "grow",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "Halo",
 		"kind": "class",
 		"subpath": ".",
@@ -1312,6 +1330,12 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "two-d/render/Capabilities.d.ts"
+	},
+	{
+		"name": "iris",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "isOnScreen",
@@ -1650,6 +1674,24 @@
 		"declaringModule": "two-d/ui/markup.d.ts"
 	},
 	{
+		"name": "MarqueeLabel",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
+		"name": "MarqueeLabelOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
+		"name": "marqueeOffset",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
 		"name": "maskPixels",
 		"kind": "function",
 		"subpath": ".",
@@ -1896,6 +1938,18 @@
 		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
 	},
 	{
+		"name": "openAnimationFrame",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "OpenAnimationKind",
+		"kind": "type",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "packColorAdd",
 		"kind": "function",
 		"subpath": ".",
@@ -2116,6 +2170,18 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "core/Stats.d.ts"
+	},
+	{
+		"name": "pop",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "popScale",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "PositionedMarkupSpan",
@@ -2356,6 +2422,12 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/Layout.d.ts"
+	},
+	{
+		"name": "resolveEasing",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "resolveTerrainGraphics",
@@ -2646,6 +2718,12 @@
 		"declaringModule": "core/SceneStack.d.ts"
 	},
 	{
+		"name": "SceneTransition",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "Schema",
 		"kind": "type",
 		"subpath": ".",
@@ -2718,10 +2796,34 @@
 		"declaringModule": "two-d/ui/ScrollBox.d.ts"
 	},
 	{
+		"name": "ScrollDrag",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/ScrollBox.d.ts"
+	},
+	{
+		"name": "ScrollKey",
+		"kind": "type",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/ScrollBox.d.ts"
+	},
+	{
 		"name": "scrollOffset",
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/ScrollBox.d.ts"
+	},
+	{
+		"name": "ScrollText",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
+		"name": "ScrollTextOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
 	},
 	{
 		"name": "serializeReplay",
@@ -2808,6 +2910,12 @@
 		"declaringModule": "two-d/stage/DialogueStage.d.ts"
 	},
 	{
+		"name": "shrink",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "Signal",
 		"kind": "class",
 		"subpath": ".",
@@ -2872,6 +2980,12 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/markdown.d.ts"
+	},
+	{
+		"name": "slide",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "Slider",
@@ -3342,6 +3456,12 @@
 		"declaringModule": "core/Multiplayer.d.ts"
 	},
 	{
+		"name": "tileDelays",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "TiledLayer",
 		"kind": "interface",
 		"subpath": ".",
@@ -3402,10 +3522,34 @@
 		"declaringModule": "two-d/render/TileMap.d.ts"
 	},
 	{
+		"name": "TileOrder",
+		"kind": "type",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "tileProgress",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "TilesetSheet",
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/render/TiledMap.d.ts"
+	},
+	{
+		"name": "tileShrink",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TileShrinkOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "TintedSprite",
@@ -3438,10 +3582,58 @@
 		"declaringModule": "two-d/ui/Tooltip.d.ts"
 	},
 	{
+		"name": "TooltipHost",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/Tooltip.d.ts"
+	},
+	{
+		"name": "TooltipHostOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/Tooltip.d.ts"
+	},
+	{
 		"name": "TooltipOptions",
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/Tooltip.d.ts"
+	},
+	{
+		"name": "TooltipTarget",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/Tooltip.d.ts"
+	},
+	{
+		"name": "TransitionContext",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionPoint",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionRunner",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionRuntime",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "TreeNode",
@@ -3466,6 +3658,12 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/TreeView.d.ts"
+	},
+	{
+		"name": "truncateLines",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
 	},
 	{
 		"name": "TweeChoice",
@@ -3626,6 +3824,12 @@
 	{
 		"name": "Window",
 		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/Window.d.ts"
+	},
+	{
+		"name": "WindowAnimation",
+		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/Window.d.ts"
 	},
@@ -11760,6 +11964,12 @@
 		"declaringModule": "two-d/stage/DialogueStage.d.ts"
 	},
 	{
+		"name": "dissolve",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "Dropdown",
 		"kind": "class",
 		"subpath": "./two-d",
@@ -11788,6 +11998,12 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/DropdownView.d.ts"
+	},
+	{
+		"name": "ellipsize",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
 	},
 	{
 		"name": "EMPTY",
@@ -12048,6 +12264,12 @@
 		"declaringModule": "two-d/ui/Layout.d.ts"
 	},
 	{
+		"name": "grow",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "Halo",
 		"kind": "class",
 		"subpath": "./two-d",
@@ -12178,6 +12400,12 @@
 		"kind": "function",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/Capabilities.d.ts"
+	},
+	{
+		"name": "iris",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "isOnScreen",
@@ -12402,6 +12630,24 @@
 		"declaringModule": "two-d/ui/markup.d.ts"
 	},
 	{
+		"name": "MarqueeLabel",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
+		"name": "MarqueeLabelOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
+		"name": "marqueeOffset",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
 		"name": "maskPixels",
 		"kind": "function",
 		"subpath": "./two-d",
@@ -12576,6 +12822,18 @@
 		"declaringModule": "two-d/ui/OnScreenKeyboard.d.ts"
 	},
 	{
+		"name": "openAnimationFrame",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "OpenAnimationKind",
+		"kind": "type",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "packColorAdd",
 		"kind": "function",
 		"subpath": "./two-d",
@@ -12724,6 +12982,18 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/SpriteDeform.d.ts"
+	},
+	{
+		"name": "pop",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "popScale",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "PositionedMarkupSpan",
@@ -12876,6 +13146,12 @@
 		"declaringModule": "two-d/ui/Layout.d.ts"
 	},
 	{
+		"name": "resolveEasing",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "resolveTerrainGraphics",
 		"kind": "function",
 		"subpath": "./two-d",
@@ -13026,6 +13302,12 @@
 		"declaringModule": "two-d/Scene2D.d.ts"
 	},
 	{
+		"name": "SceneTransition",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "ScreenEffectPhase",
 		"kind": "type",
 		"subpath": "./two-d",
@@ -13086,10 +13368,34 @@
 		"declaringModule": "two-d/ui/ScrollBox.d.ts"
 	},
 	{
+		"name": "ScrollDrag",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/ScrollBox.d.ts"
+	},
+	{
+		"name": "ScrollKey",
+		"kind": "type",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/ScrollBox.d.ts"
+	},
+	{
 		"name": "scrollOffset",
 		"kind": "function",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/ScrollBox.d.ts"
+	},
+	{
+		"name": "ScrollText",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
+		"name": "ScrollTextOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
 	},
 	{
 		"name": "setTheme",
@@ -13140,6 +13446,12 @@
 		"declaringModule": "two-d/stage/DialogueStage.d.ts"
 	},
 	{
+		"name": "shrink",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "SkeletalSprite",
 		"kind": "class",
 		"subpath": "./two-d",
@@ -13174,6 +13486,12 @@
 		"kind": "function",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/markdown.d.ts"
+	},
+	{
+		"name": "slide",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "Slider",
@@ -13554,6 +13872,12 @@
 		"declaringModule": "two-d/ui/theme.d.ts"
 	},
 	{
+		"name": "tileDelays",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "TiledLayer",
 		"kind": "interface",
 		"subpath": "./two-d",
@@ -13614,10 +13938,34 @@
 		"declaringModule": "two-d/render/TileMap.d.ts"
 	},
 	{
+		"name": "TileOrder",
+		"kind": "type",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "tileProgress",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "TilesetSheet",
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/TiledMap.d.ts"
+	},
+	{
+		"name": "tileShrink",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TileShrinkOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "TintedSprite",
@@ -13650,10 +13998,58 @@
 		"declaringModule": "two-d/ui/Tooltip.d.ts"
 	},
 	{
+		"name": "TooltipHost",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/Tooltip.d.ts"
+	},
+	{
+		"name": "TooltipHostOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/Tooltip.d.ts"
+	},
+	{
 		"name": "TooltipOptions",
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/Tooltip.d.ts"
+	},
+	{
+		"name": "TooltipTarget",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/Tooltip.d.ts"
+	},
+	{
+		"name": "TransitionContext",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionPoint",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionRunner",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionRuntime",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "TreeNode",
@@ -13678,6 +14074,12 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/TreeView.d.ts"
+	},
+	{
+		"name": "truncateLines",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
 	},
 	{
 		"name": "TwineStory",
@@ -13736,6 +14138,12 @@
 	{
 		"name": "Window",
 		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/Window.d.ts"
+	},
+	{
+		"name": "WindowAnimation",
+		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/Window.d.ts"
 	},
@@ -14214,6 +14622,12 @@
 		"declaringModule": "two-d/render/Capabilities.d.ts"
 	},
 	{
+		"name": "dissolve",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "EMPTY",
 		"kind": "const",
 		"subpath": "./two-d/render",
@@ -14316,6 +14730,12 @@
 		"declaringModule": "two-d/render/Capabilities.d.ts"
 	},
 	{
+		"name": "grow",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "Halo",
 		"kind": "class",
 		"subpath": "./two-d/render",
@@ -14392,6 +14812,12 @@
 		"kind": "function",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/Capabilities.d.ts"
+	},
+	{
+		"name": "iris",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "isOnScreen",
@@ -14544,6 +14970,18 @@
 		"declaringModule": "two-d/render/Shape2D.d.ts"
 	},
 	{
+		"name": "openAnimationFrame",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "OpenAnimationKind",
+		"kind": "type",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "packColorAdd",
 		"kind": "function",
 		"subpath": "./two-d/render",
@@ -14676,6 +15114,18 @@
 		"declaringModule": "two-d/render/SpriteDeform.d.ts"
 	},
 	{
+		"name": "pop",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "popScale",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "Projectile",
 		"kind": "class",
 		"subpath": "./two-d/render",
@@ -14758,6 +15208,12 @@
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/Capabilities.d.ts"
+	},
+	{
+		"name": "resolveEasing",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "resolveTerrainGraphics",
@@ -14874,6 +15330,12 @@
 		"declaringModule": "two-d/render/RpgmAutotile.d.ts"
 	},
 	{
+		"name": "SceneTransition",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "ScreenEffectPhase",
 		"kind": "type",
 		"subpath": "./two-d/render",
@@ -14910,10 +15372,22 @@
 		"declaringModule": "two-d/render/Shape2D.d.ts"
 	},
 	{
+		"name": "shrink",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "SkeletalSprite",
 		"kind": "class",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/SkeletalSprite.d.ts"
+	},
+	{
+		"name": "slide",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "snapZoom",
@@ -15096,6 +15570,12 @@
 		"declaringModule": "two-d/render/Types2D.d.ts"
 	},
 	{
+		"name": "tileDelays",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "TiledLayer",
 		"kind": "interface",
 		"subpath": "./two-d/render",
@@ -15156,10 +15636,34 @@
 		"declaringModule": "two-d/render/TileMap.d.ts"
 	},
 	{
+		"name": "TileOrder",
+		"kind": "type",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "tileProgress",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
 		"name": "TilesetSheet",
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/TiledMap.d.ts"
+	},
+	{
+		"name": "tileShrink",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TileShrinkOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "TintedSprite",
@@ -15172,6 +15676,36 @@
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/StatusVisuals.d.ts"
+	},
+	{
+		"name": "TransitionContext",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionPoint",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionRunner",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
+	},
+	{
+		"name": "TransitionRuntime",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
 		"name": "Viewport",
@@ -15516,6 +16050,12 @@
 		"declaringModule": "two-d/ui/DropdownView.d.ts"
 	},
 	{
+		"name": "ellipsize",
+		"kind": "function",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
 		"name": "escapeHtml",
 		"kind": "function",
 		"subpath": "./two-d/ui",
@@ -15852,6 +16392,24 @@
 		"declaringModule": "two-d/ui/markup.d.ts"
 	},
 	{
+		"name": "MarqueeLabel",
+		"kind": "class",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
+		"name": "MarqueeLabelOptions",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
+		"name": "marqueeOffset",
+		"kind": "function",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
 		"name": "meetsContrast",
 		"kind": "function",
 		"subpath": "./two-d/ui",
@@ -16056,10 +16614,34 @@
 		"declaringModule": "two-d/ui/ScrollBox.d.ts"
 	},
 	{
+		"name": "ScrollDrag",
+		"kind": "class",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/ScrollBox.d.ts"
+	},
+	{
+		"name": "ScrollKey",
+		"kind": "type",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/ScrollBox.d.ts"
+	},
+	{
 		"name": "scrollOffset",
 		"kind": "function",
 		"subpath": "./two-d/ui",
 		"declaringModule": "two-d/ui/ScrollBox.d.ts"
+	},
+	{
+		"name": "ScrollText",
+		"kind": "class",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
+		"name": "ScrollTextOptions",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
 	},
 	{
 		"name": "setTheme",
@@ -16284,7 +16866,25 @@
 		"declaringModule": "two-d/ui/Tooltip.d.ts"
 	},
 	{
+		"name": "TooltipHost",
+		"kind": "class",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/Tooltip.d.ts"
+	},
+	{
+		"name": "TooltipHostOptions",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/Tooltip.d.ts"
+	},
+	{
 		"name": "TooltipOptions",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/Tooltip.d.ts"
+	},
+	{
+		"name": "TooltipTarget",
 		"kind": "interface",
 		"subpath": "./two-d/ui",
 		"declaringModule": "two-d/ui/Tooltip.d.ts"
@@ -16312,6 +16912,12 @@
 		"kind": "interface",
 		"subpath": "./two-d/ui",
 		"declaringModule": "two-d/ui/TreeView.d.ts"
+	},
+	{
+		"name": "truncateLines",
+		"kind": "function",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/ScrollText.d.ts"
 	},
 	{
 		"name": "UPPERCASE_KEYBOARD",
@@ -16346,6 +16952,12 @@
 	{
 		"name": "Window",
 		"kind": "class",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/Window.d.ts"
+	},
+	{
+		"name": "WindowAnimation",
+		"kind": "interface",
 		"subpath": "./two-d/ui",
 		"declaringModule": "two-d/ui/Window.d.ts"
 	},

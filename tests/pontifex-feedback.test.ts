@@ -193,7 +193,7 @@ test('DropdownView opens a list of buttons and a pick selects, closes and fires 
 	const view = new DropdownView({ width: 120, options: [{ label: 'A' }, { label: 'B' }, { label: 'C' }] });
 	const picked: number[] = [];
 	view.model.onChange.add(({ index }) => void picked.push(index));
-	const rows = () => (view.children[1] as unknown as { children: InstanceType<typeof Button>[] }).children;
+	const rows = () => (view.scroller?.content.children ?? []) as InstanceType<typeof Button>[];
 	assert.equal(rows().length, 0, 'closed: no list');
 	(view.children[0] as InstanceType<typeof Button>).onClick.dispatch();
 	assert.equal(view.model.isOpen, true);

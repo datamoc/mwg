@@ -578,6 +578,9 @@ build instead.
         private background;
         private labelText;
         private icon;
+        private iconSelected;
+        private iconPlain;
+        private tooltip_;
         private width_;
         private height_;
         private state;
@@ -591,6 +594,14 @@ build instead.
 
         resize(width: number, height: number): void;
         setText(text: string | undefined): void;
+
+        setIcon(icon: Container2D | null): void;
+
+        setSelectedIcon(icon: Container2D | null): void;
+        private showIcon;
+
+        get tooltip(): string | undefined;
+        setTooltip(tooltip: string | (() => string) | undefined): void;
         get disabled(): boolean;
         setDisabled(disabled: boolean): void;
         get selected(): boolean;
@@ -624,6 +635,10 @@ build instead.
         text?: string;
 
         icon?: Container2D;
+
+        iconSelected?: Container2D;
+
+        tooltip?: string | (() => string);
 
         skin?: ButtonSkin;
 
@@ -1282,6 +1297,10 @@ build instead.
         get isBusy(): boolean;
     }
 
+### `dissolve` (function)
+
+    export declare function dissolve(): SceneTransition;
+
 ### `distance` (function)
 
     export declare function distance(metric: DistanceMetric, a: {
@@ -1355,21 +1374,47 @@ build instead.
 
     export declare class DropdownView extends Container {
         readonly model: Dropdown;
-        private readonly width_;
+        private width_;
         private readonly rowHeight;
+        private readonly maxRows;
         private readonly head;
         private readonly list;
+        private readonly backdrop;
+        private box;
+        private listHeight;
+        private readonly themeListener;
         constructor(options: DropdownViewOptions);
 
+        protected measureLabel(text: string): number;
+        private labelWidth;
+
+        get viewWidth(): number;
+
+        get visibleRows(): number;
+
+        get scroller(): ScrollBox | null;
+
+        fitBelow(globalY: number, viewportHeight: number): number;
+
         refresh(): void;
+
+        handleKey(key: string): boolean;
+
+        handleOutsideClick(globalX: number, globalY: number): boolean;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
 ### `DropdownViewOptions` (interface)
 
     export interface DropdownViewOptions extends DropdownOptions {
+
         width: number;
 
         rowHeight?: number;
+
+        maxVisibleRows?: number;
+
+        autoWidth?: boolean;
     }
 
 ### `Easing` (const)
@@ -1383,6 +1428,10 @@ build instead.
 ### `effectiveSfxVolume` (function)
 
     export declare function effectiveSfxVolume(settings: Pick<GameSettings, 'sfxVolume' | 'muted'>): number;
+
+### `ellipsize` (function)
+
+    export declare function ellipsize(text: string, maxWidth: number, measure: (text: string) => number, ellipsis?: string): string;
 
 ### `EMPTY` (const)
 
@@ -1747,6 +1796,7 @@ build instead.
         private hitStopScale;
         private stack;
         private pending;
+        private running;
         private options;
         private started;
         private stopWatchingDpr;
@@ -1759,10 +1809,16 @@ build instead.
         get width(): number;
         get height(): number;
 
+        static get active(): Game | null;
+
         static get current(): Game;
         start(first: SceneClass<Scene2D>): Promise<void>;
 
-        switchScene(next: SceneClass<Scene2D>): void;
+        switchScene(next: SceneClass<Scene2D>, options?: TransitionOptions): void;
+
+        transition(swap: () => void, options: TransitionOptions): void;
+
+        get transitioning(): boolean;
 
         pushScene(next: SceneClass<Scene2D>): void;
 
@@ -1785,6 +1841,13 @@ build instead.
         private fitResolutionToDevice;
         private frame;
         private switchNow;
+
+        private snapshot;
+
+        private beginTransition;
+
+        private endTransition;
+        private applySwap;
 
         private applySwitch;
 
@@ -1944,6 +2007,11 @@ build instead.
 
         grow?: number;
     }
+
+### `grow` (function)
+
+    export declare function grow(options?: {
+        from?: TransitionPoint;
 
 ### `Halo` (class)
 
@@ -2340,6 +2408,11 @@ build instead.
 ### `inspectGraphicsCapabilities` (function)
 
     export declare function inspectGraphicsCapabilities(probe?: GraphicsProbe): GraphicsCapabilities;
+
+### `iris` (function)
+
+    export declare function iris(options?: {
+        from?: TransitionPoint;
 
 ### `isOnScreen` (function)
 
@@ -3017,6 +3090,44 @@ build instead.
 
     export declare function markupToHtml(spans: readonly MarkupSpan[]): string;
 
+### `MarqueeLabel` (class)
+
+    export declare class MarqueeLabel extends Container {
+        private readonly body;
+        private readonly clip;
+        private readonly speed;
+        private readonly pause;
+        private readonly width_;
+        private readonly labelOptions;
+        private source;
+        private fullWidth;
+        private time;
+        constructor(options: MarqueeLabelOptions);
+
+        protected measureWidth(text: string): number;
+        setText(text: string): void;
+        private apply;
+
+        get shift(): number;
+        update(dt: number): void;
+    }
+
+### `MarqueeLabelOptions` (interface)
+
+    export interface MarqueeLabelOptions {
+        width: number;
+        text?: string;
+        label?: Omit<LabelOptions, 'text'>;
+
+        speed?: number;
+
+        pause?: number;
+    }
+
+### `marqueeOffset` (function)
+
+    export declare function marqueeOffset(textWidth: number, boxWidth: number, time: number, speed?: number, pause?: number): number;
+
 ### `maskPixels` (function)
 
     export declare function maskPixels(base: Uint8ClampedArray, baseWidth: number, baseHeight: number, mask: Uint8ClampedArray, maskWidth: number, maskHeight: number, offsetX: number, offsetY: number): Uint8ClampedArray;
@@ -3510,6 +3621,15 @@ build instead.
         get contentHeight(): number;
     }
 
+### `openAnimationFrame` (function)
+
+    export declare function openAnimationFrame(kind: OpenAnimationKind, progress: number, closing?: boolean): {
+        scale: number;
+
+### `OpenAnimationKind` (type)
+
+    export type OpenAnimationKind = 'pop' | 'grow' | 'slide' | 'fade';
+
 ### `packColorAdd` (function)
 
     export declare function packColorAdd(r: number, g: number, b: number, a?: number): number;
@@ -3893,6 +4013,15 @@ build instead.
 
         combine: (total: T, summary: S) => T;
     }
+
+### `pop` (function)
+
+    export declare function pop(options?: {
+        from?: TransitionPoint;
+
+### `popScale` (function)
+
+    export declare function popScale(progress: number, overshoot?: number): number;
 
 ### `PositionedMarkupSpan` (interface)
 
@@ -4334,6 +4463,10 @@ build instead.
     export declare function resolveAnchor(spec: AnchorSpec, bounds: LayoutRect, size?: {
         width: number;
 
+### `resolveEasing` (function)
+
+    export declare function resolveEasing(easing: TransitionOptions['easing']): EasingFunction;
+
 ### `resolveTerrainGraphics` (function)
 
     export declare function resolveTerrainGraphics(width: number, height: number, rules: readonly TerrainRule[], flagsAt: TerrainFlagsAt, options?: ResolveTerrainGraphicsOptions): TerrainPlacement[];
@@ -4681,6 +4814,8 @@ build instead.
     export declare abstract class Scene2D extends Scene {
 
         readonly stage: Container2D;
+
+        transitionTo(swap: () => void, options: TransitionOptions): void;
         protected teardown(): void;
     }
 
@@ -4740,6 +4875,13 @@ build instead.
 
         resize(width: number, height: number): void;
         destroy(): void;
+    }
+
+### `SceneTransition` (interface)
+
+    export interface SceneTransition {
+        readonly name: string;
+        start(context: TransitionContext): TransitionRuntime;
     }
 
 ### `Schema` (type)
@@ -4875,14 +5017,22 @@ build instead.
         private track;
         private thumb;
         private width_;
+        private maxHeight_;
         private height_;
         private contentHeight_;
         private offset_;
+        private readonly auto;
+        private readonly lineHeight;
+        private readonly drag;
+        private dragMoved;
+        private thumbGrab;
         private readonly themeListener;
         constructor(options: ScrollBoxOptions);
         get offset(): number;
         get contentHeight(): number;
         get viewportHeight(): number;
+
+        private fit;
 
         get maxOffset(): number;
         get scrollable(): boolean;
@@ -4892,6 +5042,28 @@ build instead.
         scrollTo(offset: number): void;
 
         scrollIntoView(top: number, height: number): void;
+
+        handleKey(key: string): boolean;
+
+        dragStart(y: number, time: number): void;
+
+        dragMove(y: number, time: number): void;
+        dragEnd(): void;
+
+        get dragged(): boolean;
+
+        update(dt: number): void;
+
+        get thumbMetrics(): {
+            y: number;
+            height: number;
+        };
+
+        thumbDragStart(y: number): void;
+
+        thumbDragMove(y: number): void;
+
+        scrollToThumbCentre(y: number): void;
         private setOffset;
         private readonly handleWheel;
         private draw;
@@ -4902,15 +5074,78 @@ build instead.
 
     export interface ScrollBoxOptions {
         width: number;
+
         height: number;
 
         contentHeight?: number;
         offset?: number;
+
+        touch?: boolean;
+
+        keyboard?: boolean;
+
+        autoHeight?: boolean;
+
+        lineHeight?: number;
     }
+
+### `ScrollDrag` (class)
+
+    export declare class ScrollDrag {
+
+        velocity: number;
+        dragging: boolean;
+
+        travelled: number;
+        private lastY;
+        private lastTime;
+        private readonly friction;
+        private readonly minSpeed;
+
+        constructor(friction?: number, minSpeed?: number);
+        start(y: number, time: number): void;
+
+        move(y: number, time: number): number;
+        end(): void;
+
+        step(dt: number): number;
+
+        stop(): void;
+    }
+
+### `ScrollKey` (type)
+
+    export type ScrollKey = 'ArrowUp' | 'ArrowDown' | 'PageUp' | 'PageDown' | 'Home' | 'End';
 
 ### `scrollOffset` (function)
 
     export declare function scrollOffset(offset: number, contentSize: number, viewportSize: number): number;
+
+### `ScrollText` (class)
+
+    export declare class ScrollText extends Container {
+        readonly box: ScrollBox;
+        private readonly body;
+        constructor(options: ScrollTextOptions);
+
+        protected measureHeight(): number;
+        private measure;
+        setText(text: string): void;
+
+        update(dt: number): void;
+    }
+
+### `ScrollTextOptions` (interface)
+
+    export interface ScrollTextOptions {
+        width: number;
+
+        maxHeight: number;
+        text?: string;
+        label?: Omit<LabelOptions, 'text' | 'wrapWidth'>;
+
+        touch?: boolean;
+    }
 
 ### `serializeReplay` (function)
 
@@ -5084,6 +5319,11 @@ build instead.
         fade?: number;
     }
 
+### `shrink` (function)
+
+    export declare function shrink(options?: {
+        to?: TransitionPoint;
+
 ### `Signal` (class)
 
     export declare class Signal<T> {
@@ -5179,6 +5419,11 @@ build instead.
 ### `sliceSpans` (function)
 
     export declare function sliceSpans(spans: readonly MarkdownSpan[], count: number): MarkdownSpan[];
+
+### `slide` (function)
+
+    export declare function slide(options?: {
+        direction?: 'left' | 'right' | 'up' | 'down';
 
 ### `Slider` (class)
 
@@ -6250,6 +6495,10 @@ build instead.
         checksums?: Record<string, number>;
     }
 
+### `tileDelays` (function)
+
+    export declare function tileDelays(columns: number, rows: number, order?: TileOrder, seed?: number): number[];
+
 ### `TiledLayer` (interface)
 
     export interface TiledLayer {
@@ -6436,11 +6685,36 @@ build instead.
         heightStep?: number;
     }
 
+### `TileOrder` (type)
+
+    export type TileOrder = 'diagonal' | 'random' | 'spiral' | 'rows';
+
+### `tileProgress` (function)
+
+    export declare function tileProgress(delay: number, progress: number, stagger: number): number;
+
 ### `TilesetSheet` (interface)
 
     export interface TilesetSheet {
         firstgid: number;
         sheet: SpriteSheet;
+    }
+
+### `tileShrink` (function)
+
+    export declare function tileShrink(options?: TileShrinkOptions): SceneTransition;
+
+### `TileShrinkOptions` (interface)
+
+    export interface TileShrinkOptions {
+        columns?: number;
+        rows?: number;
+
+        stagger?: number;
+        order?: TileOrder;
+
+        rotation?: number;
+        seed?: number;
     }
 
 ### `TintedSprite` (class)
@@ -6524,7 +6798,7 @@ build instead.
 
         setViewport(width: number, height: number): void;
 
-        hover(text: string, x: number, y: number): void;
+        hover(text: string, x: number, y: number, delay?: number): void;
 
         leave(): void;
         get isShowing(): boolean;
@@ -6550,6 +6824,39 @@ build instead.
         private place;
     }
 
+### `TooltipHost` (class)
+
+    export declare class TooltipHost extends Container {
+        readonly tooltip: Tooltip;
+        private readonly longPress;
+        private readonly targets;
+        constructor(options?: TooltipHostOptions);
+
+        add(target: TooltipTarget): () => void;
+
+        addButton(button: Button): () => void;
+        private targetAt;
+
+        pointerMove(x: number, y: number): void;
+
+        pointerDown(x: number, y: number): void;
+
+        pointerUp(): void;
+
+        attach(pointer: PointerTracker): () => void;
+
+        update(dt: number): boolean;
+    }
+
+### `TooltipHostOptions` (interface)
+
+    export interface TooltipHostOptions {
+
+        tooltip?: Tooltip;
+
+        longPress?: number;
+    }
+
 ### `TooltipOptions` (interface)
 
     export interface TooltipOptions {
@@ -6564,6 +6871,93 @@ build instead.
         };
 
         margin?: number;
+    }
+
+### `TooltipTarget` (interface)
+
+    export interface TooltipTarget {
+        bounds(): {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+        };
+
+        text(): string | undefined;
+
+        active?(): boolean;
+    }
+
+### `TransitionContext` (interface)
+
+    export interface TransitionContext {
+
+        width: number;
+        height: number;
+
+        snapshot: Texture2D | null;
+
+        incoming: Container2D;
+
+        under: Container2D;
+
+        over: Container2D;
+    }
+
+### `TransitionOptions` (interface)
+
+    export interface TransitionOptions {
+        transition: SceneTransition;
+
+        duration?: number;
+
+        easing?: keyof typeof Easing | EasingFunction;
+
+        pause?: boolean;
+
+        onDone?: () => void;
+    }
+
+### `TransitionPoint` (interface)
+
+    export interface TransitionPoint {
+        x: number;
+        y: number;
+    }
+
+### `TransitionRunner` (class)
+
+    export declare class TransitionRunner {
+        readonly under: Container2D;
+        readonly over: Container2D;
+        readonly pause: boolean;
+        private readonly runtime;
+        private readonly duration;
+        private readonly ease;
+        private readonly onDone?;
+        private readonly snapshot;
+        private elapsed;
+        private finished;
+        constructor(options: TransitionOptions, size: {
+            width: number;
+            height: number;
+        }, snapshot: Texture2D | null, incoming: Container2D);
+
+        get progress(): number;
+        get done(): boolean;
+
+        update(dt: number): boolean;
+
+        finish(): void;
+    }
+
+### `TransitionRuntime` (interface)
+
+    export interface TransitionRuntime {
+
+        update(progress: number): void;
+
+        destroy(): void;
     }
 
 ### `TreeNode` (interface)
@@ -6621,6 +7015,10 @@ build instead.
 
         disabled?: (node: TreeNode<T>) => boolean;
     }
+
+### `truncateLines` (function)
+
+    export declare function truncateLines(text: string, maxWidth: number, maxLines: number, measure: (text: string) => number, ellipsis?: string): string[];
 
 ### `TweeChoice` (interface)
 
@@ -6724,7 +7122,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.42.0";
+    export declare const version = "0.43.0";
 
 ### `VerticalLabel` (class)
 
@@ -6869,6 +7267,7 @@ build instead.
         private blocker;
         private readonly themeListener;
         private isClosed;
+        private motion;
         private colors;
         constructor(options: WindowOptions);
 
@@ -6889,9 +7288,13 @@ build instead.
 
         get closed(): boolean;
 
-        update(_dt: number): void;
+        update(dt: number): void;
 
-        close(): void;
+        private applyMotion;
+
+        open(animation?: WindowAnimation): void;
+
+        close(animation?: WindowAnimation): void;
 
         place(viewportWidth: number, viewportHeight: number): void;
 
@@ -6900,6 +7303,19 @@ build instead.
 
         handleOutsideClick(x: number, y: number): boolean;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `WindowAnimation` (interface)
+
+    export interface WindowAnimation {
+        animation: OpenAnimationKind;
+
+        from?: {
+            x: number;
+            y: number;
+        };
+
+        duration?: number;
     }
 
 ### `WindowColors` (interface)
@@ -18247,6 +18663,9 @@ build instead.
         private background;
         private labelText;
         private icon;
+        private iconSelected;
+        private iconPlain;
+        private tooltip_;
         private width_;
         private height_;
         private state;
@@ -18260,6 +18679,14 @@ build instead.
 
         resize(width: number, height: number): void;
         setText(text: string | undefined): void;
+
+        setIcon(icon: Container2D | null): void;
+
+        setSelectedIcon(icon: Container2D | null): void;
+        private showIcon;
+
+        get tooltip(): string | undefined;
+        setTooltip(tooltip: string | (() => string) | undefined): void;
         get disabled(): boolean;
         setDisabled(disabled: boolean): void;
         get selected(): boolean;
@@ -18293,6 +18720,10 @@ build instead.
         text?: string;
 
         icon?: Container2D;
+
+        iconSelected?: Container2D;
+
+        tooltip?: string | (() => string);
 
         skin?: ButtonSkin;
 
@@ -18791,6 +19222,10 @@ build instead.
         get isBusy(): boolean;
     }
 
+### `dissolve` (function)
+
+    export declare function dissolve(): SceneTransition;
+
 ### `Dropdown` (class)
 
     export declare class Dropdown {
@@ -18851,22 +19286,52 @@ build instead.
 
     export declare class DropdownView extends Container {
         readonly model: Dropdown;
-        private readonly width_;
+        private width_;
         private readonly rowHeight;
+        private readonly maxRows;
         private readonly head;
         private readonly list;
+        private readonly backdrop;
+        private box;
+        private listHeight;
+        private readonly themeListener;
         constructor(options: DropdownViewOptions);
 
+        protected measureLabel(text: string): number;
+        private labelWidth;
+
+        get viewWidth(): number;
+
+        get visibleRows(): number;
+
+        get scroller(): ScrollBox | null;
+
+        fitBelow(globalY: number, viewportHeight: number): number;
+
         refresh(): void;
+
+        handleKey(key: string): boolean;
+
+        handleOutsideClick(globalX: number, globalY: number): boolean;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
 ### `DropdownViewOptions` (interface)
 
     export interface DropdownViewOptions extends DropdownOptions {
+
         width: number;
 
         rowHeight?: number;
+
+        maxVisibleRows?: number;
+
+        autoWidth?: boolean;
     }
+
+### `ellipsize` (function)
+
+    export declare function ellipsize(text: string, maxWidth: number, measure: (text: string) => number, ellipsis?: string): string;
 
 ### `EMPTY` (const)
 
@@ -19154,6 +19619,7 @@ build instead.
         private hitStopScale;
         private stack;
         private pending;
+        private running;
         private options;
         private started;
         private stopWatchingDpr;
@@ -19166,10 +19632,16 @@ build instead.
         get width(): number;
         get height(): number;
 
+        static get active(): Game | null;
+
         static get current(): Game;
         start(first: SceneClass<Scene2D>): Promise<void>;
 
-        switchScene(next: SceneClass<Scene2D>): void;
+        switchScene(next: SceneClass<Scene2D>, options?: TransitionOptions): void;
+
+        transition(swap: () => void, options: TransitionOptions): void;
+
+        get transitioning(): boolean;
 
         pushScene(next: SceneClass<Scene2D>): void;
 
@@ -19192,6 +19664,13 @@ build instead.
         private fitResolutionToDevice;
         private frame;
         private switchNow;
+
+        private snapshot;
+
+        private beginTransition;
+
+        private endTransition;
+        private applySwap;
 
         private applySwitch;
 
@@ -19313,6 +19792,11 @@ build instead.
 
         grow?: number;
     }
+
+### `grow` (function)
+
+    export declare function grow(options?: {
+        from?: TransitionPoint;
 
 ### `Halo` (class)
 
@@ -19583,6 +20067,11 @@ build instead.
 ### `inspectGraphicsCapabilities` (function)
 
     export declare function inspectGraphicsCapabilities(probe?: GraphicsProbe): GraphicsCapabilities;
+
+### `iris` (function)
+
+    export declare function iris(options?: {
+        from?: TransitionPoint;
 
 ### `isOnScreen` (function)
 
@@ -20036,6 +20525,44 @@ build instead.
 
     export declare function markupToHtml(spans: readonly MarkupSpan[]): string;
 
+### `MarqueeLabel` (class)
+
+    export declare class MarqueeLabel extends Container {
+        private readonly body;
+        private readonly clip;
+        private readonly speed;
+        private readonly pause;
+        private readonly width_;
+        private readonly labelOptions;
+        private source;
+        private fullWidth;
+        private time;
+        constructor(options: MarqueeLabelOptions);
+
+        protected measureWidth(text: string): number;
+        setText(text: string): void;
+        private apply;
+
+        get shift(): number;
+        update(dt: number): void;
+    }
+
+### `MarqueeLabelOptions` (interface)
+
+    export interface MarqueeLabelOptions {
+        width: number;
+        text?: string;
+        label?: Omit<LabelOptions, 'text'>;
+
+        speed?: number;
+
+        pause?: number;
+    }
+
+### `marqueeOffset` (function)
+
+    export declare function marqueeOffset(textWidth: number, boxWidth: number, time: number, speed?: number, pause?: number): number;
+
 ### `maskPixels` (function)
 
     export declare function maskPixels(base: Uint8ClampedArray, baseWidth: number, baseHeight: number, mask: Uint8ClampedArray, maskWidth: number, maskHeight: number, offsetX: number, offsetY: number): Uint8ClampedArray;
@@ -20431,6 +20958,15 @@ build instead.
         get contentHeight(): number;
     }
 
+### `openAnimationFrame` (function)
+
+    export declare function openAnimationFrame(kind: OpenAnimationKind, progress: number, closing?: boolean): {
+        scale: number;
+
+### `OpenAnimationKind` (type)
+
+    export type OpenAnimationKind = 'pop' | 'grow' | 'slide' | 'fade';
+
 ### `packColorAdd` (function)
 
     export declare function packColorAdd(r: number, g: number, b: number, a?: number): number;
@@ -20707,6 +21243,15 @@ build instead.
         height: number;
     }
 
+### `pop` (function)
+
+    export declare function pop(options?: {
+        from?: TransitionPoint;
+
+### `popScale` (function)
+
+    export declare function popScale(progress: number, overshoot?: number): number;
+
 ### `PositionedMarkupSpan` (interface)
 
     export interface PositionedMarkupSpan {
@@ -20976,6 +21521,10 @@ build instead.
     export declare function resolveAnchor(spec: AnchorSpec, bounds: LayoutRect, size?: {
         width: number;
 
+### `resolveEasing` (function)
+
+    export declare function resolveEasing(easing: TransitionOptions['easing']): EasingFunction;
+
 ### `resolveTerrainGraphics` (function)
 
     export declare function resolveTerrainGraphics(width: number, height: number, rules: readonly TerrainRule[], flagsAt: TerrainFlagsAt, options?: ResolveTerrainGraphicsOptions): TerrainPlacement[];
@@ -21146,12 +21695,21 @@ build instead.
     export declare abstract class Scene2D extends Scene {
 
         readonly stage: Container2D;
+
+        transitionTo(swap: () => void, options: TransitionOptions): void;
         protected teardown(): void;
     }
 
 ### `Scene2DClass` (type)
 
     export type Scene2DClass = new () => Scene2D;
+
+### `SceneTransition` (interface)
+
+    export interface SceneTransition {
+        readonly name: string;
+        start(context: TransitionContext): TransitionRuntime;
+    }
 
 ### `ScreenEffectPhase` (type)
 
@@ -21277,14 +21835,22 @@ build instead.
         private track;
         private thumb;
         private width_;
+        private maxHeight_;
         private height_;
         private contentHeight_;
         private offset_;
+        private readonly auto;
+        private readonly lineHeight;
+        private readonly drag;
+        private dragMoved;
+        private thumbGrab;
         private readonly themeListener;
         constructor(options: ScrollBoxOptions);
         get offset(): number;
         get contentHeight(): number;
         get viewportHeight(): number;
+
+        private fit;
 
         get maxOffset(): number;
         get scrollable(): boolean;
@@ -21294,6 +21860,28 @@ build instead.
         scrollTo(offset: number): void;
 
         scrollIntoView(top: number, height: number): void;
+
+        handleKey(key: string): boolean;
+
+        dragStart(y: number, time: number): void;
+
+        dragMove(y: number, time: number): void;
+        dragEnd(): void;
+
+        get dragged(): boolean;
+
+        update(dt: number): void;
+
+        get thumbMetrics(): {
+            y: number;
+            height: number;
+        };
+
+        thumbDragStart(y: number): void;
+
+        thumbDragMove(y: number): void;
+
+        scrollToThumbCentre(y: number): void;
         private setOffset;
         private readonly handleWheel;
         private draw;
@@ -21304,15 +21892,78 @@ build instead.
 
     export interface ScrollBoxOptions {
         width: number;
+
         height: number;
 
         contentHeight?: number;
         offset?: number;
+
+        touch?: boolean;
+
+        keyboard?: boolean;
+
+        autoHeight?: boolean;
+
+        lineHeight?: number;
     }
+
+### `ScrollDrag` (class)
+
+    export declare class ScrollDrag {
+
+        velocity: number;
+        dragging: boolean;
+
+        travelled: number;
+        private lastY;
+        private lastTime;
+        private readonly friction;
+        private readonly minSpeed;
+
+        constructor(friction?: number, minSpeed?: number);
+        start(y: number, time: number): void;
+
+        move(y: number, time: number): number;
+        end(): void;
+
+        step(dt: number): number;
+
+        stop(): void;
+    }
+
+### `ScrollKey` (type)
+
+    export type ScrollKey = 'ArrowUp' | 'ArrowDown' | 'PageUp' | 'PageDown' | 'Home' | 'End';
 
 ### `scrollOffset` (function)
 
     export declare function scrollOffset(offset: number, contentSize: number, viewportSize: number): number;
+
+### `ScrollText` (class)
+
+    export declare class ScrollText extends Container {
+        readonly box: ScrollBox;
+        private readonly body;
+        constructor(options: ScrollTextOptions);
+
+        protected measureHeight(): number;
+        private measure;
+        setText(text: string): void;
+
+        update(dt: number): void;
+    }
+
+### `ScrollTextOptions` (interface)
+
+    export interface ScrollTextOptions {
+        width: number;
+
+        maxHeight: number;
+        text?: string;
+        label?: Omit<LabelOptions, 'text' | 'wrapWidth'>;
+
+        touch?: boolean;
+    }
 
 ### `setTheme` (function)
 
@@ -21422,6 +22073,11 @@ build instead.
         fade?: number;
     }
 
+### `shrink` (function)
+
+    export declare function shrink(options?: {
+        to?: TransitionPoint;
+
 ### `SkeletalSprite` (class)
 
     export declare class SkeletalSprite extends Container {
@@ -21483,6 +22139,11 @@ build instead.
 ### `sliceSpans` (function)
 
     export declare function sliceSpans(spans: readonly MarkdownSpan[], count: number): MarkdownSpan[];
+
+### `slide` (function)
+
+    export declare function slide(options?: {
+        direction?: 'left' | 'right' | 'up' | 'down';
 
 ### `Slider` (class)
 
@@ -22389,6 +23050,10 @@ build instead.
 
     export declare const themeChanged: Signal<Theme>;
 
+### `tileDelays` (function)
+
+    export declare function tileDelays(columns: number, rows: number, order?: TileOrder, seed?: number): number[];
+
 ### `TiledLayer` (interface)
 
     export interface TiledLayer {
@@ -22575,11 +23240,36 @@ build instead.
         heightStep?: number;
     }
 
+### `TileOrder` (type)
+
+    export type TileOrder = 'diagonal' | 'random' | 'spiral' | 'rows';
+
+### `tileProgress` (function)
+
+    export declare function tileProgress(delay: number, progress: number, stagger: number): number;
+
 ### `TilesetSheet` (interface)
 
     export interface TilesetSheet {
         firstgid: number;
         sheet: SpriteSheet;
+    }
+
+### `tileShrink` (function)
+
+    export declare function tileShrink(options?: TileShrinkOptions): SceneTransition;
+
+### `TileShrinkOptions` (interface)
+
+    export interface TileShrinkOptions {
+        columns?: number;
+        rows?: number;
+
+        stagger?: number;
+        order?: TileOrder;
+
+        rotation?: number;
+        seed?: number;
     }
 
 ### `TintedSprite` (class)
@@ -22663,7 +23353,7 @@ build instead.
 
         setViewport(width: number, height: number): void;
 
-        hover(text: string, x: number, y: number): void;
+        hover(text: string, x: number, y: number, delay?: number): void;
 
         leave(): void;
         get isShowing(): boolean;
@@ -22689,6 +23379,39 @@ build instead.
         private place;
     }
 
+### `TooltipHost` (class)
+
+    export declare class TooltipHost extends Container {
+        readonly tooltip: Tooltip;
+        private readonly longPress;
+        private readonly targets;
+        constructor(options?: TooltipHostOptions);
+
+        add(target: TooltipTarget): () => void;
+
+        addButton(button: Button): () => void;
+        private targetAt;
+
+        pointerMove(x: number, y: number): void;
+
+        pointerDown(x: number, y: number): void;
+
+        pointerUp(): void;
+
+        attach(pointer: PointerTracker): () => void;
+
+        update(dt: number): boolean;
+    }
+
+### `TooltipHostOptions` (interface)
+
+    export interface TooltipHostOptions {
+
+        tooltip?: Tooltip;
+
+        longPress?: number;
+    }
+
 ### `TooltipOptions` (interface)
 
     export interface TooltipOptions {
@@ -22703,6 +23426,93 @@ build instead.
         };
 
         margin?: number;
+    }
+
+### `TooltipTarget` (interface)
+
+    export interface TooltipTarget {
+        bounds(): {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+        };
+
+        text(): string | undefined;
+
+        active?(): boolean;
+    }
+
+### `TransitionContext` (interface)
+
+    export interface TransitionContext {
+
+        width: number;
+        height: number;
+
+        snapshot: Texture2D | null;
+
+        incoming: Container2D;
+
+        under: Container2D;
+
+        over: Container2D;
+    }
+
+### `TransitionOptions` (interface)
+
+    export interface TransitionOptions {
+        transition: SceneTransition;
+
+        duration?: number;
+
+        easing?: keyof typeof Easing | EasingFunction;
+
+        pause?: boolean;
+
+        onDone?: () => void;
+    }
+
+### `TransitionPoint` (interface)
+
+    export interface TransitionPoint {
+        x: number;
+        y: number;
+    }
+
+### `TransitionRunner` (class)
+
+    export declare class TransitionRunner {
+        readonly under: Container2D;
+        readonly over: Container2D;
+        readonly pause: boolean;
+        private readonly runtime;
+        private readonly duration;
+        private readonly ease;
+        private readonly onDone?;
+        private readonly snapshot;
+        private elapsed;
+        private finished;
+        constructor(options: TransitionOptions, size: {
+            width: number;
+            height: number;
+        }, snapshot: Texture2D | null, incoming: Container2D);
+
+        get progress(): number;
+        get done(): boolean;
+
+        update(dt: number): boolean;
+
+        finish(): void;
+    }
+
+### `TransitionRuntime` (interface)
+
+    export interface TransitionRuntime {
+
+        update(progress: number): void;
+
+        destroy(): void;
     }
 
 ### `TreeNode` (interface)
@@ -22760,6 +23570,10 @@ build instead.
 
         disabled?: (node: TreeNode<T>) => boolean;
     }
+
+### `truncateLines` (function)
+
+    export declare function truncateLines(text: string, maxWidth: number, maxLines: number, measure: (text: string) => number, ellipsis?: string): string[];
 
 ### `TwineStory` (interface)
 
@@ -22860,6 +23674,7 @@ build instead.
         private blocker;
         private readonly themeListener;
         private isClosed;
+        private motion;
         private colors;
         constructor(options: WindowOptions);
 
@@ -22880,9 +23695,13 @@ build instead.
 
         get closed(): boolean;
 
-        update(_dt: number): void;
+        update(dt: number): void;
 
-        close(): void;
+        private applyMotion;
+
+        open(animation?: WindowAnimation): void;
+
+        close(animation?: WindowAnimation): void;
 
         place(viewportWidth: number, viewportHeight: number): void;
 
@@ -22891,6 +23710,19 @@ build instead.
 
         handleOutsideClick(x: number, y: number): boolean;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `WindowAnimation` (interface)
+
+    export interface WindowAnimation {
+        animation: OpenAnimationKind;
+
+        from?: {
+            x: number;
+            y: number;
+        };
+
+        duration?: number;
     }
 
 ### `WindowColors` (interface)
@@ -23762,6 +24594,10 @@ build instead.
 
     export declare function detectWebGpu(): Promise<WebGpuDetection>;
 
+### `dissolve` (function)
+
+    export declare function dissolve(): SceneTransition;
+
 ### `EMPTY` (const)
 
     export declare const EMPTY = -1;
@@ -23918,6 +24754,11 @@ build instead.
 
     export type GraphicsWorkload = 'sprites' | 'ui' | 'custom-shaders' | 'particles' | 'instanced-terrain' | 'voxels' | 'animated-models' | 'large-3d-worlds';
 
+### `grow` (function)
+
+    export declare function grow(options?: {
+        from?: TransitionPoint;
+
 ### `Halo` (class)
 
     export declare class Halo extends AnimatedSprite {
@@ -24051,6 +24892,11 @@ build instead.
 ### `inspectGraphicsCapabilities` (function)
 
     export declare function inspectGraphicsCapabilities(probe?: GraphicsProbe): GraphicsCapabilities;
+
+### `iris` (function)
+
+    export declare function iris(options?: {
+        from?: TransitionPoint;
 
 ### `isOnScreen` (function)
 
@@ -24338,6 +25184,15 @@ build instead.
     export declare class Node2D extends Container {
     }
 
+### `openAnimationFrame` (function)
+
+    export declare function openAnimationFrame(kind: OpenAnimationKind, progress: number, closing?: boolean): {
+        scale: number;
+
+### `OpenAnimationKind` (type)
+
+    export type OpenAnimationKind = 'pop' | 'grow' | 'slide' | 'fade';
+
 ### `packColorAdd` (function)
 
     export declare function packColorAdd(r: number, g: number, b: number, a?: number): number;
@@ -24602,6 +25457,15 @@ build instead.
         height: number;
     }
 
+### `pop` (function)
+
+    export declare function pop(options?: {
+        from?: TransitionPoint;
+
+### `popScale` (function)
+
+    export declare function popScale(progress: number, overshoot?: number): number;
+
 ### `Projectile` (class)
 
     export declare class Projectile {
@@ -24713,6 +25577,10 @@ build instead.
         fallback: string;
         reason: string;
     }
+
+### `resolveEasing` (function)
+
+    export declare function resolveEasing(easing: TransitionOptions['easing']): EasingFunction;
 
 ### `resolveTerrainGraphics` (function)
 
@@ -24832,6 +25700,13 @@ build instead.
         };
     }
 
+### `SceneTransition` (interface)
+
+    export interface SceneTransition {
+        readonly name: string;
+        start(context: TransitionContext): TransitionRuntime;
+    }
+
 ### `ScreenEffectPhase` (type)
 
     export type ScreenEffectPhase = 'idle' | 'fadeOut' | 'fadeIn' | 'flash' | 'hold';
@@ -24917,6 +25792,11 @@ build instead.
         dashedLine(x1: number, y1: number, x2: number, y2: number, dash?: number, gap?: number): this;
     }
 
+### `shrink` (function)
+
+    export declare function shrink(options?: {
+        to?: TransitionPoint;
+
 ### `SkeletalSprite` (class)
 
     export declare class SkeletalSprite extends Container {
@@ -24936,6 +25816,11 @@ build instead.
 
         update(_dt: number): void;
     }
+
+### `slide` (function)
+
+    export declare function slide(options?: {
+        direction?: 'left' | 'right' | 'up' | 'down';
 
 ### `snapZoom` (function)
 
@@ -25302,6 +26187,10 @@ build instead.
         frame: Rect;
     }
 
+### `tileDelays` (function)
+
+    export declare function tileDelays(columns: number, rows: number, order?: TileOrder, seed?: number): number[];
+
 ### `TiledLayer` (interface)
 
     export interface TiledLayer {
@@ -25488,11 +26377,36 @@ build instead.
         heightStep?: number;
     }
 
+### `TileOrder` (type)
+
+    export type TileOrder = 'diagonal' | 'random' | 'spiral' | 'rows';
+
+### `tileProgress` (function)
+
+    export declare function tileProgress(delay: number, progress: number, stagger: number): number;
+
 ### `TilesetSheet` (interface)
 
     export interface TilesetSheet {
         firstgid: number;
         sheet: SpriteSheet;
+    }
+
+### `tileShrink` (function)
+
+    export declare function tileShrink(options?: TileShrinkOptions): SceneTransition;
+
+### `TileShrinkOptions` (interface)
+
+    export interface TileShrinkOptions {
+        columns?: number;
+        rows?: number;
+
+        stagger?: number;
+        order?: TileOrder;
+
+        rotation?: number;
+        seed?: number;
     }
 
 ### `TintedSprite` (class)
@@ -25518,6 +26432,78 @@ build instead.
     export interface TintTarget {
 
         colorAdd: number;
+    }
+
+### `TransitionContext` (interface)
+
+    export interface TransitionContext {
+
+        width: number;
+        height: number;
+
+        snapshot: Texture2D | null;
+
+        incoming: Container2D;
+
+        under: Container2D;
+
+        over: Container2D;
+    }
+
+### `TransitionOptions` (interface)
+
+    export interface TransitionOptions {
+        transition: SceneTransition;
+
+        duration?: number;
+
+        easing?: keyof typeof Easing | EasingFunction;
+
+        pause?: boolean;
+
+        onDone?: () => void;
+    }
+
+### `TransitionPoint` (interface)
+
+    export interface TransitionPoint {
+        x: number;
+        y: number;
+    }
+
+### `TransitionRunner` (class)
+
+    export declare class TransitionRunner {
+        readonly under: Container2D;
+        readonly over: Container2D;
+        readonly pause: boolean;
+        private readonly runtime;
+        private readonly duration;
+        private readonly ease;
+        private readonly onDone?;
+        private readonly snapshot;
+        private elapsed;
+        private finished;
+        constructor(options: TransitionOptions, size: {
+            width: number;
+            height: number;
+        }, snapshot: Texture2D | null, incoming: Container2D);
+
+        get progress(): number;
+        get done(): boolean;
+
+        update(dt: number): boolean;
+
+        finish(): void;
+    }
+
+### `TransitionRuntime` (interface)
+
+    export interface TransitionRuntime {
+
+        update(progress: number): void;
+
+        destroy(): void;
     }
 
 ### `Viewport` (class)
@@ -25938,6 +26924,9 @@ build instead.
         private background;
         private labelText;
         private icon;
+        private iconSelected;
+        private iconPlain;
+        private tooltip_;
         private width_;
         private height_;
         private state;
@@ -25951,6 +26940,14 @@ build instead.
 
         resize(width: number, height: number): void;
         setText(text: string | undefined): void;
+
+        setIcon(icon: Container2D | null): void;
+
+        setSelectedIcon(icon: Container2D | null): void;
+        private showIcon;
+
+        get tooltip(): string | undefined;
+        setTooltip(tooltip: string | (() => string) | undefined): void;
         get disabled(): boolean;
         setDisabled(disabled: boolean): void;
         get selected(): boolean;
@@ -25984,6 +26981,10 @@ build instead.
         text?: string;
 
         icon?: Container2D;
+
+        iconSelected?: Container2D;
+
+        tooltip?: string | (() => string);
 
         skin?: ButtonSkin;
 
@@ -26177,22 +27178,52 @@ build instead.
 
     export declare class DropdownView extends Container {
         readonly model: Dropdown;
-        private readonly width_;
+        private width_;
         private readonly rowHeight;
+        private readonly maxRows;
         private readonly head;
         private readonly list;
+        private readonly backdrop;
+        private box;
+        private listHeight;
+        private readonly themeListener;
         constructor(options: DropdownViewOptions);
 
+        protected measureLabel(text: string): number;
+        private labelWidth;
+
+        get viewWidth(): number;
+
+        get visibleRows(): number;
+
+        get scroller(): ScrollBox | null;
+
+        fitBelow(globalY: number, viewportHeight: number): number;
+
         refresh(): void;
+
+        handleKey(key: string): boolean;
+
+        handleOutsideClick(globalX: number, globalY: number): boolean;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
     }
 
 ### `DropdownViewOptions` (interface)
 
     export interface DropdownViewOptions extends DropdownOptions {
+
         width: number;
 
         rowHeight?: number;
+
+        maxVisibleRows?: number;
+
+        autoWidth?: boolean;
     }
+
+### `ellipsize` (function)
+
+    export declare function ellipsize(text: string, maxWidth: number, measure: (text: string) => number, ellipsis?: string): string;
 
 ### `escapeHtml` (function)
 
@@ -26834,6 +27865,44 @@ build instead.
 
     export declare function markupToHtml(spans: readonly MarkupSpan[]): string;
 
+### `MarqueeLabel` (class)
+
+    export declare class MarqueeLabel extends Container {
+        private readonly body;
+        private readonly clip;
+        private readonly speed;
+        private readonly pause;
+        private readonly width_;
+        private readonly labelOptions;
+        private source;
+        private fullWidth;
+        private time;
+        constructor(options: MarqueeLabelOptions);
+
+        protected measureWidth(text: string): number;
+        setText(text: string): void;
+        private apply;
+
+        get shift(): number;
+        update(dt: number): void;
+    }
+
+### `MarqueeLabelOptions` (interface)
+
+    export interface MarqueeLabelOptions {
+        width: number;
+        text?: string;
+        label?: Omit<LabelOptions, 'text'>;
+
+        speed?: number;
+
+        pause?: number;
+    }
+
+### `marqueeOffset` (function)
+
+    export declare function marqueeOffset(textWidth: number, boxWidth: number, time: number, speed?: number, pause?: number): number;
+
 ### `meetsContrast` (function)
 
     export declare function meetsContrast(foreground: number, background: number, level?: ContrastLevel, large?: boolean): boolean;
@@ -27278,14 +28347,22 @@ build instead.
         private track;
         private thumb;
         private width_;
+        private maxHeight_;
         private height_;
         private contentHeight_;
         private offset_;
+        private readonly auto;
+        private readonly lineHeight;
+        private readonly drag;
+        private dragMoved;
+        private thumbGrab;
         private readonly themeListener;
         constructor(options: ScrollBoxOptions);
         get offset(): number;
         get contentHeight(): number;
         get viewportHeight(): number;
+
+        private fit;
 
         get maxOffset(): number;
         get scrollable(): boolean;
@@ -27295,6 +28372,28 @@ build instead.
         scrollTo(offset: number): void;
 
         scrollIntoView(top: number, height: number): void;
+
+        handleKey(key: string): boolean;
+
+        dragStart(y: number, time: number): void;
+
+        dragMove(y: number, time: number): void;
+        dragEnd(): void;
+
+        get dragged(): boolean;
+
+        update(dt: number): void;
+
+        get thumbMetrics(): {
+            y: number;
+            height: number;
+        };
+
+        thumbDragStart(y: number): void;
+
+        thumbDragMove(y: number): void;
+
+        scrollToThumbCentre(y: number): void;
         private setOffset;
         private readonly handleWheel;
         private draw;
@@ -27305,15 +28404,78 @@ build instead.
 
     export interface ScrollBoxOptions {
         width: number;
+
         height: number;
 
         contentHeight?: number;
         offset?: number;
+
+        touch?: boolean;
+
+        keyboard?: boolean;
+
+        autoHeight?: boolean;
+
+        lineHeight?: number;
     }
+
+### `ScrollDrag` (class)
+
+    export declare class ScrollDrag {
+
+        velocity: number;
+        dragging: boolean;
+
+        travelled: number;
+        private lastY;
+        private lastTime;
+        private readonly friction;
+        private readonly minSpeed;
+
+        constructor(friction?: number, minSpeed?: number);
+        start(y: number, time: number): void;
+
+        move(y: number, time: number): number;
+        end(): void;
+
+        step(dt: number): number;
+
+        stop(): void;
+    }
+
+### `ScrollKey` (type)
+
+    export type ScrollKey = 'ArrowUp' | 'ArrowDown' | 'PageUp' | 'PageDown' | 'Home' | 'End';
 
 ### `scrollOffset` (function)
 
     export declare function scrollOffset(offset: number, contentSize: number, viewportSize: number): number;
+
+### `ScrollText` (class)
+
+    export declare class ScrollText extends Container {
+        readonly box: ScrollBox;
+        private readonly body;
+        constructor(options: ScrollTextOptions);
+
+        protected measureHeight(): number;
+        private measure;
+        setText(text: string): void;
+
+        update(dt: number): void;
+    }
+
+### `ScrollTextOptions` (interface)
+
+    export interface ScrollTextOptions {
+        width: number;
+
+        maxHeight: number;
+        text?: string;
+        label?: Omit<LabelOptions, 'text' | 'wrapWidth'>;
+
+        touch?: boolean;
+    }
 
 ### `setTheme` (function)
 
@@ -27914,7 +29076,7 @@ build instead.
 
         setViewport(width: number, height: number): void;
 
-        hover(text: string, x: number, y: number): void;
+        hover(text: string, x: number, y: number, delay?: number): void;
 
         leave(): void;
         get isShowing(): boolean;
@@ -27940,6 +29102,39 @@ build instead.
         private place;
     }
 
+### `TooltipHost` (class)
+
+    export declare class TooltipHost extends Container {
+        readonly tooltip: Tooltip;
+        private readonly longPress;
+        private readonly targets;
+        constructor(options?: TooltipHostOptions);
+
+        add(target: TooltipTarget): () => void;
+
+        addButton(button: Button): () => void;
+        private targetAt;
+
+        pointerMove(x: number, y: number): void;
+
+        pointerDown(x: number, y: number): void;
+
+        pointerUp(): void;
+
+        attach(pointer: PointerTracker): () => void;
+
+        update(dt: number): boolean;
+    }
+
+### `TooltipHostOptions` (interface)
+
+    export interface TooltipHostOptions {
+
+        tooltip?: Tooltip;
+
+        longPress?: number;
+    }
+
 ### `TooltipOptions` (interface)
 
     export interface TooltipOptions {
@@ -27954,6 +29149,21 @@ build instead.
         };
 
         margin?: number;
+    }
+
+### `TooltipTarget` (interface)
+
+    export interface TooltipTarget {
+        bounds(): {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+        };
+
+        text(): string | undefined;
+
+        active?(): boolean;
     }
 
 ### `TreeNode` (interface)
@@ -28011,6 +29221,10 @@ build instead.
 
         disabled?: (node: TreeNode<T>) => boolean;
     }
+
+### `truncateLines` (function)
+
+    export declare function truncateLines(text: string, maxWidth: number, maxLines: number, measure: (text: string) => number, ellipsis?: string): string[];
 
 ### `UPPERCASE_KEYBOARD` (const)
 
@@ -28071,6 +29285,7 @@ build instead.
         private blocker;
         private readonly themeListener;
         private isClosed;
+        private motion;
         private colors;
         constructor(options: WindowOptions);
 
@@ -28091,9 +29306,13 @@ build instead.
 
         get closed(): boolean;
 
-        update(_dt: number): void;
+        update(dt: number): void;
 
-        close(): void;
+        private applyMotion;
+
+        open(animation?: WindowAnimation): void;
+
+        close(animation?: WindowAnimation): void;
 
         place(viewportWidth: number, viewportHeight: number): void;
 
@@ -28102,6 +29321,19 @@ build instead.
 
         handleOutsideClick(x: number, y: number): boolean;
         destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `WindowAnimation` (interface)
+
+    export interface WindowAnimation {
+        animation: OpenAnimationKind;
+
+        from?: {
+            x: number;
+            y: number;
+        };
+
+        duration?: number;
     }
 
 ### `WindowColors` (interface)

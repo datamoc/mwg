@@ -1,4 +1,6 @@
 import { Container } from 'pixi.js';
+import type { PointerPoint, PointerTracker } from '../../core/Input.ts';
+import { Button } from './Button.ts';
 import { Label } from './Label.ts';
 import { Window } from './Window.ts';
 import { theme } from './theme.ts';
@@ -69,7 +71,7 @@ export class Tooltip extends Container {
 	private panelWidth = 0;
 	private panelHeight = 0;
 
-	private pending: { text: string; x: number; y: number } | null = null;
+	private pending: { text: string; x: number; y: number; delay: number } | null = null;
 	private waited = 0;
 
 	constructor(options: TooltipOptions = {}) {
@@ -98,11 +100,13 @@ export class Tooltip extends Container {
 	/**
 	 * The pointer is resting on something with `text` to explain, at `x`/`y`.
 	 *
+	 * `delay` replaces the tooltip's own wait for this one call (a touch long-press waits longer than a hover).
+	 *
 	 * Safe to call every frame with the same arguments: the delay keeps counting rather than
 	 * restarting. Calling it with *different* text restarts the wait, so sweeping across a row
 	 * of icons shows the one the pointer settles on rather than the first one it crossed.
 	 */
-	hover(text: string, x: number, y: number): void {
+	hover(text: string, x: number, y: number, delay = this.delay): void {
 		if (this.pending && this.pending.text === text) {
 			this.pending.x = x;
 			this.pending.y = y;
@@ -110,7 +114,7 @@ export class Tooltip extends Container {
 			return;
 		}
 
-		this.pending = { text, x, y };
+		this.pending = { text, x, y, delay };
 		this.waited = 0;
 		this.visible = false;
 	}
@@ -145,7 +149,7 @@ export class Tooltip extends Container {
 		if (!this.pending || this.visible) return false;
 
 		this.waited += dt;
-		if (this.waited < this.delay) return false;
+		if (this.waited < this.pending.delay) return false;
 
 		this.body.setText(this.pending.text);
 
@@ -199,5 +203,134 @@ export class Tooltip extends Container {
 
 		this.panel.x = x;
 		this.panel.y = y;
+	}
+}
+
+/** a rectangle on screen that has something to explain, in the same space as the pointer positions fed to the host */
+export interface TooltipTarget {
+	bounds(): { x: number; y: number; width: number; height: number };
+	/** what to say now, or undefined for nothing */
+	text(): string | undefined;
+	/** false while the target is hidden; a hidden one explains nothing. True when omitted */
+	active?(): boolean;
+}
+
+export interface TooltipHostOptions {
+	/** the tooltip to drive; a default one when omitted */
+	tooltip?: Tooltip;
+	/** seconds a finger or button must rest before the tooltip shows on a press; 0.5 when omitted */
+	longPress?: number;
+}
+
+/**
+ * Drives one `Tooltip` from rectangles instead of from each widget's own pointer events, which is
+ * what makes it work in the two places hover cannot reach: on a touch screen (a press that rests
+ * for `longPress` seconds shows the text, and releasing hides it) and over a disabled `Button`,
+ * which has no pointer events to receive (the host tests the button's bounds itself, and a greyed-out
+ * button is exactly the one worth explaining).
+ *
+ * Feed it pointer positions with `pointerMove`, `pointerDown` and `pointerUp` (or `attach` a
+ * `PointerTracker`), and call `update(dt)` each frame. The later a target was added, the higher it
+ * counts when targets overlap.
+ *
+ * @example
+ * ```ts
+ * import { Button, TooltipHost } from '@datamoc/mw_games/two-d/ui';
+ *
+ * const host = new TooltipHost({ longPress: 0.4 });
+ * host.tooltip.setViewport(800, 600);
+ *
+ * const test = new Button({ width: 80, height: 28, text: 'Test', disabled: true,
+ * 	tooltip: () => 'Build a road across the gap first' });
+ * host.addButton(test);
+ *
+ * host.pointerMove(10, 10); // over the disabled button: the text still shows after the hover delay
+ * ```
+ */
+export class TooltipHost extends Container {
+	readonly tooltip: Tooltip;
+	private readonly longPress: number;
+	private readonly targets: TooltipTarget[] = [];
+
+	constructor(options: TooltipHostOptions = {}) {
+		super();
+		this.tooltip = options.tooltip ?? new Tooltip();
+		this.longPress = options.longPress ?? 0.5;
+		this.addChild(this.tooltip);
+	}
+
+	/** @returns a function that removes the target again */
+	add(target: TooltipTarget): () => void {
+		this.targets.push(target);
+		return () => {
+			const at = this.targets.indexOf(target);
+			if (at >= 0) this.targets.splice(at, 1);
+		};
+	}
+
+	/** a button's own bounds and `tooltip`, whether or not the button is disabled */
+	addButton(button: Button): () => void {
+		return this.add({
+			bounds: () => {
+				const rect = button.getBounds();
+				return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+			},
+			text: () => button.tooltip,
+			active: () => {
+				for (let node: Container | null = button; node; node = node.parent) if (!node.visible) return false;
+				return true;
+			},
+		});
+	}
+
+	private targetAt(x: number, y: number): TooltipTarget | null {
+		for (let index = this.targets.length - 1; index >= 0; index--) {
+			const target = this.targets[index];
+			if (target.active && !target.active()) continue;
+			const rect = target.bounds();
+			if (x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height) {
+				return target.text() === undefined ? null : target;
+			}
+		}
+		return null;
+	}
+
+	/** a pointer with no button down moved: the usual hover */
+	pointerMove(x: number, y: number): void {
+		const text = this.targetAt(x, y)?.text();
+		if (text) this.tooltip.hover(text, x, y);
+		else this.tooltip.leave();
+	}
+
+	/** a finger or button went down: the tooltip shows once it has rested for `longPress` */
+	pointerDown(x: number, y: number): void {
+		const text = this.targetAt(x, y)?.text();
+		if (text) this.tooltip.hover(text, x, y, this.longPress);
+		else this.tooltip.leave();
+	}
+
+	/** the finger or button came up */
+	pointerUp(): void {
+		this.tooltip.leave();
+	}
+
+	/** wires a `PointerTracker` (`Input.attachPointer`) to the host; returns the function that unwires it */
+	attach(pointer: PointerTracker): () => void {
+		const onMove = (p: PointerPoint): void => this.pointerMove(p.x, p.y);
+		const onDown = (p: PointerPoint): void => this.pointerDown(p.x, p.y);
+		const onUp = (): void => this.pointerUp();
+		pointer.move.add(onMove);
+		pointer.down.add(onDown);
+		pointer.up.add(onUp);
+		return () => {
+			pointer.move.remove(onMove);
+			pointer.down.remove(onDown);
+			pointer.up.remove(onUp);
+		};
+	}
+
+	/** @returns true on the frame the tooltip appears, as `Tooltip.update` does */
+	update(dt: number): boolean {
+		return this.tooltip.update(dt);
 	}
 }

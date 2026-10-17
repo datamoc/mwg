@@ -7,8 +7,30 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.43.0] - 2026-10-17
+
+Scrolling, tooltips and screen transitions for interface-heavy games, a MIDI music player and
+SoundFont tooling, and the shipped command line tools made to work from an installed package on
+Node 20.19. `@datamoc/pyroeis` moves to 0.9.1, which ends the last moderate audit advisory.
+
 ### Added
 
+- Scrolling and transitions asked for by a bridge game (Pontifex feedback 45-50):
+  - `ScrollBox`: `touch` (drag to scroll, coasting on release, `ScrollDrag`), `handleKey` for line, page and
+    ends, a draggable scrollbar thumb and a clickable track, and `autoHeight`. A drag no longer clicks the row
+    it ends on.
+  - `DropdownView`: `maxVisibleRows` (the list scrolls), an opaque backdrop, `autoWidth`, opening with the chosen
+    row in view, `handleKey`, `handleOutsideClick` and `fitBelow`.
+  - `ScrollText` (a wrapped label that sizes itself and scrolls), `MarqueeLabel` (a long line sliding inside
+    its width, still under reduced motion), `ellipsize` and `truncateLines`.
+  - `TooltipHost`: tooltips on a touch long-press and on disabled buttons, from rectangles instead of pointer
+    events. `Button` gains `tooltip`, `setIcon` and a second icon for the selected state (`iconSelected`).
+  - `Game.switchScene(Next, { transition, duration, easing, pause })`, `Game.transition(swap, options)` and
+    `Scene2D.transitionTo`: `tileShrink`, `shrink`, `pop`, `grow`, `slide`, `iris` and `dissolve` over a snapshot of
+    the outgoing scene, skipped under reduced motion, with `Game.transitioning` and `Game.active`. `Window.open`
+    and `Window.close` take an animation (`pop`, `grow`, `slide`, `fade`). The bridge example switches level
+    with `tileShrink`.
+  - The dist grew 3.8% with them; the size baseline is moved to match.
 - `limits` (`SoundFontLimits`: `sampleFrames`, `totalFrames`) on `decodeSoundFont`, `loadSoundFont` and
   `webAudioSampleDecoder` raises or lowers what a SoundFont 3 may decode to, instead of the fixed 16 M
   frames per sample and 128 M per font. The sample-rate bounds stay: the format itself stops at 50 kHz.

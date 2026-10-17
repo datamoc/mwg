@@ -530,6 +530,12 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   `sequence(steps)` (item 302) chains fade/hold/flash steps end to end as one call, for the
   hold-then-fade-back transition the four individual methods cannot express alone; `update`
   keeps returning false at every step boundary, true only once the whole sequence finishes.
+- `SceneTransition`/`TransitionOptions`/`TransitionRunner` + `tileShrink`, `shrink`, `pop`, `grow`, `slide`, `iris`
+  and `dissolve` - screen transitions: `Game.switchScene(Next, { transition, duration, easing })` photographs the
+  outgoing scene and animates it away (or grows the new one over it), `Scene2D.transitionTo(swap, options)` does
+  the same for a scene changing its own content, `Game.transitioning` tells a scene to ignore input, and
+  reduced motion skips it. `tileDelays`, `tileProgress`, `popScale`, `openAnimationFrame` and `resolveEasing` are the
+  timing as plain functions.
 - `ActorAnimator` - an idle/move/action animation state machine with one interruption rule.
 - `StatusVisuals` - composes every active status effect's colour additively onto a sprite's
   `colorAdd` (item 301), instead of one status winning by declaration order; each channel clips
@@ -663,7 +669,9 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
 - `BitmapLabel`/`bitmapLabelStyle` - bitmap-font-backed text, for a HUD value redrawn
   every frame where `Label`'s per-string texture re-render would be wasteful.
 - `NinePatch` - a resizable nine-slice panel.
-- `Window` - a themed panel container. `close()` frees the window and its contents and is
+- `Window` - a themed panel container. `open({ animation, from })` plays `pop`, `grow`, `slide` or `fade`
+  (`WindowAnimation`) and `close({ animation })` plays it backwards before closing, both driven by
+  `update(dt)` and skipped under reduced motion. `close()` frees the window and its contents and is
   idempotent; `closed` is the guard for the caller's reference afterwards (input and `place` on a
   closed window are no-ops), and `WindowStack.push` refuses one with a named error. A window's own
   area is not clickable, so a click travels to whatever is under it; `blocker: true` adds the
@@ -695,7 +703,11 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
 - `Spinner`/`SpinnerOptions` + `spinValue` - an up/down numeric stepper; `spinValue` is the rule
   (snap to the step, then clamp at the ends or wrap past them).
 - `DropdownView`/`DropdownViewOptions` - the widget over a `Dropdown` model: a button showing the choice
-  that opens a column of `Button`s, the chosen one marked with `Button.setSelected`.
+  that opens a column of `Button`s on an opaque backdrop, the highlighted one marked with
+  `Button.setSelected`. `maxVisibleRows` makes a long list scroll (wheel, touch, keys, scrollbar) and it opens with
+  the chosen row in view; `autoWidth` fits the longest label; `handleKey` (arrows, Page, Home/End, Enter,
+  Escape) and `handleOutsideClick` are what the scene forwards from its own input; `fitBelow` limits the
+  rows to what the viewport leaves under the button.
 - `Dropdown`/`DropdownOption`/`DropdownOptions` - a renderer-free option button: a selected entry,
   an open list, a highlight that starts on the selection and skips disabled options.
 - `TextModel`/`TextModelOptions` - the editing state behind a text field, fed by `core.Input`'s
@@ -727,8 +739,19 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   highlight.
 - `TreeView`/`TreeNode`/`TreeRow`/`TreeViewOptions` - a renderer-free collapsible tree, flattened to
   the rows on screen; collapsing the branch the highlight is inside lands it on the branch.
-- `ScrollBox`/`ScrollBoxOptions` + `scrollOffset` - a clipped viewport with a themed scrollbar;
-  `scrollOffset` is the clamping rule the wheel, `scrollBy` and `scrollIntoView` all share.
+- `ScrollBox`/`ScrollBoxOptions`/`ScrollKey` + `scrollOffset` - a clipped viewport with a themed scrollbar;
+  `scrollOffset` is the clamping rule the wheel, `scrollBy` and `scrollIntoView` all share. `touch: true` lets a
+  finger drag the content (a drag cancels the tap on the row under it) and coast on release, `handleKey`
+  scrolls by line, page and to either end, the thumb drags and the track jumps, and `autoHeight` sizes the
+  viewport to the content up to `height`. `update(dt)` drives the coasting.
+- `ScrollDrag` - touch scrolling as plain numbers (`start`/`move`/`end`/`step`): how far the content follows a
+  finger and how it coasts after release, with no pointer events or clock of its own.
+- `ScrollText`/`ScrollTextOptions` - a wrapped `Label` in a self-sizing `ScrollBox`: as tall as the text up to
+  `maxHeight`, scrolling beyond it, re-measured by `setText`.
+- `MarqueeLabel`/`MarqueeLabelOptions` + `marqueeOffset` - one line that stays on one line: a long text slides
+  back and forth in a clipped window (and holds still, cut short, under reduced motion).
+- `ellipsize` and `truncateLines` - cut a text to a width or a number of lines, ending in an ellipsis, with the
+  caller supplying the measuring function.
 - `flowLayout(items, width, { gap, align })` - left-to-right rows that wrap, returning each item's
   position and the total height: a toolbar that takes two rows on a phone.
 - `Grid`/`GridSpec`/`GridTrack` + `resolveAnchor`/`anchorAlign` with `Anchor`/`AnchorSpec`/
@@ -774,6 +797,10 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
 - `Toast` - a queued, timed pop-up notification (fade in, hold, fade out).
 - `Tooltip` - a hover explanation over a themed `Window`: a frame-driven hover delay, and
   edge-aware placement that flips rather than letting the panel run off screen.
+- `TooltipHost`/`TooltipHostOptions`/`TooltipTarget` - drives one `Tooltip` from rectangles: a press that rests
+  for `longPress` seconds shows the text on a touch screen, and a disabled `Button` (which gets no pointer
+  events) is still explained from its bounds and its `tooltip`. `attach(pointer)` wires an
+  `Input.attachPointer` tracker.
 - `HelpScreen` - a topic-list-plus-body help/controls screen.
 - `StatsScreen` - a player-stats display screen.
 - `LoadingScreen` - a progress-bar loading screen wired to `core.LoadQueue`.

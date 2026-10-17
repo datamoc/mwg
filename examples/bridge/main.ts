@@ -1,6 +1,6 @@
 import { Container } from '../../src/two-d/pixi-interop.ts';
 import { Game, Scene2D } from '../../src/two-d/index.ts';
-import { Shape2D } from '../../src/two-d/render/index.ts';
+import { Shape2D, tileShrink } from '../../src/two-d/render/index.ts';
 import { Button, Label, highContrastTheme, setTheme, theme, themeChanged } from '../../src/two-d/ui/index.ts';
 import {
 	Input,
@@ -88,7 +88,7 @@ class BridgeScene extends Scene2D {
 			['Clear', () => this.dispatch('clear')],
 			['Truss', () => warrenBeams(this.level).forEach(([a, b]) => this.dispatch(`beam:${a}:${b}`))],
 			['Replay', () => this.replay()],
-			['Level', () => this.load((this.levelIndex + 1) % LEVELS.length)],
+			['Level', () => this.nextLevel()],
 			['Beams', () => this.toggleCables()],
 			['Contrast', () => setTheme(theme() === highContrastTheme ? {} : highContrastTheme)],
 		];
@@ -141,6 +141,12 @@ class BridgeScene extends Scene2D {
 		this.failed = false;
 		if (!this.running) this.breaks = [];
 		this.say('');
+	}
+
+	//the old level breaks up into tiles over the new one; reduced motion skips straight to it
+	private nextLevel(): void {
+		const next = (this.levelIndex + 1) % LEVELS.length;
+		this.transitionTo(() => this.load(next), { transition: tileShrink({ columns: 8, rows: 5 }), duration: 0.6 });
 	}
 
 	load(index: number): void {

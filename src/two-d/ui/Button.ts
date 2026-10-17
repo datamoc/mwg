@@ -33,6 +33,15 @@ export interface ButtonOptions {
 	/** drawn to one side of the text, or centred alone if `text` is omitted */
 	icon?: Container2D;
 
+	/** drawn instead of `icon` while the button is selected (`setSelected`): a two-icon toggle */
+	iconSelected?: Container2D;
+
+	/**
+	 * What a tooltip should say about this button, as text or a function asked each time (so it can
+	 * name why the button is disabled). The button only holds it: a `TooltipHost` reads `tooltip`.
+	 */
+	tooltip?: string | (() => string);
+
 	/** Per-button chrome, independent of the window theme. Textures remain caller-owned. */
 	skin?: ButtonSkin;
 	/** Caption styling, also used when setText creates a caption later. */
@@ -56,6 +65,8 @@ export interface ButtonOptions {
  *
  * `icon` alone (no `text`) is the icon-only button a title screen commonly reaches for -
  * rankings, badges, settings - where a caption would only repeat what the icon already says.
+ * `setIcon` swaps the icon later, `iconSelected` gives a toggle its second icon, and `tooltip`
+ * carries the button's explanation for a `TooltipHost`.
  *
  * @example
  * ```ts
@@ -82,6 +93,9 @@ export class Button extends Container {
 	private background: NinePatch | Graphics;
 	private labelText: Label | null;
 	private icon: Container | null;
+	private iconSelected: Container | null;
+	private iconPlain: Container | null;
+	private tooltip_: string | (() => string) | undefined;
 
 	private width_: number;
 	private height_: number;
@@ -107,6 +121,9 @@ export class Button extends Container {
 		this.addChild(this.background);
 
 		this.icon = options.icon ?? null;
+		this.iconPlain = this.icon;
+		this.iconSelected = options.iconSelected ?? null;
+		this.tooltip_ = options.tooltip;
 		if (this.icon) this.addChild(this.icon);
 
 		this.labelText =
@@ -173,6 +190,38 @@ export class Button extends Container {
 		this.layoutContent();
 	}
 
+	/**
+	 * Replaces the icon (the old one is removed, not destroyed: icons are the caller's), keeping the
+	 * layout. `null` removes it.
+	 */
+	setIcon(icon: Container2D | null): void {
+		this.iconPlain = icon;
+		this.showIcon(this.selected_ && this.iconSelected ? this.iconSelected : icon);
+	}
+
+	/** the icon a selected button shows instead, or `null` to use the one icon in both states */
+	setSelectedIcon(icon: Container2D | null): void {
+		this.iconSelected = icon;
+		this.showIcon(this.selected_ && icon ? icon : this.iconPlain);
+	}
+
+	private showIcon(icon: Container | null): void {
+		if (icon === this.icon) return;
+		if (this.icon) this.removeChild(this.icon);
+		this.icon = icon;
+		if (icon) this.addChild(icon);
+		this.draw();
+	}
+
+	/** what a tooltip should say about this button right now, or `undefined` when it has none */
+	get tooltip(): string | undefined {
+		return typeof this.tooltip_ === 'function' ? this.tooltip_() : this.tooltip_;
+	}
+
+	setTooltip(tooltip: string | (() => string) | undefined): void {
+		this.tooltip_ = tooltip;
+	}
+
 	get disabled(): boolean {
 		return this.disabled_;
 	}
@@ -193,6 +242,7 @@ export class Button extends Container {
 	setSelected(selected: boolean): void {
 		if (this.selected_ === selected) return;
 		this.selected_ = selected;
+		if (this.iconSelected) this.showIcon(selected ? this.iconSelected : this.iconPlain);
 		this.draw();
 	}
 

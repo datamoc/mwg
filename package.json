@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mw_games",
-	"version": "0.42.0",
+	"version": "0.43.0",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"homepage": "https://datamoc.github.io/mwg/",
@@ -462,7 +462,7 @@
 		"@babylonjs/core": "^9.25.0",
 		"@babylonjs/loaders": "^9.25.0",
 		"@capacitor/android": "^8.5.2",
-		"@capacitor/cli": "^8.5.2",
+		"@capacitor/cli": "^8.4.3",
 		"@capacitor/core": "^8.5.2",
 		"@capacitor/ios": "^8.5.2",
 		"@types/node": "^26.4.1",
@@ -481,6 +481,6 @@
 	"types": "./dist/index.d.ts",
 	"unpkg": "./dist/mw_games.global.js",
 	"optionalDependencies": {
-		"@datamoc/pyroeis": "^0.9.0"
+		"@datamoc/pyroeis": "^0.9.1"
 	}
 }

@@ -180,3 +180,29 @@ export type {
 
 export { loadSvgSkeleton } from './SvgSkeleton.ts';
 export type { SvgBoneBinding, SvgSkeletonOptions, LoadedSvgSkeleton } from './SvgSkeleton.ts';
+
+export {
+	dissolve,
+	grow,
+	iris,
+	openAnimationFrame,
+	pop,
+	popScale,
+	resolveEasing,
+	shrink,
+	TransitionRunner,
+	slide,
+	tileDelays,
+	tileProgress,
+	tileShrink,
+} from './SceneTransition.ts';
+export type {
+	OpenAnimationKind,
+	SceneTransition,
+	TileOrder,
+	TileShrinkOptions,
+	TransitionContext,
+	TransitionOptions,
+	TransitionPoint,
+	TransitionRuntime,
+} from './SceneTransition.ts';

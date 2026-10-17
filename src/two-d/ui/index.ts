@@ -47,7 +47,7 @@ export { NinePatch } from './NinePatch.ts';
 export type { NinePatchOptions } from './NinePatch.ts';
 
 export { Window } from './Window.ts';
-export type { WindowOptions } from './Window.ts';
+export type { WindowAnimation, WindowOptions } from './Window.ts';
 
 export { WindowStack } from './WindowStack.ts';
 
@@ -96,8 +96,8 @@ export type { DataTableOptions, TableColumn } from './DataTable.ts';
 export { TreeView } from './TreeView.ts';
 export type { TreeNode, TreeRow, TreeViewOptions } from './TreeView.ts';
 
-export { ScrollBox, scrollOffset } from './ScrollBox.ts';
-export type { ScrollBoxOptions } from './ScrollBox.ts';
+export { ScrollBox, ScrollDrag, scrollOffset } from './ScrollBox.ts';
+export type { ScrollBoxOptions, ScrollKey } from './ScrollBox.ts';
 
 export { Grid, anchorAlign, resolveAnchor, flowLayout } from './Layout.ts';
 export type {
@@ -144,8 +144,8 @@ export type { FloatingTextPush, FloatingTextStackEntry, FloatingTextStackMove } 
 export { Toast } from './Toast.ts';
 export type { ToastOptions } from './Toast.ts';
 
-export { Tooltip } from './Tooltip.ts';
-export type { TooltipOptions } from './Tooltip.ts';
+export { Tooltip, TooltipHost } from './Tooltip.ts';
+export type { TooltipHostOptions, TooltipOptions, TooltipTarget } from './Tooltip.ts';
 
 export { HelpScreen } from './HelpScreen.ts';
 export type { HelpScreenOptions, HelpTopic } from './HelpScreen.ts';
@@ -163,3 +163,6 @@ export { contrastRatio, meetsContrast, relativeLuminance } from './contrast.ts';
 export type { ContrastLevel } from './contrast.ts';
 
 export { ScreenReader, screenReader } from './a11y.ts';
+
+export { MarqueeLabel, ScrollText, ellipsize, marqueeOffset, truncateLines } from './ScrollText.ts';
+export type { MarqueeLabelOptions, ScrollTextOptions } from './ScrollText.ts';
