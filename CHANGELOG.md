@@ -7,6 +7,22 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.44.1] - 2026-10-17
+
+Hardening of `.mwp` content package loading, found by a security review of 0.44.0. Version 0.44.0 was
+tagged and released on GitHub but its npm stage was rejected and it was never published, so 0.44.1
+is the first public release of everything in its entry below.
+
+### Fixed
+
+- A package could multiply its work through repeated file imports: depth was bounded at 4 but
+  the total was not. Imports now share a budget of 64 reads per package document.
+- An import or a `main` document named like an `Object.prototype` member (`constructor`) crashed
+  the loader with a `TypeError`; lookups are now own-property only and report a
+  `PackageFormatError`.
+- A WAV header declaring a large `byteRate` could shorten the duration measured against
+  `maxAudioSeconds`; the lower of the declared rate and `sampleRate * blockAlign` is used.
+
 ## [0.44.0] - 2026-10-17
 
 Retro-audio integration contracts (a MIDI engine registry, streaming playback, budgets, content packages and a command line tool), player-facing audio settings, and the interface follow-ups of the last Pontifex round. The parked items 393, 394, Syzygy and NNUE are closed rather than waiting on files or weights that will not arrive, and a simplification pass over the whole tree removes duplicated code.

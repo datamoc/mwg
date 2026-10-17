@@ -176,6 +176,16 @@ test('a flipped byte, bad magic and truncation never return content', async () =
 	await assert.rejects(decodePackage(bytes.subarray(0, 6)), PackageFormatError);
 });
 
+test('a WAV header declaring a huge byte rate cannot shorten the measured duration', async () => {
+	const lying = wav(3);
+	new DataView(lying.buffer).setUint32(28, 8000 * 1000, true);
+	const bytes = await encodePackage([
+		{ path: 'content.mwl', data: text(minimal('a', '1.0.0')) },
+		{ path: 'b.wav', data: lying },
+	]);
+	await assert.rejects(decodePackage(bytes, { maxAudioSeconds: 2 }), PackageLimitError);
+});
+
 test('declared limits refuse on size, count, image dimensions and audio length', async () => {
 	const bytes = await encodePackage([
 		{ path: 'content.mwl', data: text(minimal('a', '1.0.0')) },

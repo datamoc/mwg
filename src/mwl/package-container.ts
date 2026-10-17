@@ -404,10 +404,14 @@ function readWavSeconds(data: Uint8Array): number | undefined {
 	const tag = (at: number): string => String.fromCharCode(data[at], data[at + 1], data[at + 2], data[at + 3]);
 	if (data.length < 12 || tag(0) !== 'RIFF' || tag(8) !== 'WAVE') return undefined;
 	const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
-	let byteRate = 0;
+	let byteRate = 0; // the lower of the declared rate and sampleRate * blockAlign, so a lying header cannot shorten the duration
 	for (let at = 12; at + 8 <= data.length;) {
 		const length = view.getUint32(at + 4, true);
-		if (tag(at) === 'fmt ' && at + 20 <= data.length) byteRate = view.getUint32(at + 16, true);
+		if (tag(at) === 'fmt ' && at + 22 <= data.length) {
+			const declared = view.getUint32(at + 16, true);
+			const derived = view.getUint32(at + 12, true) * view.getUint16(at + 20, true);
+			byteRate = Math.min(declared, derived || declared);
+		}
 		// a streaming writer may leave the data size at 0xFFFFFFFF; the real length is what is there
 		if (tag(at) === 'data') return byteRate > 0 ? Math.min(length, data.length - at - 8) / byteRate : undefined;
 		at += 8 + length + (length & 1);

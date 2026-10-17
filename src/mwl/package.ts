@@ -66,7 +66,7 @@ export interface LoadedPackage {
 export async function loadPackage(bytes: Uint8Array, limits: Partial<PackageLimits> = {}): Promise<LoadedPackage> {
 	const decoded = await decodePackage(bytes, limits);
 	const decoder = new TextDecoder('utf-8', { fatal: true });
-	const documents: Record<string, string> = {};
+	const documents = Object.create(null) as Record<string, string>;
 	for (const file of decoded.files) {
 		if (!file.path.endsWith('.mwl')) continue;
 		try {
@@ -75,6 +75,8 @@ export async function loadPackage(bytes: Uint8Array, limits: Partial<PackageLimi
 			throw new PackageFormatError(`"${file.path}" is not UTF-8 text`);
 		}
 	}
+	if (!Object.hasOwn(documents, decoded.main))
+		throw new PackageFormatError(`main "${decoded.main}" is not a .mwl document`);
 	const document = parsePackageDocument(documents[decoded.main], { file: decoded.main, files: documents });
 	const directory = decoded.entries.map((entry) => `${entry.path}\n${entry.sha256}\n`).join('');
 	return {

@@ -224,6 +224,8 @@ const MAX_CONDITION = 512;
 const MAX_ACTIONS = 64;
 const MAX_JSON_DEPTH = 16;
 const MAX_IMPORT_DEPTH = 4;
+/** every import read counts, so a fan-out of repeated imports cannot multiply within the depth bound */
+const MAX_IMPORT_READS = 64;
 
 /**
  * Reads a package document: the MWL tags `package`, `asset`, `character`, `animation`,
@@ -252,7 +254,7 @@ export function parsePackageDocument(
 	options: MwlPreprocessOptions & { readonly files?: Readonly<Record<string, string>> } = {},
 ): PackageDocument {
 	const sections = emptySections();
-	readInto(sections, source, options, 0);
+	readInto(sections, source, options, 0, '', { reads: 0 });
 	if (!sections.meta) throw new PackageFormatError(`${options.file ?? 'package'}: needs a [package] tag`);
 	return finish(sections, sections.meta);
 }
@@ -290,7 +292,8 @@ function readInto(
 	source: string,
 	options: MwlPreprocessOptions & { readonly files?: Readonly<Record<string, string>> },
 	depth: number,
-	prefix = '',
+	prefix: string,
+	budget: { reads: number },
 ): void {
 	const file = options.file ?? 'package.mwl';
 	const fail = (message: string): never => {
@@ -581,7 +584,10 @@ function readInto(
 			if (imported.src !== undefined) {
 				if (depth + 1 > MAX_IMPORT_DEPTH)
 					fail(`${where}: imports are nested more than ${MAX_IMPORT_DEPTH} deep`);
-				const imported_source = options.files?.[imported.src];
+				if (++budget.reads > MAX_IMPORT_READS)
+					fail(`${where}: more than ${MAX_IMPORT_READS} imports in one package`);
+				const files = options.files;
+				const imported_source = files && Object.hasOwn(files, imported.src) ? files[imported.src] : undefined;
 				if (imported_source === undefined) fail(`${where}: "${imported.src}" is not in the package`);
 				readInto(
 					sections,
@@ -589,6 +595,7 @@ function readInto(
 					{ ...options, file: imported.src },
 					depth + 1,
 					imported.as ? local(imported.as) : prefix,
+					budget,
 				);
 			}
 			continue;
