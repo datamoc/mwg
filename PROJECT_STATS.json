@@ -1,11 +1,11 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mw_games",
-	"version": "0.44.1",
+	"version": "0.44.2",
 	"releaseDate": "2026-10-17",
 	"source": {
 		"files": 386,
-		"lines": 76399,
+		"lines": 76403,
 		"modules": 20,
 		"breakdown": [
 			{
@@ -16,7 +16,7 @@
 			{
 				"name": "mwl",
 				"files": 29,
-				"lines": 10000
+				"lines": 10004
 			},
 			{
 				"name": "audio",
@@ -112,8 +112,8 @@
 	},
 	"tests": {
 		"files": 361,
-		"lines": 50199,
-		"cases": 3283
+		"lines": 50215,
+		"cases": 3284
 	},
 	"tools": {
 		"files": 67,
@@ -163,9 +163,9 @@
 		"declarationFiles": 386
 	},
 	"bundle": {
-		"globalRaw": 1383863,
-		"globalGzip": 416139,
-		"distRaw": 5253021
+		"globalRaw": 1383913,
+		"globalGzip": 416156,
+		"distRaw": 5253213
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

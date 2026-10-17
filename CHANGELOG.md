@@ -7,11 +7,24 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.44.2] - 2026-10-17
+
+Hardening of `.mwp` content package loading, found by security reviews of 0.44.0 and 0.44.1.
+Versions 0.44.0 and 0.44.1 were tagged and released on GitHub but their npm stages were rejected and
+they were never published, so 0.44.2 is the first public release of everything in their entries below.
+
+### Fixed
+
+- A WAV header with a zero sample rate or block align fell back to its declared `byteRate`, so
+  a lying header could still shorten the measured duration. The rate is now the lowest of the
+  declared one, `sampleRate * blockAlign` and `sampleRate * channels * ceil(bits / 8)`, and a zero in
+  any of them refuses the file as unreadable.
+
 ## [0.44.1] - 2026-10-17
 
-Hardening of `.mwp` content package loading, found by a security review of 0.44.0. Version 0.44.0 was
-tagged and released on GitHub but its npm stage was rejected and it was never published, so 0.44.1
-is the first public release of everything in its entry below.
+> Superseded by 0.44.2 and never published to npm.
+
+Hardening of `.mwp` content package loading, found by a security review of 0.44.0.
 
 ### Fixed
 
@@ -24,6 +37,8 @@ is the first public release of everything in its entry below.
   `maxAudioSeconds`; the lower of the declared rate and `sampleRate * blockAlign` is used.
 
 ## [0.44.0] - 2026-10-17
+
+> Superseded by 0.44.2 and never published to npm.
 
 Retro-audio integration contracts (a MIDI engine registry, streaming playback, budgets, content packages and a command line tool), player-facing audio settings, and the interface follow-ups of the last Pontifex round. The parked items 393, 394, Syzygy and NNUE are closed rather than waiting on files or weights that will not arrive, and a simplification pass over the whole tree removes duplicated code.
 
