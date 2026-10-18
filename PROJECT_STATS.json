@@ -4,8 +4,8 @@
 	"version": "0.46.0",
 	"releaseDate": "2026-10-18",
 	"source": {
-		"files": 386,
-		"lines": 76557,
+		"files": 388,
+		"lines": 77149,
 		"modules": 20,
 		"breakdown": [
 			{
@@ -20,8 +20,8 @@
 			},
 			{
 				"name": "audio",
-				"files": 41,
-				"lines": 9274
+				"files": 43,
+				"lines": 9866
 			},
 			{
 				"name": "core",
@@ -111,13 +111,13 @@
 		]
 	},
 	"tests": {
-		"files": 361,
-		"lines": 50417,
-		"cases": 3293
+		"files": 364,
+		"lines": 50729,
+		"cases": 3307
 	},
 	"tools": {
-		"files": 67,
-		"lines": 14116
+		"files": 68,
+		"lines": 14166
 	},
 	"examples": {
 		"count": 29,
