@@ -1,12 +1,12 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mwg",
-	"version": "0.46.0",
+	"version": "0.47.0",
 	"releaseDate": "2026-10-18",
 	"source": {
-		"files": 388,
-		"lines": 77152,
-		"modules": 20,
+		"files": 396,
+		"lines": 79380,
+		"modules": 21,
 		"breakdown": [
 			{
 				"name": "two-d",
@@ -14,19 +14,19 @@
 				"lines": 24447
 			},
 			{
-				"name": "mwl",
-				"files": 29,
-				"lines": 10004
+				"name": "audio",
+				"files": 48,
+				"lines": 11285
 			},
 			{
-				"name": "audio",
-				"files": 43,
-				"lines": 9869
+				"name": "mwl",
+				"files": 29,
+				"lines": 10047
 			},
 			{
 				"name": "core",
-				"files": 52,
-				"lines": 7480
+				"files": 53,
+				"lines": 7834
 			},
 			{
 				"name": "board",
@@ -91,12 +91,17 @@
 			{
 				"name": "testing",
 				"files": 3,
-				"lines": 510
+				"lines": 560
 			},
 			{
 				"name": "skeleton",
 				"files": 1,
 				"lines": 441
+			},
+			{
+				"name": "music",
+				"files": 2,
+				"lines": 364
 			},
 			{
 				"name": "threads",
@@ -111,13 +116,13 @@
 		]
 	},
 	"tests": {
-		"files": 364,
-		"lines": 50741,
-		"cases": 3308
+		"files": 371,
+		"lines": 51980,
+		"cases": 3358
 	},
 	"tools": {
-		"files": 68,
-		"lines": 14166
+		"files": 69,
+		"lines": 14519
 	},
 	"examples": {
 		"count": 29,
@@ -154,18 +159,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 446,
+		"items": 458,
 		"completed": 411,
-		"open": 35,
-		"percent": 92
+		"open": 47,
+		"percent": 90
 	},
 	"api": {
-		"declarationFiles": 388
+		"declarationFiles": 396
 	},
 	"bundle": {
-		"globalRaw": 1394306,
-		"globalGzip": 420021,
-		"distRaw": 5290380
+		"globalRaw": 1416784,
+		"globalGzip": 428919,
+		"distRaw": 5429343
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

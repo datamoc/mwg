@@ -115,6 +115,7 @@ const RENDERER_FREE = [
 	'roguelike',
 	'board',
 	'audio',
+	'music',
 	'rpg',
 	'ai',
 	'mwl',

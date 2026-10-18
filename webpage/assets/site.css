@@ -109,6 +109,25 @@ canvas {
 	letter-spacing: 0.03em;
 }
 
+/* eleven links do not fit a phone: the menu scrolls sideways inside the header instead of the page */
+@media (max-width: 860px) {
+	.site-header .wrap {
+		gap: 1rem;
+	}
+
+	.brand {
+		flex-shrink: 0;
+	}
+
+	.site-nav {
+		min-width: 0;
+		overflow-x: auto;
+		white-space: nowrap;
+		gap: 1.1rem;
+		scrollbar-width: none;
+	}
+}
+
 .site-nav a {
 	text-decoration: none;
 	color: var(--muted);

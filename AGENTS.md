@@ -265,6 +265,17 @@ documentation someone would look for by name) belongs in `notes/` at the repo ro
 the same way as `CLAUDE.md` itself, not left loose at the top level beside the real, permanent
 docs (`README.md`, `REFERENCE.md`, `ADR.md`, `ROADMAP.md`, `DEVELOPMENT.md`, `CHANGELOG.md`).
 
+## Use the cheapest model that does the job
+
+Always try the least expensive model that can do the task well, for Claude as for OpenAI
+(Haiku on the Claude side, Luna on the OpenAI side). The default is the middle tier, Sonnet:
+most work here (reading code, edits, tests, docs) is well within it. Go down a tier for a
+simple, mechanical task (a rename, a one-line fix, adding a field, regenerating a report), and
+up to Opus only to get advice: an architecture choice, a hard bug that resists two attempts,
+a review of work that is about to be released. Say which tier a delegated task was given and
+why when it is not the default; a subagent spawned for a simple task does not inherit the
+expensive model by default.
+
 ## Use whatever plugins and tools are actually relevant
 
 If a skill, plugin, or MCP tool available in the session applies to the task at hand, use

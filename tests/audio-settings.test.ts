@@ -1,7 +1,46 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { AudioSettings, dynamicsLimit, regionPlaybackRate, softenCutoff } from '../src/audio/Settings.ts';
+import {
+	AUDIO_SETTINGS_KEYS,
+	AudioSettings,
+	audioSettingsRows,
+	dynamicsLimit,
+	regionPlaybackRate,
+	softenCutoff,
+} from '../src/audio/Settings.ts';
+
+test('the settings rows feed the dials: percent sliders, a caption box and two choices', () => {
+	const rows = audioSettingsRows({ soften: 'Doux' });
+	assert.deepEqual(
+		rows.map((row) => row.key),
+		Object.values(AUDIO_SETTINGS_KEYS),
+	);
+	assert.equal(rows[0].label, 'Doux');
+	const settings = new AudioSettings();
+	settings.restoreFromCustom({
+		'audio.soften': 40,
+		'audio.dynamics': 150,
+		'audio.captions': true,
+		'audio.outputStage': 'clean',
+		'audio.region': 'pal',
+	});
+	assert.deepEqual(
+		{ ...settings.snapshot(), busVolumes: undefined },
+		{
+			busVolumes: undefined,
+			preferredEngine: null,
+			region: 'pal',
+			outputStage: 'clean',
+			captions: true,
+			dynamics: 1,
+			soften: 0.4,
+		},
+	);
+	settings.restoreFromCustom({ 'audio.region': 'mars', 'audio.soften': 'high', other: 3 });
+	assert.equal(settings.snapshot().region, 'pal', 'a value of the wrong kind leaves the dial alone');
+	assert.equal(settings.snapshot().soften, 0.4);
+});
 
 test('regionPlaybackRate runs an NTSC tune slower on PAL and faster the other way', () => {
 	assert.ok(regionPlaybackRate('pal', 'ntsc') < 1, 'PAL is the slower clock');

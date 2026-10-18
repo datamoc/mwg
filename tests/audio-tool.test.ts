@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -195,6 +195,59 @@ test('the command line inspects, renders, converts, compares and refuses what it
 		assert.equal(wavInfo(readFileSync(join(dir, 'low.wav'))).sampleRate, 4000);
 		assert.match(run('compare', 'direct.wav', 'out/tune.wav'), /^0\.00 dB/);
 		assert.match(run('budget', '.', '--rate', '8000'), /total:/);
+		writeFileSync(
+			join(dir, 'encoder.mjs'),
+			"export default (frames, request) => Uint8Array.of(request.format === 'flac' ? 1 : 2, request.bitrate ?? 0, frames.sampleRate >> 8);",
+		);
+		run('convert', 'tune.mid', 'tune.flac', '--rate', '8000', '--encoder', 'encoder.mjs');
+		assert.deepEqual([...readFileSync(join(dir, 'tune.flac'))], [1, 0, 31]);
+		run('convert', 'direct.wav', 'tune.opus', '--encoder', 'encoder.mjs', '--bitrate', '96');
+		assert.deepEqual([...readFileSync(join(dir, 'tune.opus'))], [2, 96, 31]);
+		assert.throws(() => run('convert', 'tune.mid', 'x.opus'), /needs --encoder/);
+		if (spawnSync('ffmpeg', ['-version']).status === 0) {
+			run('convert', 'direct.wav', 'real.opus', '--encoder', 'ffmpeg', '--bitrate', '64');
+			assert.equal(
+				readFileSync(join(dir, 'real.opus')).subarray(0, 4).toString(),
+				'OggS',
+				'ffmpeg wrote an Ogg Opus file',
+			);
+			run('convert', 'direct.wav', 'real.flac', '--encoder', 'ffmpeg');
+			assert.equal(readFileSync(join(dir, 'real.flac')).subarray(0, 4).toString(), 'fLaC');
+		}
+		assert.throws(
+			() => run('convert', 'tune.mid', 'x.flac', '--encoder', 'encoder.mjs', '--max-mb', '0.00001'),
+			/over the limit/,
+		);
+		writeFileSync(join(dir, 'state.json'), JSON.stringify({ seed: 4242, items: ['lamp'] }));
+		const link = run(
+			'share',
+			'make',
+			'state.json',
+			'--type',
+			'state',
+			'--id',
+			'game@1.0.0',
+			'--base',
+			'https://example.org/',
+		).trim();
+		assert.match(link, /^https:\/\/example\.org\/#mwg:/);
+		assert.match(run('share', 'read', link), /"seed": 4242/);
+		assert.throws(() => run('share', 'read', link.slice(0, -4)), /Command failed/, 'a cut link exits 1');
+		writeFileSync(
+			join(dir, 'engine.mjs'),
+			[
+				`import { registerMidiSynth } from ${JSON.stringify(new URL('../src/audio/MidiSynth.ts', import.meta.url).href)};`,
+				"registerMidiSynth('quiet', (sampleRate) => ({ sampleRate, event() {}, sysex() {}, render() {}, reset() {} }));",
+			].join('\n'),
+		);
+		const audit = run('audit', '--synth', 'builtin', '--programs', '0', '--notes', '69');
+		assert.match(audit, /1 notes rendered, 0 flagged/);
+		assert.throws(
+			() => run('audit', '--synth', 'quiet', '--module', 'engine.mjs', '--programs', '0', '--notes', '69'),
+			/Command failed/,
+			'a silent engine exits 1',
+		);
+		assert.throws(() => run('audit', '--synth', 'builtin', '--programs', '200'), /Command failed/);
 		assert.throws(() => run('convert', 'tune.mid', 'x.mwa'), /retro-audio package/);
 		assert.throws(() => run('budget', '.', '--rate', '8000', '--max-mb', '0.001'), /budget/);
 		assert.throws(() => run('frobnicate'), /unknown command/);

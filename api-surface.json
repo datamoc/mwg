@@ -252,6 +252,12 @@
 		"declaringModule": "two-d/render/Beam.d.ts"
 	},
 	{
+		"name": "bisectShareLink",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
 		"name": "BitmapLabel",
 		"kind": "class",
 		"subpath": ".",
@@ -624,6 +630,12 @@
 		"declaringModule": "core/Collection.d.ts"
 	},
 	{
+		"name": "decodeShareLink",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
 		"name": "defaultSettings",
 		"kind": "function",
 		"subpath": ".",
@@ -708,6 +720,12 @@
 		"declaringModule": "core/ReplayFile.d.ts"
 	},
 	{
+		"name": "dropByPriority",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
 		"name": "Dropdown",
 		"kind": "class",
 		"subpath": ".",
@@ -768,6 +786,12 @@
 		"declaringModule": "two-d/render/TileMap.d.ts"
 	},
 	{
+		"name": "encodeShareLink",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
 		"name": "EntityId",
 		"kind": "type",
 		"subpath": ".",
@@ -826,6 +850,18 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "core/Feedback.d.ts"
+	},
+	{
+		"name": "fitShareLink",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
+		"name": "FittedShareLink",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "core/ShareLink.d.ts"
 	},
 	{
 		"name": "fitWindowZoom",
@@ -1834,6 +1870,12 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/render/SpriteMotion.d.ts"
+	},
+	{
+		"name": "Music",
+		"kind": "namespace",
+		"subpath": ".",
+		"declaringModule": "index.d.ts"
 	},
 	{
 		"name": "Mwl",
@@ -2896,6 +2938,36 @@
 		"kind": "class",
 		"subpath": ".",
 		"declaringModule": "two-d/render/Shape2D.d.ts"
+	},
+	{
+		"name": "ShareDecoded",
+		"kind": "type",
+		"subpath": ".",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
+		"name": "ShareDecodeOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
+		"name": "ShareEncodeOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
+		"name": "ShareEnvelope",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
+		"name": "ShareFailure",
+		"kind": "type",
+		"subpath": ".",
+		"declaringModule": "core/ShareLink.d.ts"
 	},
 	{
 		"name": "sharpenText",
@@ -5364,6 +5436,18 @@
 		"declaringModule": "audio/DecoderGuard.d.ts"
 	},
 	{
+		"name": "AUDIO_FORMATS",
+		"kind": "const",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioExport.d.ts"
+	},
+	{
+		"name": "AUDIO_SETTINGS_KEYS",
+		"kind": "const",
+		"subpath": "./audio",
+		"declaringModule": "audio/Settings.d.ts"
+	},
+	{
 		"name": "AudioBus",
 		"kind": "class",
 		"subpath": "./audio",
@@ -5398,6 +5482,18 @@
 		"kind": "interface",
 		"subpath": "./audio",
 		"declaringModule": "audio/CoreHost.d.ts"
+	},
+	{
+		"name": "AudioExport",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioExport.d.ts"
+	},
+	{
+		"name": "AudioExportOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioExport.d.ts"
 	},
 	{
 		"name": "AudioFalloff",
@@ -5454,10 +5550,58 @@
 		"declaringModule": "audio/Settings.d.ts"
 	},
 	{
+		"name": "AudioSettingsRow",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/Settings.d.ts"
+	},
+	{
+		"name": "audioSettingsRows",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Settings.d.ts"
+	},
+	{
 		"name": "AudioUnderrun",
 		"kind": "interface",
 		"subpath": "./audio",
 		"declaringModule": "audio/Underrun.d.ts"
+	},
+	{
+		"name": "auditEngines",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Audit.d.ts"
+	},
+	{
+		"name": "AuditFinding",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Audit.d.ts"
+	},
+	{
+		"name": "AuditKind",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/Audit.d.ts"
+	},
+	{
+		"name": "AuditOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Audit.d.ts"
+	},
+	{
+		"name": "AuditReport",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Audit.d.ts"
+	},
+	{
+		"name": "benchEngine",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Audit.d.ts"
 	},
 	{
 		"name": "BlockSource",
@@ -5640,8 +5784,26 @@
 		"declaringModule": "audio/SampleCodec.d.ts"
 	},
 	{
+		"name": "downloadSaver",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioExport.d.ts"
+	},
+	{
 		"name": "dx7PatchNames",
 		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/SyxBank.d.ts"
+	},
+	{
+		"name": "dx7VoiceInfo",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/SyxBank.d.ts"
+	},
+	{
+		"name": "Dx7VoiceInfo",
+		"kind": "interface",
 		"subpath": "./audio",
 		"declaringModule": "audio/SyxBank.d.ts"
 	},
@@ -5668,6 +5830,54 @@
 		"kind": "function",
 		"subpath": "./audio",
 		"declaringModule": "audio/Wav.d.ts"
+	},
+	{
+		"name": "EngineBenchmark",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Audit.d.ts"
+	},
+	{
+		"name": "estimateExportBytes",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioExport.d.ts"
+	},
+	{
+		"name": "ExportEncoder",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioExport.d.ts"
+	},
+	{
+		"name": "ExportEncoderRequest",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioExport.d.ts"
+	},
+	{
+		"name": "ExportFormat",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioExport.d.ts"
+	},
+	{
+		"name": "ExportRequest",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioExport.d.ts"
+	},
+	{
+		"name": "exportTags",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioExport.d.ts"
+	},
+	{
+		"name": "ExportTooLargeError",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/AudioExport.d.ts"
 	},
 	{
 		"name": "fitToBudget",
@@ -5754,6 +5964,18 @@
 		"declaringModule": "audio/DecoderGuard.d.ts"
 	},
 	{
+		"name": "HostedMidi",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/HostedMidi.d.ts"
+	},
+	{
+		"name": "HostedMidiOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/HostedMidi.d.ts"
+	},
+	{
 		"name": "HumanizationOptions",
 		"kind": "interface",
 		"subpath": "./audio",
@@ -5806,6 +6028,12 @@
 		"kind": "const",
 		"subpath": "./audio",
 		"declaringModule": "audio/MidiSynth.d.ts"
+	},
+	{
+		"name": "isOpusEncodingAvailable",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/OpusEncoder.d.ts"
 	},
 	{
 		"name": "LiteHumanizer",
@@ -6000,6 +6228,18 @@
 		"declaringModule": "audio/Midi.d.ts"
 	},
 	{
+		"name": "oggOpus",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/OpusEncoder.d.ts"
+	},
+	{
+		"name": "OggOpusOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/OpusEncoder.d.ts"
+	},
+	{
 		"name": "onAudioUnderrun",
 		"kind": "const",
 		"subpath": "./audio",
@@ -6028,6 +6268,18 @@
 		"kind": "interface",
 		"subpath": "./audio",
 		"declaringModule": "audio/Orchestrator.d.ts"
+	},
+	{
+		"name": "OutputRecorder",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/Recorder.d.ts"
+	},
+	{
+		"name": "OutputRecorderOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Recorder.d.ts"
 	},
 	{
 		"name": "OutputStage",
@@ -6060,6 +6312,12 @@
 		"declaringModule": "audio/Playable.d.ts"
 	},
 	{
+		"name": "playMidiHosted",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/HostedMidi.d.ts"
+	},
+	{
 		"name": "playTone",
 		"kind": "function",
 		"subpath": "./audio",
@@ -6070,6 +6328,24 @@
 		"kind": "interface",
 		"subpath": "./audio",
 		"declaringModule": "audio/Positional.d.ts"
+	},
+	{
+		"name": "Quantize",
+		"kind": "type",
+		"subpath": "./audio",
+		"declaringModule": "audio/AdaptiveMusic.d.ts"
+	},
+	{
+		"name": "readSyx",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/SyxBank.d.ts"
+	},
+	{
+		"name": "Recording",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/Recorder.d.ts"
 	},
 	{
 		"name": "regionPlaybackRate",
@@ -6138,6 +6414,12 @@
 		"declaringModule": "audio/MidiSynth.d.ts"
 	},
 	{
+		"name": "reportUnderruns",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/HostedMidi.d.ts"
+	},
+	{
 		"name": "requestWebMidiInput",
 		"kind": "function",
 		"subpath": "./audio",
@@ -6202,6 +6484,12 @@
 		"kind": "function",
 		"subpath": "./audio",
 		"declaringModule": "audio/Midi.d.ts"
+	},
+	{
+		"name": "sendMidiToHost",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/HostedMidi.d.ts"
 	},
 	{
 		"name": "SfxArbiter",
@@ -6456,6 +6744,18 @@
 		"declaringModule": "audio/SyxBank.d.ts"
 	},
 	{
+		"name": "SyxPatchFinding",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/SyxBank.d.ts"
+	},
+	{
+		"name": "SyxSkip",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/SyxBank.d.ts"
+	},
+	{
 		"name": "TimedMidiMessage",
 		"kind": "interface",
 		"subpath": "./audio",
@@ -6510,6 +6810,18 @@
 		"declaringModule": "audio/AudioViews.d.ts"
 	},
 	{
+		"name": "UnderrunReportOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/HostedMidi.d.ts"
+	},
+	{
+		"name": "UnderrunSink",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/HostedMidi.d.ts"
+	},
+	{
 		"name": "unregisterMidiSynth",
 		"kind": "function",
 		"subpath": "./audio",
@@ -6556,6 +6868,12 @@
 		"kind": "function",
 		"subpath": "./audio",
 		"declaringModule": "audio/SampleDecoder.d.ts"
+	},
+	{
+		"name": "webCodecsOpusEncoder",
+		"kind": "const",
+		"subpath": "./audio",
+		"declaringModule": "audio/OpusEncoder.d.ts"
 	},
 	{
 		"name": "WebMidiAccess",
@@ -7632,6 +7950,12 @@
 		"declaringModule": "core/ActionJournal.d.ts"
 	},
 	{
+		"name": "bisectShareLink",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
 		"name": "Blob",
 		"kind": "class",
 		"subpath": "./core",
@@ -7764,6 +8088,12 @@
 		"declaringModule": "core/Collection.d.ts"
 	},
 	{
+		"name": "decodeShareLink",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
 		"name": "defaultSettings",
 		"kind": "function",
 		"subpath": "./core",
@@ -7806,6 +8136,12 @@
 		"declaringModule": "core/ReplayFile.d.ts"
 	},
 	{
+		"name": "dropByPriority",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
 		"name": "Easing",
 		"kind": "const",
 		"subpath": "./core",
@@ -7822,6 +8158,12 @@
 		"kind": "function",
 		"subpath": "./core",
 		"declaringModule": "core/Settings.d.ts"
+	},
+	{
+		"name": "encodeShareLink",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/ShareLink.d.ts"
 	},
 	{
 		"name": "EntityId",
@@ -7870,6 +8212,18 @@
 		"kind": "interface",
 		"subpath": "./core",
 		"declaringModule": "core/Feedback.d.ts"
+	},
+	{
+		"name": "fitShareLink",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
+		"name": "FittedShareLink",
+		"kind": "interface",
+		"subpath": "./core",
+		"declaringModule": "core/ShareLink.d.ts"
 	},
 	{
 		"name": "FixedStepper",
@@ -8500,6 +8854,36 @@
 		"kind": "interface",
 		"subpath": "./core",
 		"declaringModule": "core/Settings.d.ts"
+	},
+	{
+		"name": "ShareDecoded",
+		"kind": "type",
+		"subpath": "./core",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
+		"name": "ShareDecodeOptions",
+		"kind": "interface",
+		"subpath": "./core",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
+		"name": "ShareEncodeOptions",
+		"kind": "interface",
+		"subpath": "./core",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
+		"name": "ShareEnvelope",
+		"kind": "interface",
+		"subpath": "./core",
+		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
+		"name": "ShareFailure",
+		"kind": "type",
+		"subpath": "./core",
+		"declaringModule": "core/ShareLink.d.ts"
 	},
 	{
 		"name": "Signal",
@@ -9220,6 +9604,60 @@
 		"kind": "function",
 		"subpath": "./i18n",
 		"declaringModule": "i18n/Validate.d.ts"
+	},
+	{
+		"name": "composeMusic",
+		"kind": "function",
+		"subpath": "./music",
+		"declaringModule": "music/Compose.d.ts"
+	},
+	{
+		"name": "composeStates",
+		"kind": "function",
+		"subpath": "./music",
+		"declaringModule": "music/Compose.d.ts"
+	},
+	{
+		"name": "GeneratedMusic",
+		"kind": "interface",
+		"subpath": "./music",
+		"declaringModule": "music/Compose.d.ts"
+	},
+	{
+		"name": "maxPolyphony",
+		"kind": "function",
+		"subpath": "./music",
+		"declaringModule": "music/Compose.d.ts"
+	},
+	{
+		"name": "MUSIC_GENERATOR_VERSION",
+		"kind": "const",
+		"subpath": "./music",
+		"declaringModule": "music/Compose.d.ts"
+	},
+	{
+		"name": "MUSIC_MOODS",
+		"kind": "const",
+		"subpath": "./music",
+		"declaringModule": "music/Compose.d.ts"
+	},
+	{
+		"name": "MusicMood",
+		"kind": "type",
+		"subpath": "./music",
+		"declaringModule": "music/Compose.d.ts"
+	},
+	{
+		"name": "MusicScene",
+		"kind": "interface",
+		"subpath": "./music",
+		"declaringModule": "music/Compose.d.ts"
+	},
+	{
+		"name": "normalizeScene",
+		"kind": "function",
+		"subpath": "./music",
+		"declaringModule": "music/Compose.d.ts"
 	},
 	{
 		"name": "AiHook",

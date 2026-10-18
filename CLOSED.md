@@ -6275,3 +6275,94 @@ example already draws.
   cores of the per-channel oscilloscope and tracker views (`waveformEnvelope`,
   `channelEnvelopes`, `trackerPattern`). The drop target and the drawing are the game's
   own widgets over those cores, the way every view in the framework is drawn.
+448. **Share links** (2026-10-18). `core/ShareLink`: an envelope in the URL fragment (`#mwg:`,
+  never sent to a server) of content type, `id@version` and a JSON payload, deflated and base64url
+  with a 2 to 4 byte CRC-32 prefix, 2000 characters by default and 4093 at most. Reading is bounded
+  and total: link length, inflated size, a `reason` (`checksum`, `too-big`, `version`, `refused`,
+  `schema`...) instead of an exception, nothing executed. `fitShareLink` + `dropByPriority` drop the
+  least important field first and report how many went; `bisectShareLink` keeps the most notes that
+  fit. Tests cover the round trip, a link cut at every character, a decompression bomb inside the
+  budget and a hostile schema. Applying a link after the player confirms stays the game's.
+  `mwg-audio share make|read` is the command line over it.
+451. **Generated game music** (2026-10-18). `music`: `composeMusic(scene)` turns a plain-data
+  scene (mood, tension, key, seed, bars, voices) into a playable `MidiFile` the same way every time
+  (seeds mixed as `sfxSeed` does, `MUSIC_GENERATOR_VERSION` to tell a save when output changed);
+  `composeStates` makes one piece per game state with a shared key, tempo and length so
+  `AdaptiveMusic` can switch on a bar line; the `voices` limit is kept by writing fewer layers, never
+  by cutting a note, and `maxPolyphony` measures it (tested for every mood, tension and count up to
+  8). The notes are in key and the structure is sound, but nobody has listened to the result: it
+  is the listening protocol's job to say whether it is pleasant, and the first consumer's to ask for
+  more moods or shapes.
+452. **Bar-quantised adaptive music** (2026-10-18). `AdaptiveMusic.load(..., { barSeconds })`, then
+  `setLevel(..., 'bar')` and `switchVersion(..., 'bar')` start the fade or the crossfade at the next
+  bar line of the version that sounds, carrying the frame of that line. Without `barSeconds`,
+  `'bar'` throws by name.
+454. **`mwg-audio audit`** (2026-10-18). `auditEngines` renders calibration notes through named
+  engines and flags a fallback, a failure, silence, clipping, a DC offset and a partial that is no
+  harmonic of the note; the command exits 1 when anything is flagged. Tested with synthetic
+  engines that are each broken one way. It is a screen, not a verdict: the package's own audit found
+  five defects by ear and hand, and this is where the next ones would be caught before a listener.
+455. **Audio accessibility rows** (2026-10-18). The settings (soften, dynamics, captions) already
+  existed in `AudioSettings`; what was missing was the screen. `audioSettingsRows` gives the rows
+  for `SettingsScreen`'s `custom` option and `AudioSettings.restoreFromCustom` reads them back.
+456. **A support line in generated credits** (2026-10-18). `generateCredits(documents, { support })`
+  appends a "Take part in the project" block, off unless the game passes it, `http`/`https` only.
+  The repository's own sponsorship is the funding metadata (`.github/FUNDING.yml`, `funding` in
+  the package and alias `package.json`) and a "Support" link in the website header.
+447. **Audio export** (2026-10-18). `AudioExport`: WAV built in, FLAC and Opus through injected
+  `ExportEncoder`s, the formats this device offers (`formats()`, Opus hidden where
+  `opusAvailable()` is false), a size check before encoding, default tags (`exportTags`), an
+  `AbortSignal`, a saver (`downloadSaver`) and `inWorker` for self-contained encoders on a
+  `threads.spawn` worker with the main thread as fallback. Opus without a dependency: `oggOpus`
+  writes the Ogg Opus container (CRC-checked pages, a last granule trimmed to the exact length;
+  decoded cleanly by ffmpeg) and `webCodecsOpusEncoder` feeds it from a WebCodecs `AudioEncoder`
+  (tested against a stand-in, since Node has none). `OutputRecorder` and `AudioBus.record()` capture
+  what the bus plays into plain frames through a silent script processor, bounded by `maxSeconds`.
+  `mwg-audio convert` writes `.flac` and `.opus` with `--encoder <module>` or `--encoder ffmpeg`
+  (developer machine only). Not done, because it needs devices: trying Opus on Safari, Firefox and
+  the Android and iOS WebViews.
+450. **Patch banks, as far as mwg goes** (2026-10-18). `readSyx` and `SyxBank.skipped` (a tolerant read that
+  says what it left out), the patch `id` (`source#slot@fingerprint`), DX7 voice metadata (`dx7VoiceInfo`:
+  algorithm, feedback, LFO wave, transposition), `SyxBank.audit` (a control render of every patch, each
+  selected by a program change, flagging silent and clipping ones), `verifyPackage({ shared })` and `mwl
+  pack --share` (a synth-patch needs a licence) and the `inspectPatch` hook, through which an instrument's own
+  parser reports what only it knows. Decided: a patch that depends on a wave the model does not render is
+  accepted with a warning, never refused; listening verdicts are plain rows keyed by the patch id that an
+  author keeps where they like, the repository holding only the reference list of ids. What waits on the
+  package is in [ROADMAP.md](ROADMAP.md) (457, 458).
+453. **The off-main-thread host, proven on the package's engines** (2026-10-18). `playMidiHosted`/`sendMidiToHost`,
+  `AudioCoreHost.start` and `events`, `reportUnderruns`, and `mwg-audio bench` (`benchEngine`). Measured with
+  the package's own engines on this machine, 16 held voices at 44.1 kHz: `retro:m1` 0.18x real time over ten
+  minutes (0.30x over 30 s), `retro:d50` 0.86x over ten minutes but 1.41x over 30 s (the two disagree by 60 %,
+  cause not established), so the D-50 does not keep a frame its room on the main thread. The host was run
+  with the package's bundled engines through the new `factorySource` option: DX7, MT-32 and D-50 came out
+  identical to a direct render sample for sample, with no underrun, D-50 at 16 voices for 30 s included.
+  Two defects of mwg's own found on the way and fixed: blocks asked for before a reset arrived after it and
+  played as silence (every block now carries an epoch), and a host that rendered silence before the piece
+  started made MT-32 and D-50 differ from a direct render because their `reset()` keeps noise or phase state
+  (`prefetch: false`, which `playMidiHosted` uses; the package's `reset()` is recorded in its own
+  requirements document). The benchmark itself had a bug on long runs: the render drops messages past its
+  480 s cap, so the note-offs of a ten-minute run were lost (the bench raises the cap).
+449. **Instruction budgets and output limits in the retro-audio players** (2026-10-18). Item 434 had left
+  the NSF, PSID and SPC players without a limit on the work a file may ask for. The package now takes a
+  `budget` option (`InstructionSpender`, a `spend(count)` that throws) in `LoadOptions`: the NSF and PSID
+  players charge the instructions each init, play or IRQ routine ran (each already bounded in cycles), the SPC
+  player charges them per output sample, and a charge that overruns fails with mwg's `DecodeBudgetError`
+  (`maxInstructionsPerSecond`) because mwg's `InstructionBudget` has that shape and the package imports
+  nothing of mwg's. Checked with the real `InstructionBudget` against an NSF that never returns. The
+  package's readers also had no cap: `inflateRaw`, `gunzip`, `unzlib` and `unlha` now stop at
+  `DEFAULT_MAX_OUTPUT` (64 MiB, mwg's default) and an LHA header or gzip trailer that claims gigabytes
+  allocates nothing (an 8 MiB zero DEFLATE bomb of under 20 KB, a gzip trailer claiming 4 GiB and an LHA
+  header claiming 4 GiB are tests). Done in the package's working tree, not yet committed there.
+457. **Bundled cores from the package** (2026-10-18). The package ships `retroCoreSource(name)` and
+  `retroCoreNames` (96 files, one per engine, built with its own esbuild, no import, eval, WebAssembly or DOM).
+  `tools/check-retro-cores.mjs` plays the same held chord through `AudioCoreHost` on a worker from each core's
+  text and through a direct render of the engine and requires them identical sample for sample, with no
+  underrun: all 48 engines of the catalogue pass, with and without a pre-rendered second of silence, which
+  the package's corrected `reset()` now allows.
+458. **D-50 patch metadata and unrendered waves** (2026-10-18). The package's `inspectD50Patch` returns the
+  `{ warnings, errors }` of `verifyPackage({ inspectPatch })`: a patch that uses the PCM waves 77-100 is
+  played with a stand-in and reported as a warning, never refused. Run end to end through `verifyPackage` on
+  the package's six real D-50 banks (64 patches each): the package stays valid and the warnings name the patches
+  and waves, for instance 10 of 64 in one bank. The patch identity, the DX7 metadata (`dx7VoiceInfo`) and
+  the control render (`SyxBank.audit`) were already in mwg.

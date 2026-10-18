@@ -45,6 +45,15 @@ export class FakeAudioContext {
 		return new FakeGain();
 	}
 
+	/** every script processor made, in order */
+	readonly processors: FakeScriptProcessor[] = [];
+
+	createScriptProcessor(bufferSize: number): FakeScriptProcessor {
+		const processor = new FakeScriptProcessor(bufferSize);
+		this.processors.push(processor);
+		return processor;
+	}
+
 	createStereoPanner(): { pan: { value: number }; connect(): void } {
 		return { pan: { value: 0 }, connect(): void {} };
 	}
@@ -146,7 +155,48 @@ export class FakeGain {
 		},
 	};
 
-	connect(): void {}
+	/** every node this one was connected to, so a test can tell a tap was wired */
+	readonly connections: unknown[] = [];
+
+	connect(target?: unknown): void {
+		if (target !== undefined) this.connections.push(target);
+	}
+
+	disconnect(target?: unknown): void {
+		const at = this.connections.indexOf(target);
+		if (at !== -1) this.connections.splice(at, 1);
+	}
+}
+
+/**
+ * A script processor double: a test calls `emit` with the blocks the browser would have delivered,
+ * and the recorder under test reads them through `onaudioprocess` as it would from a real node.
+ */
+export class FakeScriptProcessor {
+	readonly bufferSize: number;
+	onaudioprocess: ((event: { inputBuffer: FakeBuffer }) => void) | null = null;
+	connected = false;
+	disconnected = false;
+
+	constructor(bufferSize: number) {
+		this.bufferSize = bufferSize;
+	}
+
+	connect(): void {
+		this.connected = true;
+	}
+
+	disconnect(): void {
+		this.disconnected = true;
+	}
+
+	/** delivers one block of stereo input */
+	emit(left: Float32Array, right: Float32Array, sampleRate = 8000): void {
+		const buffer = new FakeBuffer(2, left.length, sampleRate);
+		buffer.getChannelData(0).set(left);
+		buffer.getChannelData(1).set(right);
+		this.onaudioprocess?.({ inputBuffer: buffer });
+	}
 }
 
 export interface FakeBlockSourceOptions {

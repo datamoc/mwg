@@ -27,6 +27,77 @@ export interface AudioSettingsData {
 }
 
 /**
+ * The `core.Settings` custom keys the audio rows use; sliders hold percent, 0 to 100.
+ *
+ * @example
+ * ```ts
+ * import { AUDIO_SETTINGS_KEYS } from '@datamoc/mwg/audio';
+ * import { Settings } from '@datamoc/mwg/core';
+ *
+ * declare const settings: Settings;
+ *
+ * settings.setCustom(AUDIO_SETTINGS_KEYS.soften, 40); // 40 percent
+ * ```
+ */
+export const AUDIO_SETTINGS_KEYS = {
+	soften: 'audio.soften',
+	dynamics: 'audio.dynamics',
+	captions: 'audio.captions',
+	outputStage: 'audio.outputStage',
+	region: 'audio.region',
+} as const;
+
+/** one row of a settings screen, in the same shape as `two-d/ui`'s `SettingsCustomRow` */
+export type AudioSettingsRow =
+	| { kind: 'boolean'; key: string; label: string }
+	| { kind: 'number'; key: string; label: string; min: number; max: number; step?: number }
+	| { kind: 'choice'; key: string; label: string; options: readonly [string, ...string[]] };
+
+/**
+ * The accessibility and fidelity rows a player-facing settings screen shows: softening of bright
+ * and broadband sounds, loudness dynamics, caption text, the output stage and the region. Pass them
+ * as the `custom` option of `SettingsScreen`, and read the answers back with
+ * `AudioSettings.restoreFromCustom(settings.snapshot().custom)`. Labels are English defaults.
+ *
+ * @example
+ * ```ts
+ * import { audioSettingsRows } from '@datamoc/mwg/audio';
+ *
+ * console.log(audioSettingsRows().map((row) => row.key)); // ['audio.soften', 'audio.dynamics', ...]
+ * ```
+ */
+export function audioSettingsRows(
+	labels: Partial<Record<keyof typeof AUDIO_SETTINGS_KEYS, string>> = {},
+): AudioSettingsRow[] {
+	return [
+		{
+			kind: 'number',
+			key: AUDIO_SETTINGS_KEYS.soften,
+			label: labels.soften ?? 'Soften bright sounds',
+			min: 0,
+			max: 100,
+			step: 5,
+		},
+		{
+			kind: 'number',
+			key: AUDIO_SETTINGS_KEYS.dynamics,
+			label: labels.dynamics ?? 'Even out loudness',
+			min: 0,
+			max: 100,
+			step: 5,
+		},
+		{ kind: 'boolean', key: AUDIO_SETTINGS_KEYS.captions, label: labels.captions ?? 'Sound captions' },
+		{
+			kind: 'choice',
+			key: AUDIO_SETTINGS_KEYS.outputStage,
+			label: labels.outputStage ?? 'Output',
+			options: ['faithful', 'clean'],
+		},
+		{ kind: 'choice', key: AUDIO_SETTINGS_KEYS.region, label: labels.region ?? 'Region', options: ['ntsc', 'pal'] },
+	];
+}
+
+/**
  * The playback rate a tune authored for one region runs at on the other: a PAL machine's
  * 50 Hz clock against NTSC's 60 Hz makes the same file slower and lower, which is the
  * difference a player who grew up with the other standard hears first.
@@ -137,6 +208,26 @@ export class AudioSettings {
 
 	setBusVolume(kind: BusKind, volume: number): void {
 		this.data.busVolumes[kind] = clamp(volume, 0, 100);
+	}
+
+	/**
+	 * takes the audio keys of a `core.Settings` custom bag in (see `audioSettingsRows`), so the
+	 * sliders a `SettingsScreen` shows are the dials this class reads; keys that are absent or of
+	 * the wrong kind leave the current value alone
+	 */
+	restoreFromCustom(custom: Readonly<Record<string, string | number | boolean>>): void {
+		const patch: Partial<AudioSettingsData> = {};
+		const dynamics = custom[AUDIO_SETTINGS_KEYS.dynamics];
+		const soften = custom[AUDIO_SETTINGS_KEYS.soften];
+		const captions = custom[AUDIO_SETTINGS_KEYS.captions];
+		const outputStage = custom[AUDIO_SETTINGS_KEYS.outputStage];
+		const region = custom[AUDIO_SETTINGS_KEYS.region];
+		if (typeof dynamics === 'number') patch.dynamics = dynamics / 100;
+		if (typeof soften === 'number') patch.soften = soften / 100;
+		if (typeof captions === 'boolean') patch.captions = captions;
+		if (outputStage === 'faithful' || outputStage === 'clean') patch.outputStage = outputStage;
+		if (region === 'pal' || region === 'ntsc') patch.region = region;
+		this.restore(patch);
 	}
 
 	/** pushes the per-bus volumes onto a bus's mixer, the settings' one live connection */

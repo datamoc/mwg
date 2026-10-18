@@ -9,6 +9,7 @@ import { publicPathMap } from './helpers/publicPaths.ts';
 import * as core from '../src/core/index.ts';
 import * as assets from '../src/assets/index.ts';
 import * as audio from '../src/audio/index.ts';
+import * as music from '../src/music/index.ts';
 import * as battle from '../src/battle/index.ts';
 import * as board from '../src/board/index.ts';
 import * as actors from '../src/actors/index.ts';
@@ -59,6 +60,7 @@ const MODULES: Record<string, Record<string, unknown>> = {
 	core,
 	assets,
 	audio,
+	music,
 	battle,
 	board,
 	actors,

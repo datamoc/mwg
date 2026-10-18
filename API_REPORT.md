@@ -486,6 +486,11 @@ build instead.
         anchor?: number;
     }
 
+### `bisectShareLink` (function)
+
+    export declare function bisectShareLink<T>(type: string, id: string, items: readonly T[], build: (kept: readonly T[], truncated: boolean) => unknown, options?: ShareEncodeOptions): Promise<{
+        link: string;
+
 ### `BitmapLabel` (class)
 
     export declare class BitmapLabel extends BitmapText {
@@ -1183,6 +1188,10 @@ build instead.
         [field: string]: unknown;
     }
 
+### `decodeShareLink` (function)
+
+    export declare function decodeShareLink<T = unknown>(link: string, options?: ShareDecodeOptions<T>): Promise<ShareDecoded<T>>;
+
 ### `defaultSettings` (function)
 
     export declare function defaultSettings(): GameSettings;
@@ -1314,6 +1323,10 @@ build instead.
 
     export declare function downloadReplayFile(json: string, filename: string): void;
 
+### `dropByPriority` (function)
+
+    export declare function dropByPriority(record: Readonly<Record<string, unknown>>, priority: readonly string[]): Record<string, unknown>[];
+
 ### `Dropdown` (class)
 
     export declare class Dropdown {
@@ -1444,6 +1457,10 @@ build instead.
 
     export declare const EMPTY = -1;
 
+### `encodeShareLink` (function)
+
+    export declare function encodeShareLink(envelope: ShareEnvelope, options?: ShareEncodeOptions): Promise<string>;
+
 ### `EntityId` (type)
 
     export type EntityId = string;
@@ -1506,6 +1523,18 @@ build instead.
     export interface FeedbackResponse {
         ok: boolean;
         status: number;
+    }
+
+### `fitShareLink` (function)
+
+    export declare function fitShareLink(type: string, id: string, candidates: readonly unknown[], options?: ShareEncodeOptions): Promise<FittedShareLink>;
+
+### `FittedShareLink` (interface)
+
+    export interface FittedShareLink {
+        link: string;
+
+        reductions: number;
     }
 
 ### `fitWindowZoom` (function)
@@ -3470,6 +3499,10 @@ build instead.
         };
     }
 
+### `Music` (namespace)
+
+    export * as Music from './music/index.ts'
+
 ### `Mwl` (namespace)
 
     export * as Mwl from './mwl/index.ts'
@@ -5326,6 +5359,53 @@ build instead.
         dashedLine(x1: number, y1: number, x2: number, y2: number, dash?: number, gap?: number): this;
     }
 
+### `ShareDecoded` (type)
+
+    export type ShareDecoded<T> = {
+        ok: true;
+
+### `ShareDecodeOptions` (interface)
+
+    export interface ShareDecodeOptions<T> {
+
+        maxChars?: number;
+
+        maxPayloadBytes?: number;
+
+        accept?: (type: string, id: string) => boolean;
+
+        validate?: (payload: unknown, envelope: {
+            type: string;
+            id: string;
+        }) => T;
+    }
+
+### `ShareEncodeOptions` (interface)
+
+    export interface ShareEncodeOptions {
+
+        base?: string;
+
+        maxChars?: number;
+
+        checksumBytes?: 2 | 3 | 4;
+    }
+
+### `ShareEnvelope` (interface)
+
+    export interface ShareEnvelope {
+
+        type: string;
+
+        id: string;
+
+        payload: unknown;
+    }
+
+### `ShareFailure` (type)
+
+    export type ShareFailure = 'too-long' | 'malformed' | 'checksum' | 'version' | 'unsupported' | 'too-big' | 'refused' | 'schema';
+
 ### `sharpenText` (function)
 
     export declare function sharpenText(root: Container, devicePixelRatio: number): void;
@@ -7154,7 +7234,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.46.0";
+    export declare const version = "0.47.0";
 
 ### `VerticalLabel` (class)
 
@@ -9368,6 +9448,8 @@ build instead.
         groups?: Readonly<Record<string, readonly string[]>>;
 
         loop?: LoopRegion | null;
+
+        barSeconds?: number;
     }
 
 ### `AdaptiveMusic` (class)
@@ -9390,18 +9472,23 @@ build instead.
 
         play(options?: AdaptivePlayOptions): void;
 
-        setLevel(target: string, level: number, fadeSeconds?: number): void;
+        setLevel(target: string, level: number, fadeSeconds?: number, quantize?: Quantize): void;
 
         levels(): Record<string, number>;
 
         positionFrames(): number;
+
+        private frameAfter;
+
+        private secondsUntil;
         position(): number;
 
-        switchVersion(name: string, fadeSeconds?: number): void;
+        switchVersion(name: string, fadeSeconds?: number, quantize?: Quantize): void;
 
         stop(fadeSeconds?: number): void;
         private startVersion;
         private membersOf;
+
         private ramp;
         private stopAt;
     }
@@ -9434,6 +9521,16 @@ build instead.
     export declare function assertInputSize(input: {
         byteLength: number;
 
+### `AUDIO_FORMATS` (const)
+
+    export declare const AUDIO_FORMATS: Readonly<Record<ExportFormat, {
+        extension: string;
+
+### `AUDIO_SETTINGS_KEYS` (const)
+
+    export declare const AUDIO_SETTINGS_KEYS: {
+        readonly soften: 'audio.soften';
+
 ### `AudioBus` (class)
 
     export declare class AudioBus {
@@ -9458,6 +9555,8 @@ build instead.
         private readonly mixerLevels;
         private readonly kindGains;
         constructor(context: AudioContext, options?: AudioBusOptions);
+
+        record(options?: OutputRecorderOptions): OutputRecorder;
 
         streamChannel(kind: 'bgm' | 'bgs'): StreamChannel;
 
@@ -9545,6 +9644,7 @@ build instead.
         private disposed;
         private readFrame;
         private requestedUntil;
+        private epoch;
         private blocks;
         private underruns;
         private load;
@@ -9554,9 +9654,15 @@ build instead.
         stats(): AudioCoreStats;
 
         event(status: number, data1: number, data2: number, atFrame?: number): void;
+
+        events(list: readonly TimedMessage[]): void;
+
+        start(list: readonly TimedMessage[]): void;
         sysex(bytes: Uint8Array, atFrame?: number): void;
 
         reset(): void;
+
+        private discard;
 
         seek(frame: number): void;
 
@@ -9577,12 +9683,16 @@ build instead.
 
     export interface AudioCoreHostOptions {
 
-        factory: (sampleRate: number) => AudioCore;
+        factory?: (sampleRate: number) => AudioCore;
+
+        factorySource?: string;
         sampleRate: number;
 
         mode?: 'auto' | 'worker' | 'inline';
 
         blockFrames?: number;
+
+        prefetch?: boolean;
 
         queueSeconds?: number;
     }
@@ -9598,6 +9708,39 @@ build instead.
         queuedFrames: number;
 
         load: number;
+    }
+
+### `AudioExport` (class)
+
+    export declare class AudioExport {
+        private readonly options;
+        constructor(options?: AudioExportOptions);
+
+        formats(): ExportFormat[];
+
+        export(frames: StereoFrames, request: ExportRequest): Promise<Uint8Array>;
+        private encodeInWorker;
+
+        exportBlob(frames: StereoFrames, request: ExportRequest): Promise<Blob>;
+
+        save(frames: StereoFrames, request: ExportRequest, name: string): Promise<string>;
+    }
+
+### `AudioExportOptions` (interface)
+
+    export interface AudioExportOptions {
+
+        encoders?: Partial<Record<Exclude<ExportFormat, 'wav'>, ExportEncoder>>;
+
+        inWorker?: boolean;
+
+        opusAvailable?: () => boolean;
+
+        maxBytes?: number;
+
+        defaultTags?: Readonly<Record<string, string>>;
+
+        saver?: (blob: Blob, filename: string) => void | Promise<void>;
     }
 
 ### `AudioFalloff` (interface)
@@ -9669,6 +9812,8 @@ build instead.
         restore(data: Partial<AudioSettingsData>): void;
         setBusVolume(kind: BusKind, volume: number): void;
 
+        restoreFromCustom(custom: Readonly<Record<string, string | number | boolean>>): void;
+
         applyToBus(bus: AudioBus): void;
 
         playbackRate(authored?: AudioRegion): number;
@@ -9695,6 +9840,15 @@ build instead.
         soften: number;
     }
 
+### `AudioSettingsRow` (type)
+
+    export type AudioSettingsRow = {
+        kind: 'boolean';
+
+### `audioSettingsRows` (function)
+
+    export declare function audioSettingsRows(labels?: Partial<Record<keyof typeof AUDIO_SETTINGS_KEYS, string>>): AudioSettingsRow[];
+
 ### `AudioUnderrun` (interface)
 
     export interface AudioUnderrun {
@@ -9703,6 +9857,58 @@ build instead.
 
         lateSeconds: number;
     }
+
+### `auditEngines` (function)
+
+    export declare function auditEngines(options: AuditOptions): AuditReport;
+
+### `AuditFinding` (interface)
+
+    export interface AuditFinding {
+        engine: string;
+        kind: AuditKind;
+
+        program?: number;
+        note?: number;
+        detail: string;
+    }
+
+### `AuditKind` (type)
+
+    export type AuditKind = 'fallback' | 'silent' | 'clipping' | 'pitch' | 'dc-offset' | 'failed';
+
+### `AuditOptions` (interface)
+
+    export interface AuditOptions {
+
+        engines: readonly string[];
+
+        programs?: readonly number[];
+
+        notes?: readonly number[];
+        sampleRate?: number;
+
+        unpitchedPrograms?: readonly number[];
+
+        silentBelow?: number;
+
+        clipFraction?: number;
+
+        toleranceCents?: number;
+    }
+
+### `AuditReport` (interface)
+
+    export interface AuditReport {
+
+        rendered: number;
+        findings: AuditFinding[];
+    }
+
+### `benchEngine` (function)
+
+    export declare function benchEngine(options: {
+        engine: string;
 
 ### `BlockSource` (interface)
 
@@ -9948,9 +10154,29 @@ build instead.
 
     export declare function detectSampleCodec(bytes: Uint8Array): SampleCodec;
 
+### `downloadSaver` (function)
+
+    export declare function downloadSaver(blob: Blob, filename: string): void;
+
 ### `dx7PatchNames` (function)
 
-    export declare function dx7PatchNames(bytes: Uint8Array): SyxPatch[];
+    export declare function dx7PatchNames(bytes: Uint8Array, source?: string): SyxPatch[];
+
+### `dx7VoiceInfo` (function)
+
+    export declare function dx7VoiceInfo(voice: Uint8Array): Dx7VoiceInfo;
+
+### `Dx7VoiceInfo` (interface)
+
+    export interface Dx7VoiceInfo {
+
+        algorithm: number;
+
+        feedback: number;
+        lfoWave: 'triangle' | 'saw down' | 'saw up' | 'square' | 'sine' | 'sample and hold';
+
+        transpose: number;
+    }
 
 ### `dynamicsLimit` (function)
 
@@ -9967,6 +10193,64 @@ build instead.
 ### `encodeWav` (function)
 
     export declare function encodeWav(frames: StereoFrames, format?: 'pcm16' | 'float32'): Uint8Array;
+
+### `EngineBenchmark` (interface)
+
+    export interface EngineBenchmark {
+        engine: string;
+        voices: number;
+
+        audioSeconds: number;
+
+        renderSeconds: number;
+
+        ratio: number;
+    }
+
+### `estimateExportBytes` (function)
+
+    export declare function estimateExportBytes(request: Pick<ExportRequest, 'format' | 'bitrate' | 'bitsPerSample'>, seconds: number, sampleRate: number): number;
+
+### `ExportEncoder` (type)
+
+    export type ExportEncoder = (frames: StereoFrames, request: ExportEncoderRequest) => Uint8Array | Promise<Uint8Array>;
+
+### `ExportEncoderRequest` (type)
+
+    export type ExportEncoderRequest = ExportRequest & {
+        tags: Readonly<Record<string, string>>;
+
+### `ExportFormat` (type)
+
+    export type ExportFormat = 'wav' | 'flac' | 'opus';
+
+### `ExportRequest` (interface)
+
+    export interface ExportRequest {
+        format: ExportFormat;
+
+        bitrate?: number;
+
+        bitsPerSample?: 16 | 24;
+
+        tags?: Readonly<Record<string, string>>;
+        signal?: AbortSignal;
+
+        onProgress?: (fraction: number) => void;
+    }
+
+### `exportTags` (function)
+
+    export declare function exportTags(info: {
+        game?: string;
+
+### `ExportTooLargeError` (class)
+
+    export declare class ExportTooLargeError extends Error {
+        readonly estimatedBytes: number;
+        readonly maxBytes: number;
+        constructor(estimatedBytes: number, maxBytes: number);
+    }
 
 ### `fitToBudget` (function)
 
@@ -10070,6 +10354,25 @@ build instead.
         now?: () => number;
     }
 
+### `HostedMidi` (interface)
+
+    export interface HostedMidi {
+        host: AudioCoreHost;
+
+        lastFrame: number;
+
+        stop(fadeSeconds?: number): void;
+    }
+
+### `HostedMidiOptions` (interface)
+
+    export interface HostedMidiOptions extends AudioCoreHostOptions {
+
+        channel: StreamChannel;
+
+        play?: StreamPlayOptions;
+    }
+
 ### `HumanizationOptions` (interface)
 
     export interface HumanizationOptions {
@@ -10134,6 +10437,10 @@ build instead.
 ### `INTERNAL_MIDI_ENGINES` (const)
 
     export declare const INTERNAL_MIDI_ENGINES: readonly string[];
+
+### `isOpusEncodingAvailable` (function)
+
+    export declare function isOpusEncodingAvailable(): boolean;
 
 ### `LiteHumanizer` (class)
 
@@ -10463,6 +10770,23 @@ build instead.
 
     export declare function noteToFrequency(note: number): number;
 
+### `oggOpus` (function)
+
+    export declare function oggOpus(packets: readonly Uint8Array[], options: OggOpusOptions): Uint8Array;
+
+### `OggOpusOptions` (interface)
+
+    export interface OggOpusOptions {
+
+        inputRate: number;
+
+        preSkip?: number;
+
+        totalSamples: number;
+
+        tags?: Readonly<Record<string, string>>;
+    }
+
 ### `onAudioUnderrun` (const)
 
     export declare const onAudioUnderrun: Signal<AudioUnderrun>;
@@ -10504,6 +10828,38 @@ build instead.
         fadeDuration?: number;
     }
 
+### `OutputRecorder` (class)
+
+    export declare class OutputRecorder {
+        private readonly processor;
+        private readonly inputs;
+        private readonly sampleRate;
+        private readonly maxFrames;
+        private readonly left;
+        private readonly right;
+        private frames;
+        private cut;
+        private done;
+        constructor(context: AudioContext, inputs: readonly AudioNode[], options?: OutputRecorderOptions);
+
+        get seconds(): number;
+
+        get finished(): boolean;
+        private collect;
+        private finish;
+
+        stop(): Recording;
+    }
+
+### `OutputRecorderOptions` (interface)
+
+    export interface OutputRecorderOptions {
+
+        maxSeconds?: number;
+
+        bufferSize?: number;
+    }
+
 ### `OutputStage` (type)
 
     export type OutputStage = 'faithful' | 'clean';
@@ -10534,6 +10890,10 @@ build instead.
         onended?: ((event: Event) => unknown) | null;
     }
 
+### `playMidiHosted` (function)
+
+    export declare function playMidiHosted(file: MidiFile, options: HostedMidiOptions): HostedMidi;
+
 ### `playTone` (function)
 
     export declare function playTone(options?: ToneOptions, create?: (dataUri: string) => Playable): Playable;
@@ -10542,6 +10902,21 @@ build instead.
 
     export interface PositionalSound {
         play(gain?: number, pitch?: number, pan?: number): unknown;
+    }
+
+### `Quantize` (type)
+
+    export type Quantize = 'now' | 'bar';
+
+### `readSyx` (function)
+
+    export declare function readSyx(bytes: Uint8Array): {
+        messages: Uint8Array[];
+
+### `Recording` (interface)
+
+    export interface Recording extends StereoFrames {
+        truncated: boolean;
     }
 
 ### `regionPlaybackRate` (function)
@@ -10646,6 +11021,11 @@ build instead.
         blockSize?: number;
     }
 
+### `reportUnderruns` (function)
+
+    export declare function reportUnderruns(sink: UnderrunSink, options?: UnderrunReportOptions): {
+        flush(): void;
+
 ### `requestWebMidiInput` (function)
 
     export declare function requestWebMidiInput(synth: MidiSynth): Promise<WebMidiConnection | null>;
@@ -10721,6 +11101,10 @@ build instead.
 ### `scheduleMidi` (function)
 
     export declare function scheduleMidi(file: MidiFile): ScheduledNote[];
+
+### `sendMidiToHost` (function)
+
+    export declare function sendMidiToHost(host: AudioCoreHost, file: MidiFile, startFrame?: number): number;
 
 ### `SfxArbiter` (class)
 
@@ -11210,7 +11594,15 @@ build instead.
         readonly messages: Uint8Array[];
 
         readonly patches: SyxPatch[];
-        constructor(bytes: Uint8Array);
+
+        readonly skipped: SyxSkip[];
+
+        constructor(bytes: Uint8Array, source?: string);
+
+        audit(synth: MidiSynth, options?: {
+            note?: number;
+            silentBelow?: number;
+        }): SyxPatchFinding[];
 
         audition(synth: MidiSynth, patch: SyxPatch, note?: number, seconds?: number): RenderedMidi;
     }
@@ -11218,11 +11610,33 @@ build instead.
 ### `SyxPatch` (interface)
 
     export interface SyxPatch {
+
+        id: string;
         name: string;
+
+        info?: Dx7VoiceInfo;
 
         message: number;
 
         voice: number;
+    }
+
+### `SyxPatchFinding` (interface)
+
+    export interface SyxPatchFinding {
+        patch: SyxPatch;
+        kind: 'silent' | 'clipping';
+        peak: number;
+    }
+
+### `SyxSkip` (interface)
+
+    export interface SyxSkip {
+        kind: 'leading-bytes' | 'unterminated' | 'bad-checksum' | 'unrecognised';
+
+        message?: number;
+
+        bytes: number;
     }
 
 ### `TimedMidiMessage` (interface)
@@ -11306,6 +11720,24 @@ build instead.
         notes: (string | null)[];
     }
 
+### `UnderrunReportOptions` (interface)
+
+    export interface UnderrunReportOptions {
+
+        minIntervalMs?: number;
+
+        now?: () => number;
+    }
+
+### `UnderrunSink` (interface)
+
+    export interface UnderrunSink {
+        send(event: {
+            name: string;
+            properties?: Record<string, string | number | boolean | null>;
+        }): Promise<unknown>;
+    }
+
 ### `unregisterMidiSynth` (function)
 
     export declare function unregisterMidiSynth(name: string): boolean;
@@ -11352,6 +11784,10 @@ build instead.
 ### `webAudioSampleDecoder` (function)
 
     export declare function webAudioSampleDecoder(create?: (rate: number) => SampleDecodingContext, limits?: SoundFontLimits): SoundFontSampleDecoder;
+
+### `webCodecsOpusEncoder` (const)
+
+    export declare const webCodecsOpusEncoder: ExportEncoder;
 
 ### `WebMidiAccess` (interface)
 
@@ -12725,6 +13161,11 @@ build instead.
         readonly events: readonly Event[];
     }
 
+### `bisectShareLink` (function)
+
+    export declare function bisectShareLink<T>(type: string, id: string, items: readonly T[], build: (kept: readonly T[], truncated: boolean) => unknown, options?: ShareEncodeOptions): Promise<{
+        link: string;
+
 ### `Blob` (class)
 
     export declare class Blob {
@@ -12906,6 +13347,10 @@ build instead.
         [field: string]: unknown;
     }
 
+### `decodeShareLink` (function)
+
+    export declare function decodeShareLink<T = unknown>(link: string, options?: ShareDecodeOptions<T>): Promise<ShareDecoded<T>>;
+
 ### `defaultSettings` (function)
 
     export declare function defaultSettings(): GameSettings;
@@ -12938,6 +13383,10 @@ build instead.
 
     export declare function downloadReplayFile(json: string, filename: string): void;
 
+### `dropByPriority` (function)
+
+    export declare function dropByPriority(record: Readonly<Record<string, unknown>>, priority: readonly string[]): Record<string, unknown>[];
+
 ### `Easing` (const)
 
     export declare const Easing: Record<'linear' | 'easeInQuad' | 'easeOutQuad' | 'easeInOutQuad' | 'easeInCubic' | 'easeOutCubic' | 'easeInOutCubic', Easing>;
@@ -12949,6 +13398,10 @@ build instead.
 ### `effectiveSfxVolume` (function)
 
     export declare function effectiveSfxVolume(settings: Pick<GameSettings, 'sfxVolume' | 'muted'>): number;
+
+### `encodeShareLink` (function)
+
+    export declare function encodeShareLink(envelope: ShareEnvelope, options?: ShareEncodeOptions): Promise<string>;
 
 ### `EntityId` (type)
 
@@ -13003,6 +13456,18 @@ build instead.
     export interface FeedbackResponse {
         ok: boolean;
         status: number;
+    }
+
+### `fitShareLink` (function)
+
+    export declare function fitShareLink(type: string, id: string, candidates: readonly unknown[], options?: ShareEncodeOptions): Promise<FittedShareLink>;
+
+### `FittedShareLink` (interface)
+
+    export interface FittedShareLink {
+        link: string;
+
+        reductions: number;
     }
 
 ### `FixedStepper` (class)
@@ -14076,6 +14541,53 @@ build instead.
         storage?: SaveStorage;
     }
 
+### `ShareDecoded` (type)
+
+    export type ShareDecoded<T> = {
+        ok: true;
+
+### `ShareDecodeOptions` (interface)
+
+    export interface ShareDecodeOptions<T> {
+
+        maxChars?: number;
+
+        maxPayloadBytes?: number;
+
+        accept?: (type: string, id: string) => boolean;
+
+        validate?: (payload: unknown, envelope: {
+            type: string;
+            id: string;
+        }) => T;
+    }
+
+### `ShareEncodeOptions` (interface)
+
+    export interface ShareEncodeOptions {
+
+        base?: string;
+
+        maxChars?: number;
+
+        checksumBytes?: 2 | 3 | 4;
+    }
+
+### `ShareEnvelope` (interface)
+
+    export interface ShareEnvelope {
+
+        type: string;
+
+        id: string;
+
+        payload: unknown;
+    }
+
+### `ShareFailure` (type)
+
+    export type ShareFailure = 'too-long' | 'malformed' | 'checksum' | 'version' | 'unsupported' | 'too-big' | 'refused' | 'schema';
+
 ### `Signal` (class)
 
     export declare class Signal<T> {
@@ -14867,6 +15379,71 @@ build instead.
 
     export declare function validateMessageAudio(catalog: Catalog): AudioIssue[];
 
+## `./music`
+
+### `composeMusic` (function)
+
+    export declare function composeMusic(input: Partial<MusicScene> & {
+        id: string;
+
+### `composeStates` (function)
+
+    export declare function composeStates(base: Partial<MusicScene> & {
+        id: string;
+
+### `GeneratedMusic` (interface)
+
+    export interface GeneratedMusic {
+        file: MidiFile;
+        scene: MusicScene;
+        bars: number;
+        tempo: number;
+
+        barSeconds: number;
+
+        polyphony: number;
+    }
+
+### `maxPolyphony` (function)
+
+    export declare function maxPolyphony(file: MidiFile): number;
+
+### `MUSIC_GENERATOR_VERSION` (const)
+
+    export declare const MUSIC_GENERATOR_VERSION = 1;
+
+### `MUSIC_MOODS` (const)
+
+    export declare const MUSIC_MOODS: readonly MusicMood[];
+
+### `MusicMood` (type)
+
+    export type MusicMood = 'calm' | 'sad' | 'tense' | 'mysterious' | 'triumphant';
+
+### `MusicScene` (interface)
+
+    export interface MusicScene {
+
+        id: string;
+        seed: number;
+        mood: MusicMood;
+
+        tension: number;
+
+        key: number;
+
+        bars: number;
+
+        voices: number;
+
+        tempo?: number;
+    }
+
+### `normalizeScene` (function)
+
+    export declare function normalizeScene(raw: Partial<MusicScene> & {
+        id: string;
+
 ## `./mwl`
 
 ### `AiHook` (type)
@@ -15063,7 +15640,9 @@ build instead.
 
 ### `generateCredits` (function)
 
-    export declare function generateCredits(documents: readonly PackageDocument[]): string;
+    export declare function generateCredits(documents: readonly PackageDocument[], options?: {
+        support?: {
+            url: string;
 
 ### `GeneratorHook` (type)
 
@@ -16567,6 +17146,16 @@ build instead.
         readonly limits?: Partial<PackageLimits>;
 
         readonly policy?: PackagePolicy;
+
+        readonly shared?: boolean;
+
+        readonly inspectPatch?: (bytes: Uint8Array, asset: {
+            readonly id: string;
+            readonly path: string;
+        }) => {
+            readonly warnings?: readonly string[];
+            readonly errors?: readonly string[];
+        } | void;
     }
 
 ## `./mwl/presentation`
@@ -19653,6 +20242,9 @@ build instead.
         createBuffer(channels: number, length: number, sampleRate: number): FakeBuffer;
         createBufferSource(): FakeBufferSource;
         createGain(): FakeGain;
+
+        readonly processors: FakeScriptProcessor[];
+        createScriptProcessor(bufferSize: number): FakeScriptProcessor;
         createStereoPanner(): {
             pan: {
                 value: number;
@@ -19758,7 +20350,10 @@ build instead.
             cancelScheduledValues: () => void;
             linearRampToValueAtTime: (value: number, time: number) => void;
         };
-        connect(): void;
+
+        readonly connections: unknown[];
+        connect(target?: unknown): void;
+        disconnect(target?: unknown): void;
     }
 
 ### `fakeGamepad` (function)

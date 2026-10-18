@@ -14,6 +14,7 @@
 
 import { Signal } from '../core/Signal.ts';
 import { createAudioLoader } from './AudioLoader.ts';
+import { OutputRecorder, type OutputRecorderOptions } from './Recorder.ts';
 import type { SfxArbiter } from './Sfx.ts';
 import { StreamChannel, type BlockSource } from './StreamChannel.ts';
 
@@ -407,6 +408,15 @@ export class AudioBus {
 			bgm: new StreamChannel(context, this.kindGains.bgm),
 			bgs: new StreamChannel(context, this.kindGains.bgs),
 		};
+	}
+
+	/**
+	 * Starts recording what the bus plays, every kind (music, ambience, jingles and effects) as the
+	 * player hears it, into plain frames: `stop()` on the returned recorder gives them to
+	 * `AudioExport`. A take is bounded (`maxSeconds`, 600 when omitted) so memory stays bounded too.
+	 */
+	record(options: OutputRecorderOptions = {}): OutputRecorder {
+		return new OutputRecorder(this.context, Object.values(this.kindGains), options);
 	}
 
 	/** the streaming voice of a loop kind, for underrun reports and its own controls */

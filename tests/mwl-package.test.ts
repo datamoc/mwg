@@ -549,6 +549,56 @@ test('credits list every package and licensed asset in the existing CREDITS.txt 
 	assert.equal(generateCredits([]), '');
 });
 
+test('a package meant to be shared refuses a synth-patch bank with no licence', async () => {
+	const bank = (license: string): string =>
+		minimal('patches', '1.0.0', `{ tag: 'asset', id: 'bank', kind: 'synth-patch', path: 'banks/a.syx'${license} }`);
+	const files = [{ path: 'banks/a.syx', data: new Uint8Array([0xf0, 0x43, 0xf7]) }];
+	const unlicensed = await packageOf(bank(''), files);
+	assert.equal((await verifyPackage(unlicensed)).ok, true, 'a private package is not held to it');
+	const refused = await verifyPackage(unlicensed, { shared: true });
+	assert.equal(refused.ok, false);
+	assert.match(refused.errors.join(), /asset "bank": a shared synth-patch needs a license/);
+	const licensed = await packageOf(bank(", license: 'CC0-1.0'"), files);
+	assert.equal((await verifyPackage(licensed, { shared: true })).ok, true);
+});
+
+test("a patch inspector's warnings are reported without refusing the package, its errors refuse it", async () => {
+	const source = minimal(
+		'patches',
+		'1.0.0',
+		"{ tag: 'asset', id: 'bank', kind: 'synth-patch', path: 'banks/a.syx', license: 'CC0-1.0' }",
+	);
+	const bytes = await packageOf(source, [{ path: 'banks/a.syx', data: new Uint8Array([0xf0, 0x41, 0xf7]) }]);
+	const seen: string[] = [];
+	const warned = await verifyPackage(bytes, {
+		inspectPatch: (data, asset) => {
+			seen.push(`${asset.id}:${asset.path}:${data.length}`);
+			return { warnings: ['patch 3 uses wave 80, which the model replaces'] };
+		},
+	});
+	assert.equal(warned.ok, true, 'an unrendered wave is a warning, not a refusal');
+	assert.deepEqual(seen, ['bank:banks/a.syx:3']);
+	assert.match(warned.warnings.join(), /asset "bank": patch 3 uses wave 80/);
+	const refused = await verifyPackage(bytes, { inspectPatch: () => ({ errors: ['not a bank'] }) });
+	assert.equal(refused.ok, false);
+	assert.match(refused.errors.join(), /asset "bank": not a bank/);
+});
+
+test('credits add a support line only when the game asks for one, and only for a web address', () => {
+	const document = parsePackageDocument(CHARACTER);
+	const plain = generateCredits([document]);
+	const support = { url: 'https://example.org/support' };
+	assert.equal(
+		generateCredits([document], { support }),
+		`${plain}\nTake part in the project\nhttps://example.org/support\n`,
+	);
+	assert.equal(
+		generateCredits([], { support: { ...support, label: 'Soutenir' } }),
+		'Soutenir\nhttps://example.org/support\n',
+	);
+	assert.throws(() => generateCredits([], { support: { url: 'javascript:alert(1)' } }), /http or https/);
+});
+
 test('a file with no package tag compiles exactly as before', () => {
 	const golden = JSON.parse(readFileSync(new URL('./fixtures/mwl/skirmish.golden.json', import.meta.url), 'utf8'));
 	const source = readFileSync(new URL('./fixtures/mwl/skirmish.mwl', import.meta.url), 'utf8');

@@ -341,7 +341,8 @@ async function hooks(files) {
  * `pack <dir> -o x.mwp` writes a folder (`content.mwl` plus its media) as one package, refusing to
  * write one that `verify` would reject. `unpack x.mwp -o dir` writes the files back. `verify x.mwp`
  * checks digests, limits, schema, references, licences, ROM images and the capabilities requested
- * (`--allow audio,script` applies a game policy, `--json` prints the report). Any other command
+ * (`--allow audio,script` applies a game policy, `--json` prints the report, `--share` also demands a
+ * licence on every synth-patch bank, as a package meant for others must have). Any other command
  * given a `.mwp` runs on the content the package's characters expand to.
  *
  * Audio conversion to MWA belongs to the retro-audio package, not to mwg: `--audio-converter module`
@@ -385,7 +386,7 @@ async function packageCommand() {
 			packed.push((convert && (await convert(file.path, file.data))) || file);
 		}
 		const bytes = await encodePackage(packed, { main: flag('--main') });
-		const report = await verifyPackage(bytes);
+		const report = await verifyPackage(bytes, { shared: args.includes('--share') });
 		for (const warning of report.warnings) console.error(`warning: ${warning}`);
 		if (!report.ok) {
 			for (const error of report.errors) console.error(`error: ${error}`);
@@ -401,10 +402,10 @@ async function packageCommand() {
 	const bytes = new Uint8Array(fs.readFileSync(input));
 	if (command === 'verify') {
 		const allow = flag('--allow');
-		const report = await verifyPackage(
-			bytes,
-			allow === undefined ? {} : { policy: { allow: allow.split(',').filter(Boolean) } },
-		);
+		const report = await verifyPackage(bytes, {
+			...(allow === undefined ? {} : { policy: { allow: allow.split(',').filter(Boolean) } }),
+			shared: args.includes('--share'),
+		});
 		if (args.includes('--json')) console.log(JSON.stringify(report, null, '	'));
 		else {
 			for (const warning of report.warnings) console.error(`warning: ${warning}`);

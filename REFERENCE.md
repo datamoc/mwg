@@ -24,7 +24,7 @@ renders: the scene lifecycle, `SceneStack`, input, saves, RNG, signals, achievem
 
 | renderer-free | Pixi | Babylon |
 | --- | --- | --- |
-| `core`, `i18n`, `actors`, `world`, `battle`, `simulation`, `roguelike`, `board`, `audio`, `rpg`, `ai`, `mwl`, `assets/paths` | `two-d` (and `two-d/render`, `two-d/ui`, `two-d/stage`), `assets` | `three-d` (the `3d` subpath) |
+| `core`, `i18n`, `actors`, `world`, `battle`, `simulation`, `roguelike`, `board`, `audio`, `music`, `rpg`, `ai`, `mwl`, `assets/paths` | `two-d` (and `two-d/render`, `two-d/ui`, `two-d/stage`), `assets` | `three-d` (the `3d` subpath) |
 
 `roguelike` adds only `rot-js`, and `pixi.js`, `@babylonjs/core`/`@babylonjs/loaders` and
 `@capacitor/core` are optional peer dependencies rather than installed ones, so a project names
@@ -122,7 +122,7 @@ Three rules the whole API follows, so a name means one thing everywhere:
 ## Contents
 
 [core](#core) · [two-d](#two-d) · [render](#two-drender) · [ui](#two-dui) · [stage](#two-dstage) ·
-[assets](#assets) · [audio](#audio) · [battle](#battle) · [board](#board) ·
+[assets](#assets) · [audio](#audio) · [music](#music) · [battle](#battle) · [board](#board) ·
 [actors](#actors) · [roguelike](#roguelike) · [rpg](#rpg) · [simulation](#simulation) ·
 [three-d](#three-d-optional) · [world](#world) · [i18n](#i18n) · [mwl](#mwl) · [mwl/pyroeis](#mwlpyroeis) ·
 [skeleton](#skeleton) · [physics](#physics) · [ai](#ai) ·
@@ -255,6 +255,15 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   own `summary` holds), distinct from `SaveSystem`'s continuable slots.
 - `PlayerStats` - a lifetime running total folded in one run's summary at a time, distinct
   from `RunHistory`'s per-run records.
+- `encodeShareLink`/`decodeShareLink`/`fitShareLink`/`dropByPriority`/`bisectShareLink` - share
+  links: a short URL whose fragment (`#mwg:`, never sent to a server) carries an envelope of
+  content type, `id@version` and a JSON payload, deflated, base64url and ending in a CRC-32
+  prefix that catches a link a messaging app cut short. The envelope is public and the payload
+  is the game's own, validated by the game on read; reading is bounded (link length, inflated
+  size) and every failure is a `reason` rather than an exception. `maxChars` is 2000 by default,
+  up to 4093. `fitShareLink` takes the first of several candidate payloads, fullest first
+  (`dropByPriority` builds that ladder from a record), that fits; `bisectShareLink` keeps the
+  most items of a list that fit. Applying a decoded link after the player confirms is the game's.
 - `TelemetryClient` - sends usage/error events to a server the game supplies.
 - `NewsClient`/`NewsSeenTracker` - a game's own patch-notes/announcement feed, with a
   seen-tracker so a player is only notified of what's actually new.
@@ -1064,7 +1073,37 @@ reach the compiled asset map without it.
   other, `regionPlaybackRate`), a faithful or clean output stage, caption display, a
   dynamics control (a soft limiter, `dynamicsLimit`) and bright-sound softening (a falling
   low-pass cutoff, `softenCutoff`). A CPU and underrun indicator reads `AudioCoreHost`'s
-  stats and `onAudioUnderrun`.
+  stats and `onAudioUnderrun`. `audioSettingsRows` gives the rows (soften, dynamics, captions,
+  output stage, region) to pass as `SettingsScreen`'s `custom`, under the `AUDIO_SETTINGS_KEYS`
+  custom keys, and `AudioSettings.restoreFromCustom` reads the answers back.
+- `AudioExport`/`AUDIO_FORMATS`/`ExportTooLargeError` + `estimateExportBytes`, `exportTags` and
+  `downloadSaver` - rendering to a file: the service decides which of WAV, FLAC and Opus this
+  device offers (WAV is written here, FLAC and Opus come from injected `ExportEncoder`s such as the
+  retro-audio package's `exportAudio`, Opus hidden where `opusAvailable()` is false), refuses an
+  export over its size limit before spending the time, merges default tags, honours an
+  `AbortSignal`, and hands the finished `Blob` to a saver (`downloadSaver`, a link with the
+  `download` attribute, unless the platform supplies its own). `inWorker` runs self-contained
+  encoders on a `threads.spawn` worker (main thread where none exists). `mwg-audio convert` writes
+  `.flac` and `.opus` through the same service with `--encoder` (a module, or `ffmpeg`).
+- `webCodecsOpusEncoder`/`isOpusEncodingAvailable`/`oggOpus` - Opus without a dependency: the
+  encoder an `AudioExport` takes for `opus` in a browser (48 kHz, 20 ms blocks into a WebCodecs
+  `AudioEncoder`, the encoder's own pre-skip, tags), and the Ogg Opus writer under it (`OpusHead`,
+  `OpusTags`, CRC-checked pages, a last granule trimmed to the exact length), checked against ffmpeg's
+  decoder. Where there is no `AudioEncoder` (Node, old WebViews) the game injects another.
+- `OutputRecorder` + `AudioBus.record()` - what the bus plays, every kind as the player hears it,
+  recorded into plain stereo frames through a silent script processor (the capture node that
+  exists everywhere, `file://` pages included) and bounded by `maxSeconds`; `stop()` returns the
+  take for `AudioExport`.
+- `benchEngine`/`EngineBenchmark` - times an engine on up to 16 held voices and reports its share of
+  real time; `mwg-audio bench` is the command line. The number belongs to the engine and machine it
+  was measured on; over about half of real time, `playMidiHosted` is the way out.
+- `auditEngines`/`AuditFinding`/`AuditReport` - renders calibration notes through named engines
+  and flags a fallback, a failure, silence, clipping, a DC offset and a pitch that is no harmonic
+  of the note; `mwg-audio audit` is the command line over it. Screening, not a verdict.
+- `playMidiHosted`/`sendMidiToHost`/`HostedMidi` and `reportUnderruns` - a MIDI file played through
+  an `AudioCoreHost` into a `StreamChannel` (the file's messages queued on the host in one post),
+  and a forwarder that turns `onAudioUnderrun` into summed, rate-limited `audio_underrun`
+  telemetry events through any sink with `send`, `TelemetryClient` included.
 - `waveformEnvelope`/`channelEnvelopes`/`WaveformBucket` and
   `trackerPattern`/`trackerNoteName`/`TrackerRow` - the data cores of the audio views: a
   waveform as per-bucket min/max pairs per channel (what an oscilloscope draws), and a
@@ -1075,16 +1114,32 @@ reach the compiled asset map without it.
   its whole sysex messages, the patch names of every checksummed DX7 32-voice bulk dump in
   it (another maker's bank names nothing rather than guessing), and an `audition` that
   loads a patch into a `MidiSynth` and renders one note through it for a settings screen.
+  `readSyx` and `SyxBank.skipped` say what a tolerant read left out (`SyxSkip`: bytes before
+  the first message, an unterminated tail, a DX7-shaped bank with a bad checksum, a message
+  that is no DX7 bank) so a mixed or damaged file is used for what is whole and reported for the
+  rest. Each patch has an `id` of `source#message.voice@fingerprint`, the identity a save holds:
+  a name alone is shared by many patches. A DX7 patch also carries `info` (`Dx7VoiceInfo`: the
+  algorithm, feedback, LFO wave and transposition, read by `dx7VoiceInfo` from the packed bytes). `audit(synth)` renders one note of every patch (each
+  selected by a program change after the bank loads) and returns the silent and clipping ones
+  (`SyxPatchFinding`), so an author knows before publishing.
 - `connectWebMidi`/`requestWebMidiInput`/`WebMidiConnection` - live Web MIDI into a
   `MidiSynth`: every input port of a `MIDIAccess` is wired to the synth (channel messages
   to `event`, sysex to `sysex`, transport dropped), and `requestWebMidiInput` is the
   browser entry that returns null where Web MIDI does not exist or was refused.
 - `AdaptiveMusic` - adaptive tracks: mute and unmute stems of a running track with a fade,
   and switch between two versions at the same frame position; `loopRegionFromFile` reads
-  the loop region a file declares as the default.
+  the loop region a file declares as the default. A version loaded with `barSeconds` accepts
+  `quantize: 'bar'` (`Quantize`) on `setLevel` and `switchVersion`, so a layer comes in or a scene
+  changes at the next bar line instead of cutting the measure.
 - `AudioCoreHost` + `onAudioUnderrun` - the off-main-thread audio host: a synthesis core in
   a worker behind the same `Playable` facade, with a main-thread fallback and an underrun
-  signal feeding bounded telemetry.
+  signal feeding bounded telemetry. The core is given as a self-contained `factory`, or as
+  `factorySource` (the text of an expression that evaluates to the factory) for a core with
+  imports, bundled into one script by the core's own package. `start(events)` begins a piece in
+  order (reset, messages, then rendering) and `prefetch: false` keeps a new host from rendering
+  silence first: a modelled instrument that has rendered a second of silence is not a fresh one,
+  and the piece would differ from a direct render. A reset also drops blocks still in flight
+  from before it (each block carries the host's epoch).
 - `encodeWav`/`decodeWav`/`wavInfo` and `spectralDistance` - WAVE as plain bytes (the
   `mwg-audio` tool's convert and compare verbs over the same code), and a spectral distance
   between two renders for a listening check that can be automated.
@@ -1130,6 +1185,26 @@ reach the compiled asset map without it.
   reader because the round trip needs the tempo, time-signature and name metas that `parseMidi`
   deliberately drops. `GrooveFormat` also names `ableton-agr` and `reaper-groove`, both of
   which throw saying they are not shipped rather than returning a file that resembles one.
+
+## `music`
+
+Generated game music, renderer-free and deterministic. `import * as Music from '@datamoc/mwg/music'`.
+
+- `composeMusic(scene)` - a scene (`MusicScene`: `id`, `seed`, `mood`, `tension`, `key`, `bars`,
+  `voices`, optional `tempo`) becomes a `GeneratedMusic`: a playable `MidiFile`, its `barSeconds`
+  and its measured `polyphony`. The same scene gives the same notes, since the seeds are mixed
+  the way the data sound effects' are (`sfxSeed`). `voices` is kept by writing fewer layers
+  (one voice is the melody alone, two add a bass, three a one-note arpeggio, four drums, more pad
+  notes), so a piece for a 3-voice SID or YM never needs a note cut. The result plays through
+  `renderMidiToBuffer`, a registered MIDI engine, or `AdaptiveMusic`.
+- `composeStates(base, states)` - one piece per game state (exploration, combat, victory) with
+  the same key, tempo and length in bars, so `AdaptiveMusic` can switch between them on a bar
+  line with `barSeconds` and `quantize: 'bar'`.
+- `normalizeScene`/`MUSIC_MOODS`/`MusicMood` - makes a scene safe from a save, a share link or a
+  settings screen (clamps every number, unknown moods become `calm`), so a scene is plain data
+  a game stores. `MUSIC_GENERATOR_VERSION` changes when the composer's output for a scene does:
+  a save that keeps scenes keeps the version with them.
+- `maxPolyphony(file)` - the most notes sounding at once in any `MidiFile`.
 
 ## `battle`
 
@@ -1956,7 +2031,10 @@ consumes generated data and does not parse `.mwl` source files in the browser.
   `satisfiesVersionRange`, `requestedCapabilities`, `detectRomImage`, `registerRomDigest`,
   `generateCredits` and `sha256Hex` (self-contained `.mwp` content packages: one compressed
   container with per-entry digests and declared limits, a capability policy the game accepts
-  or refuses, `id@version` namespaces in saves, and a ROM-image refusal with generated credits),
+  or refuses, `id@version` namespaces in saves, and a ROM-image refusal with generated credits;
+  `verifyPackage`'s `shared` option demands a licence on every synth-patch bank, and its
+  `inspectPatch` hook lets an instrument's own parser report what only it knows, its warnings
+  (an unrendered wave) never refusing the package and its errors refusing it),
   `parseExpression`, `parseHookReference`, `parseMapFile`, `parseTerrain`, `parseValue`, `preprocess`,
   `schema01`, `typedRows`, `validateCatalogNodes`, `validateHookReferences`, `loadContent`, and `validateWorld`.
 - `parseMapFile`/`MwlMapFile` (item 284) - reads a Wesnoth-shaped `.map`: the `key=value` header

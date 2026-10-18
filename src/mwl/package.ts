@@ -432,8 +432,14 @@ export function compilePackages(set: PackageSet): MwlCompiledGame {
  * );
  * console.log(generateCredits([document])); // 'marta 1.0.0 by Ada\nLicense: CC-BY-4.0\n'
  * ```
+ *
+ * A game that wants a "take part in the project" line passes it as `options.support`; nothing is
+ * added unless it does, and only an `http:` or `https:` address is accepted.
  */
-export function generateCredits(documents: readonly PackageDocument[]): string {
+export function generateCredits(
+	documents: readonly PackageDocument[],
+	options: { support?: { url: string; label?: string } } = {},
+): string {
 	const blocks: string[] = [];
 	for (const { meta, assets } of [...documents].sort((a, b) =>
 		a.meta.id < b.meta.id ? -1 : a.meta.id > b.meta.id ? 1 : 0,
@@ -446,6 +452,11 @@ export function generateCredits(documents: readonly PackageDocument[]): string {
 			if (asset.source) lines.push(asset.source);
 			blocks.push(lines.join('\n'));
 		}
+	}
+	const { support } = options;
+	if (support) {
+		if (!/^https?:\/\//i.test(support.url)) throw new Error(`support url "${support.url}" must be http or https`);
+		blocks.push(`${support.label ?? 'Take part in the project'}\n${support.url}`);
 	}
 	return blocks.length ? `${blocks.join('\n\n')}\n` : '';
 }

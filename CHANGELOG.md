@@ -7,6 +7,74 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.47.0] - 2026-10-18
+
+Generated game music, share links, an audio export service, an off-main-thread host that runs the retro-audio
+package's own engines, and the audit and bench tools, from the retro-audio package's requirements document and its
+author's follow-up list (roadmap items 447 to 458), plus the project's sponsorship metadata. Run against the
+package's engines, the host's output is identical to a direct render sample for sample for all 48 catalogue
+engines, and the D-50 at 16 voices, which the main thread cannot keep up with (0.86 to 1.41 times real time on the
+development machine), plays on the worker without an underrun. Nothing here is breaking.
+
+### Added
+
+- **`mwg/music`: generated game music.** `composeMusic(scene)` turns a plain-data scene (mood, tension,
+  key, seed, bars, voices) into a playable `MidiFile`, the same one every time; `composeStates` makes
+  one piece per game state (exploration, combat, victory) with a shared key, tempo and length. The
+  `voices` limit is kept by writing fewer layers, so a piece for a 3-voice SID or YM needs no note cut
+  (`maxPolyphony` measures it). Renderer-free; on the root barrel as `Music`.
+- **Bar-quantised adaptive music.** `AdaptiveMusic.load(..., { barSeconds })`, then `setLevel(..., 'bar')`
+  and `switchVersion(..., 'bar')` start a fade or a crossfade at the next bar line.
+- **Share links** (`core`): `encodeShareLink`/`decodeShareLink` put a public envelope in the URL
+  fragment (content type, `id@version`, JSON payload, deflate, base64url, a CRC-32 prefix), bounded and
+  failing by `reason` instead of throwing; `fitShareLink`/`dropByPriority` and `bisectShareLink` fit
+  the content under the character limit. `mwg-audio share make|read` is the command line.
+- **`AudioExport`**: a service that renders frames to WAV (built in), FLAC or Opus (injected encoders,
+  such as the retro-audio package's `exportAudio`), with a size check before encoding, default tags,
+  cancellation and a saver. `mwg-audio convert` writes `.flac`/`.opus` with `--encoder`.
+- **A bundled core in the off-main-thread host.** `AudioCoreHostOptions.factorySource` takes the text of
+  an expression that evaluates to the core factory, so a core with imports (the retro-audio package's
+  engines) can run in a worker once bundled into one script; `AudioCoreHost.start(events)` begins a piece
+  in order, `prefetch: false` keeps a new host from rendering silence first, and `playMidiHosted` uses both.
+- **`tools/check-retro-cores.mjs`**, a developer check (not shipped to games): plays a held chord through
+  `AudioCoreHost` on a worker from each packaged core of the retro-audio package and requires it to be identical to a
+  direct render of the engine, with no underrun.
+- **DX7 voice metadata and a patch inspector hook.** `dx7VoiceInfo` (algorithm, feedback, LFO wave,
+  transposition) on every DX7 `SyxPatch.info`, and `verifyPackage({ inspectPatch })`, whose warnings never
+  refuse a package.- **Opus and recording without a dependency**: `oggOpus` (the Ogg Opus container, checked against
+  ffmpeg's decoder), `webCodecsOpusEncoder`/`isOpusEncodingAvailable` (a WebCodecs encoder for
+  `AudioExport`), `AudioExport`'s `inWorker` option, and `OutputRecorder`/`AudioBus.record()`, which
+  record what the bus plays into frames for export. `mwg-audio convert ... --encoder ffmpeg` writes
+  `.flac` and `.opus` on a developer machine.
+- **`mwg-audio audit`** and `auditEngines`: calibration notes through named engines, flagging a
+  fallback, a failure, silence, clipping, a DC offset and a wrong pitch. **`mwg-audio bench`**
+  and `benchEngine` time an engine on up to 16 held voices and print its share of real time.
+  `SyxBank.audit` does the same control render for every patch of a bank.
+- **Hosted MIDI**: `playMidiHosted`/`sendMidiToHost` play a MIDI file through an `AudioCoreHost` into a
+  `StreamChannel`, `AudioCoreHost.events` queues many messages in one post, and `reportUnderruns`
+  forwards audio underruns as summed, rate-limited `audio_underrun` telemetry events.
+- **`.syx` banks**: `readSyx` and `SyxBank.skipped` report what a tolerant read left out, and each
+  patch has an `id` of `source#slot@fingerprint`. `verifyPackage({ shared: true })` and `mwl pack
+  --share` refuse a synth-patch with no licence.
+- **Audio settings rows**: `audioSettingsRows` and `AudioSettings.restoreFromCustom` put soften,
+  dynamics, captions, output stage and region on a `SettingsScreen`.
+- **`generateCredits(documents, { support })`** appends a support line, only when a game asks for it.
+- **Sponsorship**: `.github/FUNDING.yml`, `funding` in the package and alias `package.json`, and a
+  "Support" link in the website header.
+
+### Fixed
+
+- **`AudioCoreHost.stats().queuedFrames`** counted blocks already read (they stay in the list until the next read),
+  so it overstated what was left, in the worst case by several blocks. It now counts only the frames ahead of the
+  playhead.
+- **`AudioCoreHost` after a reset.** Blocks asked for before a `reset()` could arrive after it and play as silence; each block now carries the host's epoch and stale ones are dropped.
+- **`benchEngine` on long runs.** The synth render drops messages past its 480 s cap, which lost the note-offs of a ten-minute run; the bench raises the cap.
+
+### Changed
+
+- The bundle budget moved up (global bundle +2.5 % gzip, `dist` +2.5 %) for the additions above,
+  recorded in `tools/bundle-size.json`.
+
 ## [0.46.0] - 2026-10-18
 
 SoundFont 3 samples in Vorbis, Opus or FLAC, read and written, and the SoundFont a game embeds is now a SoundFont 3 in Opus by default (a breaking change for code that parses the embedded bytes directly, taken before 1.0.0). Measured on FluidR3 (141.5 MB as a SoundFont 2) the three formats come to 81.0 MB (FLAC), 21.5 MB (Opus) and 19.0 MB (Vorbis) at ffmpeg defaults, and on SGM v2.01 (235.9 MB) to 120.3, 26.9 and 26.8 MB.

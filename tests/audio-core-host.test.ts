@@ -53,6 +53,48 @@ async function readAll(host: AudioCoreHost, frames: number): Promise<Float32Arra
 	return out;
 }
 
+test('a bundled core given as source text runs inline and on a worker, and a host with neither is refused', async () => {
+	//what a bundler would emit: an expression whose value is the factory, with its helpers inside
+	const bundled = `(() => { const level = 0.25; return (rate) => ({ sampleRate: rate, event() {}, sysex() {}, reset() {},
+		render(left, right, start, count) { for (let i = start; i < start + count; i++) { left[i] += level; right[i] += level; } } }); })()`;
+	for (const mode of ['inline', 'worker'] as const) {
+		const host = new AudioCoreHost({ factorySource: bundled, sampleRate: RATE, mode, blockFrames: 256 });
+		//a worker's first blocks arrive a moment after it starts; reading before then is start-up silence
+		if (mode === 'worker') await sleep(400);
+		const out = await readAll(host, 2000);
+		assert.ok(
+			out.slice(500).every((v) => v === 0.25),
+			`${mode}: the bundled core renders`,
+		);
+		host.dispose();
+	}
+	assert.throws(() => new AudioCoreHost({ sampleRate: RATE, mode: 'inline' }), /factory or a factorySource/);
+});
+
+test('queuedFrames counts what is ahead of the playhead, not blocks already read or half read', async () => {
+	const host = new AudioCoreHost({
+		factory: squareCore,
+		sampleRate: RATE,
+		mode: 'inline',
+		blockFrames: 256,
+		queueSeconds: 0.25,
+		prefetch: false,
+	});
+	assert.equal(host.stats().queuedFrames, 0, 'nothing is rendered ahead of a host that was told not to prefetch');
+	host.pump(1000);
+	const before = host.stats().queuedFrames;
+	assert.ok(before >= 1000, `${before} frames rendered for a request of 1000`);
+	const left = new Float32Array(1000);
+	const right = new Float32Array(1000);
+	host.read(left, right, 0, 100);
+	//100 frames were read out of the first 256-frame block: that block still sits in the list, half read
+	const after = host.stats().queuedFrames;
+	assert.ok(after <= before - 100 + 256, `${after} frames ahead after reading 100 of ${before}`);
+	host.read(left, right, 0, 500);
+	assert.ok(host.stats().queuedFrames < 1000, 'frames consumed by the reads are no longer counted as waiting');
+	host.dispose();
+});
+
 test('an inline host renders what the core makes, with events applied at their frame', async () => {
 	const host = new AudioCoreHost({ factory: squareCore, sampleRate: RATE, mode: 'inline', blockFrames: 256 });
 	assert.equal(host.mode, 'inline');

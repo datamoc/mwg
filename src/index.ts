@@ -19,6 +19,7 @@ export * as Rpg from './rpg/index.ts';
 export * as Battle from './battle/index.ts';
 export * as Board from './board/index.ts';
 export * as Audio from './audio/index.ts';
+export * as Music from './music/index.ts';
 export * as Simulation from './simulation/index.ts';
 export * as Mwl from './mwl/index.ts';
 export * as AI from './ai/index.ts';

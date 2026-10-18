@@ -1,17 +1,17 @@
 # Project statistics
 
-Generated for **mwg 0.46.0** on 2026-10-18.
+Generated for **mwg 0.47.0** on 2026-10-18.
 
 | Area | Statistics |
 | --- | ---: |
-| Source | 388 TypeScript files, 77,152 lines, 20 modules |
-| Tests | 364 files, 3,308 test cases, 50,741 lines |
-| Tools | 68 files, 14,166 lines |
+| Source | 396 TypeScript files, 79,380 lines, 21 modules |
+| Tests | 371 files, 3,358 test cases, 51,980 lines |
+| Tools | 69 files, 14,519 lines |
 | Examples | 29 runnable examples |
-| Roadmap | 411/446 items complete, 35 open |
-| API | 388 declaration files |
-| Bundle | 1361.6 kB raw, 410.2 kB gzip |
-| Published dist | 5166.4 kB excluding source maps |
+| Roadmap | 411/458 items complete, 47 open |
+| API | 396 declaration files |
+| Bundle | 1383.6 kB raw, 418.9 kB gzip |
+| Published dist | 5302.1 kB excluding source maps |
 | Test-to-source ratio | 0.7x by line count |
 
 ## Source modules
@@ -19,9 +19,9 @@ Generated for **mwg 0.46.0** on 2026-10-18.
 | Module | Files | Lines |
 | --- | ---: | ---: |
 | two-d | 108 | 24,447 |
-| mwl | 29 | 10,004 |
-| audio | 43 | 9,869 |
-| core | 52 | 7,480 |
+| audio | 48 | 11,285 |
+| mwl | 29 | 10,047 |
+| core | 53 | 7,834 |
 | board | 12 | 5,284 |
 | roguelike | 24 | 4,272 |
 | actors | 24 | 2,453 |
@@ -34,8 +34,9 @@ Generated for **mwg 0.46.0** on 2026-10-18.
 | assets | 9 | 854 |
 | three-d | 9 | 851 |
 | world | 7 | 603 |
-| testing | 3 | 510 |
+| testing | 3 | 560 |
 | skeleton | 1 | 441 |
+| music | 2 | 364 |
 | threads | 3 | 324 |
 | headless | 1 | 86 |
 

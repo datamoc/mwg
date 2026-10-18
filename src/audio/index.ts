@@ -94,18 +94,54 @@ export { decodeWav, encodeWav, wavInfo } from './Wav.ts';
 export type { WavInfo } from './Wav.ts';
 export { spectralDistance } from './SpectralDistance.ts';
 export type { SpectralDistanceOptions, SpectralDistanceResult } from './SpectralDistance.ts';
-export { AudioSettings, dynamicsLimit, regionPlaybackRate, softenCutoff } from './Settings.ts';
+export {
+	AUDIO_SETTINGS_KEYS,
+	AudioSettings,
+	audioSettingsRows,
+	dynamicsLimit,
+	regionPlaybackRate,
+	softenCutoff,
+} from './Settings.ts';
 export { connectWebMidi, requestWebMidiInput } from './WebMidi.ts';
-export { SyxBank, dx7PatchNames, splitSysex } from './SyxBank.ts';
+export { SyxBank, dx7PatchNames, dx7VoiceInfo, readSyx, splitSysex } from './SyxBank.ts';
 export { channelEnvelopes, trackerNoteName, trackerPattern, waveformEnvelope } from './AudioViews.ts';
 export type { TrackerRow, WaveformBucket } from './AudioViews.ts';
-export type { SyxPatch } from './SyxBank.ts';
+export type { Dx7VoiceInfo, SyxPatch, SyxPatchFinding, SyxSkip } from './SyxBank.ts';
 export type { WebMidiAccess, WebMidiConnection, WebMidiInputPort } from './WebMidi.ts';
-export type { AudioRegion, AudioSettingsData, OutputStage } from './Settings.ts';
+export type { AudioRegion, AudioSettingsData, AudioSettingsRow, OutputStage } from './Settings.ts';
+export {
+	AUDIO_FORMATS,
+	AudioExport,
+	ExportTooLargeError,
+	downloadSaver,
+	estimateExportBytes,
+	exportTags,
+} from './AudioExport.ts';
+export type {
+	AudioExportOptions,
+	ExportEncoder,
+	ExportEncoderRequest,
+	ExportFormat,
+	ExportRequest,
+} from './AudioExport.ts';
+export { OutputRecorder } from './Recorder.ts';
+export type { OutputRecorderOptions, Recording } from './Recorder.ts';
+export { isOpusEncodingAvailable, oggOpus, webCodecsOpusEncoder } from './OpusEncoder.ts';
+export type { OggOpusOptions } from './OpusEncoder.ts';
+export { auditEngines, benchEngine } from './Audit.ts';
+export type { AuditFinding, AuditKind, AuditOptions, AuditReport, EngineBenchmark } from './Audit.ts';
 export { AdaptiveMusic } from './AdaptiveMusic.ts';
-export type { AdaptiveLoadOptions, AdaptiveMusicOptions, AdaptivePlayOptions, StemSet } from './AdaptiveMusic.ts';
+export type {
+	AdaptiveLoadOptions,
+	AdaptiveMusicOptions,
+	AdaptivePlayOptions,
+	Quantize,
+	StemSet,
+} from './AdaptiveMusic.ts';
 export { AudioCoreHost } from './CoreHost.ts';
 export type { AudioCore, AudioCoreHostOptions, AudioCoreStats } from './CoreHost.ts';
+export { playMidiHosted, reportUnderruns, sendMidiToHost } from './HostedMidi.ts';
+export type { HostedMidi, HostedMidiOptions, UnderrunReportOptions, UnderrunSink } from './HostedMidi.ts';
 export { onAudioUnderrun } from './Underrun.ts';
 export type { AudioUnderrun } from './Underrun.ts';
 export { StreamChannel } from './StreamChannel.ts';

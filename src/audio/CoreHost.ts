@@ -20,13 +20,20 @@ interface CoreEvent {
 	sysex?: Uint8Array;
 }
 
+/** a channel message with the output frame it is applied at */
+type TimedMessage = Pick<CoreEvent, 'frame' | 'status' | 'data1' | 'data2'>;
+
 /** what the main thread says to the runner, whether that is a worker or the inline fallback */
 type RunnerMessage =
-	{ type: 'events'; events: CoreEvent[] } | { type: 'render'; frames: number } | { type: 'reset'; frame: number };
+	| { type: 'events'; events: CoreEvent[] }
+	| { type: 'render'; frames: number; epoch: number }
+	| { type: 'reset'; frame: number };
 
 /** what the runner answers to a render request */
 interface RenderedBlock {
 	type: 'block';
+	/** the host's epoch when the block was asked for, so a block that was in flight across a reset can be told from a current one */
+	epoch: number;
 	start: number;
 	left: Float32Array;
 	right: Float32Array;
@@ -84,7 +91,7 @@ function createCoreRunner(factorySource: string, sampleRate: number) {
 			pending = pending.slice(used);
 			if (done < frames) core.render(left, right, done, frames - done);
 			position = end;
-			return { type: 'block', start, left, right, renderMs: now() - began };
+			return { type: 'block', epoch: message.epoch, start, left, right, renderMs: now() - began };
 		},
 	};
 }
@@ -139,12 +146,26 @@ export interface AudioCoreHostOptions {
 	 * Builds the core for a sample rate. It is shipped to the worker as text, so it must be
 	 * self-contained: no closures, no imports, everything it needs inside its own body.
 	 */
-	factory: (sampleRate: number) => AudioCore;
+	factory?: (sampleRate: number) => AudioCore;
+	/**
+	 * Instead of `factory`: the text of a JavaScript expression that evaluates to the factory, for a
+	 * core that cannot be self-contained because it has imports. Bundle the core into one classic
+	 * script (an IIFE, with a bundler such as esbuild) whose last expression is the factory, e.g.
+	 * `(() => { ...bundled code...; return (rate) => new Core(rate); })()`, and pass that text.
+	 */
+	factorySource?: string;
 	sampleRate: number;
 	/** `'auto'` tries a worker and falls back to the main thread; `'inline'` never uses one; `'worker'` fails instead of falling back. `'auto'` when omitted */
 	mode?: 'auto' | 'worker' | 'inline';
 	/** frames per render request; 1024 when omitted */
 	blockFrames?: number;
+	/**
+	 * whether the host renders ahead as soon as it is made (true when omitted). Turn it off when a
+	 * piece is about to be started with `start`: a core that has already rendered a second of
+	 * silence is not in the state of a fresh one (a modelled instrument's noise generator keeps its
+	 * place through `reset`), so the piece would sound slightly different from a direct render.
+	 */
+	prefetch?: boolean;
 	/** seconds of rendered audio kept ahead of the playhead; 0.3 when omitted, which is also the latency of a message sent now */
 	queueSeconds?: number;
 }
@@ -154,7 +175,7 @@ export interface AudioCoreStats {
 	/** why a worker was not used, when it was not */
 	fallbackReason?: string;
 	underruns: number;
-	/** frames rendered and waiting */
+	/** frames rendered and waiting ahead of the playhead (what a read could still take without an underrun) */
 	queuedFrames: number;
 	/** render time over audio time, smoothed: 1 means the core uses all of real time */
 	load: number;
@@ -210,6 +231,7 @@ export class AudioCoreHost implements BlockSource {
 	private disposed = false;
 	private readFrame = 0;
 	private requestedUntil = 0;
+	private epoch = 0;
 	private blocks: RenderedBlock[] = [];
 	private underruns = 0;
 	private load = 0;
@@ -217,7 +239,9 @@ export class AudioCoreHost implements BlockSource {
 	constructor(options: AudioCoreHostOptions) {
 		if (!(options.sampleRate > 0)) throw new Error('core host sample rate must be positive');
 		this.sampleRate = options.sampleRate;
-		this.factorySource = options.factory.toString();
+		const source = options.factorySource ?? options.factory?.toString();
+		if (!source) throw new Error('core host needs a factory or a factorySource');
+		this.factorySource = source;
 		this.blockFrames = Math.max(64, Math.floor(options.blockFrames ?? 1024));
 		this.queueFrames = Math.max(this.blockFrames, Math.floor((options.queueSeconds ?? 0.3) * options.sampleRate));
 		this.requested = options.mode ?? 'auto';
@@ -228,7 +252,7 @@ export class AudioCoreHost implements BlockSource {
 			//the first failure of a core that cannot be built at all belongs to the caller
 			if (!this.runner && this.failure) throw this.failure;
 		}
-		this.pump(0);
+		if (options.prefetch !== false) this.pump(0);
 	}
 
 	/** `'worker'` while the core runs off the main thread, `'inline'` otherwise */
@@ -241,7 +265,12 @@ export class AudioCoreHost implements BlockSource {
 			mode: this.mode_,
 			...(this.fallbackReason ? { fallbackReason: this.fallbackReason } : {}),
 			underruns: this.underruns,
-			queuedFrames: this.blocks.reduce((total, block) => total + block.left.length, 0),
+			//a block already read, or half read, stays in the list until the next read purges it: count what is ahead only
+			queuedFrames: this.blocks.reduce(
+				(total, block) =>
+					total + Math.max(0, block.start + block.left.length - Math.max(block.start, this.readFrame)),
+				0,
+			),
 			load: this.load,
 		};
 	}
@@ -251,16 +280,39 @@ export class AudioCoreHost implements BlockSource {
 		this.send({ frame: atFrame ?? this.requestedUntil, status, data1, data2 });
 	}
 
+	/** sends many channel messages in one go, each at its own frame: one post to the worker instead of one per message */
+	events(list: readonly TimedMessage[]): void {
+		if (list.length > 0) this.post({ type: 'events', events: list.map((event) => ({ ...event })) });
+	}
+
+	/**
+	 * Starts a piece: silences the core, drops what was rendered ahead, and queues `list` before any
+	 * further audio is asked for. A host starts rendering ahead as soon as it exists, so messages sent
+	 * afterwards with `events` would reach the core after the audio they belong to was already made and
+	 * start late; this orders the reset, the messages and the rendering so they cannot.
+	 */
+	start(list: readonly TimedMessage[]): void {
+		this.discard();
+		this.events(list);
+		this.pump(0);
+	}
+
 	sysex(bytes: Uint8Array, atFrame?: number): void {
 		this.send({ frame: atFrame ?? this.requestedUntil, status: 0xf0, data1: 0, data2: 0, sysex: bytes });
 	}
 
 	/** silences the core and discards everything rendered ahead of the playhead */
 	reset(): void {
+		this.discard();
+		this.pump(0);
+	}
+
+	/** resets the core at the playhead and drops what was rendered ahead of it, including blocks still in flight */
+	private discard(): void {
 		this.blocks = [];
+		this.epoch++;
 		this.requestedUntil = this.readFrame;
 		this.post({ type: 'reset', frame: this.readFrame });
-		this.pump(0);
 	}
 
 	/** moves the playhead; a different frame resets the core, the same frame leaves it playing */
@@ -283,7 +335,7 @@ export class AudioCoreHost implements BlockSource {
 		const queuedUntil = this.readFrame + lead;
 		while (this.requestedUntil < queuedUntil) {
 			this.requestedUntil += this.blockFrames;
-			this.post({ type: 'render', frames: this.blockFrames });
+			this.post({ type: 'render', frames: this.blockFrames, epoch: this.epoch });
 		}
 	}
 
@@ -382,6 +434,8 @@ export class AudioCoreHost implements BlockSource {
 		}
 		if (message.type === 'block') {
 			const block = message as unknown as RenderedBlock;
+			//a block asked for before the last reset belongs to audio that was thrown away
+			if (block.epoch !== this.epoch) return;
 			this.noteLoad(block);
 			this.blocks.push(block);
 			this.warm = true;

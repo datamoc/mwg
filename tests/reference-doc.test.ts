@@ -7,6 +7,7 @@ import * as twoD from '../src/two-d/index.ts';
 import * as render from '../src/two-d/render/index.ts';
 import * as assets from '../src/assets/index.ts';
 import * as audio from '../src/audio/index.ts';
+import * as music from '../src/music/index.ts';
 import * as battle from '../src/battle/index.ts';
 import * as board from '../src/board/index.ts';
 import * as actors from '../src/actors/index.ts';
@@ -47,6 +48,7 @@ const MODULES: Record<string, Record<string, unknown>> = {
 	render,
 	assets,
 	audio,
+	music,
 	battle,
 	board,
 	actors,

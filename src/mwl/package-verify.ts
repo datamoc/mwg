@@ -26,6 +26,21 @@ export interface VerifyPackageOptions {
 	readonly limits?: Partial<PackageLimits>;
 	/** also refuse what this game would refuse */
 	readonly policy?: PackagePolicy;
+	/**
+	 * the package is meant to be shared with others: a `synth-patch` bank then needs a licence too,
+	 * since a third party's bank stays its author's (media always need one, shared or not)
+	 */
+	readonly shared?: boolean;
+	/**
+	 * looks inside each `synth-patch` asset, for what only an instrument's own parser knows (the
+	 * retro-audio package's, for the D-50 waves its model does not render). What it returns as
+	 * `warnings` is reported as a warning and never refuses the package: a patch that plays with a
+	 * substitute wave is still a patch; `errors` it returns do refuse.
+	 */
+	readonly inspectPatch?: (
+		bytes: Uint8Array,
+		asset: { readonly id: string; readonly path: string },
+	) => { readonly warnings?: readonly string[]; readonly errors?: readonly string[] } | void;
 }
 
 /**
@@ -60,7 +75,17 @@ export async function verifyPackage(bytes: Uint8Array, options: VerifyPackageOpt
 		const rom = await detectRomImage(file.data, file.path);
 		if (rom) errors.push(rom.message);
 	}
-	checkAssets(document, digests, errors);
+	checkAssets(document, digests, errors, options.shared === true);
+	if (options.inspectPatch) {
+		for (const asset of document.assets) {
+			const file =
+				asset.kind === 'synth-patch' ? pkg.files.find((entry) => entry.path === asset.path) : undefined;
+			if (!file) continue;
+			const found = options.inspectPatch(file.data, { id: asset.id, path: asset.path });
+			for (const warning of found?.warnings ?? []) warnings.push(`asset "${asset.id}": ${warning}`);
+			for (const error of found?.errors ?? []) errors.push(`asset "${asset.id}": ${error}`);
+		}
+	}
 	checkReferences(document, errors);
 	for (const file of pkg.files)
 		if (
@@ -80,8 +105,15 @@ export async function verifyPackage(bytes: Uint8Array, options: VerifyPackageOpt
 	return { ok: errors.length === 0, errors, warnings, ref: packageRef(pkg), capabilities };
 }
 
-function checkAssets(document: PackageDocument, digests: ReadonlyMap<string, string>, errors: string[]): void {
+function checkAssets(
+	document: PackageDocument,
+	digests: ReadonlyMap<string, string>,
+	errors: string[],
+	shared: boolean,
+): void {
 	for (const asset of document.assets) {
+		if (shared && asset.kind === 'synth-patch' && !asset.license)
+			errors.push(`asset "${asset.id}": a shared synth-patch needs a license`);
 		const actual = digests.get(asset.path);
 		if (actual === undefined) errors.push(`asset "${asset.id}": "${asset.path}" is not in the package`);
 		else if (asset.sha256 !== undefined && asset.sha256 !== actual)

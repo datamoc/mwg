@@ -105,6 +105,26 @@ the requested effects cluster (cloth, spring, haze, glow) is complete with state
 budgets and reduced-motion handling, and the asset pipeline ends with the embedded
 report 422.
 
+Items 447-456, added 2026-10-18 from the retro-audio package's updated `MWG-REQUIREMENTS.md`
+(sections 1.4, 1.9, 1.10, 1.11, 2.1 and 5) and its author's follow-up list, sat at the end at low
+priority the same way. Their mwg-side parts are implemented in the same session; see
+[CLOSED.md](CLOSED.md) for 447 to 458, all implemented. The only things not done are the ones that need a
+device this machine does not have (see the review below).
+
+Items 449, 457 and 458 are implemented as far as mwg goes, together with the retro-audio package (work
+done in both repositories on 2026-10-18, still uncommitted in the package); see [CLOSED.md](CLOSED.md). 449: the
+package's NSF, PSID and SPC players take a `budget` that mwg's `InstructionBudget` fits, and its DEFLATE, gzip,
+zlib and LHA readers refuse to produce more than `DEFAULT_MAX_OUTPUT` (64 MiB, mwg's own default) whatever size
+the file claims. 457: the package ships `retroCoreSource(name)` and `tools/check-retro-cores.mjs` runs every
+packaged core through `AudioCoreHost` against a direct render. 458: the package's `inspectD50Patch` plugs into
+`verifyPackage({ inspectPatch })` and reports the PCM waves 77-100 a patch uses.
+
+Priority review, 2026-10-18: the list was re-read end to end. The one numbered item left that needs another
+project is 401 (a port session), and 412 waits on the npm owner. Opus was tried in Chrome 155 and Firefox 158;
+Safari and the iOS and Android WebViews need devices this machine does not have. Nothing is promoted. The audio
+and music additions cost bundle size (global bundle +2.5 % gzip, `dist` +2.5 %), accepted and recorded in
+`tools/bundle-size.json`; no render path changed.
+
 ### Parked decisions
 
 Not open work, and not forgotten: these are decisions this project has deliberately

@@ -1,5 +1,17 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	readdirSync,
+	realpathSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -21,7 +33,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 /** the library: the TypeScript source in this repository, the built `dist/` in an installed package */
 async function loadLibrary() {
 	try {
-		const [midi, render, soundFont, wav, resample, distance, synth] = await Promise.all([
+		const [midi, render, soundFont, wav, resample, distance, synth, exporter, audit, share] = await Promise.all([
 			import('../src/audio/Midi.ts'),
 			import('../src/audio/MidiRender.ts'),
 			import('../src/audio/SoundFont.ts'),
@@ -29,10 +41,28 @@ async function loadLibrary() {
 			import('../src/audio/Resample.ts'),
 			import('../src/audio/SpectralDistance.ts'),
 			import('../src/audio/MidiSynth.ts'),
+			import('../src/audio/AudioExport.ts'),
+			import('../src/audio/Audit.ts'),
+			import('../src/core/ShareLink.ts'),
 		]);
-		return { ...midi, ...render, ...soundFont, ...wav, ...resample, ...distance, ...synth };
+		return {
+			...midi,
+			...render,
+			...soundFont,
+			...wav,
+			...resample,
+			...distance,
+			...synth,
+			...exporter,
+			...audit,
+			...share,
+		};
 	} catch {
-		return import(pathToFileURL(join(HERE, '..', 'dist', 'audio', 'index.js')).href);
+		const [audio, core] = await Promise.all([
+			import(pathToFileURL(join(HERE, '..', 'dist', 'audio', 'index.js')).href),
+			import(pathToFileURL(join(HERE, '..', 'dist', 'core', 'index.js')).href),
+		]);
+		return { ...audio, ...core };
 	}
 }
 
@@ -148,11 +178,16 @@ export async function inspectAudio(bytes, name = '') {
 
 /** `"0,9"` as `[0, 9]`, each a MIDI channel */
 export function parseChannelList(text) {
+	return parseIntList(text, 15, 'channel');
+}
+
+/** a comma list of whole numbers from 0 to `max`, named `what` in the error */
+function parseIntList(text, max, what) {
 	return text.split(',').map((item) => {
-		const channel = Number(item.trim());
-		if (!Number.isInteger(channel) || channel < 0 || channel > 15)
-			throw new Error(`invalid channel "${item}": expected 0 to 15`);
-		return channel;
+		const value = Number(item.trim());
+		if (!Number.isInteger(value) || value < 0 || value > max)
+			throw new Error(`invalid ${what} "${item}": expected 0 to ${max}`);
+		return value;
 	});
 }
 
@@ -175,6 +210,94 @@ export async function renderToWav(midiBytes, options = {}) {
 		channels: options.channels,
 	});
 	return lib.encodeWav(rendered, options.float ? 'float32' : 'pcm16');
+}
+
+/**
+ * Writes a MIDI or WAV file as FLAC or Opus (or WAV) through `AudioExport`. FLAC and Opus bytes
+ * come from `encoderModule`, whose default export is `(frames, { format, bitrate, tags }) =>
+ * Uint8Array`: the retro-audio package's `exportAudio` wrapped to that shape. Opus needs an
+ * encoder that works under Node, such as one that calls `ffmpeg`, which stays a developer tool.
+ */
+export async function exportFile(bytes, name, format, options = {}) {
+	const lib = await loadLibrary();
+	const detected = detectAudioFormat(bytes, name);
+	let frames;
+	if (detected.kind === 'midi') {
+		frames = lib.renderMidiToBuffer(lib.parseMidi(bytes), { sampleRate: options.rate });
+	} else if (detected.kind === 'wav') {
+		frames = lib.decodeWav(bytes);
+		if (options.rate) frames = lib.resampleStereo(frames, options.rate);
+	} else {
+		throw new Error(`cannot export ${detected.format} to ${format}: give a MIDI or WAV file`);
+	}
+	let encode;
+	if (format !== 'wav') {
+		if (!options.encoderModule)
+			throw new Error(
+				`writing ${format} needs --encoder <module> (the retro-audio package's exportAudio, wrapped) or --encoder ffmpeg`,
+			);
+		encode =
+			options.encoderModule === 'ffmpeg'
+				? (rendered, request) => ffmpegEncode(lib, rendered, request)
+				: (await importModule(options.encoderModule)).default;
+		if (typeof encode !== 'function')
+			throw new Error(
+				'an encoder module must export a default function (frames, { format, bitrate, tags }) => bytes',
+			);
+	}
+	const service = new lib.AudioExport({ encoders: { flac: encode, opus: encode }, maxBytes: options.maxBytes });
+	return service.export(frames, { format, bitrate: options.bitrate, tags: options.tags });
+}
+
+/** `auditEngines` over the engines named in `synth` (a comma list), after importing the modules that register them */
+export async function auditRender(options) {
+	const lib = await loadLibrary();
+	for (const module of options.modules ?? []) await importModule(module);
+	return lib.auditEngines({
+		engines: options.synth.split(',').map((name) => name.trim()),
+		programs: options.programs,
+		notes: options.notes,
+		sampleRate: options.rate,
+	});
+}
+
+/**
+ * FLAC or Opus through the `ffmpeg` on the developer's machine (`--encoder ffmpeg`): the frames go
+ * out as a WAV, come back encoded, with the request's tags. A tool for building assets, never
+ * something a player's machine needs.
+ */
+function ffmpegEncode(lib, frames, request) {
+	const dir = mkdtempSync(join(tmpdir(), 'mwg-ffmpeg-'));
+	try {
+		const input = join(dir, 'in.wav');
+		const output = join(dir, `out.${request.format === 'opus' ? 'opus' : 'flac'}`);
+		writeFileSync(input, lib.encodeWav(frames));
+		const args = ['-v', 'error', '-y', '-i', input];
+		if (request.format === 'opus') args.push('-c:a', 'libopus', '-b:a', `${request.bitrate ?? 128}k`);
+		else args.push('-c:a', 'flac', ...(request.bitsPerSample === 24 ? ['-sample_fmt', 's32'] : []));
+		for (const [key, value] of Object.entries(request.tags ?? {})) args.push('-metadata', `${key}=${value}`);
+		const run = spawnSync('ffmpeg', [...args, output], { encoding: 'utf8' });
+		if (run.error) throw new Error(`--encoder ffmpeg needs ffmpeg on the PATH: ${run.error.message}`);
+		if (run.status !== 0) throw new Error(`ffmpeg failed: ${run.stderr.trim()}`);
+		return new Uint8Array(readFileSync(output));
+	} finally {
+		rmSync(dir, { recursive: true, force: true });
+	}
+}
+
+/** makes a share link from a JSON payload file's text */
+export async function makeShareLink(payloadText, options) {
+	const lib = await loadLibrary();
+	return lib.encodeShareLink(
+		{ type: options.type, id: options.id, payload: JSON.parse(payloadText) },
+		{ base: options.base, maxChars: options.maxChars },
+	);
+}
+
+/** reads a share link into `{ ok, type, id, payload }` or `{ ok: false, reason }` */
+export async function readShareLink(link) {
+	const lib = await loadLibrary();
+	return lib.decodeShareLink(link);
 }
 
 /** resamples WAV bytes to another rate */
@@ -288,11 +411,23 @@ const USAGE = `usage: mwg-audio <command>
   render <in.mid> -o <out.wav> [--synth <names>] [--module <file>...] [--soundfont <file>] [--rate <hz>]
                                                  [--channels 0,9] [--gain <0-1>] [--float]
                                                  a MIDI file to WAV through a registered engine (--module imports the code that registers it)
-  convert <in> <out> [--rate <hz>] [--converter <module>]
+  convert <in> <out> [--rate <hz>] [--converter <module>] [--encoder <module>] [--bitrate <kbps>] [--max-mb <n>]
                                                  .mid to .wav, .wav to .wav at another rate, or any file through a converter module
-                                                 (MWA and the other chip formats come from the retro-audio package's converter)
+                                                 (MWA and the other chip formats come from the retro-audio package's converter);
+                                                 .flac and .opus outputs take their bytes from --encoder, a module whose default export is
+                                                 (frames, { format, bitrate, tags }) => bytes, such as the package's exportAudio wrapped;
+                                                 --encoder ffmpeg uses the ffmpeg on the PATH (a developer tool, never a player's)
+  share make <payload.json> --type <t> --id <id@version> [--base <url>] [--max <chars>]
+                                                 a share link (envelope in the URL fragment) around a JSON payload
+  share read <link>                              what a link holds, or why it is refused (checksum, size budget, version)
   budget <file|folder>... [--rate <hz>] [--max-mb <n>] [--max-track-seconds <n>] [--json]
                                                  disk, page and decoded memory cost of the audio; exits 1 over a budget
+  audit --synth <names> [--module <file>...] [--programs 0,24] [--notes 48,69,84] [--rate <hz>] [--json]
+                                                 renders calibration notes through each engine and flags a fallback, silence, clipping,
+                                                 a DC offset or a wrong pitch; exits 1 when anything is flagged
+  bench --synth <name> [--module <file>...] [--voices 16] [--seconds 10] [--rate <hz>] [--max-ratio <r>] [--json]
+                                                 times an engine on held voices and prints its share of real time (1 is exactly real
+                                                 time); exits 1 over --max-ratio
   compare <a.wav> <b.wav> [--max <db>]           spectral distance between two renders; exits 1 over --max`;
 
 async function main(argv) {
@@ -328,6 +463,16 @@ async function main(argv) {
 			'--max',
 			'--max-mb',
 			'--max-track-seconds',
+			'--encoder',
+			'--bitrate',
+			'--type',
+			'--id',
+			'--base',
+			'--programs',
+			'--notes',
+			'--voices',
+			'--seconds',
+			'--max-ratio',
 		]);
 		for (let i = 0; i < rest.length; i++) {
 			if (valued.has(rest[i])) i++;
@@ -371,6 +516,13 @@ async function main(argv) {
 			throw new Error(
 				"converting to MWA is the retro-audio package's job: pass its converter with --converter <module>",
 			);
+		} else if (target === '.flac' || target === '.opus') {
+			result = await exportFile(bytes, input, target.slice(1), {
+				rate: number('--rate'),
+				encoderModule: flag('--encoder'),
+				bitrate: number('--bitrate'),
+				maxBytes: number('--max-mb') === undefined ? undefined : number('--max-mb') * MEGABYTE,
+			});
 		} else if (target === '.wav') {
 			const detected = detectAudioFormat(bytes, input);
 			if (detected.kind === 'midi') result = await renderToWav(bytes, { rate: number('--rate') });
@@ -410,6 +562,64 @@ async function main(argv) {
 		}
 		for (const problem of report.problems) console.error(problem);
 		if (report.problems.length > 0) process.exitCode = 1;
+	} else if (command === 'share') {
+		const [action, input] = positional();
+		if (action === 'make') {
+			if (!input || !flag('--type') || !flag('--id'))
+				throw new Error('usage: mwg-audio share make <payload.json> --type <t> --id <id@version>');
+			console.log(
+				await makeShareLink(readFileSync(input, 'utf8'), {
+					type: flag('--type'),
+					id: flag('--id'),
+					base: flag('--base'),
+					maxChars: number('--max'),
+				}),
+			);
+		} else if (action === 'read') {
+			if (!input) throw new Error('usage: mwg-audio share read <link>');
+			const result = await readShareLink(input);
+			console.log(JSON.stringify(result, null, 2));
+			if (!result.ok) process.exitCode = 1;
+		} else {
+			throw new Error('usage: mwg-audio share make|read ...');
+		}
+	} else if (command === 'audit') {
+		if (!flag('--synth')) throw new Error('usage: mwg-audio audit --synth <names> [--module <file>...]');
+		const report = await auditRender({
+			synth: flag('--synth'),
+			modules: valuesAfter('--module'),
+			programs: flag('--programs') ? parseIntList(flag('--programs'), 127, 'program') : undefined,
+			notes: flag('--notes') ? parseIntList(flag('--notes'), 127, 'note') : undefined,
+			rate: number('--rate'),
+		});
+		if (rest.includes('--json')) {
+			console.log(JSON.stringify(report, null, 2));
+		} else {
+			for (const f of report.findings) {
+				const where = f.program === undefined ? '' : ` program ${f.program} note ${f.note}`;
+				console.log(`${f.engine}  ${f.kind}${where}: ${f.detail}`);
+			}
+			console.log(`${report.rendered} notes rendered, ${report.findings.length} flagged`);
+		}
+		if (report.findings.length > 0) process.exitCode = 1;
+	} else if (command === 'bench') {
+		if (!flag('--synth'))
+			throw new Error('usage: mwg-audio bench --synth <name> [--module <file>...] [--voices 16]');
+		const lib = await loadLibrary();
+		for (const module of valuesAfter('--module')) await importModule(module);
+		const result = lib.benchEngine({
+			engine: flag('--synth'),
+			voices: number('--voices'),
+			seconds: number('--seconds'),
+			sampleRate: number('--rate'),
+		});
+		if (rest.includes('--json')) console.log(JSON.stringify(result, null, 2));
+		else
+			console.log(
+				`${result.engine}: ${result.voices} voices, ${result.audioSeconds.toFixed(1)} s of audio in ${result.renderSeconds.toFixed(2)} s, ${result.ratio.toFixed(2)}x real time` +
+					(result.ratio >= 0.5 ? ' (too heavy for the main thread: play it through playMidiHosted)' : ''),
+			);
+		if (number('--max-ratio') !== undefined && result.ratio > number('--max-ratio')) process.exitCode = 1;
 	} else if (command === 'compare') {
 		const [a, b] = positional();
 		if (!a || !b) throw new Error('usage: mwg-audio compare <a.wav> <b.wav>');

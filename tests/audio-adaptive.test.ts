@@ -104,6 +104,50 @@ test('switching versions crossfades at the same frame and keeps the levels', () 
 	assert.equal(voicesOf(context).length, 4, 'switching to the version already playing does nothing');
 });
 
+test('a bar-quantised switch waits for the next bar line and carries the frame of that bar', () => {
+	const { context, music, gains } = setup();
+	music.load('calm', stems(context, ['drums']), { barSeconds: 2 });
+	music.load('fight', stems(context, ['drums']), { barSeconds: 2 });
+	music.play({ levels: { drums: 1 } });
+	context.advance(0.5);
+	music.switchVersion('fight', 1, 'bar');
+	const [oldDrums, newDrums] = voicesOf(context);
+	assert.equal(newDrums.startedAt, 2, 'the new version starts at the bar line, 1.5 s away');
+	assert.equal(newDrums.offset, 2, 'at the frame the old one reaches then');
+	assert.equal(oldDrums.stoppedAt, 2 + 1.05);
+	assert.deepEqual(gains[0].ramps.at(-1), { value: 0, time: 3 }, 'the old master fades from the bar line');
+	assert.equal(music.version, 'fight');
+});
+
+test('a bar-quantised switch made exactly on a bar line happens at once', () => {
+	const { context, music } = setup();
+	music.load('calm', stems(context, ['drums']), { barSeconds: 2 });
+	music.load('fight', stems(context, ['drums']), { barSeconds: 2 });
+	music.play({ levels: { drums: 1 } });
+	context.advance(2);
+	music.switchVersion('fight', 0, 'bar');
+	assert.equal(voicesOf(context)[1].startedAt, 2);
+	assert.equal(voicesOf(context)[1].offset, 2);
+});
+
+test('a bar-quantised level change starts its fade at the bar line', () => {
+	const { context, music, gains } = setup();
+	music.load('calm', stems(context, ['drums', 'pads']), { barSeconds: 2 });
+	music.play({ levels: { pads: 1 } });
+	context.advance(0.5);
+	music.setLevel('drums', 1, 1, 'bar');
+	assert.deepEqual(gains[1].ramps, [{ value: 1, time: 3 }], 'from 2 s, over 1 s');
+	assert.deepEqual(music.levels(), { drums: 1, pads: 1 });
+});
+
+test('quantising to a bar needs the version to declare its bar length', () => {
+	const { context, music } = setup();
+	music.load('calm', stems(context, ['drums']));
+	music.play();
+	assert.throws(() => music.setLevel('drums', 1, 1, 'bar'), /declares no barSeconds/);
+	assert.throws(() => music.load('bad', stems(context, ['drums']), { barSeconds: -1 }), /must be positive/);
+});
+
 test('stopping fades the master, then the position is forgotten', () => {
 	const { context, music, gains } = setup();
 	music.load('calm', stems(context, ['drums']));

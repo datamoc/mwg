@@ -43,6 +43,15 @@ export type { RunHistoryEntry, RunHistoryOptions } from './RunHistory.ts';
 export { PlayerStats } from './Stats.ts';
 export type { PlayerStatsOptions } from './Stats.ts';
 
+export { bisectShareLink, decodeShareLink, dropByPriority, encodeShareLink, fitShareLink } from './ShareLink.ts';
+export type {
+	FittedShareLink,
+	ShareDecoded,
+	ShareDecodeOptions,
+	ShareEncodeOptions,
+	ShareEnvelope,
+	ShareFailure,
+} from './ShareLink.ts';
 export { TelemetryClient } from './Telemetry.ts';
 export type { TelemetryEvent, TelemetryOptions, TelemetryResponse } from './Telemetry.ts';
 export { NewsClient, NewsSeenTracker } from './News.ts';

@@ -1,8 +1,12 @@
 {
 	"name": "@datamoc/mwg",
-	"version": "0.46.0",
+	"version": "0.47.0",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
+	"funding": {
+		"type": "individual",
+		"url": "https://buy.stripe.com/bJe8wOeUq4oZ2kXfyeaIM00"
+	},
 	"homepage": "https://datamoc.github.io/mwg/",
 	"bugs": {
 		"url": "https://github.com/datamoc/mwg/issues"
@@ -208,6 +212,10 @@
 		"./physics/xpbd": {
 			"types": "./dist/physics/xpbd.d.ts",
 			"import": "./dist/physics/xpbd.js"
+		},
+		"./music": {
+			"types": "./dist/music/index.d.ts",
+			"import": "./dist/music/index.js"
 		},
 		"./skeleton": {
 			"types": "./dist/skeleton/index.d.ts",

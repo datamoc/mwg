@@ -42,6 +42,7 @@ export function aliasFiles(main) {
 				//the same repository, with the folder this package is generated into so npm links to it
 				repository: { ...main.repository, directory: 'packages/mw_games' },
 				homepage: main.homepage,
+				funding: main.funding,
 				bugs: main.bugs,
 				keywords: main.keywords,
 				engines: main.engines,
