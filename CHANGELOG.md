@@ -7,13 +7,18 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.45.0] - 2026-10-18
+
+The package is now `@datamoc/mwg`, with `@datamoc/mw_games` kept as a forwarding package, and the standalone bundle follows the new name. Both renames are breaking and are taken now, before 1.0.0.
+
 ### Changed
 
 - **`@datamoc/mwg` is now the main package name.** It replaces `@datamoc/mw_games` in `package.json`,
   every import specifier in the documentation, the tools and the tests, and the tarball name. `@datamoc/mw_games`
   becomes the generated forwarding package (`packages/mw_games`, `npm run alias:write`): each entry point
-  re-exports `@datamoc/mwg`, so installs made under the old name keep resolving. The standalone bundle keeps
-  its `mw_games.global.js` file name and `window.mw_games` global.
+  re-exports `@datamoc/mwg`, so installs made under the old name keep resolving. The standalone bundle follows:
+  `dist/mw_games.global.js` becomes `dist/mwg.global.js` and the `window.mw_games` global becomes
+  `window.mwg`, a breaking change for pages loading the old file.
 
 ## [0.44.2] - 2026-10-17
 
