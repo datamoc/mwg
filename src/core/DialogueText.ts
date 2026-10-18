@@ -29,7 +29,7 @@
  *
  * @example
  * ```ts
- * import { parseDialogueLines, type DialogueLine } from '@datamoc/mw_games/core';
+ * import { parseDialogueLines, type DialogueLine } from '@datamoc/mwg/core';
  *
  * const lines: DialogueLine[] = parseDialogueLines(`
  * @alice Hello.
@@ -51,7 +51,7 @@ export interface DialogueLine {
  *
  * @example
  * ```ts
- * import { parseDialogueLines } from '@datamoc/mw_games/core';
+ * import { parseDialogueLines } from '@datamoc/mwg/core';
  *
  * const lines = parseDialogueLines(`
  * The bridge creaks.

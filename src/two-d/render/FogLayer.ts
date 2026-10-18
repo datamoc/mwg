@@ -17,7 +17,7 @@ export type FogCell = number | ArrayLike<number>;
  *
  * @example
  * ```ts
- * import { paintFogPixels } from '@datamoc/mw_games/two-d/render';
+ * import { paintFogPixels } from '@datamoc/mwg/two-d/render';
  *
  * const pixels = new Uint8ClampedArray(2 * 1 * 4);
  * paintFogPixels(pixels, 2, 1, 1, (x) => x, [[0, 0, 0, 0], [0, 0, 0, 255]]);
@@ -67,7 +67,7 @@ export interface FogLayerOptions {
  *
  * @example
  * ```ts
- * import { FogLayer } from '@datamoc/mw_games/two-d/render';
+ * import { FogLayer } from '@datamoc/mwg/two-d/render';
  *
  * const fog = new FogLayer({
  *   width: 20,

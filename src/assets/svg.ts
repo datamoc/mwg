@@ -20,7 +20,7 @@
  *
  * @example
  * ```ts
- * import { sanitizeSvg, splitSvgGroups } from '@datamoc/mw_games/assets';
+ * import { sanitizeSvg, splitSvgGroups } from '@datamoc/mwg/assets';
  *
  * const puppet = '<svg><g id=\"arm\"><rect/></g></svg>';
  * const parts = splitSvgGroups(sanitizeSvg(puppet));
@@ -72,7 +72,7 @@ export interface SvgVariant {
  *
  * @example
  * ```ts
- * import { svgDataUri } from '@datamoc/mw_games/assets';
+ * import { svgDataUri } from '@datamoc/mwg/assets';
  *
  * console.log(svgDataUri('<svg/>').startsWith('data:image/svg+xml,')); // true
  * ```
@@ -91,7 +91,7 @@ export function svgDataUri(source: string): string {
  *
  * @example
  * ```ts
- * import { svgScaleVariants } from '@datamoc/mw_games/assets';
+ * import { svgScaleVariants } from '@datamoc/mwg/assets';
  *
  * const [sharp] = svgScaleVariants('<svg/>', [{ name: '3x', resolution: 3 }]);
  * console.log(sharp.resolution); // 3

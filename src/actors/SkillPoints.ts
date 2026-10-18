@@ -24,7 +24,7 @@ export interface SkillPointsOptions {
  *
  * @example
  * ```ts
- * import { SkillPoints, StatBlock } from '@datamoc/mw_games/actors';
+ * import { SkillPoints, StatBlock } from '@datamoc/mwg/actors';
  *
  * const stats = new StatBlock({ base: { lockpicking: 0 } });
  * const points = new SkillPoints(stats, { cap: () => 10, cost: (_stat, rank) => rank });

@@ -9,7 +9,7 @@
  *
  * @example
  * ```ts
- * import { FixedStepper } from '@datamoc/mw_games/core';
+ * import { FixedStepper } from '@datamoc/mwg/core';
  *
  * const stepper = new FixedStepper(1 / 60);
  * const world = { step: (h: number) => console.log('step', h) };

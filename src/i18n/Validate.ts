@@ -16,7 +16,7 @@ export interface CatalogKeyDiff {
  *
  * @example
  * ```ts
- * import { diffCatalogKeys } from '@datamoc/mw_games/i18n';
+ * import { diffCatalogKeys } from '@datamoc/mwg/i18n';
  *
  * const en = { locale: 'en', direction: 'ltr' as const, messages: { greeting: 'Hello', farewell: 'Bye' } };
  * const fr = { locale: 'fr', direction: 'ltr' as const, messages: { greeting: 'Bonjour', extra: 'oops' } };
@@ -53,7 +53,7 @@ export interface CatalogIssue {
  *
  * @example
  * ```ts
- * import { validateCatalog } from '@datamoc/mw_games/i18n';
+ * import { validateCatalog } from '@datamoc/mwg/i18n';
  *
  * const catalog = {
  *   locale: 'en', direction: 'ltr' as const,
@@ -100,7 +100,7 @@ export interface AudioIssue {
  *
  * @example
  * ```ts
- * import { validateMessageAudio } from '@datamoc/mw_games/i18n';
+ * import { validateMessageAudio } from '@datamoc/mwg/i18n';
  *
  * const catalog = {
  *   locale: 'en', direction: 'ltr' as const,

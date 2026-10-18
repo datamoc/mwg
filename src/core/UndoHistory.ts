@@ -10,7 +10,7 @@
  *
  * @example
  * ```ts
- * import { UndoHistory } from '@datamoc/mw_games/core';
+ * import { UndoHistory } from '@datamoc/mwg/core';
  *
  * interface TurnState { x: number; y: number }
  *

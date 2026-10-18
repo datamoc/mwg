@@ -18,7 +18,7 @@ const SCAN_LIMIT = 64 * 1024;
  *
  * @example
  * ```ts
- * import { parseVorbisLoopTags } from '@datamoc/mw_games/audio';
+ * import { parseVorbisLoopTags } from '@datamoc/mwg/audio';
  *
  * declare const oggBytes: Uint8Array;
  *
@@ -69,7 +69,7 @@ export function parseVorbisLoopTags(bytes: Uint8Array): VorbisLoopTags | null {
  *
  * @example
  * ```ts
- * import { loopRegionFromTags } from '@datamoc/mw_games/audio';
+ * import { loopRegionFromTags } from '@datamoc/mwg/audio';
  *
  * console.log(loopRegionFromTags({ loopStart: 44100, loopLength: 44100 }, 44100, 10)); // { start: 1, end: 2 }
  * ```
@@ -93,7 +93,7 @@ export function loopRegionFromTags(
  *
  * @example
  * ```ts
- * import { loopRegionFromFile } from '@datamoc/mw_games/audio';
+ * import { loopRegionFromFile } from '@datamoc/mwg/audio';
  *
  * console.log(loopRegionFromFile({ loopStartSeconds: 8, durationSeconds: 60 })); // { start: 8, end: 60 }
  * ```

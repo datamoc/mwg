@@ -19,7 +19,7 @@ export interface ScriptHost {
  *
  * @example
  * ```ts
- * import { createExpressionScriptHost } from '@datamoc/mw_games/mwl';
+ * import { createExpressionScriptHost } from '@datamoc/mwg/mwl';
  *
  * const host = createExpressionScriptHost();
  * console.log(host.evaluate('level * 2', { level: 3 })); // 6

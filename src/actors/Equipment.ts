@@ -23,10 +23,10 @@ export interface EquipmentOptions<Slot extends string, Item extends EquippableIt
  *
  * @example
  * ```ts
- * import { EquipmentSlots, StatBlock } from '@datamoc/mw_games/actors';
+ * import { EquipmentSlots, StatBlock } from '@datamoc/mwg/actors';
  *
  * const stats = new StatBlock({ base: { attack: 3 } });
- * const equipment = new EquipmentSlots<'weapon' | 'armor', { modifiers?: import('@datamoc/mw_games/actors').Modifier[] }>(
+ * const equipment = new EquipmentSlots<'weapon' | 'armor', { modifiers?: import('@datamoc/mwg/actors').Modifier[] }>(
  *   ['weapon', 'armor'],
  *   stats
  * );

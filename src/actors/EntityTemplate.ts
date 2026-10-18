@@ -26,8 +26,8 @@ import { ReactionTable } from '../core/Reactions.ts';
  *
  * @example
  * ```ts
- * import { parseCSV } from '@datamoc/mw_games/core';
- * import { buildEntities, type EntityTemplateRow } from '@datamoc/mw_games/actors';
+ * import { parseCSV } from '@datamoc/mwg/core';
+ * import { buildEntities, type EntityTemplateRow } from '@datamoc/mwg/actors';
  *
  * const csv = `id,attack,speed,growth,startingAffix,startingItem,lowHpReaction
  * fireling,10,8,steep,blazing,ember_charm,0.25`;
@@ -87,7 +87,7 @@ const RESERVED_KEYS = new Set(['id', 'growth', 'level', 'startingAffix', 'starti
 /**
  * @example
  * ```ts
- * import { buildEntity } from '@datamoc/mw_games/actors';
+ * import { buildEntity } from '@datamoc/mwg/actors';
  *
  * const goblin = buildEntity({ id: 'goblin', attack: 4, speed: 3 }, {});
  * console.log(goblin.stats.get('attack')); // 4
@@ -150,7 +150,7 @@ export function buildEntities(
  *
  * @example
  * ```ts
- * import { buildEntity, toEntitySaveState, fromEntitySaveState, type EntityTemplateCatalog } from '@datamoc/mw_games/actors';
+ * import { buildEntity, toEntitySaveState, fromEntitySaveState, type EntityTemplateCatalog } from '@datamoc/mwg/actors';
  *
  * const catalog: EntityTemplateCatalog = {
  *   growthCurves: { steep: { maxLevel: 20, experienceFor: (level) => level * level * 10 } },

@@ -26,7 +26,7 @@ export interface HelpScreenOptions {
  *
  * @example
  * ```ts
- * import { HelpScreen } from '@datamoc/mw_games/two-d/ui';
+ * import { HelpScreen } from '@datamoc/mwg/two-d/ui';
  *
  * const help = new HelpScreen({
  * 	width: 320,

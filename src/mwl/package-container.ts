@@ -18,7 +18,7 @@
  *
  * @example
  * ```ts
- * import { PackageError } from '@datamoc/mw_games/mwl';
+ * import { PackageError } from '@datamoc/mwg/mwl';
  *
  * console.log(new PackageError('refused') instanceof Error); // true
  * ```
@@ -35,7 +35,7 @@ export class PackageError extends Error {
  *
  * @example
  * ```ts
- * import { decodePackage, PackageFormatError } from '@datamoc/mw_games/mwl';
+ * import { decodePackage, PackageFormatError } from '@datamoc/mwg/mwl';
  *
  * await decodePackage(new Uint8Array(8)).catch((error) => console.log(error instanceof PackageFormatError)); // true
  * ```
@@ -52,7 +52,7 @@ export class PackageFormatError extends PackageError {
  *
  * @example
  * ```ts
- * import { PackageIntegrityError } from '@datamoc/mw_games/mwl';
+ * import { PackageIntegrityError } from '@datamoc/mwg/mwl';
  *
  * console.log(new PackageIntegrityError('sha256 mismatch').name); // 'PackageIntegrityError'
  * ```
@@ -69,7 +69,7 @@ export class PackageIntegrityError extends PackageError {
  *
  * @example
  * ```ts
- * import { PackageLimitError } from '@datamoc/mw_games/mwl';
+ * import { PackageLimitError } from '@datamoc/mwg/mwl';
  *
  * console.log(new PackageLimitError('too many entries').name); // 'PackageLimitError'
  * ```
@@ -86,7 +86,7 @@ export class PackageLimitError extends PackageError {
  *
  * @example
  * ```ts
- * import { checkPackagePath, PackagePathError } from '@datamoc/mw_games/mwl';
+ * import { checkPackagePath, PackagePathError } from '@datamoc/mwg/mwl';
  *
  * try {
  *   checkPackagePath('../escape.txt');
@@ -127,7 +127,7 @@ export interface PackageLimits {
  *
  * @example
  * ```ts
- * import { DEFAULT_PACKAGE_LIMITS, decodePackage } from '@datamoc/mw_games/mwl';
+ * import { DEFAULT_PACKAGE_LIMITS, decodePackage } from '@datamoc/mwg/mwl';
  *
  * const roomy = { ...DEFAULT_PACKAGE_LIMITS, maxEntries: 4096 };
  * await decodePackage(new Uint8Array(8), roomy).catch(() => console.log(roomy.maxEntries)); // 4096
@@ -173,7 +173,7 @@ const DEFAULT_MAIN = 'content.mwl';
  *
  * @example
  * ```ts
- * import { checkPackagePath } from '@datamoc/mw_games/mwl';
+ * import { checkPackagePath } from '@datamoc/mwg/mwl';
  *
  * console.log(checkPackagePath('media/portrait.png')); // 'media/portrait.png'
  * ```
@@ -194,7 +194,7 @@ export function checkPackagePath(path: string): string {
  *
  * @example
  * ```ts
- * import { sha256Hex } from '@datamoc/mw_games/mwl';
+ * import { sha256Hex } from '@datamoc/mwg/mwl';
  *
  * console.log((await sha256Hex(new Uint8Array(0))).slice(0, 8)); // 'e3b0c442'
  * ```
@@ -210,7 +210,7 @@ export async function sha256Hex(bytes: Uint8Array): Promise<string> {
  *
  * @example
  * ```ts
- * import { decodePackage, encodePackage } from '@datamoc/mw_games/mwl';
+ * import { decodePackage, encodePackage } from '@datamoc/mwg/mwl';
  *
  * const text = new TextEncoder().encode('[]');
  * const bytes = await encodePackage([{ path: 'content.mwl', data: text }]);
@@ -262,7 +262,7 @@ export async function encodePackage(
  *
  * @example
  * ```ts
- * import { decodePackage, encodePackage } from '@datamoc/mw_games/mwl';
+ * import { decodePackage, encodePackage } from '@datamoc/mwg/mwl';
  *
  * const bytes = await encodePackage([{ path: 'content.mwl', data: new TextEncoder().encode('[]') }]);
  * const decoded = await decodePackage(bytes, { maxEntries: 8 });

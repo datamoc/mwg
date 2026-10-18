@@ -11,7 +11,7 @@ export type ColorBlindnessType = 'protanopia' | 'deuteranopia' | 'tritanopia';
  *
  * @example
  * ```ts
- * import { COLOR_BLINDNESS_MATRICES } from '@datamoc/mw_games/two-d/render';
+ * import { COLOR_BLINDNESS_MATRICES } from '@datamoc/mwg/two-d/render';
  *
  * console.log(COLOR_BLINDNESS_MATRICES.deuteranopia.length); // 20
  * ```
@@ -34,8 +34,8 @@ export const COLOR_BLINDNESS_MATRICES: Record<ColorBlindnessType, ColorMatrix> =
  *
  * @example
  * ```ts
- * import { createColorBlindnessFilter } from '@datamoc/mw_games/two-d/render';
- * import type { Container2D } from '@datamoc/mw_games/two-d/render';
+ * import { createColorBlindnessFilter } from '@datamoc/mwg/two-d/render';
+ * import type { Container2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const stage: Container2D;
  *

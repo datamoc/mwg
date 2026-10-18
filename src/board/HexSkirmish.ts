@@ -17,7 +17,7 @@ import * as Random from '../core/Random.ts';
  *
  * @example
  * ```ts
- * import { startingSkirmish, setSkirmishTerrain, addSkirmishUnit, skirmishMoves, moveSkirmishUnit, skirmishAttack, endSkirmishTurn, skirmishIncome } from '@datamoc/mw_games/board';
+ * import { startingSkirmish, setSkirmishTerrain, addSkirmishUnit, skirmishMoves, moveSkirmishUnit, skirmishAttack, endSkirmishTurn, skirmishIncome } from '@datamoc/mwg/board';
  *
  * const terrain = { plain: { moveCost: 1, defense: 0 }, forest: { moveCost: 2, defense: 0.3 } };
  * const state = startingSkirmish(6, 6, terrain);
@@ -98,7 +98,7 @@ export interface SkirmishExchange {
 /**
  * @example
  * ```ts
- * import { startingSkirmish } from '@datamoc/mw_games/board';
+ * import { startingSkirmish } from '@datamoc/mwg/board';
  *
  * const state = startingSkirmish(6, 6, { plain: { moveCost: 1, defense: 0 } });
  * console.log(state.width, state.round); // 6 1
@@ -127,7 +127,7 @@ export function startingSkirmish(
 /**
  * @example
  * ```ts
- * import { startingSkirmish, setSkirmishTerrain } from '@datamoc/mw_games/board';
+ * import { startingSkirmish, setSkirmishTerrain } from '@datamoc/mwg/board';
  *
  * const state = startingSkirmish(6, 6, { plain: { moveCost: 1, defense: 0 }, forest: { moveCost: 2, defense: 0.3 } });
  * setSkirmishTerrain(state, 2, 2, 'forest', true);
@@ -145,7 +145,7 @@ export function setSkirmishTerrain(state: SkirmishState, x: number, y: number, t
  *
  * @example
  * ```ts
- * import { startingSkirmish, addSkirmishUnit, canPlaceSkirmishUnit } from '@datamoc/mw_games/board';
+ * import { startingSkirmish, addSkirmishUnit, canPlaceSkirmishUnit } from '@datamoc/mwg/board';
  *
  * const state = startingSkirmish(6, 6, { plain: { moveCost: 1, defense: 0 } });
  * addSkirmishUnit(state, { id: 'axeman', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, moves: 4, attack: 4, hitChance: 0.7 });
@@ -163,7 +163,7 @@ export function canPlaceSkirmishUnit(state: SkirmishState, x: number, y: number)
  *
  * @example
  * ```ts
- * import { startingSkirmish, addSkirmishUnit } from '@datamoc/mw_games/board';
+ * import { startingSkirmish, addSkirmishUnit } from '@datamoc/mwg/board';
  *
  * const state = startingSkirmish(6, 6, { plain: { moveCost: 1, defense: 0 } });
  * addSkirmishUnit(state, { id: 'axeman', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, moves: 4, attack: 4, hitChance: 0.7 });
@@ -182,7 +182,7 @@ export function addSkirmishUnit(state: SkirmishState, unit: SkirmishUnit): void 
  *
  * @example
  * ```ts
- * import { startingSkirmish, addSkirmishUnit, skirmishMoves } from '@datamoc/mw_games/board';
+ * import { startingSkirmish, addSkirmishUnit, skirmishMoves } from '@datamoc/mwg/board';
  *
  * const state = startingSkirmish(6, 6, { plain: { moveCost: 1, defense: 0 } });
  * addSkirmishUnit(state, { id: 'axeman', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, moves: 2, attack: 4, hitChance: 0.7 });
@@ -216,7 +216,7 @@ export function skirmishMoves(state: SkirmishState, unitId: string): SkirmishMov
 /**
  * @example
  * ```ts
- * import { startingSkirmish, addSkirmishUnit, skirmishMoves, moveSkirmishUnit } from '@datamoc/mw_games/board';
+ * import { startingSkirmish, addSkirmishUnit, skirmishMoves, moveSkirmishUnit } from '@datamoc/mwg/board';
  *
  * const state = startingSkirmish(6, 6, { plain: { moveCost: 1, defense: 0 } });
  * addSkirmishUnit(state, { id: 'axeman', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, moves: 2, attack: 4, hitChance: 0.7 });
@@ -244,8 +244,8 @@ export function moveSkirmishUnit(state: SkirmishState, move: SkirmishMove): void
  *
  * @example
  * ```ts
- * import { startingSkirmish, addSkirmishUnit, skirmishAttack } from '@datamoc/mw_games/board';
- * import { Random } from '@datamoc/mw_games/core';
+ * import { startingSkirmish, addSkirmishUnit, skirmishAttack } from '@datamoc/mwg/board';
+ * import { Random } from '@datamoc/mwg/core';
  *
  * const state = startingSkirmish(6, 6, { plain: { moveCost: 1, defense: 0 } });
  * addSkirmishUnit(state, { id: 'axeman', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, moves: 4, attack: 4, hitChance: 1 });
@@ -283,7 +283,7 @@ function strike(state: SkirmishState, attacker: SkirmishUnit, defender: Skirmish
  *
  * @example
  * ```ts
- * import { startingSkirmish, setSkirmishTerrain, skirmishIncome } from '@datamoc/mw_games/board';
+ * import { startingSkirmish, setSkirmishTerrain, skirmishIncome } from '@datamoc/mwg/board';
  *
  * const state = startingSkirmish(4, 1, { plain: { moveCost: 1, defense: 0 } });
  * setSkirmishTerrain(state, 0, 0, 'plain', true);
@@ -303,7 +303,7 @@ export function skirmishIncome(state: SkirmishState, owner: string, baseIncome: 
  *
  * @example
  * ```ts
- * import { startingSkirmish, addSkirmishUnit, endSkirmishTurn } from '@datamoc/mw_games/board';
+ * import { startingSkirmish, addSkirmishUnit, endSkirmishTurn } from '@datamoc/mwg/board';
  *
  * const state = startingSkirmish(6, 6, { plain: { moveCost: 1, defense: 0 } });
  * addSkirmishUnit(state, { id: 'axeman', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, moves: 4, attack: 4, hitChance: 0.7 });

@@ -43,7 +43,7 @@ export interface AttackFrame {
  *
  * @example
  * ```ts
- * import { AttackPreview } from '@datamoc/mw_games/battle';
+ * import { AttackPreview } from '@datamoc/mwg/battle';
  *
  * const preview = new AttackPreview({
  *   attacker: { hp: 20 },

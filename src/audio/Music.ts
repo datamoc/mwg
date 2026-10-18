@@ -21,7 +21,7 @@ export interface MusicOptions {
  *
  * @example
  * ```ts
- * import { Music } from '@datamoc/mw_games/audio';
+ * import { Music } from '@datamoc/mwg/audio';
  *
  * const music = new Music({ volume: 0.7 });
  * music.play('music/town.mp3', 2); // crossfades in over 2 seconds

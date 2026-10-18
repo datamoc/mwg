@@ -20,7 +20,7 @@ export type MwlExpressionContext = Readonly<Record<string, number>>;
  *
  * @example
  * ```ts
- * import { parseExpression } from '@datamoc/mw_games/mwl';
+ * import { parseExpression } from '@datamoc/mwg/mwl';
  *
  * console.log(parseExpression('level * 2 + 1'));
  * ```
@@ -39,7 +39,7 @@ export function parseExpression(source: string): MwlExpression {
  *
  * @example
  * ```ts
- * import { evaluateExpression } from '@datamoc/mw_games/mwl';
+ * import { evaluateExpression } from '@datamoc/mwg/mwl';
  *
  * console.log(evaluateExpression('level * 2', { level: 3 })); // 6
  * ```

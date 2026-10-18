@@ -14,7 +14,7 @@ import { parseInbound } from './Sanitize.ts';
  *
  * @example
  * ```ts
- * import { StoredValue, defaultStorage } from '@datamoc/mw_games/core';
+ * import { StoredValue, defaultStorage } from '@datamoc/mwg/core';
  *
  * const progress = new StoredValue<{ solved: number[] }>(defaultStorage(), 'mygame.progress');
  * progress.write({ solved: [...progress.read({ solved: [] }).solved, 3] });

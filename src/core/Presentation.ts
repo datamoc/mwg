@@ -22,7 +22,7 @@ export interface PresentationQueueOptions<Event> {
  *
  * @example
  * ```ts
- * import { PresentationQueue } from '@datamoc/mw_games/core';
+ * import { PresentationQueue } from '@datamoc/mwg/core';
  *
  * type GameEvent = { type: 'move' } | { type: 'damage'; amount: number };
  *

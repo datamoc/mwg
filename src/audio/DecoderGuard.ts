@@ -27,7 +27,7 @@ export interface DecoderLimits {
  *
  * @example
  * ```ts
- * import { DEFAULT_DECODER_LIMITS } from '@datamoc/mw_games/audio';
+ * import { DEFAULT_DECODER_LIMITS } from '@datamoc/mwg/audio';
  *
  * console.log(DEFAULT_DECODER_LIMITS.maxInputBytes); // 16777216
  * ```
@@ -50,7 +50,7 @@ export type DecoderLimitName = keyof DecoderLimits;
  *
  * @example
  * ```ts
- * import { DecodeBudgetError } from '@datamoc/mw_games/audio';
+ * import { DecodeBudgetError } from '@datamoc/mwg/audio';
  *
  * const error = new DecodeBudgetError('maxInputBytes', 'tune.nsf is larger than the limit');
  * console.log(error.limit); // 'maxInputBytes'
@@ -71,7 +71,7 @@ export class DecodeBudgetError extends Error {
  *
  * @example
  * ```ts
- * import { decoderLimits } from '@datamoc/mw_games/audio';
+ * import { decoderLimits } from '@datamoc/mwg/audio';
  *
  * console.log(decoderLimits({ maxSeconds: 600 }).maxSeconds); // 600
  * ```
@@ -89,7 +89,7 @@ export function decoderLimits(overrides: Partial<DecoderLimits> = {}): DecoderLi
  *
  * @example
  * ```ts
- * import { assertInputSize } from '@datamoc/mw_games/audio';
+ * import { assertInputSize } from '@datamoc/mwg/audio';
  *
  * declare const bytes: Uint8Array;
  *
@@ -118,7 +118,7 @@ export function assertInputSize(
  *
  * @example
  * ```ts
- * import { InstructionBudget } from '@datamoc/mw_games/audio';
+ * import { InstructionBudget } from '@datamoc/mwg/audio';
  *
  * const budget = InstructionBudget.forSeconds(30);
  * function runFrame(cycles: number): void {
@@ -163,7 +163,7 @@ export class InstructionBudget {
  *
  * @example
  * ```ts
- * import { inflateBounded } from '@datamoc/mw_games/audio';
+ * import { inflateBounded } from '@datamoc/mwg/audio';
  *
  * declare const packed: Uint8Array;
  *
@@ -213,7 +213,7 @@ export interface GuardOptions {
  *
  * @example
  * ```ts
- * import { guardBlockSource, type BlockSource } from '@datamoc/mw_games/audio';
+ * import { guardBlockSource, type BlockSource } from '@datamoc/mwg/audio';
  *
  * declare const untrusted: BlockSource;
  *

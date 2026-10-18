@@ -8,7 +8,7 @@ import { theme, themeChanged } from './theme.ts';
  *
  * @example
  * ```ts
- * import { scrollOffset } from '@datamoc/mw_games/two-d/ui';
+ * import { scrollOffset } from '@datamoc/mwg/two-d/ui';
  *
  * console.log(scrollOffset(-5, 500, 200)); // 0
  * console.log(scrollOffset(900, 500, 200)); // 300
@@ -25,7 +25,7 @@ export function scrollOffset(offset: number, contentSize: number, viewportSize: 
  *
  * @example
  * ```ts
- * import { ScrollDrag } from '@datamoc/mw_games/two-d/ui';
+ * import { ScrollDrag } from '@datamoc/mwg/two-d/ui';
  *
  * const drag = new ScrollDrag();
  * drag.start(200, 0);
@@ -131,7 +131,7 @@ export type ScrollKey = 'ArrowUp' | 'ArrowDown' | 'PageUp' | 'PageDown' | 'Home'
  *
  * @example
  * ```ts
- * import { ScrollBox } from '@datamoc/mw_games/two-d/ui';
+ * import { ScrollBox } from '@datamoc/mwg/two-d/ui';
  *
  * const box = new ScrollBox({ width: 200, height: 120, contentHeight: 400 });
  * box.scrollBy(60);

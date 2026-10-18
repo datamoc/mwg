@@ -83,7 +83,7 @@ export interface SfxGrant {
  *
  * @example
  * ```ts
- * import { SfxArbiter } from '@datamoc/mw_games/audio';
+ * import { SfxArbiter } from '@datamoc/mwg/audio';
  *
  * const arbiter = new SfxArbiter({ maxVoices: 2 });
  * const a = arbiter.request(1, () => console.log('a cut'));
@@ -138,7 +138,7 @@ export class SfxArbiter {
  *
  * @example
  * ```ts
- * import { sfxSeed } from '@datamoc/mw_games/audio';
+ * import { sfxSeed } from '@datamoc/mwg/audio';
  *
  * sfxSeed('arrow', 120) === sfxSeed('arrow', 120); // true
  * ```
@@ -178,7 +178,7 @@ export interface SfxSoundOptions {
  *
  * @example
  * ```ts
- * import { SfxArbiter, SfxBank, SfxSound, SoundSource, AudioListener, type SfxBackend } from '@datamoc/mw_games/audio';
+ * import { SfxArbiter, SfxBank, SfxSound, SoundSource, AudioListener, type SfxBackend } from '@datamoc/mwg/audio';
  *
  * declare const chip: SfxBackend;
  *

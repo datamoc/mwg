@@ -20,7 +20,7 @@ import { catalogCompleteness, messageText } from './Content.ts';
  *   AUDIO_SUFFIX, copyFromBase, createEditSession, cueKeyFor, deleteTargetKey,
  *   isAudioKey, sessionCompleteness, sessionKeys, sessionRow, sessionRows,
  *   setTargetSound, setTargetText, swapSession,
- * } from '@datamoc/mw_games/i18n';
+ * } from '@datamoc/mwg/i18n';
  *
  * let session = createEditSession(
  *   { locale: 'en', direction: 'ltr', messages: { greeting: 'Hello!', 'hit.audio': 'sounds/hit.wav' } },

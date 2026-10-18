@@ -122,7 +122,7 @@ function finish(
  *
  * @example
  * ```ts
- * import { parseMidi, GrooveExtractor, type GrooveTemplate } from '@datamoc/mw_games/audio';
+ * import { parseMidi, GrooveExtractor, type GrooveTemplate } from '@datamoc/mwg/audio';
  *
  * declare const straightBytes: ArrayBuffer;
  * declare const playedBytes: ArrayBuffer;

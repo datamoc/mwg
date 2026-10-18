@@ -20,7 +20,7 @@
 		"paths": {
 			"mwg/*": ["./src/*"],
 			"mwg": ["./src/index.ts"],
-			"@datamoc/mw_games/*": ["./src/*/index.ts"]
+			"@datamoc/mwg/*": ["./src/*/index.ts"]
 		}
 	},
 	"include": ["src", "examples", "tools", "tests"]

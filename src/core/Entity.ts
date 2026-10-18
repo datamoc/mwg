@@ -5,7 +5,7 @@
  *
  * @example
  * ```ts
- * import { EntityRegistry, type EntityId } from '@datamoc/mw_games/core';
+ * import { EntityRegistry, type EntityId } from '@datamoc/mwg/core';
  *
  * interface Monster { name: string }
  *

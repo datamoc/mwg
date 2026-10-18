@@ -106,7 +106,7 @@ export interface XpbdLink<T = undefined> {
  *
  * @example
  * ```ts
- * import { XpbdWorld } from '@datamoc/mw_games/physics/xpbd';
+ * import { XpbdWorld } from '@datamoc/mwg/physics/xpbd';
  *
  * const world = new XpbdWorld({ gravity: 520 });
  * const wall = world.addNode({ x: 0, y: 0, fixed: true });
@@ -123,7 +123,7 @@ export interface XpbdLink<T = undefined> {
  *
  * @example
  * ```ts
- * import { XpbdWorld } from '@datamoc/mw_games/physics/xpbd';
+ * import { XpbdWorld } from '@datamoc/mwg/physics/xpbd';
  *
  * //a Warren truss between two abutments, with a cart of `cartMass` at midspan
  * function loadBridge(cartMass: number): { sag: number; broken: number; peakLoad: number } {

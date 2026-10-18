@@ -78,8 +78,8 @@ function fadeModeOf(fadeIn: FlightOptions['fadeIn']): LiveFlight['fadeMode'] {
  *
  * @example
  * ```ts
- * import { Flights } from '@datamoc/mw_games/two-d/render';
- * import type { Container2D } from '@datamoc/mw_games/two-d/render';
+ * import { Flights } from '@datamoc/mwg/two-d/render';
+ * import type { Container2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const layer: Container2D;
  * declare const bolt: { x: number; y: number };

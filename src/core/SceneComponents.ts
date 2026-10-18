@@ -32,7 +32,7 @@ export interface SceneComponent<TScene extends Scene = Scene> {
  *
  * @example
  * ```ts
- * import { Scene, SceneComponentHost, type SceneComponent } from '@datamoc/mw_games/core';
+ * import { Scene, SceneComponentHost, type SceneComponent } from '@datamoc/mwg/core';
  *
  * class MapSection implements SceneComponent<DungeonScene> {
  *   readonly name = 'map';

@@ -32,7 +32,7 @@ function octave(x: number, y: number, seed: number): number {
  *
  * @example
  * ```ts
- * import { hazeField } from '@datamoc/mw_games/two-d/render';
+ * import { hazeField } from '@datamoc/mwg/two-d/render';
  *
  * console.log(hazeField(3, 5, 1.5, 7) === hazeField(3, 5, 1.5, 7)); // true - same sky twice
  * console.log(hazeField(3, 5, 1.5, 7) >= 0 && hazeField(3, 5, 1.5, 7) <= 1); // true - always a density
@@ -68,7 +68,7 @@ export interface HazePaint {
  *
  * @example
  * ```ts
- * import { paintHazePixels } from '@datamoc/mw_games/two-d/render';
+ * import { paintHazePixels } from '@datamoc/mwg/two-d/render';
  *
  * const pixels = new Uint8ClampedArray(4 * 2 * 4);
  * paintHazePixels(pixels, 4, 2, { time: 0, density: 1, seed: 3 });
@@ -142,7 +142,7 @@ export interface HazeLayerOptions {
  *
  * @example
  * ```ts
- * import { HazeLayer } from '@datamoc/mw_games/two-d/render';
+ * import { HazeLayer } from '@datamoc/mwg/two-d/render';
  *
  * const far = new HazeLayer({ width: 400, height: 225, density: 0.3, tint: 0x9db8d6, drift: { x: 0.1, y: 0 } });
  * const near = new HazeLayer({ width: 400, height: 225, density: 0.5, tint: 0xcfd8e6, drift: { x: 0.4, y: 0.05 } });

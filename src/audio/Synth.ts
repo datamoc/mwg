@@ -31,7 +31,7 @@ export interface ToneOptions {
  *
  * @example
  * ```ts
- * import { synthesizeTone } from '@datamoc/mw_games/audio';
+ * import { synthesizeTone } from '@datamoc/mwg/audio';
  *
  * const dataUri = synthesizeTone({ waveform: 'square', frequency: 880, duration: 0.1 });
  * const audio = new Audio(dataUri);
@@ -68,7 +68,7 @@ export function synthesizeTone(options: ToneOptions = {}): string {
  *
  * @example
  * ```ts
- * import { playTone } from '@datamoc/mw_games/audio';
+ * import { playTone } from '@datamoc/mwg/audio';
  *
  * playTone({ waveform: 'sine', frequency: 660, duration: 0.08 }); // a quick UI blip
  * ```
@@ -90,7 +90,7 @@ export function playTone(
  *
  * @example
  * ```ts
- * import { synthesizeSound } from '@datamoc/mw_games/audio';
+ * import { synthesizeSound } from '@datamoc/mwg/audio';
  *
  * const blip = synthesizeSound({ waveform: 'square', frequency: 660, duration: 0.08 }, { poolSize: 6 });
  * blip.play(1, 0.9 + Math.random() * 0.2); // a little pitch variance per hit

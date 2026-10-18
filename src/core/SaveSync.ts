@@ -14,7 +14,7 @@ import { HttpTransport, type HttpTransportOptions } from './HttpTransport.ts';
  *
  * @example
  * ```ts
- * import { SaveSyncClient, SaveSystem } from '@datamoc/mw_games/core';
+ * import { SaveSyncClient, SaveSystem } from '@datamoc/mwg/core';
  *
  * const sync = new SaveSyncClient({ endpoint: 'https://example.com/api/saves' });
  * const saves = new SaveSystem<{ depth: number }>({ namespace: 'my-game', version: 1 });

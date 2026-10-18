@@ -126,7 +126,7 @@ test('scanImports separates value from type imports and scanLocals finds definit
 	const files = [
 		{
 			path: 'src/a.ts',
-			text: `import { Generator } from '@datamoc/mw_games/core';\nimport type { Actor } from '@datamoc/mw_games/world';\n`,
+			text: `import { Generator } from '@datamoc/mwg/core';\nimport type { Actor } from '@datamoc/mwg/world';\n`,
 		},
 		{ path: 'src/b.ts', text: `export interface World {\n\thp: number;\n}\n` },
 	];

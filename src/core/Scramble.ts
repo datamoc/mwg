@@ -9,7 +9,7 @@
  *
  * @example
  * ```ts
- * import { scramble, unscramble } from '@datamoc/mw_games/core';
+ * import { scramble, unscramble } from '@datamoc/mwg/core';
  *
  * const scrambled = scramble('{"depth":3}', 'a-per-game-key');
  * const restored = unscramble(scrambled, 'a-per-game-key'); // '{"depth":3}'

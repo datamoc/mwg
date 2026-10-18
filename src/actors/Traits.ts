@@ -32,7 +32,7 @@ export interface AssignedTrait {
  *
  * @example
  * ```ts
- * import { assignTraits, StatBlock, type TraitDef } from '@datamoc/mw_games/actors';
+ * import { assignTraits, StatBlock, type TraitDef } from '@datamoc/mwg/actors';
  *
  * const stats = new StatBlock({ base: { strength: 10, speed: 10 } });
  * const pool: TraitDef[] = [

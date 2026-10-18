@@ -28,7 +28,7 @@
  *
  * @example
  * ```ts
- * import { registerBuiltinPipes, TilingSprite } from '@datamoc/mw_games/two-d/pixi-interop';
+ * import { registerBuiltinPipes, TilingSprite } from '@datamoc/mwg/two-d/pixi-interop';
  *
  * // only needed if a game's own bundler configuration tree-shook TilingSpritePipe/
  * // NineSliceSpritePipe away; call before the renderer is created

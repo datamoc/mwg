@@ -22,7 +22,7 @@ export interface Point3D {
  *
  * @example
  * ```ts
- * import { gridPoint3D } from '@datamoc/mw_games/3d';
+ * import { gridPoint3D } from '@datamoc/mwg/3d';
  *
  * //cell (3, 2), one level up, on a grid of 2-unit tiles with 0.5-unit levels
  * const point = gridPoint3D('square', 3, 2, 2, 1, 0.5);

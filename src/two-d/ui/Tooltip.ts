@@ -36,7 +36,7 @@ export interface TooltipOptions {
  *
  * @example
  * ```ts
- * import { Tooltip } from '@datamoc/mw_games/two-d/ui';
+ * import { Tooltip } from '@datamoc/mwg/two-d/ui';
  *
  * const tooltip = new Tooltip({ delay: 0 });
  * tooltip.setViewport(800, 600);
@@ -235,7 +235,7 @@ export interface TooltipHostOptions {
  *
  * @example
  * ```ts
- * import { Button, TooltipHost } from '@datamoc/mw_games/two-d/ui';
+ * import { Button, TooltipHost } from '@datamoc/mwg/two-d/ui';
  *
  * const host = new TooltipHost({ longPress: 0.4 });
  * host.tooltip.setViewport(800, 600);

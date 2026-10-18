@@ -31,7 +31,7 @@ export interface Playable {
  *
  * @example
  * ```ts
- * import { createAudio, Sound } from '@datamoc/mw_games/audio';
+ * import { createAudio, Sound } from '@datamoc/mwg/audio';
  *
  * // Sound/Music both default to this; supply your own only for a test or a non-browser backend
  * const hit = new Sound('sounds/hit.mp3', { create: createAudio });

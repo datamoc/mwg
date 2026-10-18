@@ -34,7 +34,7 @@ export interface TelemetryResponse {
  *
  * @example
  * ```ts
- * import { TelemetryClient } from '@datamoc/mw_games/core';
+ * import { TelemetryClient } from '@datamoc/mwg/core';
  *
  * const telemetry = new TelemetryClient({ endpoint: 'https://example.com/api/telemetry' });
  *

@@ -32,7 +32,7 @@ export interface ProjectileOptions {
  *
  * @example
  * ```ts
- * import { Projectile } from '@datamoc/mw_games/two-d/render';
+ * import { Projectile } from '@datamoc/mwg/two-d/render';
  *
  * declare const boltSprite: { x: number; y: number };
  *

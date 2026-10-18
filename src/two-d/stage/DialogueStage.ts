@@ -57,9 +57,9 @@ interface Actor {
  *
  * @example
  * ```ts
- * import { DialogueStage } from '@datamoc/mw_games/two-d';
+ * import { DialogueStage } from '@datamoc/mwg/two-d';
  * import type { Texture } from 'pixi.js';
- * import type { SpriteSheet } from '@datamoc/mw_games/two-d/render';
+ * import type { SpriteSheet } from '@datamoc/mwg/two-d/render';
  *
  * declare const backdropTexture: Texture;
  * declare const heroSheet: SpriteSheet;

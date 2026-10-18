@@ -16,7 +16,7 @@ export interface AbilityStage {
 /**
  * @example
  * ```ts
- * import { MultiStageAbility } from '@datamoc/mw_games/roguelike';
+ * import { MultiStageAbility } from '@datamoc/mwg/roguelike';
  *
  * const dive = new MultiStageAbility([
  *   { name: 'windup', duration: 1 },

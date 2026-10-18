@@ -30,8 +30,8 @@ type Phase = 'fadeIn' | 'hold' | 'fadeOut';
  *
  * @example
  * ```ts
- * import { Toast } from '@datamoc/mw_games/two-d/ui';
- * import { Text2D } from '@datamoc/mw_games/two-d/render';
+ * import { Toast } from '@datamoc/mwg/two-d/ui';
+ * import { Text2D } from '@datamoc/mwg/two-d/render';
  *
  * const toast = new Toast({ fadeIn: 0.2, hold: 1.5, fadeOut: 0.5 });
  * toast.show(new Text2D({ text: 'Achievement unlocked: First Blood' }));

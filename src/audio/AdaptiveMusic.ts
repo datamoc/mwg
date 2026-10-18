@@ -55,7 +55,7 @@ interface Running {
  *
  * @example
  * ```ts
- * import { AdaptiveMusic, renderMidiStems, parseMidi, toAudioBuffer } from '@datamoc/mw_games/audio';
+ * import { AdaptiveMusic, renderMidiStems, parseMidi, toAudioBuffer } from '@datamoc/mwg/audio';
  *
  * declare const context: AudioContext;
  * declare const midiBytes: ArrayBuffer;

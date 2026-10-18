@@ -18,7 +18,7 @@ export interface ParsedImagePath {
 /** Split top-level modifiers while keeping nested `~` paths inside arguments.
  * @example
  * ```ts
- * import { parseImagePath } from '@datamoc/mw_games/two-d/render';
+ * import { parseImagePath } from '@datamoc/mwg/two-d/render';
  * const parsed = parseImagePath('hero.png~FL(horizontal)~GS');
  * ```
  */
@@ -52,7 +52,7 @@ export function parseImagePath(value: string): ParsedImagePath {
 /** Return one named modifier from a parsed image path.
  * @example
  * ```ts
- * import { imageModifier, parseImagePath } from '@datamoc/mw_games/two-d/render';
+ * import { imageModifier, parseImagePath } from '@datamoc/mwg/two-d/render';
  * const flip = imageModifier(parseImagePath('hero.png~FL(horizontal)'), 'FL');
  * ```
  */
@@ -69,7 +69,7 @@ export function imageModifier(path: ParsedImagePath, name: string): ImageModifie
  *
  * @example
  * ```ts
- * import { parseImagePath, imageModifier, parseRotateMode } from '@datamoc/mw_games/two-d/render';
+ * import { parseImagePath, imageModifier, parseRotateMode } from '@datamoc/mwg/two-d/render';
  *
  * const rotate = imageModifier(parseImagePath('tile.png~ROTATE(60,linear)'), 'ROTATE');
  * parseRotateMode(rotate?.args[1]); // 'linear'
@@ -85,7 +85,7 @@ export function parseRotateMode(argument: string | undefined): RotateMode {
  *
  * @example
  * ```ts
- * import { colorShiftMatrix } from '@datamoc/mw_games/two-d/render';
+ * import { colorShiftMatrix } from '@datamoc/mwg/two-d/render';
  * const matrix = colorShiftMatrix(-20, 0, 30);
  * console.log(matrix.length); // 20
  * ```
@@ -121,7 +121,7 @@ export function colorShiftMatrix(red: number, green: number, blue: number): Colo
  *
  * @example
  * ```ts
- * import { channelScaleMatrix } from '@datamoc/mw_games/two-d/render';
+ * import { channelScaleMatrix } from '@datamoc/mwg/two-d/render';
  * const matrix = channelScaleMatrix({ red: 150 }); // ~R(150), a 50% brighter red channel
  * console.log(matrix[0]); // 1.5
  * ```
@@ -148,7 +148,7 @@ export function channelScaleMatrix(scale: {
  *
  * @example
  * ```ts
- * import { blendMatrix } from '@datamoc/mw_games/two-d/render';
+ * import { blendMatrix } from '@datamoc/mwg/two-d/render';
  * const matrix = blendMatrix(0xff0000, 0.5); // half-way to red
  * ```
  */
@@ -191,7 +191,7 @@ export type ChannelSource = 'R' | 'G' | 'B' | 'A' | '0' | '1';
  *
  * @example
  * ```ts
- * import { channelSwapMatrix } from '@datamoc/mw_games/two-d/render';
+ * import { channelSwapMatrix } from '@datamoc/mwg/two-d/render';
  * const matrix = channelSwapMatrix(['B', 'G', 'R']); // swap the red and blue channels
  * ```
  */
@@ -229,7 +229,7 @@ export function channelSwapMatrix(sources: readonly ChannelSource[]): ColorMatri
  * @example
  * ```ts
  * import { Sprite } from 'pixi.js';
- * import { blendMatrix, spriteColorMatrix } from '@datamoc/mw_games/two-d/render';
+ * import { blendMatrix, spriteColorMatrix } from '@datamoc/mwg/two-d/render';
  *
  * const sprite = new Sprite();
  * spriteColorMatrix(sprite, blendMatrix(0xff0000, 0.5)); // half-blended red, no pixi.js import needed for the filter itself
@@ -266,7 +266,7 @@ function appendFilter(sprite: Sprite, filter: ColorMatrixFilter): void {
  * @example
  * ```ts
  * import { Sprite } from 'pixi.js';
- * import { applyImageModifiers, parseImagePath } from '@datamoc/mw_games/two-d/render';
+ * import { applyImageModifiers, parseImagePath } from '@datamoc/mwg/two-d/render';
  * applyImageModifiers(new Sprite(), parseImagePath('hero.png~FL(horizontal)'));
  * ```
  */
@@ -344,7 +344,7 @@ export function applyImageModifiers(sprite: Sprite, parsed: ParsedImagePath, sca
  * @example
  * ```ts
  * import { Sprite, Texture } from 'pixi.js';
- * import { applyAllImageModifiers, parseImagePath } from '@datamoc/mw_games/two-d/render';
+ * import { applyAllImageModifiers, parseImagePath } from '@datamoc/mwg/two-d/render';
  *
  * const sprite = new Sprite(Texture.EMPTY);
  * applyAllImageModifiers(sprite, parseImagePath('hero.png~BLEND(ff0000,50%)~FL(horizontal)'));
@@ -367,7 +367,7 @@ export function applyAllImageModifiers(
  * @example
  * ```ts
  * import { Texture } from 'pixi.js';
- * import { croppedTexture, parseImagePath } from '@datamoc/mw_games/two-d/render';
+ * import { croppedTexture, parseImagePath } from '@datamoc/mwg/two-d/render';
  * const cropped = croppedTexture(Texture.EMPTY, parseImagePath('atlas.png~CROP(0,0,16,16)'));
  * ```
  */
@@ -398,7 +398,7 @@ function resolveColor(value: string, resolve?: (name: string) => number | undefi
  *
  * @example
  * ```ts
- * import { parseColorPairs, parseImagePath, imageModifier } from '@datamoc/mw_games/two-d/render';
+ * import { parseColorPairs, parseImagePath, imageModifier } from '@datamoc/mwg/two-d/render';
  *
  * const rc = imageModifier(parseImagePath('unit.png~RC(magenta>ff0000)'), 'RC')!;
  * const mapping = parseColorPairs(rc.args, (name) => (name === 'magenta' ? 0xff00ff : undefined));
@@ -434,7 +434,7 @@ export function parseColorPairs(
  *
  * @example
  * ```ts
- * import { parsePaletteLists, parseImagePath, imageModifier } from '@datamoc/mw_games/two-d/render';
+ * import { parsePaletteLists, parseImagePath, imageModifier } from '@datamoc/mwg/two-d/render';
  *
  * const pal = imageModifier(parseImagePath('unit.png~PAL(ff0000,00ff00>0000ff,ffff00)'), 'PAL')!;
  * console.log(parsePaletteLists(pal.args)); // { from: [0xff0000, 0x00ff00], to: [0x0000ff, 0xffff00] }
@@ -494,7 +494,7 @@ export interface ImageTextureProbe extends RecolorProbe {
  * @example
  * ```ts
  * import { Texture } from 'pixi.js';
- * import { applyTextureModifiers, parseImagePath } from '@datamoc/mw_games/two-d/render';
+ * import { applyTextureModifiers, parseImagePath } from '@datamoc/mwg/two-d/render';
  * const recolored = applyTextureModifiers(Texture.EMPTY, parseImagePath('unit.png~RC(ff00ff>ff0000)'));
  * ```
  */
@@ -614,7 +614,7 @@ function createCanvas(width: number, height: number, probe: RecolorProbe): Remap
  *
  * @example
  * ```ts
- * import { maskPixels } from '@datamoc/mw_games/two-d/render';
+ * import { maskPixels } from '@datamoc/mwg/two-d/render';
  * const base = new Uint8ClampedArray([10, 20, 30, 255]); // one opaque pixel
  * const mask = new Uint8ClampedArray([0, 0, 0, 128]); // half-alpha mask, same 1x1 size
  * const out = maskPixels(base, 1, 1, mask, 1, 1, 0, 0);
@@ -656,7 +656,7 @@ export function maskPixels(
  *
  * @example
  * ```ts
- * import { blendPixels } from '@datamoc/mw_games/two-d/render';
+ * import { blendPixels } from '@datamoc/mwg/two-d/render';
  *
  * const pixels = new Uint8ClampedArray([0, 0, 0, 255]); // one opaque black pixel
  * const out = blendPixels(pixels, 0xff0000, 0.5);
@@ -721,7 +721,7 @@ export type RotateMode = 'nearest' | 'linear';
  *
  * @example
  * ```ts
- * import { rotatePixels } from '@datamoc/mw_games/two-d/render';
+ * import { rotatePixels } from '@datamoc/mwg/two-d/render';
  *
  * const pixels = new Uint8ClampedArray([255, 0, 0, 255, 0, 255, 0, 255]); // 2x1: red, green
  * const rotated = rotatePixels(pixels, 2, 1, 90);

@@ -40,7 +40,7 @@ export interface StatusVisualsOptions {
  *
  * @example
  * ```ts
- * import { StatusVisuals, TintedSprite, type Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { StatusVisuals, TintedSprite, type Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const ratTexture: Texture2D;
  * const rat = new TintedSprite(ratTexture);

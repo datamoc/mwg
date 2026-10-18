@@ -33,7 +33,7 @@ export interface SettingsOptions {
  *
  * @example
  * ```ts
- * import { defaultSettings } from '@datamoc/mw_games/core';
+ * import { defaultSettings } from '@datamoc/mwg/core';
  *
  * console.log(defaultSettings().zoom); // 1
  * ```
@@ -73,7 +73,7 @@ export function effectiveSfxVolume(settings: Pick<GameSettings, 'sfxVolume' | 'm
  *
  * @example
  * ```ts
- * import { Settings, effectiveMusicVolume, effectiveSfxVolume } from '@datamoc/mw_games/core';
+ * import { Settings, effectiveMusicVolume, effectiveSfxVolume } from '@datamoc/mwg/core';
  *
  * const settings = new Settings({ namespace: 'my-game' });
  * settings.update({ musicVolume: 0.7, zoom: 2 });

@@ -83,7 +83,7 @@ const nodeWorker: WorkerHost = (source, events) => {
  *
  * @example
  * ```ts
- * import { openWorker } from '@datamoc/mw_games/threads';
+ * import { openWorker } from '@datamoc/mwg/threads';
  *
  * const link = openWorker('globalThis.onmessage = (event) => globalThis.postMessage(event.data * 2);', {
  * 	message: (value) => console.log(value),
@@ -123,7 +123,7 @@ function taskError(reply: { message: string; stack?: string }): Error {
  *
  * @example
  * ```ts
- * import { spawn } from '@datamoc/mw_games/threads';
+ * import { spawn } from '@datamoc/mwg/threads';
  *
  * const sum = await spawn((a: number, b: number) => a + b, [40, 2]);
  * console.log(sum); // 42

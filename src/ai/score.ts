@@ -56,7 +56,7 @@ export interface ScoreSubjectFilter {
  *
  * @example
  * ```ts
- * import { subjectsWhere } from '@datamoc/mw_games/ai';
+ * import { subjectsWhere } from '@datamoc/mwg/ai';
  *
  * const world = [
  *   { id: 'hero', side: 'blue', x: 0, y: 0, role: 'leader', can_recruit: true },
@@ -119,7 +119,7 @@ export interface ScorePersonality {
  *
  * @example
  * ```ts
- * import { personalScoreView, scoreWith } from '@datamoc/mw_games/ai';
+ * import { personalScoreView, scoreWith } from '@datamoc/mwg/ai';
  *
  * const hero = { id: 'hero', side: 'blue', x: 2, y: 2 };
  * const world = [
@@ -168,8 +168,8 @@ export function personalScoreView<T>(
  *
  * @example
  * ```ts
- * import { FactionFog } from '@datamoc/mw_games/board';
- * import { scoreWith, sideScoreView } from '@datamoc/mw_games/ai';
+ * import { FactionFog } from '@datamoc/mwg/board';
+ * import { scoreWith, sideScoreView } from '@datamoc/mwg/ai';
  *
  * const fog = new FactionFog(10, 10);
  * const world = [
@@ -212,7 +212,7 @@ export function sideScoreView<T>(
  *
  * @example
  * ```ts
- * import { scoreWith, type ScoreView } from '@datamoc/mw_games/ai';
+ * import { scoreWith, type ScoreView } from '@datamoc/mwg/ai';
  *
  * const view: ScoreView = { own: 10, allies: 4, enemies: -2, seen: 3 };
  *

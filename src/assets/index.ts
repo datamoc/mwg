@@ -5,9 +5,9 @@
  * and needs no renderer at all; `binary.ts` caches raw bytes the same renderer-free way, for
  * anything (`three-d`'s VOX loader, most directly) that wants an `ArrayBuffer` rather than a
  * decoded texture; `loader.ts` fetches and decodes textures through Pixi specifically. This
- * barrel exposes all three, so `import { load, resolve } from '@datamoc/mw_games/assets'` is
+ * barrel exposes all three, so `import { load, resolve } from '@datamoc/mwg/assets'` is
  * unchanged - but a game rendering through something else imports
- * `@datamoc/mw_games/assets/paths` or `@datamoc/mw_games/assets/binary` instead and pays
+ * `@datamoc/mwg/assets/paths` or `@datamoc/mwg/assets/binary` instead and pays
  * nothing for Pixi.
  */
 

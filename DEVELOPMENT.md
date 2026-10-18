@@ -72,7 +72,7 @@ unexplained growth fails rather than ships.
 - Pixi batcher and high-shader internals belong only in
   `src/two-d/render/ColorTransformBatcher.ts` (checked by `tests/renderer-isolation.test.ts`).
 - Each source module has an `index.ts` barrel. The root `src/index.ts` defines the root
-  package surface and the standalone `window.mw_games` build.
+  package surface and the standalone `window.mwg` build.
 
 The renderer-isolation tests walk the real import graph. Keep the boundaries true in code,
 not only in documentation.
@@ -169,4 +169,4 @@ and check the tip.
 
 When the getting-started tutorial changes, test both documented paths from an empty
 directory: an npm install using the package, and a no-install path using the standalone
-`mw_games.global.js`. Both must reach a working `file://` page, not only a Vite dev server.
+`mwg.global.js`. Both must reach a working `file://` page, not only a Vite dev server.

@@ -10,7 +10,7 @@ import * as Random from '../core/Random.ts';
  *
  * @example
  * ```ts
- * import { rollEncounter } from '@datamoc/mw_games/world';
+ * import { rollEncounter } from '@datamoc/mwg/world';
  *
  * const grassland = {
  *   rate: 0.1,

@@ -45,7 +45,7 @@ import {
  * table, say) - is not a gap in this command's flags to fill one at a time;
  * every one of `compileSources`, `emitArtifacts`, `validateCatalog` and
  * `contentReport` this command itself calls is public
- * (`@datamoc/mw_games/mwl`), so that game's own small Node script, written
+ * (`@datamoc/mwg/mwl`), so that game's own small Node script, written
  * against the same library API this file uses, is the actual extension
  * point - not a CLI kept open-ended for checks no two games would agree on.
  */

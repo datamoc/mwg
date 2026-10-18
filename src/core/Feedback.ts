@@ -18,7 +18,7 @@ export interface FeedbackResponse {
  *
  * @example
  * ```ts
- * import { FeedbackClient } from '@datamoc/mw_games/core';
+ * import { FeedbackClient } from '@datamoc/mwg/core';
  *
  * const feedback = new FeedbackClient({ endpoint: 'https://example.com/api/feedback' });
  * await feedback.submit({ message: 'the boss fight softlocks on floor 5', contact: 'a@b.com' });

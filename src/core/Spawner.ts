@@ -41,7 +41,7 @@ interface ScheduledSpawn<T> {
  *
  * @example
  * ```ts
- * import { Spawner } from '@datamoc/mw_games/core';
+ * import { Spawner } from '@datamoc/mwg/core';
  *
  * const spawner = new Spawner<'rat' | 'bat'>({
  *   waves: [

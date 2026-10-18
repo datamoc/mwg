@@ -6,7 +6,7 @@ import { buildSbom, hashesFromIntegrity, purlFor, serialize, type Lockfile, type
 
 test('purlFor encodes a scoped name the way the purl npm examples do', () => {
 	assert.equal(purlFor('rot-js', '2.2.1'), 'pkg:npm/rot-js@2.2.1');
-	assert.equal(purlFor('@datamoc/mw_games', '0.7.8'), 'pkg:npm/%40datamoc/mw_games@0.7.8');
+	assert.equal(purlFor('@datamoc/mwg', '0.7.8'), 'pkg:npm/%40datamoc/mwg@0.7.8');
 });
 
 test('hashesFromIntegrity converts npm base64 to CycloneDX hex', () => {
@@ -115,14 +115,14 @@ test('the artifact SBOM lists only the packages whose modules reached the bundle
 	try {
 		for (const [name, version, license] of [
 			['pixi.js', '8.1.0', 'MIT'],
-			['@datamoc/mw_games', '0.16.0', 'MPL-2.0'],
+			['@datamoc/mwg', '0.16.0', 'MPL-2.0'],
 		]) {
 			mkdirSync(join(root, 'node_modules', name), { recursive: true });
 			writeFileSync(join(root, 'node_modules', name, 'package.json'), JSON.stringify({ name, version, license }));
 		}
-		assert.deepEqual(packageOfModule(`${root}/node_modules/@datamoc/mw_games/dist/core/index.js`), {
-			name: '@datamoc/mw_games',
-			dir: `${root}/node_modules/@datamoc/mw_games`,
+		assert.deepEqual(packageOfModule(`${root}/node_modules/@datamoc/mwg/dist/core/index.js`), {
+			name: '@datamoc/mwg',
+			dir: `${root}/node_modules/@datamoc/mwg`,
 		});
 		assert.equal(packageOfModule(`${root}/src/main.ts`), null);
 		const bom = buildArtifactSbom({
@@ -131,7 +131,7 @@ test('the artifact SBOM lists only the packages whose modules reached the bundle
 				`${root}/src/main.ts`,
 				`${root}/node_modules/pixi.js/lib/index.mjs`,
 				`${root}/node_modules/pixi.js/lib/app/Application.mjs`,
-				`${root}/node_modules/@datamoc/mw_games/dist/two-d/Game.js`,
+				`${root}/node_modules/@datamoc/mwg/dist/two-d/Game.js`,
 				'\0vite/preload-helper',
 			],
 			files: [
@@ -142,14 +142,14 @@ test('the artifact SBOM lists only the packages whose modules reached the bundle
 		assert.equal(bom.metadata.component.type, 'application');
 		assert.deepEqual(
 			bom.components.map((component) => component['bom-ref']),
-			['pkg:npm/%40datamoc/mw_games@0.16.0', 'pkg:npm/pixi.js@8.1.0', 'file:game.js', 'file:index.html'],
+			['pkg:npm/%40datamoc/mwg@0.16.0', 'pkg:npm/pixi.js@8.1.0', 'file:game.js', 'file:index.html'],
 		);
 		assert.deepEqual(bom.components[1].licenses, [{ license: { id: 'MIT' } }]);
 		assert.deepEqual(bom.components[2].hashes, [{ alg: 'SHA-256', content: 'bb' }]);
 		assert.deepEqual(bom.dependencies, [
 			{
 				ref: 'pkg:npm/my-game@1.0.0',
-				dependsOn: ['pkg:npm/%40datamoc/mw_games@0.16.0', 'pkg:npm/pixi.js@8.1.0'],
+				dependsOn: ['pkg:npm/%40datamoc/mwg@0.16.0', 'pkg:npm/pixi.js@8.1.0'],
 			},
 		]);
 	} finally {

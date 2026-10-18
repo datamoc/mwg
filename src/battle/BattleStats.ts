@@ -10,7 +10,7 @@
  *
  * @example
  * ```ts
- * import { BattleStats } from '@datamoc/mw_games/battle';
+ * import { BattleStats } from '@datamoc/mwg/battle';
  *
  * const stats = new BattleStats();
  * stats.record('kills', 'orc-grunt');

@@ -32,7 +32,7 @@ export interface OpeningBook {
  *
  * @example
  * ```ts
- * import { probeBook, startingChess } from '@datamoc/mw_games/board';
+ * import { probeBook, startingChess } from '@datamoc/mwg/board';
  *
  * const book = {
  *   version: 1 as const,
@@ -58,7 +58,7 @@ const PROMOTION_LETTER: Record<string, PromotionKind> = { q: 'queen', r: 'rook',
  *
  * @example
  * ```ts
- * import { parseUciMove } from '@datamoc/mw_games/board';
+ * import { parseUciMove } from '@datamoc/mwg/board';
  *
  * console.log(parseUciMove('e2e4')); // { from: 12, to: 28 }
  * ```

@@ -17,7 +17,7 @@ import { smokePage } from './browser-smoke.mjs';
  *   - with npm: `npm pack`, install the tarball, build a tiny game through step 10's by-hand
  *     variant (a plain vite config and the module-to-classic script edit), then again through
  *     the shipped `mwgPage()` plugin and through the `mwg-emit` command, and open each result;
- *   - without npm: `dist/mw_games.global.js` in a plain `<script>` tag, also from `file://`.
+ *   - without npm: `dist/mwg.global.js` in a plain `<script>` tag, also from `file://`.
  *
  * Run `npm run build` first. Each page is judged the same way the per-PR visual smoke judges
  * one, and its screenshot lands under `benchmark-results/package-smoke/` for a reviewer.
@@ -25,7 +25,7 @@ import { smokePage } from './browser-smoke.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const { devDependencies } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
-const globalBundle = join(root, 'dist', 'mw_games.global.js');
+const globalBundle = join(root, 'dist', 'mwg.global.js');
 
 if (!existsSync(globalBundle)) {
 	throw new Error(`no build found at ${globalBundle} - run "npm run build" first`);
@@ -63,8 +63,8 @@ const NPM_INDEX = `<!doctype html>
 </html>
 `;
 
-const NPM_MAIN = `import { Game, Scene2D } from '@datamoc/mw_games/two-d';
-import { Shape2D, Text2D } from '@datamoc/mw_games/two-d/render';
+const NPM_MAIN = `import { Game, Scene2D } from '@datamoc/mwg/two-d';
+import { Shape2D, Text2D } from '@datamoc/mwg/two-d/render';
 
 class SmokeScene extends Scene2D {
 	override create(): void {
@@ -104,7 +104,7 @@ export default defineConfig({
 
 //the shipped plugin: vite build alone finishes the page, assets included
 const PLUGIN_VITE_CONFIG = `import { defineConfig } from 'vite';
-import { mwgPage } from '@datamoc/mw_games/tools/vite';
+import { mwgPage } from '@datamoc/mwg/tools/vite';
 
 export default defineConfig({ plugins: [mwgPage({ compress: false })], build: { outDir: 'dist-plugin' } });
 `;
@@ -121,9 +121,9 @@ const GLOBAL_INDEX = `<!doctype html>
 </head>
 <body>
 	<canvas id="game"></canvas>
-	<script src="./mw_games.global.js"></script>
+	<script src="./mwg.global.js"></script>
 	<script>
-		const { Game, Scene2D, Shape2D, Text2D } = window.mw_games;
+		const { Game, Scene2D, Shape2D, Text2D } = window.mwg;
 
 		class SmokeScene extends Scene2D {
 			create() {
@@ -175,7 +175,7 @@ try {
 				private: true,
 				type: 'module',
 				dependencies: {
-					'@datamoc/mw_games': `file:${join(scratch, tarball).replace(/\\/g, '/')}`,
+					'@datamoc/mwg': `file:${join(scratch, tarball).replace(/\\/g, '/')}`,
 					'pixi.js': devDependencies['pixi.js'],
 					vite: devDependencies.vite,
 					//for `mwg-smoke`, whose browser driver is an optional peer
@@ -232,7 +232,7 @@ try {
 	// the plugin's artifact SBOM: what the page ships, not what the lockfile holds
 	const bom = JSON.parse(readFileSync(join(npmApp, 'dist-plugin', 'sbom.cdx.json'), 'utf8'));
 	const shipped = bom.components.filter((c) => c.type === 'library').map((c) => c.name);
-	if (!shipped.includes('pixi.js') || !shipped.includes('@datamoc/mw_games') || shipped.includes('vite'))
+	if (!shipped.includes('pixi.js') || !shipped.includes('@datamoc/mwg') || shipped.includes('vite'))
 		throw new Error(`the artifact SBOM does not describe the bundle: ${shipped.join(', ')}`);
 	console.log(`artifact SBOM: ${shipped.join(', ')} + ${bom.components.length - shipped.length} files`);
 	// the translation editor's CI mode, from the installed package: it must load `dist`, since
@@ -244,7 +244,7 @@ try {
 	// the reference lockstep server, loaded from the package (so from `dist`), started and stopped
 	writeFileSync(
 		join(npmApp, 'server-smoke.mjs'),
-		"import { createLockstepServer } from '@datamoc/mw_games/tools/multiplayer-server';\n" +
+		"import { createLockstepServer } from '@datamoc/mwg/tools/multiplayer-server';\n" +
 			'const server = createLockstepServer({ port: 0 });\nawait server.ready;\n' +
 			"console.log('lockstep server listened on', server.address().port);\nawait server.close();\n",
 	);
@@ -271,7 +271,7 @@ try {
 	// the no-install path: the standalone global, no node_modules at all
 	const globalApp = join(scratch, 'global-app');
 	mkdirSync(globalApp, { recursive: true });
-	cpSync(globalBundle, join(globalApp, 'mw_games.global.js'));
+	cpSync(globalBundle, join(globalApp, 'mwg.global.js'));
 	writeFileSync(join(globalApp, 'index.html'), GLOBAL_INDEX);
 
 	const globalResult = await smokePage({

@@ -227,7 +227,7 @@ export type MwlCommand =
  *
  * @example
  * ```ts
- * import { createWorld } from '@datamoc/mw_games/mwl';
+ * import { createWorld } from '@datamoc/mwg/mwl';
  *
  * const world = createWorld();
  * console.log(world.turn, world.status); // 1 'playing'
@@ -259,7 +259,7 @@ const MAX_TERRAIN_CELLS = 1024 * 1024;
  *
  * @example
  * ```ts
- * import { parseTerrain } from '@datamoc/mw_games/mwl';
+ * import { parseTerrain } from '@datamoc/mwg/mwl';
  *
  * const map = parseTerrain('Gg,Gg\nGg,1 Kh');
  * console.log(map.width, map.starts['1']); // 2 [{ x: 1, y: 1 }]
@@ -311,7 +311,7 @@ const variableReference = /\$([A-Za-z_][A-Za-z0-9_.]*)/g;
  *
  * @example
  * ```ts
- * import { compile, MwlRuntime } from '@datamoc/mw_games/mwl';
+ * import { compile, MwlRuntime } from '@datamoc/mwg/mwl';
  *
  * const runtime = new MwlRuntime(compile("[{ tag: 'game', schema: 0.1 }]"), {
  *   resolveMap: () => 'Gg,Gg\nGg,Gg',
@@ -1666,7 +1666,7 @@ export class MwlRuntime {
  *
  * @example
  * ```ts
- * import { createWorld, execute } from '@datamoc/mw_games/mwl';
+ * import { createWorld, execute } from '@datamoc/mwg/mwl';
  *
  * const world = createWorld();
  * execute(world, { name: 'set_variable', target: 'gold', value: 50 });
@@ -1736,7 +1736,7 @@ function endLevelSide(world: MwlWorld, named: string | undefined): MwlSideRef | 
  *
  * @example
  * ```ts
- * import { sideVisionGroups, type MwlWorld } from '@datamoc/mw_games/mwl';
+ * import { sideVisionGroups, type MwlWorld } from '@datamoc/mwg/mwl';
  *
  * declare const world: MwlWorld;
  *

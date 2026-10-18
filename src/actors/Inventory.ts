@@ -8,7 +8,7 @@
  *
  * @example
  * ```ts
- * import { Inventory } from '@datamoc/mw_games/actors';
+ * import { Inventory } from '@datamoc/mwg/actors';
  *
  * const bag = new Inventory({ capacity: 50 });
  * bag.add({ id: 'potion', quantity: 3, stackable: true, weight: 0.5 });

@@ -37,7 +37,7 @@ export interface RenderingDecision {
  *
  * @example
  * ```ts
- * import { RENDERING_DECISIONS } from '@datamoc/mw_games/two-d/render';
+ * import { RENDERING_DECISIONS } from '@datamoc/mwg/two-d/render';
  *
  * const particles = RENDERING_DECISIONS.find((d) => d.workload === 'particles');
  * console.log(particles?.preferred); // 'PixiJS for 2D, Babylon.js for 3D'
@@ -106,7 +106,7 @@ export const RENDERING_DECISIONS: readonly RenderingDecision[] = [
  *
  * @example
  * ```ts
- * import { inspectGraphicsCapabilities } from '@datamoc/mw_games/two-d/render';
+ * import { inspectGraphicsCapabilities } from '@datamoc/mwg/two-d/render';
  *
  * // reads the real browser when no probe is given
  * const here = inspectGraphicsCapabilities();
@@ -142,7 +142,7 @@ export interface WebGpuDetection {
  *
  * @example
  * ```ts
- * import { detectWebGpu, inspectGraphicsCapabilities } from '@datamoc/mw_games/two-d/render';
+ * import { detectWebGpu, inspectGraphicsCapabilities } from '@datamoc/mwg/two-d/render';
  *
  * const detected = await detectWebGpu();
  * const capabilities = inspectGraphicsCapabilities({ webgpu: detected.webgpu, wgsl: detected.wgsl });

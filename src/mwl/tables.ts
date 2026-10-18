@@ -10,7 +10,7 @@ import type { MwlTableColumn } from './schema.ts';
  *
  * @example
  * ```ts
- * import type { MwlColumnValueType } from '@datamoc/mw_games/mwl';
+ * import type { MwlColumnValueType } from '@datamoc/mwg/mwl';
  *
  * const cost: MwlColumnValueType<'number'> = 3;
  * const kinds: MwlColumnValueType<'list'> = ['sharp', 'shiny'];
@@ -38,8 +38,8 @@ export type MwlColumnValueType<Type extends CsvColumnType> = Type extends 'numbe
  *
  * @example
  * ```ts
- * import { typedRows } from '@datamoc/mw_games/mwl';
- * import type { MwlTableColumn } from '@datamoc/mw_games/mwl';
+ * import { typedRows } from '@datamoc/mwg/mwl';
+ * import type { MwlTableColumn } from '@datamoc/mwg/mwl';
  *
  * const columns = [
  * 	{ name: 'kind', type: 'string' },
@@ -63,8 +63,8 @@ export type MwlTypedRow<Columns extends readonly MwlTableColumn[]> = {
  *
  * @example
  * ```ts
- * import { typedRows } from '@datamoc/mw_games/mwl';
- * import type { MwlTableColumn } from '@datamoc/mw_games/mwl';
+ * import { typedRows } from '@datamoc/mwg/mwl';
+ * import type { MwlTableColumn } from '@datamoc/mwg/mwl';
  *
  * const columns = [{ name: 'cost', type: 'number' }] as const satisfies readonly MwlTableColumn[];
  * const rows = typedRows({ columns, rows: [{ cost: 3 }] });
@@ -96,7 +96,7 @@ export interface EmitTableTypesOptions {
  *
  * @example
  * ```ts
- * import { compile, contentCatalog, emitTableTypes } from '@datamoc/mw_games/mwl';
+ * import { compile, contentCatalog, emitTableTypes } from '@datamoc/mwg/mwl';
  *
  * const catalog = contentCatalog(
  * 	compile(
@@ -111,8 +111,8 @@ export function emitTableTypes(tables: readonly MwlTableDefinition[], options: E
 	const lines = [`// ${header}`];
 	if (tables.length > 0)
 		lines.push(
-			`import { typedRows } from '@datamoc/mw_games/mwl';`,
-			`import type { MwlContentCatalog } from '@datamoc/mw_games/mwl';`,
+			`import { typedRows } from '@datamoc/mwg/mwl';`,
+			`import type { MwlContentCatalog } from '@datamoc/mwg/mwl';`,
 		);
 	const taken = new Set<string>();
 	for (const table of tables) {

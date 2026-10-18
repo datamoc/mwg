@@ -16,7 +16,7 @@
  *
  * @example
  * ```ts
- * import { setBase, setActive, t, locale, direction, typographic, parseFTL, reset } from '@datamoc/mw_games/i18n';
+ * import { setBase, setActive, t, locale, direction, typographic, parseFTL, reset } from '@datamoc/mwg/i18n';
  *
  * setBase({ locale: 'en', direction: 'ltr', messages: { greeting: 'Hello, {name}!' } });
  *
@@ -34,7 +34,7 @@
  * simulation emits one typed `SemanticMessage` and a game renders it differently per channel
  * (log line, compact HUD, accessibility, debug) without touching the message itself.
  * ```ts
- * import { setBase, createCatalogFormatter, type SemanticMessage } from '@datamoc/mw_games/i18n';
+ * import { setBase, createCatalogFormatter, type SemanticMessage } from '@datamoc/mwg/i18n';
  *
  * setBase({
  *   locale: 'en',
@@ -121,7 +121,7 @@ export interface MessageParams {
  *
  * @example
  * ```ts
- * import { setBase, tRaw } from '@datamoc/mw_games/i18n';
+ * import { setBase, tRaw } from '@datamoc/mwg/i18n';
  *
  * setBase({ locale: 'fr', direction: 'ltr', messages: { 'ui.click.audio': 'sounds/hit!.wav' } });
  * tRaw('ui.click.audio'); // 'sounds/hit!.wav', with no extra spacing before the '!'
@@ -244,7 +244,7 @@ export function typographic(text: string, language = locale()): string {
  *
  * @example
  * ```ts
- * import { nonBreakingUnit } from '@datamoc/mw_games/i18n';
+ * import { nonBreakingUnit } from '@datamoc/mwg/i18n';
  *
  * console.log(nonBreakingUnit(12, 'pièces d\'or', 'fr')); // '12 pièces d\'or'
  * console.log(nonBreakingUnit(5, 'kg', 'de')); // '5 kg'

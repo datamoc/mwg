@@ -37,7 +37,7 @@ export interface TreeViewOptions<T> {
  *
  * @example
  * ```ts
- * import { TreeView } from '@datamoc/mw_games/two-d/ui';
+ * import { TreeView } from '@datamoc/mwg/two-d/ui';
  *
  * const tree = new TreeView({
  *   roots: [{ id: 'a', label: 'A', children: [{ id: 'a1', label: 'A1' }] }],

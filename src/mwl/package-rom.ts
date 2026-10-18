@@ -50,7 +50,7 @@ const SIGNATURES: readonly (readonly number[])[] = [
  *
  * @example
  * ```ts
- * import { detectRomImage, registerRomDigest, sha256Hex } from '@datamoc/mw_games/mwl';
+ * import { detectRomImage, registerRomDigest, sha256Hex } from '@datamoc/mwg/mwl';
  *
  * const bytes = new Uint8Array([1, 2, 3]);
  * registerRomDigest(await sha256Hex(bytes), 'example ROM');
@@ -70,7 +70,7 @@ export function registerRomDigest(sha256: string, label: string): void {
  *
  * @example
  * ```ts
- * import { detectRomImage } from '@datamoc/mw_games/mwl';
+ * import { detectRomImage } from '@datamoc/mwg/mwl';
  *
  * const refusal = await detectRomImage(new Uint8Array(65536).fill(0xa5), 'pcm.bin');
  * console.log(refusal?.reason); // 'size'

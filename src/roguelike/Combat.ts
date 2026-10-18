@@ -19,7 +19,7 @@ export interface DamageContext<C> {
  *
  * @example
  * ```ts
- * import { CombatHooks } from '@datamoc/mw_games/roguelike';
+ * import { CombatHooks } from '@datamoc/mwg/roguelike';
  *
  * const hooks = new CombatHooks<{ name: string }>();
  * const invulnerability = {};

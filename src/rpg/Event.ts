@@ -35,7 +35,7 @@ export function conditionHolds(condition: EventCondition, state: GameState): boo
  *
  * @example
  * ```ts
- * import { activePage, conditionHolds, GameState, type MapEvent } from '@datamoc/mw_games/rpg';
+ * import { activePage, conditionHolds, GameState, type MapEvent } from '@datamoc/mwg/rpg';
  *
  * const state = new GameState();
  * const shopkeeper: MapEvent = {

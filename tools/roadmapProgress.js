@@ -155,7 +155,7 @@ function parseRoadmap(markdown) {
 	return { sections: [], overallDone: 0, overallTotal: 0, openItems: [], allItems: [], checklist: null };
 }
 
-const Scene2DBase = typeof mw_games !== 'undefined' && mw_games.Scene2D ? mw_games.Scene2D : class {};
+const Scene2DBase = typeof mwg !== 'undefined' && mwg.Scene2D ? mwg.Scene2D : class {};
 
 class RoadmapScene extends Scene2DBase {
 	create() {
@@ -164,7 +164,7 @@ class RoadmapScene extends Scene2DBase {
 		let y = 20;
 
 		if (!data || data.overallTotal === 0) {
-			const missingLabel = new mw_games.Label({
+			const missingLabel = new mwg.Label({
 				text: 'No roadmap data found. Serve this page over HTTP or embed ROADMAP.md in roadmap-data.',
 				size: 14,
 				color: 0xff6b6b,
@@ -178,7 +178,7 @@ class RoadmapScene extends Scene2DBase {
 		const barWidth = 460;
 		const rowHeight = 32;
 
-		const title = new mw_games.Label({
+		const title = new mwg.Label({
 			text: 'mwg - ROADMAP.md progress',
 			size: 20,
 			bold: true,
@@ -189,7 +189,7 @@ class RoadmapScene extends Scene2DBase {
 		y += 40;
 
 		const overallPct = overallTotal > 0 ? Math.round((100 * overallDone) / overallTotal) : 0;
-		const overallLabel = new mw_games.Label({
+		const overallLabel = new mwg.Label({
 			text: `Overall: ${overallDone}/${overallTotal} (${overallPct}%)`,
 			size: 16,
 			bold: true,
@@ -199,7 +199,7 @@ class RoadmapScene extends Scene2DBase {
 		this.stage.addChild(overallLabel);
 		y += 24;
 
-		const overallBar = new mw_games.Bar({
+		const overallBar = new mwg.Bar({
 			width: barWidth,
 			height: 18,
 			color: 0xffd166,
@@ -212,7 +212,7 @@ class RoadmapScene extends Scene2DBase {
 
 		for (const section of sections) {
 			const pct = section.total > 0 ? Math.round((100 * section.done) / section.total) : 0;
-			const label = new mw_games.Label({
+			const label = new mwg.Label({
 				text: `${section.name}  (${section.done}/${section.total} - ${pct}%)`,
 				size: 13,
 				color: 0xdddddd,
@@ -222,7 +222,7 @@ class RoadmapScene extends Scene2DBase {
 			y += 18;
 
 			const barColor = section.done === section.total ? 0x06d6a0 : 0x118ab2;
-			const bar = new mw_games.Bar({
+			const bar = new mwg.Bar({
 				width: barWidth,
 				height: 10,
 				color: barColor,
@@ -239,7 +239,7 @@ class RoadmapScene extends Scene2DBase {
 		const checklist = data.checklist;
 		if (checklist && checklist.total > 0) {
 			const checklistPct = Math.round((100 * checklist.done) / checklist.total);
-			const checklistLabel = new mw_games.Label({
+			const checklistLabel = new mwg.Label({
 				text: `${checklist.name}  (${checklist.done}/${checklist.total} - ${checklistPct}%)`,
 				size: 13,
 				color: 0xdddddd,
@@ -248,7 +248,7 @@ class RoadmapScene extends Scene2DBase {
 			this.stage.addChild(checklistLabel);
 			y += 18;
 
-			const checklistBar = new mw_games.Bar({
+			const checklistBar = new mwg.Bar({
 				width: barWidth,
 				height: 10,
 				color: checklist.done === checklist.total ? 0x06d6a0 : 0xffd166,
@@ -265,7 +265,7 @@ class RoadmapScene extends Scene2DBase {
 		const pending = [...(openItems || []), ...((checklist && checklist.open) || [])];
 		if (pending.length > 0) {
 			y += 12;
-			const openHeader = new mw_games.Label({
+			const openHeader = new mwg.Label({
 				text: `Open items (${pending.length}):`,
 				size: 14,
 				bold: true,
@@ -278,7 +278,7 @@ class RoadmapScene extends Scene2DBase {
 			for (const item of pending.slice(0, 8)) {
 				const itemText = item.num ? `#${item.num}: ${item.text}` : item.text;
 				const trimmed = itemText.length > 70 ? itemText.slice(0, 67) + '...' : itemText;
-				const itemLabel = new mw_games.Label({
+				const itemLabel = new mwg.Label({
 					text: trimmed,
 					size: 12,
 					color: 0xbbbbbb,
@@ -288,7 +288,7 @@ class RoadmapScene extends Scene2DBase {
 				y += 18;
 			}
 			if (pending.length > 8) {
-				const moreLabel = new mw_games.Label({
+				const moreLabel = new mwg.Label({
 					text: `... and ${pending.length - 8} more open items`,
 					size: 12,
 					color: 0x888888,
@@ -612,11 +612,11 @@ if (typeof window !== 'undefined') {
 			window.__roadmapData = markdown ? parseRoadmap(markdown) : null;
 
 			const canvasWrap = document.getElementById('mwg-roadmap-canvas-wrap');
-			if (typeof mw_games !== 'undefined' && mw_games.Game) {
+			if (typeof mwg !== 'undefined' && mwg.Game) {
 				const gameOptions = canvasWrap
 					? { background: 0x14161c, resizeTo: canvasWrap }
 					: { background: 0x14161c, resizeTo: window };
-				const game = new mw_games.Game(gameOptions);
+				const game = new mwg.Game(gameOptions);
 				await game.start(RoadmapScene);
 			}
 

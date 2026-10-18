@@ -11,7 +11,7 @@
  *
  * @example
  * ```ts
- * import { BossPhases, AbilityCycle } from '@datamoc/mw_games/roguelike';
+ * import { BossPhases, AbilityCycle } from '@datamoc/mwg/roguelike';
  *
  * const phases = new BossPhases([0.66, 0.33]); // three stages
  * const entered = phases.check(0.3); // [1, 2] if a massive hit skipped straight past phase 1

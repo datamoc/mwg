@@ -35,7 +35,7 @@ export interface PoOptions {
  *
  * @example
  * ```ts
- * import { parsePo, setBase, setActive, t } from '@datamoc/mw_games/i18n';
+ * import { parsePo, setBase, setActive, t } from '@datamoc/mwg/i18n';
  *
  * const po = [
  *   'msgid "greeting"',

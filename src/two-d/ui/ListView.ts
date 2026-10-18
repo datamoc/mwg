@@ -53,7 +53,7 @@ export interface ListViewOptions {
  *
  * @example
  * ```ts
- * import { ListView } from '@datamoc/mw_games/two-d/ui';
+ * import { ListView } from '@datamoc/mwg/two-d/ui';
  *
  * const menu = new ListView({
  * 	width: 160,

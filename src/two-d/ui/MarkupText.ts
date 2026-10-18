@@ -49,7 +49,7 @@ export interface MarkupTextOptions {
  *
  * @example
  * ```ts
- * import { MarkupText } from '@datamoc/mw_games/two-d/ui';
+ * import { MarkupText } from '@datamoc/mwg/two-d/ui';
  *
  * const description = new MarkupText({ text: 'Pay <b>10</b> gold<img>coin.png</img>', maxWidth: 240 });
  * description.setText('Pay <b>15</b> gold<img>coin.png</img>');

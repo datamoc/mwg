@@ -146,7 +146,7 @@ const DEFAULT_MAX_MILLISECONDS = 16;
  *
  * @example
  * ```ts
- * import { JavaScriptAI, AICancelledError, AIBudgetExceededError } from '@datamoc/mw_games/ai';
+ * import { JavaScriptAI, AICancelledError, AIBudgetExceededError } from '@datamoc/mwg/ai';
  *
  * const ai = new JavaScriptAI({ seed: 7 });
  * ai.register({ id: 'guard', behaviors: [{ id: 'wait', decide: () => ({ type: 'wait' }) }] });

@@ -82,8 +82,8 @@ function blend(a: number, b: number, ratio: number): number {
  *
  * @example
  * ```ts
- * import { paletteRangeMapping, recolorTexture } from '@datamoc/mw_games/two-d/render';
- * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { paletteRangeMapping, recolorTexture } from '@datamoc/mwg/two-d/render';
+ * import type { Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const texture: Texture2D;
  * declare const magentaReference: readonly number[]; // the exact colours the art was painted with
@@ -114,7 +114,7 @@ export function paletteRangeMapping(reference: readonly number[], range: Palette
  *
  * @example
  * ```ts
- * import { remapPixels } from '@datamoc/mw_games/two-d/render';
+ * import { remapPixels } from '@datamoc/mwg/two-d/render';
  *
  * const pixels = new Uint8ClampedArray([255, 0, 255, 255, 10, 10, 10, 255]); // magenta, then dark grey
  * const out = remapPixels(pixels, { from: [0xff00ff], to: [0xff0000] }); // 'exact' by default
@@ -199,8 +199,8 @@ export interface RecolorProbe {
  *
  * @example
  * ```ts
- * import { withTextureCanvas } from '@datamoc/mw_games/two-d/render';
- * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { withTextureCanvas } from '@datamoc/mwg/two-d/render';
+ * import type { Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const texture: Texture2D;
  *
@@ -270,8 +270,8 @@ export function withTextureCanvas(
  *
  * @example
  * ```ts
- * import { paletteRangeMapping, recolorTexture } from '@datamoc/mw_games/two-d/render';
- * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { paletteRangeMapping, recolorTexture } from '@datamoc/mwg/two-d/render';
+ * import type { Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const texture: Texture2D;
  * const mapping = paletteRangeMapping([0xffffff, 0x808080, 0x000000], { min: 0xffe0e0, mid: 0xc00000, max: 0x400000 });

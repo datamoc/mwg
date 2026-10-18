@@ -44,7 +44,7 @@ export interface BarOptions {
  *
  * @example
  * ```ts
- * import { Bar } from '@datamoc/mw_games/two-d/ui';
+ * import { Bar } from '@datamoc/mwg/two-d/ui';
  *
  * const hp = new Bar({ width: 120, height: 8, color: 0xcc3333, value: 30, max: 30 });
  *

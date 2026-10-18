@@ -99,7 +99,7 @@ interface MidiRenderTask {
  *
  * @example
  * ```ts
- * import { parseMidi, renderMidiToBuffer } from '@datamoc/mw_games/audio';
+ * import { parseMidi, renderMidiToBuffer } from '@datamoc/mwg/audio';
  *
  * declare const midiBytes: ArrayBuffer;
  *
@@ -158,7 +158,7 @@ function renderThroughRequestedSynth(file: MidiFile, options: RenderMidiOptions)
  *
  * @example
  * ```ts
- * import { renderMidiToBufferAsync } from '@datamoc/mw_games/audio';
+ * import { renderMidiToBufferAsync } from '@datamoc/mwg/audio';
  *
  * declare const midi: ArrayBuffer;
  * declare const soundFont: ArrayBuffer;
@@ -523,7 +523,7 @@ function renderNotes(task: MidiRenderTask): RenderedMidi {
  *
  * @example
  * ```ts
- * import { parseMidi, renderMidiStems } from '@datamoc/mw_games/audio';
+ * import { parseMidi, renderMidiStems } from '@datamoc/mwg/audio';
  *
  * declare const midiBytes: ArrayBuffer;
  *
@@ -568,7 +568,7 @@ export function renderMidiStems(
  *
  * @example
  * ```ts
- * import { parseMidi, renderMidiToBuffer, toAudioBuffer } from '@datamoc/mw_games/audio';
+ * import { parseMidi, renderMidiToBuffer, toAudioBuffer } from '@datamoc/mwg/audio';
  *
  * declare const context: AudioContext;
  * declare const midiBytes: ArrayBuffer;

@@ -9,7 +9,7 @@
  *
  * @example
  * ```ts
- * import { Charges } from '@datamoc/mw_games/actors';
+ * import { Charges } from '@datamoc/mwg/actors';
  *
  * const wand = new Charges({ max: 3, regenRate: 10 }); // one charge every 10 turns
  * wand.spend(1);

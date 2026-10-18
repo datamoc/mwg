@@ -62,8 +62,8 @@ export function leaseClock(
  *
  * @example
  * ```ts
- * import { applyStatusEffect, StatBlock } from '@datamoc/mw_games/actors';
- * import { TurnClock } from '@datamoc/mw_games/world';
+ * import { applyStatusEffect, StatBlock } from '@datamoc/mwg/actors';
+ * import { TurnClock } from '@datamoc/mwg/world';
  *
  * const stats = new StatBlock({ base: { hp: 20, attack: 5 } });
  * const clock = new TurnClock();

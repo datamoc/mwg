@@ -10,7 +10,7 @@
  *
  * @example
  * ```ts
- * import { contrastRatio, meetsContrast, relativeLuminance } from '@datamoc/mw_games/two-d/ui';
+ * import { contrastRatio, meetsContrast, relativeLuminance } from '@datamoc/mwg/two-d/ui';
  *
  * console.log(relativeLuminance(0xffffff)); // 1
  * console.log(contrastRatio(0xffffff, 0x000000).toFixed(1)); // 21.0

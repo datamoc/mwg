@@ -9,7 +9,7 @@ import { theme, themeChanged } from './theme.ts';
  *
  * @example
  * ```ts
- * import { spinValue } from '@datamoc/mw_games/two-d/ui';
+ * import { spinValue } from '@datamoc/mwg/two-d/ui';
  *
  * console.log(spinValue(10, 1, 0, 10, 1)); // 10, clamped
  * console.log(spinValue(10, 1, 0, 10, 1, true)); // 0, wrapped
@@ -46,7 +46,7 @@ export interface SpinnerOptions {
  *
  * @example
  * ```ts
- * import { Spinner } from '@datamoc/mw_games/two-d/ui';
+ * import { Spinner } from '@datamoc/mwg/two-d/ui';
  *
  * const level = new Spinner({ min: 1, max: 99, value: 1 });
  * level.increment();

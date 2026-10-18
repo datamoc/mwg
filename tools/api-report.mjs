@@ -299,7 +299,7 @@ function renderReport(modules, files) {
 	for (const { subpath, rel } of modules) {
 		const exported = resolveModule(rel, files, cache);
 		const names = [...exported.keys()].sort((a, b) => a.localeCompare(b));
-		lines.push(`## ${subpath === '.' ? 'root (`@datamoc/mw_games`)' : `\`${subpath}\``}`, '');
+		lines.push(`## ${subpath === '.' ? 'root (`@datamoc/mwg`)' : `\`${subpath}\``}`, '');
 
 		if (names.length === 0) {
 			lines.push('_no exports_', '');

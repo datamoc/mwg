@@ -115,8 +115,8 @@ export function layoutKeys(
  *
  * @example
  * ```ts
- * import { OnScreenKeyboard, UPPERCASE_KEYBOARD } from '@datamoc/mw_games/two-d/ui';
- * import type { Container2D } from '@datamoc/mw_games/two-d/render';
+ * import { OnScreenKeyboard, UPPERCASE_KEYBOARD } from '@datamoc/mwg/two-d/ui';
+ * import type { Container2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const layer: Container2D;
  *

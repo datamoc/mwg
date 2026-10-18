@@ -21,7 +21,7 @@ export interface StatsScreenOptions {
  *
  * @example
  * ```ts
- * import { StatsScreen } from '@datamoc/mw_games/two-d/ui';
+ * import { StatsScreen } from '@datamoc/mwg/two-d/ui';
  *
  * const screen = new StatsScreen({
  * 	width: 200,

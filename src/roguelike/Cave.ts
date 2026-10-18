@@ -28,7 +28,7 @@ import { Level, type LevelShape, type TerrainKind } from './Level.ts';
  *
  * @example
  * ```ts
- * import { generateCave } from '@datamoc/mw_games/roguelike';
+ * import { generateCave } from '@datamoc/mwg/roguelike';
  *
  * const cave = generateCave({
  *   width: 40,

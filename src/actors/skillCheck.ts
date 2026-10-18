@@ -13,7 +13,7 @@ import * as Random from '../core/Random.ts';
  *
  * @example
  * ```ts
- * import { skillCheck } from '@datamoc/mw_games/actors';
+ * import { skillCheck } from '@datamoc/mwg/actors';
  *
  * const success = skillCheck(5, 15); // proficiency 5, difficulty 15, default d20 roll
  * const withCustomDice = skillCheck(5, 15, () => 12); // an injected, non-random roll

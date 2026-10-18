@@ -94,23 +94,23 @@
 					<div class="two-col">
 						<div class="panel" style="padding: 1rem">
 							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>With npm</strong></p>
-							<pre style="margin: 0"><code>npm install @datamoc/mw_games pixi.js vite</code></pre>
+							<pre style="margin: 0"><code>npm install @datamoc/mwg pixi.js vite</code></pre>
 							<p style="margin: 0.5rem 0 0; font-size: 0.85rem">
 								Fetches from the registry, what this tutorial uses from here on.
 								<code>pixi.js</code> is the 2D renderer and an optional peer
 								dependency, so name it yourself, exactly as this line does. No
-								registry access? Download <code>datamoc-mw_games-&lt;version&gt;.tgz</code> from a
+								registry access? Download <code>datamoc-mwg-&lt;version&gt;.tgz</code> from a
 								<a href="https://github.com/datamoc/mwg/releases">release</a> and run
-								<code>npm install ./datamoc-mw_games-&lt;version&gt;.tgz pixi.js vite</code> instead, same
-								result, same <code>node_modules/@datamoc/mw_games/</code>, every later
+								<code>npm install ./datamoc-mwg-&lt;version&gt;.tgz pixi.js vite</code> instead, same
+								result, same <code>node_modules/@datamoc/mwg/</code>, every later
 								step identical.
 							</p>
 						</div>
 						<div class="panel" style="padding: 1rem">
 							<p style="margin: 0 0 0.5rem; color: var(--paper)"><strong>Without npm</strong></p>
-							<pre style="margin: 0"><code>&lt;script src="mw_games.global.js"&gt;&lt;/script&gt;</code></pre>
+							<pre style="margin: 0"><code>&lt;script src="mwg.global.js"&gt;&lt;/script&gt;</code></pre>
 							<p style="margin: 0.5rem 0 0; font-size: 0.85rem">
-								Download and unzip <code>mw_games-&lt;version&gt;.zip</code> from a
+								Download and unzip <code>mwg-&lt;version&gt;.zip</code> from a
 								<a href="https://github.com/datamoc/mwg/releases">release</a>; it holds
 								one file, already <code>file://</code>-ready. No install step, no
 								<code>node_modules/</code>.
@@ -121,8 +121,8 @@
 						This tutorial follows the npm column, since that's what the code samples below
 						assume (<code>import</code> statements, TypeScript). Without npm is the odd one
 						out: it skips step 10's build entirely, and every class below is written as
-						<code>mw_games.Game</code>, <code>mw_games.Scene</code> and so on off the
-						<code>window.mw_games</code> global instead of imported; everything else in
+						<code>mwg.Game</code>, <code>mwg.Scene</code> and so on off the
+						<code>window.mwg</code> global instead of imported; everything else in
 						steps 02-09 is identical.
 					</p>
 					<p>
@@ -175,7 +175,7 @@
 						<code>create()</code> builds its contents; assets are already loaded by the
 						time it runs, which the next step arranges.
 					</p>
-					<pre><code>import { Game, Scene2D } from '@datamoc/mw_games/two-d';
+					<pre><code>import { Game, Scene2D } from '@datamoc/mwg/two-d';
 
 class TownScene extends Scene2D {
 	override create(): void {
@@ -202,7 +202,7 @@ main();</code></pre>
 						at that folder; the compiled build in step 10 ignores it; it looks assets up
 						in the script <code>compile-resources</code> generated instead.
 					</p>
-					<pre><code>import * as Resources from '@datamoc/mw_games/assets';
+					<pre><code>import * as Resources from '@datamoc/mwg/assets';
 
 const TILES = 'tiles.png';
 
@@ -225,8 +225,8 @@ async function main(): Promise&lt;void&gt; {
 						renderer is built, which means before <code>game.start()</code>, not inside
 						<code>create()</code>:
 					</p>
-					<pre><code>import { Camera, TileMap, SpriteSheet, registerColorTransform } from '@datamoc/mw_games/two-d/render';
-import { Random } from '@datamoc/mw_games/core';
+					<pre><code>import { Camera, TileMap, SpriteSheet, registerColorTransform } from '@datamoc/mwg/two-d/render';
+import { Random } from '@datamoc/mwg/core';
 
 const FLOOR_TILE = 0;
 const WALL_TILE = 1;
@@ -271,8 +271,8 @@ class TownScene extends Scene2D {
 						<code>Input</code>'s named actions rather than raw keys: <code>up</code>,
 						<code>down</code>, <code>left</code>, <code>right</code> are bound by default.
 					</p>
-					<pre><code>import { TintedSprite } from '@datamoc/mw_games/two-d/render';
-import { Input } from '@datamoc/mw_games/core';
+					<pre><code>import { TintedSprite } from '@datamoc/mwg/two-d/render';
+import { Input } from '@datamoc/mwg/core';
 
 const HERO_TILE = 2;
 const TILE_SIZE = 16;
@@ -348,7 +348,7 @@ override update(dt: number): void {
 				<article class="step">
 					<h3><span class="n">09</span> A status line</h3>
 					<p>Any UI text is a <code>Label</code>, styled from the current theme rather than carrying its own font and colour:</p>
-					<pre><code>import { Label, theme } from '@datamoc/mw_games/two-d/ui';
+					<pre><code>import { Label, theme } from '@datamoc/mwg/two-d/ui';
 
 // inside TownScene:
 private status!: Label;
@@ -367,7 +367,7 @@ override create(): void {
 					<p>The dev server is gone from here on: this step is what removes the need for it. The framework ships a Vite plugin that does the whole job, so the configuration is one line:</p>
 					<pre><code>// vite.config.ts
 import { defineConfig } from 'vite';
-import { mwgPage } from '@datamoc/mw_games/tools/vite';
+import { mwgPage } from '@datamoc/mwg/tools/vite';
 
 export default defineConfig({ plugins: [mwgPage()] });</code></pre>
 					<p>Then build:</p>
@@ -388,7 +388,7 @@ export default defineConfig({ plugins: [mwgPage()] });</code></pre>
 						(<code>format: 'iife'</code>), with every path relative rather than site-absolute
 						(<code>base: './'</code>). It compiles <code>assets/</code> into
 						<code>dist/assets/assets.js</code>, since a <code>file://</code> page cannot fetch
-						files (<code>node node_modules/@datamoc/mw_games/tools/compile-resources.mjs ./assets ./dist/assets</code>).
+						files (<code>node node_modules/@datamoc/mwg/tools/compile-resources.mjs ./assets ./dist/assets</code>).
 						Last, in <code>dist/index.html</code>, it replaces
 						<code>&lt;script type="module" crossorigin src="./game.js"&gt;&lt;/script&gt;</code>,
 						which <code>file://</code> refuses to run, with these two lines, in this order,
@@ -438,11 +438,11 @@ dotnet run --project desktop/MwgDesktopHost -- dist/index.html</code></pre>
 				<article class="step">
 					<h3><span class="n">12</span> Finished code</h3>
 					<p>The whole scene, about 60 lines:</p>
-					<pre><code>import { Game, Scene2D } from '@datamoc/mw_games/two-d';
-import { Input, Random } from '@datamoc/mw_games/core';
-import { Camera, TileMap, TintedSprite, SpriteSheet, registerColorTransform } from '@datamoc/mw_games/two-d/render';
-import { Label, theme } from '@datamoc/mw_games/two-d/ui';
-import * as Resources from '@datamoc/mw_games/assets';
+					<pre><code>import { Game, Scene2D } from '@datamoc/mwg/two-d';
+import { Input, Random } from '@datamoc/mwg/core';
+import { Camera, TileMap, TintedSprite, SpriteSheet, registerColorTransform } from '@datamoc/mwg/two-d/render';
+import { Label, theme } from '@datamoc/mwg/two-d/ui';
+import * as Resources from '@datamoc/mwg/assets';
 
 const TILES = 'tiles.png';
 const TILE_SIZE = 16;

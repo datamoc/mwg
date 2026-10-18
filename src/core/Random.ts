@@ -15,7 +15,7 @@
  *
  * @example
  * ```ts
- * import { Random } from '@datamoc/mw_games/core';
+ * import { Random } from '@datamoc/mwg/core';
  *
  * // a floor generated from a seed always comes out the same
  * Random.push(12345);
@@ -31,7 +31,7 @@
  *
  * @example
  * ```ts
- * import { Generator } from '@datamoc/mw_games/core';
+ * import { Generator } from '@datamoc/mwg/core';
  *
  * const rng = new Generator(42); // same seed, same sequence, every time
  * const roll = rng.int(20);
@@ -136,7 +136,7 @@ const current = (): Generator => stack[stack.length - 1];
  *
  * @example
  * ```ts
- * import { Generator, Random } from '@datamoc/mw_games/core';
+ * import { Generator, Random } from '@datamoc/mwg/core';
  *
  * // a journaled rule draws from its own stream, never the ambient one
  * const stream = new Generator(99);
@@ -150,8 +150,8 @@ const current = (): Generator => stack[stack.length - 1];
  *
  * @example
  * ```ts
- * import { Random } from '@datamoc/mw_games/core';
- * import type { FloatSource } from '@datamoc/mw_games/core';
+ * import { Random } from '@datamoc/mwg/core';
+ * import type { FloatSource } from '@datamoc/mwg/core';
  *
  * // a scripted float-only stream: every draw is data, no integer path exists
  * const scripted: FloatSource = { float: () => 0.25 };
@@ -187,7 +187,7 @@ export interface RandomSource extends FloatSource {
  *
  * @example
  * ```ts
- * import { Random } from '@datamoc/mw_games/core';
+ * import { Random } from '@datamoc/mwg/core';
  *
  * Random.push(12345);
  * const shared = Random.active();
@@ -345,7 +345,7 @@ export interface MersenneTwisterState {
  *
  * @example
  * ```ts
- * import { MersenneTwister } from '@datamoc/mw_games/core';
+ * import { MersenneTwister } from '@datamoc/mwg/core';
  *
  * const rng = new MersenneTwister(5489);
  * const first = rng.nextUint32(); // 3499211612, the engine's own first value for this seed
@@ -459,7 +459,7 @@ function fnv1a(text: string): number {
  *
  * @example
  * ```ts
- * import { RandomStreams } from '@datamoc/mw_games/core';
+ * import { RandomStreams } from '@datamoc/mwg/core';
  *
  * const streams = new RandomStreams(12345);
  * streams.stream('loot').int(100); // one stream

@@ -7,7 +7,7 @@ import type { MwlWorld } from './runtime.ts';
  *
  * @example
  * ```ts
- * import { MWL_DEFAULT_CARRYOVER_PERCENTAGE } from '@datamoc/mw_games/mwl';
+ * import { MWL_DEFAULT_CARRYOVER_PERCENTAGE } from '@datamoc/mwg/mwl';
  *
  * console.log(MWL_DEFAULT_CARRYOVER_PERCENTAGE); // 80
  * ```
@@ -66,7 +66,7 @@ export interface MwlCarryover {
  *
  * @example
  * ```ts
- * import { endLevelCarryover, carryoverIntoScenario } from '@datamoc/mw_games/mwl';
+ * import { endLevelCarryover, carryoverIntoScenario } from '@datamoc/mwg/mwl';
  *
  * const world = {
  *   variables: {},

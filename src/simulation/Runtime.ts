@@ -68,9 +68,9 @@ export interface SimulationRuntimeHistoryOptions<A extends Actor = Actor> extend
  *
  * @example
  * ```ts
- * import { validateSimulationReplay, type SimulationRuntimeRule, type SimulationSnapshot } from '@datamoc/mw_games/simulation';
- * import type { ActionJournalEntry } from '@datamoc/mw_games/core';
- * import type { Actor } from '@datamoc/mw_games/roguelike';
+ * import { validateSimulationReplay, type SimulationRuntimeRule, type SimulationSnapshot } from '@datamoc/mwg/simulation';
+ * import type { ActionJournalEntry } from '@datamoc/mwg/core';
+ * import type { Actor } from '@datamoc/mwg/roguelike';
  *
  * declare const initialSnapshot: SimulationSnapshot<unknown>;
  * declare const recordedJournal: readonly ActionJournalEntry<unknown, unknown>[];
@@ -169,9 +169,9 @@ export function validateSimulationReplay<State, Command, Event, A extends Actor>
  *
  * @example
  * ```ts
- * import { SimulationRuntime, type SimulationRuntimeRule } from '@datamoc/mw_games/simulation';
- * import { Scheduler, type Actor } from '@datamoc/mw_games/roguelike';
- * import { Generator } from '@datamoc/mw_games/core';
+ * import { SimulationRuntime, type SimulationRuntimeRule } from '@datamoc/mwg/simulation';
+ * import { Scheduler, type Actor } from '@datamoc/mwg/roguelike';
+ * import { Generator } from '@datamoc/mwg/core';
  *
  * interface Fighter extends Actor { id: string; hp: number }
  * type State = { hero: Fighter; rat: Fighter };

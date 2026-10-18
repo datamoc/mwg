@@ -15,7 +15,7 @@ export interface AspectValues {
  *
  * @example
  * ```ts
- * import { Aspects } from '@datamoc/mw_games/ai';
+ * import { Aspects } from '@datamoc/mwg/ai';
  *
  * const aspects = new Aspects({ aggression: 2, keep_away: 3 });
  * console.log(aspects.number('aggression')); // 2
@@ -100,7 +100,7 @@ export interface DifficultyLevel {
  *
  * @example
  * ```ts
- * import { Aspects, Difficulty } from '@datamoc/mw_games/ai';
+ * import { Aspects, Difficulty } from '@datamoc/mwg/ai';
  *
  * const difficulty = new Difficulty(
  *   [{ id: 'hard', aspects: { aggression: 2, keep_away: 3 } }],
@@ -156,7 +156,7 @@ export interface Goal {
  *
  * @example
  * ```ts
- * import { Goals } from '@datamoc/mw_games/ai';
+ * import { Goals } from '@datamoc/mwg/ai';
  *
  * const goals = new Goals();
  * goals.set({ unit: 'hero', kind: 'attack', target: 'rat', priority: 3 });
@@ -194,7 +194,7 @@ export class Goals {
  *
  * @example
  * ```ts
- * import { RecruitmentPattern } from '@datamoc/mw_games/ai';
+ * import { RecruitmentPattern } from '@datamoc/mwg/ai';
  *
  * const pattern = new RecruitmentPattern(['scout', 'fighter'], 'fighter');
  * console.log(pattern.at(0), pattern.at(1), pattern.at(2)); // scout fighter scout
@@ -283,7 +283,7 @@ export interface HeuristicDecision<A = unknown> {
  *
  * @example
  * ```ts
- * import { Aspects, HeuristicAI } from '@datamoc/mw_games/ai';
+ * import { Aspects, HeuristicAI } from '@datamoc/mwg/ai';
  *
  * const ai = new HeuristicAI<{ kind: string }>({ stages: [{ id: 'best' }] });
  * const decision = ai.decide(
@@ -327,7 +327,7 @@ export class HeuristicAI<A = unknown> {
  *
  * @example
  * ```ts
- * import { Aspects, defaultWeigh } from '@datamoc/mw_games/ai';
+ * import { Aspects, defaultWeigh } from '@datamoc/mwg/ai';
  *
  * const score = defaultWeigh(
  *   { id: 'charge', action: {}, factors: { aggression: 3 } },
@@ -353,7 +353,7 @@ export function defaultWeigh<A>(candidate: HeuristicCandidate<A>, context: Heuri
  *
  * @example
  * ```ts
- * import { keepAwayScore } from '@datamoc/mw_games/ai';
+ * import { keepAwayScore } from '@datamoc/mwg/ai';
  *
  * console.log(keepAwayScore(1, 3)); // -2, two tiles inside the radius
  * console.log(keepAwayScore(5, 3)); // 0, outside it
@@ -369,7 +369,7 @@ export function keepAwayScore(distance: number, keepAway: number): number {
  *
  * @example
  * ```ts
- * import { goalScore } from '@datamoc/mw_games/ai';
+ * import { goalScore } from '@datamoc/mwg/ai';
  *
  * console.log(goalScore({ unit: 'u1', kind: 'attack', priority: 3 })); // 3
  * console.log(goalScore(undefined)); // 0, no goal at all

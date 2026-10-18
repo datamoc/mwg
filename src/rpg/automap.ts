@@ -25,7 +25,7 @@ export interface AutomapTarget {
  *
  * @example
  * ```ts
- * import { automap, AUTOMAP_EMPTY, type AutomapTarget, type AutomapRule } from '@datamoc/mw_games/rpg';
+ * import { automap, AUTOMAP_EMPTY, type AutomapTarget, type AutomapRule } from '@datamoc/mwg/rpg';
  *
  * declare const map: AutomapTarget; // a real two-d/render.TileMap satisfies this structurally
  *

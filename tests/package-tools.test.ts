@@ -6,7 +6,7 @@ import { join } from 'node:path';
 /**
  * P19, in a consumer's own terms: `package.json`'s `files` list decides what gets installed,
  * but its `exports` map decides what can be *imported*. An exports map blocks every deep path it
- * does not name, so `@datamoc/mw_games/tools/classic-html.mjs` fails with
+ * does not name, so `@datamoc/mwg/tools/classic-html.mjs` fails with
  * `ERR_PACKAGE_PATH_NOT_EXPORTED` while the file itself sits right there in the installed
  * package. That is how a consumer ended up hardcoding a `node_modules/...` path, which then
  * broke when the package was installed under an npm alias (its `tools/emit.mjs` stopped
@@ -65,8 +65,8 @@ test('the deep .mjs path a consumer tried is refused precisely because it is one
 
 test('the CLI-only tool has no subpath, because importing it would run it', () => {
 	// `mwl.mjs` reads process.argv and dispatches at import time and exports nothing, so a
-	// subpath would make `import '@datamoc/mw_games/tools/mwl'` print its usage and set an exit
-	// code. Its library half is `@datamoc/mw_games/mwl`, which is typed and already exported.
+	// subpath would make `import '@datamoc/mwg/tools/mwl'` print its usage and set an exit
+	// code. Its library half is `@datamoc/mwg/mwl`, which is typed and already exported.
 	assert.deepEqual(exportedNames('mwl'), []);
 	assert.equal(pkg.exports['./tools/mwl'], undefined);
 });

@@ -19,7 +19,7 @@ closed.
 **Where**: `two-d/render/Types2D.ts` (`Container2D`/`Texture2D`/`Rect`/`TextureRegion`),
 `two-d/render/Shape2D.ts` (`Node2D`/`Shape2D`/`Text2D`/`Sprite2D`/`TiledSprite`/`Gradient`),
 and `two-d/pixi-interop.ts` as the one sanctioned, visible escape hatch (published at
-`@datamoc/mw_games/two-d/pixi-interop`) for what those don't cover.
+`@datamoc/mwg/two-d/pixi-interop`) for what those don't cover.
 Enforced by `tests/renderer-isolation.test.ts` (both directions: nothing under `two-d` reaches
 Babylon, nothing under `three-d` reaches Pixi, no example names `pixi.js`/`@babylonjs/*`
 directly) and `tests/consumer-app.test.ts` (a minimal game compiles against the real published

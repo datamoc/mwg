@@ -12,8 +12,8 @@ import { clamp } from '../core/Math.ts';
  *
  * @example
  * ```ts
- * import { StatStages } from '@datamoc/mw_games/battle';
- * import { StatBlock } from '@datamoc/mw_games/actors';
+ * import { StatStages } from '@datamoc/mwg/battle';
+ * import { StatBlock } from '@datamoc/mwg/actors';
  *
  * const stats = new StatBlock({ base: { attack: 10 } });
  * const stages = new StatStages(stats, { max: 6, multiplier: (stage) => 1 + stage * 0.5 });

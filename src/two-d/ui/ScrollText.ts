@@ -9,7 +9,7 @@ import { ScrollBox } from './ScrollBox.ts';
  *
  * @example
  * ```ts
- * import { ellipsize } from '@datamoc/mw_games/two-d/ui';
+ * import { ellipsize } from '@datamoc/mwg/two-d/ui';
  *
  * const width = (text: string) => text.length * 10;
  * console.log(ellipsize('3. Le Fleuve profond (verrouillé)', 150, width)); // 3. Le Fleuve…
@@ -33,7 +33,7 @@ export function ellipsize(text: string, maxWidth: number, measure: (text: string
  *
  * @example
  * ```ts
- * import { truncateLines } from '@datamoc/mw_games/two-d/ui';
+ * import { truncateLines } from '@datamoc/mwg/two-d/ui';
  *
  * const width = (text: string) => text.length * 10;
  * console.log(truncateLines('build a bridge across the river gorge', 120, 2, width));
@@ -72,7 +72,7 @@ export function truncateLines(
  *
  * @example
  * ```ts
- * import { marqueeOffset } from '@datamoc/mw_games/two-d/ui';
+ * import { marqueeOffset } from '@datamoc/mwg/two-d/ui';
  *
  * console.log(marqueeOffset(300, 200, 0)); // 0, waiting at the start
  * console.log(marqueeOffset(300, 200, 3)); // 100, at the far end
@@ -109,7 +109,7 @@ export interface ScrollTextOptions {
  *
  * @example
  * ```ts
- * import { ScrollText } from '@datamoc/mw_games/two-d/ui';
+ * import { ScrollText } from '@datamoc/mwg/two-d/ui';
  *
  * const hint = new ScrollText({ width: 220, maxHeight: 60 });
  * hint.setText('Span the gorge with at most 400 of budget. Cables only pull; beams push as well.');
@@ -193,7 +193,7 @@ export interface MarqueeLabelOptions {
  *
  * @example
  * ```ts
- * import { MarqueeLabel } from '@datamoc/mw_games/two-d/ui';
+ * import { MarqueeLabel } from '@datamoc/mwg/two-d/ui';
  *
  * const title = new MarqueeLabel({ width: 160, text: 'A very long track title that cannot fit' });
  * title.update(1 / 60); // once a frame from the scene

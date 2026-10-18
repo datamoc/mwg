@@ -20,7 +20,7 @@ export interface StealthOptions {
  *
  * @example
  * ```ts
- * import { Stealth } from '@datamoc/mw_games/roguelike';
+ * import { Stealth } from '@datamoc/mwg/roguelike';
  *
  * const assassin = new Stealth({ radius: 2 });
  * const guards = [{ x: 10, y: 10 }, { x: 5, y: 5 }];

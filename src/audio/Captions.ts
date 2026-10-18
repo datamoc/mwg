@@ -18,7 +18,7 @@ export interface CaptionEvent {
  *
  * @example
  * ```ts
- * import { onCaption } from '@datamoc/mw_games/audio';
+ * import { onCaption } from '@datamoc/mwg/audio';
  *
  * onCaption.add(({ text }) => showCaptionOverlay(text));
  *

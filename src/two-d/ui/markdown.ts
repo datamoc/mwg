@@ -17,7 +17,7 @@
  *
  * @example
  * ```ts
- * import { parseMarkdown, stripMarkdown } from '@datamoc/mw_games/two-d/ui';
+ * import { parseMarkdown, stripMarkdown } from '@datamoc/mwg/two-d/ui';
  *
  * parseMarkdown('Take **two** *small* coins');
  * // [{ text: 'Take ', bold: false, italic: false },
@@ -184,7 +184,7 @@ export function stripMarkdown(text: string): string {
  *
  * @example
  * ```ts
- * import { parseMarkdown, sliceSpans } from '@datamoc/mw_games/two-d/ui';
+ * import { parseMarkdown, sliceSpans } from '@datamoc/mwg/two-d/ui';
  *
  * sliceSpans(parseMarkdown('Take **two** coins'), 7);
  * // [{ text: 'Take ', bold: false, italic: false },

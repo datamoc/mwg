@@ -34,7 +34,7 @@ export interface RoomBuilder {
  *
  * @example
  * ```ts
- * import { generateDungeon, hallBuilder, pickBuilder, eligibleBuilders, type RoomBuilder } from '@datamoc/mw_games/roguelike';
+ * import { generateDungeon, hallBuilder, pickBuilder, eligibleBuilders, type RoomBuilder } from '@datamoc/mwg/roguelike';
  *
  * const pillaredHall: RoomBuilder = {
  *   id: 'pillared',

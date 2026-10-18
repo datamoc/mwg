@@ -60,7 +60,7 @@ function featuresEqual(a: readonly [number, string][], b: readonly [number, stri
  *
  * @example
  * ```ts
- * import { compareDungeonArtifacts, checkDeterminism, type DungeonArtifacts } from '@datamoc/mw_games/roguelike';
+ * import { compareDungeonArtifacts, checkDeterminism, type DungeonArtifacts } from '@datamoc/mwg/roguelike';
  *
  * declare const mine: DungeonArtifacts;
  * declare const golden: DungeonArtifacts; // a reference implementation's own run

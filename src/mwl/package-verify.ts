@@ -36,7 +36,7 @@ export interface VerifyPackageOptions {
  *
  * @example
  * ```ts
- * import { encodePackage, verifyPackage } from '@datamoc/mw_games/mwl';
+ * import { encodePackage, verifyPackage } from '@datamoc/mwg/mwl';
  *
  * const source = "[{ tag: 'package', id: 'marta', version: '1.0.0' }]";
  * const bytes = await encodePackage([{ path: 'content.mwl', data: new TextEncoder().encode(source) }]);

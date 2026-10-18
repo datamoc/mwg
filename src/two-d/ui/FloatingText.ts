@@ -32,7 +32,7 @@ export interface FloatingTextOptions {
  *
  * @example
  * ```ts
- * import { floatingTextAlpha } from '@datamoc/mw_games/two-d/ui';
+ * import { floatingTextAlpha } from '@datamoc/mwg/two-d/ui';
  * console.log(floatingTextAlpha(0.75, 0.5)); // 0.5
  * ```
  */
@@ -47,7 +47,7 @@ export function floatingTextAlpha(t: number, hold: number): number {
  *
  * @example
  * ```ts
- * import { floatingTextRise } from '@datamoc/mw_games/two-d/ui';
+ * import { floatingTextRise } from '@datamoc/mwg/two-d/ui';
  * console.log(floatingTextRise(0.5, 24)); // -12
  * ```
  */
@@ -76,7 +76,7 @@ export function floatingTextRise(t: number, rise: number, reduce = false): numbe
  *
  * @example
  * ```ts
- * import { floatingTextAgeAtLeast } from '@datamoc/mw_games/two-d/ui';
+ * import { floatingTextAgeAtLeast } from '@datamoc/mwg/two-d/ui';
  *
  * console.log(floatingTextAgeAtLeast(0, 1, 0.2)); // 0.2, a fresh line is pushed forward
  * console.log(floatingTextAgeAtLeast(0.5, 1, 0.2)); // 0.5, an older line keeps the age it has
@@ -97,8 +97,8 @@ export function floatingTextAgeAtLeast(elapsed: number, duration: number, atLeas
  *
  * @example
  * ```ts
- * import { FloatingText } from '@datamoc/mw_games/two-d/ui';
- * import type { Container2D } from '@datamoc/mw_games/two-d/render';
+ * import { FloatingText } from '@datamoc/mwg/two-d/ui';
+ * import type { Container2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const worldLayer: Container2D;
  *

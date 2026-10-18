@@ -60,8 +60,8 @@ export interface IconGridOptions {
  *
  * @example
  * ```ts
- * import { IconGrid } from '@datamoc/mw_games/two-d/ui';
- * import { Shape2D } from '@datamoc/mw_games/two-d/render';
+ * import { IconGrid } from '@datamoc/mwg/two-d/ui';
+ * import { Shape2D } from '@datamoc/mwg/two-d/render';
  *
  * const potionIcon = new Shape2D().rect(0, 0, 16, 16).fill(0x66cc66);
  * const swordIcon = new Shape2D().rect(0, 0, 16, 16).fill(0xcccccc);

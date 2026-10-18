@@ -17,8 +17,8 @@ interface Layer {
  *
  * @example
  * ```ts
- * import { LayeredSprite } from '@datamoc/mw_games/two-d/render';
- * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { LayeredSprite } from '@datamoc/mwg/two-d/render';
+ * import type { Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const skinTexture: Texture2D;
  * declare const hairTexture: Texture2D;

@@ -5,7 +5,7 @@
  *
  * @example
  * ```ts
- * import { GameState } from '@datamoc/mw_games/rpg';
+ * import { GameState } from '@datamoc/mwg/rpg';
  *
  * const state = new GameState();
  * state.setSwitch('metShopkeeper', true);

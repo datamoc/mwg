@@ -19,8 +19,8 @@ export interface NinePatchOptions {
  *
  * @example
  * ```ts
- * import { NinePatch } from '@datamoc/mw_games/two-d/ui';
- * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { NinePatch } from '@datamoc/mwg/two-d/ui';
+ * import type { Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const panelTexture: Texture2D;
  *

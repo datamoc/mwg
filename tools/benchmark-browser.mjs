@@ -16,7 +16,7 @@ import { readHistory, appendHistory, bestSeen } from './benchmark-history.mjs';
  * has seen (a fixed gate alone cannot see a slow decline that never quite crosses it). The run is
  * appended to that history either way.
  *
- * Shipped for a game (item 387) as `@datamoc/mw_games/tools/benchmark-browser` and
+ * Shipped for a game (item 387) as `@datamoc/mwg/tools/benchmark-browser` and
  * `mwg-bench <page | dist>`; this repository runs it through `npm run benchmark:*`. A CI runner
  * has no GPU, so Chrome there is told which software WebGL path to take through
  * `MWG_BENCHMARK_CHROME_ARGS` (`--use-gl=angle --use-angle=swiftshader`), a property of the

@@ -31,7 +31,7 @@ export interface StreamPlayableOptions {
  *
  * @example
  * ```ts
- * import { StreamPlayable, type BlockSource } from '@datamoc/mw_games/audio';
+ * import { StreamPlayable, type BlockSource } from '@datamoc/mwg/audio';
  *
  * declare const context: AudioContext;
  * declare const tune: BlockSource;

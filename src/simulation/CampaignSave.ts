@@ -35,7 +35,7 @@ export interface CampaignSaveParts<CampaignState extends StateValue, Result exte
  *
  * @example
  * ```ts
- * import { CampaignSave } from '@datamoc/mw_games/simulation';
+ * import { CampaignSave } from '@datamoc/mwg/simulation';
  *
  * const saves = new CampaignSave<{ gold: number }, never, unknown, { hp: number }>({
  *   namespace: 'my-campaign',

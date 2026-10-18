@@ -10,7 +10,7 @@ import { resolve, type AssetProgress } from './paths.ts';
  *
  * @example
  * ```ts
- * import { load, texture, isLoaded, release } from '@datamoc/mw_games/assets';
+ * import { load, texture, isLoaded, release } from '@datamoc/mwg/assets';
  *
  * await load(['tiles.png', 'data/level1.json']);
  * const tilesTexture = texture('tiles.png');

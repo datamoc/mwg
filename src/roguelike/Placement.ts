@@ -80,9 +80,9 @@ export interface PlacementResult {
  *
  * @example
  * ```ts
- * import { candidateCells, cellsNear, selectDistinctCells } from '@datamoc/mw_games/roguelike';
+ * import { candidateCells, cellsNear, selectDistinctCells } from '@datamoc/mwg/roguelike';
  *
- * declare const level: import('@datamoc/mw_games/roguelike').Level;
+ * declare const level: import('@datamoc/mwg/roguelike').Level;
  * const FLOOR = new Set([1]);
  *
  * // scatter 3 decorations anywhere on the floor

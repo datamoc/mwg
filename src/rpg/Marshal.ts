@@ -23,7 +23,7 @@
  *
  * @example
  * ```ts
- * import { decodeMarshal, encodeMarshal, RubySymbol, hashDefaultOf, withHashDefault } from '@datamoc/mw_games/rpg';
+ * import { decodeMarshal, encodeMarshal, RubySymbol, hashDefaultOf, withHashDefault } from '@datamoc/mwg/rpg';
  *
  * declare const rxdataBytes: Uint8Array; // read from a Game.rxdata file
  *

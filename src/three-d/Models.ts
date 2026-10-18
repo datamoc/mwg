@@ -51,7 +51,7 @@ const containerCache = new Map<string, Promise<AssetContainer>>();
  *
  * @example
  * ```ts
- * import { loadModelContainer3D, isModelContainerLoaded, releaseModelContainer } from '@datamoc/mw_games/3d/models';
+ * import { loadModelContainer3D, isModelContainerLoaded, releaseModelContainer } from '@datamoc/mwg/3d/models';
  *
  * declare const scene: import('@babylonjs/core/scene.js').Scene;
  *

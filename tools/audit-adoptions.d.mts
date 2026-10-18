@@ -47,7 +47,7 @@ export interface AdoptionFinding {
 /** `<subpath> :: <name>`, the key reasons and adoption are tracked by */
 export function adoptionKey(subpath: string, name: string): string;
 
-/** every `@datamoc/mw_games/<sub>` import row in the given files */
+/** every `@datamoc/mwg/<sub>` import row in the given files */
 export function scanImports(files: SourceFile[]): ConsumerImport[];
 
 /** every top-level interface/type/class/function/const/enum the consumer defines */

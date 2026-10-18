@@ -29,7 +29,7 @@ export interface AnchorSpec {
  *
  * @example
  * ```ts
- * import { anchorAlign } from '@datamoc/mw_games/two-d/ui';
+ * import { anchorAlign } from '@datamoc/mwg/two-d/ui';
  *
  * console.log(anchorAlign('bottom-right')); // { x: 1, y: 1 }
  * ```
@@ -67,7 +67,7 @@ export function anchorAlign(anchor: Anchor): { x: number; y: number } {
  *
  * @example
  * ```ts
- * import { resolveAnchor } from '@datamoc/mw_games/two-d/ui';
+ * import { resolveAnchor } from '@datamoc/mwg/two-d/ui';
  *
  * const bounds = { x: 0, y: 0, width: 800, height: 600 };
  * console.log(resolveAnchor({ anchor: 'bottom-right', width: 100, height: 30, margin: 10 }, bounds));
@@ -131,7 +131,7 @@ export interface GridSpec {
  *
  * @example
  * ```ts
- * import { Grid } from '@datamoc/mw_games/two-d/ui';
+ * import { Grid } from '@datamoc/mwg/two-d/ui';
  *
  * const grid = new Grid({ columns: [{ size: 200 }, { grow: 1 }], rows: [{ grow: 1 }], gap: 8 });
  * const cell = grid.rect(0, 1, { x: 0, y: 0, width: 800, height: 600 });
@@ -258,7 +258,7 @@ export interface FlowResult {
  *
  * @example
  * ```ts
- * import { flowLayout } from '@datamoc/mw_games/two-d/ui';
+ * import { flowLayout } from '@datamoc/mwg/two-d/ui';
  *
  * const buttons = [{ width: 120, height: 32 }, { width: 120, height: 32 }, { width: 120, height: 32 }];
  * const { positions, height } = flowLayout(buttons, 300, { gap: 8, align: 'center' });

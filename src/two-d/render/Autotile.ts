@@ -30,7 +30,7 @@ export interface NeighborMask {
  *
  * @example
  * ```ts
- * import { BLOB_SHAPES } from '@datamoc/mw_games/two-d/render';
+ * import { BLOB_SHAPES } from '@datamoc/mwg/two-d/render';
  *
  * console.log(BLOB_SHAPES.length); // 47
  * console.log(BLOB_SHAPES[0]); // { n: false, e: false, s: false, w: false, ne: false, se: false, sw: false, nw: false }
@@ -109,7 +109,7 @@ function buildBlobShapes(): NeighborMask[] {
  *
  * @example
  * ```ts
- * import { blobIndex } from '@datamoc/mw_games/two-d/render';
+ * import { blobIndex } from '@datamoc/mwg/two-d/render';
  *
  * const surroundedOnAllSides = blobIndex({
  * 	n: true, e: true, s: true, w: true,
@@ -134,7 +134,7 @@ export function blobIndex(neighbors: NeighborMask): number {
  *
  * @example
  * ```ts
- * import { autotileFrames, BLOB_SHAPES } from '@datamoc/mw_games/two-d/render';
+ * import { autotileFrames, BLOB_SHAPES } from '@datamoc/mwg/two-d/render';
  *
  * const water = new Set([0, 1, 10, 11]); // a 2x2 pond in a wider grid
  * const frames = Array.from({ length: BLOB_SHAPES.length }, (_, index) => index); // frame N = shape N

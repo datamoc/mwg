@@ -37,7 +37,7 @@ function assertFinitePair(value: { x: number; y: number } | undefined, name: str
  *
  * @example
  * ```ts
- * import { Cloth } from '@datamoc/mw_games/physics';
+ * import { Cloth } from '@datamoc/mwg/physics';
  *
  * const scarf = new Cloth({ width: 60, height: 20, segmentsX: 6, segmentsY: 2, gravity: { x: 0, y: 900 } });
  * for (let i = 0; i < 60; i++) scarf.update(1 / 60); // one fixed second

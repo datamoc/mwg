@@ -35,7 +35,7 @@ const STATES: readonly WidgetState[] = ['idle', 'hover', 'pressed', 'disabled', 
  *
  * @example
  * ```ts
- * import { Skins } from '@datamoc/mw_games/two-d/ui';
+ * import { Skins } from '@datamoc/mwg/two-d/ui';
  *
  * const skins = new Skins();
  * skins.define('*', 'idle', { background: 0x101018, text: 0xe8e8f0 });

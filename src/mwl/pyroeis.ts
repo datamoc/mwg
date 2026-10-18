@@ -24,7 +24,7 @@ export type { LuaToJsOptions, LuaToJsResult };
  *
  * @example
  * ```ts
- * import { luaToJs } from '@datamoc/mw_games/mwl/pyroeis';
+ * import { luaToJs } from '@datamoc/mwg/mwl/pyroeis';
  *
  * const { code } = luaToJs('function double(n) return n * 2 end', { format: 'esm' });
  * ```
@@ -63,7 +63,7 @@ const DEFAULT_MEMORY_LIMIT = 32 * 1024 * 1024;
  *
  * @example
  * ```ts
- * import { createPyroeisScriptHost } from '@datamoc/mw_games/mwl/pyroeis';
+ * import { createPyroeisScriptHost } from '@datamoc/mwg/mwl/pyroeis';
  *
  * const host = createPyroeisScriptHost();
  * console.log(host.evaluate('1 + 2')); // 3

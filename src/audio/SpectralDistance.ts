@@ -40,7 +40,7 @@ function logSpectrum(samples: Float32Array, start: number, size: number): Float6
  *
  * @example
  * ```ts
- * import { spectralDistance } from '@datamoc/mw_games/audio';
+ * import { spectralDistance } from '@datamoc/mwg/audio';
  *
  * declare const reference: { sampleRate: number; left: Float32Array; right: Float32Array };
  * declare const candidate: { sampleRate: number; left: Float32Array; right: Float32Array };

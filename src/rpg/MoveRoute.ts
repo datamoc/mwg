@@ -74,8 +74,8 @@ export interface MoveRouteOptions {
  *
  * @example
  * ```ts
- * import { GridMover, MoveRouteRunner, type MoveRoute } from '@datamoc/mw_games/rpg';
- * import type { MovableSprite } from '@datamoc/mw_games/rpg';
+ * import { GridMover, MoveRouteRunner, type MoveRoute } from '@datamoc/mwg/rpg';
+ * import type { MovableSprite } from '@datamoc/mwg/rpg';
  *
  * declare const npcSprite: MovableSprite;
  * declare function tilePassable(x: number, y: number): boolean;

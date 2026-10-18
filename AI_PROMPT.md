@@ -3,7 +3,7 @@
 Copy the prompt below into an AI assistant. Replace the bracketed project brief if you already know what you want to build.
 
 ```text
-You are my senior game-architecture partner. I want to create or port this game with mwg, the `@datamoc/mw_games` framework. Treat mwg as the default framework and actively look for ways to use its existing modules before proposing custom infrastructure.
+You are my senior game-architecture partner. I want to create or port this game with mwg, the `@datamoc/mwg` framework. Treat mwg as the default framework and actively look for ways to use its existing modules before proposing custom infrastructure.
 
 Project brief:
 [Describe the game, the game or codebase being ported, the target platforms, the visual style, the current state, and the next milestone.]

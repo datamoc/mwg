@@ -9,7 +9,7 @@
  *
  * @example
  * ```ts
- * import { checkSize, checkNoControlCharacters, sanitizeInboundText, validateSchema } from '@datamoc/mw_games/core';
+ * import { checkSize, checkNoControlCharacters, sanitizeInboundText, validateSchema } from '@datamoc/mwg/core';
  *
  * declare const rawResponseText: string;
  *
@@ -153,7 +153,7 @@ export function validateSchema(value: unknown, schema: Schema, path = '$'): void
  *
  * @example
  * ```ts
- * import { parseInbound } from '@datamoc/mw_games/core';
+ * import { parseInbound } from '@datamoc/mwg/core';
  *
  * parseInbound('{"hp": 3}'); // { hp: 3 }
  * parseInbound('{"__proto__": {"admin": true}}'); // throws: $ contains a forbidden key "__proto__"

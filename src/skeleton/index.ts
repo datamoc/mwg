@@ -14,7 +14,7 @@
  *
  * @example
  * ```ts
- * import * as Skeleton from '@datamoc/mw_games/skeleton';
+ * import * as Skeleton from '@datamoc/mwg/skeleton';
  *
  * const puppet = Skeleton.create([
  *   { name: 'body' },
@@ -235,7 +235,7 @@ export function samplePose(clip: Clip, time: number, skeleton?: SkeletonBones): 
  * before it, the last past the end of a one-shot, and wraps a looping clip.
  * @example
  * ```ts
- * import { sampleTransformPose } from '@datamoc/mw_games/skeleton';
+ * import { sampleTransformPose } from '@datamoc/mwg/skeleton';
  * const pose = sampleTransformPose({ id: 'idle', duration: 1, frames: [{ time: 0, rotations: {} }] }, 0.5);
  * ```
  */
@@ -322,7 +322,7 @@ export function advance(mixer: Mixer, dt: number): Record<string, number> {
 /** Advance all clip channels together, including crossfades and priority layers.
  * @example
  * ```ts
- * import { create, createMixer, advancePose } from '@datamoc/mw_games/skeleton';
+ * import { create, createMixer, advancePose } from '@datamoc/mwg/skeleton';
  * const mixer = createMixer(create([{ name: 'body' }]), { id: 'bob', duration: 1,
  * frames: [{ time: 0, rotations: {}, translations: { body: { x: 0, y: 4 } } }] });
  * const pose = advancePose(mixer, 0.1);
@@ -375,7 +375,7 @@ function blendTransforms(from: TransformPose, to: TransformPose, weight: number,
 /** Refuse non-finite rotations and absolute local angles outside a joint's bounds.
  * @example
  * ```ts
- * import { create, validatePose } from '@datamoc/mw_games/skeleton';
+ * import { create, validatePose } from '@datamoc/mwg/skeleton';
  * validatePose(create([{ name: 'knee', limits: { min: -120, max: 0 } }]), { knee: -30 });
  * ```
  */
@@ -395,7 +395,7 @@ export function validatePose(skeleton: SkeletonBones, pose: Pose): void {
  * second bone must be zero; the solver accepts rotation-only poses.
  * @example
  * ```ts
- * import { create, solveTwoBoneIK } from '@datamoc/mw_games/skeleton';
+ * import { create, solveTwoBoneIK } from '@datamoc/mwg/skeleton';
  * const rig = create([{ name: 'upper', length: 10 }, { name: 'lower', parent: 'upper', length: 10 }]);
  * const pose = solveTwoBoneIK(rig, 'upper', 'lower', { x: 10, y: 10 });
  * ```

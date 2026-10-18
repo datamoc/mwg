@@ -30,7 +30,7 @@ export interface CollectionOptions {
  *
  * @example
  * ```ts
- * import { Collection } from '@datamoc/mw_games/core';
+ * import { Collection } from '@datamoc/mwg/core';
  *
  * const quests = new Collection('quests');
  * quests.put({ id: 'rats', stage: 1, done: false });

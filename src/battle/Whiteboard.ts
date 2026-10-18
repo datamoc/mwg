@@ -16,7 +16,7 @@ export interface WhiteboardEntry {
  *
  * @example
  * ```ts
- * import { Whiteboard } from '@datamoc/mw_games/battle';
+ * import { Whiteboard } from '@datamoc/mwg/battle';
  *
  * const board = new Whiteboard<{ unit: string; x: number; y: number }>();
  * board.plan({ unit: 'hero', x: 2, y: 3 });

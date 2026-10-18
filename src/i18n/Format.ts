@@ -12,7 +12,7 @@ import { locale } from './index.ts';
  *
  * @example
  * ```ts
- * import { setActive, t, formatNumber, formatDate, formatList } from '@datamoc/mw_games/i18n';
+ * import { setActive, t, formatNumber, formatDate, formatList } from '@datamoc/mwg/i18n';
  *
  * setActive({ locale: 'fr-FR', direction: 'ltr', messages: { found: 'Vous trouvez {amount}.' } });
  *

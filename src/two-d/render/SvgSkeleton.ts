@@ -39,9 +39,9 @@ export interface LoadedSvgSkeleton {
  * Requires browser DOMParser and XMLSerializer. Compiled asset paths work directly under file://.
  * @example
  * ```ts
- * import { create } from '@datamoc/mw_games/skeleton';
- * import { loadSvgSkeleton } from '@datamoc/mw_games/two-d/render';
- * import { releaseSvgParts } from '@datamoc/mw_games/assets';
+ * import { create } from '@datamoc/mwg/skeleton';
+ * import { loadSvgSkeleton } from '@datamoc/mwg/two-d/render';
+ * import { releaseSvgParts } from '@datamoc/mwg/assets';
  * const loaded = await loadSvgSkeleton('<svg xmlns="http://www.w3.org/2000/svg" width="30" height="10"><g id="arm" data-pivot-x="0" data-pivot-y="5"><rect width="30" height="10"/></g></svg>', {
  *   skeleton: create([{ name: 'arm', length: 30, origin: { x: 0, y: 5 } }]), resolution: 2,
  * });

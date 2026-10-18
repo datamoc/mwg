@@ -20,7 +20,7 @@ export interface GrowthCurve {
  *
  * @example
  * ```ts
- * import { powerCurve, Progression } from '@datamoc/mw_games/actors';
+ * import { powerCurve, Progression } from '@datamoc/mwg/actors';
  *
  * const curve = powerCurve(100, 1.5, 50); // level 50 caps out around 100 * 49^1.5 experience
  * const progression = new Progression(curve);

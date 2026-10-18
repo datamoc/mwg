@@ -61,7 +61,7 @@ export interface MessageFormatter {
  *
  * @example
  * ```ts
- * import { setBase, createCatalogFormatter, type SemanticMessage } from '@datamoc/mw_games/i18n';
+ * import { setBase, createCatalogFormatter, type SemanticMessage } from '@datamoc/mwg/i18n';
  *
  * setBase({
  *   locale: 'en',

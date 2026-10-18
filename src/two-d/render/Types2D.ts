@@ -21,7 +21,7 @@ export { Texture as Texture2D };
  *
  * @example
  * ```ts
- * import { Rectangle2D } from '@datamoc/mw_games/two-d/render';
+ * import { Rectangle2D } from '@datamoc/mwg/two-d/render';
  *
  * const hitArea = new Rectangle2D(0, 0, 32, 32);
  * console.log(hitArea.width); // 32
@@ -50,7 +50,7 @@ export interface TextureRegion {
  *
  * @example
  * ```ts
- * import { rectOf, type Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { rectOf, type Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const texture: Texture2D;
  *

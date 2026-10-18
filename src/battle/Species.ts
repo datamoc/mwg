@@ -38,7 +38,7 @@ const DEFAULT_GROWTH = powerCurve(20, 2, 100);
  *
  * @example
  * ```ts
- * import { Creature, type Species } from '@datamoc/mw_games/battle';
+ * import { Creature, type Species } from '@datamoc/mwg/battle';
  *
  * const fireling: Species = { id: 'fireling', types: ['fire'], baseStats: { attack: 10, speed: 8 } };
  *

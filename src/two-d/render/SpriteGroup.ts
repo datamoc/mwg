@@ -39,7 +39,7 @@ function insideBox(
  *
  * @example
  * ```ts
- * import { Camera, isOnScreen } from '@datamoc/mw_games/two-d/render';
+ * import { Camera, isOnScreen } from '@datamoc/mwg/two-d/render';
  *
  * declare const camera: Camera;
  *
@@ -70,7 +70,7 @@ export function isOnScreen(camera: Camera, x: number, y: number, margin = 0): bo
  *
  * @example
  * ```ts
- * import { SpriteGroup, AnimatedSprite, Camera } from '@datamoc/mw_games/two-d/render';
+ * import { SpriteGroup, AnimatedSprite, Camera } from '@datamoc/mwg/two-d/render';
  *
  * declare const camera: Camera;
  *

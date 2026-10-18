@@ -9,7 +9,7 @@ import type { Elevation } from './Elevation.ts';
  *
  * @example
  * ```ts
- * import { neighbourOffsets } from '@datamoc/mw_games/roguelike';
+ * import { neighbourOffsets } from '@datamoc/mwg/roguelike';
  *
  * const offsets = neighbourOffsets(8); // the 8 (x, y) deltas around a cell, diagonals included
  * ```
@@ -55,7 +55,7 @@ export interface PathOptions {
  *
  * @example
  * ```ts
- * import { Pathfinder, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ * import { Pathfinder, Level, WALL, FLOOR } from '@datamoc/mwg/roguelike';
  *
  * const level = new Level(20, 20, [WALL, FLOOR], 1);
  * const pathfinder = new Pathfinder(level);

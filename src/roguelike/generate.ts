@@ -108,7 +108,7 @@ export interface DungeonResult {
  *
  * @example
  * ```ts
- * import { DUNGEON_KINDS } from '@datamoc/mw_games/roguelike';
+ * import { DUNGEON_KINDS } from '@datamoc/mwg/roguelike';
  *
  * const kinds = [...DUNGEON_KINDS, { passable: false, transparent: true }]; // + a window
  * ```
@@ -206,8 +206,8 @@ export function generateDungeonGraph(options: DungeonOptions): DungeonResult {
  *
  * @example
  * ```ts
- * import { generateDungeon, generateDungeonGraph } from '@datamoc/mw_games/roguelike';
- * import { Random } from '@datamoc/mw_games/core';
+ * import { generateDungeon, generateDungeonGraph } from '@datamoc/mwg/roguelike';
+ * import { Random } from '@datamoc/mwg/core';
  *
  * Random.push(12345); // the same seed always produces the same floor
  * const level = generateDungeon({ width: 60, height: 40, rooms: 12 });
@@ -275,7 +275,7 @@ function carveLine(
  *
  * @example
  * ```ts
- * import { generateDungeon, findFreeCell, furthestRoom, rectCenter } from '@datamoc/mw_games/roguelike';
+ * import { generateDungeon, findFreeCell, furthestRoom, rectCenter } from '@datamoc/mwg/roguelike';
  *
  * const level = generateDungeon({ width: 40, height: 30 });
  * const start = rectCenter(level.rooms[0]);

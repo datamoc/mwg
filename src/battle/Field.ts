@@ -9,7 +9,7 @@
  *
  * @example
  * ```ts
- * import { Field } from '@datamoc/mw_games/battle';
+ * import { Field } from '@datamoc/mwg/battle';
  *
  * const field = new Field();
  * field.set({ id: 'rain', duration: 5 });

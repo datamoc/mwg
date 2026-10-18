@@ -18,7 +18,7 @@ import type { AutotileCellPart, AutotileLayout, RpgmAutotileShapeTable, RpgmAuto
  *
  * @example
  * ```ts
- * import { EMPTY, TileMap, SpriteSheet } from '@datamoc/mw_games/two-d/render';
+ * import { EMPTY, TileMap, SpriteSheet } from '@datamoc/mwg/two-d/render';
  *
  * declare const sheet: SpriteSheet;
  *
@@ -42,7 +42,7 @@ const RIGHT_FACE_FILL = 0x9a9a9a;
  *
  * @example
  * ```ts
- * import { tileFrame, tileFrameSheet, tileFrameIndex } from '@datamoc/mw_games/two-d/render';
+ * import { tileFrame, tileFrameSheet, tileFrameIndex } from '@datamoc/mwg/two-d/render';
  *
  * const packed = tileFrame(1, 42); // frame 42 of the second sheet (index 1)
  * console.log(tileFrameSheet(packed)); // 1
@@ -64,7 +64,7 @@ export function tileFrame(sheet: number, frame: number): number {
  *
  * @example
  * ```ts
- * import { tileFrame, tileFrameSheet } from '@datamoc/mw_games/two-d/render';
+ * import { tileFrame, tileFrameSheet } from '@datamoc/mwg/two-d/render';
  *
  * console.log(tileFrameSheet(tileFrame(2, 5))); // 2
  * console.log(tileFrameSheet(5)); // 0 - a plain frame index reads as sheet 0
@@ -79,7 +79,7 @@ export function tileFrameSheet(packed: number): number {
  *
  * @example
  * ```ts
- * import { tileFrame, tileFrameIndex } from '@datamoc/mw_games/two-d/render';
+ * import { tileFrame, tileFrameIndex } from '@datamoc/mwg/two-d/render';
  *
  * console.log(tileFrameIndex(tileFrame(2, 5))); // 5
  * console.log(tileFrameIndex(5)); // 5 - a plain frame index passes through unchanged
@@ -248,7 +248,7 @@ interface ResolvedAutotileSet {
  *
  * @example
  * ```ts
- * import { TileMap, EMPTY, SpriteSheet, createCamera } from '@datamoc/mw_games/two-d/render';
+ * import { TileMap, EMPTY, SpriteSheet, createCamera } from '@datamoc/mwg/two-d/render';
  *
  * const sheet = SpriteSheet.grid('tiles/ground.png', 16);
  *
@@ -447,7 +447,7 @@ export class TileMap extends Container {
 	 *
 	 * @example
 	 * ```ts
-	 * import { TileMap, SpriteSheet, type AutotileSet } from '@datamoc/mw_games/two-d/render';
+	 * import { TileMap, SpriteSheet, type AutotileSet } from '@datamoc/mwg/two-d/render';
 	 *
 	 * declare const sheet: SpriteSheet; // a raw MV A1 sheet: 48px cells, slot 0
 	 *
@@ -570,7 +570,7 @@ export class TileMap extends Container {
 	 *
 	 * @example
 	 * ```ts
-	 * import { TileMap, SpriteSheet } from '@datamoc/mw_games/two-d/render';
+	 * import { TileMap, SpriteSheet } from '@datamoc/mwg/two-d/render';
 	 *
 	 * declare const sheet: SpriteSheet;
 	 *

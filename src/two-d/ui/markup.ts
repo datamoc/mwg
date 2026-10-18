@@ -75,7 +75,7 @@ interface Tag {
  *
  * @example
  * ```ts
- * import { escapeHtml, markupToHtml, parseMarkup, stripMarkup } from '@datamoc/mw_games/two-d/ui';
+ * import { escapeHtml, markupToHtml, parseMarkup, stripMarkup } from '@datamoc/mwg/two-d/ui';
  *
  * const spans = parseMarkup("Hail, <b>$name</b>! <span color='#c0ffee'>Four</span> coins<br/>And an<img>gold.png</img>", {
  *   variables: { name: 'Kalenz' },
@@ -215,7 +215,7 @@ export function markupToHtml(spans: readonly MarkupSpan[]): string {
  *
  * @example
  * ```ts
- * import { markupAccessibilityText, parseMarkup } from '@datamoc/mw_games/two-d/ui';
+ * import { markupAccessibilityText, parseMarkup } from '@datamoc/mwg/two-d/ui';
  *
  * const spans = parseMarkup("Pay <b>10</b> gold<img>coin.png</img>");
  * console.log(markupAccessibilityText(spans)); // 'Pay 10 gold[image]'
@@ -261,7 +261,7 @@ export type MarkupMeasure = (piece: Pick<MarkupSpan, 'text' | 'bold' | 'italic' 
  *
  * @example
  * ```ts
- * import { layoutMarkupLines, parseMarkup } from '@datamoc/mw_games/two-d/ui';
+ * import { layoutMarkupLines, parseMarkup } from '@datamoc/mwg/two-d/ui';
  *
  * const spans = parseMarkup('Take <b>two small</b> coins');
  * const lines = layoutMarkupLines(spans, (piece) => piece.text.length * 8, 100);
@@ -400,7 +400,7 @@ export interface MarkupLayout {
  *
  * @example
  * ```ts
- * import { layoutMarkupLines, parseMarkup, positionMarkupLines } from '@datamoc/mw_games/two-d/ui';
+ * import { layoutMarkupLines, parseMarkup, positionMarkupLines } from '@datamoc/mwg/two-d/ui';
  *
  * const spans = parseMarkup('Take <b>two</b> coins<img>coin.png</img>');
  * const measure = (piece: { text: string; image?: string }) =>

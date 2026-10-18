@@ -20,7 +20,7 @@ export interface SvgPartsOptions {
  * releaseSvgParts once no sprite uses them. Different resolutions have separate entries.
  * @example
  * ```ts
- * import { loadSvgParts, releaseSvgParts } from '@datamoc/mw_games/assets';
+ * import { loadSvgParts, releaseSvgParts } from '@datamoc/mwg/assets';
  * const parts = await loadSvgParts('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10"><g id="body"><rect width="20" height="10"/></g></svg>', { resolution: 2 });
  * console.log(parts.body.width);
  * await releaseSvgParts(parts);
@@ -49,7 +49,7 @@ export async function loadSvgParts(
 /** Release borrowed SVG part textures after their sprites have been destroyed.
  * @example
  * ```ts
- * import { releaseSvgParts } from '@datamoc/mw_games/assets';
+ * import { releaseSvgParts } from '@datamoc/mwg/assets';
  * await releaseSvgParts({});
  * ```
  */

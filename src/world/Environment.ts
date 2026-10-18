@@ -23,7 +23,7 @@ export interface EnvironmentOptions {
  *
  * @example
  * ```ts
- * import { EnvironmentClock } from '@datamoc/mw_games/world';
+ * import { EnvironmentClock } from '@datamoc/mwg/world';
  *
  * const clock = new EnvironmentClock({ dayLength: 600 }); // a 10-minute day
  * clock.setWeather('rain');

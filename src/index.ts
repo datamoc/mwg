@@ -2,9 +2,9 @@
  * mwg - a framework for 2D top-down games that run from a local file.
  *
  * This is the whole surface in one place, which is also what the standalone
- * `mw_games.global.js` build exposes as `window.mw_games`. Consumers using a bundler can
- * import the narrower entry points instead: `mw_games/core`, `mw_games/two-d`,
- * `mw_games/roguelike`. `mw_games/3d` is deliberately absent from here: it pulls in Babylon,
+ * `mwg.global.js` build exposes as `window.mwg`. Consumers using a bundler can
+ * import the narrower entry points instead: `mwg/core`, `mwg/two-d`,
+ * `mwg/roguelike`. `mwg/3d` is deliberately absent from here: it pulls in Babylon,
  * which a 2D game should never pay for by importing the root.
  */
 export { version } from './version.ts';

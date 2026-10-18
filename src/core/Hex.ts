@@ -15,7 +15,7 @@
  *
  * @example
  * ```ts
- * import { hexNeighbors, hexDistance, hexLine, hexRange, hexToPixel, pixelToHex } from '@datamoc/mw_games/core';
+ * import { hexNeighbors, hexDistance, hexLine, hexRange, hexToPixel, pixelToHex } from '@datamoc/mwg/core';
  *
  * const start = { x: 2, y: 2 };
  * const neighbours = hexNeighbors(start.x, start.y); // the 6 adjacent cells

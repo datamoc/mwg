@@ -25,7 +25,7 @@ export interface SliderOptions {
  *
  * @example
  * ```ts
- * import { sliderFraction } from '@datamoc/mw_games/two-d/ui';
+ * import { sliderFraction } from '@datamoc/mwg/two-d/ui';
  *
  * console.log(sliderFraction(30, 0, 60)); // 0.5
  * ```
@@ -42,7 +42,7 @@ export function sliderFraction(value: number, min = 0, max = 1): number {
  *
  * @example
  * ```ts
- * import { sliderValueAt } from '@datamoc/mw_games/two-d/ui';
+ * import { sliderValueAt } from '@datamoc/mwg/two-d/ui';
  *
  * console.log(sliderValueAt(0.5, 0, 10, 1)); // 5
  * ```
@@ -64,7 +64,7 @@ export function sliderValueAt(fraction: number, min = 0, max = 1, step = 0): num
  *
  * @example
  * ```ts
- * import { Slider } from '@datamoc/mw_games/two-d/ui';
+ * import { Slider } from '@datamoc/mwg/two-d/ui';
  *
  * const volume = new Slider({ width: 200, min: 0, max: 100, step: 5, value: 40 });
  * volume.onChange.add((value) => console.log('volume', value));

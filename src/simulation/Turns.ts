@@ -24,7 +24,7 @@ export type TurnResult<Actor> =
  *
  * @example
  * ```ts
- * import { advanceToInput, type TurnRules } from '@datamoc/mw_games/simulation';
+ * import { advanceToInput, type TurnRules } from '@datamoc/mwg/simulation';
  *
  * declare const rules: TurnRules<{ id: string; isPlayer: boolean }>;
  *

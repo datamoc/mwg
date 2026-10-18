@@ -29,7 +29,7 @@ export interface DropdownOptions {
  *
  * @example
  * ```ts
- * import { Dropdown } from '@datamoc/mw_games/two-d/ui';
+ * import { Dropdown } from '@datamoc/mwg/two-d/ui';
  *
  * const difficulty = new Dropdown({
  *   options: [{ id: 'easy', label: 'Easy' }, { id: 'normal', label: 'Normal' }],

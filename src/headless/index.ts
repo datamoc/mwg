@@ -41,7 +41,7 @@
  * 	simulation,
  * 	testing,
  * 	world,
- * } from '@datamoc/mw_games/headless';
+ * } from '@datamoc/mwg/headless';
  *
  * // deterministic rules with no renderer: a seeded stream plus one headless scenario
  * const random = new core.Generator(7);

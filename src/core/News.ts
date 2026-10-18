@@ -9,7 +9,7 @@ import { HttpTransport, type HttpTransportOptions } from './HttpTransport.ts';
  *
  * @example
  * ```ts
- * import { NewsClient, NewsSeenTracker } from '@datamoc/mw_games/core';
+ * import { NewsClient, NewsSeenTracker } from '@datamoc/mwg/core';
  *
  * const news = new NewsClient({ endpoint: 'https://example.com/api/news' });
  * const seen = new NewsSeenTracker({ namespace: 'my-game' });

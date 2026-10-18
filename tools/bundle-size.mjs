@@ -83,13 +83,13 @@ export function compareBudget(current, baseline, tolerance = 0.02) {
 /** this repository's own budget: the global bundle and the published `dist` tree */
 function measureFramework(root) {
 	const dist = join(root, 'dist');
-	const globalBundle = join(dist, 'mw_games.global.js');
+	const globalBundle = join(dist, 'mwg.global.js');
 	if (!existsSync(globalBundle)) {
 		throw new Error(`no build found at ${relative(root, globalBundle)} - run "npm run build" first`);
 	}
 	const globalBytes = readFileSync(globalBundle);
 	return {
-		'mw_games.global.js': { raw: globalBytes.length, gzip: gzipSync(globalBytes).length },
+		'mwg.global.js': { raw: globalBytes.length, gzip: gzipSync(globalBytes).length },
 		dist: {
 			raw: walk(dist)
 				.filter((file) => !file.endsWith('.map'))

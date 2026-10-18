@@ -25,7 +25,7 @@ export interface MusicPlayOptions {
  *
  * @example
  * ```ts
- * import { MusicPlayer, renderMidiToBufferAsync } from '@datamoc/mw_games/audio';
+ * import { MusicPlayer, renderMidiToBufferAsync } from '@datamoc/mwg/audio';
  *
  * declare const context: AudioContext;
  * declare const midiBytes: ArrayBuffer;

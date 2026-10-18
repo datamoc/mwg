@@ -29,7 +29,7 @@ export interface TargetingOptions {
  *
  * @example
  * ```ts
- * import { chebyshevDistance, traceLine, hasLineOfSight, canTarget, resolveArea, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ * import { chebyshevDistance, traceLine, hasLineOfSight, canTarget, resolveArea, Level, WALL, FLOOR } from '@datamoc/mwg/roguelike';
  *
  * const level = new Level(20, 20, [WALL, FLOOR], 1); // an open floor
  * const origin = { x: 2, y: 2 };
@@ -109,7 +109,7 @@ export interface BallisticaResult {
  *
  * @example
  * ```ts
- * import { ballistica, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ * import { ballistica, Level, WALL, FLOOR } from '@datamoc/mwg/roguelike';
  *
  * const level = new Level(10, 1, [WALL, FLOOR], 1);
  * const result = ballistica(level, { x: 0, y: 0 }, { x: 9, y: 0 }, { stop: 'opaque' });
@@ -186,7 +186,7 @@ export function resolveArea(origin: Step, target: Step, shape: AreaShape): Step[
  *
  * @example
  * ```ts
- * import { Level, FLOOR, resolveAreaOnLevel } from '@datamoc/mw_games/roguelike';
+ * import { Level, FLOOR, resolveAreaOnLevel } from '@datamoc/mwg/roguelike';
  * const level = new Level(8, 8, [{ passable: true, transparent: true }, FLOOR], 1, 'hex');
  * const cells = resolveAreaOnLevel(level, { x: 2, y: 2 }, { x: 4, y: 2 }, { kind: 'line' });
  * ```
@@ -204,7 +204,7 @@ export function resolveAreaOnLevel(level: Level, origin: Step, target: Step, sha
  *
  * @example
  * ```ts
- * import { hexConeCells } from '@datamoc/mw_games/roguelike';
+ * import { hexConeCells } from '@datamoc/mwg/roguelike';
  * const cells = hexConeCells({ x: 2, y: 2 }, { x: 5, y: 2 }, 2);
  * ```
  */
@@ -231,7 +231,7 @@ export function hexConeCells(origin: Step, target: Step, width: number): Step[] 
  *
  * @example
  * ```ts
- * import { coneCells, chainTargets, knockbackPath, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ * import { coneCells, chainTargets, knockbackPath, Level, WALL, FLOOR } from '@datamoc/mwg/roguelike';
  *
  * const breath = coneCells({ x: 5, y: 5 }, { x: 5, y: 0 }, 3); // a dragon's breath, aimed north
  *
@@ -306,7 +306,7 @@ function roundOffset(value: number): number {
  *
  * @example
  * ```ts
- * import { coneSector, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ * import { coneSector, Level, WALL, FLOOR } from '@datamoc/mwg/roguelike';
  *
  * const level = new Level(20, 20, [WALL, FLOOR], 1);
  * // a 60-degree cone, 6 cells deep, aimed east from (4, 10)
@@ -391,7 +391,7 @@ export function chainTargets(candidates: readonly Step[], origin: Step, jumps: n
  *
  * @example
  * ```ts
- * import { rangeMultiplier, areaFalloffMultiplier, type RangeBand } from '@datamoc/mw_games/roguelike';
+ * import { rangeMultiplier, areaFalloffMultiplier, type RangeBand } from '@datamoc/mwg/roguelike';
  *
  * const bands: RangeBand[] = [{ max: 2, multiplier: 1.5 }, { max: 6, multiplier: 1 }];
  * rangeMultiplier(1, bands); // 1.5 - point-blank bonus
@@ -486,7 +486,7 @@ export interface TargetResult {
  *
  * @example
  * ```ts
- * import { Level, FLOOR, WALL, TargetingController } from '@datamoc/mw_games/roguelike';
+ * import { Level, FLOOR, WALL, TargetingController } from '@datamoc/mwg/roguelike';
  *
  * const level = new Level(12, 12, [WALL, FLOOR], 1);
  * const aiming = new TargetingController(level, {

@@ -29,7 +29,7 @@ export interface LightningArcOptions {
  *
  * @example
  * ```ts
- * import { LightningArc } from '@datamoc/mw_games/two-d/render';
+ * import { LightningArc } from '@datamoc/mwg/two-d/render';
  *
  * const bolt = new LightningArc({ x: 0, y: 0 }, { x: 100, y: 0 }, { duration: 0.2, segments: 4 });
  * console.log(bolt.points.length); // 6 - both endpoints plus 4 interior points

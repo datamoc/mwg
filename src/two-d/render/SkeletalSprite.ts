@@ -30,9 +30,9 @@ import type { Texture2D } from './Types2D.ts';
  *
  * @example
  * ```ts
- * import * as Skeleton from '@datamoc/mw_games/skeleton';
+ * import * as Skeleton from '@datamoc/mwg/skeleton';
  * import { Texture, TextureSource } from 'pixi.js';
- * import { SkeletalSprite } from '@datamoc/mw_games/two-d/render';
+ * import { SkeletalSprite } from '@datamoc/mwg/two-d/render';
  *
  * const puppet = Skeleton.create([{ name: 'arm', length: 12 }]);
  * const mixer = Skeleton.createMixer(puppet, {
@@ -133,7 +133,7 @@ export interface ChainOptions {
  *
  * @example
  * ```ts
- * import { ArticulatedChain } from '@datamoc/mw_games/two-d/render';
+ * import { ArticulatedChain } from '@datamoc/mwg/two-d/render';
  *
  * const spine = new ArticulatedChain({ segments: 8, length: 12, bendLimit: 45 });
  * spine.pull(100, 0);
@@ -210,7 +210,7 @@ export class ArticulatedChain {
  * @example
  * ```ts
  * import { Texture, TextureSource } from 'pixi.js';
- * import { ArticulatedChain, ChainRig } from '@datamoc/mw_games/two-d/render';
+ * import { ArticulatedChain, ChainRig } from '@datamoc/mwg/two-d/render';
  *
  * const skin = new Texture({ source: new TextureSource({ width: 8, height: 8 }) });
  * const spine = new ArticulatedChain({ segments: 3, length: 10 });

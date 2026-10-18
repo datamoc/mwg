@@ -75,7 +75,7 @@ export interface PyroeisRuntime {
  *
  * @example
  * ```ts
- * import { createPyroeisRuntime } from '@datamoc/mw_games/mwl/pyroeis';
+ * import { createPyroeisRuntime } from '@datamoc/mwg/mwl/pyroeis';
  *
  * const runtime = createPyroeisRuntime({ modules: { rules: 'return { cost = 4 }' } });
  * let gold = 10;

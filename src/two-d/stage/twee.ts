@@ -25,7 +25,7 @@ export interface TwineStory {
  *
  * @example
  * ```ts
- * import { importTwee, StageScript } from '@datamoc/mw_games/two-d';
+ * import { importTwee, StageScript } from '@datamoc/mwg/two-d';
  *
  * declare const tweeSource: string;
  * declare const script: StageScript;

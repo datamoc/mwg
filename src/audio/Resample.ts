@@ -19,7 +19,7 @@ export interface StereoFrames {
  *
  * @example
  * ```ts
- * import { resampleStereo } from '@datamoc/mw_games/audio';
+ * import { resampleStereo } from '@datamoc/mwg/audio';
  *
  * declare const frames: { sampleRate: number; left: Float32Array; right: Float32Array };
  *
@@ -66,7 +66,7 @@ export interface RenderBudget {
  *
  * @example
  * ```ts
- * import { fitToBudget, renderMidiToBuffer, parseMidi } from '@datamoc/mw_games/audio';
+ * import { fitToBudget, renderMidiToBuffer, parseMidi } from '@datamoc/mwg/audio';
  *
  * declare const midiBytes: ArrayBuffer;
  *

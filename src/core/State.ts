@@ -46,7 +46,7 @@ export interface CanonicalStateSnapshot<State extends StateValue = StateValue> {
  *
  * @example
  * ```ts
- * import { CanonicalState } from '@datamoc/mw_games/core';
+ * import { CanonicalState } from '@datamoc/mwg/core';
  *
  * const state = new CanonicalState({ turn: 1, gold: 10 });
  * state.update((current) => ({ ...current, gold: current.gold - 3 }));
@@ -149,7 +149,7 @@ export class CanonicalState<State extends StateValue> {
  *
  * @example
  * ```ts
- * import { StateRegistry } from '@datamoc/mw_games/core';
+ * import { StateRegistry } from '@datamoc/mwg/core';
  *
  * let inventory = { gold: 10 };
  * const state = new StateRegistry();

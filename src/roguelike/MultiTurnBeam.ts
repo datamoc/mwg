@@ -82,7 +82,7 @@ export interface MultiTurnBeamSave {
  *
  * @example
  * ```ts
- * import { Level, FLOOR, WALL, MultiTurnBeam } from '@datamoc/mw_games/roguelike';
+ * import { Level, FLOOR, WALL, MultiTurnBeam } from '@datamoc/mwg/roguelike';
  *
  * const level = new Level(8, 1, [WALL, FLOOR], 1);
  * const beam = new MultiTurnBeam({ level, from: { x: 0, y: 0 }, target: { x: 3, y: 0 }, damage: 4 });

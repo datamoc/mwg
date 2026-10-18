@@ -7,7 +7,7 @@
  *
  * @example
  * ```ts
- * import { Signal } from '@datamoc/mw_games/core';
+ * import { Signal } from '@datamoc/mwg/core';
  *
  * const onDamage = new Signal<{ amount: number }>();
  * onDamage.add(({ amount }) => {

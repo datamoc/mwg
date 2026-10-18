@@ -13,8 +13,8 @@ import { resolve, type AssetProgress } from './paths.ts';
  *
  * @example
  * ```ts
- * import { loadBinary, getBinary } from '@datamoc/mw_games/assets';
- * import { parseVox, createVoxModel3D } from '@datamoc/mw_games/3d';
+ * import { loadBinary, getBinary } from '@datamoc/mwg/assets';
+ * import { parseVox, createVoxModel3D } from '@datamoc/mwg/3d';
  *
  * await loadBinary(['models/rock.vox']);
  * const model = parseVox(getBinary('models/rock.vox'));
@@ -67,7 +67,7 @@ export function getBinary(path: string): ArrayBuffer {
  *
  * @example
  * ```ts
- * import { isBinaryLoaded } from '@datamoc/mw_games/assets';
+ * import { isBinaryLoaded } from '@datamoc/mwg/assets';
  *
  * console.log(isBinaryLoaded('models/rock.vox')); // false until loadBinary resolves for it
  * ```
@@ -81,7 +81,7 @@ export function isBinaryLoaded(path: string): boolean {
  *
  * @example
  * ```ts
- * import { releaseBinary } from '@datamoc/mw_games/assets';
+ * import { releaseBinary } from '@datamoc/mwg/assets';
  *
  * releaseBinary(['models/rock.vox']); // frees the cached bytes once the model is placed
  * ```

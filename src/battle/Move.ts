@@ -33,7 +33,7 @@ export interface BattleAction<C = unknown> {
  *
  * @example
  * ```ts
- * import { battleOrder, type BattleAction } from '@datamoc/mw_games/battle';
+ * import { battleOrder, type BattleAction } from '@datamoc/mwg/battle';
  *
  * const actions: BattleAction<string>[] = [
  *   { actor: 'hero', speed: 12 },

@@ -63,7 +63,7 @@ export interface TerrainKind {
  *
  * @example
  * ```ts
- * import { Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ * import { Level, WALL, FLOOR } from '@datamoc/mwg/roguelike';
  *
  * const level = new Level(20, 15, [WALL, FLOOR], 0); // 0 = WALL, everything starts solid
  * level.set(5, 5, 1); // 1 = FLOOR
@@ -262,7 +262,7 @@ export function rectCenter(rect: Rect): { x: number; y: number } {
  *
  * @example
  * ```ts
- * import { rectsOverlap } from '@datamoc/mw_games/roguelike';
+ * import { rectsOverlap } from '@datamoc/mwg/roguelike';
  *
  * const roomA = { left: 0, top: 0, right: 4, bottom: 4 };
  * const roomB = { left: 5, top: 0, right: 9, bottom: 4 };

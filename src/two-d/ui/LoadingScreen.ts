@@ -17,8 +17,8 @@ export interface LoadingScreenOptions {
  *
  * @example
  * ```ts
- * import { LoadingScreen } from '@datamoc/mw_games/two-d/ui';
- * import { LoadQueue } from '@datamoc/mw_games/core';
+ * import { LoadingScreen } from '@datamoc/mwg/two-d/ui';
+ * import { LoadQueue } from '@datamoc/mwg/core';
  *
  * const queue = new LoadQueue();
  * queue.add({ id: 'tileset', run: async () => { await Promise.resolve(); } });

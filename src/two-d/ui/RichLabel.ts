@@ -27,7 +27,7 @@ export interface RichLabelOptions extends ThemedTextOptions {
  *
  * @example
  * ```ts
- * import { RichLabel } from '@datamoc/mw_games/two-d/ui';
+ * import { RichLabel } from '@datamoc/mwg/two-d/ui';
  *
  * const blurb = new RichLabel({ text: 'Take **two** *small* coins' });
  *

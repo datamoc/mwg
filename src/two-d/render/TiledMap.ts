@@ -122,8 +122,8 @@ export interface TilesetSheet {
  *
  * @example
  * ```ts
- * import { loadTiledMap, SpriteSheet, type TiledMapData, type TiledTilesetData, type TilesetSheet } from '@datamoc/mw_games/two-d/render';
- * import * as Resources from '@datamoc/mw_games/assets';
+ * import { loadTiledMap, SpriteSheet, type TiledMapData, type TiledTilesetData, type TilesetSheet } from '@datamoc/mwg/two-d/render';
+ * import * as Resources from '@datamoc/mwg/assets';
  *
  * const map: TiledMapData = Resources.get('maps/village.json');
  * const sheets: TilesetSheet[] = map.tilesets.map((ref) => {

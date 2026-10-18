@@ -73,7 +73,7 @@ const BLOCK_FRAMES = 2048;
  *
  * @example
  * ```ts
- * import { StreamChannel, type BlockSource } from '@datamoc/mw_games/audio';
+ * import { StreamChannel, type BlockSource } from '@datamoc/mwg/audio';
  *
  * declare const context: AudioContext;
  * declare const tune: BlockSource;

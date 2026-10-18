@@ -36,7 +36,7 @@ export interface MeterOptions {
  *
  * @example
  * ```ts
- * import { Meter } from '@datamoc/mw_games/two-d/ui';
+ * import { Meter } from '@datamoc/mwg/two-d/ui';
  *
  * const hearts = new Meter({ count: 5, value: 3 });
  *

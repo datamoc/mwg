@@ -21,7 +21,7 @@ import type { GridCell3D, GridShape3D } from './Grid.ts';
  *
  * @example
  * ```ts
- * import { buildHeightIndex, heightAt } from '@datamoc/mw_games/3d';
+ * import { buildHeightIndex, heightAt } from '@datamoc/mwg/3d';
  *
  * const heights = buildHeightIndex([
  * 	{ x: 0, y: 0 },
@@ -48,7 +48,7 @@ function cellKey(x: number, y: number): string {
  *
  * @example
  * ```ts
- * import { cellAt } from '@datamoc/mw_games/3d';
+ * import { cellAt } from '@datamoc/mwg/3d';
  *
  * console.log(cellAt('square', 3.4, 1.6, 2)); // { x: 2, y: 1 }
  * ```
@@ -67,7 +67,7 @@ export function cellAt(shape: GridShape3D, x: number, z: number, tileSize = 1): 
  *
  * @example
  * ```ts
- * import { buildHeightIndex, heightAt } from '@datamoc/mw_games/3d';
+ * import { buildHeightIndex, heightAt } from '@datamoc/mwg/3d';
  *
  * const heights = buildHeightIndex([{ x: 0, y: 0, height: 1 }]);
  * console.log(heightAt(heights, 'square', 0, 0), heightAt(heights, 'square', 5, 5)); // 1 null
@@ -118,7 +118,7 @@ export interface CapsuleGridMoveResult {
  *
  * @example
  * ```ts
- * import { buildHeightIndex, resolveCapsuleAgainstGrid } from '@datamoc/mw_games/3d';
+ * import { buildHeightIndex, resolveCapsuleAgainstGrid } from '@datamoc/mwg/3d';
  *
  * const heights = buildHeightIndex([
  * 	{ x: 0, y: 0 },

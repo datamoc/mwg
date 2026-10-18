@@ -17,7 +17,7 @@ export interface BoardPiece<K = string> {
  *
  * @example
  * ```ts
- * import { BoardGrid } from '@datamoc/mw_games/board';
+ * import { BoardGrid } from '@datamoc/mwg/board';
  *
  * const board = new BoardGrid<{ id: string; owner: string; kind: string }>(3, 3);
  * board.set(1, 1, { id: 'king', owner: 'white', kind: 'king' });
@@ -83,7 +83,7 @@ export interface CheckersState {
 /**
  * @example
  * ```ts
- * import { startingCheckers } from '@datamoc/mw_games/board';
+ * import { startingCheckers } from '@datamoc/mwg/board';
  *
  * const state = startingCheckers();
  * console.log(state.turn, state.board.length); // 'red' 64
@@ -104,7 +104,7 @@ export function startingCheckers(): CheckersState {
  *
  * @example
  * ```ts
- * import { startingCheckers, checkersMoves } from '@datamoc/mw_games/board';
+ * import { startingCheckers, checkersMoves } from '@datamoc/mwg/board';
  *
  * const moves = checkersMoves(startingCheckers());
  * console.log(moves.length); // 7 - every red piece on the back row can step forward
@@ -126,7 +126,7 @@ export function checkersMoves(state: CheckersState): CheckersMove[] {
 /**
  * @example
  * ```ts
- * import { startingCheckers, checkersMoves, applyCheckersMove } from '@datamoc/mw_games/board';
+ * import { startingCheckers, checkersMoves, applyCheckersMove } from '@datamoc/mwg/board';
  *
  * const state = startingCheckers();
  * applyCheckersMove(state, checkersMoves(state)[0]);
@@ -201,7 +201,7 @@ export interface GoState {
 /**
  * @example
  * ```ts
- * import { startingGo } from '@datamoc/mw_games/board';
+ * import { startingGo } from '@datamoc/mwg/board';
  *
  * const state = startingGo(9);
  * console.log(state.turn, state.board.length); // 'black' 81
@@ -218,7 +218,7 @@ export function startingGo(size = 9): GoState {
  *
  * @example
  * ```ts
- * import { startingGo, playGo } from '@datamoc/mw_games/board';
+ * import { startingGo, playGo } from '@datamoc/mwg/board';
  *
  * const state = startingGo(9);
  * playGo(state, 4, 4);
@@ -252,7 +252,7 @@ export function playGo(state: GoState, x: number, y: number): void {
 /**
  * @example
  * ```ts
- * import { startingGo, passGo, goResult } from '@datamoc/mw_games/board';
+ * import { startingGo, passGo, goResult } from '@datamoc/mwg/board';
  *
  * const state = startingGo(9);
  * passGo(state);
@@ -269,7 +269,7 @@ export function passGo(state: GoState): void {
 /**
  * @example
  * ```ts
- * import { startingGo, goResult } from '@datamoc/mw_games/board';
+ * import { startingGo, goResult } from '@datamoc/mwg/board';
  *
  * console.log(goResult(startingGo(9))); // 'ongoing' - nobody has passed yet
  * ```
@@ -284,7 +284,7 @@ export function goResult(state: GoState): 'ongoing' | 'finished' {
  *
  * @example
  * ```ts
- * import { startingGo, playGo, goScore } from '@datamoc/mw_games/board';
+ * import { startingGo, playGo, goScore } from '@datamoc/mwg/board';
  *
  * const state = startingGo(9);
  * playGo(state, 4, 4);
@@ -365,7 +365,7 @@ export interface BackgammonMove {
 /**
  * @example
  * ```ts
- * import { startingBackgammon } from '@datamoc/mw_games/board';
+ * import { startingBackgammon } from '@datamoc/mwg/board';
  *
  * const state = startingBackgammon();
  * console.log(state.points[0], state.points[23]); // 2 -2 - white's and black's back checkers
@@ -388,7 +388,7 @@ export function startingBackgammon(): BackgammonState {
  *
  * @example
  * ```ts
- * import { rollBackgammonDice } from '@datamoc/mw_games/board';
+ * import { rollBackgammonDice } from '@datamoc/mwg/board';
  *
  * const dice = rollBackgammonDice();
  * console.log(dice.length === 2 || dice.length === 4); // true
@@ -402,7 +402,7 @@ export function rollBackgammonDice(): number[] {
 /**
  * @example
  * ```ts
- * import { startingBackgammon, backgammonMoves } from '@datamoc/mw_games/board';
+ * import { startingBackgammon, backgammonMoves } from '@datamoc/mwg/board';
  *
  * const moves = backgammonMoves(startingBackgammon(), [1]);
  * console.log(moves.length, moves[0]); // 3 { from: 0, to: 1, die: 1 }
@@ -450,7 +450,7 @@ export function backgammonMoves(state: BackgammonState, dice: readonly number[])
 /**
  * @example
  * ```ts
- * import { startingBackgammon, backgammonMoves, applyBackgammonMove } from '@datamoc/mw_games/board';
+ * import { startingBackgammon, backgammonMoves, applyBackgammonMove } from '@datamoc/mwg/board';
  *
  * const state = startingBackgammon();
  * applyBackgammonMove(state, backgammonMoves(state, [1])[0]);
@@ -491,7 +491,7 @@ export interface Card {
 /**
  * @example
  * ```ts
- * import { createDeck } from '@datamoc/mw_games/board';
+ * import { createDeck } from '@datamoc/mwg/board';
  *
  * console.log(createDeck().length); // 52
  * console.log(createDeck(2).length); // 54 - two jokers added
@@ -506,8 +506,8 @@ export function createDeck(jokers = 0): Card[] {
 /**
  * @example
  * ```ts
- * import { createDeck, shuffleDeck } from '@datamoc/mw_games/board';
- * import { Random } from '@datamoc/mw_games/core';
+ * import { createDeck, shuffleDeck } from '@datamoc/mwg/board';
+ * import { Random } from '@datamoc/mwg/core';
  *
  * const shuffled = Random.withSeed(1, () => shuffleDeck(createDeck()));
  * console.log(shuffled[0]); // { suit: 'hearts', rank: 6 } - deterministic for seed 1
@@ -519,7 +519,7 @@ export function shuffleDeck(deck: Card[]): Card[] {
 /**
  * @example
  * ```ts
- * import { createDeck, deal } from '@datamoc/mw_games/board';
+ * import { createDeck, deal } from '@datamoc/mwg/board';
  *
  * const hands = deal(createDeck(), 4, 13);
  * console.log(hands.length, hands[0].length); // 4 13 - a full deck dealt to four players
@@ -538,7 +538,7 @@ export interface TrickPlay<O = string> {
  *
  * @example
  * ```ts
- * import { trickWinner } from '@datamoc/mw_games/board';
+ * import { trickWinner } from '@datamoc/mwg/board';
  *
  * const plays = [
  * 	{ owner: 'north', card: { suit: 'hearts' as const, rank: 5 as const } },
@@ -573,7 +573,7 @@ export interface SolitaireState {
  *
  * @example
  * ```ts
- * import { dealSolitaire } from '@datamoc/mw_games/board';
+ * import { dealSolitaire } from '@datamoc/mwg/board';
  *
  * const state = dealSolitaire(1); // seeded, for a reproducible deal
  * console.log(state.stock.length); // 24 - 52 minus the 28 dealt across the tableau
@@ -596,7 +596,7 @@ export function dealSolitaire(seed?: number): SolitaireState {
  *
  * @example
  * ```ts
- * import { dealSolitaire, drawSolitaire } from '@datamoc/mw_games/board';
+ * import { dealSolitaire, drawSolitaire } from '@datamoc/mwg/board';
  *
  * const state = dealSolitaire(1);
  * const card = drawSolitaire(state);
@@ -619,7 +619,7 @@ export function drawSolitaire(state: SolitaireState): Card | null {
  *
  * @example
  * ```ts
- * import { dealSolitaire, moveSolitaireTableau } from '@datamoc/mw_games/board';
+ * import { dealSolitaire, moveSolitaireTableau } from '@datamoc/mwg/board';
  *
  * const state = dealSolitaire(1);
  * moveSolitaireTableau(state, 4, 0, 1); // the jack of hearts onto the queen of clubs
@@ -647,7 +647,7 @@ export function moveSolitaireTableau(state: SolitaireState, from: number, to: nu
  *
  * @example
  * ```ts
- * import { dealSolitaire, drawSolitaire, moveSolitaireToFoundation } from '@datamoc/mw_games/board';
+ * import { dealSolitaire, drawSolitaire, moveSolitaireToFoundation } from '@datamoc/mwg/board';
  *
  * const state = dealSolitaire(1);
  * let card = drawSolitaire(state);
@@ -673,7 +673,7 @@ export function moveSolitaireToFoundation(state: SolitaireState, source: 'waste'
 /**
  * @example
  * ```ts
- * import { dealSolitaire, solitaireWon } from '@datamoc/mw_games/board';
+ * import { dealSolitaire, solitaireWon } from '@datamoc/mwg/board';
  *
  * console.log(solitaireWon(dealSolitaire(1))); // false - a fresh deal is never already won
  * ```
@@ -690,8 +690,8 @@ function alternatingDescending(top: Card, bottom: Card): boolean {
 /**
  * @example
  * ```ts
- * import { rollDice } from '@datamoc/mw_games/board';
- * import { Random } from '@datamoc/mw_games/core';
+ * import { rollDice } from '@datamoc/mwg/board';
+ * import { Random } from '@datamoc/mwg/core';
  *
  * const rolls = Random.withSeed(1, () => rollDice(2, 6));
  * console.log(rolls); // [5, 2] - deterministic for seed 1
@@ -707,8 +707,8 @@ export function rollDice(count: number, sides: number): number[] {
  *
  * @example
  * ```ts
- * import { rollExpression } from '@datamoc/mw_games/board';
- * import { Random } from '@datamoc/mw_games/core';
+ * import { rollExpression } from '@datamoc/mwg/board';
+ * import { Random } from '@datamoc/mwg/core';
  *
  * console.log(Random.withSeed(1, () => rollExpression('2d6+1'))); // 8 - rolls [5, 2], plus 1
  * ```
@@ -725,8 +725,8 @@ export function rollExpression(expression: string): number {
  *
  * @example
  * ```ts
- * import { DiceCup } from '@datamoc/mw_games/board';
- * import { Random } from '@datamoc/mw_games/core';
+ * import { DiceCup } from '@datamoc/mwg/board';
+ * import { Random } from '@datamoc/mwg/core';
  *
  * const cup = Random.withSeed(1, () => new DiceCup(5, 6));
  * console.log(cup.values); // [5, 2, 6, 1, 1]
@@ -777,7 +777,7 @@ export type DiceCategory =
  *
  * @example
  * ```ts
- * import { scoreDice } from '@datamoc/mw_games/board';
+ * import { scoreDice } from '@datamoc/mwg/board';
  *
  * console.log(scoreDice([4, 4, 4, 4, 4], 'yahtzee')); // 50
  * console.log(scoreDice([1, 2, 3, 4, 5], 'chance')); // 15 - the sum of all five dice

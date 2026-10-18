@@ -15,7 +15,7 @@ export interface AudioUnderrun {
  *
  * @example
  * ```ts
- * import { onAudioUnderrun } from '@datamoc/mw_games/audio';
+ * import { onAudioUnderrun } from '@datamoc/mwg/audio';
  *
  * let dropouts = 0;
  * onAudioUnderrun.add(() => {

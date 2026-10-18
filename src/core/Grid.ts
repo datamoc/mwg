@@ -15,8 +15,8 @@
  *
  * @example
  * ```ts
- * import { cellInside, cellIndex, cellX, cellY, cellKey, cellFromKey } from '@datamoc/mw_games/core';
- * import { NEIGHBOURS4, NEIGHBOURS8, CIRCLE8, euclidean } from '@datamoc/mw_games/core';
+ * import { cellInside, cellIndex, cellX, cellY, cellKey, cellFromKey } from '@datamoc/mwg/core';
+ * import { NEIGHBOURS4, NEIGHBOURS8, CIRCLE8, euclidean } from '@datamoc/mwg/core';
  *
  * // a 4x3 board, row-major: y * width + x
  * cellInside(4, 3, 3, 2);        // true, the far corner
@@ -142,7 +142,7 @@ export const CIRCLE8: ReadonlyArray<readonly [number, number]> = [
  *
  * @example
  * ```ts
- * import { euclidean } from '@datamoc/mw_games/core';
+ * import { euclidean } from '@datamoc/mwg/core';
  *
  * euclidean({ x: 0, y: 0 }, { x: 3, y: 4 }); // 5
  * ```
@@ -163,7 +163,7 @@ export function euclidean(
  *
  * @example
  * ```ts
- * import { chebyshev } from '@datamoc/mw_games/core';
+ * import { chebyshev } from '@datamoc/mwg/core';
  *
  * chebyshev({ x: 0, y: 0 }, { x: 3, y: 4 }); // 4
  * ```
@@ -183,7 +183,7 @@ export function chebyshev(
  *
  * @example
  * ```ts
- * import { manhattan } from '@datamoc/mw_games/core';
+ * import { manhattan } from '@datamoc/mwg/core';
  *
  * manhattan({ x: 0, y: 0 }, { x: 3, y: 4 }); // 7
  * ```
@@ -208,7 +208,7 @@ export type DistanceMetric = 'euclidean' | 'manhattan' | 'chebyshev';
  *
  * @example
  * ```ts
- * import { distance } from '@datamoc/mw_games/core';
+ * import { distance } from '@datamoc/mwg/core';
  *
  * distance('chebyshev', { x: 0, y: 0 }, { x: 3, y: 4 }); // 4
  * distance('euclidean', { x: 0, y: 0 }, { x: 3, y: 4 }); // 5

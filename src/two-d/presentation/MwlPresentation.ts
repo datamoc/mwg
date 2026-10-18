@@ -79,9 +79,9 @@ interface MountedNode {
  *
  * @example
  * ```ts
- * import { MwlPresentation } from '@datamoc/mw_games/two-d/presentation';
- * import type { CompiledPresentation } from '@datamoc/mw_games/mwl/presentation';
- * import { Node2D } from '@datamoc/mw_games/two-d/render';
+ * import { MwlPresentation } from '@datamoc/mwg/two-d/presentation';
+ * import type { CompiledPresentation } from '@datamoc/mwg/mwl/presentation';
+ * import { Node2D } from '@datamoc/mwg/two-d/render';
  * declare const data: CompiledPresentation;
  * const ui = new MwlPresentation(data, 'game', { parent: new Node2D(), state: () => ({}), actions: {} });
  * ui.resize(800, 600);

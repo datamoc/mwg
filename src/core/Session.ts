@@ -11,7 +11,7 @@ import { defaultStorage, type SaveStorage } from './Save.ts';
  *
  * @example
  * ```ts
- * import { Session } from '@datamoc/mw_games/core';
+ * import { Session } from '@datamoc/mwg/core';
  *
  * const session = new Session({ namespace: 'my-game' });
  * if (session.launches === 5) {

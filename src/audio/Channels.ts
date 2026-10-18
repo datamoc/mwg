@@ -81,7 +81,7 @@ function wireVoice(
  *
  * @example
  * ```ts
- * import { Channel } from '@datamoc/mw_games/audio';
+ * import { Channel } from '@datamoc/mwg/audio';
  *
  * declare const context: AudioContext;
  * declare const buffer: AudioBuffer;
@@ -353,7 +353,7 @@ function clampBus(value: number | undefined, low: number, high: number, fallback
  *
  * @example
  * ```ts
- * import { AudioBus } from '@datamoc/mw_games/audio';
+ * import { AudioBus } from '@datamoc/mwg/audio';
  *
  * declare const context: AudioContext;
  *

@@ -47,7 +47,7 @@ function canonical(value: unknown, inArray = false): string {
  *
  * @example
  * ```ts
- * import { stateChecksum } from '@datamoc/mw_games/core';
+ * import { stateChecksum } from '@datamoc/mwg/core';
  *
  * // same state, whatever order the keys happen to be in
  * stateChecksum({ hp: 7, x: 2 }) === stateChecksum({ x: 2, hp: 7 }); // true
@@ -71,7 +71,7 @@ export function stateChecksum(value: unknown): number {
  *
  * @example
  * ```ts
- * import { SyncGuard, stateChecksum } from '@datamoc/mw_games/core';
+ * import { SyncGuard, stateChecksum } from '@datamoc/mwg/core';
  *
  * const localState = { hp: 7 };
  * const remoteState = { hp: 6 };

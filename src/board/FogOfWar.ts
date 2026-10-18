@@ -16,7 +16,7 @@ export interface VisionCell {
  *
  * @example
  * ```ts
- * import { FactionFog } from '@datamoc/mw_games/board';
+ * import { FactionFog } from '@datamoc/mwg/board';
  *
  * const fog = new FactionFog(10, 10);
  *

@@ -18,8 +18,8 @@ export interface MwlObject {
  *
  * @example
  * ```ts
- * import { compile, nodesToObjects } from '@datamoc/mw_games/mwl';
- * import type { MwlTagSchema } from '@datamoc/mw_games/mwl';
+ * import { compile, nodesToObjects } from '@datamoc/mwg/mwl';
+ * import type { MwlTagSchema } from '@datamoc/mwg/mwl';
  * const schemas = {
  *   bridge: { attributes: { budget: 'number' }, children: ['anchor'] },
  *   anchor: { attributes: { x: 'number', fixed: 'boolean' }, children: [] },

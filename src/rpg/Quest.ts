@@ -52,7 +52,7 @@ export type QuestMarker = 'offer' | 'turnIn' | 'none';
  *
  * @example
  * ```ts
- * import { QuestLog, GameState } from '@datamoc/mw_games/rpg';
+ * import { QuestLog, GameState } from '@datamoc/mwg/rpg';
  *
  * const state = new GameState();
  * const quests = new QuestLog();
@@ -230,8 +230,8 @@ export interface QuestStageRow {
  *
  * @example
  * ```ts
- * import { parseCSV } from '@datamoc/mw_games/core';
- * import { questsFromRows, QuestLog, type QuestStageRow } from '@datamoc/mw_games/rpg';
+ * import { parseCSV } from '@datamoc/mwg/core';
+ * import { questsFromRows, QuestLog, type QuestStageRow } from '@datamoc/mwg/rpg';
  *
  * const csv = `questId,counterVariable,counterTarget,description
  * rats,ratsKilled,5,Kill 5 rats

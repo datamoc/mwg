@@ -10,7 +10,7 @@
  *
  * @example
  * ```ts
- * import { createHandles } from '@datamoc/mw_games/core';
+ * import { createHandles } from '@datamoc/mwg/core';
  *
  * const handles = createHandles<() => number>();
  * const result = handles.with(() => 7, (id) => {

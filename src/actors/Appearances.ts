@@ -25,7 +25,7 @@ export interface AppearanceTable {
  *
  * @example
  * ```ts
- * import { assignAppearances, Appearances } from '@datamoc/mw_games/actors';
+ * import { assignAppearances, Appearances } from '@datamoc/mwg/actors';
  *
  * const potions = assignAppearances({ kinds: ['healing', 'poison'], labels: ['red', 'blue'] });
  * console.log(potions.get('healing')); // 'red' or 'blue', fixed for this shuffle

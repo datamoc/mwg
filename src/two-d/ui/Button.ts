@@ -70,7 +70,7 @@ export interface ButtonOptions {
  *
  * @example
  * ```ts
- * import { Button } from '@datamoc/mw_games/two-d/ui';
+ * import { Button } from '@datamoc/mwg/two-d/ui';
  *
  * const start = new Button({
  * 	width: 160,

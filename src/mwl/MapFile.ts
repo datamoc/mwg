@@ -30,7 +30,7 @@ const HEADER_LINE = /^\s*([A-Za-z_][\w]*)\s*=\s*(.*?)\s*$/;
  *
  * @example
  * ```ts
- * import { parseMapFile } from '@datamoc/mw_games/mwl';
+ * import { parseMapFile } from '@datamoc/mwg/mwl';
  *
  * const map = parseMapFile('border_size=1\nusage=map\n\nGg, Gg, Gg\nGg, Gg^Vh, Gg\n');
  * map.header.usage; // 'map'

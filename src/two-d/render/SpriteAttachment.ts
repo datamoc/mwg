@@ -26,7 +26,7 @@ export interface SpriteAttachmentOptions {
  *
  * @example
  * ```ts
- * import { SpriteAttachment } from '@datamoc/mw_games/two-d/render';
+ * import { SpriteAttachment } from '@datamoc/mwg/two-d/render';
  *
  * declare const shadowSprite: { x: number; y: number };
  * declare const statusIcon: { x: number; y: number };

@@ -1,6 +1,6 @@
 # mwg reference
 
-A one-line-per-export index of `@datamoc/mw_games`'s public API - what exists and where,
+A one-line-per-export index of `@datamoc/mwg`'s public API - what exists and where,
 not how to use it. The published Documentation page is this file rendered as HTML; the
 full generated API (every parameter, every doc comment) lives beside it at
 `webpage/documentation/api/`, with an examples index beside it at
@@ -10,8 +10,8 @@ is shaped this way and what it's for, see `README.md`'s capability spec. For arc
 and build commands, see `DEVELOPMENT.md`. For the order things shipped in and the reasoning
 behind it, see `CLOSED.md`; for what's still open, see `ROADMAP.md`.
 
-Every module is its own barrel: `import { X } from '@datamoc/mw_games/core'` (or the
-matching subpath for any module below), or `import { X } from '@datamoc/mw_games'` for the
+Every module is its own barrel: `import { X } from '@datamoc/mwg/core'` (or the
+matching subpath for any module below), or `import { X } from '@datamoc/mwg'` for the
 root re-export.
 
 **Two rendering worlds, and a core that belongs to neither.** `mwg/two-d` is everything drawn
@@ -35,8 +35,8 @@ a 3D game can run map events, dialogue and quests without a 2D renderer anywhere
 
 ## MWL presentation
 
-The optional compiler at `@datamoc/mw_games/mwl/presentation` is renderer-free. The
-runtime at `@datamoc/mw_games/two-d/presentation` imports Pixi and is kept off the root
+The optional compiler at `@datamoc/mwg/mwl/presentation` is renderer-free. The
+runtime at `@datamoc/mwg/two-d/presentation` imports Pixi and is kept off the root
 barrel. The browser consumes compiled data, with no MWL parser or network requests.
 
 - `compilePresentation(files, manifest)` validates and compiles top-level
@@ -864,12 +864,12 @@ change what a game calls to load an asset.
 Split by renderer specificity: `assets/paths.ts` resolves paths and needs no renderer,
 `assets/binary.ts` caches raw bytes just as renderer-free, `assets/loader.ts` fetches and
 decodes *textures* through Pixi. The `assets` barrel exposes all three; a game rendering
-through something else imports `@datamoc/mw_games/assets/paths` or
-`@datamoc/mw_games/assets/binary` and pays nothing for Pixi, which is how `3d` and `audio`
+through something else imports `@datamoc/mwg/assets/paths` or
+`@datamoc/mwg/assets/binary` and pays nothing for Pixi, which is how `3d` and `audio`
 reach the compiled asset map without it.
 
 - `setBase`/`setAssetMap`/`isCompiled`/`paths`/`has`/`resolve` - dev-vs-compiled path
-  resolution, renderer-free (also its own entry point, `@datamoc/mw_games/assets/paths`).
+  resolution, renderer-free (also its own entry point, `@datamoc/mwg/assets/paths`).
   `setAssetMap` hands these a game's own path-to-URI map directly (item 300), for a game
   bundled by its own tool rather than `tools/compile-resources`, and takes priority over
   `window.__MWG_ASSETS__` while set; `undefined` reverts to it.
@@ -893,7 +893,7 @@ reach the compiled asset map without it.
   descriptor by hand.
 - `loadBinary`/`getBinary`/`isBinaryLoaded`/`releaseBinary` - the renderer-free counterpart
   to `load`/`texture`/.../`release`, caching raw `ArrayBuffer`s instead of Pixi textures
-  (also its own entry point, `@datamoc/mw_games/assets/binary`); `3d/models`' `Vox.parseVox`
+  (also its own entry point, `@datamoc/mwg/assets/binary`); `3d/models`' `Vox.parseVox`
   is the direct consumer, taking bytes this now fetches and caches instead of a game doing
   it by hand.
 - `AssetStream`/`AssetBundle` - preloads likely-next bundles with LRU eviction under a
@@ -921,7 +921,7 @@ reach the compiled asset map without it.
   a `Sound` placed at a point, and `audioGain`/`audioPan` turning distance and heading into a
   volume and a stereo position. `SoundSource.playFor` applies the distance gain through
   `Sound.play`; panning is reported for a backend that has a panner. `Music` stays global.
-- `XpbdWorld` (`@datamoc/mw_games/physics/xpbd`) - a deterministic structure solver
+- `XpbdWorld` (`@datamoc/mwg/physics/xpbd`) - a deterministic structure solver
   (extended position-based dynamics): `addNode`/`addLink` (stiffness, `tensionOnly` cables, `strength`/
   `tensionStrength`), `applyForce`, `step()` on fixed substeps, the load of every link read back
   (`force`, smoothed `ratio`, `peakRatio`) and `onBreak` when a link passes its strength; `ground` (a height or a function of x) holds nodes
@@ -933,7 +933,7 @@ reach the compiled asset map without it.
   returns positions, velocities, load state and queued forces as detached arrays; `hash()`
   compares their exact numeric bits for runs with the same configuration. Payloads and ground
   callbacks are excluded. The bridge example applies a moving vehicle's weight with `applyForce`.
-- `PhysicsWorld` (`@datamoc/mw_games/physics`) - rigid bodies and constraints in plain TypeScript, no engine
+- `PhysicsWorld` (`@datamoc/mwg/physics`) - rigid bodies and constraints in plain TypeScript, no engine
   dependency: `addBox`/`addCircle`/`addConstraint`/`remove`, `update(dt)` from
   `Scene.update`, `onContact`, `alpha` for interpolation. A constraint with `maxStretch` breaks when pulled
   that far past its rest length (`onBreak`, `stretchOf`). Bodies never spin; `angle` is a display offset.
@@ -1558,7 +1558,7 @@ live game loop.
 
 Skeletal pose math, renderer-free: a bone tree, keyframed clips and layered blending, as
 pure data and arithmetic so it loads headless and tests without a renderer. Clips are plain
-JSON-shaped data a game authors itself. `import * as Skeleton from '@datamoc/mw_games/skeleton'`.
+JSON-shaped data a game authors itself. `import * as Skeleton from '@datamoc/mwg/skeleton'`.
 
 - `create(bones)` - builds a `SkeletonBones` from `Bone`s (`name`, `parent`, `length`,
   `origin`, `rest` `rotation` in degrees, optional `limits`), throwing by name on a duplicate
@@ -1584,8 +1584,8 @@ JSON-shaped data a game authors itself. `import * as Skeleton from '@datamoc/mw_
 ## `physics`
 
 Small deterministic simulations, renderer-free, with no third-party engine. Three entry
-points: `@datamoc/mw_games/physics` (rigid bodies, cloth, spring) and
-`@datamoc/mw_games/physics/xpbd` (a structure solver). Everything is plain arithmetic, so a
+points: `@datamoc/mwg/physics` (rigid bodies, cloth, spring) and
+`@datamoc/mwg/physics/xpbd` (a structure solver). Everything is plain arithmetic, so a
 game's headless tests run the same world.
 
 - `PhysicsWorld` - rigid circles and axis-aligned boxes (never rotating: `angle` is a display
@@ -1652,7 +1652,7 @@ a classic blob worker in the browser, because that is the one shape a double-cli
 `file://` page accepts (the shipped CSP allows `worker-src blob:` and `new Function`, and
 a module worker loaded from `file://` fails CORS whatever the policy says), and
 `node:worker_threads` in Node. Off the root barrel like `testing`: a game that never
-spawns a worker pays nothing for it, and imports `@datamoc/mw_games/threads` when it
+spawns a worker pays nothing for it, and imports `@datamoc/mwg/threads` when it
 wants one.
 
 - `openWorker(source, events)` - opens a long-lived worker from a self-contained script
@@ -1702,7 +1702,7 @@ this module.
   continuous world coordinates; `playAnimation` plays a clip an imported model carries.
 - `parseVox`/`createVoxModel3D` - MagicaVoxel `.vox` import, batched by colour.
 - `loadModel3D`/`loadModelContainer3D`/`isModelContainerLoaded`/`releaseModelContainer`
-  (`@datamoc/mw_games/3d/models`, kept out of the main `3d` barrel so a scene that never
+  (`@datamoc/mwg/3d/models`, kept out of the main `3d` barrel so a scene that never
   imports a model pays nothing for the loader) - glTF/GLB import. `loadModel3D` imports
   straight into the scene, for one copy; `loadModelContainer3D` fetches and parses a source
   once, caches the `AssetContainer`, and a game calls `instantiateModelsToScene()` on it for
@@ -1906,7 +1906,7 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 - `mwl compile`/`mwl extract-i18n`/`mwl hooks` - lower-level commands for a generated module,
   translation extraction, or hook manifest when a build pipeline needs separate outputs.
 - `parse`/`compile`/`validate`/`extractI18n` - the programmatic compiler surface exported from
-  `@datamoc/mw_games/mwl`; games provide their own hook implementations and interpret
+  `@datamoc/mwg/mwl`; games provide their own hook implementations and interpret
   game-specific effects.
 - The `[side]` surface Wesnoth's own data writes, and the one key of it with behaviour here (item
   252): `team_name`, `user_team_name`, `share_vision`, `village_gold`, `heal`, `fog`, `shroud`,
@@ -1988,7 +1988,7 @@ consumes generated data and does not parse `.mwl` source files in the browser.
 - `ScriptHost` and `createExpressionScriptHost` - the game-owned boundary for executable content.
   The expression host is the statement-free default. The main `mwl` entry point
   exports its types without loading a scripting VM. Projects that opt in to the optional
-  `@datamoc/pyroeis` dependency can import `createPyroeisScriptHost` from `@datamoc/mw_games/mwl/pyroeis`.
+  `@datamoc/pyroeis` dependency can import `createPyroeisScriptHost` from `@datamoc/mwg/mwl/pyroeis`.
   It provides Lua 5.4 evaluation, chunks, named function calls, JSON-shaped context values, and
   `mwg_emit(name, payload)` events. The adapter opens only the sandbox-safe standard libraries
   (base, coroutine, math, string, table, utf8): `io`, `os`, `debug` and `package` with its
@@ -2100,7 +2100,7 @@ before invoking this build step.
 
 ## `mwl/pyroeis`
 
-The optional Lua 5.4 entry point, `@datamoc/mw_games/mwl/pyroeis`, kept off the `mwl` barrel
+The optional Lua 5.4 entry point, `@datamoc/mwg/mwl/pyroeis`, kept off the `mwl` barrel
 so the Pyroeis VM (the optional `@datamoc/pyroeis` dependency) loads only when a game imports
 it. The `mwl` section above describes its behaviour in full; the exports are:
 
@@ -2186,7 +2186,7 @@ actions, serialisable state, diagnostics and budgets.
   a JavaScript behaviour when it observes cancellation or exceeds its configured budget.
 - `exportState`/`importState` - versioned, JSON-shaped agent state. Function closures, VM
   state and arbitrary object graphs never become save data.
-- `LuaAI`/`createLuaAI` from `@datamoc/mw_games/ai/lua` - optional Lua 5.4 provider with the same
+- `LuaAI`/`createLuaAI` from `@datamoc/mwg/ai/lua` - optional Lua 5.4 provider with the same
   action and state envelope. A Lua function receives `(perception, state)` and returns an action
   table or `{ action, state, events }`. It uses the existing optional Pyroeis host, which
   removes filesystem, process, module-loading, clock and debug access, supplies seeded random,

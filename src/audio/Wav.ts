@@ -7,7 +7,7 @@ import type { StereoFrames } from './Resample.ts';
  *
  * @example
  * ```ts
- * import { encodeWav, renderMidiToBuffer, parseMidi } from '@datamoc/mw_games/audio';
+ * import { encodeWav, renderMidiToBuffer, parseMidi } from '@datamoc/mwg/audio';
  *
  * declare const midiBytes: ArrayBuffer;
  *
@@ -112,7 +112,7 @@ function wavChunks(bytes: Uint8Array): { info: WavInfo; dataOffset: number } {
  *
  * @example
  * ```ts
- * import { wavInfo } from '@datamoc/mw_games/audio';
+ * import { wavInfo } from '@datamoc/mwg/audio';
  *
  * declare const bytes: Uint8Array;
  *
@@ -129,7 +129,7 @@ export function wavInfo(bytes: Uint8Array): WavInfo {
  *
  * @example
  * ```ts
- * import { decodeWav } from '@datamoc/mw_games/audio';
+ * import { decodeWav } from '@datamoc/mwg/audio';
  *
  * declare const bytes: Uint8Array;
  *

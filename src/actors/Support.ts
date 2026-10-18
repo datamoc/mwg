@@ -24,7 +24,7 @@ export interface SupportSave {
  *
  * @example
  * ```ts
- * import { SupportLedger, type SupportLevel } from '@datamoc/mw_games/actors';
+ * import { SupportLedger, type SupportLevel } from '@datamoc/mwg/actors';
  *
  * const levels: SupportLevel[] = [{ id: 'C', threshold: 10 }, { id: 'B', threshold: 30 }];
  * const support = new SupportLedger(levels);

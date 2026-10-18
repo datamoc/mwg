@@ -8,7 +8,7 @@
  *
  * @example
  * ```ts
- * import { TriggerTracker } from '@datamoc/mw_games/roguelike';
+ * import { TriggerTracker } from '@datamoc/mwg/roguelike';
  *
  * const combo = new TriggerTracker(2); // a hit must land within 2 turns of the last
  * combo.trigger(1); // streak: 1

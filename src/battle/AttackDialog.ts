@@ -33,7 +33,7 @@ export interface AttackDialogOptions {
  *
  * @example
  * ```ts
- * import { AttackDialog } from '@datamoc/mw_games/battle';
+ * import { AttackDialog } from '@datamoc/mwg/battle';
  *
  * const dialog = new AttackDialog({
  *   units: [{ id: 'hero', side: '1' }, { id: 'rat', side: '2' }],

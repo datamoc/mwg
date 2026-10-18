@@ -33,7 +33,7 @@ export interface LoadSnapshot {
  *
  * @example
  * ```ts
- * import { LoadQueue } from '@datamoc/mw_games/core';
+ * import { LoadQueue } from '@datamoc/mwg/core';
  *
  * const queue = new LoadQueue();
  * queue.add({ id: 'tileset', run: async () => { await loadTileset(); } });

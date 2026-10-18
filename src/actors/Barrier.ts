@@ -8,7 +8,7 @@
  *
  * @example
  * ```ts
- * import { Barrier } from '@datamoc/mw_games/actors';
+ * import { Barrier } from '@datamoc/mwg/actors';
  *
  * const barrier = new Barrier();
  * barrier.add(20); // a shield spell

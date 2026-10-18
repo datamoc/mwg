@@ -15,7 +15,7 @@ const LEVEL_COLORS = { positive: 0x55dd77, negative: 0xff5555, warning: 0xffb347
  *
  * @example
  * ```ts
- * import { linesToDrop } from '@datamoc/mw_games/two-d/ui';
+ * import { linesToDrop } from '@datamoc/mwg/two-d/ui';
  *
  * console.log(linesToDrop([1, 2, 2], 3)); // 2 - the two oldest go, leaving one 2-line entry
  * ```
@@ -33,7 +33,7 @@ export interface MessageLogEntry {
  *
  * @example
  * ```ts
- * import { takeLastEntries } from '@datamoc/mw_games/two-d/ui';
+ * import { takeLastEntries } from '@datamoc/mwg/two-d/ui';
  *
  * console.log(takeLastEntries(['a', 'b', 'c'], 2)); // ['b', 'c']
  * ```
@@ -72,7 +72,7 @@ export interface MessageLogOptions {
  *
  * @example
  * ```ts
- * import { MessageLog } from '@datamoc/mw_games/two-d/ui';
+ * import { MessageLog } from '@datamoc/mwg/two-d/ui';
  *
  * const log = new MessageLog({ wrapWidth: 200, maxLines: 4 });
  * log.add('You find a dewdrop.', 'positive');

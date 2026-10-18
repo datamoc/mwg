@@ -94,7 +94,7 @@ export interface MessageBoxOptions {
  *
  * @example
  * ```ts
- * import { MessageBox } from '@datamoc/mw_games/two-d/ui';
+ * import { MessageBox } from '@datamoc/mwg/two-d/ui';
  *
  * const box = new MessageBox({
  * 	width: 400,

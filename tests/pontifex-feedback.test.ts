@@ -120,7 +120,7 @@ test('mwgPage drops the EMPTY_IMPORT_META noise and keeps every other log', asyn
 	assert.deepEqual(seen, ['OTHER']);
 });
 
-test('packages/mwg, the @datamoc/mwg alias, is what the generator writes and re-exports real entry points', async () => {
+test('packages/mw_games, the @datamoc/mw_games alias, is what the generator writes and re-exports real entry points', async () => {
 	const { readFileSync, readdirSync, statSync } = await import('node:fs');
 	const { join } = await import('node:path');
 	const { aliasFiles } = await import('../tools/make-alias-package.mjs');
@@ -129,7 +129,7 @@ test('packages/mwg, the @datamoc/mwg alias, is what the generator writes and re-
 	for (const [path, content] of Object.entries(files)) {
 		assert.equal(
 			//a Windows checkout may hand text files over as CRLF
-			readFileSync(join(ROOT_DIR, 'packages', 'mwg', path), 'utf8').replace(/\r\n/g, '\n'),
+			readFileSync(join(ROOT_DIR, 'packages', 'mw_games', path), 'utf8').replace(/\r\n/g, '\n'),
 			content,
 			`${path} is stale - run npm run alias:write`,
 		);
@@ -142,22 +142,22 @@ test('packages/mwg, the @datamoc/mwg alias, is what the generator writes and re-
 			else committed.push(prefix + name);
 		}
 	};
-	walk(join(ROOT_DIR, 'packages', 'mwg'), '');
+	walk(join(ROOT_DIR, 'packages', 'mw_games'), '');
 	assert.deepEqual(
 		committed.sort(),
 		Object.keys(files).sort(),
-		'no file in packages/mwg the generator does not write',
+		'no file in packages/mw_games the generator does not write',
 	);
 	const alias = JSON.parse(files['package.json']);
-	assert.equal(alias.name, '@datamoc/mwg');
-	assert.equal(alias.dependencies['@datamoc/mw_games'], main.version, 'pinned to the exact matching version');
+	assert.equal(alias.name, '@datamoc/mw_games');
+	assert.equal(alias.dependencies['@datamoc/mwg'], main.version, 'pinned to the exact matching version');
 	assert.ok(alias.exports['./two-d'] && alias.exports['.'] && alias.exports['./tools/vite']);
 	for (const [key, entry] of Object.entries(alias.exports) as [string, { import: string } | string][]) {
 		if (typeof entry === 'string') {
 			assert.ok(key in main.exports, `${key} exists in the main package`);
 			continue;
 		}
-		const specifier = key === '.' ? '@datamoc/mw_games' : `@datamoc/mw_games/${key.slice(2)}`;
+		const specifier = key === '.' ? '@datamoc/mwg' : `@datamoc/mwg/${key.slice(2)}`;
 		assert.equal(files[entry.import.slice(2)], `export * from '${specifier}';\n`);
 		assert.ok(key === '.' || key in main.exports, `${key} exists in the main package`);
 	}
@@ -285,9 +285,9 @@ test('mwg-init writes a buildable starter that uses the published package names 
 			readFileSync(join(target, '.githooks/pre-commit'), 'utf8'),
 			'#!/bin/sh\nset -e\nnpm run check\nnpm test\n',
 		);
-		assert.match(pkg.dependencies['@datamoc/mw_games'], /^\^\d+\.\d+\.\d+$/);
+		assert.match(pkg.dependencies['@datamoc/mwg'], /^\^\d+\.\d+\.\d+$/);
 		assert.match(readFileSync(join(target, 'vite.config.mts'), 'utf8'), /mwgPage/);
-		assert.match(initFiles('x')['src/main.ts'], /@datamoc\/mw_games\/two-d/);
+		assert.match(initFiles('x')['src/main.ts'], /@datamoc\/mwg\/two-d/);
 		writeFileSync(join(target, 'keep.txt'), 'mine');
 		assert.throws(() => initProject(target), /not empty/);
 	} finally {

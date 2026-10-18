@@ -188,7 +188,7 @@ function measureRoadmap(source) {
  * @returns {string | null} an explanation to print, or null when the build is current
  */
 function staleBuild() {
-	const bundle = join(root, 'dist', 'mw_games.global.js');
+	const bundle = join(root, 'dist', 'mwg.global.js');
 	if (!existsSync(bundle)) return null; //no build at all is a different, self-describing state
 	const builtAt = statSync(bundle).mtimeMs;
 	let newestSource = 0;
@@ -197,11 +197,11 @@ function staleBuild() {
 		if (mtime > newestSource) newestSource = mtime;
 	}
 	if (newestSource <= builtAt) return null;
-	return 'dist/mw_games.global.js is older than src/, so these numbers would describe the previous build.';
+	return 'dist/mwg.global.js is older than src/, so these numbers would describe the previous build.';
 }
 
 function measureBundle() {
-	const globalPath = join(root, 'dist', 'mw_games.global.js');
+	const globalPath = join(root, 'dist', 'mwg.global.js');
 	if (!existsSync(globalPath)) return { globalRaw: null, globalGzip: null, distRaw: null };
 	const global = readFileSync(globalPath);
 	let distRaw = 0;

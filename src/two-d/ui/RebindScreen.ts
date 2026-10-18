@@ -42,7 +42,7 @@ export interface RebindScreenOptions {
  *
  * @example
  * ```ts
- * import { RebindScreen } from '@datamoc/mw_games/two-d/ui';
+ * import { RebindScreen } from '@datamoc/mwg/two-d/ui';
  *
  * const screen = new RebindScreen({
  * 	width: 200,

@@ -42,7 +42,7 @@ export interface MwlEmitOptions {
  *
  * @example
  * ```ts
- * import { compile } from '@datamoc/mw_games/mwl';
+ * import { compile } from '@datamoc/mwg/mwl';
  *
  * const game = compile("[{ tag: 'game', schema: 0.1 }]");
  * console.log(game.schema); // '0.1'
@@ -63,7 +63,7 @@ export interface MwlSourceFile {
  *
  * @example
  * ```ts
- * import { compileSources } from '@datamoc/mw_games/mwl';
+ * import { compileSources } from '@datamoc/mwg/mwl';
  *
  * const game = compileSources([{ file: 'a.mwl', source: "[{ tag: 'game', schema: 0.1 }]" }]);
  * console.log(game.roots.length); // 1
@@ -85,7 +85,7 @@ export function compileSources(files: readonly MwlSourceFile[], options: MwlComp
  *
  * @example
  * ```ts
- * import { compileNodes, parse } from '@datamoc/mw_games/mwl';
+ * import { compileNodes, parse } from '@datamoc/mwg/mwl';
  *
  * const game = compileNodes(parse("[{ tag: 'game', schema: 0.1 }]"));
  * console.log(game.schema); // '0.1'
@@ -204,7 +204,7 @@ export interface MwlCatalog {
  *
  * @example
  * ```ts
- * import { compile, extractCatalog } from '@datamoc/mw_games/mwl';
+ * import { compile, extractCatalog } from '@datamoc/mwg/mwl';
  *
  * const game = compile("[{ tag: 'game', schema: 0.1 }]");
  * console.log(extractCatalog(game, { locale: 'fr' }).locale); // 'fr'
@@ -221,7 +221,7 @@ export function extractCatalog(game: MwlCompiledGame, options: MwlCatalogOptions
  *
  * @example
  * ```ts
- * import { compile, emitModule } from '@datamoc/mw_games/mwl';
+ * import { compile, emitModule } from '@datamoc/mwg/mwl';
  *
  * console.log(emitModule(compile("[{ tag: 'game', schema: 0.1 }]")).startsWith('export const gameData')); // true
  * ```
@@ -235,7 +235,7 @@ export function emitModule(game: MwlCompiledGame, variable = 'gameData'): string
  *
  * @example
  * ```ts
- * import { compile, emitArtifacts } from '@datamoc/mw_games/mwl';
+ * import { compile, emitArtifacts } from '@datamoc/mwg/mwl';
  *
  * const artifacts = emitArtifacts(compile("[{ tag: 'game', schema: 0.1 }]"));
  * console.log(artifacts.map((artifact) => artifact.name)); // ['game-data.ts', 'i18n.json', 'assets.json']
@@ -259,7 +259,7 @@ export function emitArtifacts(game: MwlCompiledGame, options: MwlEmitOptions = {
  *
  * @example
  * ```ts
- * import { compileAndEmitSources } from '@datamoc/mw_games/mwl';
+ * import { compileAndEmitSources } from '@datamoc/mwg/mwl';
  *
  * const artifacts = compileAndEmitSources([{ file: 'a.mwl', source: "[{ tag: 'game', schema: 0.1 }]" }]);
  * console.log(artifacts.length); // 3

@@ -64,7 +64,7 @@ export interface TickEvent {
  *
  * @example
  * ```ts
- * import { LockstepClient } from '@datamoc/mw_games/core';
+ * import { LockstepClient } from '@datamoc/mwg/core';
  *
  * const client = new LockstepClient({ url: 'wss://example.com/room/1' });
  * client.onTick.add(({ tick, inputs }) => console.log('tick', tick, inputs));

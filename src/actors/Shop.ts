@@ -10,7 +10,7 @@ import type { Inventory } from './Inventory.ts';
  *
  * @example
  * ```ts
- * import { buy, sell, StatBlock, Inventory, type ShopOptions } from '@datamoc/mw_games/actors';
+ * import { buy, sell, StatBlock, Inventory, type ShopOptions } from '@datamoc/mwg/actors';
  *
  * const wallet = new StatBlock({ base: { gold: 100 } });
  * const shopStock = new Inventory();

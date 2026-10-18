@@ -34,7 +34,7 @@ export interface HeightSight {
 /**
  * @example
  * ```ts
- * import { FieldOfView, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ * import { FieldOfView, Level, WALL, FLOOR } from '@datamoc/mwg/roguelike';
  *
  * const level = new Level(20, 20, [WALL, FLOOR], 1);
  * const fov = new FieldOfView(level);

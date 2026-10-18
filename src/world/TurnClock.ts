@@ -18,7 +18,7 @@ export interface TimedEffect {
 /**
  * @example
  * ```ts
- * import { TurnClock } from '@datamoc/mw_games/world';
+ * import { TurnClock } from '@datamoc/mwg/world';
  *
  * const clock = new TurnClock();
  * const poisonId = clock.add({

@@ -16,7 +16,7 @@ import { NEIGHBOURS4 } from './Grid.ts';
  *
  * @example
  * ```ts
- * import { Blob } from '@datamoc/mw_games/core';
+ * import { Blob } from '@datamoc/mwg/core';
  *
  * const fire = new Blob(20, 20);
  * fire.seed(5, 5, 10); // a fireball lands

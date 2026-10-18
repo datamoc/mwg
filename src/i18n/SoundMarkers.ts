@@ -22,7 +22,7 @@ const SOUND_MARKER = /\{sound:([^{}\r\n]+)\}/g;
  *
  * @example
  * ```ts
- * import { parseSoundMarkers } from '@datamoc/mw_games/i18n';
+ * import { parseSoundMarkers } from '@datamoc/mwg/i18n';
  *
  * parseSoundMarkers('Strike! {sound:hit.wav}');
  * // { text: 'Strike! ', cues: [{ path: 'hit.wav', index: 8 }] }
@@ -52,7 +52,7 @@ export function parseSoundMarkers(source: string): ParsedSoundText {
  *
  * @example
  * ```ts
- * import { stripSoundMarkers } from '@datamoc/mw_games/i18n';
+ * import { stripSoundMarkers } from '@datamoc/mwg/i18n';
  *
  * stripSoundMarkers('Strike! {sound:hit.wav}'); // 'Strike! '
  * ```

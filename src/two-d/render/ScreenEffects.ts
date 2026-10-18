@@ -40,7 +40,7 @@ export interface ScreenEffectStep {
  *
  * @example
  * ```ts
- * import { ScreenEffects } from '@datamoc/mw_games/two-d/render';
+ * import { ScreenEffects } from '@datamoc/mwg/two-d/render';
  *
  * const effects = new ScreenEffects({ width: 640, height: 360 });
  * // add effects last: game.stage.addChild(effects);

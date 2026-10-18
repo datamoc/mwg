@@ -20,7 +20,7 @@ import { HookRegistry } from '../core/Hooks.ts';
  *
  * @example
  * ```ts
- * import { BattleHooks } from '@datamoc/mw_games/battle';
+ * import { BattleHooks } from '@datamoc/mwg/battle';
  *
  * const hooks = new BattleHooks<{ name: string }>();
  * const paralysis = {};

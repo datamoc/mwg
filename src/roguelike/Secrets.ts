@@ -17,7 +17,7 @@ import type { Level } from './Level.ts';
  *
  * @example
  * ```ts
- * import { Secrets, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ * import { Secrets, Level, WALL, FLOOR } from '@datamoc/mwg/roguelike';
  *
  * const level = new Level(20, 20, [WALL, FLOOR], 1);
  * const secrets = new Secrets(level);

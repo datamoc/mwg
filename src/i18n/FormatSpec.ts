@@ -22,7 +22,7 @@
  *
  * @example
  * ```ts
- * import { formatSpec, tokenizeMessage, diffPlaceholders } from '@datamoc/mw_games/i18n';
+ * import { formatSpec, tokenizeMessage, diffPlaceholders } from '@datamoc/mwg/i18n';
  *
  * formatSpec(7, '03d'); // '007'
  * formatSpec(0.125, '.1%'); // '12.5%'

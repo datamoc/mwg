@@ -15,7 +15,7 @@ import type { TypeMatrix } from './TypeMatrix.ts';
  *
  * @example
  * ```ts
- * import { chooseMove, chooseSwitch, TypeMatrix } from '@datamoc/mw_games/battle';
+ * import { chooseMove, chooseSwitch, TypeMatrix } from '@datamoc/mwg/battle';
  *
  * const matrix = new TypeMatrix();
  * matrix.set('fire', 'grass', 2);

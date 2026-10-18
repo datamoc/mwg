@@ -6,7 +6,7 @@ export type ActorAnimationState = 'idle' | 'move' | 'action';
 /**
  * @example
  * ```ts
- * import type { ActorAnimatorOptions } from '@datamoc/mw_games/two-d/render';
+ * import type { ActorAnimatorOptions } from '@datamoc/mwg/two-d/render';
  *
  * const options: ActorAnimatorOptions = {
  * 	animationName: (state, facing) => `${state}-${facing}`,
@@ -48,7 +48,7 @@ export interface ActorAnimatorOptions {
  *
  * @example
  * ```ts
- * import { ActorAnimator, AnimatedSprite, SpriteSheet } from '@datamoc/mw_games/two-d/render';
+ * import { ActorAnimator, AnimatedSprite, SpriteSheet } from '@datamoc/mwg/two-d/render';
  *
  * declare const sheet: SpriteSheet;
  *

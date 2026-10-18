@@ -25,8 +25,8 @@ export interface FreeMoverOptions {
  *
  * @example
  * ```ts
- * import { FreeMover } from '@datamoc/mw_games/rpg';
- * import type { MovableSprite } from '@datamoc/mw_games/rpg';
+ * import { FreeMover } from '@datamoc/mwg/rpg';
+ * import type { MovableSprite } from '@datamoc/mwg/rpg';
  *
  * declare const heroSprite: MovableSprite;
  *

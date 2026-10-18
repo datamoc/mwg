@@ -24,7 +24,7 @@
  *   reducedMotion,
  *   setReducedMotion,
  *   watchReducedMotion,
- * } from '@datamoc/mw_games/core';
+ * } from '@datamoc/mwg/core';
  *
  * console.log(prefersReducedMotion()); // the OS preference
  * console.log(reducedMotion()); // the effective answer, override included
@@ -106,7 +106,7 @@ export function watchReducedMotion(listener: (reduced: boolean) => void): () => 
  *
  * @example
  * ```ts
- * import { Tweener, motionDuration, setReducedMotion } from '@datamoc/mw_games/core';
+ * import { Tweener, motionDuration, setReducedMotion } from '@datamoc/mwg/core';
  *
  * const tweener = new Tweener();
  * const panel = { x: -200, fill: 0 };

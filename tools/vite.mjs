@@ -31,7 +31,7 @@ import { buildArtifactSbom, serialize, shippedFiles } from './sbom.mjs';
  * ```ts
  * // vite.config.ts
  * import { defineConfig } from 'vite';
- * import { mwgPage } from '@datamoc/mw_games/tools/vite';
+ * import { mwgPage } from '@datamoc/mwg/tools/vite';
  *
  * export default defineConfig({ plugins: [mwgPage({ assets: 'assets', singleFile: true })] });
  * ```

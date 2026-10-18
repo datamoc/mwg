@@ -19,7 +19,7 @@ import type { Scene } from './Scene.ts';
  *
  * @example
  * ```ts
- * import { SceneStack, Scene } from '@datamoc/mw_games/core';
+ * import { SceneStack, Scene } from '@datamoc/mwg/core';
  *
  * class DungeonScene extends Scene {
  *   create(): void {}

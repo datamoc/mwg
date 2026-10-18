@@ -73,7 +73,7 @@ export interface SideTurnState {
  *
  * @example
  * ```ts
- * import { SideTurns } from '@datamoc/mw_games/world';
+ * import { SideTurns } from '@datamoc/mwg/world';
  *
  * const turns = new SideTurns({
  *   sides: ['rebels', 'undead'],
@@ -188,7 +188,7 @@ export class SideTurns {
  *
  * @example
  * ```ts
- * import { alignmentBonus } from '@datamoc/mw_games/world';
+ * import { alignmentBonus } from '@datamoc/mwg/world';
  *
  * alignmentBonus('lawful', 25); // 25 - day favours a lawful unit
  * alignmentBonus('chaotic', 25); // -25 - the same day punishes a chaotic one

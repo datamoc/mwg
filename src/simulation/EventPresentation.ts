@@ -50,9 +50,9 @@ export interface EventPresentationOptions<State, Command, Event, A extends Actor
  *
  * @example
  * ```ts
- * import { EventPresentation } from '@datamoc/mw_games/simulation';
- * import type { SimulationRuntime } from '@datamoc/mw_games/simulation';
- * import type { Actor } from '@datamoc/mw_games/roguelike';
+ * import { EventPresentation } from '@datamoc/mwg/simulation';
+ * import type { SimulationRuntime } from '@datamoc/mwg/simulation';
+ * import type { Actor } from '@datamoc/mwg/roguelike';
  *
  * interface Fighter extends Actor {
  *   id: string;

@@ -98,7 +98,7 @@ const LOOP_CONTROLLER = 111;
  *
  * @example
  * ```ts
- * import { parseMidi, scheduleMidi, noteToFrequency, MidiPlayer } from '@datamoc/mw_games/audio';
+ * import { parseMidi, scheduleMidi, noteToFrequency, MidiPlayer } from '@datamoc/mwg/audio';
  *
  * declare const midiBytes: ArrayBuffer;
  *
@@ -270,7 +270,7 @@ function tickToSeconds(map: readonly TempoSegment[], ticksPerQuarter: number, ti
  *
  * @example
  * ```ts
- * import { parseMidi, midiLoopStart } from '@datamoc/mw_games/audio';
+ * import { parseMidi, midiLoopStart } from '@datamoc/mwg/audio';
  *
  * declare const midiBytes: ArrayBuffer;
  *
@@ -379,7 +379,7 @@ export interface TimedMidiMessage {
  *
  * @example
  * ```ts
- * import { timedMidiMessages, type MidiFile } from '@datamoc/mw_games/audio';
+ * import { timedMidiMessages, type MidiFile } from '@datamoc/mwg/audio';
  *
  * declare const file: MidiFile;
  *
@@ -471,7 +471,7 @@ export class MidiPlayer {
 	 *
 	 * @example
 	 * ```ts
-	 * import { MidiPlayer, parseMidi } from '@datamoc/mw_games/audio';
+	 * import { MidiPlayer, parseMidi } from '@datamoc/mwg/audio';
 	 *
 	 * declare const midiBytes: ArrayBuffer;
 	 *

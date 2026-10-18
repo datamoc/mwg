@@ -23,7 +23,7 @@ export interface CellFeatureDef<TContext = unknown> {
 /**
  * @example
  * ```ts
- * import { FeatureLayer } from '@datamoc/mw_games/roguelike';
+ * import { FeatureLayer } from '@datamoc/mwg/roguelike';
  *
  * const features = new FeatureLayer<{ hp: number }>();
  * features.define('trap', {

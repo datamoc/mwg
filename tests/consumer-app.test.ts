@@ -9,20 +9,20 @@ import { publicPathMap } from './helpers/publicPaths.ts';
 /**
  * A genuinely external consumer, not the in-repo examples: those import `mwg` by relative
  * `../../src/...` path, which proves nothing about what a real install looks like. This
- * fixture only ever names `@datamoc/mw_games/...` specifiers - the same public paths
+ * fixture only ever names `@datamoc/mwg/...` specifiers - the same public paths
  * `api-examples.test.ts` already type-checks `@example` fences against - and its own source
  * is scanned for `pixi.js`/`@pixi/*`/`@babylonjs/*` to confirm the doc's acceptance criterion
- * literally: "a non-trivial 2D game can depend on `@datamoc/mw_games` alone, without
+ * literally: "a non-trivial 2D game can depend on `@datamoc/mwg` alone, without
  * installing or importing PixiJS directly."
  */
 const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
 
 const CONSUMER_GAME = `
-import { Game, Scene2D } from '@datamoc/mw_games/two-d';
-import { TintedSprite, SpriteSheet, type Container2D, type TextureRegion } from '@datamoc/mw_games/two-d/render';
-import { NinePatch } from '@datamoc/mw_games/two-d/ui';
-import { EntityRegistry, PresentationQueue, Generator, type EntityId } from '@datamoc/mw_games/core';
-import { SimulationRuntime, Scheduler, type SimulationRuntimeRule, type Actor } from '@datamoc/mw_games/simulation';
+import { Game, Scene2D } from '@datamoc/mwg/two-d';
+import { TintedSprite, SpriteSheet, type Container2D, type TextureRegion } from '@datamoc/mwg/two-d/render';
+import { NinePatch } from '@datamoc/mwg/two-d/ui';
+import { EntityRegistry, PresentationQueue, Generator, type EntityId } from '@datamoc/mwg/core';
+import { SimulationRuntime, Scheduler, type SimulationRuntimeRule, type Actor } from '@datamoc/mwg/simulation';
 
 interface Monster extends Actor { id: EntityId; hp: number }
 type State = { monster: Monster };
@@ -66,7 +66,7 @@ class GameScene extends Scene2D {
 new Game({ extensions: [] }).start(GameScene);
 `;
 
-test('a minimal 2D game compiling only against @datamoc/mw_games public paths never names pixi.js/@babylonjs', () => {
+test('a minimal 2D game compiling only against @datamoc/mwg public paths never names pixi.js/@babylonjs', () => {
 	assert.doesNotMatch(
 		CONSUMER_GAME,
 		/['"](pixi\.js|@pixi\/|@babylonjs\/)/,
@@ -104,9 +104,7 @@ test('a minimal 2D game compiling only against @datamoc/mw_games public paths ne
 			execFileSync('npx', ['tsc', '--noEmit', '-p', tsconfigPath], { cwd: ROOT, stdio: 'pipe', shell: true });
 		} catch (error) {
 			const output = (error as { stdout?: Buffer }).stdout?.toString() ?? String(error);
-			assert.fail(
-				`the minimal consumer game fails to compile against @datamoc/mw_games's public paths:\n${output}`,
-			);
+			assert.fail(`the minimal consumer game fails to compile against @datamoc/mwg's public paths:\n${output}`);
 		}
 	} finally {
 		rmSync(dir, { recursive: true, force: true });

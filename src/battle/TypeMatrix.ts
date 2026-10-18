@@ -5,7 +5,7 @@
  *
  * @example
  * ```ts
- * import { TypeMatrix } from '@datamoc/mw_games/battle';
+ * import { TypeMatrix } from '@datamoc/mwg/battle';
  *
  * const matrix = new TypeMatrix();
  * matrix.set('fire', 'grass', 2); // super effective

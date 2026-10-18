@@ -14,7 +14,7 @@ import { Signal } from './Signal.ts';
  *
  * @example
  * ```ts
- * import { Scene } from '@datamoc/mw_games/core';
+ * import { Scene } from '@datamoc/mwg/core';
  *
  * // a 2D game extends two-d.Scene2D instead, which adds the Pixi display container;
  * // this base is what a renderer-free game (or a Babylon one) extends directly.

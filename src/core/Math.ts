@@ -3,7 +3,7 @@
  *
  * @example
  * ```ts
- * import { clamp } from '@datamoc/mw_games/core';
+ * import { clamp } from '@datamoc/mwg/core';
  *
  * clamp(15, 0, 10); // 10
  * clamp(-5, 0, 10); // 0

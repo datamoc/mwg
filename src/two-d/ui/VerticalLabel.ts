@@ -30,7 +30,7 @@ const DEFAULT_ROTATE = /[A-Za-z0-9]/;
  *
  * @example
  * ```ts
- * import { layoutVertical } from '@datamoc/mw_games/two-d/ui';
+ * import { layoutVertical } from '@datamoc/mwg/two-d/ui';
  *
  * const glyphs = layoutVertical('AB', { lineHeight: 10, columnHeight: 100 });
  * console.log(glyphs[0]); // { char: 'A', x: -5, y: 5, rotate: true } - Latin letters rotate by default
@@ -93,7 +93,7 @@ export interface VerticalLabelOptions {
  *
  * @example
  * ```ts
- * import { VerticalLabel } from '@datamoc/mw_games/two-d/ui';
+ * import { VerticalLabel } from '@datamoc/mwg/two-d/ui';
  *
  * const sign = new VerticalLabel({ text: '出口', columnHeight: 200, size: 24 });
  * sign.x = 400;

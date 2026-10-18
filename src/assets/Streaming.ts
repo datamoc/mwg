@@ -29,7 +29,7 @@ interface Entry extends AssetBundle {
  *
  * @example
  * ```ts
- * import { AssetStream } from '@datamoc/mw_games/assets';
+ * import { AssetStream } from '@datamoc/mwg/assets';
  *
  * const stream = new AssetStream({ budgetBytes: 50_000_000 });
  *

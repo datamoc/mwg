@@ -8,7 +8,7 @@ events, quests, stats and turn order underneath are the same either way.
 Licensed under the [MPL-2.0](LICENSE): games built with `mwg` carry no licence obligation
 of their own; improvements to `mwg`'s own files are shared back.
 
-The canonical npm package is `@datamoc/mw_games`; use that name for installation, imports,
+The canonical npm package is `@datamoc/mwg`; use that name for installation, imports,
 tools and bundled data such as `data/microgm-opt.sf2`. `@datamoc/mwg` remains a compatible
 re-export package for existing projects. The recipes here consistently use the canonical name.
 
@@ -24,7 +24,7 @@ and the [mwg Pixel Dungeon study](https://datamoc.github.io/mwg-pixel-dungeon/).
 > [ROADMAP.md](https://github.com/datamoc/mwg/blob/main/ROADMAP.md) for open work, and
 > [CLOSED.md](https://github.com/datamoc/mwg/blob/main/CLOSED.md) for the full, numbered shipped history.
 > The packaging scaffolding is part of this repository rather than the published package, so a
-> game that installs `@datamoc/mw_games` supplies its own native shell:
+> game that installs `@datamoc/mwg` supplies its own native shell:
 > [tools.md](https://github.com/datamoc/mwg/blob/main/tools.md#packaging-as-a-native-app)
 > carries the recipe.
 >
@@ -103,11 +103,11 @@ for free: a finished game is still a folder you double-click.
 **With a toolchain**, if you already use a bundler:
 
 ```
-npm install @datamoc/mw_games pixi.js
+npm install @datamoc/mwg pixi.js
 ```
 ```ts
-import { Game, Scene } from '@datamoc/mw_games/core';
-import { Sprite } from '@datamoc/mw_games/two-d/render';
+import { Game, Scene } from '@datamoc/mwg/core';
+import { Sprite } from '@datamoc/mwg/two-d/render';
 ```
 
 `pixi.js` is the 2D renderer, and it is an optional peer dependency rather than an installed
@@ -116,22 +116,22 @@ logic modules never downloads it. Name it on the install line when a game draws,
 `@babylonjs/core` is named for 3D.
 
 No npm registry access (an offline machine, a pinned artifact for reproducible builds)?
-`npm pack @datamoc/mw_games` downloads the exact published tarball; install it by path
+`npm pack @datamoc/mwg` downloads the exact published tarball; install it by path
 instead of by name:
 
 ```
-npm install ./datamoc-mw_games-<version>.tgz pixi.js
+npm install ./datamoc-mwg-<version>.tgz pixi.js
 ```
 
 **Without either.** Drop one file next to your page and open it: this path exists because
 the framework's own target is a game you can run by double-clicking it. Download
-`mw_games.global.js` from a [release](https://github.com/datamoc/mwg/releases) (no `npm`,
+`mwg.global.js` from a [release](https://github.com/datamoc/mwg/releases) (no `npm`,
 no `node_modules`, nothing to install):
 
 ```html
-<script src="mw_games.global.js"></script>
+<script src="mwg.global.js"></script>
 <script>
-  const game = new mw_games.Game(document.getElementById('game'));
+  const game = new mwg.Game(document.getElementById('game'));
 </script>
 ```
 
@@ -164,10 +164,10 @@ finds no such tag - the guard against running it against an unbuilt dev template
 The bundle itself still has to already be a classic script (an IIFE or UMD build, not further
 ES module output); this only rewrites the tag pointing at it.
 
-With Vite, none of that is by hand: `@datamoc/mw_games/tools/vite`'s `mwgPage()` plugin sets
+With Vite, none of that is by hand: `@datamoc/mwg/tools/vite`'s `mwgPage()` plugin sets
 the classic-script configuration and, when `vite build` finishes, compiles `assets/`, rewrites
 the tag and precompresses the output (item 381). The same finishing step is `emitPage` from
-`@datamoc/mw_games/tools/emit-page`, or the `mwg-emit` command, for another bundler.
+`@datamoc/mwg/tools/emit-page`, or the `mwg-emit` command, for another bundler.
 `mwgPage({ singleFile: true })` (or `{ singleFile: { compress: true } }`) additionally writes one
 self-contained `standalone.html`. Plain `.ts` tests under `node --test` need a Node with type
 stripping (22.18 or later, or any build with `--experimental-strip-types`); otherwise run them
@@ -192,11 +192,11 @@ treat a save as the player's own editable file, which it is.
 
 `await load(['vehicles/car.svg'], { resolution: 2 })` rasterizes SVG assets at twice
 their logical resolution, keeping them sharp when a camera zooms in. Import `load` from
-`@datamoc/mw_games/assets`. `loadSvgParts(path, { resolution: 2 })` loads top-level SVG
+`@datamoc/mwg/assets`. `loadSvgParts(path, { resolution: 2 })` loads top-level SVG
 groups as textures in their authored stacking order.
 
 Input events live under the `Input` namespace: import `{ Input }` from
-`@datamoc/mw_games/core` and subscribe with `Input.onAction.add(...)`. `onAction` is not a
+`@datamoc/mwg/core` and subscribe with `Input.onAction.add(...)`. `onAction` is not a
 direct core export. `Input.attachPointer` supplies pointer and drag events for mouse and touch.
 
 ## Audio
@@ -223,8 +223,8 @@ trumpet, flute and standard drums in 314 KB. Use it instead of the full bank bel
 `missingProgram: 'synth'` for the remaining instruments. Both banks retain their WTFPL licence.
 
 ```ts
-import { loadBinary, getBinary } from '@datamoc/mw_games/assets';
-import { MusicPlayer, renderMidiToBufferAsync } from '@datamoc/mw_games/audio';
+import { loadBinary, getBinary } from '@datamoc/mwg/assets';
+import { MusicPlayer, renderMidiToBufferAsync } from '@datamoc/mwg/audio';
 
 const player = new MusicPlayer(new AudioContext(), { volume: 0.7 });
 await loadBinary(['music/theme.mid', 'soundfonts/microgm-opt.sf2']);
@@ -468,8 +468,8 @@ a game that never imports `mwg/3d` never downloads Babylon.js. Add them yourself
 (`npm install @babylonjs/core @babylonjs/loaders`) once a game imports 3D support:
 
 ```ts
-import { Engine3D, createTileGrid3D } from '@datamoc/mw_games/3d';
-import { loadModel3D } from '@datamoc/mw_games/3d/models';
+import { Engine3D, createTileGrid3D } from '@datamoc/mwg/3d';
+import { loadModel3D } from '@datamoc/mwg/3d/models';
 ```
 
 `Engine3D` owns a WebGL scene, orbit camera, light, resize handling, and render loop.
@@ -482,7 +482,7 @@ Run `npm run example:3d` for the live example or `npm run benchmark:3d` for its 
 
 ## Headless simulation
 
-`@datamoc/mw_games/simulation` has no rendering or browser imports. It provides two
+`@datamoc/mwg/simulation` has no rendering or browser imports. It provides two
 small runners while games keep their state, commands, rules, and event types:
 
 - `advanceToInput(rules, budget)` runs automatic scheduled actions until an actor needs
@@ -496,7 +496,7 @@ small runners while games keep their state, commands, rules, and event types:
   `processedCommands`; a command need not consume a game turn.
 
 ```ts
-import { runScenario } from '@datamoc/mw_games/simulation';
+import { runScenario } from '@datamoc/mwg/simulation';
 
 const result = runScenario({
   state: { position: 0 },
@@ -579,8 +579,8 @@ real numbers and booleans for scalar values and `_("...")` marking translatable
 strings. It describes game data and commands while `mwg` remains responsible for
 execution, rendering, input, audio, and saves. MWL is a new language, not a WML
 compatibility layer.
-Optional scene and UI composition is available through `@datamoc/mw_games/mwl/presentation`
-(build-time compiler) and `@datamoc/mw_games/two-d/presentation` (Pixi runtime). Compile
+Optional scene and UI composition is available through `@datamoc/mwg/mwl/presentation`
+(build-time compiler) and `@datamoc/mwg/two-d/presentation` (Pixi runtime). Compile
 reusable widgets, responsive layouts, keyed lists, semantic palettes and context overrides
 against a TypeScript binding manifest. The game supplies actions, physics and procedural
 adapters. See [the presentation contract](REFERENCE.md#mwl-presentation) and
@@ -591,7 +591,7 @@ the port-owned WML front end parses them, the adapter converts the supported
 nodes to MWL, and the normal MWL compiler emits the runtime module.
 
 The framework exposes the parser, validator, compiler, runtime, i18n extraction,
-and the hook contract through `@datamoc/mw_games/mwl`. Compile source at build
+and the hook contract through `@datamoc/mwg/mwl`. Compile source at build
 time with:
 
 ```sh
@@ -628,7 +628,7 @@ so this only closes that one gate rather than adding new asset-collection behavi
 A game needing more than `mwl build`'s three standard files - its own extra generated module,
 or a cross-table check this CLI has no flag for - should not look for a flag to add: every
 function that command calls (`compileSources`, `emitArtifacts`, `validateCatalog`,
-`contentReport`) is public from `@datamoc/mw_games/mwl`, so that game's own small Node build
+`contentReport`) is public from `@datamoc/mwg/mwl`, so that game's own small Node build
 script, written against the same library API `tools/mwl.mjs` itself uses, is the extension
 point (item 305).
 
@@ -647,7 +647,7 @@ CSS `url(data:...)` values and HTML `srcset` candidates are handled too, includi
 their density descriptors.
 
 Translation messages are the values marked `_("...")` in the source; the
-extracted catalog matches `@datamoc/mw_games/i18n`. Hooks are referenced as
+extracted catalog matches `@datamoc/mwg/i18n`. Hooks are referenced as
 `type:name`, declared in a manifest, and bundled with esbuild, which a game
 project installs itself (`npm install --save-dev esbuild`). The framework does
 not depend on esbuild, so a game without hooks pays nothing for the feature.

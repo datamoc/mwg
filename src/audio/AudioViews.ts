@@ -13,7 +13,7 @@ export interface WaveformBucket {
  *
  * @example
  * ```ts
- * import { waveformEnvelope } from '@datamoc/mw_games/audio';
+ * import { waveformEnvelope } from '@datamoc/mwg/audio';
  *
  * const view = waveformEnvelope(new Float32Array([0, 1, -1, 0.5]), 2);
  * console.log(view); // [{ min: 0, max: 1 }, { min: -1, max: 0.5 }]
@@ -42,7 +42,7 @@ export function waveformEnvelope(samples: Float32Array, buckets: number): Wavefo
  *
  * @example
  * ```ts
- * import { channelEnvelopes } from '@datamoc/mw_games/audio';
+ * import { channelEnvelopes } from '@datamoc/mwg/audio';
  *
  * const [left] = channelEnvelopes(new Float32Array([1, -1]), new Float32Array([0.5, -0.5]), 1);
  * console.log(left); // [{ min: -1, max: 1 }]
@@ -63,7 +63,7 @@ const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 
  *
  * @example
  * ```ts
- * import { trackerNoteName } from '@datamoc/mw_games/audio';
+ * import { trackerNoteName } from '@datamoc/mwg/audio';
  *
  * console.log(trackerNoteName(60)); // 'C4'
  * console.log(trackerNoteName(61)); // 'C#4'
@@ -89,7 +89,7 @@ export interface TrackerRow {
  *
  * @example
  * ```ts
- * import { trackerPattern, type MidiFile } from '@datamoc/mw_games/audio';
+ * import { trackerPattern, type MidiFile } from '@datamoc/mwg/audio';
  *
  * declare const file: MidiFile;
  *

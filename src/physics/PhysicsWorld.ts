@@ -90,7 +90,7 @@ export interface PhysicsConstraint {
  *
  * @example
  * ```ts
- * import { PhysicsWorld } from '@datamoc/mw_games/physics';
+ * import { PhysicsWorld } from '@datamoc/mwg/physics';
  *
  * const world = new PhysicsWorld();
  * world.addBox(0, 300, 800, 20, { isStatic: true });

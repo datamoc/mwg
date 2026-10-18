@@ -171,7 +171,7 @@ export interface AudioCoreStats {
  *
  * @example
  * ```ts
- * import { AudioCoreHost, StreamChannel, type AudioCore } from '@datamoc/mw_games/audio';
+ * import { AudioCoreHost, StreamChannel, type AudioCore } from '@datamoc/mwg/audio';
  *
  * declare const context: AudioContext;
  *

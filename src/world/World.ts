@@ -20,7 +20,7 @@ interface MapDefinition<M> {
  *
  * @example
  * ```ts
- * import { World } from '@datamoc/mw_games/world';
+ * import { World } from '@datamoc/mwg/world';
  *
  * interface MyMap { name: string }
  *

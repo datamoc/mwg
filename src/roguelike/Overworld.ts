@@ -25,7 +25,7 @@ import type { LevelShape } from './Level.ts';
  *
  * @example
  * ```ts
- * import { generateOverworld } from '@datamoc/mw_games/roguelike';
+ * import { generateOverworld } from '@datamoc/mwg/roguelike';
  *
  * const realm = generateOverworld({ width: 96, height: 64, seed: 42 });
  * console.log(realm.terrain[0]); // 'water' | 'plains' | 'forest' | ...

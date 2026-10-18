@@ -34,7 +34,7 @@ export interface LuaAIOptions extends PyroeisScriptHostOptions {
  *
  * @example
  * ```ts
- * import { LuaAI } from '@datamoc/mw_games/ai/lua';
+ * import { LuaAI } from '@datamoc/mwg/ai/lua';
  *
  * const ai = new LuaAI({ seed: 7 });
  * ai.register({ id: 'guard', source: 'return { type = "wait" }' });
@@ -254,7 +254,7 @@ function clone<T>(value: T): T {
  *
  * @example
  * ```ts
- * import { createLuaAI } from '@datamoc/mw_games/ai/lua';
+ * import { createLuaAI } from '@datamoc/mwg/ai/lua';
  *
  * const ai = createLuaAI({ seed: 7 });
  * ai.register({ id: 'guard', source: 'return { type = "wait" }' });

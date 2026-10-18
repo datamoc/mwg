@@ -33,7 +33,7 @@ export type MidiSynthRequest = string | MidiSynthFactory | readonly (string | Mi
  *
  * @example
  * ```ts
- * import { INTERNAL_MIDI_ENGINES } from '@datamoc/mw_games/audio';
+ * import { INTERNAL_MIDI_ENGINES } from '@datamoc/mwg/audio';
  *
  * console.log(INTERNAL_MIDI_ENGINES.includes('builtin')); // true
  * ```
@@ -56,7 +56,7 @@ export interface MidiSynthFallback {
  *
  * @example
  * ```ts
- * import { onMidiSynthFallback } from '@datamoc/mw_games/audio';
+ * import { onMidiSynthFallback } from '@datamoc/mwg/audio';
  *
  * onMidiSynthFallback.add(({ requested, used }) => console.log(requested, '->', used));
  * ```
@@ -71,7 +71,7 @@ const engines = new Map<string, MidiSynthFactory>();
  *
  * @example
  * ```ts
- * import { registerMidiSynth, type MidiSynth } from '@datamoc/mw_games/audio';
+ * import { registerMidiSynth, type MidiSynth } from '@datamoc/mwg/audio';
  *
  * declare function createMt32(sampleRate: number): MidiSynth;
  *
@@ -88,7 +88,7 @@ export function registerMidiSynth(name: string, factory: MidiSynthFactory): void
  *
  * @example
  * ```ts
- * import { unregisterMidiSynth } from '@datamoc/mw_games/audio';
+ * import { unregisterMidiSynth } from '@datamoc/mwg/audio';
  *
  * console.log(unregisterMidiSynth('retro:mt32')); // true when it was registered
  * ```
@@ -102,7 +102,7 @@ export function unregisterMidiSynth(name: string): boolean {
  *
  * @example
  * ```ts
- * import { midiSynthNames } from '@datamoc/mw_games/audio';
+ * import { midiSynthNames } from '@datamoc/mwg/audio';
  *
  * console.log(midiSynthNames()); // ['gm-soundfont', 'builtin', ...registered engines]
  * ```
@@ -127,7 +127,7 @@ export interface ResolvedMidiSynth {
  *
  * @example
  * ```ts
- * import { resolveMidiSynth } from '@datamoc/mw_games/audio';
+ * import { resolveMidiSynth } from '@datamoc/mwg/audio';
  *
  * const { synth, name } = resolveMidiSynth(['retro:mt32', 'retro:opl2'], 44100, 'gm-soundfont');
  * console.log(name, synth === null ? 'internal path' : synth.sampleRate);
@@ -210,7 +210,7 @@ const DEFAULT_BLOCK = 1024;
  *
  * @example
  * ```ts
- * import { parseMidi, renderMidiThroughSynth, type MidiSynth } from '@datamoc/mw_games/audio';
+ * import { parseMidi, renderMidiThroughSynth, type MidiSynth } from '@datamoc/mwg/audio';
  *
  * declare const synth: MidiSynth;
  * declare const midiBytes: ArrayBuffer;

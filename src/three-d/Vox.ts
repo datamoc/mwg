@@ -35,7 +35,7 @@ export interface VoxModel {
  *
  * @example
  * ```ts
- * import { parseVox } from '@datamoc/mw_games/3d';
+ * import { parseVox } from '@datamoc/mwg/3d';
  *
  * declare const voxBytes: ArrayBuffer;
  *

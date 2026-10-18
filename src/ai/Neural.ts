@@ -140,7 +140,7 @@ function inferenceBatch(source: string, model: NeuralModel, inputs: readonly (re
  *
  * @example
  * ```ts
- * import { NeuralPolicy, JavaScriptAI } from '@datamoc/mw_games/ai';
+ * import { NeuralPolicy, JavaScriptAI } from '@datamoc/mwg/ai';
  * const policy = new NeuralPolicy({ version: 1, observationVersion: 'v1', layers: [
  *   { inputSize: 1, outputSize: 2, weights: [-1, 1], biases: [0, 0] },
  * ] });

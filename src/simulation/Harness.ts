@@ -19,7 +19,7 @@ export interface HeadlessScenarioResult<State, Event> extends ScenarioResult<Sta
  * Execute a deterministic scenario without a renderer, returning state, outputs and RNG state for CI.
  * @example
  * ```ts
- * import { runHeadlessScenario } from '@datamoc/mw_games/simulation';
+ * import { runHeadlessScenario } from '@datamoc/mwg/simulation';
  * const result = runHeadlessScenario({
  *   seed: 7, initialState: { score: 0 }, commands: [1],
  *   step: (state, command) => ({ state: { score: state.score + command }, events: [], status: 'ready' }),

@@ -36,7 +36,7 @@ export interface RadioGroupOptions {
  *
  * @example
  * ```ts
- * import { RadioGroup } from '@datamoc/mw_games/two-d/ui';
+ * import { RadioGroup } from '@datamoc/mwg/two-d/ui';
  *
  * const side = new RadioGroup({ options: [{ text: 'White' }, { text: 'Black' }] });
  * side.onChange.add((index) => console.log('side', index));

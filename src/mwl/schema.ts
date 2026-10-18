@@ -7,7 +7,7 @@ export type MwlValueType = 'string' | 'id' | 'number' | 'integer' | 'boolean' | 
  *
  * @example
  * ```ts
- * import { MWL_SCHEMA_01, MWL_SCHEMA_10 } from '@datamoc/mw_games/mwl';
+ * import { MWL_SCHEMA_01, MWL_SCHEMA_10 } from '@datamoc/mwg/mwl';
  *
  * console.log(MWL_SCHEMA_01, MWL_SCHEMA_10); // '0.1', '1.0'
  * ```
@@ -33,7 +33,7 @@ export interface MwlTableColumn {
  *
  * @example
  * ```ts
- * import { parseTableColumns } from '@datamoc/mw_games/mwl';
+ * import { parseTableColumns } from '@datamoc/mwg/mwl';
  *
  * console.log(parseTableColumns('id:string|cost:number'));
  * ```
@@ -85,7 +85,7 @@ export interface MwlTagSchema {
  *
  * @example
  * ```ts
- * import { schema01 } from '@datamoc/mw_games/mwl';
+ * import { schema01 } from '@datamoc/mwg/mwl';
  *
  * console.log(Object.keys(schema01).includes('game')); // true
  * ```
@@ -723,7 +723,7 @@ export const schema01: Readonly<Record<string, MwlTagSchema>> = {
  *
  * @example
  * ```ts
- * import { MWL_SCHEMA_10, schema10 } from '@datamoc/mw_games/mwl';
+ * import { MWL_SCHEMA_10, schema10 } from '@datamoc/mwg/mwl';
  *
  * console.log(MWL_SCHEMA_10, Object.hasOwn(schema10, 'game')); // '1.0', true
  * ```
@@ -743,7 +743,7 @@ export const schema10: Readonly<Record<string, MwlTagSchema>> = {
  *
  * @example
  * ```ts
- * import { parse, validate } from '@datamoc/mw_games/mwl';
+ * import { parse, validate } from '@datamoc/mwg/mwl';
  *
  * console.log(validate(parse("[{ tag: 'game', schema: 0.1 }]"))); // []
  * ```
@@ -941,7 +941,7 @@ function validateTables(nodes: readonly MwlNode[], diagnostics: MwlDiagnostic[])
  *
  * @example
  * ```ts
- * import { coerceTableValue } from '@datamoc/mw_games/mwl';
+ * import { coerceTableValue } from '@datamoc/mwg/mwl';
  *
  * console.log(coerceTableValue('3', 'number', 'cost')); // 3
  * ```
@@ -970,7 +970,7 @@ export function coerceTableValue(
  *
  * @example
  * ```ts
- * import { isMwlId } from '@datamoc/mw_games/mwl';
+ * import { isMwlId } from '@datamoc/mwg/mwl';
  *
  * console.log(isMwlId('party[0].name')); // true - a variable path is an `id`
  * console.log(isMwlId('0bad')); // false - it does not start like an identifier
@@ -987,7 +987,7 @@ export function isMwlId(value: string): boolean {
  *
  * @example
  * ```ts
- * import { validAttributeValue } from '@datamoc/mw_games/mwl';
+ * import { validAttributeValue } from '@datamoc/mwg/mwl';
  *
  * console.log(validAttributeValue('yes', 'boolean')); // true
  * ```
@@ -1009,7 +1009,7 @@ export function validAttributeValue(value: string, type: MwlAttributeType): bool
  *
  * @example
  * ```ts
- * import { attributeTypeDescription } from '@datamoc/mw_games/mwl';
+ * import { attributeTypeDescription } from '@datamoc/mwg/mwl';
  *
  * console.log(attributeTypeDescription(['literal', 'number'])); // 'one of literal, number'
  * ```

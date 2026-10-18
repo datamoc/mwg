@@ -67,8 +67,8 @@ interface Row {
  *
  * @example
  * ```ts
- * import { Settings } from '@datamoc/mw_games/core';
- * import { SettingsScreen } from '@datamoc/mw_games/two-d/ui';
+ * import { Settings } from '@datamoc/mwg/core';
+ * import { SettingsScreen } from '@datamoc/mwg/two-d/ui';
  *
  * const settings = new Settings({ namespace: 'my-game' });
  * const screen = new SettingsScreen({

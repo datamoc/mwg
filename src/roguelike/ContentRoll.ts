@@ -47,7 +47,7 @@ export interface ContentRollResult<T> {
  *
  * @example
  * ```ts
- * import { rollRoster } from '@datamoc/mw_games/roguelike';
+ * import { rollRoster } from '@datamoc/mwg/roguelike';
  *
  * const { roster, trace } = rollRoster(
  *   [{ value: 'rat' }, { value: 'rat', alternative: { value: 'albino rat', chance: 0.02 } }],

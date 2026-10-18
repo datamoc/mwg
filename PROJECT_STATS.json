@@ -1,6 +1,6 @@
 {
 	"project": "mwg",
-	"package": "@datamoc/mw_games",
+	"package": "@datamoc/mwg",
 	"version": "0.44.2",
 	"releaseDate": "2026-10-17",
 	"source": {
@@ -112,7 +112,7 @@
 	},
 	"tests": {
 		"files": 361,
-		"lines": 50215,
+		"lines": 50213,
 		"cases": 3284
 	},
 	"tools": {
@@ -163,9 +163,9 @@
 		"declarationFiles": 386
 	},
 	"bundle": {
-		"globalRaw": 1383913,
-		"globalGzip": 416156,
-		"distRaw": 5253213
+		"globalRaw": 1383893,
+		"globalGzip": 416152,
+		"distRaw": 5245008
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

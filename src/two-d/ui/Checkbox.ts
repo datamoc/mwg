@@ -18,7 +18,7 @@ export interface CheckboxOptions {
  *
  * @example
  * ```ts
- * import { Checkbox } from '@datamoc/mw_games/two-d/ui';
+ * import { Checkbox } from '@datamoc/mwg/two-d/ui';
  *
  * const fullscreen = new Checkbox({ checked: true });
  * fullscreen.onChange.add((on) => console.log('fullscreen', on));

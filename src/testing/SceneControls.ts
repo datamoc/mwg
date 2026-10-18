@@ -12,7 +12,7 @@
  *
  * @example
  * ```ts
- * import { createSceneControls } from '@datamoc/mw_games/testing';
+ * import { createSceneControls } from '@datamoc/mwg/testing';
  *
  * const controls = createSceneControls();
  * const enterScenario = (name: string) => {}; // the game's own private scene flow

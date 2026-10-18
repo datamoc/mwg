@@ -36,8 +36,8 @@ export interface ScenarioResult<State, Event> extends SimulationStep<State, Even
  *
  * @example
  * ```ts
- * import { runScenario, type SimulationRule } from '@datamoc/mw_games/simulation';
- * import { Generator } from '@datamoc/mw_games/core';
+ * import { runScenario, type SimulationRule } from '@datamoc/mwg/simulation';
+ * import { Generator } from '@datamoc/mwg/core';
  *
  * type State = { hp: number };
  * const step: SimulationRule<State, 'attack', { damage: number }, Generator> = (state, _cmd, rng) => {

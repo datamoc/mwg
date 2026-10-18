@@ -50,7 +50,7 @@ export interface StatBlockOptions {
  *
  * @example
  * ```ts
- * import { composeModifiers } from '@datamoc/mw_games/actors';
+ * import { composeModifiers } from '@datamoc/mwg/actors';
  *
  * const attack = composeModifiers(10, [{ stat: 'attack', op: 'add', value: 2 }]);
  * console.log(attack); // 12

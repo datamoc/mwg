@@ -48,7 +48,7 @@ export interface TabbedListOptions<T> {
  *
  * @example
  * ```ts
- * import { TabbedList } from '@datamoc/mw_games/two-d/ui';
+ * import { TabbedList } from '@datamoc/mwg/two-d/ui';
  *
  * const items = [
  *   { name: 'Sword', kind: 'weapon' },

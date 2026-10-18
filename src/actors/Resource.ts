@@ -11,7 +11,7 @@ import type { Charges } from './Charges.ts';
  *
  * @example
  * ```ts
- * import { canAfford, spend, refund, convertToCharges, StatBlock, Charges } from '@datamoc/mw_games/actors';
+ * import { canAfford, spend, refund, convertToCharges, StatBlock, Charges } from '@datamoc/mwg/actors';
  *
  * const stats = new StatBlock({ base: { mana: 30 } });
  * const cost = { stat: 'mana', amount: 10 };

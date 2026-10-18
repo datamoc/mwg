@@ -50,8 +50,8 @@ const PIECE_VALUE: Record<ChessPiece['kind'], number> = {
  *
  * @example
  * ```ts
- * import { chooseMove } from '@datamoc/mw_games/board';
- * import { startingChess, applyMove } from '@datamoc/mw_games/board';
+ * import { chooseMove } from '@datamoc/mwg/board';
+ * import { startingChess, applyMove } from '@datamoc/mwg/board';
  *
  * const state = startingChess();
  * const move = chooseMove(state, { depth: 2 });
@@ -68,7 +68,7 @@ export function chooseMove(state: ChessState, options: ChessEngineOptions = {}):
  *
  * @example
  * ```ts
- * import { search, startingChess } from '@datamoc/mw_games/board';
+ * import { search, startingChess } from '@datamoc/mwg/board';
  *
  * const result = search(startingChess(), { depth: 2 });
  * console.log(result.move !== null); // true - the opening position always has legal moves
@@ -109,7 +109,7 @@ export interface ChessEngineAsyncOptions {
  *
  * @example
  * ```ts
- * import { searchAsync, startingChess } from '@datamoc/mw_games/board';
+ * import { searchAsync, startingChess } from '@datamoc/mwg/board';
  *
  * const result = await searchAsync(startingChess(), { depth: 2 });
  * console.log(result.move !== null); // true - the opening position always has legal moves
@@ -561,8 +561,8 @@ function chessSubtreeScore(
  *
  * @example
  * ```ts
- * import { chessGame, startingChess } from '@datamoc/mw_games/board';
- * import { alphaBetaSearch } from '@datamoc/mw_games/ai';
+ * import { chessGame, startingChess } from '@datamoc/mwg/board';
+ * import { alphaBetaSearch } from '@datamoc/mwg/ai';
  *
  * const result = alphaBetaSearch(chessGame, startingChess(), { depth: 2 });
  * console.log(result.move !== null); // true

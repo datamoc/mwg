@@ -46,7 +46,7 @@ import * as headless from '../src/headless/index.ts';
  *    lives in, since tracing "which file declares this re-exported name" is exactly the kind
  *    of fragile bookkeeping this project avoids elsewhere.
  * 2. **Compilation** - every `@example` fence is written to its own file and type-checked
- *    with `tsc`, importing through the *public* `@datamoc/mw_games/...` paths a real user
+ *    with `tsc`, importing through the *public* `@datamoc/mwg/...` paths a real user
  *    would write, path-mapped onto `src/` rather than a build. The mapping is derived from
  *    `package.json`'s own `exports` field (`./dist/X/index.js` -> `../src/X/index.ts`), so a
  *    module rename updates the check automatically instead of leaving it to point at a path

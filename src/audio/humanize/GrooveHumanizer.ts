@@ -15,7 +15,7 @@ import { applyHumanization, type HumanizationOptions, type MidiHumanizerEngine }
  *
  * @example
  * ```ts
- * import { parseMidi, GrooveHumanizer, type GrooveTemplate } from '@datamoc/mw_games/audio';
+ * import { parseMidi, GrooveHumanizer, type GrooveTemplate } from '@datamoc/mwg/audio';
  *
  * declare const midiBytes: ArrayBuffer;
  * declare const template: GrooveTemplate;

@@ -326,7 +326,7 @@ function presetIndexOf(
  *
  * @example
  * ```ts
- * import { parseSoundFont, parseMidi, renderMidiToBuffer } from '@datamoc/mw_games/audio';
+ * import { parseSoundFont, parseMidi, renderMidiToBuffer } from '@datamoc/mwg/audio';
  *
  * declare const soundfontBytes: ArrayBuffer;
  * declare const midiBytes: ArrayBuffer;
@@ -449,7 +449,7 @@ export function parseSoundFont(data: ArrayBuffer | ArrayBufferView, options: Sou
  *
  * @example
  * ```ts
- * import { parseMidi, collectSoundFontUsage } from '@datamoc/mw_games/audio';
+ * import { parseMidi, collectSoundFontUsage } from '@datamoc/mwg/audio';
  *
  * declare const midiBytes: ArrayBuffer;
  *
@@ -482,7 +482,7 @@ export function collectSoundFontUsage(files: readonly MidiFile[]): SoundFontProg
  *
  * @example
  * ```ts
- * import { missingSoundFontPrograms, parseMidi, collectSoundFontUsage } from '@datamoc/mw_games/audio';
+ * import { missingSoundFontPrograms, parseMidi, collectSoundFontUsage } from '@datamoc/mwg/audio';
  *
  * declare const soundfontBytes: ArrayBuffer;
  * declare const midiBytes: ArrayBuffer;
@@ -566,7 +566,7 @@ function listBytes(type: string, subs: Uint8Array[]): Uint8Array {
  *
  * @example
  * ```ts
- * import { mergeSoundFonts, parseSoundFont } from '@datamoc/mw_games/audio';
+ * import { mergeSoundFonts, parseSoundFont } from '@datamoc/mwg/audio';
  *
  * declare const pianoBytes: ArrayBuffer;
  * declare const drumsBytes: ArrayBuffer;
@@ -696,7 +696,7 @@ function distinctPresets(tables: SoundTables): number[] {
  *
  * @example
  * ```ts
- * import { decodeSoundFont, webAudioSampleDecoder } from '@datamoc/mw_games/audio';
+ * import { decodeSoundFont, webAudioSampleDecoder } from '@datamoc/mwg/audio';
  *
  * declare const sf3Bytes: ArrayBuffer;
  *
@@ -776,7 +776,7 @@ export async function decodeSoundFont(
  *
  * @example
  * ```ts
- * import { loadSoundFont, parseMidi, renderMidiToBuffer } from '@datamoc/mw_games/audio';
+ * import { loadSoundFont, parseMidi, renderMidiToBuffer } from '@datamoc/mwg/audio';
  *
  * declare const fontBytes: ArrayBuffer;
  * declare const midiBytes: ArrayBuffer;
@@ -806,7 +806,7 @@ export async function loadSoundFont(
  *
  * @example
  * ```ts
- * import { parseMidi, collectSoundFontUsage, subsetSoundFont } from '@datamoc/mw_games/audio';
+ * import { parseMidi, collectSoundFontUsage, subsetSoundFont } from '@datamoc/mwg/audio';
  *
  * declare const midiBytes: ArrayBuffer;
  * declare const soundfontBytes: ArrayBuffer;

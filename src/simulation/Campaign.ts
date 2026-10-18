@@ -30,7 +30,7 @@ export interface CampaignSnapshot<State extends StateValue, Result extends State
  *
  * @example
  * ```ts
- * import { Campaign } from '@datamoc/mw_games/simulation';
+ * import { Campaign } from '@datamoc/mwg/simulation';
  * const campaign = new Campaign({
  *   levels: [{ id: 'intro', run: (state) => ({ outcome: 'completed', state, next: null }) }],
  *   start: 'intro', state: { gold: 0 },

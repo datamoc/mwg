@@ -110,8 +110,8 @@ test('emitTableTypes names one interface and one accessor per table', () => {
 		output,
 		[
 			'// Generated from MWL tables - do not edit by hand.',
-			`import { typedRows } from '@datamoc/mw_games/mwl';`,
-			`import type { MwlContentCatalog } from '@datamoc/mw_games/mwl';`,
+			`import { typedRows } from '@datamoc/mwg/mwl';`,
+			`import type { MwlContentCatalog } from '@datamoc/mwg/mwl';`,
 			'',
 			'const RosterColumns = [{ name: "kind", type: "string" }] as const;',
 			'export interface RosterRow {',

@@ -61,8 +61,8 @@ export interface BeamOptions {
  *
  * @example
  * ```ts
- * import { Beam } from '@datamoc/mw_games/two-d/render';
- * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { Beam } from '@datamoc/mwg/two-d/render';
+ * import type { Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const rayTexture: Texture2D;
  *
@@ -211,8 +211,8 @@ export class Beam extends Container {
  *
  * @example
  * ```ts
- * import { Beams } from '@datamoc/mw_games/two-d/render';
- * import type { Container2D } from '@datamoc/mw_games/two-d/render';
+ * import { Beams } from '@datamoc/mwg/two-d/render';
+ * import type { Container2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const layer: Container2D;
  *

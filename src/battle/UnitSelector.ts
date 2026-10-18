@@ -31,7 +31,7 @@ export type SelectorStage = 'attacker' | 'target';
  *
  * @example
  * ```ts
- * import { UnitSelector } from '@datamoc/mw_games/battle';
+ * import { UnitSelector } from '@datamoc/mwg/battle';
  *
  * const selector = new UnitSelector({
  *   units: [{ id: 'hero', side: '1' }, { id: 'rat', side: '2' }],

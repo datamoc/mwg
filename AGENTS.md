@@ -7,7 +7,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 ```
 npm run check          # tsc --noEmit, typechecks src/examples/tools/tests
 npm test                # node --test "tests/**/*.test.ts"; runs a single file: node --test tests/random.test.ts
-npm run build           # library build: tsc emit + the standalone mw_games.global.js IIFE
+npm run build           # library build: tsc emit + the standalone mwg.global.js IIFE
 npm run audit           # npm dependency audit, fails for high or critical advisories
 npm run ci:status       # waits for every workflow run of HEAD and fails if any of them did
 npm run format:check    # prettier over the tree; CI gate, no lint rules behind it
@@ -133,8 +133,8 @@ yourself first.
 ## Architecture
 
 `src/` is organized into modules, each with its own `index.ts` barrel, re-exported from the root
-`src/index.ts` (which is also what the standalone `mw_games.global.js` build exposes as
-`window.mw_games`). `three-d` is the one exception, kept off the root barrel so a 2D game never pays
+`src/index.ts` (which is also what the standalone `mwg.global.js` build exposes as
+`window.mwg`). `three-d` is the one exception, kept off the root barrel so a 2D game never pays
 for it, and `ui` and `stage` live under `two-d` rather than at the root:
 
 - **`core`** - `Scene` (lifecycle only: `create`/`update`/`resize`/`onSuspend`/`onResume`/
@@ -201,7 +201,7 @@ for it, and `ui` and `stage` live under `two-d` rather than at the root:
 - **`threads`** - `spawn` runs a self-contained function on a worker thread: a blob worker
   under the shipped `file://` CSP in the browser, `node:worker_threads` in Node, one worker
   per task, transferable results, failures that reject instead of hanging. Off the root
-  barrel: `@datamoc/mw_games/threads`.
+  barrel: `@datamoc/mwg/threads`.
 - **`three-d`** - the optional Babylon.js path, kept off the root barrel so a 2D game never
   pays for it.
 - **`core`** also has `SaveSystem` - named, versioned save slots over `localStorage` (with
@@ -241,7 +241,7 @@ double-clicking a local HTML file, with no server:
 `tests/**/*.test.ts` run directly under `node --test`, no framework, importing `.ts` sources
 via the extension-rewriting above. Keep new tests dependency-free in the same way.
 The doubles every test used to rewrite for itself are `src/testing`, shipped to games as
-`@datamoc/mw_games/testing`: `memoryStorage`, `fakeAudio`/`fakeAudioWithEnded`, `FakeSocket`,
+`@datamoc/mwg/testing`: `memoryStorage`, `fakeAudio`/`fakeAudioWithEnded`, `FakeSocket`,
 `fakeFetch` and `fakeGamepad`. Import those (tests reach them at `../src/testing/index.ts`)
 instead of writing another copy.
 
@@ -427,12 +427,12 @@ because nothing in this repo exercises that page's instructions from a clean sta
 When the tutorial changes, actually follow it, from scratch, in an empty directory outside
 this repo, once for each of the two paths it documents:
 
-- **With npm**: `npm install @datamoc/mw_games vite` and the bundler-based steps. Also try
+- **With npm**: `npm install @datamoc/mwg vite` and the bundler-based steps. Also try
   the `.tgz` variant it mentions as a fallback (`npm pack` in this repo, then
-  `npm install ./datamoc-mw_games-<version>.tgz` by path), closer to what a real install
+  `npm install ./datamoc-mwg-<version>.tgz` by path), closer to what a real install
   sees than linking straight to `dist/`, and should reach the exact same
-  `node_modules/@datamoc/mw_games/` either way.
-- **Without npm**: just `mw_games.global.js` (built here, or downloaded from a release) and
+  `node_modules/@datamoc/mwg/` either way.
+- **Without npm**: just `mwg.global.js` (built here, or downloaded from a release) and
   a `<script>` tag, no install step at all.
 
 Confirm both actually reach a working `file://` page at the end, not only that the dev-time

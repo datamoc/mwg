@@ -21,7 +21,7 @@ export interface SoundOptions {
  *
  * @example
  * ```ts
- * import { Sound } from '@datamoc/mw_games/audio';
+ * import { Sound } from '@datamoc/mwg/audio';
  *
  * const hit = new Sound('sounds/hit.mp3', { poolSize: 6, caption: 'a sword strikes' });
  * hit.play(); // safe to call several times in the same second

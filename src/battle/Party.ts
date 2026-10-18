@@ -5,7 +5,7 @@
  *
  * @example
  * ```ts
- * import { Party, Creature, type Species } from '@datamoc/mw_games/battle';
+ * import { Party, Creature, type Species } from '@datamoc/mwg/battle';
  *
  * const species: Species = { id: 'fireling', types: ['fire'], baseStats: { attack: 10 } };
  * const party = new Party<Creature>(3); // 3 active slots

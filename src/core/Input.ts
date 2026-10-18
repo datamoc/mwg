@@ -13,7 +13,7 @@ import { Signal } from './Signal.ts';
  *
  * @example
  * ```ts
- * import { Input } from '@datamoc/mw_games/core';
+ * import { Input } from '@datamoc/mwg/core';
  *
  * Input.bind('confirm', ['Enter', 'Space']);
  * Input.bind('left', ['ArrowLeft', 'KeyA']);
@@ -603,7 +603,7 @@ export interface PointerTracker {
  *
  * @example
  * ```ts
- * import { Input } from '@datamoc/mw_games/core';
+ * import { Input } from '@datamoc/mwg/core';
  *
  * const target = new EventTarget(); // the game's canvas in a browser
  * const pointer = Input.attachPointer(target, { dragThreshold: 6 });

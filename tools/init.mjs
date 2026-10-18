@@ -33,7 +33,7 @@ export function initFiles(name) {
 						test: 'node --test',
 						'hooks:install': 'git config core.hooksPath .githooks',
 					},
-					dependencies: { '@datamoc/mw_games': `^${PACKAGE_VERSION}`, 'pixi.js': '^8.20.1' },
+					dependencies: { '@datamoc/mwg': `^${PACKAGE_VERSION}`, 'pixi.js': '^8.20.1' },
 					devDependencies: { typescript: '^7.0.2', vite: '^8.2.2' },
 				},
 				null,
@@ -41,7 +41,7 @@ export function initFiles(name) {
 			) + '\n',
 		'vite.config.mts': [
 			"import { defineConfig } from 'vite';",
-			"import { mwgPage } from '@datamoc/mw_games/tools/vite';",
+			"import { mwgPage } from '@datamoc/mwg/tools/vite';",
 			'',
 			'//`singleFile: true` also writes dist/standalone.html, the whole game in one file',
 			'export default defineConfig({ plugins: [mwgPage({ singleFile: true })] });',
@@ -81,8 +81,8 @@ export function initFiles(name) {
 			'',
 		].join('\n'),
 		'src/main.ts': [
-			"import { Game, Scene2D } from '@datamoc/mw_games/two-d';",
-			"import { Shape2D, Text2D } from '@datamoc/mw_games/two-d/render';",
+			"import { Game, Scene2D } from '@datamoc/mwg/two-d';",
+			"import { Shape2D, Text2D } from '@datamoc/mwg/two-d/render';",
 			'',
 			'class MainScene extends Scene2D {',
 			'\tprivate square!: Shape2D;',

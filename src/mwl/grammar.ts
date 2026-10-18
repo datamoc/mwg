@@ -36,7 +36,7 @@ export interface MwlDiagnostic {
  *
  * @example
  * ```ts
- * import { parse, MwlSyntaxError } from '@datamoc/mw_games/mwl';
+ * import { parse, MwlSyntaxError } from '@datamoc/mwg/mwl';
  *
  * try {
  *   parse('[{ tag: "game" }]', 'broken.mwl');
@@ -81,7 +81,7 @@ const directiveNames = new Set(['define', 'enddef', 'arg', 'ifdef', 'ifndef', 'e
  *
  * @example
  * ```ts
- * import { preprocess } from '@datamoc/mw_games/mwl';
+ * import { preprocess } from '@datamoc/mwg/mwl';
  *
  * console.log(preprocess("[{ tag: 'game', schema: 0.1 }]"));
  * ```
@@ -569,7 +569,7 @@ function json5SyntaxError(error: unknown, source: string, file: string): MwlSynt
  *
  * @example
  * ```ts
- * import { parseValue } from '@datamoc/mw_games/mwl';
+ * import { parseValue } from '@datamoc/mwg/mwl';
  *
  * console.log(parseValue('_("Hold the line")', { file: 'a.mwl', line: 1, column: 1 })); // 'Hold the line'
  * ```
@@ -597,7 +597,7 @@ export function parseValue(raw: string, location: MwlLocation, lineText = raw): 
  *
  * @example
  * ```ts
- * import { isGettext } from '@datamoc/mw_games/mwl';
+ * import { isGettext } from '@datamoc/mwg/mwl';
  *
  * console.log(isGettext('_("Hello")')); // true
  * console.log(isGettext('Hello')); // false

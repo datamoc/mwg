@@ -8,7 +8,7 @@ import * as glue from './vendored/rgssad-wasm/rgssad_wasm_bg.js';
  * Extracts an RPG Maker XP/VX `.rgssad` archive to plain files, through the vendored
  * `rgssad-wasm` decoder (MIT, see `vendored/rgssad-wasm/README.md`). A format tool, for someone
  * porting a game whose archive they own; nothing a player receives. Shipped as
- * `@datamoc/mw_games/tools/extract-rgssad` and `mwg-extract-rgssad <archive> <outDir>` (item 389).
+ * `@datamoc/mwg/tools/extract-rgssad` and `mwg-extract-rgssad <archive> <outDir>` (item 389).
  *
  * Entry names come from the archive, so they are untrusted: each is normalised (RPG Maker writes
  * `\\` separators) and refused unless it resolves inside `outDir`, the check that stops an entry

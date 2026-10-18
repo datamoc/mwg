@@ -30,8 +30,8 @@ export interface ItemStatusEffectHandle {
  *
  * @example
  * ```ts
- * import { applyItemStatusEffect } from '@datamoc/mw_games/actors';
- * import { TurnClock } from '@datamoc/mw_games/world';
+ * import { applyItemStatusEffect } from '@datamoc/mwg/actors';
+ * import { TurnClock } from '@datamoc/mwg/world';
  *
  * const sword = { id: 'sword', quantity: 1, blessed: false };
  * const clock = new TurnClock();

@@ -82,7 +82,7 @@ export interface WindowOptions {
  *
  * @example
  * ```ts
- * import { Window, Label } from '@datamoc/mw_games/two-d/ui';
+ * import { Window, Label } from '@datamoc/mwg/two-d/ui';
  *
  * const confirm = new Window({ width: 200, height: 100, title: 'Leave?', anchor: 'center', blocker: true });
  * confirm.content.addChild(new Label({ text: 'Progress since your last save will be lost.' }));
@@ -309,7 +309,7 @@ export class Window extends Container {
 	 *
 	 * @example
 	 * ```ts
-	 * import { Window } from '@datamoc/mw_games/two-d/ui';
+	 * import { Window } from '@datamoc/mwg/two-d/ui';
 	 *
 	 * const window = new Window({ width: 240, height: 120, title: 'Result' });
 	 * window.open({ animation: 'pop' });

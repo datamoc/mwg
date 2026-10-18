@@ -23,7 +23,7 @@ export interface PlayerInputOptions {
  *
  * @example
  * ```ts
- * import { PlayerInput } from '@datamoc/mw_games/core';
+ * import { PlayerInput } from '@datamoc/mwg/core';
  *
  * const player1 = new PlayerInput('p1', { padIndex: 0 });
  * const player2 = new PlayerInput('p2', { padIndex: 1 });

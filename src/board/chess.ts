@@ -49,7 +49,7 @@ export type ChessResult = 'ongoing' | 'white-wins' | 'black-wins' | 'stalemate';
  *
  * @example
  * ```ts
- * import { sq } from '@datamoc/mw_games/board';
+ * import { sq } from '@datamoc/mwg/board';
  *
  * console.log(sq('a1')); // 0
  * console.log(sq('e4')); // 28
@@ -70,7 +70,7 @@ export function sq(name: string): ChessSquare {
  *
  * @example
  * ```ts
- * import { squareName } from '@datamoc/mw_games/board';
+ * import { squareName } from '@datamoc/mwg/board';
  *
  * console.log(squareName(0)); // 'a1'
  * console.log(squareName(28)); // 'e4'
@@ -90,7 +90,7 @@ export function squareName(sq: ChessSquare): string {
  *
  * @example
  * ```ts
- * import { positionKey, startingChess } from '@datamoc/mw_games/board';
+ * import { positionKey, startingChess } from '@datamoc/mwg/board';
  *
  * console.log(positionKey(startingChess()));
  * // 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -'
@@ -134,7 +134,7 @@ export function positionKey(state: ChessState): string {
  *
  * @example
  * ```ts
- * import { parseFen, sq } from '@datamoc/mw_games/board';
+ * import { parseFen, sq } from '@datamoc/mwg/board';
  *
  * // Scholar's mate position, black to move, every castling right still on the books
  * const state = parseFen('r1bqkbnr/pppp1Qpp/2n5/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4');
@@ -219,7 +219,7 @@ function onBoard(file: number, rank: number): boolean {
  *
  * @example
  * ```ts
- * import { startingChess, legalMoves } from '@datamoc/mw_games/board';
+ * import { startingChess, legalMoves } from '@datamoc/mwg/board';
  *
  * const state = startingChess();
  * console.log(state.turn); // 'white'
@@ -250,7 +250,7 @@ export function startingChess(): ChessState {
  *
  * @example
  * ```ts
- * import { startingChess, cloneChess } from '@datamoc/mw_games/board';
+ * import { startingChess, cloneChess } from '@datamoc/mwg/board';
  *
  * const state = startingChess();
  * const trial = cloneChess(state);
@@ -360,7 +360,7 @@ function findKing(board: Array<ChessPiece | null>, side: ChessSide): ChessSquare
 /**
  * @example
  * ```ts
- * import { startingChess, inCheck } from '@datamoc/mw_games/board';
+ * import { startingChess, inCheck } from '@datamoc/mwg/board';
  *
  * console.log(inCheck(startingChess(), 'white')); // false - nobody is in check at the start
  * ```
@@ -381,7 +381,7 @@ interface RawMove {
  *
  * @example
  * ```ts
- * import { startingChess, legalMoves } from '@datamoc/mw_games/board';
+ * import { startingChess, legalMoves } from '@datamoc/mwg/board';
  *
  * console.log(legalMoves(startingChess()).length); // 20 - the opening position's own count
  * ```
@@ -583,7 +583,7 @@ export function legalMoves(state: ChessState): ChessMove[] {
  *
  * @example
  * ```ts
- * import { startingChess, sq, applyMove } from '@datamoc/mw_games/board';
+ * import { startingChess, sq, applyMove } from '@datamoc/mwg/board';
  *
  * const state = startingChess();
  * applyMove(state, { from: sq('e2'), to: sq('e4') });
@@ -612,7 +612,7 @@ export function applyMove(state: ChessState, move: ChessMove): void {
  *
  * @example
  * ```ts
- * import { startingChess, gameResult } from '@datamoc/mw_games/board';
+ * import { startingChess, gameResult } from '@datamoc/mwg/board';
  *
  * console.log(gameResult(startingChess())); // 'ongoing'
  * ```

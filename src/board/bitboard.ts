@@ -172,7 +172,7 @@ function rightBit(side: ChessSide, kingside: boolean): number {
  *
  * @example
  * ```ts
- * import { bitboardFromChess, bitboardMoves, startingChess } from '@datamoc/mw_games/board';
+ * import { bitboardFromChess, bitboardMoves, startingChess } from '@datamoc/mwg/board';
  *
  * const moves = bitboardMoves(bitboardFromChess(startingChess()));
  * console.log(moves.length); // 20 - the opening position's own count
@@ -207,7 +207,7 @@ export function bitboardFromChess(state: ChessState): BitboardState {
  *
  * @example
  * ```ts
- * import { bitboardMoves, startingBitboard } from '@datamoc/mw_games/board';
+ * import { bitboardMoves, startingBitboard } from '@datamoc/mwg/board';
  *
  * console.log(bitboardMoves(startingBitboard()).length); // 20 - 16 pawn moves, 4 knight moves
  * ```
@@ -224,7 +224,7 @@ export function startingBitboard(): BitboardState {
  *
  * @example
  * ```ts
- * import { bitboardMoves, startingBitboard } from '@datamoc/mw_games/board';
+ * import { bitboardMoves, startingBitboard } from '@datamoc/mwg/board';
  *
  * const moves = bitboardMoves(startingBitboard());
  * console.log(moves.every((move) => move.from >= 0 && move.to < 64)); // true
@@ -385,7 +385,7 @@ function pseudoMoves(
  *
  * @example
  * ```ts
- * import { bitboardMoves, makeMove, startingBitboard, unmakeMove } from '@datamoc/mw_games/board';
+ * import { bitboardMoves, makeMove, startingBitboard, unmakeMove } from '@datamoc/mwg/board';
  *
  * const board = startingBitboard();
  * const move = bitboardMoves(board)[0];
@@ -460,7 +460,7 @@ export function makeMove(board: BitboardState, move: BitboardMove): BitboardUndo
  *
  * @example
  * ```ts
- * import { bitboardMoves, makeMove, startingBitboard, unmakeMove } from '@datamoc/mw_games/board';
+ * import { bitboardMoves, makeMove, startingBitboard, unmakeMove } from '@datamoc/mwg/board';
  *
  * const board = startingBitboard();
  * const move = bitboardMoves(board)[0];
@@ -512,7 +512,7 @@ export function unmakeMove(board: BitboardState, move: BitboardMove, undo: Bitbo
  *
  * @example
  * ```ts
- * import { perft, startingBitboard } from '@datamoc/mw_games/board';
+ * import { perft, startingBitboard } from '@datamoc/mwg/board';
  *
  * console.log(perft(startingBitboard(), 2)); // 400 - the opening's two-ply count
  * ```

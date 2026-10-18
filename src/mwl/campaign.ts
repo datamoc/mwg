@@ -30,8 +30,8 @@ export interface MwlCampaignChain<State extends StateValue, Result extends State
  *
  * @example
  * ```ts
- * import { campaignChain } from '@datamoc/mw_games/mwl';
- * import { Campaign } from '@datamoc/mw_games/simulation';
+ * import { campaignChain } from '@datamoc/mwg/mwl';
+ * import { Campaign } from '@datamoc/mwg/simulation';
  *
  * const definition = {
  *   id: 'prologue',

@@ -27,7 +27,7 @@ export interface EventTwineStory {
  *
  * @example
  * ```ts
- * import { importTwee, EventRunner, GameState, type DialoguePresenter } from '@datamoc/mw_games/rpg';
+ * import { importTwee, EventRunner, GameState, type DialoguePresenter } from '@datamoc/mwg/rpg';
  *
  * declare const present: DialoguePresenter;
  *

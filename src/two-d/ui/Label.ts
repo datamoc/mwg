@@ -21,7 +21,7 @@ export interface LabelOptions extends ThemedTextOptions {
  *
  * @example
  * ```ts
- * import { Label } from '@datamoc/mw_games/two-d/ui';
+ * import { Label } from '@datamoc/mwg/two-d/ui';
  *
  * const gold = new Label({ text: 'Gold: 0', color: 0xffe680 });
  *

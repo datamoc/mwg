@@ -80,7 +80,7 @@ function sourceBase(tileId: number, slot: RpgmAutotileSlot): readonly [number, n
  *
  * @example
  * ```ts
- * import { rpgmAutotileFrame } from '@datamoc/mw_games/two-d/render';
+ * import { rpgmAutotileFrame } from '@datamoc/mwg/two-d/render';
  *
  * const shapeTable = Array.from({ length: 48 }, () => [[0, 0], [1, 0], [0, 1], [1, 1]] as const);
  * const frame = rpgmAutotileFrame(7, 0, 3, shapeTable);
@@ -120,7 +120,7 @@ export function rpgmAutotileFrame(
  *
  * @example
  * ```ts
- * import { RpgmAutotileAtlas, type RpgmAutotileShapeTable } from '@datamoc/mw_games/two-d/render';
+ * import { RpgmAutotileAtlas, type RpgmAutotileShapeTable } from '@datamoc/mwg/two-d/render';
  *
  * declare const shapeTable: RpgmAutotileShapeTable;
  * const atlas = new RpgmAutotileAtlas(shapeTable);
@@ -175,7 +175,7 @@ export const RPGM_AUTOTILE_SLOT_COUNTS = [768, 1536, 1536, 2304] as const;
  * 	rpgmAutotileSlot,
  * 	RPGM_AUTOTILE_SLOT_BASES,
  * 	RPGM_AUTOTILE_SLOT_COUNTS,
- * } from '@datamoc/mw_games/two-d/render';
+ * } from '@datamoc/mwg/two-d/render';
  *
  * console.log(rpgmAutotileSlot(2048)); // 0 - the first A1 tile
  * console.log(rpgmAutotileSlot(3000)); // 1 - inside the A2 range
@@ -211,7 +211,7 @@ export function rpgmAutotileSlot(tile: number): RpgmAutotileSlot | null {
  *
  * @example
  * ```ts
- * import { RPGM_FLOOR_AUTOTILE_TABLE, RPGM_WALL_AUTOTILE_TABLE } from '@datamoc/mw_games/two-d/render';
+ * import { RPGM_FLOOR_AUTOTILE_TABLE, RPGM_WALL_AUTOTILE_TABLE } from '@datamoc/mwg/two-d/render';
  *
  * console.log(RPGM_FLOOR_AUTOTILE_TABLE.length); // 48 - one entry per baked shape
  * console.log(RPGM_WALL_AUTOTILE_TABLE.length); // 16 - walls cycle every 16 shapes
@@ -629,7 +629,7 @@ export type XpAutotilePattern = readonly [number, number, number, number];
  *
  * @example
  * ```ts
- * import { XP_AUTOTILE_PATTERNS, XP_NEIGHBORS_TO_PATTERN } from '@datamoc/mw_games/two-d/render';
+ * import { XP_AUTOTILE_PATTERNS, XP_NEIGHBORS_TO_PATTERN } from '@datamoc/mwg/two-d/render';
  *
  * console.log(XP_AUTOTILE_PATTERNS.length); // 48 - one entry per baked pattern
  * console.log(XP_AUTOTILE_PATTERNS[0]); // [26,27,32,33] - the filled interior tile
@@ -721,7 +721,7 @@ export interface XpAutotileRef {
  *
  * @example
  * ```ts
- * import { xpAutotileRef } from '@datamoc/mw_games/two-d/render';
+ * import { xpAutotileRef } from '@datamoc/mwg/two-d/render';
  *
  * console.log(xpAutotileRef(97)); // { index: 2, pattern: 1 } - second image, second pattern
  * console.log(xpAutotileRef(0)); // null - EMPTY is blank, never an autotile
@@ -742,7 +742,7 @@ export function xpAutotileRef(tile: number): XpAutotileRef | null {
  *
  * @example
  * ```ts
- * import { xpAutotilePattern } from '@datamoc/mw_games/two-d/render';
+ * import { xpAutotilePattern } from '@datamoc/mwg/two-d/render';
  *
  * const filled = new Set(['0,0', '1,0', '0,1', '1,1', '-1,0', '0,-1', '2,1', '1,2']);
  * console.log(xpAutotilePattern((dx, dy) => filled.has(`${dx},${dy}`))); // 0 - the interior
@@ -828,7 +828,7 @@ const RPGM_AUTOTILE_KIND_COUNTS = [16, 32, 32, 48] as const;
  * import {
  * 	assertAutotileLayout,
  * 	RPGM_FLOOR_AUTOTILE_TABLE,
- * } from '@datamoc/mw_games/two-d/render';
+ * } from '@datamoc/mwg/two-d/render';
  *
  * assertAutotileLayout({ format: 'rpgm-mv', slot: 0, table: RPGM_FLOOR_AUTOTILE_TABLE, cycles: [[0, 1, 2]] });
  * assertAutotileLayout({ format: 'rpgm-xp', index: 2, frames: 1, single: false });
@@ -894,7 +894,7 @@ const XP_SINGLE_TILE_SIZE = 32;
  * import {
  * 	autotileCellParts,
  * 	RPGM_FLOOR_AUTOTILE_TABLE,
- * } from '@datamoc/mw_games/two-d/render';
+ * } from '@datamoc/mwg/two-d/render';
  *
  * const parts = autotileCellParts(
  * 	{ format: 'rpgm-mv', slot: 0, table: RPGM_FLOOR_AUTOTILE_TABLE, cycles: [] },
@@ -1052,7 +1052,7 @@ export interface RpgmTableEdgeMap {
  *
  * @example
  * ```ts
- * import { rpgmTableEdgeCells } from '@datamoc/mw_games/two-d/render';
+ * import { rpgmTableEdgeCells } from '@datamoc/mwg/two-d/render';
  *
  * const table = 2816 + 48 * 0 + 47; // an A2 kind with the table flag
  * const flags = { [table]: 0x80 };

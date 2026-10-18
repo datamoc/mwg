@@ -17,7 +17,7 @@
  *
  * @example
  * ```ts
- * import { setBase, isCompiled, paths, resolve } from '@datamoc/mw_games/assets/paths';
+ * import { setBase, isCompiled, paths, resolve } from '@datamoc/mwg/assets/paths';
  *
  * setBase('assets/'); // dev-server mode; a compiled build ignores this
  *
@@ -56,7 +56,7 @@ let assetMap: Record<string, string> | undefined;
  *
  * @example
  * ```ts
- * import { setAssetMap, isCompiled, resolve } from '@datamoc/mw_games/assets/paths';
+ * import { setAssetMap, isCompiled, resolve } from '@datamoc/mwg/assets/paths';
  *
  * setAssetMap({ 'tiles.png': 'data:image/png;base64,...' });
  * console.log(isCompiled()); // true

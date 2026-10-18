@@ -30,7 +30,7 @@ export interface ReplayEvent {
  *
  * @example
  * ```ts
- * import { Recorder, Signal, serializeReplay } from '@datamoc/mw_games/core';
+ * import { Recorder, Signal, serializeReplay } from '@datamoc/mwg/core';
  *
  * const onAction = new Signal<string>();
  * const onFrame = new Signal<number>();
@@ -106,7 +106,7 @@ export class Recorder {
  *
  * @example
  * ```ts
- * import { Player, Signal, deserializeReplay } from '@datamoc/mw_games/core';
+ * import { Player, Signal, deserializeReplay } from '@datamoc/mwg/core';
  *
  * declare const saved: string; // written by serializeReplay, see Recorder
  *
@@ -184,7 +184,7 @@ export function deserializeReplay(json: string): ReplayEvent[] {
  *
  * @example
  * ```ts
- * import { parseReplayEvents } from '@datamoc/mw_games/core';
+ * import { parseReplayEvents } from '@datamoc/mwg/core';
  *
  * const events = parseReplayEvents([{ frame: 3, action: 'confirm' }]);
  * ```

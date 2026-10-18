@@ -14,7 +14,7 @@
  *
  * @example
  * ```ts
- * import { Advancement, type AdvancementTrack } from '@datamoc/mw_games/actors';
+ * import { Advancement, type AdvancementTrack } from '@datamoc/mwg/actors';
  *
  * const track: AdvancementTrack = {
  *   tiers: [

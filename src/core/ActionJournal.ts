@@ -19,7 +19,7 @@ export interface ActionJournalEntry<Action, Event> {
  *
  * @example
  * ```ts
- * import { ActionJournal } from '@datamoc/mw_games/core';
+ * import { ActionJournal } from '@datamoc/mwg/core';
  *
  * const journal = new ActionJournal<string, { type: string }>();
  * journal.append('open-door', [{ type: 'door-opened' }]);

@@ -58,7 +58,7 @@ function ingredientHasMatcher(ingredient: Ingredient): boolean {
  *
  * @example
  * ```ts
- * import { craft, Inventory, type Recipe } from '@datamoc/mw_games/actors';
+ * import { craft, Inventory, type Recipe } from '@datamoc/mwg/actors';
  *
  * const bag = new Inventory();
  * bag.add({ id: 'sage', quantity: 2, stackable: true, category: 'herb' });

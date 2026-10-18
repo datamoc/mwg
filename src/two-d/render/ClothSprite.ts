@@ -31,8 +31,8 @@ export interface ClothSpriteOptions {
  *
  * @example
  * ```ts
- * import { ClothSprite } from '@datamoc/mw_games/two-d/render';
- * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { ClothSprite } from '@datamoc/mwg/two-d/render';
+ * import type { Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const tunicTexture: Texture2D;
  *

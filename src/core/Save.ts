@@ -12,7 +12,7 @@
  *
  * @example
  * ```ts
- * import { SaveSystem } from '@datamoc/mw_games/core';
+ * import { SaveSystem } from '@datamoc/mwg/core';
  *
  * interface RunState { depth: number; hp: number }
  *
@@ -112,7 +112,7 @@ export interface SaveSystemOptions {
  *
  * @example
  * ```ts
- * import { SaveSystem } from '@datamoc/mw_games/core';
+ * import { SaveSystem } from '@datamoc/mwg/core';
  *
  * interface RunState {
  * 	depth: number;

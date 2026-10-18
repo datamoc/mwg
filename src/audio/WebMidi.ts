@@ -29,7 +29,7 @@ export interface WebMidiConnection {
  *
  * @example
  * ```ts
- * import { connectWebMidi, type MidiSynth, type WebMidiAccess } from '@datamoc/mw_games/audio';
+ * import { connectWebMidi, type MidiSynth, type WebMidiAccess } from '@datamoc/mwg/audio';
  *
  * declare const access: WebMidiAccess;
  * declare const synth: MidiSynth;
@@ -69,7 +69,7 @@ export function connectWebMidi(access: WebMidiAccess, synth: MidiSynth): WebMidi
  *
  * @example
  * ```ts
- * import { requestWebMidiInput, type MidiSynth } from '@datamoc/mw_games/audio';
+ * import { requestWebMidiInput, type MidiSynth } from '@datamoc/mwg/audio';
  *
  * declare const synth: MidiSynth;
  *

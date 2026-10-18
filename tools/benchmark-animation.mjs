@@ -33,7 +33,7 @@ import { launchChrome } from './find-chrome.mjs';
  */
 
 const root = resolve(import.meta.dirname, '..');
-const globalBundle = join(root, 'dist', 'mw_games.global.js');
+const globalBundle = join(root, 'dist', 'mwg.global.js');
 if (!existsSync(globalBundle)) throw new Error(`no build found at ${globalBundle} - run "npm run build" first`);
 
 const counts = (process.env.MWG_ANIM_COUNTS ?? '250,1000,4000')
@@ -65,12 +65,12 @@ const PAGE = `<!doctype html>
 <body>
 	<div id="dom"></div>
 	<canvas id="game"></canvas>
-	<script src="./mw_games.global.js"></script>
+	<script src="./mwg.global.js"></script>
 	<script>
 		const params = new URLSearchParams(location.search);
 		const mode = params.get('mode') || 'pixi';
 		const count = Number(params.get('count') || 1000);
-		const { Game, Scene2D, Shape2D, Sprite2D } = window.mw_games;
+		const { Game, Scene2D, Shape2D, Sprite2D } = window.mwg;
 		const GEM = '<svg width="18" height="18" viewBox="0 0 18 18"><polygon points="9,0 18,9 9,18 0,9" fill="#6fb1ff"/></svg>';
 
 		let spriteCount = 0;
@@ -174,7 +174,7 @@ const PAGE = `<!doctype html>
 `;
 
 const scratch = mkdtempSync(join(tmpdir(), 'mwg-animation-bench-'));
-cpSync(globalBundle, join(scratch, 'mw_games.global.js'));
+cpSync(globalBundle, join(scratch, 'mwg.global.js'));
 writeFileSync(join(scratch, 'index.html'), PAGE);
 
 const browser = await launchChrome();

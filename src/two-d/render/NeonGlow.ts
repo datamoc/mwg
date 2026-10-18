@@ -17,7 +17,7 @@ function splitColor(color: number): readonly [number, number, number] {
  *
  * @example
  * ```ts
- * import { glowFalloff } from '@datamoc/mw_games/two-d/render';
+ * import { glowFalloff } from '@datamoc/mwg/two-d/render';
  *
  * console.log(glowFalloff(0, 24)); // 1 - the centre burns full
  * console.log(glowFalloff(24, 24)); // 0 - the rim carries nothing
@@ -53,7 +53,7 @@ export interface GlowPaint {
  *
  * @example
  * ```ts
- * import { paintGlowPixels } from '@datamoc/mw_games/two-d/render';
+ * import { paintGlowPixels } from '@datamoc/mwg/two-d/render';
  *
  * const size = 5;
  * const pixels = new Uint8ClampedArray(size * size * 4);
@@ -110,7 +110,7 @@ export interface NeonGlowOptions {
  *
  * @example
  * ```ts
- * import { NeonGlow } from '@datamoc/mw_games/two-d/render';
+ * import { NeonGlow } from '@datamoc/mwg/two-d/render';
  *
  * const sign = new NeonGlow({ color: 0x37e0ff, radius: 48, flicker: { amount: 0.15, frequency: 2 } });
  * sign.position.set(200, 120);

@@ -13,7 +13,7 @@
  *
  * @example
  * ```ts
- * import { ScreenReader, screenReader } from '@datamoc/mw_games/two-d/ui';
+ * import { ScreenReader, screenReader } from '@datamoc/mwg/two-d/ui';
  *
  * // the built-in widgets use the shared instance; a game can own a second region
  * const reader = new ScreenReader();

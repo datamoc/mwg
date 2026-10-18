@@ -17,7 +17,7 @@ export interface ArmyState {
  *
  * @example
  * ```ts
- * import { startingArmy } from '@datamoc/mw_games/board';
+ * import { startingArmy } from '@datamoc/mwg/board';
  *
  * console.log(startingArmy(100)); // { currency: 100, pool: [] }
  * ```
@@ -32,7 +32,7 @@ export function startingArmy(currency: number): ArmyState {
 /**
  * @example
  * ```ts
- * import { startingArmy, recruit, startingTactics } from '@datamoc/mw_games/board';
+ * import { startingArmy, recruit, startingTactics } from '@datamoc/mwg/board';
  *
  * const board = startingTactics(6, 6, 'square');
  * const army = startingArmy(100);
@@ -53,7 +53,7 @@ export function recruit(army: ArmyState, board: TacticalState, unit: TacticalUni
 /**
  * @example
  * ```ts
- * import { startingArmy, recruit, bankUnit, recall, startingTactics } from '@datamoc/mw_games/board';
+ * import { startingArmy, recruit, bankUnit, recall, startingTactics } from '@datamoc/mwg/board';
  *
  * const board = startingTactics(6, 6, 'square');
  * const army = startingArmy(100);
@@ -77,7 +77,7 @@ export function recall(army: ArmyState, board: TacticalState, unitId: string, x:
 /**
  * @example
  * ```ts
- * import { startingArmy, recruit, bankUnit, startingTactics } from '@datamoc/mw_games/board';
+ * import { startingArmy, recruit, bankUnit, startingTactics } from '@datamoc/mwg/board';
  *
  * const board = startingTactics(6, 6, 'square');
  * const army = startingArmy(100);
@@ -107,7 +107,7 @@ export interface UpkeepRates {
 /**
  * @example
  * ```ts
- * import { startingTactics, addTacticalUnit, armyIncome } from '@datamoc/mw_games/board';
+ * import { startingTactics, addTacticalUnit, armyIncome } from '@datamoc/mwg/board';
  *
  * const board = startingTactics(6, 6, 'square');
  * addTacticalUnit(board, { id: 'scout', owner: 'blue', x: 0, y: 0, hp: 6, maxHp: 6, actions: 2 });
@@ -124,7 +124,7 @@ export function armyIncome(board: TacticalState, owner: string, rates: UpkeepRat
 /**
  * @example
  * ```ts
- * import { startingArmy, startingTactics, addTacticalUnit, applyUpkeep } from '@datamoc/mw_games/board';
+ * import { startingArmy, startingTactics, addTacticalUnit, applyUpkeep } from '@datamoc/mwg/board';
  *
  * const board = startingTactics(6, 6, 'square');
  * addTacticalUnit(board, { id: 'scout', owner: 'blue', x: 0, y: 0, hp: 6, maxHp: 6, actions: 2 });

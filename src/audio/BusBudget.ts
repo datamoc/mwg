@@ -28,7 +28,7 @@ export interface TrackCacheStats {
  *
  * @example
  * ```ts
- * import { bufferBytes } from '@datamoc/mw_games/audio';
+ * import { bufferBytes } from '@datamoc/mwg/audio';
  *
  * console.log(bufferBytes({ length: 44100, numberOfChannels: 2 })); // 352800, one stereo second
  * ```
@@ -45,7 +45,7 @@ export function bufferBytes(buffer: Pick<AudioBuffer, 'length' | 'numberOfChanne
  *
  * @example
  * ```ts
- * import { TrackCache, type LoadedTrack } from '@datamoc/mw_games/audio';
+ * import { TrackCache, type LoadedTrack } from '@datamoc/mwg/audio';
  *
  * declare function decode(path: string): Promise<LoadedTrack>;
  *
@@ -134,7 +134,7 @@ export interface BudgetedLoader extends BusLoader {
  *
  * @example
  * ```ts
- * import { AudioBus, createBudgetedLoader, type BusLoader } from '@datamoc/mw_games/audio';
+ * import { AudioBus, createBudgetedLoader, type BusLoader } from '@datamoc/mwg/audio';
  *
  * declare const context: AudioContext;
  * declare const decode: BusLoader;

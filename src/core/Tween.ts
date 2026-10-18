@@ -57,7 +57,7 @@ interface ActiveTween {
  *
  * @example
  * ```ts
- * import { Tweener, Easing } from '@datamoc/mw_games/core';
+ * import { Tweener, Easing } from '@datamoc/mwg/core';
  *
  * const tweener = new Tweener();
  * const sprite = { alpha: 0 };

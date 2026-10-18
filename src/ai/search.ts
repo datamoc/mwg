@@ -36,7 +36,7 @@ const DEFAULT_MAX_NODES = 100_000;
  *
  * @example
  * ```ts
- * import { alphaBetaSearch } from '@datamoc/mw_games/ai';
+ * import { alphaBetaSearch } from '@datamoc/mwg/ai';
  *
  * const result = alphaBetaSearch({
  *   currentPlayer: () => 1,
@@ -145,7 +145,7 @@ export interface RootSplit<State, Move> {
  *
  * @example
  * ```ts
- * import { rootSplits } from '@datamoc/mw_games/ai';
+ * import { rootSplits } from '@datamoc/mwg/ai';
  *
  * const game = {
  *   currentPlayer: () => 1,
@@ -169,7 +169,7 @@ export function rootSplits<State, Move>(game: AlphaBetaGame<State, Move>, state:
  *
  * @example
  * ```ts
- * import { firstWins } from '@datamoc/mw_games/ai';
+ * import { firstWins } from '@datamoc/mwg/ai';
  *
  * console.log(firstWins([{ move: 'a', score: 1 }, { move: 'b', score: 1 }], true)); // 'a'
  * console.log(firstWins([{ move: 'a', score: 1 }, { move: 'b', score: 2 }], true)); // 'b'

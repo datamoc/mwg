@@ -9,8 +9,8 @@ import type { MidiSynth } from '../audio/MidiSynth.ts';
  *
  * @example
  * ```ts
- * import { StreamChannel } from '@datamoc/mw_games/audio';
- * import { FakeAudioContext, FakeBlockSource } from '@datamoc/mw_games/testing';
+ * import { StreamChannel } from '@datamoc/mwg/audio';
+ * import { FakeAudioContext, FakeBlockSource } from '@datamoc/mwg/testing';
  *
  * const context = new FakeAudioContext();
  * const channel = new StreamChannel(context.asContext(), undefined, { pumpMs: 0 });
@@ -204,7 +204,7 @@ export class FakeBlockSource implements BlockSource {
  *
  * @example
  * ```ts
- * import { FakeRetroPlayer } from '@datamoc/mw_games/testing';
+ * import { FakeRetroPlayer } from '@datamoc/mwg/testing';
  *
  * const synth = new FakeRetroPlayer(8000);
  * synth.event(0x90, 60, 100); // note on, middle C

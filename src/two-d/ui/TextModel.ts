@@ -25,7 +25,7 @@ export interface TextModelOptions {
  *
  * @example
  * ```ts
- * import { TextModel } from '@datamoc/mw_games/two-d/ui';
+ * import { TextModel } from '@datamoc/mwg/two-d/ui';
  *
  * const name = new TextModel({ maxLength: 8, value: 'Hero' });
  * name.selectAll();

@@ -25,8 +25,8 @@ import { clamp } from '../../core/Math.ts';
  *
  * @example
  * ```ts
- * import { Camera, createCamera } from '@datamoc/mw_games/two-d/render';
- * import type { Container2D } from '@datamoc/mw_games/two-d/render';
+ * import { Camera, createCamera } from '@datamoc/mwg/two-d/render';
+ * import type { Container2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const stage: Container2D;
  * declare const hero: { x: number; y: number };
@@ -86,8 +86,8 @@ export interface CameraOptions {
 /**
  * @example
  * ```ts
- * import { Camera } from '@datamoc/mw_games/two-d/render';
- * import type { Container2D } from '@datamoc/mw_games/two-d/render';
+ * import { Camera } from '@datamoc/mwg/two-d/render';
+ * import type { Container2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const stage: Container2D;
  *
@@ -474,7 +474,7 @@ function angleDiff(from: number, to: number): number {
  *
  * @example
  * ```ts
- * import { snapZoom } from '@datamoc/mw_games/two-d/render';
+ * import { snapZoom } from '@datamoc/mwg/two-d/render';
  *
  * console.log(snapZoom(2.4, 16)); // 2.375 - 16 * 2.375 = 38, a whole number of pixels
  * ```
@@ -489,7 +489,7 @@ export function snapZoom(zoom: number, tileSize: number, resolution = 1): number
  *
  * @example
  * ```ts
- * import { createCamera } from '@datamoc/mw_games/two-d/render';
+ * import { createCamera } from '@datamoc/mwg/two-d/render';
  *
  * const camera = createCamera({ zoom: 2 }); // sized to Game.current automatically
  * ```

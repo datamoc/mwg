@@ -29,8 +29,8 @@
  *
  * @example
  * ```ts
- * import { parseCSV } from '@datamoc/mw_games/core';
- * import type { AffixDef, AffixTable } from '@datamoc/mw_games/actors';
+ * import { parseCSV } from '@datamoc/mwg/core';
+ * import type { AffixDef, AffixTable } from '@datamoc/mwg/actors';
  *
  * const csv = `id,trigger,weight,curse,description
  * blazing,strike,3,,Ignites the victim
@@ -59,7 +59,7 @@ export interface CsvOptions {
 /**
  * @example
  * ```ts
- * import { parseCSV } from '@datamoc/mw_games/core';
+ * import { parseCSV } from '@datamoc/mwg/core';
  *
  * const rows = parseCSV('id,weight\nblazing,3\nchilling,3', { columns: { weight: 'number' } });
  * console.log(rows); // [{ id: 'blazing', weight: 3 }, { id: 'chilling', weight: 3 }]

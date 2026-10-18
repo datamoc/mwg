@@ -10,7 +10,7 @@
  *
  * @example
  * ```ts
- * import { aabbOverlap, circleOverlap, circleAabbOverlap, resolveAabbAgainstTiles } from '@datamoc/mw_games/rpg';
+ * import { aabbOverlap, circleOverlap, circleAabbOverlap, resolveAabbAgainstTiles } from '@datamoc/mwg/rpg';
  *
  * const player = { x: 10, y: 10, width: 16, height: 16 };
  * const chest = { x: 20, y: 10, width: 16, height: 16 };

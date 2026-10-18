@@ -30,7 +30,7 @@ const MASK = (1n << 48n) - 1n;
  *
  * @example
  * ```ts
- * import { JavaRandom } from '@datamoc/mw_games/core';
+ * import { JavaRandom } from '@datamoc/mwg/core';
  *
  * const random = new JavaRandom(42);
  * console.log(random.nextInt()); // -1170105035, what `new Random(42).nextInt()` returns

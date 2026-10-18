@@ -3,17 +3,17 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Generates `packages/mwg`, the `@datamoc/mwg` package: the short name for
- * `@datamoc/mw_games`. It holds no code of its own. Every public entry point of the main
+ * Generates `packages/mw_games`, the `@datamoc/mw_games` package: the former name of
+ * `@datamoc/mwg`, kept so installs made under it keep resolving. It holds no code of its own. Every public entry point of the main
  * package gets a one-line module that re-exports the same entry point, and the package
- * depends on the exact matching version, so `npm install @datamoc/mwg` and
- * `import { Game } from '@datamoc/mwg/two-d'` behave as the long name does.
+ * depends on the exact matching version, so `npm install @datamoc/mw_games` and
+ * `import { Game } from '@datamoc/mw_games/two-d'` behave as the main name does.
  *
  * Generated rather than hand-kept so the two cannot drift: `tests/alias-package.test.ts`
  * fails when the committed folder differs from what this writes.
  */
-const SOURCE = '@datamoc/mw_games';
-const NAME = '@datamoc/mwg';
+const SOURCE = '@datamoc/mwg';
+const NAME = '@datamoc/mw_games';
 
 /** the file set and package.json for the alias, as `{ path: content }`, from the main package.json */
 export function aliasFiles(main) {
@@ -37,10 +37,10 @@ export function aliasFiles(main) {
 			{
 				name: NAME,
 				version: main.version,
-				description: `The short name for ${SOURCE}: every entry point re-exports the same one there.`,
+				description: `The former name of ${SOURCE}, kept for existing installs: every entry point re-exports the same one there.`,
 				license: main.license,
 				//the same repository, with the folder this package is generated into so npm links to it
-				repository: { ...main.repository, directory: 'packages/mwg' },
+				repository: { ...main.repository, directory: 'packages/mw_games' },
 				homepage: main.homepage,
 				bugs: main.bugs,
 				keywords: main.keywords,
@@ -57,8 +57,8 @@ export function aliasFiles(main) {
 			'\t',
 		) + '\n';
 	files['README.md'] =
-		`# ${NAME}\n\nThe short name for [\`${SOURCE}\`](https://www.npmjs.com/package/${SOURCE}).\n\n` +
-		'```\nnpm install @datamoc/mwg\n```\n\n' +
+		`# ${NAME}\n\nThe former name of [\`${SOURCE}\`](https://www.npmjs.com/package/${SOURCE}).\n\n` +
+		'```\nnpm install @datamoc/mwg\n```\n\nNew projects install the main name above; this package only forwards to it.\n\n' +
 		`\`import { Game } from '${NAME}/two-d'\` is the same module as \`import { Game } from '${SOURCE}/two-d'\`. ` +
 		`The \`mwg-*\` command line tools are installed by \`${SOURCE}\`; run them with ` +
 		`\`npx -p ${SOURCE} mwg-emit\`. Documentation: ${main.homepage}\n`;
@@ -66,7 +66,7 @@ export function aliasFiles(main) {
 }
 
 /** writes the alias folder, replacing what was there */
-export function writeAliasPackage(root, out = join(root, 'packages', 'mwg')) {
+export function writeAliasPackage(root, out = join(root, 'packages', 'mw_games')) {
 	const main = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 	rmSync(out, { recursive: true, force: true });
 	for (const [path, content] of Object.entries(aliasFiles(main))) {

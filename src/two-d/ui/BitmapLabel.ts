@@ -21,7 +21,7 @@ export type BitmapLabelOptions = ThemedTextOptions;
  *
  * @example
  * ```ts
- * import { BitmapLabel } from '@datamoc/mw_games/two-d/ui';
+ * import { BitmapLabel } from '@datamoc/mwg/two-d/ui';
  *
  * const fps = new BitmapLabel({ text: '60 fps', size: 12 });
  *
@@ -72,8 +72,8 @@ export class BitmapLabel extends BitmapText {
  *
  * @example
  * ```ts
- * import { bitmapLabelStyle } from '@datamoc/mw_games/two-d/ui';
- * import { defaultTheme } from '@datamoc/mw_games/two-d/ui';
+ * import { bitmapLabelStyle } from '@datamoc/mwg/two-d/ui';
+ * import { defaultTheme } from '@datamoc/mwg/two-d/ui';
  *
  * const style = bitmapLabelStyle({ text: 'Score', bold: true }, defaultTheme);
  * console.log(style.fontWeight); // 'bold'

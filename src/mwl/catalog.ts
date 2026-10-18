@@ -14,7 +14,7 @@ import { flattenNodes } from './utils.ts';
  *
  * @example
  * ```ts
- * import { compile, validateCatalog } from '@datamoc/mw_games/mwl';
+ * import { compile, validateCatalog } from '@datamoc/mwg/mwl';
  *
  * const game = compile(
  * 	"[{ tag: 'table', id: 'items', columns: 'id:string', children: [{ tag: 'row', id: 'sword' }] }, { tag: 'table', id: 'recipes', columns: 'ingredient:string', children: [{ tag: 'row', ingredient: 'sword' }] }]",
@@ -367,7 +367,7 @@ function validateCoordinateBounds(
  *
  * @example
  * ```ts
- * import { parse, validateCatalogNodes } from '@datamoc/mw_games/mwl';
+ * import { parse, validateCatalogNodes } from '@datamoc/mwg/mwl';
  *
  * console.log(validateCatalogNodes(parse('[game]\nschema=0.1\n[/game]'))); // []
  * ```

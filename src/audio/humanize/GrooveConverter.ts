@@ -351,7 +351,7 @@ function readGrooveJson(data: Uint8Array | string): GrooveTemplate {
  *
  * @example
  * ```ts
- * import { GrooveConverter, type GrooveTemplate } from '@datamoc/mw_games/audio';
+ * import { GrooveConverter, type GrooveTemplate } from '@datamoc/mwg/audio';
  *
  * declare const template: GrooveTemplate;
  *

@@ -200,7 +200,7 @@ function curveOf(range: readonly [number, number] | ParticleCurve): ParticleCurv
  *
  * @example
  * ```ts
- * import { ParticleEmitter, type Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { ParticleEmitter, type Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const sparkTexture: Texture2D;
  *
@@ -327,7 +327,7 @@ export class ParticleEmitter extends Container {
 	 *
 	 * @example
 	 * ```ts
-	 * import { ParticleEmitter } from '@datamoc/mw_games/two-d/render';
+	 * import { ParticleEmitter } from '@datamoc/mwg/two-d/render';
 	 *
 	 * const aura = new ParticleEmitter({ rate: 20 });
 	 * const hero = { x: 100, y: 200 };

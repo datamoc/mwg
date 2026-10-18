@@ -7,7 +7,7 @@ import { hexToPixel } from '../../core/Hex.ts';
  *
  * @example
  * ```ts
- * import { newlyRevealed } from '@datamoc/mw_games/two-d/render';
+ * import { newlyRevealed } from '@datamoc/mwg/two-d/render';
  *
  * const explored = new Set([4, 9, 12]);
  * const alreadyDrawn = new Set([4]);
@@ -46,7 +46,7 @@ export interface MinimapMarker {
  *
  * @example
  * ```ts
- * import { minimapCellCenter } from '@datamoc/mw_games/two-d/render';
+ * import { minimapCellCenter } from '@datamoc/mwg/two-d/render';
  * const centre = minimapCellCenter(3, 2, 4, 'hex');
  * ```
  */
@@ -80,7 +80,7 @@ export function minimapCellCenter(
  *
  * @example
  * ```ts
- * import { Minimap } from '@datamoc/mw_games/two-d/render';
+ * import { Minimap } from '@datamoc/mwg/two-d/render';
  *
  * const minimap = new Minimap({ widthInCells: 40, heightInCells: 24, cellSize: 2 });
  *

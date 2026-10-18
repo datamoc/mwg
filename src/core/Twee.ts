@@ -29,7 +29,7 @@
  *
  * @example
  * ```ts
- * import { parseTwee, type TweeStory } from '@datamoc/mw_games/core';
+ * import { parseTwee, type TweeStory } from '@datamoc/mwg/core';
  *
  * const story: TweeStory = parseTwee(`:: Start
  * Pick a door.
@@ -68,7 +68,7 @@ export interface TweeStory {
  *
  * @example
  * ```ts
- * import { parseTwee } from '@datamoc/mw_games/core';
+ * import { parseTwee } from '@datamoc/mwg/core';
  *
  * const story = parseTwee(`:: Start
  * You reach the gorge.

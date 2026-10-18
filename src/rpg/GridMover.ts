@@ -27,8 +27,8 @@ export interface GridMoverOptions {
  *
  * @example
  * ```ts
- * import { GridMover } from '@datamoc/mw_games/rpg';
- * import type { MovableSprite } from '@datamoc/mw_games/rpg';
+ * import { GridMover } from '@datamoc/mwg/rpg';
+ * import type { MovableSprite } from '@datamoc/mwg/rpg';
  *
  * declare const heroSprite: MovableSprite;
  *

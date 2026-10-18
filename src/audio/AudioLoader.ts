@@ -23,7 +23,7 @@ export interface AudioLoaderOptions {
  *
  * @example
  * ```ts
- * import { AudioBus, createAudioLoader } from '@datamoc/mw_games/audio';
+ * import { AudioBus, createAudioLoader } from '@datamoc/mwg/audio';
  * declare const context: AudioContext;
  * declare const soundFontBytes: ArrayBuffer;
  * const bus = new AudioBus(context, {

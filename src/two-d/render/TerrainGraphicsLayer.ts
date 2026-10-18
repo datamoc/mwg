@@ -36,7 +36,7 @@ export interface TerrainGraphicsLayerOptions {
  *
  * @example
  * ```ts
- * import { TerrainGraphicsLayer, resolveTerrainGraphics } from '@datamoc/mw_games/two-d/render';
+ * import { TerrainGraphicsLayer, resolveTerrainGraphics } from '@datamoc/mwg/two-d/render';
  *
  * const placements = resolveTerrainGraphics(2, 1, [], () => new Set(['land']));
  * const layer = new TerrainGraphicsLayer({

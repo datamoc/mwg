@@ -9,7 +9,7 @@ import { removeAffix } from './Affix.ts';
  *
  * @example
  * ```ts
- * import { identify, enchant, damageItem, repairItem } from '@datamoc/mw_games/actors';
+ * import { identify, enchant, damageItem, repairItem } from '@datamoc/mwg/actors';
  *
  * const sword = { id: 'sword', quantity: 1, durability: 30, maxDurability: 50 };
  *

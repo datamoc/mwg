@@ -11,7 +11,7 @@ import type { Texture2D } from '../render/Types2D.ts';
  *
  * @example
  * ```ts
- * import { highContrastTheme, setTheme, theme, themeChanged } from '@datamoc/mw_games/two-d/ui';
+ * import { highContrastTheme, setTheme, theme, themeChanged } from '@datamoc/mwg/two-d/ui';
  *
  * //a custom theme: only what differs from the default needs stating (`font` and `color` merge too)
  * setTheme({
@@ -76,7 +76,7 @@ export interface Theme {
  *
  * @example
  * ```ts
- * import { defaultTheme } from '@datamoc/mw_games/two-d/ui';
+ * import { defaultTheme } from '@datamoc/mwg/two-d/ui';
  *
  * console.log(defaultTheme.color.text); // 0xe8e8f0
  * console.log(defaultTheme.padding); // 8
@@ -116,7 +116,7 @@ export const defaultTheme: Theme = {
  *
  * @example
  * ```ts
- * import { setTheme, highContrastTheme } from '@datamoc/mw_games/two-d/ui';
+ * import { setTheme, highContrastTheme } from '@datamoc/mwg/two-d/ui';
  *
  * setTheme(highContrastTheme); // an accessibility toggle in the settings screen
  * ```
@@ -148,7 +148,7 @@ let current: Theme = defaultTheme;
 /**
  * @example
  * ```ts
- * import { theme } from '@datamoc/mw_games/two-d/ui';
+ * import { theme } from '@datamoc/mwg/two-d/ui';
  *
  * console.log(theme().color.text); // 0xe8e8f0 - the default, until a game calls setTheme
  * ```
@@ -168,7 +168,7 @@ export function theme(): Theme {
  *
  * @example
  * ```ts
- * import { themeChanged } from '@datamoc/mw_games/two-d/ui';
+ * import { themeChanged } from '@datamoc/mwg/two-d/ui';
  *
  * themeChanged.add((next) => console.log('theme changed, text colour is now', next.color.text));
  * ```
@@ -180,7 +180,7 @@ export const themeChanged = new Signal<Theme>();
  *
  * @example
  * ```ts
- * import { setTheme, theme } from '@datamoc/mw_games/two-d/ui';
+ * import { setTheme, theme } from '@datamoc/mwg/two-d/ui';
  *
  * setTheme({ color: { ...theme().color, textHighlight: 0x66ff66 } });
  * console.log(theme().color.textHighlight); // 0x66ff66

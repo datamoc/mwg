@@ -15,7 +15,7 @@
  *
  * @example
  * ```ts
- * import { ReactionTable } from '@datamoc/mw_games/core';
+ * import { ReactionTable } from '@datamoc/mwg/core';
  *
  * const reactions = new ReactionTable<{ hp: number; maxHp: number }>([
  *   { id: 'critical', when: (s) => s.hp / s.maxHp <= 0.25, action: () => console.log('low hp!') },

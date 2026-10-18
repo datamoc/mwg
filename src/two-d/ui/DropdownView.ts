@@ -37,7 +37,7 @@ export interface DropdownViewOptions extends DropdownOptions {
  *
  * @example
  * ```ts
- * import { DropdownView } from '@datamoc/mw_games/two-d/ui';
+ * import { DropdownView } from '@datamoc/mwg/two-d/ui';
  *
  * const level = new DropdownView({
  * 	width: 180,

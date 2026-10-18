@@ -53,7 +53,7 @@ const INERT: MotionHandle = { done: Promise.resolve(), cancel() {} };
  *
  * @example
  * ```ts
- * import { SpriteMotion } from '@datamoc/mw_games/two-d/render';
+ * import { SpriteMotion } from '@datamoc/mwg/two-d/render';
  *
  * const rat = { x: 0, y: 0, rotation: 0, scale: { x: 1, y: 1 }, skew: { x: 0, y: 0 } };
  * const motion = new SpriteMotion(rat);

@@ -48,7 +48,7 @@ export interface MonsterAIOptions extends PathOptions {
  *
  * @example
  * ```ts
- * import { decideMonsterAI, Pathfinder, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ * import { decideMonsterAI, Pathfinder, Level, WALL, FLOOR } from '@datamoc/mwg/roguelike';
  *
  * const level = new Level(20, 20, [WALL, FLOOR], 1);
  * const pathfinder = new Pathfinder(level);

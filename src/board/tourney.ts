@@ -917,7 +917,7 @@ function toBitboard(state: ChessState | BitboardState): BitboardState {
  *
  * @example
  * ```ts
- * import { searchTourney, startingBitboard, tourneyThink } from '@datamoc/mw_games/board';
+ * import { searchTourney, startingBitboard, tourneyThink } from '@datamoc/mwg/board';
  *
  * const direct = tourneyThink(startingBitboard(), { depth: 1 });
  * const result = searchTourney(startingBitboard(), { depth: 2 });
@@ -946,7 +946,7 @@ export function searchTourney(state: ChessState | BitboardState, options: Tourne
  *
  * @example
  * ```ts
- * import { searchTourneyAsync, startingBitboard } from '@datamoc/mw_games/board';
+ * import { searchTourneyAsync, startingBitboard } from '@datamoc/mwg/board';
  *
  * const result = await searchTourneyAsync(startingBitboard(), { depth: 2 });
  * console.log(result.move !== null); // true - the opening position always has legal moves

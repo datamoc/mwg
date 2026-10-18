@@ -40,7 +40,7 @@ export interface HaloOptions {
  *
  * @example
  * ```ts
- * import { Halo, HALO_ANIMATION, SpriteSheet } from '@datamoc/mw_games/two-d/render';
+ * import { Halo, HALO_ANIMATION, SpriteSheet } from '@datamoc/mwg/two-d/render';
  *
  * declare const sheet: SpriteSheet;
  * declare const unit: { x: number; y: number };

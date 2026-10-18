@@ -81,7 +81,7 @@ function offlineContext(rate: number): SampleDecodingContext {
  *
  * @example
  * ```ts
- * import { loadSoundFont, webAudioSampleDecoder } from '@datamoc/mw_games/audio';
+ * import { loadSoundFont, webAudioSampleDecoder } from '@datamoc/mwg/audio';
  *
  * declare const sf3Bytes: ArrayBuffer;
  *

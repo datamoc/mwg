@@ -10,7 +10,7 @@
  *
  * @example
  * ```ts
- * import { startReveal, advanceReveal, completeReveal, revealComplete } from '@datamoc/mw_games/two-d/ui';
+ * import { startReveal, advanceReveal, completeReveal, revealComplete } from '@datamoc/mwg/two-d/ui';
  *
  * const reveal = startReveal('Hello.'.length, 40);
  * advanceReveal(reveal, 0.5); // 20 characters per half second at speed 40

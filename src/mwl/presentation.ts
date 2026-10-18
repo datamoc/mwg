@@ -234,7 +234,7 @@ const MIN_INDICATOR_CONTRAST = 3;
  *
  * @example
  * ```ts
- * import { compilePresentation, emitPresentationModule } from '@datamoc/mw_games/mwl/presentation';
+ * import { compilePresentation, emitPresentationModule } from '@datamoc/mwg/mwl/presentation';
  * const data = compilePresentation([], { values: {}, actions: [] });
  * console.log(emitPresentationModule(data).startsWith('export const presentationData')); // true
  * ```
@@ -477,7 +477,7 @@ export function compilePresentation(
  * Emits data and literal ID types for a game's build script to write alongside its other MWL artifacts.
  * @example
  * ```ts
- * import { compilePresentation, emitPresentationModule } from '@datamoc/mw_games/mwl/presentation';
+ * import { compilePresentation, emitPresentationModule } from '@datamoc/mwg/mwl/presentation';
  * console.log(emitPresentationModule(compilePresentation([], { values: {}, actions: [] })));
  * ```
  */

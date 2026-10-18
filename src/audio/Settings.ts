@@ -33,7 +33,7 @@ export interface AudioSettingsData {
  *
  * @example
  * ```ts
- * import { regionPlaybackRate } from '@datamoc/mw_games/audio';
+ * import { regionPlaybackRate } from '@datamoc/mwg/audio';
  *
  * console.log(regionPlaybackRate('pal', 'ntsc')); // 0.8333..., slower on PAL
  * console.log(regionPlaybackRate('ntsc', 'ntsc')); // 1, its own region
@@ -50,7 +50,7 @@ export function regionPlaybackRate(region: AudioRegion, authored: AudioRegion = 
  *
  * @example
  * ```ts
- * import { softenCutoff } from '@datamoc/mw_games/audio';
+ * import { softenCutoff } from '@datamoc/mwg/audio';
  *
  * console.log(softenCutoff(0, 44100)); // 18000, effectively open
  * console.log(softenCutoff(1, 44100) < softenCutoff(0.5, 44100)); // true, more soften, lower cutoff
@@ -69,7 +69,7 @@ export function softenCutoff(soften: number, sampleRate: number): number {
  *
  * @example
  * ```ts
- * import { dynamicsLimit } from '@datamoc/mw_games/audio';
+ * import { dynamicsLimit } from '@datamoc/mwg/audio';
  *
  * console.log(dynamicsLimit(0.5, 0)); // 0.5, untouched
  * console.log(dynamicsLimit(4, 1) < 1); // true, a hot sample is pulled under full scale
@@ -92,7 +92,7 @@ export function dynamicsLimit(sample: number, dynamics: number): number {
  *
  * @example
  * ```ts
- * import { AudioSettings } from '@datamoc/mw_games/audio';
+ * import { AudioSettings } from '@datamoc/mwg/audio';
  *
  * const settings = new AudioSettings({ preferredEngine: 'retro:mt32', soften: 0.4 });
  * settings.setBusVolume('se', 130);

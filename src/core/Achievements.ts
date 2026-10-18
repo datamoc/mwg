@@ -18,7 +18,7 @@
  *
  * @example
  * ```ts
- * import { Achievements } from '@datamoc/mw_games/core';
+ * import { Achievements } from '@datamoc/mwg/core';
  *
  * const achievements = new Achievements();
  * achievements.define({ id: 'first-blood', counter: 'kills', target: 1 });

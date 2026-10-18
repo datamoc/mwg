@@ -7,7 +7,7 @@ import { Text, type Container } from 'pixi.js';
  *
  * @example
  * ```ts
- * import { fitWindowZoom } from '@datamoc/mw_games/two-d/ui';
+ * import { fitWindowZoom } from '@datamoc/mwg/two-d/ui';
  *
  * console.log(fitWindowZoom(3, 300, 700)); // 2 - 300 x 3 is too tall, 300 x 2 fits
  * ```
@@ -35,7 +35,7 @@ function cumulativeScale(node: Container | null): number {
  * @example
  * ```ts
  * import { Container } from 'pixi.js';
- * import { sharpenText } from '@datamoc/mw_games/two-d/ui';
+ * import { sharpenText } from '@datamoc/mwg/two-d/ui';
  *
  * const panel = new Container();
  * panel.scale.set(3);

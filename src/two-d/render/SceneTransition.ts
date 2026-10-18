@@ -76,7 +76,7 @@ export type TransitionDisposition = 'apply' | 'ignore' | 'queue' | 'interrupt';
  *
  * @example
  * ```ts
- * import { transitionDisposition, dissolve } from '@datamoc/mw_games/two-d/render';
+ * import { transitionDisposition, dissolve } from '@datamoc/mwg/two-d/render';
  *
  * console.log(transitionDisposition({ transition: dissolve() }, true)); // 'ignore'
  * console.log(transitionDisposition({ transition: dissolve(), queue: true }, true)); // 'queue'
@@ -111,7 +111,7 @@ const clamp01 = (value: number): number => Math.min(1, Math.max(0, value));
  *
  * @example
  * ```ts
- * import { tileDelays } from '@datamoc/mw_games/two-d/render';
+ * import { tileDelays } from '@datamoc/mwg/two-d/render';
  *
  * console.log(tileDelays(3, 2, 'diagonal')); // [0, 1/3, 2/3, 1/3, 2/3, 1]
  * ```
@@ -143,7 +143,7 @@ export function tileDelays(columns: number, rows: number, order: TileOrder = 'di
  *
  * @example
  * ```ts
- * import { tileProgress } from '@datamoc/mw_games/two-d/render';
+ * import { tileProgress } from '@datamoc/mwg/two-d/render';
  *
  * console.log(tileProgress(0, 0.5, 0.5)); // 1: the first tile is already done
  * console.log(tileProgress(1, 0.5, 0.5)); // 0: the last one has not started
@@ -159,7 +159,7 @@ export function tileProgress(delay: number, progress: number, stagger: number): 
  *
  * @example
  * ```ts
- * import { popScale } from '@datamoc/mw_games/two-d/render';
+ * import { popScale } from '@datamoc/mwg/two-d/render';
  *
  * console.log(popScale(0)); // 0
  * console.log(popScale(0.7)); // 1.08, the peak
@@ -177,7 +177,7 @@ export function popScale(progress: number, overshoot = 1.08): number {
  *
  * @example
  * ```ts
- * import { resolveEasing } from '@datamoc/mw_games/two-d/render';
+ * import { resolveEasing } from '@datamoc/mwg/two-d/render';
  *
  * console.log(resolveEasing('linear')(0.25)); // 0.25
  * console.log(resolveEasing((t) => t * t)(0.5)); // 0.25
@@ -227,7 +227,7 @@ export interface TileShrinkOptions {
  *
  * @example
  * ```ts
- * import { tileShrink } from '@datamoc/mw_games/two-d/render';
+ * import { tileShrink } from '@datamoc/mwg/two-d/render';
  *
  * const transition = tileShrink({ columns: 8, rows: 5, order: 'diagonal' });
  * // Game.current.switchScene(NextLevel, { transition, duration: 0.6 });
@@ -286,7 +286,7 @@ export function tileShrink(options: TileShrinkOptions = {}): SceneTransition {
  *
  * @example
  * ```ts
- * import { shrink } from '@datamoc/mw_games/two-d/render';
+ * import { shrink } from '@datamoc/mwg/two-d/render';
  *
  * const closeToButton = shrink({ to: { x: 700, y: 40 } });
  * console.log(closeToButton.name); // 'shrink'
@@ -350,7 +350,7 @@ function growing(
  *
  * @example
  * ```ts
- * import { pop } from '@datamoc/mw_games/two-d/render';
+ * import { pop } from '@datamoc/mwg/two-d/render';
  *
  * console.log(pop({ from: { x: 400, y: 300 } }).name); // 'pop'
  * ```
@@ -364,7 +364,7 @@ export function pop(options: { from?: TransitionPoint; overshoot?: number } = {}
  *
  * @example
  * ```ts
- * import { grow } from '@datamoc/mw_games/two-d/render';
+ * import { grow } from '@datamoc/mwg/two-d/render';
  *
  * console.log(grow().name); // 'grow'
  * ```
@@ -379,7 +379,7 @@ export function grow(options: { from?: TransitionPoint } = {}): SceneTransition 
  *
  * @example
  * ```ts
- * import { slide } from '@datamoc/mw_games/two-d/render';
+ * import { slide } from '@datamoc/mwg/two-d/render';
  *
  * console.log(slide({ direction: 'left' }).name); // 'slide'
  * ```
@@ -414,7 +414,7 @@ export function slide(options: { direction?: 'left' | 'right' | 'up' | 'down' } 
  *
  * @example
  * ```ts
- * import { iris } from '@datamoc/mw_games/two-d/render';
+ * import { iris } from '@datamoc/mwg/two-d/render';
  *
  * console.log(iris({ from: { x: 120, y: 80 } }).name); // 'iris'
  * ```
@@ -456,7 +456,7 @@ export function iris(options: { from?: TransitionPoint } = {}): SceneTransition 
  *
  * @example
  * ```ts
- * import { dissolve } from '@datamoc/mw_games/two-d/render';
+ * import { dissolve } from '@datamoc/mwg/two-d/render';
  *
  * console.log(dissolve().name); // 'dissolve'
  * ```
@@ -485,7 +485,7 @@ export type OpenAnimationKind = 'pop' | 'grow' | 'slide' | 'fade';
  *
  * @example
  * ```ts
- * import { openAnimationFrame } from '@datamoc/mw_games/two-d/render';
+ * import { openAnimationFrame } from '@datamoc/mwg/two-d/render';
  *
  * console.log(openAnimationFrame('pop', 0).scale); // 0
  * console.log(openAnimationFrame('pop', 1).scale); // 1
@@ -512,8 +512,8 @@ export function openAnimationFrame(
  *
  * @example
  * ```ts
- * import { Container2D as Container } from '@datamoc/mw_games/two-d/render';
- * import { TransitionRunner, dissolve } from '@datamoc/mw_games/two-d/render';
+ * import { Container2D as Container } from '@datamoc/mwg/two-d/render';
+ * import { TransitionRunner, dissolve } from '@datamoc/mwg/two-d/render';
  *
  * const incoming = new Container();
  * const runner = new TransitionRunner({ transition: dissolve(), duration: 0.5 }, { width: 800, height: 600 }, null, incoming);

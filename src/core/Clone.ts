@@ -7,7 +7,7 @@
  *
  * @example
  * ```ts
- * import { uncloneablePath } from '@datamoc/mw_games/core';
+ * import { uncloneablePath } from '@datamoc/mwg/core';
  *
  * uncloneablePath({ target: { id: 'king', onHit: () => {} } }, 'command'); // 'command.target.onHit'
  * uncloneablePath({ targetId: 'king' }, 'command'); // null
@@ -55,7 +55,7 @@ function clones(value: object): boolean {
  *
  * @example
  * ```ts
- * import { cloneData } from '@datamoc/mw_games/core';
+ * import { cloneData } from '@datamoc/mwg/core';
  *
  * const checkpoint = cloneData({ turn: 3, hp: { king: 12 } }, 'state');
  * cloneData({ onHit: () => {} }, 'command'); // throws: command.onHit cannot be structured-cloned ...

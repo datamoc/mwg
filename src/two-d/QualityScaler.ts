@@ -27,7 +27,7 @@ export interface QualityScalerOptions {
  *
  * @example
  * ```ts
- * import { QualityScaler } from '@datamoc/mw_games/two-d';
+ * import { QualityScaler } from '@datamoc/mwg/two-d';
  *
  * const scaler = new QualityScaler({ ceiling: 2 });
  * for (let i = 0; i < 60; i++) scaler.observe(1 / 30);

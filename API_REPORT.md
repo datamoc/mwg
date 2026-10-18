@@ -4,7 +4,7 @@ Generated from the built declarations by `npm run api:report`; verified by
 `tests/api-surface.test.ts`. Do not edit by hand - run `npm run api:report` after a
 build instead.
 
-## root (`@datamoc/mw_games`)
+## root (`@datamoc/mwg`)
 
 ### `AchievementCriterion` (interface)
 

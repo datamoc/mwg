@@ -39,7 +39,7 @@ export function assertSecureUrl(url: string, label: string, allowInsecure = fals
  *
  * @example
  * ```ts
- * import { HttpTransport, type HttpTransportOptions } from '@datamoc/mw_games/core';
+ * import { HttpTransport, type HttpTransportOptions } from '@datamoc/mwg/core';
  *
  * class ScoreClient extends HttpTransport {
  * 	constructor(options: HttpTransportOptions) {

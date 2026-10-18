@@ -11,7 +11,7 @@
  *
  * @example
  * ```ts
- * import { Scheduler, type Actor } from '@datamoc/mw_games/roguelike';
+ * import { Scheduler, type Actor } from '@datamoc/mwg/roguelike';
  *
  * interface Monster extends Actor { name: string }
  *

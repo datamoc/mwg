@@ -28,7 +28,7 @@
 </style>
 </head>
 <body>
-<!-- Standalone mwg build: global window.mw_games build without a bundler.
+<!-- Standalone mwg build: global window.mwg build without a bundler.
      When served via HTTP, fetch('../ROADMAP.md') is loaded live.
      When opened directly via file://, run 'npm run roadmap:progress -- --embed'
      to inline the markdown inside the script tag below.
@@ -39,7 +39,7 @@
 <div id="mwg-roadmap-canvas-wrap"></div>
 <div id="mwg-roadmap-panel"></div>
 </div>
-<script src="../dist/mw_games.global.js"></script>
+<script src="../dist/mwg.global.js"></script>
 <script id="roadmap-data" type="text/plain">
 # Closed roadmap items
 
@@ -1657,7 +1657,7 @@ process - appended at low priority, not argued into or out of existence on the s
        browser this project targets both have one), so `ws` - needed only to *host* a
        WebSocket server, which neither browsers nor (until now) `mwg` ever needed to do -
        stays a `tools/`-only devDependency, confirmed absent from the built
-       `mw_games.global.js` by grepping the actual bundle rather than assuming tree-shaking
+       `mwg.global.js` by grepping the actual bundle rather than assuming tree-shaking
        caught it. 10 tests, including two real `LockstepClient`s driven against the real
        reference server over actual sockets (not mocked), covering per-room isolation,
        early advancement once every client has submitted, and the timeout fallback reporting
@@ -1936,9 +1936,9 @@ process - appended at low priority, not argued into or out of existence on the s
      caught only by manually diffing against the current checkout each time. Not a defect in
      `mwg` itself, but a discoverability gap for anything consuming it: a lightweight
      changelog, or an exported version constant readable without grepping source (`import {
-     version } from '@datamoc/mw_games'`, say), would make "is this still missing, or did it
+     version } from '@datamoc/mwg'`, say), would make "is this still missing, or did it
      ship since I last checked" cheaper to answer than re-deriving it by hand every time~~ -
-     `import { version } from '@datamoc/mw_games'`, exactly as named above. Kept in sync with
+     `import { version } from '@datamoc/mwg'`, exactly as named above. Kept in sync with
      `package.json` by a test that fails the moment they disagree, rather than a build step
      that injects it - simpler, and this project's own build has no earlier step this would
      need to run ahead of. A full changelog stays unbuilt; the version constant alone answers
@@ -2552,7 +2552,7 @@ rather than someone else's build.
      independence (`tests/simulation.test.ts`, three different presentation-duration
      functions over the same commands produce identical simulation results), a genuinely
      external consumer (`tests/consumer-app.test.ts`, a minimal game compiled against
-     `@datamoc/mw_games`'s real published paths, never naming a renderer), and the reverse
+     `@datamoc/mwg`'s real published paths, never naming a renderer), and the reverse
      Babylon-isolation direction (`renderer-isolation.test.ts`). `examples/headless` gained a
      third demo dispatching through `SimulationRuntime`/`Scheduler`/`EntityRegistry`/
      `PresentationQueue` together, so the newer facade has a working, visible example rather
@@ -2733,7 +2733,7 @@ rather than someone else's build.
      view`) - a real breaking-change decision, not a same-session mechanical edit. Needs,
      before it can move: confirming `npm install`'s behaviour is unchanged for a consumer
      under npm 7+'s auto-installed-required-peer-dependency handling (both the `npm install
-     @datamoc/mw_games vite` path and the `.tgz` fallback CLAUDE.md's own getting-started
+     @datamoc/mwg vite` path and the `.tgz` fallback CLAUDE.md's own getting-started
      verification section names), rerunning that getting-started verification from an empty
      directory once the shape actually changes, and deciding whether this is a `0.5.x` patch
      or belongs bundled with a larger breaking-change release. Left open on purpose rather
@@ -2969,7 +2969,7 @@ rather than someone else's build.
      features-to-example link chain.~~
 
 191. ~~requested directly: a generic `Blob` API with a per-cell clear operation~~ - `Blob`
-     moved from `roguelike` to `core` (still top-level through `mw_games`) and now imports
+     moved from `roguelike` to `core` (still top-level through `mwg`) and now imports
      nothing, so a volume field is no longer a dungeon-crawl concern; it gained `clear(x, y)`
      to zero one cell without touching its neighbours, and the bounds check `volumeAt`,
      `seed` and `clear` all repeated is one private `index` helper. 8 unit tests, including
@@ -2987,7 +2987,7 @@ rather than someone else's build.
 193. ~~requested directly: nothing proves the central promise end to end~~ -
      `tools/package-smoke.mjs` packs the tarball, installs it into a scratch directory outside
      the repo, builds the tutorial's own tiny game with its vite config, applies step 10's
-     module-to-classic edit, and opens both that page and the standalone `mw_games.global.js`
+     module-to-classic edit, and opens both that page and the standalone `mwg.global.js`
      from `file://` in headless Chrome, judged the same way the visual smoke judges a page. CI
      runs it per pull request. The checklist's manual pass stays: only a person can tell
      whether the prose is followable.
@@ -4336,7 +4336,7 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      needs no two games would agree on: `tools/mwl.mjs`'s own doc comment and README's MWL
      section now both say that `compileSources`/`emitArtifacts`/`validateCatalog`/
      `contentReport` - every function `build` itself calls - are public from
-     `@datamoc/mw_games/mwl`, so a game's own small Node build script against that same API is
+     `@datamoc/mwg/mwl`, so a game's own small Node build script against that same API is
      the actual extension point for an extra generated module or a cross-table check this CLI
      has no flag for.
 306. ~~[Low] Document a `file://` post-build recipe for bundler users, or add a
@@ -4537,7 +4537,7 @@ ordered by the port's own payoff estimate, not argued into or out of a different
 </style>
 </head>
 <body>
-<!-- Standalone mwg build: global window.mw_games build without a bundler.
+<!-- Standalone mwg build: global window.mwg build without a bundler.
      When served via HTTP, fetch('../ROADMAP.md') is loaded live.
      When opened directly via file://, run 'npm run roadmap:progress -- --embed'
      to inline the markdown inside the script tag below.
@@ -4548,7 +4548,7 @@ ordered by the port's own payoff estimate, not argued into or out of a different
 <div id="mwg-roadmap-canvas-wrap"></div>
 <div id="mwg-roadmap-panel"></div>
 </div>
-<script src="../dist/mw_games.global.js"></script>
+<script src="../dist/mwg.global.js"></script>
  per line, and `parseValue()` trims and only unquotes `"..."`.
      A value therefore cannot span lines and cannot keep leading or trailing whitespace, while
      Wesnoth message, objective and option-label text routinely wraps. The port's workaround
@@ -4606,7 +4606,7 @@ ordered by the port's own payoff estimate, not argued into or out of a different
 </style>
 </head>
 <body>
-<!-- Standalone mwg build: global window.mw_games build without a bundler.
+<!-- Standalone mwg build: global window.mwg build without a bundler.
      When served via HTTP, fetch('../ROADMAP.md') is loaded live.
      When opened directly via file://, run 'npm run roadmap:progress -- --embed'
      to inline the markdown inside the script tag below.
@@ -4617,7 +4617,7 @@ ordered by the port's own payoff estimate, not argued into or out of a different
 <div id="mwg-roadmap-canvas-wrap"></div>
 <div id="mwg-roadmap-panel"></div>
 </div>
-<script src="../dist/mw_games.global.js"></script>
+<script src="../dist/mwg.global.js"></script>
  in a name is not a reference today, and reading it as one would change what
      content already means, so `path` is the form that says "this is built from variables" and
      `zombies[$index].allow_recruit` now has a spelling that is not a hook. A reference that
@@ -5085,7 +5085,7 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      build-options matrix. Several related build-pipeline ideas: (a) a true standalone HTML
      build with no separate `.js` file at all, inlining the classic IIFE that `emit-page.mjs`
      currently references as script content directly into the page rather than a sibling file;
-     (b) compressing the built `mw_games.global.js` (and/or the inlined asset data URIs), with
+     (b) compressing the built `mwg.global.js` (and/or the inlined asset data URIs), with
      compression level as a build option and evaluating a small pure-JS algorithm such as
      `js-lzma` (reported to be only a few kB) against the existing gzip/deflate-shaped
      approaches, weighed against decompression cost at load time; (c) async loading of the
@@ -5289,7 +5289,7 @@ ordered by the port's own payoff estimate, not argued into or out of a different
      `Positional`'s reported pan number.
 
 Items 352-354 came from a port's own improvement-proposals notes (the RPG Maker MV player at
-`mwgp/4MWG`, checked there against `@datamoc/mw_games@0.9.1`): two of that document's four
+`mwgp/4MWG`, checked there against `@datamoc/mwg@0.9.1`): two of that document's four
 proposals were not framework gaps and were not added as items at all - first-class RPG Maker
 autotile support was already shipped as `two-d/render/RpgmAutotile.ts`'s `RpgmAutotileAtlas`/
 `rpgmAutotileFrame` (the proposal's own note was stale against the version it named), and MV
@@ -5402,9 +5402,9 @@ capability this framework was missing.
 358. ~~[Low] `package.json` lists seven `tools/*.mjs` helpers in `files`, but only three of them
      (`compile-resources`, `compress-dist`, `webp-convert`) have an `exports` subpath. An
      `exports` map blocks every deep path it does not name, so the other four cannot be imported
-     by specifier at all: `import { toClassicScript } from '@datamoc/mw_games/tools/classic-html'`
+     by specifier at all: `import { toClassicScript } from '@datamoc/mwg/tools/classic-html'`
      fails with `ERR_PACKAGE_PATH_NOT_EXPORTED` while the file sits in the installed package. A
-     consumer is left hardcoding a `node_modules/@datamoc/mw_games/...` path, which breaks the
+     consumer is left hardcoding a `node_modules/@datamoc/mwg/...` path, which breaks the
      day the package is installed under an npm alias - and no TypeScript consumer sees the
      `.d.mts` files shipped beside them. Acceptance: the specifier resolves and type-checks for
      each, no consumer needs a `node_modules` path literal, and the seven are exported
@@ -5412,12 +5412,12 @@ capability this framework was missing.
      `./tools/extract-html` and `./tools/single-file` - the three remaining helpers that export
      anything at all. `tools/mwl.mjs` deliberately keeps no subpath, which is where the item's
      own acceptance needed correcting rather than implementing: it reads `process.argv` and
-     dispatches at import time, so `import '@datamoc/mw_games/tools/mwl'` would run a CLI, and a
+     dispatches at import time, so `import '@datamoc/mwg/tools/mwl'` would run a CLI, and a
      subpath would be a trap rather than a convenience. The typed entry point for that half was
-     already there as `@datamoc/mw_games/mwl` (the library `tools/mwl.mjs` itself imports from
+     already there as `@datamoc/mwg/mwl` (the library `tools/mwl.mjs` itself imports from
      `../dist/mwl/index.js`), so the documented answer for `mwl` is the library specifier plus
      the CLI by path. `tools/classic-html.mjs`'s own `@example` had been showing
-     `@datamoc/mw_games/tools/classic-html.mjs` - the one spelling the map refuses - and now
+     `@datamoc/mwg/tools/classic-html.mjs` - the one spelling the map refuses - and now
      shows the subpath, which also explains why this was never caught: the framework's own tests
      import these files by relative path, so nothing in the repository ever exercised its own
      published map. `tests/package-tools.test.ts` now does, cheaply and without executing a
@@ -5428,7 +5428,7 @@ capability this framework was missing.
      does), asserts the deep `.mjs` path is still refused with `ERR_PACKAGE_PATH_NOT_EXPORTED`,
      asserts `mwl` has no subpath, and asserts every importable tool ships a `.d.mts` beside it.
      Verified beyond the repository as well, since an in-repo self-reference is still not an
-     install: `npm pack`, extracted into a scratch `node_modules/@datamoc/mw_games` outside the
+     install: `npm pack`, extracted into a scratch `node_modules/@datamoc/mwg` outside the
      repository, resolves all three new specifiers, refuses the old `.mjs` one and `tools/mwl`,
      and a two-line `tsc --moduleResolution bundler` fixture importing all three type-checks
      against the shipped `.d.mts` files.
@@ -5466,7 +5466,7 @@ capability this framework was missing.
      the desktop host's own recipe closed this session. `mobile:build`, `cap:sync`,
      `cap:add:android` and `cap:add:ios` are all repo-relative against this repository's own
      `android/` scaffold and `tools/capacitor-node-workaround.cjs`, so a game that installs
-     `@datamoc/mw_games` cannot produce an Android package without authoring the Capacitor
+     `@datamoc/mwg` cannot produce an Android package without authoring the Capacitor
      config and the platform tree itself. This item is `tools.md`'s "Packaging as a native app"
      section extended to that target, carrying the three things a consumer otherwise meets one
      failed build at a time: `--no-compress` (the `.gz`/`.br` siblings collide as AAPT duplicate
@@ -5474,7 +5474,7 @@ capability this framework was missing.
      that `cap add android` writes once and never revises. Recorded as P18, suggestion 1, in
      `mwg-pixel-dungeon`'s own `4MWG/IMPROVEMENT_PROPOSALS.md`.~~ Written and verified by
      building a consumer game for real, outside this repository: a game installed `mwg` from a
-     packed tarball, built its web output with the `@datamoc/mw_games/tools/classic-html`
+     packed tarball, built its web output with the `@datamoc/mwg/tools/classic-html`
      subpath item 358 had just added, ran `cap add android` / `cap sync` / `gradlew
      assembleDebug`, and the APK was installed and launched on this machine's
      `Medium_Phone_API_35` emulator, where the game rendered - checked at the pixel level, not
@@ -5743,8 +5743,8 @@ capability this framework was missing.
     metatable.
 
 381. ~~[High] Ship the build step itself: `tools/emit-page.mjs` and the shared vite config.~~
-    Landed as `@datamoc/mw_games/tools/vite`'s `mwgPage(options)` and
-    `@datamoc/mw_games/tools/emit-page`'s `emitPage(options)`. The script became a function plus
+    Landed as `@datamoc/mwg/tools/vite`'s `mwgPage(options)` and
+    `@datamoc/mwg/tools/emit-page`'s `emitPage(options)`. The script became a function plus
     a thin command line (`--dist=`, `--assets=` with project-relative defaults; the examples now
     pass `--assets=examples/assets` and produce byte-identical pages). The plugin sets what the
     target needs (IIFE `game.js`, `base: './'`, no inlined assets, `copyPublicDir: false` since
@@ -5765,7 +5765,7 @@ capability this framework was missing.
 
 374. ~~[Medium] A Content-Security-Policy generated by `tools/emit-page.mjs`.~~ Landed as
     `tools/csp.mjs` (`contentSecurityPolicy`, `withContentSecurityPolicy`, shipped as
-    `@datamoc/mw_games/tools/csp`), applied by `emitPage` to `index.html` and to
+    `@datamoc/mwg/tools/csp`), applied by `emitPage` to `index.html` and to
     `standalone.html`, on by default, with `csp: { connect, eval }` or `csp: false`
     (`--connect=`/`--no-csp` on the command). Every inline script is allowed by its SHA-256
     hash; a compressed standalone page inserts its unpacked scripts inline, so those are hashed
@@ -5793,7 +5793,7 @@ capability this framework was missing.
 
 383. ~~[Medium] A `file://` smoke check for a game's own build.~~ Landed as
     `tools/browser-smoke.mjs` + `tools/find-chrome.mjs` in the package
-    (`@datamoc/mw_games/tools/browser-smoke`, `/tools/find-chrome`) and the `mwg-smoke <page |
+    (`@datamoc/mwg/tools/browser-smoke`, `/tools/find-chrome`) and the `mwg-smoke <page |
     dist> [--screenshot=] [--key=]` command, which exits non-zero when the page did not render.
     `playwright-core` became an optional peer, imported on first use with an install hint when
     it is missing. The lookup gained what made `CHROME_PATH` necessary in the 2026-09-25
@@ -5823,20 +5823,20 @@ capability this framework was missing.
 
 380. ~~[Medium] A CycloneDX SBOM for a *consuming* project.~~ Landed in three parts, as
     proposed. (a) `sbom.cdx.json` is in `files`. (b) `tools/sbom.mjs` ships as
-    `@datamoc/mw_games/tools/sbom` and `mwg-sbom [folder] [--out=] [--check]`: the hard-coded
+    `@datamoc/mwg/tools/sbom` and `mwg-sbom [folder] [--out=] [--check]`: the hard-coded
     root became an argument, `private` projects are typed `application`, and `metadata.tools`
     names mwg's own version rather than the described project's. This repository's committed
     SBOM is byte-identical. (c) `buildArtifactSbom` + `shippedFiles`: `mwgPage()` collects
     module ids in `generateBundle` and writes `dist/sbom.cdx.json`, where each package whose
     modules reached the bundle is a `required` library with the version and licence of its own
     `package.json`, and every shipped file is a `file` component with its SHA-256 (precompressed
-    siblings left out). `package:smoke` checks it on a real consumer build: `@datamoc/mw_games`,
+    siblings left out). `package:smoke` checks it on a real consumer build: `@datamoc/mwg`,
     `pixi.js` and six of Pixi's own dependencies, no `vite`, against 60 components in the same
     project's lockfile SBOM. `mwg-emit` alone writes no artifact SBOM, since without the bundler
     it has no module graph.
 
 384. ~~[Medium] Ship the translation editor `tools/i18n-edit.mjs`.~~ Landed as
-    `@datamoc/mw_games/tools/i18n-edit` and `mwg-i18n`. The runtime imports became dynamic ones
+    `@datamoc/mwg/tools/i18n-edit` and `mwg-i18n`. The runtime imports became dynamic ones
     choosing the TypeScript sources when `src/` sits beside the tool (this repository, where the
     tests exercise the current source with no build) and `dist/` otherwise (an installed
     package). The `.d.mts` names its types through the package's own subpaths, which
@@ -5845,7 +5845,7 @@ capability this framework was missing.
     100 %).
 
 385. ~~[Medium] Ship the reference lockstep server `tools/multiplayer-server.mjs`.~~ Landed as
-    `@datamoc/mw_games/tools/multiplayer-server` and `mwg-lockstep-server [port] [--host=]`,
+    `@datamoc/mwg/tools/multiplayer-server` and `mwg-lockstep-server [port] [--host=]`,
     `ws` an optional peer loaded once at module load with an install hint. Hardening, as the
     item asked: `maxMessageBytes` (64 KB, passed to `ws` as `maxPayload`, whose default is 100
     MiB), inputs read through `parseInbound`, room names limited to `[\\w-]{1,64}` (1008
@@ -5881,7 +5881,7 @@ capability this framework was missing.
     attaches it on its own to a trusted-publishing release from a public repository.
 
 386. ~~[Low] A bundle-size budget for a game.~~ Landed as `measureBuild`/`compareBudget` in
-    `tools/bundle-size.mjs` (shipped, `@datamoc/mw_games/tools/bundle-size`) and `mwg-size
+    `tools/bundle-size.mjs` (shipped, `@datamoc/mwg/tools/bundle-size`) and `mwg-size
     <dist> [--baseline=] [--update] [--tolerance=]`. With no folder it keeps this repository's
     own two measurements and baseline, unchanged. With one, it measures every file a player
     receives (maps, precompressed siblings and SBOMs left out) raw and gzipped, plus a total; a
@@ -5891,14 +5891,14 @@ capability this framework was missing.
 
 387. ~~[Low] Frame-rate measurement for a game's page.~~ Landed as `measurePage(options)` in
     `tools/benchmark-browser.mjs` (shipped with `benchmark-history.mjs`,
-    `@datamoc/mw_games/tools/benchmark-browser`) and `mwg-bench <page | dist> [--frames=]
+    `@datamoc/mwg/tools/benchmark-browser`) and `mwg-bench <page | dist> [--frames=]
     [--min-fps=] [--max-p95=] [--history=]`, the environment variables still read as before, so
     `npm run benchmark:*` and the scheduled workflow are unchanged. The script's module-level
     run became a function that throws with the measured result attached. The readiness wait it
     duplicated with `browser-smoke.mjs` is now one `waitForGame` both use. Checked on the
     dungeon example: 25 fps under software WebGL, exit 1 when `--min-fps` is set above it.
 
-388. ~~[Low] A `@datamoc/mw_games/testing` subpath.~~ Landed as `src/testing/index.ts`:
+388. ~~[Low] A `@datamoc/mwg/testing` subpath.~~ Landed as `src/testing/index.ts`:
     `memoryStorage` (the `MemoryStorage` class `core` already fell back to, now exported, rather
     than a thirteenth copy), `fakeAudio` (usable as `create: fakeAudio` directly) and
     `fakeAudioWithEnded`, `FakeSocket` (`sent`, `receive`, `receiveRaw`, `close`) and
@@ -6318,9 +6318,9 @@ that says so rather than a numbered item of its own.
       unchanged - 574 of 1168 files, 22% of the gzipped bytes and 28% of the raw ones, so the
       share held while the package grew.)
 - [x] The getting-started tutorial is followed from scratch, in an empty directory
-      outside this repo, once for each documented path: `npm install @datamoc/mw_games
+      outside this repo, once for each documented path: `npm install @datamoc/mwg
       pixi.js vite`, the `npm pack` + install-by-path `.tgz` fallback, and the no-install
-      `mw_games.global.js` script tag. All three reach a working `file://` page.
+      `mwg.global.js` script tag. All three reach a working `file://` page.
       (2026-09-11: all three, each a WebGL, game-ready page with no page errors. The registry
       path in `C:\Users\miche\dev\_mwg-tutorial-registry`, against the published 0.7.4 and
       re-run against 0.7.6 once it landed; the `.tgz` and global paths through
@@ -6334,9 +6334,9 @@ that says so rather than a numbered item of its own.
       `README`, `REFERENCE.md` and the getting-started page. Re-verified twice: `package:smoke`
       installs the packed tarball plus `pixi.js` and reaches a working `file://` page, and once
       0.7.6 was on the registry the literal registry path was re-run against it - installing
-      `@datamoc/mw_games@^0.7.6` alone leaves `node_modules/pixi.js` absent (checked directly),
+      `@datamoc/mwg@^0.7.6` alone leaves `node_modules/pixi.js` absent (checked directly),
       the published `dependencies` is `rot-js` only with `pixi.js` a peer `^8.20.1` marked
-      `optional`, and `@datamoc/mw_games/core` imports and runs with no Pixi present. 0.7.4 had
+      `optional`, and `@datamoc/mwg/core` imports and runs with no Pixi present. 0.7.4 had
       still listed `pixi.js` under `dependencies`, which is exactly why this belonged to 1.0.)
 - [x] The public API gets a stability-marker contract: `@experimental` on anything not
       intended as 1.0-stable, called out in release notes, and a `DEPRECATED` convention, so
@@ -6420,7 +6420,7 @@ results are recorded in one place rather than scattered per line:
   since this session's changes are not published.
 - The peer-dependency contract: a bare `npm install` of the packed tarball, in a scratch
   directory with no parent install to shadow it, has **no `pixi.js`**, and
-  `@datamoc/mw_games/core` imports and runs there with 71 exports, the new grid functions
+  `@datamoc/mwg/core` imports and runs there with 71 exports, the new grid functions
   among them. The resolved path was printed to prove the local install answered, after an
   earlier run of this same check silently resolved a stale package in a parent directory.
 - The browser smoke check (`npm run visual:smoke:ui`): `pageErrors: []`, `gameReady: true`, and
@@ -6483,9 +6483,9 @@ no commits.
 
 **Ports re-tested against 0.17.0, 2026-09-25.** The same method, run once 0.17.0 was public:
 
-- `mwg-pixel-dungeon`: its `@datamoc/mw_games` dependency had already been moved to `^0.17.0`
+- `mwg-pixel-dungeon`: its `@datamoc/mwg` dependency had already been moved to `^0.17.0`
   (installed 0.17.0), but the port's own source imports only through the `mwg` alias (47
-  files import `mwg/...`, and `@datamoc/mw_games` appears in its documentation and in no
+  files import `mwg/...`, and `@datamoc/mwg` appears in its documentation and in no
   import), and that alias was installed 0.16.0 - so the first run against the installed
   dependency was testing 0.16.0 in everything the code actually reaches. Overlaid with 0.17.0
   under the alias name, its `test:mwg` passes 22/22 and `tsc --noEmit` is clean. The alias was

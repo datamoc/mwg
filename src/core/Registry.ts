@@ -10,7 +10,7 @@
  *
  * @example
  * ```ts
- * import { Registry } from '@datamoc/mw_games/core';
+ * import { Registry } from '@datamoc/mwg/core';
  *
  * const commands = new Registry<(args: string[]) => void>();
  * commands.register('heal', (args) => console.log('healing', args[0]));

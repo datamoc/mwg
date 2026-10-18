@@ -17,7 +17,7 @@ import { hexDistance, hexNeighbors } from '../core/Hex.ts';
  * 	triggerTacticalOverwatch,
  * 	tacticalAttack,
  * 	endTacticalTurn,
- * } from '@datamoc/mw_games/board';
+ * } from '@datamoc/mwg/board';
  *
  * const state = startingTactics(6, 6, 'square');
  * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
@@ -84,7 +84,7 @@ export interface TacticalAttack {
 /**
  * @example
  * ```ts
- * import { startingTactics } from '@datamoc/mw_games/board';
+ * import { startingTactics } from '@datamoc/mwg/board';
  *
  * const state = startingTactics(6, 6, 'square');
  * console.log(state.width, state.height, state.round); // 6 6 1
@@ -107,7 +107,7 @@ export function startingTactics(width: number, height: number, shape: TacticalSh
  *
  * @example
  * ```ts
- * import { startingTactics, addTacticalUnit, canPlaceTacticalUnit } from '@datamoc/mw_games/board';
+ * import { startingTactics, addTacticalUnit, canPlaceTacticalUnit } from '@datamoc/mwg/board';
  *
  * const state = startingTactics(6, 6, 'square');
  * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
@@ -125,7 +125,7 @@ export function canPlaceTacticalUnit(state: TacticalState, x: number, y: number)
  *
  * @example
  * ```ts
- * import { startingTactics, addTacticalUnit } from '@datamoc/mw_games/board';
+ * import { startingTactics, addTacticalUnit } from '@datamoc/mwg/board';
  *
  * const state = startingTactics(6, 6, 'square');
  * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
@@ -144,7 +144,7 @@ export function addTacticalUnit(state: TacticalState, unit: TacticalUnit): void 
  *
  * @example
  * ```ts
- * import { startingTactics, addTacticalUnit, tacticalMoves } from '@datamoc/mw_games/board';
+ * import { startingTactics, addTacticalUnit, tacticalMoves } from '@datamoc/mwg/board';
  *
  * const state = startingTactics(6, 6, 'square');
  * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
@@ -176,7 +176,7 @@ export function tacticalMoves(state: TacticalState, unitId: string): TacticalMov
 /**
  * @example
  * ```ts
- * import { startingTactics, addTacticalUnit, tacticalMoves, moveTacticalUnit } from '@datamoc/mw_games/board';
+ * import { startingTactics, addTacticalUnit, tacticalMoves, moveTacticalUnit } from '@datamoc/mwg/board';
  *
  * const state = startingTactics(6, 6, 'square');
  * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
@@ -201,7 +201,7 @@ export function moveTacticalUnit(state: TacticalState, move: TacticalMove): void
  *
  * @example
  * ```ts
- * import { startingTactics, addTacticalUnit, setTacticalOverwatch } from '@datamoc/mw_games/board';
+ * import { startingTactics, addTacticalUnit, setTacticalOverwatch } from '@datamoc/mwg/board';
  *
  * const state = startingTactics(6, 6, 'square');
  * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
@@ -222,7 +222,7 @@ export function setTacticalOverwatch(state: TacticalState, unitId: string): void
  *
  * @example
  * ```ts
- * import { startingTactics, addTacticalUnit, setTacticalOverwatch, endTacticalTurn, triggerTacticalOverwatch } from '@datamoc/mw_games/board';
+ * import { startingTactics, addTacticalUnit, setTacticalOverwatch, endTacticalTurn, triggerTacticalOverwatch } from '@datamoc/mwg/board';
  *
  * const state = startingTactics(6, 6, 'square');
  * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 1, y: 0, hp: 10, maxHp: 10, actions: 2 });
@@ -256,7 +256,7 @@ export function triggerTacticalOverwatch(state: TacticalState, movingUnitId: str
 /**
  * @example
  * ```ts
- * import { startingTactics, addTacticalUnit, endTacticalTurn, tacticalAttack } from '@datamoc/mw_games/board';
+ * import { startingTactics, addTacticalUnit, endTacticalTurn, tacticalAttack } from '@datamoc/mwg/board';
  *
  * const state = startingTactics(6, 6, 'square');
  * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });
@@ -291,7 +291,7 @@ export function tacticalAttack(
  *
  * @example
  * ```ts
- * import { startingTactics, addTacticalUnit, endTacticalTurn } from '@datamoc/mw_games/board';
+ * import { startingTactics, addTacticalUnit, endTacticalTurn } from '@datamoc/mwg/board';
  *
  * const state = startingTactics(6, 6, 'square');
  * addTacticalUnit(state, { id: 'ranger', owner: 'blue', x: 0, y: 0, hp: 10, maxHp: 10, actions: 2 });

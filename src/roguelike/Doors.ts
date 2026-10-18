@@ -12,7 +12,7 @@ import type { Level } from './Level.ts';
  *
  * @example
  * ```ts
- * import { Doors, Level, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ * import { Doors, Level, WALL, FLOOR } from '@datamoc/mwg/roguelike';
  *
  * const level = new Level(20, 20, [WALL, FLOOR], 1);
  * const doors = new Doors(level);

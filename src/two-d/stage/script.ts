@@ -85,8 +85,8 @@ export interface ScriptOptions {
  *
  * @example
  * ```ts
- * import { StageScript, DialogueStage, type StageCommand } from '@datamoc/mw_games/two-d';
- * import { WindowStack } from '@datamoc/mw_games/two-d';
+ * import { StageScript, DialogueStage, type StageCommand } from '@datamoc/mwg/two-d';
+ * import { WindowStack } from '@datamoc/mwg/two-d';
  * import type { Texture } from 'pixi.js';
  *
  * declare const backdropTexture: Texture;

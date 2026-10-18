@@ -26,7 +26,7 @@ export interface OrchestratorState {
  *
  * @example
  * ```ts
- * import { Orchestrator, Music, Sound } from '@datamoc/mw_games/audio';
+ * import { Orchestrator, Music, Sound } from '@datamoc/mwg/audio';
  *
  * const orchestrator = new Orchestrator(new Music());
  * orchestrator.define('exploring', { track: 'music/town.mp3' });

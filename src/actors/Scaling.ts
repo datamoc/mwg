@@ -12,7 +12,7 @@ import type { Modifier, ModifierOp } from './StatBlock.ts';
  *
  * @example
  * ```ts
- * import { scaledModifiers, type LevelScale } from '@datamoc/mw_games/actors';
+ * import { scaledModifiers, type LevelScale } from '@datamoc/mwg/actors';
  *
  * const ringScales: LevelScale[] = [{ stat: 'evasion', op: 'add', base: 1, perLevel: 1 }];
  * const modifiers = scaledModifiers(3, ringScales); // [{ stat: 'evasion', op: 'add', value: 4 }]

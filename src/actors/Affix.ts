@@ -14,7 +14,7 @@ import * as Random from '../core/Random.ts';
  *
  * @example
  * ```ts
- * import { rollAffix, applyAffix, affixOf, removeAffix, copyAffix, matchesContext, type AffixTable } from '@datamoc/mw_games/actors';
+ * import { rollAffix, applyAffix, affixOf, removeAffix, copyAffix, matchesContext, type AffixTable } from '@datamoc/mwg/actors';
  *
  * const table: AffixTable = { entries: [{ id: 'flaming', trigger: 'strike', weight: 1, kinds: ['melee'] }] };
  * const sword = { id: 'sword', quantity: 1 };

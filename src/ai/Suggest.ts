@@ -27,8 +27,8 @@ export interface SuggesterOptions {
  *
  * @example
  * ```ts
- * import { Suggester } from '@datamoc/mw_games/ai';
- * import type { AIDecision, AIDecisionInput } from '@datamoc/mw_games/ai';
+ * import { Suggester } from '@datamoc/mwg/ai';
+ * import type { AIDecision, AIDecisionInput } from '@datamoc/mwg/ai';
  *
  * declare const module: { decide(agent: string, input: AIDecisionInput): AIDecision };
  * declare const input: AIDecisionInput;

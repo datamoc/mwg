@@ -9,7 +9,7 @@ const ROOT = new URL('../../', import.meta.url).pathname.replace(/^\/([A-Za-z]:)
  * field so a rename updates the checks automatically rather than leaving them pointing at a
  * path that no longer exists.
  *
- * Shared by the two tests that resolve `@datamoc/mw_games/...` specifiers onto source -
+ * Shared by the two tests that resolve `@datamoc/mwg/...` specifiers onto source -
  * `api-examples.test.ts` and `consumer-app.test.ts` - which used to carry a copy each, free to
  * drift apart.
  */

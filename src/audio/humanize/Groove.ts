@@ -48,7 +48,7 @@ const SUBDIVISIONS_PER_QUARTER: Record<GridSubdivision, number> = { '8n': 2, '16
  *
  * @example
  * ```ts
- * import { subdivisionCount } from '@datamoc/mw_games/audio';
+ * import { subdivisionCount } from '@datamoc/mwg/audio';
  *
  * console.log(subdivisionCount([4, 4], '16n')); // 16: a bar of 4/4 cut into sixteenths
  * console.log(subdivisionCount([6, 8], '8n')); // 6: a bar of 6/8 cut into eighths
@@ -77,7 +77,7 @@ export function subdivisionTicks(pq: number, subdivision: GridSubdivision): numb
  *
  * @example
  * ```ts
- * import { assertGrooveTemplate, subdivisionCount } from '@datamoc/mw_games/audio';
+ * import { assertGrooveTemplate, subdivisionCount } from '@datamoc/mwg/audio';
  *
  * const template = {
  *   name: 'four-on-the-floor',

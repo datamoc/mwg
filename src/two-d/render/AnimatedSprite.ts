@@ -43,8 +43,8 @@ export interface AnimationOptions {
 /**
  * @example
  * ```ts
- * import { Animation } from '@datamoc/mw_games/two-d/render';
- * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { Animation } from '@datamoc/mwg/two-d/render';
+ * import type { Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const frames: Texture2D[];
  *
@@ -151,7 +151,7 @@ function isFrame(frame: AnimationFrameInput): frame is AnimationFrame {
  *
  * @example
  * ```ts
- * import { AnimatedSprite, SpriteSheet } from '@datamoc/mw_games/two-d/render';
+ * import { AnimatedSprite, SpriteSheet } from '@datamoc/mwg/two-d/render';
  *
  * declare const sheet: SpriteSheet;
  *

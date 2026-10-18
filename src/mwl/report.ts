@@ -29,7 +29,7 @@ export interface MwlContentLoadReport {
  *
  * @example
  * ```ts
- * import { loadContent } from '@datamoc/mw_games/mwl';
+ * import { loadContent } from '@datamoc/mwg/mwl';
  *
  * const report = loadContent([{ file: 'a.mwl', source: "[{ tag: 'game', schema: 0.1 }]" }]);
  * console.log(report.game?.schema); // '0.1'
@@ -70,7 +70,7 @@ export function loadContent(files: readonly MwlSourceFile[], options: MwlCompile
  *
  * @example
  * ```ts
- * import { compile, contentReport } from '@datamoc/mw_games/mwl';
+ * import { compile, contentReport } from '@datamoc/mwg/mwl';
  *
  * console.log(contentReport(compile("[{ tag: 'game', schema: 0.1 }]")).tags);
  * ```

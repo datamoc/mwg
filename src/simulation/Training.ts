@@ -54,7 +54,7 @@ export interface TrainingCheckpoint<State, TrainerState> {
  *
  * @example
  * ```ts
- * import { TrainingEnvironment } from '@datamoc/mw_games/simulation';
+ * import { TrainingEnvironment } from '@datamoc/mwg/simulation';
  * const env = new TrainingEnvironment({ observationVersion: 'counter-v1',
  *   initial: () => ({ x: 0 }), observe: s => [{ input: [s.x], mask: [true] }],
  *   command: (_s, actions) => actions[0],
@@ -246,8 +246,8 @@ export interface RolloutEpisode {
  *
  * @example
  * ```ts
- * import { runRollouts, TrainingEnvironment } from '@datamoc/mw_games/simulation';
- * import type { NeuralModel } from '@datamoc/mw_games/ai';
+ * import { runRollouts, TrainingEnvironment } from '@datamoc/mwg/simulation';
+ * import type { NeuralModel } from '@datamoc/mwg/ai';
  * declare const env: TrainingEnvironment<{ x: number }, number, never>;
  * declare const model: NeuralModel;
  * const episodes = runRollouts(env, model, { seeds: [1, 2, 3], trajectoryLimit: 2 });
@@ -348,8 +348,8 @@ function rolloutBatch(
  *
  * @example
  * ```ts
- * import { runRolloutsAsync, type TrainingFactory } from '@datamoc/mw_games/simulation';
- * import type { NeuralModel } from '@datamoc/mw_games/ai';
+ * import { runRolloutsAsync, type TrainingFactory } from '@datamoc/mwg/simulation';
+ * import type { NeuralModel } from '@datamoc/mwg/ai';
  * declare const factory: TrainingFactory<{ maxSteps: number }, { x: number }, number, never>;
  * declare const model: NeuralModel;
  * const episodes = await runRolloutsAsync(factory, { maxSteps: 20 }, model, { seeds: [1, 2], jobs: 2 });
@@ -432,7 +432,7 @@ export interface ImitationResult {
  *
  * @example
  * ```ts
- * import { TrainingEnvironment, imitationFromReplay } from '@datamoc/mw_games/simulation';
+ * import { TrainingEnvironment, imitationFromReplay } from '@datamoc/mwg/simulation';
  * declare const env: TrainingEnvironment<{ x: number }, number, never>;
  * const result = imitationFromReplay(env, {
  * 	actions: ['left', 'right'],
@@ -490,7 +490,7 @@ export interface SeededRun {
  *
  * @example
  * ```ts
- * import { TrainingEnvironment, runSeededEpisode } from '@datamoc/mw_games/simulation';
+ * import { TrainingEnvironment, runSeededEpisode } from '@datamoc/mwg/simulation';
  * declare const env: TrainingEnvironment<{ x: number }, number, never>;
  * const run = runSeededEpisode(env, (observations) => [0], { seed: 7 });
  * console.log(run.steps, run.terminated);

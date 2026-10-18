@@ -29,7 +29,7 @@ import {
  *
  * @example
  * ```ts
- * import { PackageConflictError } from '@datamoc/mw_games/mwl';
+ * import { PackageConflictError } from '@datamoc/mwg/mwl';
  *
  * console.log(new PackageConflictError('already merged').name); // 'PackageConflictError'
  * ```
@@ -56,7 +56,7 @@ export interface LoadedPackage {
  *
  * @example
  * ```ts
- * import { encodePackage, loadPackage } from '@datamoc/mw_games/mwl';
+ * import { encodePackage, loadPackage } from '@datamoc/mwg/mwl';
  *
  * const source = "[{ tag: 'package', id: 'marta', version: '1.0.0' }]";
  * const bytes = await encodePackage([{ path: 'content.mwl', data: new TextEncoder().encode(source) }]);
@@ -92,7 +92,7 @@ export async function loadPackage(bytes: Uint8Array, limits: Partial<PackageLimi
  *
  * @example
  * ```ts
- * import { encodePackage, loadPackage, packageRef } from '@datamoc/mw_games/mwl';
+ * import { encodePackage, loadPackage, packageRef } from '@datamoc/mwg/mwl';
  *
  * const source = "[{ tag: 'package', id: 'marta', version: '1.0.0' }]";
  * const bytes = await encodePackage([{ path: 'content.mwl', data: new TextEncoder().encode(source) }]);
@@ -108,7 +108,7 @@ export function packageRef(pkg: LoadedPackage): string {
  *
  * @example
  * ```ts
- * import { parsePackageRef } from '@datamoc/mw_games/mwl';
+ * import { parsePackageRef } from '@datamoc/mwg/mwl';
  *
  * console.log(parsePackageRef('marta@1.0.0#abc').version); // '1.0.0'
  * ```
@@ -135,7 +135,7 @@ export interface PackagePolicy {
  *
  * @example
  * ```ts
- * import { parsePackageDocument, requestedCapabilities } from '@datamoc/mw_games/mwl';
+ * import { parsePackageDocument, requestedCapabilities } from '@datamoc/mwg/mwl';
  *
  * const document = parsePackageDocument("[{ tag: 'package', id: 'p', version: '1.0.0' }, { tag: 'script', id: 's', on: 'start', code: '1' }]");
  * console.log(requestedCapabilities(document)); // ['script']
@@ -153,7 +153,7 @@ export function requestedCapabilities(document: PackageDocument): string[] {
  *
  * @example
  * ```ts
- * import { checkPackagePolicy, parsePackageDocument } from '@datamoc/mw_games/mwl';
+ * import { checkPackagePolicy, parsePackageDocument } from '@datamoc/mwg/mwl';
  *
  * const document = parsePackageDocument(
  *   "[{ tag: 'package', id: 'marta', version: '1.0.0', requires: { capabilities: ['script'] } }]",
@@ -205,7 +205,7 @@ export interface PackageSet {
  *
  * @example
  * ```ts
- * import { encodePackage, loadPackage, mergePackage, packageContent } from '@datamoc/mw_games/mwl';
+ * import { encodePackage, loadPackage, mergePackage, packageContent } from '@datamoc/mwg/mwl';
  *
  * const source = "[{ tag: 'package', id: 'marta', version: '1.0.0' }, { tag: 'sound_effect', id: 'ouch', chip: 'sn76489' }]";
  * const bytes = await encodePackage([{ path: 'content.mwl', data: new TextEncoder().encode(source) }]);
@@ -261,7 +261,7 @@ export interface PackageContent {
  *
  * @example
  * ```ts
- * import { encodePackage, loadPackage, mergePackage, packageContent } from '@datamoc/mw_games/mwl';
+ * import { encodePackage, loadPackage, mergePackage, packageContent } from '@datamoc/mwg/mwl';
  *
  * const source = "[{ tag: 'package', id: 'marta', version: '1.0.0' }, { tag: 'music', id: 'theme', src: 'song' }]";
  * const bytes = await encodePackage([{ path: 'content.mwl', data: new TextEncoder().encode(source) }]);
@@ -364,7 +364,7 @@ const UNIT_TYPE_STATS = [
  *
  * @example
  * ```ts
- * import { compilePackages, encodePackage, loadPackage, mergePackage } from '@datamoc/mw_games/mwl';
+ * import { compilePackages, encodePackage, loadPackage, mergePackage } from '@datamoc/mwg/mwl';
  *
  * const source = "[{ tag: 'package', id: 'marta', version: '1.0.0' }, { tag: 'character', id: 'marta', hitpoints: 28 }]";
  * const bytes = await encodePackage([{ path: 'content.mwl', data: new TextEncoder().encode(source) }]);
@@ -425,7 +425,7 @@ export function compilePackages(set: PackageSet): MwlCompiledGame {
  *
  * @example
  * ```ts
- * import { generateCredits, parsePackageDocument } from '@datamoc/mw_games/mwl';
+ * import { generateCredits, parsePackageDocument } from '@datamoc/mwg/mwl';
  *
  * const document = parsePackageDocument(
  *   "[{ tag: 'package', id: 'marta', version: '1.0.0', author: 'Ada', license: 'CC-BY-4.0' }]",

@@ -24,7 +24,7 @@ export interface WeightedFloodOptions<T, K> {
  *
  * @example
  * ```ts
- * import { weightedFlood } from '@datamoc/mw_games/core';
+ * import { weightedFlood } from '@datamoc/mwg/core';
  *
  * const cells = weightedFlood(0, {
  *   key: (cell) => cell,

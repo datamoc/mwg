@@ -35,7 +35,7 @@ export interface MwlTableMapOptions<Row extends Record<string, unknown>, Value =
  *
  * @example
  * ```ts
- * import { compile, readAttributes } from '@datamoc/mw_games/mwl';
+ * import { compile, readAttributes } from '@datamoc/mwg/mwl';
  *
  * const game = compile("[{ tag: 'game', schema: 0.1 }]");
  * const { value } = readAttributes(game.roots[0]!, { schema: { type: 'string' } });
@@ -72,7 +72,7 @@ export function readAttributes<T extends Record<string, unknown>>(
  *
  * @example
  * ```ts
- * import { compile, readAttributes, readChildren } from '@datamoc/mw_games/mwl';
+ * import { compile, readAttributes, readChildren } from '@datamoc/mwg/mwl';
  *
  * const game = compile("[{ tag: 'game', schema: 0.1, children: [{ tag: 'side', id: 1 }] }]");
  * const sides = readChildren(game.roots[0]!, 'side', (child) => readAttributes(child, { id: { type: 'id' } }));
@@ -101,7 +101,7 @@ export function readChildren<T>(
  *
  * @example
  * ```ts
- * import { readTableMap, tableKey } from '@datamoc/mw_games/mwl';
+ * import { readTableMap, tableKey } from '@datamoc/mwg/mwl';
  * const effects = [{ item: 'potion', effect: 'heal', amount: 5 }];
  * const byEffect = readTableMap(effects, { key: ['item', 'effect'], value: (row) => row.amount });
  * console.log(byEffect.get(tableKey('potion', 'heal'))); // 5
@@ -125,7 +125,7 @@ export function readTableMap<Row extends Record<string, unknown>, Value = Row>(
  *
  * @example
  * ```ts
- * import { readTableIndex, tableKey } from '@datamoc/mw_games/mwl';
+ * import { readTableIndex, tableKey } from '@datamoc/mwg/mwl';
  * const rows = [{ item: 'potion', effect: 'heal' }, { item: 'herb', effect: 'heal' }];
  * const byEffect = readTableIndex(rows, { key: 'effect' });
  * console.log(byEffect.get(tableKey('heal'))?.length); // 2

@@ -22,7 +22,7 @@ export interface EvolutionRule<S> {
  *
  * @example
  * ```ts
- * import { checkEvolution, type EvolutionRule } from '@datamoc/mw_games/battle';
+ * import { checkEvolution, type EvolutionRule } from '@datamoc/mwg/battle';
  *
  * const rules: EvolutionRule<string>[] = [
  *   { at: (level) => level >= 16, into: 'adult-form' },

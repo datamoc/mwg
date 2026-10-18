@@ -46,7 +46,7 @@ import type { StageCommand, StoryScript } from './script.ts';
  *
  * @example
  * ```ts
- * import { parseDialogueText, StageScript } from '@datamoc/mw_games/two-d';
+ * import { parseDialogueText, StageScript } from '@datamoc/mwg/two-d';
  *
  * declare const script: StageScript;
  *
@@ -75,7 +75,7 @@ export function parseDialogueText(source: string): StageCommand[] {
  *
  * @example
  * ```ts
- * import { parseDialogueText, extractDialogueCatalog } from '@datamoc/mw_games/two-d';
+ * import { parseDialogueText, extractDialogueCatalog } from '@datamoc/mwg/two-d';
  *
  * const commands = parseDialogueText('@alice Hello.\n');
  * console.log(extractDialogueCatalog(commands).messages); // { 'Hello.': 'Hello.' }

@@ -13,7 +13,7 @@ export type PackageAssetKind = 'image' | 'audio' | 'music' | 'font' | 'data' | '
  *
  * @example
  * ```ts
- * import { PACKAGE_ASSET_KINDS } from '@datamoc/mw_games/mwl';
+ * import { PACKAGE_ASSET_KINDS } from '@datamoc/mwg/mwl';
  *
  * console.log(PACKAGE_ASSET_KINDS.includes('synth-patch')); // true
  * ```
@@ -32,7 +32,7 @@ export const PACKAGE_ASSET_KINDS: readonly PackageAssetKind[] = [
  *
  * @example
  * ```ts
- * import { PACKAGE_MEDIA_KINDS } from '@datamoc/mw_games/mwl';
+ * import { PACKAGE_MEDIA_KINDS } from '@datamoc/mwg/mwl';
  *
  * console.log(PACKAGE_MEDIA_KINDS.includes('data')); // false
  * ```
@@ -46,7 +46,7 @@ export const PACKAGE_MEDIA_KINDS: readonly PackageAssetKind[] = ['image', 'audio
  *
  * @example
  * ```ts
- * import { PACKAGE_TAGS } from '@datamoc/mw_games/mwl';
+ * import { PACKAGE_TAGS } from '@datamoc/mwg/mwl';
  *
  * console.log(PACKAGE_TAGS.includes('character')); // true
  * ```
@@ -69,7 +69,7 @@ export const PACKAGE_TAGS = [
  *
  * @example
  * ```ts
- * import { PACKAGE_SCRIPT_ACTIONS } from '@datamoc/mw_games/mwl';
+ * import { PACKAGE_SCRIPT_ACTIONS } from '@datamoc/mwg/mwl';
  *
  * console.log(PACKAGE_SCRIPT_ACTIONS.includes('hook')); // false
  * ```
@@ -90,7 +90,7 @@ export const PACKAGE_SCRIPT_ACTIONS: readonly string[] = [
  *
  * @example
  * ```ts
- * import { KNOWN_PACKAGE_CAPABILITIES } from '@datamoc/mw_games/mwl';
+ * import { KNOWN_PACKAGE_CAPABILITIES } from '@datamoc/mwg/mwl';
  *
  * console.log(KNOWN_PACKAGE_CAPABILITIES); // ['audio', 'script']
  * ```
@@ -241,7 +241,7 @@ const MAX_IMPORT_READS = 64;
  *
  * @example
  * ```ts
- * import { parsePackageDocument } from '@datamoc/mw_games/mwl';
+ * import { parsePackageDocument } from '@datamoc/mwg/mwl';
  *
  * const document = parsePackageDocument(
  *   "[{ tag: 'package', id: 'marta', version: '1.0.0' }, { tag: 'character', id: 'marta', hitpoints: 28 }]",
@@ -731,7 +731,7 @@ function comparator(text: string): Range | undefined {
  *
  * @example
  * ```ts
- * import { satisfiesVersionRange } from '@datamoc/mw_games/mwl';
+ * import { satisfiesVersionRange } from '@datamoc/mwg/mwl';
  *
  * console.log(satisfiesVersionRange('0.43.0', '>=0.42 <1')); // true
  * console.log(satisfiesVersionRange('0.43.0', '^0.42.0')); // false
@@ -760,7 +760,7 @@ export function satisfiesVersionRange(version: string, range: string): boolean {
  *
  * @example
  * ```ts
- * import { compareVersions } from '@datamoc/mw_games/mwl';
+ * import { compareVersions } from '@datamoc/mwg/mwl';
  *
  * console.log(compareVersions('1.2.0', '1.10.0') < 0); // true
  * ```

@@ -174,8 +174,8 @@ class ColorTransformGeometry extends Geometry {
  *
  * @example
  * ```ts
- * import type { HasColorAdd } from '@datamoc/mw_games/two-d/render';
- * import { packColorAdd } from '@datamoc/mw_games/two-d/render';
+ * import type { HasColorAdd } from '@datamoc/mwg/two-d/render';
+ * import { packColorAdd } from '@datamoc/mwg/two-d/render';
  *
  * function tintTowardsWhite(renderable: HasColorAdd, strength: number): void {
  * 	renderable.colorAdd = packColorAdd(strength, strength, strength);
@@ -226,7 +226,7 @@ function writeQuadCorner(
  *
  * @example
  * ```ts
- * import { ColorTransformBatcher } from '@datamoc/mw_games/two-d/render';
+ * import { ColorTransformBatcher } from '@datamoc/mwg/two-d/render';
  *
  * // registered automatically by TintedSprite.ts; naming the class directly is only ever
  * // needed to check which batcher an object ended up in, or in Pixi extension diagnostics
@@ -550,7 +550,7 @@ let registered = false;
  *
  * @example
  * ```ts
- * import { registerColorTransform } from '@datamoc/mw_games/two-d/render';
+ * import { registerColorTransform } from '@datamoc/mwg/two-d/render';
  *
  * // a game that assembles its own Pixi renderer extensions manually, instead of going
  * // through `Game`/`GameOptions.extensions`, registers the batcher itself before creating
@@ -577,8 +577,8 @@ export function registerColorTransform(): void {
  *
  * @example
  * ```ts
- * import { packColorAdd } from '@datamoc/mw_games/two-d/render';
- * import { TintedSprite } from '@datamoc/mw_games/two-d/render';
+ * import { packColorAdd } from '@datamoc/mwg/two-d/render';
+ * import { TintedSprite } from '@datamoc/mwg/two-d/render';
  *
  * declare const rat: TintedSprite;
  *
@@ -595,7 +595,7 @@ export function packColorAdd(r: number, g: number, b: number, a = 0): number {
  *
  * @example
  * ```ts
- * import { packTintAdd, TintedSprite } from '@datamoc/mw_games/two-d/render';
+ * import { packTintAdd, TintedSprite } from '@datamoc/mwg/two-d/render';
  *
  * declare const rat: TintedSprite;
  *
@@ -619,7 +619,7 @@ function clamp255(value: number): number {
  *
  * @example
  * ```ts
- * import { NO_COLOR_ADD, TintedSprite } from '@datamoc/mw_games/two-d/render';
+ * import { NO_COLOR_ADD, TintedSprite } from '@datamoc/mwg/two-d/render';
  *
  * declare const rat: TintedSprite;
  *

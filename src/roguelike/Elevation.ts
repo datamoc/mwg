@@ -17,7 +17,7 @@ import type { Level } from './Level.ts';
  *
  * @example
  * ```ts
- * import { Elevation, Level, Pathfinder, FieldOfView, WALL, FLOOR } from '@datamoc/mw_games/roguelike';
+ * import { Elevation, Level, Pathfinder, FieldOfView, WALL, FLOOR } from '@datamoc/mwg/roguelike';
  *
  * const level = new Level(20, 20, [WALL, FLOOR], 1);
  * const heights = new Elevation(level);

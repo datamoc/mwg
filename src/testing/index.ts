@@ -12,8 +12,8 @@ import type { Playable } from '../audio/Playable.ts';
  *
  * @example
  * ```ts
- * import { SaveSystem } from '@datamoc/mw_games/core';
- * import { memoryStorage } from '@datamoc/mw_games/testing';
+ * import { SaveSystem } from '@datamoc/mwg/core';
+ * import { memoryStorage } from '@datamoc/mwg/testing';
  *
  * const saves = new SaveSystem<{ gold: number }>({ namespace: 'test', version: 1, storage: memoryStorage() });
  * saves.save('slot1', { gold: 3 });
@@ -35,8 +35,8 @@ export interface FakePlayable extends Playable {
  *
  * @example
  * ```ts
- * import { Sound } from '@datamoc/mw_games/audio';
- * import { fakeAudio } from '@datamoc/mw_games/testing';
+ * import { Sound } from '@datamoc/mwg/audio';
+ * import { fakeAudio } from '@datamoc/mwg/testing';
  *
  * const audio = fakeAudio();
  * const sound = new Sound('hit.wav', { poolSize: 1, create: () => audio });
@@ -76,8 +76,8 @@ export function fakeAudioWithEnded(): FakePlayable {
  *
  * @example
  * ```ts
- * import { LockstepClient } from '@datamoc/mw_games/core';
- * import { FakeSocket } from '@datamoc/mw_games/testing';
+ * import { LockstepClient } from '@datamoc/mwg/core';
+ * import { FakeSocket } from '@datamoc/mwg/testing';
  *
  * const socket = new FakeSocket();
  * const client = new LockstepClient({ url: 'wss://example.test', create: () => socket });
@@ -123,8 +123,8 @@ export interface FakeFetchCall {
  *
  * @example
  * ```ts
- * import { NewsClient } from '@datamoc/mw_games/core';
- * import { fakeFetch } from '@datamoc/mw_games/testing';
+ * import { NewsClient } from '@datamoc/mwg/core';
+ * import { fakeFetch } from '@datamoc/mwg/testing';
  *
  * const fetch = fakeFetch(() => [{ id: '1', title: 'Patch notes', body: 'Fixed things.' }]);
  * const news = new NewsClient({ endpoint: 'https://example.test/news', fetch });
@@ -175,7 +175,7 @@ export type { SceneControls, SceneStep } from './SceneControls.ts';
  *
  * @example
  * ```ts
- * import { exposeForTests } from '@datamoc/mw_games/testing';
+ * import { exposeForTests } from '@datamoc/mwg/testing';
  *
  * declare const scene: unknown;
  * declare const hitSound: unknown;

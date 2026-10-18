@@ -31,7 +31,7 @@ export interface LiquidLayerOptions {
  * @example
  * ```ts
  * import { Texture } from 'pixi.js';
- * import { LiquidLayer } from '@datamoc/mw_games/two-d/render';
+ * import { LiquidLayer } from '@datamoc/mwg/two-d/render';
  *
  * const water = new LiquidLayer({
  *   texture: Texture.EMPTY,

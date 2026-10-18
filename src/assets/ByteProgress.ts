@@ -28,7 +28,7 @@ export type OnByteProgress = (progress: ByteProgress) => void;
  *
  * @example
  * ```ts
- * import { fetchWithByteProgress } from '@datamoc/mw_games/assets';
+ * import { fetchWithByteProgress } from '@datamoc/mwg/assets';
  *
  * const blob = await fetchWithByteProgress('https://example.com/big-tileset.png', (progress) => {
  *   if (progress.total) console.log(`${progress.loaded} / ${progress.total} bytes`);

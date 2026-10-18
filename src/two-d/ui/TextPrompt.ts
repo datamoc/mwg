@@ -87,7 +87,7 @@ export interface TextPromptOptions {
  *
  * @example
  * ```ts
- * import { TextPrompt } from '@datamoc/mw_games/two-d/ui';
+ * import { TextPrompt } from '@datamoc/mwg/two-d/ui';
  *
  * const prompt = new TextPrompt({
  * 	width: 320,

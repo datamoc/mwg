@@ -22,8 +22,8 @@ import { withContentSecurityPolicy } from './csp.mjs';
  *   - the assets have to be compiled into scripts and listed in the page, because a
  *     `file://` page cannot read a directory to discover them.
  *
- * Shipped as `@datamoc/mw_games/tools/emit-page` (`emitPage(options)`, the function every flag
- * below maps onto) and as the `mwg-emit` command; `@datamoc/mw_games/tools/vite`'s `mwgPage()`
+ * Shipped as `@datamoc/mwg/tools/emit-page` (`emitPage(options)`, the function every flag
+ * below maps onto) and as the `mwg-emit` command; `@datamoc/mwg/tools/vite`'s `mwgPage()`
  * plugin calls `emitPage` at the end of `vite build`, so a game needs neither by hand.
  *
  * usage: mwg-emit <project folder> [--dist=<dir>] [--assets=<dir>] [--no-csp] [--connect=<origin>]...

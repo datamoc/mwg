@@ -20,8 +20,8 @@ export interface SpringSpriteOptions {
  *
  * @example
  * ```ts
- * import { Spring } from '@datamoc/mw_games/physics';
- * import { SpringSprite } from '@datamoc/mw_games/two-d/render';
+ * import { Spring } from '@datamoc/mwg/physics';
+ * import { SpringSprite } from '@datamoc/mwg/two-d/render';
  *
  * const spring = new Spring({ stiffness: 120, damping: 8 });
  * const line = new SpringSprite({ spring });

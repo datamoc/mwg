@@ -34,7 +34,7 @@ export interface AudioFalloff {
  *
  * @example
  * ```ts
- * import { audioGain } from '@datamoc/mw_games/audio';
+ * import { audioGain } from '@datamoc/mwg/audio';
  *
  * audioGain(0, { refDistance: 2 }); // 1 - inside the full-volume radius
  * audioGain(2, { refDistance: 2 }); // 1 - the reference distance itself
@@ -66,7 +66,7 @@ export function audioGain(distance: number, falloff: AudioFalloff = {}): number 
  *
  * @example
  * ```ts
- * import { audioPan } from '@datamoc/mw_games/audio';
+ * import { audioPan } from '@datamoc/mwg/audio';
  *
  * const listener = { x: 0, y: 0, facing: 0 }; // facing east
  * audioPan(listener, { x: 10, y: 0 }); // 0 - straight ahead
@@ -93,7 +93,7 @@ export function audioPan(listener: AudioPoint & { facing: number }, source: Audi
  *
  * @example
  * ```ts
- * import { AudioListener } from '@datamoc/mw_games/audio';
+ * import { AudioListener } from '@datamoc/mwg/audio';
  *
  * const listener = new AudioListener({ x: 40, y: 12 });
  * listener.moveTo(41, 12); // following the camera
@@ -138,7 +138,7 @@ export interface SoundSourceOptions extends AudioFalloff {
  *
  * @example
  * ```ts
- * import { AudioListener, Sound, SoundSource } from '@datamoc/mw_games/audio';
+ * import { AudioListener, Sound, SoundSource } from '@datamoc/mwg/audio';
  *
  * const listener = new AudioListener({ x: 0, y: 0 });
  * const arrow = new Sound('sounds/arrow.mp3');

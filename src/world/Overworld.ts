@@ -19,9 +19,9 @@ export interface Location {
 /**
  * @example
  * ```ts
- * import { Overworld } from '@datamoc/mw_games/world';
+ * import { Overworld } from '@datamoc/mwg/world';
  *
- * declare const world: import('@datamoc/mw_games/world').World<unknown>;
+ * declare const world: import('@datamoc/mwg/world').World<unknown>;
  *
  * const overworld = new Overworld();
  * overworld.add({ id: 'cave', x: 12, y: 4, leadsTo: 'caveLevel1', spawn: 'entrance' });

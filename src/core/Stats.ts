@@ -22,7 +22,7 @@ export interface PlayerStatsOptions<T, S = T> {
  *
  * @example
  * ```ts
- * import { PlayerStats } from '@datamoc/mw_games/core';
+ * import { PlayerStats } from '@datamoc/mwg/core';
  *
  * const lifetimeKills = new PlayerStats<number, number>({
  *   namespace: 'my-game',

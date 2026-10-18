@@ -23,7 +23,7 @@ export interface StoryBeat {
  *
  * @example
  * ```ts
- * import { StorySequence } from '@datamoc/mw_games/two-d/stage';
+ * import { StorySequence } from '@datamoc/mwg/two-d/stage';
  *
  * const story = new StorySequence([
  *   { title: 'Prologue', text: 'The war begins.', music: 'intro.ogg' },
@@ -129,7 +129,7 @@ export interface StoryScreenOptions {
  *
  * @example
  * ```ts
- * import { StoryScreen, StorySequence } from '@datamoc/mw_games/two-d/stage';
+ * import { StoryScreen, StorySequence } from '@datamoc/mwg/two-d/stage';
  *
  * const sequence = new StorySequence([{ title: 'Prologue', text: 'The war begins.' }]);
  * const screen = new StoryScreen({ sequence, width: 960, height: 540 });

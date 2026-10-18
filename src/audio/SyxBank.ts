@@ -9,7 +9,7 @@ import type { RenderedMidi } from './MidiRender.ts';
  *
  * @example
  * ```ts
- * import { splitSysex } from '@datamoc/mw_games/audio';
+ * import { splitSysex } from '@datamoc/mwg/audio';
  *
  * const messages = splitSysex(new Uint8Array([0xf0, 0x41, 0xf7, 0xf0, 0x42, 0xf7]));
  * console.log(messages.length); // 2
@@ -65,7 +65,7 @@ function dx7BankData(message: Uint8Array): Uint8Array | null {
  *
  * @example
  * ```ts
- * import { dx7PatchNames } from '@datamoc/mw_games/audio';
+ * import { dx7PatchNames } from '@datamoc/mwg/audio';
  *
  * declare const bankBytes: Uint8Array;
  *
@@ -97,7 +97,7 @@ export function dx7PatchNames(bytes: Uint8Array): SyxPatch[] {
  *
  * @example
  * ```ts
- * import { SyxBank, type MidiSynth } from '@datamoc/mw_games/audio';
+ * import { SyxBank, type MidiSynth } from '@datamoc/mwg/audio';
  *
  * declare const bankBytes: Uint8Array;
  * declare const synth: MidiSynth;

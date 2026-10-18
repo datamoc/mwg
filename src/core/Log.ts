@@ -30,7 +30,7 @@ export interface LoggerOptions {
  *
  * @example
  * ```ts
- * import { Logger } from '@datamoc/mw_games/core';
+ * import { Logger } from '@datamoc/mwg/core';
  *
  * const log = new Logger('combat', { level: 'info' }); // debug entries are filtered out
  * log.info('turn started', { turn: 3 });

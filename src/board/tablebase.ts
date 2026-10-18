@@ -59,7 +59,7 @@ const KIND_INDEX: Record<string, number> = { pawn: 0, knight: 1, bishop: 2, rook
  *
  * @example
  * ```ts
- * import { tablebaseId } from '@datamoc/mw_games/board';
+ * import { tablebaseId } from '@datamoc/mwg/board';
  *
  * console.log(tablebaseId(['bishop', 'queen'])); // 'KQBK'
  * ```
@@ -122,7 +122,7 @@ function base64Decode(code: string): Uint8Array {
  *
  * @example
  * ```ts
- * import { huffDecode, huffEncode } from '@datamoc/mw_games/board';
+ * import { huffDecode, huffEncode } from '@datamoc/mwg/board';
  *
  * console.log(huffDecode(huffEncode(new Uint8Array([2, 2, 2, 3])))); // Uint8Array([2, 2, 2, 3])
  * ```
@@ -221,7 +221,7 @@ function canonicalCodes(ordered: Array<{ symbol: number; length: number }>): Arr
  *
  * @example
  * ```ts
- * import { huffDecode, huffEncode } from '@datamoc/mw_games/board';
+ * import { huffDecode, huffEncode } from '@datamoc/mwg/board';
  *
  * console.log(huffDecode(huffEncode(new Uint8Array([2, 2])))); // Uint8Array([2, 2])
  * ```
@@ -310,7 +310,7 @@ function huffDecodeU16(code: string): Uint16Array {
  *
  * @example
  * ```ts
- * import { loadTablebaseEnding } from '@datamoc/mw_games/board';
+ * import { loadTablebaseEnding } from '@datamoc/mwg/board';
  *
  * const ending = loadTablebaseEnding({ version: 1, id: 'KBK', white: ['bishop'], positions: 2, wdl: 'AgEC', dtm: 'AAQAAQ' });
  * console.log(ending.id); // 'KBK'
@@ -388,7 +388,7 @@ function castlingRights(state: ChessState | BitboardState): boolean {
  *
  * @example
  * ```ts
- * import { probeTablebase, startingChess } from '@datamoc/mw_games/board';
+ * import { probeTablebase, startingChess } from '@datamoc/mwg/board';
  *
  * console.log(probeTablebase({}, startingChess())); // null - no endings loaded, never an error
  * ```

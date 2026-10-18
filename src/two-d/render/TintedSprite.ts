@@ -18,8 +18,8 @@ registerColorTransform();
  *
  * @example
  * ```ts
- * import { TintedSprite } from '@datamoc/mw_games/two-d/render';
- * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { TintedSprite } from '@datamoc/mwg/two-d/render';
+ * import type { Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const texture: Texture2D;
  *

@@ -19,7 +19,7 @@ export interface ViewportOptions extends CameraOptions {
  *
  * @example
  * ```ts
- * import { Viewport, splitScreenHalves } from '@datamoc/mw_games/two-d/render';
+ * import { Viewport, splitScreenHalves } from '@datamoc/mwg/two-d/render';
  *
  * const [left, right] = splitScreenHalves(640, 360);
  * const player1 = new Viewport({ ...left, zoom: 2 });
@@ -66,7 +66,7 @@ export class Viewport {
  *
  * @example
  * ```ts
- * import { splitScreenHalves } from '@datamoc/mw_games/two-d/render';
+ * import { splitScreenHalves } from '@datamoc/mwg/two-d/render';
  *
  * const [top, bottom] = splitScreenHalves(400, 600); // taller than wide: stacks vertically
  * console.log(top); // { x: 0, y: 0, width: 400, height: 300 }

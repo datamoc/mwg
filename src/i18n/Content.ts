@@ -11,7 +11,7 @@ import { diffCatalogKeys } from './Validate.ts';
  *
  * @example
  * ```ts
- * import { messageText } from '@datamoc/mw_games/i18n';
+ * import { messageText } from '@datamoc/mwg/i18n';
  *
  * messageText('Hello'); // 'Hello'
  * messageText({ one: '1 item', other: '{count} items' }); // '{count} items'
@@ -38,7 +38,7 @@ export function messageText(value: MessageValue): string {
  *
  * @example
  * ```ts
- * import { levenshteinDistance } from '@datamoc/mw_games/i18n';
+ * import { levenshteinDistance } from '@datamoc/mwg/i18n';
  *
  * levenshteinDistance('kitten', 'sitting'); // 3
  * levenshteinDistance('same', 'same'); // 0
@@ -85,7 +85,7 @@ export interface SimilarMessagePair {
  *
  * @example
  * ```ts
- * import { findSimilarMessages } from '@datamoc/mw_games/i18n';
+ * import { findSimilarMessages } from '@datamoc/mwg/i18n';
  *
  * const catalog = {
  *   locale: 'en', direction: 'ltr' as const,
@@ -131,7 +131,7 @@ export interface CatalogUsageStats {
  *
  * @example
  * ```ts
- * import { catalogUsage } from '@datamoc/mw_games/i18n';
+ * import { catalogUsage } from '@datamoc/mwg/i18n';
  *
  * const catalog = {
  *   locale: 'en', direction: 'ltr' as const,
@@ -155,7 +155,7 @@ export function catalogUsage(catalog: Catalog, referencedKeys: Iterable<string>)
  *
  * @example
  * ```ts
- * import { catalogCompleteness } from '@datamoc/mw_games/i18n';
+ * import { catalogCompleteness } from '@datamoc/mwg/i18n';
  *
  * const en = { locale: 'en', direction: 'ltr' as const, messages: { a: '1', b: '2' } };
  * const fr = { locale: 'fr', direction: 'ltr' as const, messages: { a: '1' } };
@@ -185,7 +185,7 @@ export interface PluralCoverage {
  *
  * @example
  * ```ts
- * import { pluralFormCoverage } from '@datamoc/mw_games/i18n';
+ * import { pluralFormCoverage } from '@datamoc/mwg/i18n';
  *
  * const catalog = {
  *   locale: 'en', direction: 'ltr' as const,
@@ -222,7 +222,7 @@ export function pluralFormCoverage(catalog: Catalog): PluralCoverage {
  *
  * @example
  * ```ts
- * import { mergeCatalogKeys } from '@datamoc/mw_games/i18n';
+ * import { mergeCatalogKeys } from '@datamoc/mwg/i18n';
  *
  * const catalog = {
  *   locale: 'en', direction: 'ltr' as const,

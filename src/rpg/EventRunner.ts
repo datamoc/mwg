@@ -96,7 +96,7 @@ export interface EventRunnerOptions {
 /**
  * @example
  * ```ts
- * import { EventRunner, GameState, type DialoguePresenter } from '@datamoc/mw_games/rpg';
+ * import { EventRunner, GameState, type DialoguePresenter } from '@datamoc/mwg/rpg';
  *
  * declare const present: DialoguePresenter; // two-d/ui.messageBoxPresenter(windows), typically
  *

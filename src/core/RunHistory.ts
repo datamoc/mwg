@@ -13,7 +13,7 @@ import { StoredValue } from './StoredValue.ts';
  *
  * @example
  * ```ts
- * import { RunHistory } from '@datamoc/mw_games/core';
+ * import { RunHistory } from '@datamoc/mwg/core';
  *
  * interface RunSummary { score: number; cause: string }
  *

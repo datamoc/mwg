@@ -93,7 +93,7 @@ export interface FloatingTextStackMove {
  *   floatingTextStackLift,
  *   floatingTextStackLifePenalty,
  *   floatingTextStackMoves,
- * } from '@datamoc/mw_games/two-d/ui';
+ * } from '@datamoc/mwg/two-d/ui';
  *
  * const older = { key: 'hero', x: 0, y: 0, height: 10 };
  * const newcomer = { key: 'hero', x: 0, y: 0, height: 8 };
@@ -161,8 +161,8 @@ export interface FloatingTextPush extends FloatingTextOptions {
  *
  * @example
  * ```ts
- * import { FloatingTextStack } from '@datamoc/mw_games/two-d/ui';
- * import type { Container2D } from '@datamoc/mw_games/two-d/render';
+ * import { FloatingTextStack } from '@datamoc/mwg/two-d/ui';
+ * import type { Container2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const worldLayer: Container2D;
  * declare const hero: { x: number; y: number };

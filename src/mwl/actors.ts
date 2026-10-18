@@ -15,7 +15,7 @@ export interface MwlActorItem extends ItemDefinition {
  *
  * @example
  * ```ts
- * import { itemDefinition, type MwlItemDefinition } from '@datamoc/mw_games/mwl';
+ * import { itemDefinition, type MwlItemDefinition } from '@datamoc/mwg/mwl';
  *
  * declare const item: MwlItemDefinition;
  * const actorItem = itemDefinition(item, { level: 2 });
@@ -37,7 +37,7 @@ export function itemDefinition(item: MwlItemDefinition, context: MwlExpressionCo
  *
  * @example
  * ```ts
- * import { inventoryItem, itemDefinition, type MwlItemDefinition } from '@datamoc/mw_games/mwl';
+ * import { inventoryItem, itemDefinition, type MwlItemDefinition } from '@datamoc/mwg/mwl';
  *
  * declare const item: MwlItemDefinition;
  * const stack = inventoryItem(itemDefinition(item), 3);
@@ -53,7 +53,7 @@ export function inventoryItem(item: MwlActorItem, quantity = 1): InventoryItem {
  *
  * @example
  * ```ts
- * import { composeEffects, type MwlEffectDefinition } from '@datamoc/mw_games/mwl';
+ * import { composeEffects, type MwlEffectDefinition } from '@datamoc/mwg/mwl';
  *
  * declare const effects: readonly MwlEffectDefinition[];
  * console.log(composeEffects(10, effects, { level: 2 }));
@@ -75,7 +75,7 @@ export function composeEffects(
  *
  * @example
  * ```ts
- * import { effectToModifier, type MwlEffectDefinition } from '@datamoc/mw_games/mwl';
+ * import { effectToModifier, type MwlEffectDefinition } from '@datamoc/mwg/mwl';
  *
  * declare const effect: MwlEffectDefinition;
  * console.log(effectToModifier(effect, { level: 2 }));

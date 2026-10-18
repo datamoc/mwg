@@ -17,7 +17,7 @@ import { type HumanizationOptions, type HumanizerTier, type MidiHumanizerEngine 
  *
  * @example
  * ```ts
- * import { HumanizerFactory, humanizeMidi, parseMidi } from '@datamoc/mw_games/audio';
+ * import { HumanizerFactory, humanizeMidi, parseMidi } from '@datamoc/mwg/audio';
  *
  * declare const midiBytes: ArrayBuffer;
  *
@@ -74,7 +74,7 @@ export interface HumanizeRequest extends HumanizationOptions {
  *
  * @example
  * ```ts
- * import { humanizeMidi, parseMidi, type GrooveTemplate } from '@datamoc/mw_games/audio';
+ * import { humanizeMidi, parseMidi, type GrooveTemplate } from '@datamoc/mwg/audio';
  *
  * declare const midiBytes: ArrayBuffer;
  * declare const template: GrooveTemplate;

@@ -23,7 +23,7 @@ export interface MwlPersistenceOptions {
  *
  * @example
  * ```ts
- * import { createWorld, encodeSave } from '@datamoc/mw_games/mwl';
+ * import { createWorld, encodeSave } from '@datamoc/mwg/mwl';
  *
  * const snapshot = encodeSave(createWorld(), { version: 1 });
  * console.log(typeof snapshot); // 'string'
@@ -52,7 +52,7 @@ export function encodeSave(
  *
  * @example
  * ```ts
- * import { createWorld, decodeSave, encodeSave } from '@datamoc/mw_games/mwl';
+ * import { createWorld, decodeSave, encodeSave } from '@datamoc/mwg/mwl';
  *
  * const snapshot = encodeSave(createWorld(), { version: 1 });
  * console.log(decodeSave(snapshot, { version: 1 }).turn); // 1
@@ -67,7 +67,7 @@ export function decodeSave(snapshot: string, options: MwlPersistenceOptions): Mw
  *
  * @example
  * ```ts
- * import { createWorld, decodeSaveEnvelope, encodeSave } from '@datamoc/mw_games/mwl';
+ * import { createWorld, decodeSaveEnvelope, encodeSave } from '@datamoc/mwg/mwl';
  *
  * const save = encodeSave(createWorld(), { version: 1 }, { 'item-effect:demo': { charges: 1 } });
  * console.log(decodeSaveEnvelope(save, { version: 1 }).hookState?.['item-effect:demo']);
@@ -101,7 +101,7 @@ export function decodeSaveEnvelope(snapshot: string, options: MwlPersistenceOpti
  *
  * @example
  * ```ts
- * import { createWorld, validateWorld } from '@datamoc/mw_games/mwl';
+ * import { createWorld, validateWorld } from '@datamoc/mwg/mwl';
  *
  * console.log(validateWorld(createWorld()).turn); // 1
  * ```

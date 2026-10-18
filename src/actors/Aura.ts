@@ -27,7 +27,7 @@ export interface AuraParticipant {
  *
  * @example
  * ```ts
- * import { AuraField, StatBlock, type AuraParticipant } from '@datamoc/mw_games/actors';
+ * import { AuraField, StatBlock, type AuraParticipant } from '@datamoc/mwg/actors';
  *
  * const field = new AuraField();
  * const captain: AuraParticipant = {

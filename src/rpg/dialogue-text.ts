@@ -43,7 +43,7 @@ import type { EventCommand } from './EventRunner.ts';
  *
  * @example
  * ```ts
- * import { parseDialogueText, EventRunner, GameState } from '@datamoc/mw_games/rpg';
+ * import { parseDialogueText, EventRunner, GameState } from '@datamoc/mwg/rpg';
  *
  * declare const game: GameState;
  *
@@ -75,7 +75,7 @@ export function parseDialogueText(source: string): EventCommand[] {
  *
  * @example
  * ```ts
- * import { parseDialogueText, extractDialogueCatalog } from '@datamoc/mw_games/rpg';
+ * import { parseDialogueText, extractDialogueCatalog } from '@datamoc/mwg/rpg';
  *
  * const commands = parseDialogueText('@alice Hello.\n');
  * console.log(extractDialogueCatalog(commands).messages); // { 'Hello.': 'Hello.' }

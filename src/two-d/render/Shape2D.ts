@@ -14,7 +14,7 @@ import { Container, Graphics, Text, TilingSprite, FillGradient, Sprite } from 'p
  *
  * @example
  * ```ts
- * import { Node2D, Shape2D } from '@datamoc/mw_games/two-d/render';
+ * import { Node2D, Shape2D } from '@datamoc/mwg/two-d/render';
  *
  * const hud = new Node2D();
  * hud.addChild(new Shape2D().rect(0, 0, 100, 20).fill(0x202020));
@@ -33,7 +33,7 @@ export class Node2D extends Container {}
  *
  * @example
  * ```ts
- * import { Node2D, createLayers, Sprite2D } from '@datamoc/mw_games/two-d/render';
+ * import { Node2D, createLayers, Sprite2D } from '@datamoc/mwg/two-d/render';
  *
  * const stage = new Node2D();
  * const layers = createLayers(stage, ['terrain', 'units', 'effects', 'ui']);
@@ -62,7 +62,7 @@ export function createLayers(parent: Container, names: readonly string[]): Recor
  *
  * @example
  * ```ts
- * import { Shape2D } from '@datamoc/mw_games/two-d/render';
+ * import { Shape2D } from '@datamoc/mwg/two-d/render';
  *
  * const marker = new Shape2D().circle(0, 0, 6).fill(0xff4040).stroke({ color: 0x000000, width: 1 });
  * marker.x = 100;
@@ -96,7 +96,7 @@ export class Shape2D extends Graphics {
  *
  * @example
  * ```ts
- * import { Text2D } from '@datamoc/mw_games/two-d/render';
+ * import { Text2D } from '@datamoc/mwg/two-d/render';
  *
  * const caption = new Text2D({ text: 'N', style: { fill: 0xffffff, fontSize: 14 } });
  * caption.x = 40;
@@ -115,8 +115,8 @@ export class Text2D extends Text {}
  *
  * @example
  * ```ts
- * import { Sprite2D } from '@datamoc/mw_games/two-d/render';
- * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { Sprite2D } from '@datamoc/mwg/two-d/render';
+ * import type { Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const heroTexture: Texture2D;
  *
@@ -134,8 +134,8 @@ export class Sprite2D extends Sprite {}
  *
  * @example
  * ```ts
- * import { TiledSprite } from '@datamoc/mw_games/two-d/render';
- * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { TiledSprite } from '@datamoc/mwg/two-d/render';
+ * import type { Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const waterTexture: Texture2D;
  *
@@ -149,7 +149,7 @@ export class TiledSprite extends TilingSprite {}
  *
  * @example
  * ```ts
- * import { Shape2D, Gradient } from '@datamoc/mw_games/two-d/render';
+ * import { Shape2D, Gradient } from '@datamoc/mwg/two-d/render';
  *
  * const sky = new Gradient({
  * 	type: 'linear',

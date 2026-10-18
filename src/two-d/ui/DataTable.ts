@@ -31,7 +31,7 @@ export interface DataTableOptions<T> {
  *
  * @example
  * ```ts
- * import { DataTable } from '@datamoc/mw_games/two-d/ui';
+ * import { DataTable } from '@datamoc/mwg/two-d/ui';
  *
  * const roster = new DataTable({
  *   columns: [{ key: 'name' }, { key: 'level' }],

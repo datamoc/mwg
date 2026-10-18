@@ -75,7 +75,7 @@ export type TerrainRotate = (
  *
  * @example
  * ```ts
- * import { squareRotate } from '@datamoc/mw_games/two-d/render';
+ * import { squareRotate } from '@datamoc/mwg/two-d/render';
  *
  * console.log(squareRotate(1, 0, 1, 4)); // { dx: 0, dy: 1 } - one 90-degree step
  * ```
@@ -100,7 +100,7 @@ export function squareRotate(
  *
  * @example
  * ```ts
- * import { hexRotate } from '@datamoc/mw_games/two-d/render';
+ * import { hexRotate } from '@datamoc/mwg/two-d/render';
  *
  * console.log(hexRotate(1, 0, 1, 6)); // one 60-degree step of the axial offset (1, 0)
  * ```
@@ -134,7 +134,7 @@ function conditionMatches(condition: TerrainCondition, flags: ReadonlySet<string
  *
  * @example
  * ```ts
- * import { matchTerrainRule } from '@datamoc/mw_games/two-d/render';
+ * import { matchTerrainRule } from '@datamoc/mwg/two-d/render';
  *
  * const rule = { id: 'coast', conditions: [{ dx: 1, dy: 0, hasAll: ['water'] }], images: [] };
  * const flagsAt = (x: number, y: number) => (x === 1 && y === 0 ? new Set(['water']) : new Set(['land']));
@@ -179,7 +179,7 @@ export interface ResolveTerrainGraphicsOptions {
  *
  * @example
  * ```ts
- * import { resolveTerrainGraphics } from '@datamoc/mw_games/two-d/render';
+ * import { resolveTerrainGraphics } from '@datamoc/mwg/two-d/render';
  *
  * const water = new Set(['water']);
  * const land = new Set(['land']);

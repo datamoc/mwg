@@ -34,7 +34,7 @@ function assertPoint(value: { x: number; y: number }, name: string): { x: number
  *
  * @example
  * ```ts
- * import { Spring } from '@datamoc/mw_games/physics';
+ * import { Spring } from '@datamoc/mwg/physics';
  *
  * const hair = new Spring({ stiffness: 120, damping: 8 });
  * hair.setAnchor(10, 0); // the head moved; the bob is still behind

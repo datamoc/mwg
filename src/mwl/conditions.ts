@@ -11,7 +11,7 @@ export interface MwlConditionOptions {
  *
  * @example
  * ```ts
- * import { evaluateCondition } from '@datamoc/mw_games/mwl';
+ * import { evaluateCondition } from '@datamoc/mwg/mwl';
  *
  * console.log(evaluateCondition('gold >= 20', { gold: 30 })); // true
  * ```
@@ -188,7 +188,7 @@ const MAX_DEPTH = 64;
  *
  * @example
  * ```ts
- * import { checkConditionSyntax } from '@datamoc/mw_games/mwl';
+ * import { checkConditionSyntax } from '@datamoc/mwg/mwl';
  *
  * console.log(checkConditionSyntax('self.hp <= self.maxHp / 4')); // ['self.hp', 'self.maxHp']
  * ```

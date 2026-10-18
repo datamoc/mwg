@@ -26,7 +26,7 @@ export interface LootTable {
  *
  * @example
  * ```ts
- * import { rollLoot, type LootTable } from '@datamoc/mw_games/actors';
+ * import { rollLoot, type LootTable } from '@datamoc/mwg/actors';
  *
  * const ratLoot: LootTable = {
  *   chance: 0.5,

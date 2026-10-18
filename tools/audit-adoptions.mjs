@@ -58,7 +58,7 @@ function subpathMatches(subpath, match) {
 }
 
 /**
- * Every `import ... from '@datamoc/mw_games/<sub>'` row in the given files, as
+ * Every `import ... from '@datamoc/mwg/<sub>'` row in the given files, as
  * `{ file, line, subpath, names, typeOnly }`. `import type` rows are type-only; a
  * mixed value/type named list counts as runtime (conservative: the file still pulls
  * the module in at runtime). A default or namespace import carries no names, so it
@@ -67,7 +67,7 @@ function subpathMatches(subpath, match) {
 export function scanImports(files) {
 	const rows = [];
 	const pattern =
-		/^\s*import\s+(type\s+)?(?:\*\s+as\s+(\w+)|{([^}]*)}|(\w+))?\s*from\s*['"]@datamoc\/mw_games(\/[^'"]*)?['"]/gm;
+		/^\s*import\s+(type\s+)?(?:\*\s+as\s+(\w+)|{([^}]*)}|(\w+))?\s*from\s*['"]@datamoc\/(?:mwg|mw_games)(\/[^'"]*)?['"]/gm;
 
 	for (const { path, text } of files) {
 		for (const match of text.matchAll(pattern)) {

@@ -51,7 +51,7 @@ function assertPoint(x: number, y: number): void {
  *
  * @example
  * ```ts
- * import { PinnedDeform } from '@datamoc/mw_games/two-d/render';
+ * import { PinnedDeform } from '@datamoc/mwg/two-d/render';
  *
  * const wing = new PinnedDeform({ columns: 4, rows: 3, width: 96, height: 64 });
  * wing.drag(wing.indexOf(3, 0), 99, -6); // the wingtip follows the bone
@@ -241,8 +241,8 @@ export interface DeformableSpriteOptions {
  *
  * @example
  * ```ts
- * import { DeformableSprite } from '@datamoc/mw_games/two-d/render';
- * import type { Texture2D } from '@datamoc/mw_games/two-d/render';
+ * import { DeformableSprite } from '@datamoc/mwg/two-d/render';
+ * import type { Texture2D } from '@datamoc/mwg/two-d/render';
  *
  * declare const wingTexture: Texture2D;
  *

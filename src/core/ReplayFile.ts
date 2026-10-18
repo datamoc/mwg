@@ -59,7 +59,7 @@ function checkSeed(seed: unknown): number {
  *
  * @example
  * ```ts
- * import { exportReplayFile, Recorder, Signal, version } from '@datamoc/mw_games';
+ * import { exportReplayFile, Recorder, Signal, version } from '@datamoc/mwg';
  *
  * declare const recorder: Recorder;
  * const file = exportReplayFile(recorder.toJSON(), {
@@ -95,7 +95,7 @@ export function exportReplayFile(events: readonly ReplayEvent[], meta: ReplayFil
  *
  * @example
  * ```ts
- * import { importReplayFile, version } from '@datamoc/mw_games';
+ * import { importReplayFile, version } from '@datamoc/mwg';
  *
  * declare const json: string; // read from a file, see readReplayFile
  * const file = importReplayFile(json, { framework: version, game: 'my-game' });
@@ -153,7 +153,7 @@ export interface LastRunOptions {
  *
  * @example
  * ```ts
- * import { LastRun, Recorder } from '@datamoc/mw_games/core';
+ * import { LastRun, Recorder } from '@datamoc/mwg/core';
  *
  * declare const recorder: Recorder;
  * const last = new LastRun({ namespace: 'my-game' });
@@ -223,7 +223,7 @@ export interface RunCheckpoint<T> {
  *
  * @example
  * ```ts
- * import { runCheckpoint, Recorder } from '@datamoc/mw_games/core';
+ * import { runCheckpoint, Recorder } from '@datamoc/mwg/core';
  *
  * declare const recorder: Recorder;
  * const checkpoint = runCheckpoint(recorder, { depth: 4, hp: 9 });
@@ -242,7 +242,7 @@ export function runCheckpoint<T>(recorder: Recorder, state: T): RunCheckpoint<T>
  *
  * @example
  * ```ts
- * import { resumeRunPlayer, runCheckpoint, Recorder, Signal } from '@datamoc/mw_games/core';
+ * import { resumeRunPlayer, runCheckpoint, Recorder, Signal } from '@datamoc/mwg/core';
  *
  * declare const recorder: Recorder;
  * const checkpoint = runCheckpoint(recorder, { hp: 9 });
@@ -267,7 +267,7 @@ export function resumeRunPlayer<T>(
  *
  * @example
  * ```ts
- * import { downloadReplayFile, exportReplayFile } from '@datamoc/mw_games/core';
+ * import { downloadReplayFile, exportReplayFile } from '@datamoc/mwg/core';
  *
  * const json = exportReplayFile([], { framework: '0.26.1', game: 'my-game' });
  * downloadReplayFile(json, 'run-1.mwgreplay.json');
@@ -291,7 +291,7 @@ export function downloadReplayFile(json: string, filename: string): void {
  *
  * @example
  * ```ts
- * import { importReplayFile, readReplayFile, version } from '@datamoc/mw_games';
+ * import { importReplayFile, readReplayFile, version } from '@datamoc/mwg';
  *
  * declare const file: Blob; // from pickReplayFile, or a Node-side Blob
  * const json = await readReplayFile(file);
@@ -308,7 +308,7 @@ export async function readReplayFile(file: Blob): Promise<string> {
  *
  * @example
  * ```ts
- * import { importReplayFile, pickReplayFile, readReplayFile, version } from '@datamoc/mw_games';
+ * import { importReplayFile, pickReplayFile, readReplayFile, version } from '@datamoc/mwg';
  *
  * const picked = await pickReplayFile();
  * if (picked) {

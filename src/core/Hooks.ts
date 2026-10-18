@@ -14,7 +14,7 @@
  *
  * @example
  * ```ts
- * import { HookRegistry } from '@datamoc/mw_games/core';
+ * import { HookRegistry } from '@datamoc/mwg/core';
  *
  * const hooks = new HookRegistry<[amount: number]>();
  * const poisonRing = {};

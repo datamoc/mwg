@@ -9,7 +9,7 @@ import { applyHumanization, type HumanizationOptions, type MidiHumanizerEngine }
  *
  * @example
  * ```ts
- * import { parseMidi, LiteHumanizer } from '@datamoc/mw_games/audio';
+ * import { parseMidi, LiteHumanizer } from '@datamoc/mwg/audio';
  *
  * declare const midiBytes: ArrayBuffer;
  *

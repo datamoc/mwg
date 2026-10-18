@@ -25,8 +25,8 @@ export abstract class Scene2D extends Scene {
 	 *
 	 * @example
 	 * ```ts
-	 * import { Scene2D } from '@datamoc/mw_games/two-d';
-	 * import { tileShrink } from '@datamoc/mw_games/two-d/render';
+	 * import { Scene2D } from '@datamoc/mwg/two-d';
+	 * import { tileShrink } from '@datamoc/mwg/two-d/render';
 	 *
 	 * class Levels extends Scene2D {
 	 * 	override create(): void {}

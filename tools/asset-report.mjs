@@ -20,7 +20,7 @@ import { walk, DEFAULT_MIME } from './compile-resources.mjs';
  *     and unknown extensions excluded, exactly the files `compileResources` skips),
  *     with duplicates grouped by SHA-256 so an asset embedded twice is visible.
  *
- * Shipped as `@datamoc/mw_games/tools/asset-report` (`assetReport(options)`, what the
+ * Shipped as `@datamoc/mwg/tools/asset-report` (`assetReport(options)`, what the
  * flags below map onto) and as the `mwg-assets` command.
  *
  * usage: mwg-assets <dist folder> [--assets=<dir>] [--json=<report file>]
