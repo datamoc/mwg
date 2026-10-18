@@ -42,6 +42,10 @@ SoundFont 3 samples in Vorbis, Opus or FLAC, read and written, and the SoundFont
 
 - Writing a SoundFont (subset, merge, encode, decode) no longer fails with "Invalid array length" on a font of
   more than about a hundred megabytes: sample data is assembled from byte ranges instead of an array of numbers.
+- Encoding a SoundFont whose INFO list states a chunk size past its own end (read as a negative number) no longer
+  walks backwards forever: sizes are read unsigned and the walk stops at a chunk that does not fit.
+- The `compileResources` WebP test drew random pixels with random transparency, and a lossless WebP may drop the
+  colour under a fully transparent one, so it failed about one run in sixteen; its pixels are now opaque.
 - The ffmpeg encode cache lives in a per-user folder (`MWG_CACHE_DIR`, `XDG_CACHE_HOME`, `LOCALAPPDATA` or `~/.cache`),
   not the shared temp folder, is written atomically, and a cached sample is only trusted when it is still the codec it
   was stored as, so another local user cannot plant a sample that ends up in a game.

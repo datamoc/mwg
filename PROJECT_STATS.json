@@ -5,7 +5,7 @@
 	"releaseDate": "2026-10-18",
 	"source": {
 		"files": 388,
-		"lines": 77149,
+		"lines": 77152,
 		"modules": 20,
 		"breakdown": [
 			{
@@ -21,7 +21,7 @@
 			{
 				"name": "audio",
 				"files": 43,
-				"lines": 9866
+				"lines": 9869
 			},
 			{
 				"name": "core",
@@ -112,8 +112,8 @@
 	},
 	"tests": {
 		"files": 364,
-		"lines": 50729,
-		"cases": 3307
+		"lines": 50741,
+		"cases": 3308
 	},
 	"tools": {
 		"files": 68,
@@ -163,9 +163,9 @@
 		"declarationFiles": 388
 	},
 	"bundle": {
-		"globalRaw": 1394276,
-		"globalGzip": 420019,
-		"distRaw": 5290186
+		"globalRaw": 1394306,
+		"globalGzip": 420021,
+		"distRaw": 5290380
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

@@ -782,8 +782,11 @@ export async function decodeSoundFont(
 /** the INFO list with its `ifil` major version set (a SoundFont 3 states 3, a SoundFont 2 states 2); unchanged without an `ifil` */
 function withMajorVersion(info: Uint8Array, major: number): Uint8Array {
 	const out = info.slice();
+	const view = new DataView(out.buffer);
+	//the list comes from the font file: sizes are unsigned and a chunk that runs past the end stops the walk
 	for (let at = 12; at + 8 <= out.length;) {
-		const size = out[at + 4] | (out[at + 5] << 8) | (out[at + 6] << 16) | (out[at + 7] << 24);
+		const size = view.getUint32(at + 4, true);
+		if (size > out.length - at - 8) break;
 		if (String.fromCharCode(out[at], out[at + 1], out[at + 2], out[at + 3]) === 'ifil' && size >= 2) {
 			out[at + 8] = major & 0xff;
 			out[at + 9] = major >> 8;

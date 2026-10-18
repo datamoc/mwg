@@ -38,6 +38,8 @@ async function solidPng(width: number, height: number, rgba: [number, number, nu
 async function noisyPng(width: number, height: number): Promise<Buffer> {
 	const pixels = Buffer.alloc(width * height * 4);
 	for (let i = 0; i < pixels.length; i++) pixels[i] = Math.floor(Math.random() * 256);
+	//opaque: a lossless WebP may drop the colour under a fully transparent pixel, which is not a difference worth failing on
+	for (let i = 3; i < pixels.length; i += 4) pixels[i] = 255;
 	return sharp(pixels, { raw: { width, height, channels: 4 } })
 		.png()
 		.toBuffer();

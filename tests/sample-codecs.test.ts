@@ -175,3 +175,13 @@ test('encodeSoundFont passes its options to the encoder with every sample', asyn
 	);
 	assert.deepEqual(seen, [{ bitrate: 40 }]);
 });
+
+test('a font whose INFO list claims a chunk larger than itself is encoded without looping', async () => {
+	const sf2 = new Uint8Array(await plainFont());
+	const at = Buffer.from(sf2).indexOf(Buffer.from('ifil', 'latin1'));
+	const damaged = Buffer.from(sf2);
+	//a size of 0xfffffff0 as a signed number steps backwards
+	damaged.writeUInt32LE(0xfffffff0, at + 4);
+	const sf3 = await encodeSoundFont(damaged, flacSampleEncoder, 'flac').catch((error: Error) => error);
+	assert.ok(sf3 instanceof ArrayBuffer || sf3 instanceof Error, 'it returns or throws, but it ends');
+});
