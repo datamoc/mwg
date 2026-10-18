@@ -956,7 +956,7 @@ reach the compiled asset map without it.
   render because both call the same function. `soundFontBytes` takes raw SoundFont 2 data.
 - `parseSoundFont` - reads SoundFont 2 bytes into layered preset voices (key and velocity
   ranges, tuning, loops, envelopes, pan, attenuation); the font file itself stays the
-  game's to ship and to license. A SoundFont 3 (Ogg Vorbis samples) is refused by name
+  game's to ship and to license. A SoundFont 3 (compressed samples) is refused by name
   rather than read as noise: `loadSoundFont` reads either kind.
 - `loadSoundFont` - reads a SoundFont 2 or 3 into layered preset voices: a plain font goes
   straight to `parseSoundFont`, a SoundFont 3 is decoded first, through
@@ -967,8 +967,22 @@ reach the compiled asset map without it.
   SoundFont 3 states relative to its sample become the absolute ones SoundFont 2 uses. A
   SoundFont 2 comes back unchanged. The result feeds anything that takes SoundFont 2 bytes,
   `renderMidiToBufferAsync` included.
-- `webAudioSampleDecoder`/`SoundFontSampleDecoder` - the decoder contract (Ogg bytes and the
-  sample's own rate in, mono 16-bit frames out, synchronous or not) and the browser
+- `encodeSoundFont` - the other direction: a SoundFont 2 compressed into a SoundFont 3. Every sample
+  a preset reaches goes through the encoder once, loop points become relative to their sample, the
+  sample type gains the compressed flag and the INFO states version 3. The encoder is yours to give
+  (`mwg-soundfonts convert` hands it ffmpeg for Vorbis and Opus); `flacSampleEncoder` writes lossless
+  FLAC with nothing installed.
+- `detectSampleCodec`/`SampleCodec`/`SAMPLE_CODECS` - which codec a compressed sample uses, read from
+  its first bytes: Vorbis and Opus both sit in Ogg pages (told apart by their first packet), FLAC is
+  a native stream. The format itself only flags a sample as compressed, so a reader has to look;
+  an unknown codec is named in the error instead of failing opaquely in a decoder.
+- `encodeFlac`/`decodeFlac`/`flacSampleEncoder`/`flacSampleDecoder` - a small lossless FLAC codec
+  for one mono 16-bit sample, tested against ffmpeg in both directions. The decoder reads any FLAC
+  stream up to 24 bits (constant, verbatim, fixed and LPC subframes, every stereo mode, left channel
+  kept) and bounds the length and rate a stream claims before allocating.
+- `webAudioSampleDecoder`/`SoundFontSampleDecoder`/`SoundFontSampleEncoder` - the decoder contract
+  (compressed bytes, the sample's own rate and its detected codec in, mono 16-bit frames out,
+  synchronous or not; the encoder is the same contract reversed) and the browser
   implementation of it over `decodeAudioData`: each sample decodes in a context created at its
   own rate, so the browser never resamples it. A Node tool passes a decoder of its own.
 - `collectSoundFontUsage` - lists the (bank, program) pairs scheduled notes actually
@@ -988,7 +1002,13 @@ reach the compiled asset map without it.
   `.sf2` and `.sf3` assets, and subsets every embedded SoundFont to the programs the embedded
   MIDI files use. `soundFont: false` embeds the font whole, `soundFontUsage` names
   the programs explicitly, and with no shipped MIDI the font embeds whole because
-  the usage is unknowable. The reference bank in `data/microgm-opt.sf2` (2.6 MB,
+  the usage is unknowable. A plain `.sf2` is then compressed into a SoundFont 3 in Opus (the asset key
+  does not change, and `loadSoundFont` reads either kind): `soundFontCodec` picks `'vorbis'` or `'flac'`
+  instead, or `false` keeps the SoundFont 2. Opus and Vorbis are encoded by `ffmpeg` on the developer
+  machine (cached between builds); without it the default keeps the SoundFont 2 and the build says why,
+  while a codec named explicitly fails the build. `soundFontBitrate` (kbit/s, 6 to 510) sets how much
+  an Opus font keeps and `soundFontQuality` (-1 smallest to 10 best) does the same for Vorbis; each is
+  ignored by the other codecs, and a measured guide is in [tools.md](tools.md). A `.sf3` is embedded as it is. The reference bank in `data/microgm-opt.sf2` (2.6 MB,
   WTFPL, shipped in the npm package for a game to copy into its assets) drops to
   tens of kilobytes per game this way: measured, piano and drums come to 264 KB, eight
   essential programs (piano, guitar, bass, strings, brass, flute, synth lead, drums) to 421 KB,

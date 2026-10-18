@@ -6,7 +6,14 @@ import {
 	MIN_SAMPLE_RATE,
 	webAudioSampleDecoder,
 } from './SampleDecoder.ts';
-import type { SoundFontLimits, SoundFontSampleDecoder } from './SampleDecoder.ts';
+import type {
+	SampleEncodeOptions,
+	SoundFontLimits,
+	SoundFontSampleDecoder,
+	SoundFontSampleEncoder,
+} from './SampleDecoder.ts';
+import { detectSampleCodec } from './SampleCodec.ts';
+import type { SampleCodec } from './SampleCodec.ts';
 
 /**
  * A SoundFont 2 reader: presets to instruments to sample zones, enough to play
@@ -137,11 +144,11 @@ interface SoundTables {
 	instBags: number[];
 	instGens: Generator[];
 	samples: RawSample[];
-	/** the sample chunk as bytes: Ogg Vorbis data for a SoundFont 3, 16-bit frames otherwise */
+	/** the sample chunk as bytes: compressed streams (Ogg Vorbis, Ogg Opus or FLAC) for a SoundFont 3, 16-bit frames otherwise */
 	smplBytes: Uint8Array;
 	/** the sample chunk as 16-bit frames; empty for a SoundFont 3, whose samples are not frames */
 	smpl: Int16Array;
-	/** true for a SoundFont 3: every sample is an Ogg Vorbis byte range, its loop points relative to it */
+	/** true for a SoundFont 3: every sample is a compressed byte range, its loop points relative to it */
 	compressed: boolean;
 	/** the verbatim INFO list, carried into a subset untouched when present */
 	info: Uint8Array | null;
@@ -340,7 +347,7 @@ export function parseSoundFont(data: ArrayBuffer | ArrayBufferView, options: Sou
 	const tables = readTables(toBytes(data));
 	if (tables.compressed) {
 		throw new Error(
-			'SoundFont 3 (Ogg Vorbis samples) needs decoding first: use loadSoundFont() or decodeSoundFont(), or convert it with "mwg-soundfonts convert <in.sf3> <out.sf2>"',
+			'SoundFont 3 (compressed samples) needs decoding first: use loadSoundFont() or decodeSoundFont(), or convert it with "mwg-soundfonts convert <in.sf3> <out.sf2>"',
 		);
 	}
 
@@ -686,8 +693,9 @@ function distinctPresets(tables: SoundTables): number[] {
 }
 
 /**
- * Decodes a SoundFont 3 into a plain SoundFont 2: every Ogg Vorbis sample a preset reaches goes
- * through `decode` (one call per sample, mono 16-bit frames at the rate the header states) into
+ * Decodes a SoundFont 3 into a plain SoundFont 2: every compressed sample a preset reaches (Ogg Vorbis,
+ * Ogg Opus or FLAC, told apart by its first bytes) goes through `decode` (one call per sample, given the
+ * codec, returning mono 16-bit frames at the rate the header states) into
  * the sample chunk, and the loop points a SoundFont 3 states relative to its sample become the
  * absolute ones SoundFont 2 uses. A SoundFont 2 comes back unchanged and `decode` is never called.
  * The result feeds everything that takes SoundFont 2 bytes, `renderMidiToBufferAsync` included.
@@ -732,7 +740,8 @@ export async function decodeSoundFont(
 			if (!(sample.rate >= MIN_SAMPLE_RATE && sample.rate <= MAX_SAMPLE_RATE)) {
 				throw new Error(`a sample states ${sample.rate} Hz, which no SoundFont does: the font is damaged`);
 			}
-			const pcm = await decode(reachable.smplBytes.subarray(sample.start, sample.end), sample.rate);
+			const compressedBytes = reachable.smplBytes.subarray(sample.start, sample.end);
+			const pcm = await decode(compressedBytes, sample.rate, detectSampleCodec(compressedBytes));
 			//what a decoder returns is bounded too: a few bytes of Ogg can name a very long sound
 			if (pcm.length > maxSample || total + pcm.length > maxTotal) {
 				throw new Error(
@@ -761,12 +770,111 @@ export async function decodeSoundFont(
 	}
 	const plain: SoundTables = {
 		...reachable,
+		info: reachable.info && withMajorVersion(reachable.info, 2),
 		samples,
 		smpl,
 		smplBytes: new Uint8Array(smpl.buffer),
 		compressed: false,
 	};
 	return writeSoundFont(plain, distinctPresets(plain));
+}
+
+/** the INFO list with its `ifil` major version set (a SoundFont 3 states 3, a SoundFont 2 states 2); unchanged without an `ifil` */
+function withMajorVersion(info: Uint8Array, major: number): Uint8Array {
+	const out = info.slice();
+	for (let at = 12; at + 8 <= out.length;) {
+		const size = out[at + 4] | (out[at + 5] << 8) | (out[at + 6] << 16) | (out[at + 7] << 24);
+		if (String.fromCharCode(out[at], out[at + 1], out[at + 2], out[at + 3]) === 'ifil' && size >= 2) {
+			out[at + 8] = major & 0xff;
+			out[at + 9] = major >> 8;
+		}
+		at += 8 + size + (size & 1);
+	}
+	return out;
+}
+
+/**
+ * Compresses a SoundFont 2 into a SoundFont 3: every sample a preset reaches goes through `encode` (one
+ * call per sample, mono 16-bit frames, the codec named by `codec`, `options` passed along: an Opus bitrate
+ * or a Vorbis quality level) and its bytes replace the frames; a
+ * sample no preset reaches is dropped. Loop points become relative to their sample, as the format has
+ * them, and each compressed sample's type gains the compressed flag. The font states the SoundFont 3
+ * version in its INFO. Nothing here compresses: `encode` does, so a build tool can hand it ffmpeg for
+ * Vorbis or Opus, or `flacSampleEncoder` for lossless FLAC with nothing installed. A SoundFont that
+ * is already a SoundFont 3 comes back unchanged and `encode` is never called, whatever its codec: to
+ * change the codec, `decodeSoundFont` it first.
+ *
+ * @example
+ * ```ts
+ * import { encodeSoundFont, flacSampleEncoder } from '@datamoc/mwg/audio';
+ *
+ * declare const sf2Bytes: ArrayBuffer;
+ *
+ * const sf3 = await encodeSoundFont(sf2Bytes, flacSampleEncoder, 'flac');
+ * console.log(sf3.byteLength < sf2Bytes.byteLength);
+ * ```
+ */
+export async function encodeSoundFont(
+	data: ArrayBuffer | ArrayBufferView,
+	encode: SoundFontSampleEncoder,
+	codec: SampleCodec,
+	options: SampleEncodeOptions = {},
+): Promise<ArrayBuffer> {
+	const bytes = toBytes(data);
+	const tables = readTables(bytes);
+	if (tables.compressed) return bytes.slice().buffer as ArrayBuffer;
+
+	//prune first, so a sample no preset reaches is never compressed
+	const reachable = readTables(new Uint8Array(writeSoundFont(tables, distinctPresets(tables))));
+	const parts: Uint8Array[] = [];
+	const placed = new Map<string, { start: number; end: number }>();
+	let total = 0;
+	const samples: RawSample[] = [];
+	for (const sample of reachable.samples) {
+		if (!(sample.end > sample.start) || sample.type & 0x8000) {
+			samples.push(sample);
+			continue;
+		}
+		if (!(sample.rate >= MIN_SAMPLE_RATE && sample.rate <= MAX_SAMPLE_RATE)) {
+			throw new Error(`a sample states ${sample.rate} Hz, which no SoundFont does: the font is damaged`);
+		}
+		const key = `${sample.start}:${sample.end}`;
+		let at = placed.get(key);
+		if (!at) {
+			const compressed = await encode(
+				reachable.smpl.subarray(sample.start, sample.end),
+				sample.rate,
+				codec,
+				options,
+			);
+			if (compressed.length === 0) throw new Error('a sample encoder returned no bytes');
+			at = { start: total, end: total + compressed.length };
+			placed.set(key, at);
+			parts.push(compressed);
+			total += compressed.length;
+		}
+		const length = sample.end - sample.start;
+		samples.push({
+			...sample,
+			start: at.start,
+			end: at.end,
+			loopStart: Math.max(0, Math.min(length, sample.loopStart - sample.start)),
+			loopEnd: Math.max(0, Math.min(length, sample.loopEnd - sample.start)),
+			type: sample.type | 0x10,
+		});
+	}
+	const smplBytes = concat(parts);
+	return writeSoundFont(
+		{
+			...reachable,
+			info: reachable.info && withMajorVersion(reachable.info, 3),
+			samples,
+			smpl: new Int16Array(0),
+			smplBytes,
+			compressed: true,
+		},
+		distinctPresets(reachable),
+	);
 }
 
 /**
@@ -963,14 +1071,17 @@ function writeSoundFont(tables: SoundTables, usedPresets: readonly number[]): Ar
 
 	//Samples: data concatenated, offsets and links remapped, headers otherwise intact.
 	const newSamples: RawSample[] = [];
-	const sampleData: number[] = [];
+	//byte ranges, joined once at the end: a font's samples run to hundreds of megabytes, too many for an array of numbers
+	const sampleParts: Uint8Array[] = [];
+	let sampleBytes = 0;
 	for (const old of sampleOrder) {
 		const header = tables.samples[old];
 		const self = sampleNew.get(old)!;
 		if (tables.compressed) {
-			//Ogg bytes copied as they are: offsets count bytes and the loop points stay relative to the sample
-			const start = sampleData.length;
-			for (let index = header.start; index < header.end; index++) sampleData.push(tables.smplBytes[index]);
+			//compressed bytes copied as they are: offsets count bytes and the loop points stay relative to the sample
+			const start = sampleBytes;
+			sampleParts.push(tables.smplBytes.subarray(header.start, header.end));
+			sampleBytes += header.end - header.start;
 			newSamples.push({
 				...header,
 				start,
@@ -979,11 +1090,14 @@ function writeSoundFont(tables: SoundTables, usedPresets: readonly number[]): Ar
 			});
 			continue;
 		}
-		const start = sampleData.length / 2;
+		const start = sampleBytes / 2;
+		const part = new Uint8Array((header.end - header.start) * 2);
+		const view = new DataView(part.buffer);
 		for (let index = header.start; index < header.end; index++) {
-			const word = tables.smpl[index];
-			sampleData.push(word & 0xff, (word >> 8) & 0xff);
+			view.setInt16((index - header.start) * 2, tables.smpl[index], true);
 		}
+		sampleParts.push(part);
+		sampleBytes += part.length;
 		newSamples.push({
 			...header,
 			start,
@@ -1051,7 +1165,7 @@ function writeSoundFont(tables: SoundTables, usedPresets: readonly number[]): Ar
 		type: 0,
 	};
 	const shdr = chunkBytes('shdr', [...newSamples.flatMap(sampleRecords), ...sampleRecords(terminalSample)]);
-	const smpl = chunkBytes('smpl', sampleData);
+	const smpl = chunkBytes('smpl', concat(sampleParts));
 	const sdta = listBytes('sdta', [smpl]);
 	const pdta = listBytes('pdta', [phdr, pbag, pmod, pgen, inst, ibag, imod, igen, shdr]);
 	const body = concat([new Uint8Array(asciiBytes('sfbk')), ...(tables.info ? [tables.info] : []), sdta, pdta]);

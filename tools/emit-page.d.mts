@@ -26,6 +26,23 @@ export interface EmitPageOptions {
 	soundFont?: boolean;
 	/** Explicit `{ bank, program }` list to subset a SoundFont to, overriding the MIDI-derived list. */
 	soundFontUsage?: readonly SoundFontUsage[];
+	/**
+	 * How a plain `.sf2` is embedded: compressed into a SoundFont 3 in this codec (`'opus'` by default), or `false` to keep the
+	 * SoundFont 2. Opus and Vorbis are encoded by `ffmpeg` on the developer machine (absent and not named: the font stays a
+	 * SoundFont 2 with a warning; named: the build fails), FLAC needs nothing. The asset key is unchanged. A `.sf3` is kept as it is.
+	 */
+	soundFontCodec?: 'opus' | 'vorbis' | 'flac' | false;
+	/** target bitrate in kbit/s (6 to 510) for an Opus SoundFont; ffmpeg's own default when absent. Ignored by the other codecs. */
+	soundFontBitrate?: number;
+	/** Vorbis quality level, -1 (smallest) to 10 (best); ffmpeg's own default when absent. Ignored by the other codecs. */
+	soundFontQuality?: number;
+	/** replaces the sample encoder (`(frames, rate, codec) => bytes`), mainly for tests */
+	soundFontEncode?: (
+		frames: Int16Array,
+		rate: number,
+		codec: 'opus' | 'vorbis' | 'flac',
+		options?: { bitrate?: number; quality?: number },
+	) => Uint8Array | Promise<Uint8Array>;
 	/** the page's Content-Security-Policy: on by default, `false` to leave it out */
 	csp?: boolean | CspOptions;
 	/** fails the build when the page a player downloads (the standalone file, else the page and its scripts) is larger than this many bytes */

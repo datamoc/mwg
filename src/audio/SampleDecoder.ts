@@ -1,10 +1,40 @@
+import type { SampleCodec } from './SampleCodec.ts';
+
 /**
- * Turns the Ogg Vorbis bytes of one SoundFont 3 sample into mono 16-bit frames at the
- * sample's own rate, which is the rate its header states and the frame count its loop
- * points were written against. Synchronous or asynchronous: a browser decodes through
- * WebAudio (`webAudioSampleDecoder`), a Node tool through whatever it has installed.
+ * Turns the compressed bytes of one SoundFont 3 sample (Ogg Vorbis, Ogg Opus or FLAC, named by
+ * `codec`) into mono 16-bit frames at the sample's own rate, which is the rate its header states
+ * and the frame count its loop points were written against. Synchronous or asynchronous: a
+ * browser decodes through WebAudio (`webAudioSampleDecoder`), a Node tool through whatever it has
+ * installed (`decodeFlac` needs nothing). A decoder written for Vorbis alone may ignore `codec`.
  */
-export type SoundFontSampleDecoder = (ogg: Uint8Array, rate: number) => Int16Array | Promise<Int16Array>;
+export type SoundFontSampleDecoder = (
+	bytes: Uint8Array,
+	rate: number,
+	codec: SampleCodec,
+) => Int16Array | Promise<Int16Array>;
+
+/**
+ * Turns mono 16-bit frames into the compressed bytes of one SoundFont 3 sample in `codec`. The
+ * frames are at `rate`, the rate the sample header will state; an encoder whose codec runs at
+ * fixed rates (Opus resamples to 48 kHz) decodes back at `rate` all the same.
+ */
+export type SoundFontSampleEncoder = (
+	frames: Int16Array,
+	rate: number,
+	codec: SampleCodec,
+	options?: SampleEncodeOptions,
+) => Uint8Array | Promise<Uint8Array>;
+
+/**
+ * How hard an encoder compresses. Each field belongs to one codec and the others ignore it: FLAC is
+ * lossless and takes neither. An encoder that has no use for them may leave the parameter out.
+ */
+export interface SampleEncodeOptions {
+	/** target bitrate in kbit/s for Opus (6 to 510); the encoder's own default when absent */
+	bitrate?: number;
+	/** quality level for Vorbis, -1 (smallest) to 10 (best); the encoder's own default when absent */
+	quality?: number;
+}
 
 /** the slice of `OfflineAudioContext` the decoder uses, so a test can stand in for it */
 export interface SampleDecodingContext {
@@ -94,13 +124,13 @@ export function webAudioSampleDecoder(
 	limits: SoundFontLimits = {},
 ): SoundFontSampleDecoder {
 	const maxFrames = limits.sampleFrames ?? MAX_SAMPLE_FRAMES;
-	return async (ogg, rate) => {
+	return async (bytes, rate) => {
 		if (!(rate >= MIN_SAMPLE_RATE && rate <= MAX_SAMPLE_RATE)) {
 			throw new Error(`a sample rate of ${rate} Hz is not one a SoundFont can state`);
 		}
 		const contextRate = Math.max(MIN_RATE, Math.min(MAX_RATE, rate));
-		//decodeAudioData detaches what it is given, and `ogg` is a view into the caller's font
-		const copy = ogg.slice().buffer as ArrayBuffer;
+		//decodeAudioData detaches what it is given, and `bytes` is a view into the caller's font
+		const copy = bytes.slice().buffer as ArrayBuffer;
 		const decoded = await create(contextRate).decodeAudioData(copy);
 		if (decoded.length > maxFrames) throw new Error('a decoded sample is longer than a SoundFont sample may be');
 		const channel = decoded.getChannelData(0);

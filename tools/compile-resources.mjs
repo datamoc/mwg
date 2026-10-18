@@ -45,6 +45,7 @@ export const DEFAULT_MIME = {
 };
 
 const isSoundFontKey = (key) => /\.sf[23]$/i.test(key);
+const SOUNDFONT_CODECS = ['opus', 'vorbis', 'flac'];
 const isMidiKey = (key) => /\.(mid|midi)$/i.test(key);
 
 /**
@@ -75,6 +76,41 @@ function checkedSoundFontUsage(soundFontUsage) {
 		}
 		return { bank, program };
 	});
+}
+
+/**
+ * A SoundFont 2 compressed into a SoundFont 3 in `codec`; a SoundFont 3 comes back as it is. `explicit`
+ * is whether the caller named the codec: without it a machine with no `ffmpeg` keeps the SoundFont 2 and
+ * says so in `warning`, with it the build fails, since the developer asked for exactly that format.
+ */
+async function compressSoundFont(tools, bytes, codec, explicit, encode, options) {
+	const { ffmpegEncode } = await import('./soundfonts.mjs');
+	try {
+		const compressed = Buffer.from(await tools.encodeSoundFont(bytes, encode ?? ffmpegEncode, codec, options));
+		//an unchanged result is a font that was already a SoundFont 3
+		return { bytes: compressed, codec: compressed.equals(bytes) ? null : codec };
+	} catch (error) {
+		if (error?.code === 'FFMPEG_MISSING' && !explicit) {
+			return {
+				bytes,
+				codec: null,
+				warning: `ffmpeg is not installed, so the SoundFont stays a SoundFont 2 instead of a SoundFont 3 in ${codec}: install ffmpeg, or pass soundFontCodec: 'flac' (no ffmpeg needed) or false`,
+			};
+		}
+		throw new Error(`cannot compress the SoundFont as ${codec}: ${error.message ?? error}`);
+	}
+}
+
+/** a numeric `--name=value` CLI argument, undefined when absent */
+export function numberFlag(args, prefix) {
+	const arg = args.find((a) => a.startsWith(prefix));
+	return arg === undefined ? undefined : Number(arg.slice(prefix.length));
+}
+
+/** the `--soundfont-codec=` CLI value as an option: a codec name, `false` for `none`, undefined when absent */
+export function soundFontCodecFromFlag(arg) {
+	const value = arg?.slice('--soundfont-codec='.length);
+	return value === undefined ? undefined : value === 'none' ? false : value;
 }
 
 /** parses a `--soundfont-usage=bank:program,...` CLI value; undefined when the flag is absent */
@@ -129,6 +165,17 @@ export async function* walk(dir) {
  *   `.mid`/`.midi` files use (default true); `false` embeds every SoundFont whole
  * @param options.soundFontUsage explicit `{ bank, program }` list to subset to, for a
  *   game that voices notes no shipped MIDI file requests; overrides the MIDI-derived list
+ * @param options.soundFontCodec how a plain `.sf2` is embedded: compressed into a SoundFont 3 in
+ *   this codec (`'opus'` by default, or `'vorbis'`, `'flac'`), or `false` to embed the SoundFont 2
+ *   as it is. The asset key does not change and `loadSoundFont` reads either kind. Opus and Vorbis
+ *   are encoded by `ffmpeg` on the developer machine; when it is absent and no codec was asked for
+ *   by name, the font embeds as a SoundFont 2 and the result says why, and a codec named
+ *   explicitly fails the build. A `.sf3` is embedded as it is, in whatever codec it already has.
+ * @param options.soundFontBitrate target bitrate in kbit/s (6 to 510) for an Opus SoundFont; ffmpeg's own
+ *   default (about 64 kbit/s for these mono samples) when absent. Ignored by the other codecs
+ * @param options.soundFontQuality Vorbis quality level, -1 (smallest) to 10 (best); ffmpeg's own default
+ *   (3) when absent. Ignored by the other codecs
+ * @param options.soundFontEncode replaces the encoder (`(frames, rate, codec) => bytes`), for tests
  * @returns the group names, in the order the page should load them
  *
  * An `assets/credits.json` (an array, or `{ "credits": [...] }`, of `{ name, license, author?, url? }`)
@@ -148,8 +195,20 @@ export async function compileResources({
 	svgo: optimiseSvgFiles = false,
 	soundFont = true,
 	soundFontUsage,
+	soundFontCodec,
+	soundFontBitrate,
+	soundFontQuality,
+	soundFontEncode,
 } = {}) {
 	if (!from || !to) throw new Error('compileResources needs both `from` and `to`');
+	if (soundFontCodec !== undefined && soundFontCodec !== false && !SOUNDFONT_CODECS.includes(soundFontCodec)) {
+		throw new Error(`unknown soundFontCodec "${soundFontCodec}": expected ${SOUNDFONT_CODECS.join(', ')} or false`);
+	}
+	const codec = soundFontCodec === undefined ? 'opus' : soundFontCodec;
+	const encodeOptions = (await import('./soundfonts.mjs')).checkedEncodeOptions({
+		bitrate: soundFontBitrate,
+		quality: soundFontQuality,
+	});
 
 	const types = { ...DEFAULT_MIME, ...mime };
 	const group = groupBy ?? ((key) => (key.includes('/') ? key.slice(0, key.indexOf('/')) : 'assets'));
@@ -199,7 +258,10 @@ export async function compileResources({
 			usage = soundFontTools.collectSoundFontUsage(parsed);
 		}
 	}
-	if (embedsSoundFont && usage !== undefined && !soundFontTools) soundFontTools = await loadSoundFontTools();
+	const hasSoundFont = files.some((file) => isSelected(file) && isSoundFontKey(keyOf(file)));
+	if (((embedsSoundFont && usage !== undefined) || (hasSoundFont && codec)) && !soundFontTools) {
+		soundFontTools = await loadSoundFontTools();
+	}
 	const soundFonts = [];
 
 	await rm(to, { recursive: true, force: true });
@@ -262,23 +324,33 @@ export async function compileResources({
 		}
 
 		if (isSoundFontKey(key)) {
+			const embed = { key, programs: null, rawBytes: data.length, embeddedBytes: data.length, codec: null };
 			if (usage !== undefined && soundFontTools) {
 				try {
 					bytes = Buffer.from(soundFontTools.subsetSoundFont(data, usage));
 				} catch (error) {
 					throw new Error(`cannot subset SoundFont asset ${key}: ${error.message ?? error}`);
 				}
-				soundFonts.push({
-					key,
-					programs: usage.length,
-					rawBytes: data.length,
-					embeddedBytes: bytes.length,
-					//the programs the MIDI files ask for that this font does not carry
-					missing: soundFontTools.missingSoundFontPrograms(data, usage),
-				});
-			} else {
-				soundFonts.push({ key, programs: null, rawBytes: data.length, embeddedBytes: data.length });
+				embed.programs = usage.length;
+				embed.embeddedBytes = bytes.length;
+				//the programs the MIDI files ask for that this font does not carry
+				embed.missing = soundFontTools.missingSoundFontPrograms(data, usage);
 			}
+			if (codec && soundFontTools) {
+				const compressed = await compressSoundFont(
+					soundFontTools,
+					bytes,
+					codec,
+					soundFontCodec !== undefined,
+					soundFontEncode,
+					encodeOptions,
+				);
+				bytes = compressed.bytes;
+				embed.embeddedBytes = bytes.length;
+				embed.codec = compressed.codec;
+				if (compressed.warning) embed.warning = compressed.warning;
+			}
+			soundFonts.push(embed);
 		}
 
 		const name = group(key);
@@ -341,7 +413,7 @@ async function runCli() {
 	const [from, to] = args.filter((a) => !a.startsWith('--'));
 	if (!from || !to) {
 		console.error(
-			'usage: node compile-resources.mjs <asset folder> <output folder> [--to-webp] [--webp-lossy[=quality]] [--svgo] [--no-soundfont-subset] [--soundfont-usage=bank:program,...]',
+			'usage: node compile-resources.mjs <asset folder> <output folder> [--to-webp] [--webp-lossy[=quality]] [--svgo] [--no-soundfont-subset] [--soundfont-usage=bank:program,...] [--soundfont-codec=opus|vorbis|flac|none] [--soundfont-bitrate=kbps] [--soundfont-quality=-1..10]',
 		);
 		process.exit(1);
 	}
@@ -366,6 +438,9 @@ async function runCli() {
 			svgo: args.includes('--svgo'),
 			soundFont: !args.includes('--no-soundfont-subset'),
 			soundFontUsage,
+			soundFontCodec: soundFontCodecFromFlag(args.find((a) => a.startsWith('--soundfont-codec='))),
+			soundFontBitrate: numberFlag(args, '--soundfont-bitrate='),
+			soundFontQuality: numberFlag(args, '--soundfont-quality='),
 		});
 
 	const kb = (n) => (n / 1024).toFixed(1).padStart(8) + ' KB';
@@ -379,6 +454,9 @@ async function runCli() {
 				? `  ${font.key}: SoundFont embedded whole (${kb(font.rawBytes)}), no shipped MIDI to subset against`
 				: `  ${font.key}: SoundFont subset to ${font.programs} program(s), ${kb(font.rawBytes)} -> ${kb(font.embeddedBytes)}`,
 		);
+		if (font.codec)
+			console.log(`    compressed as a SoundFont 3 in ${font.codec}: ${kb(font.embeddedBytes)} embedded`);
+		if (font.warning) console.log(`  warning: ${font.key}: ${font.warning}`);
 		if (font.missing?.length > 0) {
 			console.log(
 				`  warning: ${font.key} does not carry ${font.missing.map(({ bank, program }) => `${bank}:${program}`).join(', ')}: ` +

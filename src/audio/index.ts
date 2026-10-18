@@ -50,6 +50,7 @@ export type { RenderMidiOptions, RenderMidiAsyncOptions, RenderedMidi } from './
 export {
 	collectSoundFontUsage,
 	decodeSoundFont,
+	encodeSoundFont,
 	loadSoundFont,
 	mergeSoundFonts,
 	missingSoundFontPrograms,
@@ -57,7 +58,16 @@ export {
 	subsetSoundFont,
 } from './SoundFont.ts';
 export { webAudioSampleDecoder } from './SampleDecoder.ts';
-export type { SampleDecodingContext, SoundFontLimits, SoundFontSampleDecoder } from './SampleDecoder.ts';
+export type {
+	SampleDecodingContext,
+	SampleEncodeOptions,
+	SoundFontLimits,
+	SoundFontSampleDecoder,
+	SoundFontSampleEncoder,
+} from './SampleDecoder.ts';
+export { detectSampleCodec, SAMPLE_CODECS } from './SampleCodec.ts';
+export type { SampleCodec } from './SampleCodec.ts';
+export { decodeFlac, encodeFlac, flacSampleDecoder, flacSampleEncoder } from './Flac.ts';
 export type {
 	MissingProgram,
 	SoundFont,

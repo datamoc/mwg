@@ -3,7 +3,7 @@ import { readFile, readdir, writeFile, rm, stat } from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
 import { join, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compileResources, soundFontUsageFromFlag } from './compile-resources.mjs';
+import { compileResources, numberFlag, soundFontCodecFromFlag, soundFontUsageFromFlag } from './compile-resources.mjs';
 import { compressDist } from './compress-dist.mjs';
 import { toClassicScript } from './classic-html.mjs';
 import { buildSingleFile } from './single-file.mjs';
@@ -31,6 +31,8 @@ import { withContentSecurityPolicy } from './csp.mjs';
  *                 [--single-file] [--single-file-compress[=level]]
  *                 [--single-file-brotli[=quality]] [--to-webp] [--webp-lossy[=quality]] [--svgo]
  *                 [--no-soundfont-subset] [--soundfont-usage=bank:program,...]
+ *                 [--soundfont-codec=opus|vorbis|flac|none] [--soundfont-bitrate=kbps]
+ *                 [--soundfont-quality=-1..10]
  *
  * `--dist` defaults to `<project folder>/dist` and `--assets` to `<project folder>/assets`; with
  * no assets folder at all, the page is rewritten and nothing is compiled.
@@ -80,6 +82,10 @@ export async function emitPage({
 	svgo = false,
 	soundFont = true,
 	soundFontUsage,
+	soundFontCodec,
+	soundFontBitrate,
+	soundFontQuality,
+	soundFontEncode,
 	csp = true,
 	maxPageBytes,
 }) {
@@ -97,6 +103,10 @@ export async function emitPage({
 				svgo,
 				soundFont,
 				soundFontUsage,
+				soundFontCodec,
+				soundFontBitrate,
+				soundFontQuality,
+				soundFontEncode,
 			})
 		: { groups: [], keys: [], rawBytes: 0, embeddedBytes: 0, webpConverted: 0, svgOptimised: 0, soundFonts: [] };
 
@@ -202,6 +212,9 @@ async function main(argv) {
 		svgo: argv.includes('--svgo'),
 		soundFont: !argv.includes('--no-soundfont-subset'),
 		soundFontUsage,
+		soundFontCodec: soundFontCodecFromFlag(argv.find((a) => a.startsWith('--soundfont-codec='))),
+		soundFontBitrate: numberFlag(argv, '--soundfont-bitrate='),
+		soundFontQuality: numberFlag(argv, '--soundfont-quality='),
 		maxPageBytes: value('max-page-bytes') ? Number(value('max-page-bytes')) : undefined,
 		csp: argv.includes('--no-csp')
 			? false
@@ -232,6 +245,9 @@ async function main(argv) {
 				? `  ${font.key}: SoundFont embedded whole (${kb(font.rawBytes)}), no shipped MIDI to subset against`
 				: `  ${font.key}: SoundFont subset to ${font.programs} program(s), ${kb(font.rawBytes)} -> ${kb(font.embeddedBytes)}`,
 		);
+		if (font.codec)
+			console.log(`    compressed as a SoundFont 3 in ${font.codec}: ${kb(font.embeddedBytes)} embedded`);
+		if (font.warning) console.log(`  warning: ${font.key}: ${font.warning}`);
 		if (font.missing?.length > 0) {
 			console.log(
 				`  warning: ${font.key} does not carry ${font.missing.map(({ bank, program }) => `${bank}:${program}`).join(', ')}: ` +

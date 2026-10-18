@@ -9,8 +9,11 @@ export const FRAMES = 100;
 
 /** an `Ogg` stand-in decoder: a ramp whose slope is the first byte of the data */
 export function fakeDecode(ogg: Uint8Array): Int16Array {
-	return Int16Array.from({ length: FRAMES }, (_, index) => index * ogg[0]);
+	return Int16Array.from({ length: FRAMES }, (_, index) => index * ogg[MAGIC.length]);
 }
+
+/** the bytes every stand-in sample starts with, so the codec detector names it (as FLAC) */
+export const MAGIC = Buffer.from('fLaC', 'latin1');
 
 function str20(name: string): Buffer {
 	return Buffer.concat([Buffer.from(name, 'latin1'), Buffer.alloc(20 - name.length)]);
@@ -40,8 +43,9 @@ function gen(oper: number, amount: number): Buffer {
 	return out;
 }
 
-/** a one-preset SoundFont 3: preset `program` of bank `bank`, one Ogg sample of `ogg.length` bytes looping 10 to 90 at 8 kHz */
-export function buildSf3(bank: number, program: number, ogg: Buffer): Buffer {
+/** a one-preset SoundFont 3: preset `program` of bank `bank`, one sample of `MAGIC` plus `payload` looping 10 to 90 at 8 kHz */
+export function buildSf3(bank: number, program: number, payload: Buffer): Buffer {
+	const ogg = Buffer.concat([MAGIC, payload]);
 	const preset = (name: string, p: number, b: number, bag: number): Buffer =>
 		Buffer.concat([str20(name), u16(p, b, bag), Buffer.alloc(12)]);
 	const header = Buffer.alloc(46);

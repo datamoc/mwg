@@ -1,14 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { spawnSync } from 'node:child_process';
+
+import { detectSampleCodec } from '../src/audio/SampleCodec.ts';
 import { decodeSoundFont, parseSoundFont } from '../src/audio/SoundFont.ts';
 import { buildSf3, fakeDecode, FRAMES } from './helpers/soundfont3.ts';
 import {
+	convertSoundFont,
 	creditsFor,
 	ffmpegDecode,
+	checkedEncodeOptions,
+	ffmpegEncode,
 	fetchSoundFont,
 	findFont,
 	parseProgramList,
@@ -209,8 +215,86 @@ test('a font whose sample offsets point outside the sample data is refused, not 
 	await assert.rejects(() => sf3ToSf2(lie(5000, 1), fakeDecode), /outside the sample data/);
 });
 
-test('ffmpeg is never handed bytes that are not Ogg: a probed playlist could name local files', () => {
+test('ffmpeg is never handed bytes that are not a known codec: a probed playlist could name local files', () => {
 	const playlist = Buffer.from('#EXTM3U\nfile:///etc/passwd\n');
-	assert.throws(() => ffmpegDecode(playlist), /not Ogg Vorbis data/);
-	assert.throws(() => ffmpegDecode(new Uint8Array(0)), /not Ogg Vorbis data/);
+	assert.throws(() => ffmpegDecode(playlist), /not Vorbis, Opus or FLAC data/);
+	assert.throws(() => ffmpegDecode(new Uint8Array(0)), /not Vorbis, Opus or FLAC data/);
+});
+
+const ffmpegMissing = spawnSync('ffmpeg', ['-version']).error !== undefined;
+
+test('ffmpeg writes Vorbis and Opus and reads them back at the rate asked, FLAC needing no ffmpeg', async (t) => {
+	if (ffmpegMissing) return t.skip('ffmpeg is not installed');
+	const frames = Int16Array.from({ length: 8000 }, (_, index) => Math.round(8000 * Math.sin(index / 9)));
+	for (const codec of ['vorbis', 'opus', 'flac'] as const) {
+		const bytes = await ffmpegEncode(frames, 22050, codec);
+		assert.equal(detectSampleCodec(bytes), codec);
+		const back = ffmpegDecode(bytes, 22050, codec);
+		//a lossy codec adds or drops a few frames at the ends; the sound is the same length to within a block
+		assert.ok(Math.abs(back.length - frames.length) < 1200, `${codec}: ${back.length} frames for ${frames.length}`);
+		if (codec === 'flac') assert.deepEqual(back, frames);
+	}
+	assert.throws(() => ffmpegDecode(Uint8Array.from(Buffer.from('fLaC')), 22050, 'vorbis'), /not the codec/);
+});
+
+test('convertSoundFont writes a SoundFont 2 as a SoundFont 3 in each codec and back, loops kept', async (t) => {
+	if (ffmpegMissing) return t.skip('ffmpeg is not installed');
+	const sf2 = await sf3ToSf2(buildSf3(0, 5, Buffer.from([3, 0])), fakeDecode);
+	for (const codec of ['vorbis', 'opus', 'flac'] as const) {
+		const sf3 = await convertSoundFont(sf2, { to: 'sf3', codec });
+		assert.ok(sf3.length > 0);
+		const back = parseSoundFont(await convertSoundFont(sf3, { to: 'sf2' }));
+		const [voice] = back.voices(0, 5, 69, 100);
+		assert.ok(Math.abs(voice.sample.data.length - FRAMES) < 1200, codec);
+		assert.equal(voice.sample.loopStart, 10, codec);
+	}
+});
+
+test('convertSoundFont refuses a kind it does not write', async () => {
+	await assert.rejects(() => convertSoundFont(new Uint8Array(0), { to: 'sf4' as 'sf2' }), /expected sf2 or sf3/);
+});
+
+test('encoded samples are cached per user and a cached file of another codec is never trusted', async (t) => {
+	if (ffmpegMissing) return t.skip('ffmpeg is not installed');
+	const dir = mkdtempSync(join(tmpdir(), 'mwg-cache-test-'));
+	const before = process.env.MWG_CACHE_DIR;
+	process.env.MWG_CACHE_DIR = dir;
+	try {
+		const frames = Int16Array.from({ length: 4000 }, (_, index) => Math.round(5000 * Math.sin(index / 7)));
+		const first = await ffmpegEncode(frames, 22050, 'opus');
+		const files = readdirSync(dir);
+		assert.equal(files.length, 1, 'one cache file per encoded sample');
+		assert.deepEqual(await ffmpegEncode(frames, 22050, 'opus'), first, 'the second encode is the cached bytes');
+		//a planted file under the right name but not Opus: ignored, and encoded again
+		writeFileSync(join(dir, files[0]), Buffer.from('fLaC planted'));
+		const again = await ffmpegEncode(frames, 22050, 'opus');
+		assert.equal(detectSampleCodec(again), 'opus');
+	} finally {
+		if (before === undefined) delete process.env.MWG_CACHE_DIR;
+		else process.env.MWG_CACHE_DIR = before;
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test('an Opus bitrate and a Vorbis quality are checked, and each reaches the encoder of its own codec', async (t) => {
+	assert.throws(() => checkedEncodeOptions({ bitrate: 2 }), /invalid Opus bitrate/);
+	assert.throws(() => checkedEncodeOptions({ bitrate: 900 }), /invalid Opus bitrate/);
+	assert.throws(() => checkedEncodeOptions({ quality: 11 }), /invalid Vorbis quality/);
+	assert.throws(() => checkedEncodeOptions({ quality: Number.NaN }), /invalid Vorbis quality/);
+	assert.deepEqual(checkedEncodeOptions({ bitrate: 32, quality: -1 }), { bitrate: 32, quality: -1 });
+	if (ffmpegMissing) return t.skip('ffmpeg is not installed');
+	const frames = Int16Array.from({ length: 22050 }, (_, index) =>
+		Math.round(9000 * Math.sin(index / 5) + 3000 * Math.sin(index / 1.3)),
+	);
+	const size = async (codec: 'opus' | 'vorbis', options: { bitrate?: number; quality?: number }) =>
+		(await ffmpegEncode(frames, 22050, codec, options)).length;
+	assert.ok(
+		(await size('opus', { bitrate: 16 })) < (await size('opus', { bitrate: 128 })),
+		'a lower Opus bitrate is smaller',
+	);
+	assert.ok(
+		(await size('vorbis', { quality: -1 })) < (await size('vorbis', { quality: 8 })),
+		'a lower Vorbis quality is smaller',
+	);
+	assert.equal(await size('opus', { quality: 8 }), await size('opus', {}), 'a quality means nothing to Opus');
 });

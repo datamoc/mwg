@@ -1,6 +1,6 @@
 {
 	"name": "@datamoc/mwg",
-	"version": "0.45.0",
+	"version": "0.46.0",
 	"description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
 	"license": "MPL-2.0",
 	"homepage": "https://datamoc.github.io/mwg/",
@@ -431,7 +431,8 @@
 		"multiplayer:server": "node tools/multiplayer-server.mjs",
 		"roadmap:progress": "node tools/roadmap-progress.mjs",
 		"roadmap:browser": "node tools/roadmap-progress.mjs --browser",
-		"alias:write": "node tools/make-alias-package.mjs"
+		"alias:write": "node tools/make-alias-package.mjs",
+		"soundfonts:fixtures": "node tools/make-soundfont-fixtures.mjs"
 	},
 	"dependencies": {
 		"json5": "^2.2.3",

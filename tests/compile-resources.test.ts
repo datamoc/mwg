@@ -7,7 +7,8 @@ import sharp from 'sharp';
 
 import { compileResources } from '../tools/compile-resources.mjs';
 import { decodeSoundFont, mergeSoundFonts, parseSoundFont } from '../src/audio/SoundFont.ts';
-import { buildSf3, fakeDecode } from './helpers/soundfont3.ts';
+import { encodeFlac, flacSampleDecoder } from '../src/audio/Flac.ts';
+import { buildSf3, fakeDecode, MAGIC } from './helpers/soundfont3.ts';
 
 async function withDirs(fn: (from: string, to: string) => Promise<void>): Promise<void> {
 	const from = await mkdtemp(join(tmpdir(), 'mwg-compile-resources-from-'));
@@ -234,7 +235,7 @@ test('compileResources subsets an embedded SoundFont to the programs the embedde
 		await writeFile(join(from, 'bank.sf2'), bank);
 		await writeFile(join(from, 'song.mid'), usedProgramsMidi());
 
-		const result = await compileResources({ from, to, groupBy: () => 'assets' });
+		const result = await compileResources({ from, to, groupBy: () => 'assets', soundFontCodec: false });
 		assert.equal(result.skipped, 0);
 		assert.deepEqual(result.soundFonts, [
 			{
@@ -242,6 +243,7 @@ test('compileResources subsets an embedded SoundFont to the programs the embedde
 				programs: 3,
 				rawBytes: bank.length,
 				embeddedBytes: result.soundFonts[0].embeddedBytes,
+				codec: null,
 				missing: [],
 			},
 		]);
@@ -280,7 +282,7 @@ test('compileResources subsets an embedded SoundFont 3 without decoding it, the 
 		const decoded: number[] = [];
 		const font = parseSoundFont(
 			await decodeSoundFont(embedded, (ogg) => {
-				decoded.push(ogg[0]);
+				decoded.push(ogg[MAGIC.length]);
 				return fakeDecode(ogg);
 			}),
 		);
@@ -296,9 +298,15 @@ test('compileResources embeds a SoundFont whole with soundFont: false, and witho
 		await writeFile(join(from, 'bank.sf2'), bank);
 		await writeFile(join(from, 'song.mid'), usedProgramsMidi());
 
-		const whole = await compileResources({ from, to, groupBy: () => 'assets', soundFont: false });
+		const whole = await compileResources({
+			from,
+			to,
+			groupBy: () => 'assets',
+			soundFont: false,
+			soundFontCodec: false,
+		});
 		assert.deepEqual(whole.soundFonts, [
-			{ key: 'bank.sf2', programs: null, rawBytes: bank.length, embeddedBytes: bank.length },
+			{ key: 'bank.sf2', programs: null, rawBytes: bank.length, embeddedBytes: bank.length, codec: null },
 		]);
 		assert.deepEqual(embeddedBytes(await readFile(join(to, 'assets.js'), 'utf8'), 'bank.sf2'), bank);
 	});
@@ -306,7 +314,7 @@ test('compileResources embeds a SoundFont whole with soundFont: false, and witho
 		const bank = await microGm();
 		await writeFile(join(from, 'bank.sf2'), bank);
 
-		const result = await compileResources({ from, to, groupBy: () => 'assets' });
+		const result = await compileResources({ from, to, groupBy: () => 'assets', soundFontCodec: false });
 		assert.equal(result.soundFonts[0].programs, null, 'no MIDI and no explicit usage: the usage is unknowable');
 		assert.deepEqual(embeddedBytes(await readFile(join(to, 'assets.js'), 'utf8'), 'bank.sf2'), bank);
 	});
@@ -322,6 +330,7 @@ test('compileResources subsets a SoundFont to an explicit soundFontUsage when no
 			to,
 			groupBy: () => 'assets',
 			soundFontUsage: [{ bank: 0, program: 0 }],
+			soundFontCodec: false,
 		});
 		assert.equal(result.soundFonts[0].programs, 1);
 		const font = parseSoundFont(embeddedBytes(await readFile(join(to, 'assets.js'), 'utf8'), 'bank.sf2'));
@@ -424,5 +433,112 @@ test('a subset SoundFont reports the programs the game asks for that the font do
 			],
 		});
 		assert.deepEqual(result.soundFonts[0].missing, [{ bank: 0, program: 99 }]);
+	});
+});
+
+/** a stand-in for ffmpeg: the FLAC encoder under another codec's name, so the bytes decode with the library's own reader */
+const flacAs = (frames: Int16Array, rate: number) => encodeFlac(frames, rate);
+
+test('compileResources embeds a plain SoundFont as a SoundFont 3 in Opus unless told otherwise', async () => {
+	await withDirs(async (from, to) => {
+		const bank = await microGm();
+		await writeFile(join(from, 'bank.sf2'), bank);
+		await writeFile(join(from, 'song.mid'), usedProgramsMidi());
+
+		const asked: string[] = [];
+		const result = await compileResources({
+			from,
+			to,
+			groupBy: () => 'assets',
+			soundFontEncode: (frames, rate, codec) => {
+				asked.push(codec);
+				return flacAs(frames, rate);
+			},
+		});
+		assert.equal(result.soundFonts[0].codec, 'opus');
+		assert.ok(asked.length > 0 && asked.every((codec) => codec === 'opus'));
+		const embedded = embeddedBytes(await readFile(join(to, 'assets.js'), 'utf8'), 'bank.sf2');
+		assert.throws(() => parseSoundFont(embedded), /needs decoding/);
+		const font = parseSoundFont(await decodeSoundFont(embedded, flacSampleDecoder));
+		assert.equal(font.presetCount, 3);
+		assert.ok(font.voices(0, 0, 60, 100).length > 0, 'the piano still voices after the round trip');
+	});
+});
+
+test('compileResources compresses in the codec named, FLAC with no ffmpeg at all, and leaves a SoundFont 3 as it is', async () => {
+	await withDirs(async (from, to) => {
+		await writeFile(join(from, 'bank.sf2'), await microGm());
+		await writeFile(join(from, 'song.mid'), usedProgramsMidi());
+		const result = await compileResources({ from, to, groupBy: () => 'assets', soundFontCodec: 'flac' });
+		assert.equal(result.soundFonts[0].codec, 'flac');
+		const embedded = embeddedBytes(await readFile(join(to, 'assets.js'), 'utf8'), 'bank.sf2');
+		assert.ok(embedded.length < result.soundFonts[0].rawBytes);
+		assert.equal(parseSoundFont(await decodeSoundFont(embedded, flacSampleDecoder)).presetCount, 3);
+	});
+	await withDirs(async (from, to) => {
+		const sf3 = buildSf3(0, 5, Buffer.from([1, 0]));
+		await writeFile(join(from, 'bank.sf3'), sf3);
+		const result = await compileResources({
+			from,
+			to,
+			groupBy: () => 'assets',
+			soundFontEncode: () => assert.fail('a SoundFont 3 is not compressed again'),
+		});
+		assert.equal(result.soundFonts[0].codec, null);
+		assert.deepEqual(embeddedBytes(await readFile(join(to, 'assets.js'), 'utf8'), 'bank.sf3'), sf3);
+	});
+	await withDirs(async (from, to) => {
+		await assert.rejects(
+			() => compileResources({ from, to, soundFontCodec: 'mp3' as 'opus' }),
+			/unknown soundFontCodec/,
+		);
+	});
+});
+
+test('without ffmpeg the default keeps the SoundFont 2 and says so, while a codec named explicitly fails the build', async () => {
+	const noFfmpeg = () => {
+		throw Object.assign(new Error('ffmpeg was not found on PATH'), { code: 'FFMPEG_MISSING' });
+	};
+	await withDirs(async (from, to) => {
+		await writeFile(join(from, 'bank.sf2'), await microGm());
+		await writeFile(join(from, 'song.mid'), usedProgramsMidi());
+		const result = await compileResources({ from, to, groupBy: () => 'assets', soundFontEncode: noFfmpeg });
+		assert.equal(result.soundFonts[0].codec, null);
+		assert.match(result.soundFonts[0].warning ?? '', /ffmpeg is not installed/);
+		const embedded = embeddedBytes(await readFile(join(to, 'assets.js'), 'utf8'), 'bank.sf2');
+		assert.equal(parseSoundFont(embedded).presetCount, 3, 'still a SoundFont 2 the reader plays');
+	});
+	await withDirs(async (from, to) => {
+		await writeFile(join(from, 'bank.sf2'), await microGm());
+		await writeFile(join(from, 'song.mid'), usedProgramsMidi());
+		await assert.rejects(
+			() => compileResources({ from, to, soundFontCodec: 'opus', soundFontEncode: noFfmpeg }),
+			/cannot compress the SoundFont as opus: ffmpeg was not found/,
+		);
+	});
+});
+
+test('compileResources hands the Opus bitrate and Vorbis quality to the encoder, and refuses values outside their range', async () => {
+	await withDirs(async (from, to) => {
+		await writeFile(join(from, 'bank.sf2'), await microGm());
+		await writeFile(join(from, 'song.mid'), usedProgramsMidi());
+		const seen: unknown[] = [];
+		await compileResources({
+			from,
+			to,
+			groupBy: () => 'assets',
+			soundFontBitrate: 48,
+			soundFontQuality: 2,
+			soundFontEncode: (frames, rate, _codec, options) => {
+				seen.push(options);
+				return flacAs(frames, rate);
+			},
+		});
+		assert.ok(seen.length > 0);
+		assert.ok(seen.every((options) => JSON.stringify(options) === JSON.stringify({ bitrate: 48, quality: 2 })));
+	});
+	await withDirs(async (from, to) => {
+		await assert.rejects(() => compileResources({ from, to, soundFontBitrate: 1 }), /invalid Opus bitrate/);
+		await assert.rejects(() => compileResources({ from, to, soundFontQuality: 99 }), /invalid Vorbis quality/);
 	});
 });

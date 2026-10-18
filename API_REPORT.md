@@ -7154,7 +7154,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.45.0";
+    export declare const version = "0.46.0";
 
 ### `VerticalLabel` (class)
 
@@ -9902,6 +9902,11 @@ build instead.
         constructor(limit: DecoderLimitName, message: string);
     }
 
+### `decodeFlac` (function)
+
+    export declare function decodeFlac(bytes: Uint8Array, maxFrames?: number): {
+        frames: Int16Array;
+
 ### `DecoderLimitName` (type)
 
     export type DecoderLimitName = keyof DecoderLimits;
@@ -9939,6 +9944,10 @@ build instead.
 
     export declare const DEFAULT_DECODER_LIMITS: Readonly<DecoderLimits>;
 
+### `detectSampleCodec` (function)
+
+    export declare function detectSampleCodec(bytes: Uint8Array): SampleCodec;
+
 ### `dx7PatchNames` (function)
 
     export declare function dx7PatchNames(bytes: Uint8Array): SyxPatch[];
@@ -9946,6 +9955,14 @@ build instead.
 ### `dynamicsLimit` (function)
 
     export declare function dynamicsLimit(sample: number, dynamics: number): number;
+
+### `encodeFlac` (function)
+
+    export declare function encodeFlac(frames: Int16Array, rate: number): Uint8Array;
+
+### `encodeSoundFont` (function)
+
+    export declare function encodeSoundFont(data: ArrayBuffer | ArrayBufferView, encode: SoundFontSampleEncoder, codec: SampleCodec, options?: SampleEncodeOptions): Promise<ArrayBuffer>;
 
 ### `encodeWav` (function)
 
@@ -9955,6 +9972,14 @@ build instead.
 
     export declare function fitToBudget<T extends StereoFrames & {
         loopStart?: number;
+
+### `flacSampleDecoder` (const)
+
+    export declare const flacSampleDecoder: SoundFontSampleDecoder;
+
+### `flacSampleEncoder` (const)
+
+    export declare const flacSampleEncoder: SoundFontSampleEncoder;
 
 ### `GridSubdivision` (type)
 
@@ -10642,6 +10667,14 @@ build instead.
 
     export declare function resolveMidiSynth(request: MidiSynthRequest, sampleRate: number, internalName: 'gm-soundfont' | 'builtin'): ResolvedMidiSynth;
 
+### `SAMPLE_CODECS` (const)
+
+    export declare const SAMPLE_CODECS: readonly SampleCodec[];
+
+### `SampleCodec` (type)
+
+    export type SampleCodec = 'vorbis' | 'opus' | 'flac';
+
 ### `SampleDecodingContext` (interface)
 
     export interface SampleDecodingContext {
@@ -10650,6 +10683,15 @@ build instead.
             length: number;
             getChannelData(channel: number): Float32Array;
         }>;
+    }
+
+### `SampleEncodeOptions` (interface)
+
+    export interface SampleEncodeOptions {
+
+        bitrate?: number;
+
+        quality?: number;
     }
 
 ### `SavedBusTrack` (interface)
@@ -10863,7 +10905,11 @@ build instead.
 
 ### `SoundFontSampleDecoder` (type)
 
-    export type SoundFontSampleDecoder = (ogg: Uint8Array, rate: number) => Int16Array | Promise<Int16Array>;
+    export type SoundFontSampleDecoder = (bytes: Uint8Array, rate: number, codec: SampleCodec) => Int16Array | Promise<Int16Array>;
+
+### `SoundFontSampleEncoder` (type)
+
+    export type SoundFontSampleEncoder = (frames: Int16Array, rate: number, codec: SampleCodec, options?: SampleEncodeOptions) => Uint8Array | Promise<Uint8Array>;
 
 ### `SoundFontVoice` (interface)
 

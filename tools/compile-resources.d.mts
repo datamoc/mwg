@@ -18,6 +18,23 @@ export interface CompileResourcesOptions {
 	soundFont?: boolean;
 	/** Explicit `{ bank, program }` list to subset a SoundFont to, overriding the MIDI-derived list. */
 	soundFontUsage?: readonly SoundFontUsage[];
+	/**
+	 * How a plain `.sf2` is embedded: compressed into a SoundFont 3 in this codec (`'opus'` by default), or `false` to keep the
+	 * SoundFont 2. Opus and Vorbis are encoded by `ffmpeg` on the developer machine (absent and not named: the font stays a
+	 * SoundFont 2 with a warning; named: the build fails), FLAC needs nothing. The asset key is unchanged. A `.sf3` is kept as it is.
+	 */
+	soundFontCodec?: 'opus' | 'vorbis' | 'flac' | false;
+	/** target bitrate in kbit/s (6 to 510) for an Opus SoundFont; ffmpeg's own default when absent. Ignored by the other codecs. */
+	soundFontBitrate?: number;
+	/** Vorbis quality level, -1 (smallest) to 10 (best); ffmpeg's own default when absent. Ignored by the other codecs. */
+	soundFontQuality?: number;
+	/** replaces the sample encoder (`(frames, rate, codec) => bytes`), mainly for tests */
+	soundFontEncode?: (
+		frames: Int16Array,
+		rate: number,
+		codec: 'opus' | 'vorbis' | 'flac',
+		options?: { bitrate?: number; quality?: number },
+	) => Uint8Array | Promise<Uint8Array>;
 }
 
 export interface CompileResourcesGroup {
@@ -58,8 +75,16 @@ export interface SoundFontEmbed {
 	embeddedBytes: number;
 	/** the programs the game's MIDI files ask for that this font does not carry; empty when none */
 	missing: SoundFontUsage[];
+	/** the codec the font was compressed in as a SoundFont 3, or null when it was embedded as it was */
+	codec: 'opus' | 'vorbis' | 'flac' | null;
+	/** why a font stays a SoundFont 2 when the default compression could not run */
+	warning?: string;
 }
 
+/** a numeric `--name=value` CLI argument, undefined when absent */
+export function numberFlag(args: readonly string[], prefix: string): number | undefined;
+/** parses a `--soundfont-codec=` CLI argument: a codec name, `false` for `none`, undefined when absent */
+export function soundFontCodecFromFlag(arg: string | undefined): 'opus' | 'vorbis' | 'flac' | false | undefined;
 /** parses a `--soundfont-usage=bank:program,...` CLI value; undefined when the flag is absent */
 export function soundFontUsageFromFlag(value: string | undefined): SoundFontUsage[] | undefined;
 

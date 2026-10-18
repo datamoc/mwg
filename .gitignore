@@ -33,3 +33,6 @@ desktop/**/obj/
 # scratch dir for tests/api-examples.test.ts's temp compile
 .example-check/
 .scratch-check/
+
+# large SoundFont 2 files kept locally for the real-font tests (tests/soundfonts-real.test.ts)
+/tests/soundfonts/

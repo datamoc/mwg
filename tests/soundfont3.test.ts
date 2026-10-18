@@ -9,7 +9,7 @@ import {
 	parseSoundFont,
 	subsetSoundFont,
 } from '../src/audio/SoundFont.ts';
-import { buildSf3, fakeDecode, FRAMES } from './helpers/soundfont3.ts';
+import { buildSf3, fakeDecode, FRAMES, MAGIC } from './helpers/soundfont3.ts';
 
 /**
  * SoundFont 3 at runtime: the Ogg bytes survive merge and subset untouched, and decoding happens
@@ -23,7 +23,7 @@ function recordingDecoder() {
 	return {
 		calls,
 		decode: (ogg: Uint8Array, rate: number): Int16Array => {
-			calls.push({ first: ogg[0], length: ogg.length, rate });
+			calls.push({ first: ogg[MAGIC.length], length: ogg.length - MAGIC.length, rate });
 			return fakeDecode(ogg);
 		},
 	};
@@ -131,7 +131,7 @@ function fakeContext(frames: number[], sampleRate: number | null, seen: { rate?:
 test('the WebAudio decoder decodes at the sample rate and converts to 16-bit, clamping', async () => {
 	const seen: { rate?: number; bytes?: number } = {};
 	const decode = webAudioSampleDecoder(fakeContext([-1, 0, 0.5, 2], null, seen));
-	const frames = await decode(new Uint8Array([1, 2, 3]), 22050);
+	const frames = await decode(new Uint8Array([1, 2, 3]), 22050, 'vorbis');
 	assert.deepEqual([...frames], [-32767, 0, 16384, 32767]);
 	assert.equal(seen.rate, 22050, 'a context at the sample rate means the browser does not resample');
 });
@@ -139,7 +139,7 @@ test('the WebAudio decoder decodes at the sample rate and converts to 16-bit, cl
 test('the WebAudio decoder is handed a copy of just the sample, not the font it lives in', async () => {
 	const seen: { rate?: number; bytes?: number } = {};
 	const font = new Uint8Array([9, 9, 1, 2, 3, 9, 9]);
-	await webAudioSampleDecoder(fakeContext([0], null, seen))(font.subarray(2, 5), 22050);
+	await webAudioSampleDecoder(fakeContext([0], null, seen))(font.subarray(2, 5), 22050, 'vorbis');
 	assert.equal(seen.bytes, 3);
 	assert.deepEqual([...font], [9, 9, 1, 2, 3, 9, 9], 'the font still has its bytes: nothing was detached');
 });
@@ -148,7 +148,7 @@ test('a rate no context accepts decodes at the nearest accepted rate and is resa
 	const seen: { rate?: number; bytes?: number } = {};
 	//8000 frames at the clamped 8000 Hz stand for 5512 Hz material, so 5512 frames come back
 	const ramp = Array.from({ length: 8000 }, (_, index) => index / 8000);
-	const frames = await webAudioSampleDecoder(fakeContext(ramp, 8000, seen))(new Uint8Array([1]), 5512);
+	const frames = await webAudioSampleDecoder(fakeContext(ramp, 8000, seen))(new Uint8Array([1]), 5512, 'vorbis');
 	assert.equal(seen.rate, 8000);
 	assert.equal(frames.length, 5512);
 	assert.ok(frames[frames.length - 1] > frames[0], 'the ramp survives the resample');
@@ -156,7 +156,7 @@ test('a rate no context accepts decodes at the nearest accepted rate and is resa
 
 test('without WebAudio the default decoder says so instead of failing on a missing global', async () => {
 	await assert.rejects(
-		async () => webAudioSampleDecoder()(new Uint8Array([1]), 22050),
+		async () => webAudioSampleDecoder()(new Uint8Array([1]), 22050, 'vorbis'),
 		/no OfflineAudioContext here/,
 	);
 });
@@ -193,7 +193,7 @@ test('the WebAudio decoder refuses a rate no SoundFont states and a decoded soun
 	const seen: { rate?: number; bytes?: number } = {};
 	const decode = webAudioSampleDecoder(fakeContext([0], null, seen));
 	await assert.rejects(
-		() => Promise.resolve(decode(new Uint8Array([1]), 4_000_000_000)),
+		() => Promise.resolve(decode(new Uint8Array([1]), 4_000_000_000, 'vorbis')),
 		/not one a SoundFont can state/,
 	);
 	assert.equal(seen.rate, undefined, 'no context was even created for it');
@@ -205,7 +205,7 @@ test('the WebAudio decoder refuses a rate no SoundFont states and a decoded soun
 		}),
 	});
 	await assert.rejects(
-		() => Promise.resolve(webAudioSampleDecoder(huge)(new Uint8Array([1]), 22050)),
+		() => Promise.resolve(webAudioSampleDecoder(huge)(new Uint8Array([1]), 22050, 'vorbis')),
 		/longer than a SoundFont sample may be/,
 	);
 });

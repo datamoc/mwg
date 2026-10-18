@@ -7,6 +7,45 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.46.0] - 2026-10-18
+
+SoundFont 3 samples in Vorbis, Opus or FLAC, read and written, and the SoundFont a game embeds is now a SoundFont 3 in Opus by default (a breaking change for code that parses the embedded bytes directly, taken before 1.0.0). Measured on FluidR3 (141.5 MB as a SoundFont 2) the three formats come to 81.0 MB (FLAC), 21.5 MB (Opus) and 19.0 MB (Vorbis) at ffmpeg defaults, and on SGM v2.01 (235.9 MB) to 120.3, 26.9 and 26.8 MB.
+
+### Added
+
+- **SoundFont 3 samples in Vorbis, Opus or FLAC, read and written.** The format only flags a sample as
+  compressed and leaves the codec to the application, so `detectSampleCodec` names it from the first
+  bytes and `decodeSoundFont` passes it to the decoder (a third argument, `codec`; a decoder that ignores
+  it keeps working). An unknown codec is named in the error. `encodeSoundFont(sf2, encode, codec)`
+  compresses a SoundFont 2 into a SoundFont 3, with `SoundFontSampleEncoder` as the contract. FLAC needs
+  nothing installed: `encodeFlac`/`decodeFlac` (checked against ffmpeg both ways) and
+  `flacSampleEncoder`/`flacSampleDecoder`. `mwg-soundfonts convert <in> <out.sf2|out.sf3> --codec
+  vorbis|opus|flac` writes either kind, Vorbis and Opus through ffmpeg. `npm run soundfonts:fixtures`
+  cuts four instruments out of a large SoundFont 2 into the small committed fixtures (`tests/fixtures/soundfonts`:
+  a SoundFont 2 and the same font as Vorbis, Opus and FLAC SoundFont 3 files).
+
+### Changed
+
+- **The SoundFont a game embeds is now a SoundFont 3 in Opus by default.** `compileResources` (so `emitPage`
+  and `mwgPage`) compresses a plain `.sf2` after subsetting it, under the same asset key; `loadSoundFont`
+  reads it, but `parseSoundFont` on the embedded bytes now needs `decodeSoundFont` first. `soundFontCodec:
+  'vorbis' | 'flac'` picks another codec and `false` (or `--soundfont-codec=none`) keeps the SoundFont 2. `soundFontBitrate` (Opus, kbit/s) and
+  `soundFontQuality` (Vorbis, -1 to 10) tune the lossy codecs, as `--soundfont-bitrate=`/`--soundfont-quality=` on
+  `mwg-emit` and `--bitrate`/`--quality` on `mwg-soundfonts convert`; `SoundFontSampleEncoder` receives them
+  as a fourth argument, `SampleEncodeOptions`.
+  Opus and Vorbis need `ffmpeg` at build time (results cached in the temp folder); without it the default
+  keeps the SoundFont 2 with a warning, and a codec named explicitly fails the build. A `.sf3` is left as it is.
+- `mwg-soundfonts` `ffmpegDecode(bytes, rate, codec)` takes the sample rate and the codec, decodes Opus at
+  the font's rate rather than 48 kHz, and refuses bytes that are not Vorbis, Opus or FLAC.
+
+### Fixed
+
+- Writing a SoundFont (subset, merge, encode, decode) no longer fails with "Invalid array length" on a font of
+  more than about a hundred megabytes: sample data is assembled from byte ranges instead of an array of numbers.
+- The ffmpeg encode cache lives in a per-user folder (`MWG_CACHE_DIR`, `XDG_CACHE_HOME`, `LOCALAPPDATA` or `~/.cache`),
+  not the shared temp folder, is written atomically, and a cached sample is only trusted when it is still the codec it
+  was stored as, so another local user cannot plant a sample that ends up in a game.
+
 ## [0.45.0] - 2026-10-18
 
 The package is now `@datamoc/mwg`, with `@datamoc/mw_games` kept as a forwarding package, and the standalone bundle follows the new name. Both renames are breaking and are taken now, before 1.0.0.
