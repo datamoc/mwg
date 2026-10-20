@@ -9,6 +9,8 @@ export interface MessageBoxPresenterOptions {
 	height?: number;
 	speed?: number;
 	anchor?: 'center' | 'bottom' | 'top';
+	/** rewrites each line's text, speaker and choice labels before it is shown; see `MessageBoxOptions` */
+	convertText?: (text: string) => string;
 }
 
 /**
@@ -40,6 +42,7 @@ export function messageBoxPresenter(windows: WindowStack, options: MessageBoxPre
 					],
 					choices: request.choices,
 					anchor: options.anchor ?? 'bottom',
+					convertText: options.convertText,
 					onDone: (chosen) => resolve(chosen),
 				}),
 			);

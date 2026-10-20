@@ -183,3 +183,110 @@ test('setAssetMap(undefined) reverts to window.__MWG_ASSETS__ / dev-server mode'
 	assert.equal(assets.isCompiled(), false);
 	assert.equal(assets.resolve('tiles.png'), 'tiles.png');
 });
+
+/** runs `body` with Pixi's add and load stubbed, returning every descriptor that reached `Assets.add` */
+async function recordAssetAdds(body: () => Promise<void>): Promise<{ alias: string; src: string; format?: string }[]> {
+	const added: { alias: string; src: string; format?: string }[] = [];
+	const originalAdd = Assets.add.bind(Assets);
+	const originalLoad = Assets.load.bind(Assets);
+	(Assets as unknown as { add: typeof Assets.add }).add = ((descriptor: (typeof added)[number]) => {
+		added.push(descriptor);
+	}) as typeof Assets.add;
+	(Assets as unknown as { load: typeof Assets.load }).load = (async () => undefined) as unknown as typeof Assets.load;
+	try {
+		await body();
+	} finally {
+		Assets.add = originalAdd;
+		Assets.load = originalLoad;
+	}
+	return added;
+}
+
+test('a blob: URL in the map gets its format from the path extension', async () => {
+	assets.setAssetMap({ 'assets/img/blob-a.png': 'blob:http://game.test/abc' });
+	try {
+		const added = await recordAssetAdds(() => assets.load(['assets/img/blob-a.png']));
+		assert.equal(added[0].src, 'blob:http://game.test/abc');
+		assert.equal(
+			added[0].format,
+			'png',
+			'a blob: URL has no extension of its own, so the path supplies the parser',
+		);
+	} finally {
+		assets.setAssetMap(undefined);
+	}
+});
+
+test('a typed Blob is minted to a blob: URL, and its MIME type beats the path extension', async () => {
+	assets.setAssetMap({ 'assets/img/typed.png': new Blob([new Uint8Array([1, 2])], { type: 'image/webp' }) });
+	try {
+		const added = await recordAssetAdds(() => assets.load(['assets/img/typed.png']));
+		assert.match(added[0].src, /^blob:/);
+		assert.equal(added[0].format, 'webp', 'the bytes are WebP, whatever the ".png" path says');
+	} finally {
+		assets.setAssetMap(undefined);
+	}
+});
+
+test('a lazy value is read once, however many loads ask for it', async () => {
+	let reads = 0;
+	assets.setAssetMap({
+		'assets/data/lazy.json': async () => {
+			reads += 1;
+			return { bytes: new TextEncoder().encode('{}'), type: 'application/json' };
+		},
+	});
+	try {
+		const first = await recordAssetAdds(() => assets.load(['assets/data/lazy.json']));
+		const second = await recordAssetAdds(() => assets.load(['assets/data/lazy.json']));
+		assert.equal(reads, 1);
+		assert.equal(first[0].src, second[0].src);
+		assert.equal(first[0].format, 'json', 'application/json has no texture format, so the path extension is used');
+	} finally {
+		assets.setAssetMap(undefined);
+	}
+});
+
+test('resolve() refuses typed bytes that load() has not read yet, and names load()', () => {
+	assets.setAssetMap({ 'assets/img/unread.png': new Blob([new Uint8Array([1])], { type: 'image/png' }) });
+	try {
+		assert.throws(
+			() => assets.resolve('assets/img/unread.png'),
+			/call load\(\['assets\/img\/unread\.png'\]\) first/,
+		);
+	} finally {
+		assets.setAssetMap(undefined);
+	}
+});
+
+test('release revokes the blob: URL it minted, and a later load mints a fresh one', async () => {
+	assets.setAssetMap({ 'assets/img/released.png': new Blob([new Uint8Array([1])], { type: 'image/png' }) });
+	const originalRevoke = URL.revokeObjectURL;
+	const revoked: string[] = [];
+	URL.revokeObjectURL = (url: string) => {
+		revoked.push(url);
+	};
+	try {
+		const [first] = await recordAssetAdds(() => assets.load(['assets/img/released.png']));
+		await assets.release(['assets/img/released.png']);
+		assert.deepEqual(revoked, [first.src]);
+		assert.throws(() => assets.resolve('assets/img/released.png'), /call load/);
+		const [second] = await recordAssetAdds(() => assets.load(['assets/img/released.png']));
+		assert.notEqual(second.src, first.src);
+	} finally {
+		URL.revokeObjectURL = originalRevoke;
+		assets.setAssetMap(undefined);
+	}
+});
+
+test('a key missing from a typed map still throws at load time', async () => {
+	assets.setAssetMap({ 'assets/img/present.png': 'data:image/png;base64,AAAA' });
+	try {
+		await assert.rejects(
+			recordAssetAdds(() => assets.load(['assets/img/absent.png'])),
+			/is not in this build/,
+		);
+	} finally {
+		assets.setAssetMap(undefined);
+	}
+});

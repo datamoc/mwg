@@ -125,6 +125,34 @@ Safari and the iOS and Android WebViews need devices this machine does not have.
 and music additions cost bundle size (global bundle +2.5 % gzip, `dist` +2.5 %), accepted and recorded in
 `tools/bundle-size.json`; no render path changed.
 
+Items 459-460, added 2026-10-19 from updating the games to 0.47.0, sit at the end at low priority the same
+way. Both are small, both were found by a consumer that had to work around them, and neither is a
+regression: the first is a rough edge of 0.46.0's SoundFont 3 default, the second a hard-coded name.
+
+459. **A way to hand `renderMidiToBufferAsync` the SoundFont a build embeds.** Since 0.46.0 the embedded
+SoundFont is a SoundFont 3 in Opus, and the worker that renders cannot decode Opus (it has no
+`AudioContext`), so `renderMidiToBufferAsync({ soundFontBytes })` throws "SoundFont 3 needs decoding first" for
+the very bytes mwg itself embeds. Pontifex had to decode on the page with `decodeSoundFont` and
+`webAudioSampleDecoder` before the call (its point 56). Add a `decode` option (decoded on the calling thread,
+rendered on the worker) or at least an `@example` on `soundFontBytes` that shows the pair, so the next game does
+not find it by a runtime error.
+
+460. **A module specifier option for `emitTableTypes`.** It writes `import ... from '@datamoc/mwg/mwl'` in the
+generated text, so a project that reaches mwg through an alias (`mwg-pixel-dungeon` imports `'mwg/mwl'`, one copy
+of the module in the bundle) rewrites that string after the call. The 0.45.0 rename broke the rewrite silently:
+it still looked for `'@datamoc/mw_games/mwl'`, the generated file kept the new name, and a test bundle failed to
+resolve it far from the cause. `emitTableTypes(tables, { specifier: 'mwg/mwl' })` would remove the text surgery.
+
+461. **A virtual filesystem service for hosted games.** A modded RPG Maker game expects one filesystem shared by
+every route: its mod toolchain writes generated caches and lock files through `fs` and reads the same paths back
+through `fetch` and `<img>`. A standalone host splits those routes, so a mod cannot see a file it has just written,
+and every probe of a not-yet-generated cache shows up as an HTTP 404. The host that works around this (Karryn's
+Prison, MWGP's `installVirtualReads`) is the reference. Ask: a read-only mount for shipped files, one writable overlay
+per game root, a durability policy per path pattern that the game declares (replacing a hard-coded name list), one
+read path shared by `fs`, `fetch`, `XMLHttpRequest` and element URLs (a service worker covers them all), a writeback
+adapter with delete support, and mod discovery and enable state. Too large for one change; it belongs with the web
+host layer, after the typed asset values that shipped in this release.
+
 ### Parked decisions
 
 Not open work, and not forgotten: these are decisions this project has deliberately

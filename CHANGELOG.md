@@ -7,6 +7,24 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.48.0] - 2026-10-20
+
+
+### Added
+
+- `setAssetMap` accepts typed and lazy values as well as URL strings: a Blob or `{ bytes, type }`, or a function returning one (or a promise of one). `load()` reads each value once, mints a `blob:` URL for it and gives the texture loader the MIME type the bytes carry, so a host need not know Pixi's format rules. A packed archive can decode one file at a time with no base64 copy.
+- `MessageBox` and `messageBoxPresenter` take a `convertText` option that rewrites every page's text, speaker and choice label as the box is built, so display-time codes that depend on live game state resolve in the renderer.
+
+### Fixed
+
+- A `blob:` URL handed to the asset map now gets an image format from its path's extension, so a texture loads from one instead of Pixi reporting it cannot parse the URL. `data:` URLs keep their MIME-type format.
+
+### Changed
+
+- `resolve` still returns a string synchronously. For a typed or lazy value it returns the URL `load()` minted, and throws before `load()` has run, naming `load()`.
+- `release` revokes the `blob:` URL minted for each path's typed value, and a later `load()` mints a fresh one.
+- `setAssetMap` takes `Record<string, AssetValue>` instead of `Record<string, string>`, so every existing string map still type-checks.
+
 ## [0.47.0] - 2026-10-18
 
 Generated game music, share links, an audio export service, an off-main-thread host that runs the retro-audio

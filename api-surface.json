@@ -5358,8 +5358,26 @@
 		"declaringModule": "assets/binary.d.ts"
 	},
 	{
+		"name": "AssetBytes",
+		"kind": "type",
+		"subpath": "./assets/paths",
+		"declaringModule": "assets/paths.d.ts"
+	},
+	{
 		"name": "AssetProgress",
 		"kind": "type",
+		"subpath": "./assets/paths",
+		"declaringModule": "assets/paths.d.ts"
+	},
+	{
+		"name": "AssetValue",
+		"kind": "type",
+		"subpath": "./assets/paths",
+		"declaringModule": "assets/paths.d.ts"
+	},
+	{
+		"name": "forgetAssetUrl",
+		"kind": "function",
 		"subpath": "./assets/paths",
 		"declaringModule": "assets/paths.d.ts"
 	},
@@ -5372,6 +5390,18 @@
 	{
 		"name": "isCompiled",
 		"kind": "function",
+		"subpath": "./assets/paths",
+		"declaringModule": "assets/paths.d.ts"
+	},
+	{
+		"name": "mint",
+		"kind": "function",
+		"subpath": "./assets/paths",
+		"declaringModule": "assets/paths.d.ts"
+	},
+	{
+		"name": "MintedUrl",
+		"kind": "interface",
 		"subpath": "./assets/paths",
 		"declaringModule": "assets/paths.d.ts"
 	},

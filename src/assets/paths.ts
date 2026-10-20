@@ -40,8 +40,33 @@ export function setBase(path: string): void {
 	base = path.endsWith('/') || path === '' ? path : path + '/';
 }
 
+/**
+ * Bytes a host holds in memory: a Blob, or raw bytes with the MIME type they carry. `load()`
+ * turns one into a `blob:` URL, and the type travels with the Blob, so the browser and the
+ * texture loader both learn the format from it.
+ */
+export type AssetBytes = Blob | { bytes: Uint8Array; type: string };
+
+/**
+ * A path's value in an asset map: a finished URL, typed bytes, or a function that produces
+ * typed bytes when `load()` asks for them (so a packed archive can decode one file at a time).
+ */
+export type AssetValue = string | AssetBytes | (() => AssetBytes | Promise<AssetBytes>);
+
+/** a `blob:` URL minted for a typed value, with the MIME type its bytes declared */
+export interface MintedUrl {
+	src: string;
+	type: string | undefined;
+}
+
 /** a path-to-URI map handed in directly, taking priority over `window.__MWG_ASSETS__` */
-let assetMap: Record<string, string> | undefined;
+let assetMap: Record<string, AssetValue> | undefined;
+
+/** the `blob:` URLs minted so far, by path, so each value is read once */
+const mintedUrls = new Map<string, MintedUrl>();
+
+/** a mint in progress, so two loads of one path share one read of its value */
+const mintingUrls = new Map<string, Promise<MintedUrl>>();
 
 /**
  * Hands `resolve`/`has`/`paths` a game's own path-to-URI map, in place of
@@ -54,6 +79,18 @@ let assetMap: Record<string, string> | undefined;
  * the same shape `window.__MWG_ASSETS__` already is. `undefined` reverts to reading
  * `window.__MWG_ASSETS__` (or dev-server mode, if that is unset too).
  *
+ * A value is one of three things:
+ * - a finished URL (`data:` or `blob:`), which works everywhere a path does, `resolve` included;
+ * - typed bytes: a Blob, or `{ bytes, type }`, which `load()` turns into a `blob:` URL and
+ *   gives the MIME type to the texture loader, so the host need not know the format rules;
+ * - a function returning typed bytes (or a promise of them), read once when `load()` first asks,
+ *   so a packed archive can decode one file at a time with no base64 copy.
+ *
+ * Bytes are only readable through `load()`: `resolve` is synchronous and throws for them until
+ * the path has been loaded, naming `load()` as the fix. A key missing from the map throws too,
+ * so a host whose `Proxy.get` returns nothing for a path gets a loud error, not a silent skip.
+ * `setAssetMap` revokes the URLs it minted for the old map; `release` revokes one path's.
+ *
  * @example
  * ```ts
  * import { setAssetMap, isCompiled, resolve } from '@datamoc/mwg/assets/paths';
@@ -65,11 +102,12 @@ let assetMap: Record<string, string> | undefined;
  * setAssetMap(undefined); // back to window.__MWG_ASSETS__ / dev-server mode
  * ```
  */
-export function setAssetMap(map: Record<string, string> | undefined): void {
+export function setAssetMap(map: Record<string, AssetValue> | undefined): void {
+	for (const path of mintedUrls.keys()) forgetAssetUrl(path);
 	assetMap = map;
 }
 
-function compiled(): Record<string, string> | undefined {
+function compiled(): Record<string, AssetValue> | undefined {
 	if (assetMap) return assetMap;
 	return typeof window === 'undefined' ? undefined : window.__MWG_ASSETS__;
 }
@@ -101,7 +139,47 @@ export function resolve(path: string): string {
 			`asset "${path}" is not in this build - check it is under the folder passed to compile-resources`,
 		);
 	}
-	return found;
+	if (typeof found === 'string') return found;
+	const minted = mintedUrls.get(path);
+	if (minted) return minted.src;
+	throw new Error(`asset "${path}" holds bytes that only load() can read - call load(['${path}']) first`);
+}
+
+/**
+ * Reads a path's value and mints a `blob:` URL for it: the one step `load()` has to await. A
+ * finished-URL value comes back as it is, with no type; typed bytes keep the MIME type they
+ * were given. The result is cached per path until `forgetAssetUrl` or `setAssetMap`.
+ */
+export function mint(path: string): Promise<MintedUrl> {
+	const minted = mintedUrls.get(path);
+	if (minted) return Promise.resolve(minted);
+	const inFlight = mintingUrls.get(path);
+	if (inFlight) return inFlight;
+	const map = compiled();
+	const value = map?.[path];
+	if (map === undefined || value === undefined || typeof value === 'string') {
+		return Promise.resolve({ src: resolve(path), type: undefined });
+	}
+	const minting = (async (): Promise<MintedUrl> => {
+		const bytes = typeof value === 'function' ? await value() : value;
+		const blob = bytes instanceof Blob ? bytes : new Blob([bytes.bytes as BlobPart], { type: bytes.type });
+		const result = { src: URL.createObjectURL(blob), type: blob.type || undefined };
+		mintedUrls.set(path, result);
+		return result;
+	})();
+	mintingUrls.set(path, minting);
+	return minting.finally(() => mintingUrls.delete(path));
+}
+
+/**
+ * Revokes the `blob:` URL `mint` made for a path so its bytes can be freed. A later `load()` of
+ * the path mints a fresh URL; a path never minted is skipped.
+ */
+export function forgetAssetUrl(path: string): void {
+	const minted = mintedUrls.get(path);
+	if (!minted) return;
+	URL.revokeObjectURL(minted.src);
+	mintedUrls.delete(path);
 }
 
 /**

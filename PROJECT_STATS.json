@@ -1,17 +1,17 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mwg",
-	"version": "0.47.0",
-	"releaseDate": "2026-10-18",
+	"version": "0.48.0",
+	"releaseDate": "2026-10-20",
 	"source": {
 		"files": 396,
-		"lines": 79380,
+		"lines": 79492,
 		"modules": 21,
 		"breakdown": [
 			{
 				"name": "two-d",
 				"files": 108,
-				"lines": 24447
+				"lines": 24479
 			},
 			{
 				"name": "audio",
@@ -76,7 +76,7 @@
 			{
 				"name": "assets",
 				"files": 9,
-				"lines": 854
+				"lines": 934
 			},
 			{
 				"name": "three-d",
@@ -116,9 +116,9 @@
 		]
 	},
 	"tests": {
-		"files": 371,
-		"lines": 51980,
-		"cases": 3358
+		"files": 372,
+		"lines": 52117,
+		"cases": 3367
 	},
 	"tools": {
 		"files": 69,
@@ -159,18 +159,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 458,
+		"items": 461,
 		"completed": 411,
-		"open": 47,
-		"percent": 90
+		"open": 50,
+		"percent": 89
 	},
 	"api": {
 		"declarationFiles": 396
 	},
 	"bundle": {
-		"globalRaw": 1416784,
-		"globalGzip": 428919,
-		"distRaw": 5429343
+		"globalRaw": 1417841,
+		"globalGzip": 429316,
+		"distRaw": 5437795
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

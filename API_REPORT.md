@@ -3278,6 +3278,8 @@ build instead.
 
         onSound?: (path: string) => void;
 
+        convertText?: (text: string) => string;
+
         dims?: boolean;
 
         blocker?: boolean;
@@ -3303,6 +3305,8 @@ build instead.
         height?: number;
         speed?: number;
         anchor?: 'center' | 'bottom' | 'top';
+
+        convertText?: (text: string) => string;
     }
 
 ### `MessageLevel` (type)
@@ -7234,7 +7238,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.47.0";
+    export declare const version = "0.48.0";
 
 ### `VerticalLabel` (class)
 
@@ -9343,7 +9347,7 @@ build instead.
 
 ### `setAssetMap` (function)
 
-    export declare function setAssetMap(map: Record<string, string> | undefined): void;
+    export declare function setAssetMap(map: Record<string, AssetValue> | undefined): void;
 
 ### `setBase` (function)
 
@@ -9411,9 +9415,22 @@ build instead.
 
 ## `./assets/paths`
 
+### `AssetBytes` (type)
+
+    export type AssetBytes = Blob | {
+        bytes: Uint8Array;
+
 ### `AssetProgress` (type)
 
     export type AssetProgress = (fraction: number) => void;
+
+### `AssetValue` (type)
+
+    export type AssetValue = string | AssetBytes | (() => AssetBytes | Promise<AssetBytes>);
+
+### `forgetAssetUrl` (function)
+
+    export declare function forgetAssetUrl(path: string): void;
 
 ### `has` (function)
 
@@ -9422,6 +9439,17 @@ build instead.
 ### `isCompiled` (function)
 
     export declare function isCompiled(): boolean;
+
+### `mint` (function)
+
+    export declare function mint(path: string): Promise<MintedUrl>;
+
+### `MintedUrl` (interface)
+
+    export interface MintedUrl {
+        src: string;
+        type: string | undefined;
+    }
 
 ### `paths` (function)
 
@@ -9433,7 +9461,7 @@ build instead.
 
 ### `setAssetMap` (function)
 
-    export declare function setAssetMap(map: Record<string, string> | undefined): void;
+    export declare function setAssetMap(map: Record<string, AssetValue> | undefined): void;
 
 ### `setBase` (function)
 
@@ -22872,6 +22900,8 @@ build instead.
 
         onSound?: (path: string) => void;
 
+        convertText?: (text: string) => string;
+
         dims?: boolean;
 
         blocker?: boolean;
@@ -22897,6 +22927,8 @@ build instead.
         height?: number;
         speed?: number;
         anchor?: 'center' | 'bottom' | 'top';
+
+        convertText?: (text: string) => string;
     }
 
 ### `MessageLevel` (type)
@@ -30244,6 +30276,8 @@ build instead.
 
         onSound?: (path: string) => void;
 
+        convertText?: (text: string) => string;
+
         dims?: boolean;
 
         blocker?: boolean;
@@ -30269,6 +30303,8 @@ build instead.
         height?: number;
         speed?: number;
         anchor?: 'center' | 'bottom' | 'top';
+
+        convertText?: (text: string) => string;
     }
 
 ### `MessageLevel` (type)

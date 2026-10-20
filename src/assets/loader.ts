@@ -1,5 +1,5 @@
 import { Assets, Texture } from 'pixi.js';
-import { resolve, type AssetProgress } from './paths.ts';
+import { mint, forgetAssetUrl, type AssetProgress } from './paths.ts';
 
 /**
  * Actually fetching and decoding assets, which is the half that needs Pixi.
@@ -66,7 +66,7 @@ interface AssetDescriptor {
 	alias: string;
 	src: string;
 	data?: { resolution: number };
-	/** the file format Pixi picks a parser from; set only when `src` has none of its own to read (a `data:` URI) */
+	/** the file format Pixi picks a parser from; set only when `src` has no extension of its own to read (a `data:` or `blob:` URL) */
 	format?: string;
 }
 
@@ -74,7 +74,9 @@ interface AssetDescriptor {
  * Loads assets by path, giving each one an alias equal to its path.
  *
  * Load everything a scene needs before creating it; afterwards `texture()` is synchronous,
- * so game code never has to await in the middle of building a scene. Pass `onProgress` alone
+ * so game code never has to await in the middle of building a scene. This is also where a typed
+ * or lazy asset value (see `setAssetMap`) is read, so it is the only way such a value reaches
+ * `resolve`, `texture` and the rest. Pass `onProgress` alone
  * (the original signature) or a `LoadAssetsOptions` object for the resolution option.
  */
 export async function load(paths: string[], options: AssetProgress | LoadAssetsOptions = {}): Promise<void> {
@@ -88,21 +90,17 @@ export async function load(paths: string[], options: AssetProgress | LoadAssetsO
 	const requiredPending = pending.filter((path) => !optionalPaths.has(path));
 	const optionalPending = pending.filter((path) => optionalPaths.has(path));
 
-	const add = (path: string): void => {
-		const src = resolve(path);
+	const add = async (path: string): Promise<void> => {
+		const { src, type } = await mint(path);
 		const descriptor: AssetDescriptor = { alias: path, src };
 		if (resolution !== undefined) descriptor.data = { resolution };
-		//a compiled build's `src` is a `data:` URI, which carries no extension for Pixi's
-		//resolver to pick a parser from - `path` still does, so it is supplied explicitly
-		//instead of a game having to pass its own {src, parser} descriptor to Assets directly.
-		//The URI's own MIME type is tried first, not just `path`'s extension: `toWebp` (item
-		//350) can compile a `sprite.png` path into `data:image/webp;...` bytes when that is
-		//smaller, and the *key* deliberately stays "sprite.png" so dev and built modes agree -
-		//trusting only the stale `.png` extension here would tell Pixi's resolver to run the
-		//PNG parser over WebP bytes.
-		if (src.startsWith('data:')) {
-			const mime = /^data:([^;,]+)/.exec(src)?.[1];
-			const extension = (mime && MIME_TO_FORMAT[mime]) ?? /\.([a-z0-9]+)$/i.exec(path)?.[1];
+		//a `data:` or `blob:` URL has no extension for Pixi to read a parser from, so the format is
+		//named here: from the bytes' MIME type when they have one, else from the path. The MIME wins
+		//because a compiled `sprite.png` can hold WebP bytes (`toWebp`, item 350), and running the
+		//PNG parser over them would be wrong. A plain dev-server path keeps its own extension.
+		if (/^(data|blob):/.test(src)) {
+			const mime = type ?? /^data:([^;,]+)/.exec(src)?.[1];
+			const extension = (mime && MIME_TO_FORMAT[mime]) ?? /\.([a-z0-9]+)$/i.exec(path)?.[1]?.toLowerCase();
 			if (extension) descriptor.format = extension;
 		}
 		Assets.add(descriptor);
@@ -113,13 +111,15 @@ export async function load(paths: string[], options: AssetProgress | LoadAssetsO
 		return;
 	}
 
-	for (const path of requiredPending) add(path);
-	const requiredLoad = requiredPending.length > 0 ? Assets.load(requiredPending, onProgress) : Promise.resolve();
+	const requiredLoad = (async () => {
+		await Promise.all(requiredPending.map(add));
+		if (requiredPending.length > 0) await Assets.load(requiredPending, onProgress);
+	})();
 
 	//loaded one at a time and never rejected past this function: one missing optional asset
 	//must never take the required batch (or any other optional path) down with it
 	const optionalLoads = optionalPending.map(async (path) => {
-		add(path);
+		await add(path);
 		try {
 			await Assets.load(path);
 		} catch (error) {
@@ -163,10 +163,12 @@ export function isLoaded(path: string): boolean {
  * memory. For a game with many discrete zones - each with its own tileset or sprite sheet -
  * this is the counterpart to `world.World.unload`: that drops a map's own state, this drops
  * the assets it pointed at, once a game decides the player has left an area for good. A path
- * never loaded (or already released) is silently skipped rather than treated as an error,
+ * never loaded (or already released) is silently skipped rather than treated as an error, and a
+ * path whose typed bytes were minted into a `blob:` URL has that URL revoked here, so the bytes can be freed,
  * since a game unloading a zone it may or may not have visited shouldn't have to check first.
  */
 export async function release(paths: string[]): Promise<void> {
+	for (const path of paths) forgetAssetUrl(path);
 	const loaded = paths.filter((path) => Assets.cache.has(path));
 	if (loaded.length === 0) return;
 	await Assets.unload(loaded);

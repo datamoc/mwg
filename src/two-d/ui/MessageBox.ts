@@ -25,6 +25,26 @@ export interface Choice {
 	disabled?: boolean;
 }
 
+/**
+ * The pages and choices a box will show, with `convert` applied to every text a reader sees:
+ * page text, speaker and choice labels. A string page becomes a `MessagePage`. Kept free of
+ * Pixi so the rule can be tested without a canvas.
+ */
+export function convertBoxContent(
+	pages: Array<MessagePage | string>,
+	choices: Choice[],
+	convert: ((text: string) => string) | undefined,
+): { pages: MessagePage[]; choices: Choice[] } {
+	const rewrite = convert ?? ((text: string) => text);
+	return {
+		pages: pages.map((page) => {
+			const { text, speaker, portrait } = typeof page === 'string' ? { text: page } : page;
+			return { text: rewrite(text), speaker: speaker === undefined ? undefined : rewrite(speaker), portrait };
+		}),
+		choices: choices.map((choice) => ({ ...choice, text: rewrite(choice.text) })),
+	};
+}
+
 export interface MessageBoxOptions {
 	width: number;
 	height: number;
@@ -41,6 +61,14 @@ export interface MessageBoxOptions {
 
 	/** called when `{sound:path}` reaches the visible typewriter position */
 	onSound?: (path: string) => void;
+
+	/**
+	 * Rewrites every page's text and speaker, and every choice label, as the box is built. A
+	 * game uses it to resolve display-time codes that depend on live state (a count of rooms, a
+	 * currency name), so the renderer applies them to every line shown rather than each caller
+	 * resolving its own strings. The `{sound:...}` tokens are read after it runs.
+	 */
+	convertText?: (text: string) => string;
 
 	/** dim the world behind; false when the scene behind is the point, as in a dialogue */
 	dims?: boolean;
@@ -153,11 +181,12 @@ export class MessageBox extends Window {
 			anchor: options.anchor ?? 'bottom',
 		});
 
-		this.pages = options.pages.map((page) => (typeof page === 'string' ? { text: page } : page));
+		const content = convertBoxContent(options.pages, options.choices ?? [], options.convertText);
+		this.pages = content.pages;
 		this.speed = options.speed ?? 40;
 		this.mode = options.mode ?? 'adv';
 		this.autoAdvance = options.autoAdvance;
-		this.choices = options.choices ?? [];
+		this.choices = content.choices;
 		this.onDone = options.onDone ?? null;
 		this.onSound = options.onSound ?? null;
 		this.announce = options.announce ?? true;

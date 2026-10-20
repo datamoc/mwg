@@ -778,8 +778,11 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   config file would parse into.
 - `MessageBox` - dialogue text box: paged reveal, choices, ADV/NVL display modes,
   `autoAdvance`, and timed `{sound:path}` markers delivered through `onSound`.
+  `convertText` rewrites every page's text, speaker and choice label as the box is built, so a
+  game resolves display-time codes once in the renderer.
 - `messageBoxPresenter` - wires `rpg.EventRunner`'s dialogue to a `MessageBox` on a
-  `WindowStack`, in one argument: `present: messageBoxPresenter(this.windows)`.
+  `WindowStack`, in one argument: `present: messageBoxPresenter(this.windows)`. Takes the same
+  `convertText` option.
 - `VerticalLabel`/`layoutVertical` - vertical writing layout, with CJK glyph rotation.
 - `RebindScreen` - a keybind-rebinding flow over `Input`, with an optional conflict hook.
 - `SettingsScreen`/`SettingsCustomRow`/`SettingsScreenOptions` (item 364) - a ready-made
@@ -879,9 +882,13 @@ reach the compiled asset map without it.
 
 - `setBase`/`setAssetMap`/`isCompiled`/`paths`/`has`/`resolve` - dev-vs-compiled path
   resolution, renderer-free (also its own entry point, `@datamoc/mwg/assets/paths`).
-  `setAssetMap` hands these a game's own path-to-URI map directly (item 300), for a game
-  bundled by its own tool rather than `tools/compile-resources`, and takes priority over
-  `window.__MWG_ASSETS__` while set; `undefined` reverts to it.
+  `setAssetMap` hands these a game's own map directly (item 300), for a game bundled by its
+  own tool rather than `tools/compile-resources`, and takes priority over `window.__MWG_ASSETS__`
+  while set; `undefined` reverts to it. A value is a URL string, typed bytes (a `Blob`, or
+  `{ bytes, type }`), or a function returning typed bytes. `load()` reads typed and lazy values
+  once and mints a `blob:` URL for them, carrying their MIME type to the texture loader.
+  `resolve` throws for them until `load()` has run, and `release` revokes the minted URL.
+  A missing key throws at load time.
 - `load`/`texture`/`get`/`isLoaded`/`release` - load assets by path, read them back
   synchronously, and free GPU memory once a zone is no longer needed. `load(paths,
   { resolution })` rasterizes a vector source (SVG) at a multiple of its intrinsic size, so a
