@@ -109,7 +109,7 @@ test('setAssetMap takes priority over window.__MWG_ASSETS__', () => {
 });
 
 test('load() supplies a format hint for a compiled data: URI asset, since the URI itself has none (item 308)', async () => {
-	const added: { alias: string; src: string; format?: string }[] = [];
+	const added: { alias: string; src: string; format?: string; parser?: string }[] = [];
 	const originalAdd = Assets.add.bind(Assets);
 	const originalLoad = Assets.load.bind(Assets);
 	//real Assets.load would try to decode the (deliberately truncated) data: URI as a texture,
@@ -137,7 +137,7 @@ test("load() takes the format hint from the data: URI's own MIME type, not a sta
 	// tools/compile-resources.mjs's toWebp option keeps an asset's key as "sprite.png" (so dev
 	// and built modes agree) but can compile it into image/webp bytes when that is smaller. The
 	// path's own extension would tell Pixi's resolver to run the PNG parser over WebP data.
-	const added: { alias: string; src: string; format?: string }[] = [];
+	const added: { alias: string; src: string; format?: string; parser?: string }[] = [];
 	const originalAdd = Assets.add.bind(Assets);
 	const originalLoad = Assets.load.bind(Assets);
 	(Assets as unknown as { add: typeof Assets.add }).add = ((descriptor: (typeof added)[number]) => {
@@ -158,7 +158,7 @@ test("load() takes the format hint from the data: URI's own MIME type, not a sta
 });
 
 test('load() does not set a format hint for a plain dev-server path, which already has its own extension', async () => {
-	const added: { alias: string; src: string; format?: string }[] = [];
+	const added: { alias: string; src: string; format?: string; parser?: string }[] = [];
 	const originalAdd = Assets.add.bind(Assets);
 	const originalLoad = Assets.load.bind(Assets);
 	(Assets as unknown as { add: typeof Assets.add }).add = ((descriptor: (typeof added)[number]) => {
@@ -185,8 +185,10 @@ test('setAssetMap(undefined) reverts to window.__MWG_ASSETS__ / dev-server mode'
 });
 
 /** runs `body` with Pixi's add and load stubbed, returning every descriptor that reached `Assets.add` */
-async function recordAssetAdds(body: () => Promise<void>): Promise<{ alias: string; src: string; format?: string }[]> {
-	const added: { alias: string; src: string; format?: string }[] = [];
+async function recordAssetAdds(
+	body: () => Promise<void>,
+): Promise<{ alias: string; src: string; format?: string; parser?: string }[]> {
+	const added: { alias: string; src: string; format?: string; parser?: string }[] = [];
 	const originalAdd = Assets.add.bind(Assets);
 	const originalLoad = Assets.load.bind(Assets);
 	(Assets as unknown as { add: typeof Assets.add }).add = ((descriptor: (typeof added)[number]) => {
@@ -210,7 +212,12 @@ test('a blob: URL in the map gets its format from the path extension', async () 
 		assert.equal(
 			added[0].format,
 			'png',
-			'a blob: URL has no extension of its own, so the path supplies the parser',
+			'a blob: URL has no extension of its own, so the path supplies the format',
+		);
+		assert.equal(
+			added[0].parser,
+			'loadTextures',
+			'and the parser is named, since Pixi cannot pick one from the URL',
 		);
 	} finally {
 		assets.setAssetMap(undefined);

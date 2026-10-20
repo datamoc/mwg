@@ -7,6 +7,12 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.48.1] - 2026-10-20
+
+### Fixed
+
+- Textures from a `blob:` URL now load in a browser. 0.48.0 named the image format for a `blob:` URL but not Pixi's parser, so Pixi could not read the texture and it failed to load. The loader now names the parser for each format and decodes such textures on the page. 0.48.0's changelog said blob textures loaded; the published 0.48.0 bundle did not do that, and its unit tests checked only the descriptor, not a real load.
+
 ## [0.48.0] - 2026-10-20
 
 

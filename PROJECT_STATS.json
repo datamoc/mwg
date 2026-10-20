@@ -1,11 +1,11 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mwg",
-	"version": "0.48.0",
+	"version": "0.48.1",
 	"releaseDate": "2026-10-20",
 	"source": {
 		"files": 396,
-		"lines": 79492,
+		"lines": 79527,
 		"modules": 21,
 		"breakdown": [
 			{
@@ -76,7 +76,7 @@
 			{
 				"name": "assets",
 				"files": 9,
-				"lines": 934
+				"lines": 969
 			},
 			{
 				"name": "three-d",
@@ -117,7 +117,7 @@
 	},
 	"tests": {
 		"files": 372,
-		"lines": 52117,
+		"lines": 52124,
 		"cases": 3367
 	},
 	"tools": {
@@ -168,9 +168,9 @@
 		"declarationFiles": 396
 	},
 	"bundle": {
-		"globalRaw": 1417841,
-		"globalGzip": 429316,
-		"distRaw": 5437795
+		"globalRaw": 1418155,
+		"globalGzip": 429489,
+		"distRaw": 5439473
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

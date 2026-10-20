@@ -1,17 +1,17 @@
 # Project statistics
 
-Generated for **mwg 0.48.0** on 2026-10-20.
+Generated for **mwg 0.48.1** on 2026-10-20.
 
 | Area | Statistics |
 | --- | ---: |
-| Source | 396 TypeScript files, 79,492 lines, 21 modules |
-| Tests | 372 files, 3,367 test cases, 52,117 lines |
+| Source | 396 TypeScript files, 79,527 lines, 21 modules |
+| Tests | 372 files, 3,367 test cases, 52,124 lines |
 | Tools | 69 files, 14,519 lines |
 | Examples | 29 runnable examples |
 | Roadmap | 411/461 items complete, 50 open |
 | API | 396 declaration files |
-| Bundle | 1384.6 kB raw, 419.3 kB gzip |
-| Published dist | 5310.3 kB excluding source maps |
+| Bundle | 1384.9 kB raw, 419.4 kB gzip |
+| Published dist | 5312.0 kB excluding source maps |
 | Test-to-source ratio | 0.7x by line count |
 
 ## Source modules
@@ -31,7 +31,7 @@ Generated for **mwg 0.48.0** on 2026-10-20.
 | simulation | 9 | 1,463 |
 | physics | 6 | 1,364 |
 | battle | 15 | 1,157 |
-| assets | 9 | 934 |
+| assets | 9 | 969 |
 | three-d | 9 | 851 |
 | world | 7 | 603 |
 | testing | 3 | 560 |

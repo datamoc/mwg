@@ -61,6 +61,34 @@ const MIME_TO_FORMAT: Record<string, string> = {
 	'image/svg+xml': 'svg',
 };
 
+/**
+ * Pixi's load parser for each format a `data:` or `blob:` URL can carry. Pixi chooses a parser
+ * by testing the URL's extension, which these URLs do not have, so the parser's name is given.
+ */
+const PARSER_FOR_FORMAT: Record<string, string> = {
+	png: 'loadTextures',
+	jpg: 'loadTextures',
+	webp: 'loadTextures',
+	gif: 'loadTextures',
+	svg: 'loadSVG',
+	json: 'loadJson',
+	txt: 'loadTxt',
+};
+
+/**
+ * Pixi's texture loader prefers a worker to decode an image, and a worker started from a blob:
+ * URL cannot fetch the page's own blob: URLs, so a blob: texture fails with "Failed to fetch".
+ * Decoding such textures on the page instead costs one decode on the main thread.
+ */
+let pagePixelsOnly = false;
+function decodeTexturesOnPage(): void {
+	if (pagePixelsOnly) return;
+	pagePixelsOnly = true;
+	for (const parser of Assets.loader.parsers) {
+		if (parser.name === 'loadTextures' && parser.config) parser.config.preferWorkers = false;
+	}
+}
+
 /** the `Assets.add` descriptor for one path, with the resolution carried through */
 interface AssetDescriptor {
 	alias: string;
@@ -68,6 +96,8 @@ interface AssetDescriptor {
 	data?: { resolution: number };
 	/** the file format Pixi picks a parser from; set only when `src` has no extension of its own to read (a `data:` or `blob:` URL) */
 	format?: string;
+	/** the name of the load parser to use, for a URL whose extension cannot pick one */
+	parser?: string;
 }
 
 /**
@@ -102,6 +132,11 @@ export async function load(paths: string[], options: AssetProgress | LoadAssetsO
 			const mime = type ?? /^data:([^;,]+)/.exec(src)?.[1];
 			const extension = (mime && MIME_TO_FORMAT[mime]) ?? /\.([a-z0-9]+)$/i.exec(path)?.[1]?.toLowerCase();
 			if (extension) descriptor.format = extension;
+			//naming `format` is not enough: Pixi chooses a parser by testing the URL's extension, and a
+			//blob: URL has none, so the parser is named outright
+			const parser = extension && PARSER_FOR_FORMAT[extension];
+			if (parser) descriptor.parser = parser;
+			if (src.startsWith('blob:')) decodeTexturesOnPage();
 		}
 		Assets.add(descriptor);
 	};

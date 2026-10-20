@@ -7238,7 +7238,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.48.0";
+    export declare const version = "0.48.1";
 
 ### `VerticalLabel` (class)
 
