@@ -6,6 +6,9 @@ import {
 	parseMidi,
 	renderMidiToBuffer,
 	renderMidiToBufferAsync,
+	renderedMidiBytes,
+	renderMidiStems,
+	fitToBudget,
 	registerMidiSynth,
 	unregisterMidiSynth,
 	onMidiSynthFallback,
@@ -57,7 +60,11 @@ test('MIDI preparation waits for idle time and serializes tracks and authored no
 		const first = queue.prepare(bytes, options);
 		const second = queue.prepare(notes(72), options);
 		assert.equal(idle.count(), 1);
+		assert.equal(queue.pendingCount, 2);
+		assert.equal(queue.activeCount, 0);
 		idle.run();
+		assert.equal(queue.pendingCount, 1);
+		assert.equal(queue.activeCount, 1);
 		assert.equal(idle.count(), 0, 'the next track cannot launch while the first is rendering');
 		assert.deepEqual(await first, renderMidiToBuffer(parseMidi(bytes), options));
 		assert.equal(idle.count(), 1, 'the next track gets its own idle slot');
@@ -321,4 +328,21 @@ test('a registration changed while waiting cannot run a synth on the game thread
 		queue.dispose();
 		unregisterMidiSynth('queue:changed');
 	}
+});
+
+test('first note and PCM bytes follow the rendered channels and shared buffers', async () => {
+	const file = notes();
+	file.events[0].tick = 96;
+	file.events[1].tick = 192;
+	const options = { sampleRate: 8000 };
+	const rendered = renderMidiToBuffer(file, options);
+	assert.equal(rendered.firstNoteTime, 0.5);
+	assert.equal((await renderMidiToBufferAsync(file, options)).firstNoteTime, 0.5);
+	assert.equal(renderedMidiBytes(rendered), rendered.left.byteLength + rendered.right.byteLength);
+	const mono = fitToBudget(rendered, { mono: true });
+	assert.equal(renderedMidiBytes(mono), mono.left.byteLength);
+	assert.equal(fitToBudget(rendered, { maxSeconds: 0.25 }).firstNoteTime, null);
+	const stems = renderMidiStems(file, { sounding: [0], silent: [1] }, options);
+	assert.equal(stems.sounding.firstNoteTime, 0.5);
+	assert.equal(stems.silent.firstNoteTime, null);
 });

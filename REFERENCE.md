@@ -972,6 +972,7 @@ reach the compiled asset map without it.
   controller and pitch-bend events plus the controller-111 loop start, with each
   scheduled note carrying its channel voice. `MidiPlayer.create(file, { humanize })`
   humanizes first and then schedules, for the same player with a performance behind it.
+- `renderedMidiBytes` - reports PCM backing-buffer bytes, counting shared buffers once (excluding player copies).
 - `renderMidiToBuffer` - renders a parsed `.mid` file to stereo PCM frames, offline and
   deterministic: browsers cannot decode MIDI, so the file is synthesized once and plays
   back like any decoded track, with its controller-111 loop region. An optional game-supplied
@@ -1055,7 +1056,7 @@ reach the compiled asset map without it.
   `AudioBus` uses this loader by default, so `playBgm` and `playSe` accept asset paths with
   the same volume, pitch and pan fields. BGM/BGS loop; ME/SE play once.
 - `MusicPlayer`/`MusicPlayerOptions`/`MusicPlayOptions` - one loaded `AudioBuffer` or
-  `RenderedMidi`, with play, pause, resume, seek, position, volume and an `onEnded` signal.
+  `RenderedMidi` (whose `firstNoteTime` gives the first included note in seconds, or null for a silent stem), with play, pause, resume, seek, position, volume and an `onEnded` signal.
   Call `update()` each frame to dispatch track completion and choose the next track.
   `toAudioBuffer(context, rendered)` copies rendered stereo samples into an `AudioBuffer`.
 - `Channel`/`AudioBus` - buffered WebAudio music: a `Channel` plays one looping track with
@@ -1080,7 +1081,7 @@ reach the compiled asset map without it.
   next requested engine, then SoundFont or the built-in path, with a fallback notification.
 - `MidiRenderQueue`/`MidiRenderQueueOptions` - prepares upcoming MIDI tracks or game-authored
   `MidiFile` note sequences before playback. `prepare(input, options)` returns a promise of
-  `RenderedMidi`, suitable for `MusicPlayer.load`. One render runs at a time; each launch waits
+  `RenderedMidi`, suitable for `MusicPlayer.load`. `pendingCount` and `activeCount` report jobs, not retained PCM. One render runs at a time; each launch waits
   for `requestIdleCallback`, or a timer where unavailable. The idle wait is bounded by
   `idleTimeoutMs` (1000 by default), so a busy or background page cannot starve a preparation
   forever. `pause` stops new launches, `resume`

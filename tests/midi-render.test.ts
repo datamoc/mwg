@@ -356,3 +356,23 @@ test('the async render decodes a SoundFont 3 on this thread when given a decoder
 	assert.ok(peak(decoded.left) > 0, 'the decoded font must actually voice the note');
 	assert.deepEqual(decoded, expected);
 });
+
+test('render normalization matches peak or RMS and caps the peak in both paths', async () => {
+	const bytes = oneNote();
+	const file = parseMidi(bytes);
+	for (const options of [{ targetPeak: 0.5 }, { targetRms: 0.1 }, { targetRms: 0.8, targetPeak: 0.4 }]) {
+		const direct = renderMidiToBuffer(file, options);
+		const worker = await renderMidiToBufferAsync(bytes, options);
+		assert.deepEqual(worker.left, direct.left);
+		assert.deepEqual(worker.right, direct.right);
+		const samples = [...direct.left, ...direct.right];
+		const actualPeak = Math.max(peak(direct.left), peak(direct.right));
+		const rms = Math.sqrt(samples.reduce((sum, x) => sum + x * x, 0) / samples.length);
+		if (options.targetPeak !== undefined) assert.ok(Math.abs(actualPeak - options.targetPeak) < 1e-6);
+		else assert.ok(Math.abs(rms - options.targetRms!) < 1e-6);
+	}
+	const silent = renderMidiToBuffer(file, { gain: 0, targetRms: 0.5 });
+	assert.equal(peak(silent.left), 0);
+	assert.throws(() => renderMidiToBuffer(file, { targetPeak: 0 }), /targetPeak/);
+	await assert.rejects(renderMidiToBufferAsync(bytes, { targetRms: NaN }), /targetRms/);
+});

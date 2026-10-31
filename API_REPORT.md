@@ -7238,7 +7238,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.52.0";
+    export declare const version = "0.52.1";
 
 ### `VerticalLabel` (class)
 
@@ -10942,6 +10942,10 @@ build instead.
         private disposed;
         constructor(options?: MidiRenderQueueOptions);
 
+        get pendingCount(): number;
+
+        get activeCount(): number;
+
         prepare(input: ArrayBuffer | ArrayBufferView | MidiFile, options?: RenderMidiAsyncOptions): Promise<RenderedMidi>;
 
         pause(): void;
@@ -11312,12 +11316,18 @@ build instead.
         left: Float32Array;
         right: Float32Array;
 
+        firstNoteTime: number | null;
+
         loopStart: number;
 
         loopEnd: number;
 
         duration: number;
     }
+
+### `renderedMidiBytes` (function)
+
+    export declare function renderedMidiBytes(track: Pick<RenderedMidi, 'left' | 'right'>): number;
 
 ### `RenderMidiAsyncOptions` (interface)
 
@@ -11340,6 +11350,10 @@ build instead.
         gain?: number;
 
         maxDuration?: number;
+
+        targetPeak?: number;
+
+        targetRms?: number;
     }
 
 ### `RenderMidiOptions` (interface)
@@ -11357,6 +11371,10 @@ build instead.
         gain?: number;
 
         maxDuration?: number;
+
+        targetPeak?: number;
+
+        targetRms?: number;
     }
 
 ### `renderMidiStems` (function)

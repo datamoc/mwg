@@ -74,10 +74,9 @@ export interface RenderBudget {
  * console.log(ambience.duration);
  * ```
  */
-export function fitToBudget<T extends StereoFrames & { loopStart?: number; loopEnd?: number; duration?: number }>(
-	track: T,
-	budget: RenderBudget,
-): T {
+export function fitToBudget<
+	T extends StereoFrames & { loopStart?: number; loopEnd?: number; duration?: number; firstNoteTime?: number | null },
+>(track: T, budget: RenderBudget): T {
 	let result: T = track;
 	if (budget.maxSeconds !== undefined) {
 		if (!(budget.maxSeconds > 0)) throw new Error('budget maxSeconds must be positive');
@@ -104,8 +103,12 @@ export function fitToBudget<T extends StereoFrames & { loopStart?: number; loopE
 	return result;
 }
 
-function withEnd<T extends { loopStart?: number; loopEnd?: number; duration?: number }>(track: T, seconds: number): T {
+function withEnd<T extends { loopStart?: number; loopEnd?: number; duration?: number; firstNoteTime?: number | null }>(
+	track: T,
+	seconds: number,
+): T {
 	const next = { ...track };
+	if (next.firstNoteTime != null && next.firstNoteTime >= seconds) next.firstNoteTime = null;
 	if (next.duration !== undefined) next.duration = seconds;
 	if (next.loopEnd !== undefined) next.loopEnd = Math.min(next.loopEnd, seconds);
 	if (next.loopStart !== undefined) next.loopStart = Math.min(next.loopStart, Math.max(0, seconds - 0.1));

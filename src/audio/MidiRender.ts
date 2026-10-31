@@ -64,12 +64,18 @@ export interface RenderMidiOptions {
 	gain?: number;
 	/** hard cap on rendered seconds; longer tails are cut */
 	maxDuration?: number;
+	/** Normalize the stereo peak to this linear amplitude (0 < targetPeak <= 1). With targetRms, this is a ceiling. */
+	targetPeak?: number;
+	/** Normalize stereo RMS to this linear amplitude (0 < targetRms <= 1). Silence stays silent. */
+	targetRms?: number;
 }
 
 export interface RenderedMidi {
 	sampleRate: number;
 	left: Float32Array;
 	right: Float32Array;
+	/** seconds to the first included note, or null for a silent stem */
+	firstNoteTime: number | null;
 	/** seconds the loop jumps back to: the file's controller-111 marker, else 0 */
 	loopStart: number;
 	/** seconds the loop wraps from: the end of the render */
@@ -100,6 +106,10 @@ export interface RenderMidiAsyncOptions {
 	gain?: number;
 	/** hard cap on rendered seconds; longer tails are cut */
 	maxDuration?: number;
+	/** Normalize the stereo peak to this linear amplitude (0 < targetPeak <= 1). With targetRms, this is a ceiling. */
+	targetPeak?: number;
+	/** Normalize stereo RMS to this linear amplitude (0 < targetRms <= 1). Silence stays silent. */
+	targetRms?: number;
 }
 
 const DEFAULT_SAMPLE_RATE = 22050;
@@ -141,7 +151,39 @@ interface MidiRenderTask {
  * ```
  */
 export function renderMidiToBuffer(file: MidiFile, options: RenderMidiOptions = {}): RenderedMidi {
-	return renderThroughRequestedSynth(file, options) ?? renderNotes(prepare(file, options));
+	validateLevels(options);
+	return normalizeLevels(renderThroughRequestedSynth(file, options) ?? renderNotes(prepare(file, options)), options);
+}
+
+/** Validate before starting a render, including worker renders. */
+function validateLevels(options: Pick<RenderMidiOptions, 'targetPeak' | 'targetRms'>): void {
+	for (const name of ['targetPeak', 'targetRms'] as const) {
+		const value = options[name];
+		if (value !== undefined && (!Number.isFinite(value) || value <= 0 || value > 1))
+			throw new RangeError(`${name} must be greater than 0 and at most 1`);
+	}
+}
+
+/** One gain for both channels preserves stereo balance; a peak ceiling can limit RMS normalization. */
+function normalizeLevels(
+	rendered: RenderedMidi,
+	options: Pick<RenderMidiOptions, 'targetPeak' | 'targetRms'>,
+): RenderedMidi {
+	if (options.targetPeak === undefined && options.targetRms === undefined) return rendered;
+	let peak = 0;
+	let sumSquares = 0;
+	for (const channel of [rendered.left, rendered.right]) {
+		for (const sample of channel) {
+			peak = Math.max(peak, Math.abs(sample));
+			sumSquares += sample * sample;
+		}
+	}
+	if (peak === 0) return rendered;
+	const rms = Math.sqrt(sumSquares / (rendered.left.length + rendered.right.length));
+	let gain = options.targetRms === undefined ? Infinity : options.targetRms / rms;
+	if (options.targetPeak !== undefined) gain = Math.min(gain, options.targetPeak / peak);
+	for (const channel of [rendered.left, rendered.right]) for (let i = 0; i < channel.length; i++) channel[i] *= gain;
+	return rendered;
 }
 
 /** the channels of 0 to 15 that are not in the list */
@@ -231,6 +273,7 @@ export async function renderMidiToBufferAsync(
 	options: RenderMidiAsyncOptions = {},
 ): Promise<RenderedMidi> {
 	options.signal?.throwIfAborted();
+	validateLevels(options);
 	const file = 'events' in midi ? midi : parseMidi(midi);
 	const fontBytes =
 		options.soundFontBytes && options.decode
@@ -242,7 +285,7 @@ export async function renderMidiToBufferAsync(
 	options.signal?.throwIfAborted();
 	const soundfont = fontBytes ? parseSoundFont(fontBytes, { missingProgram: options.missingProgram }) : null;
 	const viaSynth = await renderRequestedSynthAsync(file, { ...options, soundfont });
-	if (viaSynth) return viaSynth;
+	if (viaSynth) return normalizeLevels(viaSynth, options);
 	const task = prepare(file, {
 		soundfont,
 		channels: options.channels,
@@ -250,7 +293,7 @@ export async function renderMidiToBufferAsync(
 		gain: options.gain,
 		maxDuration: options.maxDuration,
 	});
-	return spawn(renderNotes, [task], { signal: options.signal });
+	return normalizeLevels(await spawn(renderNotes, [task], { signal: options.signal }), options);
 }
 
 /** A platform decoder cannot be stopped, but cancellation must release the preparation queue. */
@@ -676,7 +719,15 @@ function renderNotes(task: MidiRenderTask): RenderedMidi {
 			renderSynth(left, right, sampleRate, note, peak, startFrame, frames);
 		}
 	}
-	return { sampleRate, left, right, loopStart, loopEnd: duration, duration };
+	return {
+		sampleRate,
+		left,
+		right,
+		firstNoteTime: notes.reduce((first, note) => Math.min(first, note.time), Infinity),
+		loopStart,
+		loopEnd: duration,
+		duration,
+	};
 }
 
 /**
@@ -721,9 +772,34 @@ export function renderMidiStems(
 			left.set(stem.left);
 			right.set(stem.right);
 		}
-		stems[name] = { sampleRate, left, right, loopStart, loopEnd: duration, duration };
+		stems[name] = {
+			sampleRate,
+			left,
+			right,
+			firstNoteTime: stem?.firstNoteTime ?? null,
+			loopStart,
+			loopEnd: duration,
+			duration,
+		};
 	}
 	return stems;
+}
+
+/**
+ * Bytes retained by the PCM backing buffers, counting a shared buffer once. This excludes
+ * player AudioBuffer copies and other objects. It also works after mono or resampling.
+ *
+ * @example
+ * ```ts
+ * import { renderedMidiBytes, renderMidiToBuffer, parseMidi } from '@datamoc/mwg/audio';
+ * declare const bytes: ArrayBuffer;
+ * console.log(renderedMidiBytes(renderMidiToBuffer(parseMidi(bytes))));
+ * ```
+ */
+export function renderedMidiBytes(track: Pick<RenderedMidi, 'left' | 'right'>): number {
+	return (
+		track.left.buffer.byteLength + (track.left.buffer === track.right.buffer ? 0 : track.right.buffer.byteLength)
+	);
 }
 
 /**

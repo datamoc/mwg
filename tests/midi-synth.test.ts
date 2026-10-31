@@ -441,3 +441,10 @@ test('replacing or unregistering a named synth forgets its worker factory', asyn
 		unregisterMidiSynth('test:replace');
 	}
 });
+
+test('synth rendering reports the first unmuted note after setup events', () => {
+	const file = parseMidi(
+		midiFile([0, 0xc0, 5, ...vlq(48), 0x91, 64, 100, ...vlq(48), 0x90, 60, 100, ...vlq(96), 0x80, 60, 0]),
+	);
+	assert.equal(renderMidiThroughSynth(file, sineSynth(), { mutedChannels: [1] }).firstNoteTime, 0.5);
+});

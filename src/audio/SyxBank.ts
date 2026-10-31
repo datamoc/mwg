@@ -278,6 +278,14 @@ export class SyxBank {
 		synth.event(0x80, note, 0);
 		if (frames > sounding) synth.render(left, right, sounding, frames - sounding);
 		synth.reset();
-		return { sampleRate, left, right, loopStart: 0, loopEnd: seconds + tail, duration: seconds + tail };
+		return {
+			sampleRate,
+			left,
+			right,
+			firstNoteTime: 0,
+			loopStart: 0,
+			loopEnd: seconds + tail,
+			duration: seconds + tail,
+		};
 	}
 }

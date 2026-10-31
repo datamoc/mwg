@@ -7,6 +7,16 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.52.1] - 2026-10-31
+
+MIDI renders expose their first note and PCM weight, and can be normalized to a target level. Background preparation reports its waiting and active jobs.
+
+### Added
+
+- `RenderedMidi.firstNoteTime` gives the first included note in seconds, or null for a silent stem. `renderedMidiBytes` counts PCM backing-buffer bytes, including shared buffers only once.
+- `MidiRenderQueue.pendingCount` and `activeCount` expose queued and running preparations.
+- Offline MIDI renders accept `targetPeak` and `targetRms` to normalize stereo output, with a peak ceiling when both are supplied.
+
 ## [0.52.0] - 2026-10-31
 
 Timed MIDI messages in seconds turn into a `MidiFile` directly, and a named worker synth engine can be registered from source text.

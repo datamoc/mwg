@@ -51,7 +51,13 @@ export type {
 	MidiPlayerOptions,
 	TimedMidiMessage,
 } from './Midi.ts';
-export { renderMidiStems, renderMidiToBuffer, renderMidiToBufferAsync, toAudioBuffer } from './MidiRender.ts';
+export {
+	renderMidiStems,
+	renderMidiToBuffer,
+	renderMidiToBufferAsync,
+	renderedMidiBytes,
+	toAudioBuffer,
+} from './MidiRender.ts';
 export { MusicPlayer } from './MusicPlayer.ts';
 export type { MusicPlayerOptions, MusicPlayOptions } from './MusicPlayer.ts';
 export type { RenderMidiOptions, RenderMidiAsyncOptions, RenderedMidi } from './MidiRender.ts';

@@ -6624,6 +6624,12 @@
 		"declaringModule": "audio/MidiRender.d.ts"
 	},
 	{
+		"name": "renderedMidiBytes",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiRender.d.ts"
+	},
+	{
 		"name": "RenderMidiAsyncOptions",
 		"kind": "interface",
 		"subpath": "./audio",

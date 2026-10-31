@@ -88,6 +88,16 @@ export class MidiRenderQueue {
 		this.schedule = options.schedule ?? ((start) => scheduleIdle(start, idleTimeoutMs));
 	}
 
+	/** Number of preparations waiting to launch, including a scheduled idle launch. */
+	get pendingCount(): number {
+		return this.pending.length;
+	}
+
+	/** Number of preparations currently running, either 0 or 1. */
+	get activeCount(): number {
+		return this.active ? 1 : 0;
+	}
+
 	/** Enqueues a track or note sequence; signal cancels either a queued or an active render. */
 	prepare(
 		input: ArrayBuffer | ArrayBufferView | MidiFile,

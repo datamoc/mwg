@@ -271,7 +271,8 @@ export function renderSynthMessages(
 	const muted = new Set(options.mutedChannels ?? []);
 
 	const messages = input.filter((message) => message.time < maxDuration && !muted.has(message.status & 0x0f));
-	if (!messages.some((message) => (message.status & 0xf0) === 0x90 && message.data2 > 0)) {
+	const firstNote = messages.find((message) => (message.status & 0xf0) === 0x90 && message.data2 > 0);
+	if (!firstNote) {
 		throw new Error('MIDI file has no notes');
 	}
 	const sampleRate = synth.sampleRate;
@@ -301,7 +302,7 @@ export function renderSynthMessages(
 		}
 	}
 	const loopStart = Math.min(loopMarker ?? 0, Math.max(0, duration - 0.1));
-	return { sampleRate, left, right, loopStart, loopEnd: duration, duration };
+	return { sampleRate, left, right, firstNoteTime: firstNote.time, loopStart, loopEnd: duration, duration };
 
 	function advance(from: number, to: number): number {
 		let frame = from;

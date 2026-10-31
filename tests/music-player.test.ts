@@ -68,6 +68,7 @@ test('toAudioBuffer copies both channels of a render into the buffer', () => {
 		sampleRate: 4,
 		left: new Float32Array([1, 2]),
 		right: new Float32Array([3, 4]),
+		firstNoteTime: 0,
 		loopStart: 0,
 		loopEnd: 0.5,
 		duration: 0.5,
