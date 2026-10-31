@@ -64,10 +64,10 @@ export interface MidiSynthFallback {
 export const onMidiSynthFallback = new Signal<MidiSynthFallback>();
 
 const engines = new Map<string, MidiSynthFactory>();
-const workerEngines = new Map<string, MidiSynthFactory>();
+const workerEngines = new Map<string, string>();
 
-/** Internal lookup: worker factories must be self-contained, as for threads.spawn. */
-export function midiSynthWorkerFactory(name: string): MidiSynthFactory | undefined {
+/** Internal lookup: the self-contained function expression a worker evaluates, as for threads.spawn. */
+export function midiSynthWorkerSource(name: string): string | undefined {
 	return workerEngines.get(name);
 }
 
@@ -76,6 +76,8 @@ export function midiSynthWorkerFactory(name: string): MidiSynthFactory | undefin
  * registered is replaced, and the two internal names are reserved. Pass `workerFactory` to
  * let async offline renders construct and run the engine on a worker. It must be self-contained
  * (no imports or closures), like `threads.spawn`; the ordinary factory stays on this thread.
+ * It may be a function or the source text of a function expression (as `playMidiHosted`'s
+ * `factorySource` takes), for a core that is shipped as a string and has no function to stringify.
  *
  * @example
  * ```ts
@@ -88,10 +90,14 @@ export function midiSynthWorkerFactory(name: string): MidiSynthFactory | undefin
  * registerMidiSynth('retro:mt32', createMt32, createMt32InWorker);
  * ```
  */
-export function registerMidiSynth(name: string, factory: MidiSynthFactory, workerFactory?: MidiSynthFactory): void {
+export function registerMidiSynth(
+	name: string,
+	factory: MidiSynthFactory,
+	workerFactory?: MidiSynthFactory | string,
+): void {
 	if (INTERNAL_MIDI_ENGINES.includes(name)) throw new Error(`"${name}" is a reserved MIDI engine name`);
 	engines.set(name, factory);
-	if (workerFactory) workerEngines.set(name, workerFactory);
+	if (workerFactory) workerEngines.set(name, workerFactory.toString());
 	else workerEngines.delete(name);
 }
 

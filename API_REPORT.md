@@ -10838,6 +10838,11 @@ build instead.
         loopStartTick: number | null;
     }
 
+### `midiFileFromTimedMessages` (function)
+
+    export declare function midiFileFromTimedMessages(messages: readonly TimedMidiMessage[], options?: {
+        loopStart?: number;
+
 ### `MidiHumanizerEngine` (interface)
 
     export interface MidiHumanizerEngine {
@@ -11285,7 +11290,7 @@ build instead.
 
 ### `registerMidiSynth` (function)
 
-    export declare function registerMidiSynth(name: string, factory: MidiSynthFactory, workerFactory?: MidiSynthFactory): void;
+    export declare function registerMidiSynth(name: string, factory: MidiSynthFactory, workerFactory?: MidiSynthFactory | string): void;
 
 ### `RenderBudget` (interface)
 

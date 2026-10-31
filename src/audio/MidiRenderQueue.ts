@@ -1,6 +1,6 @@
 import type { MidiFile } from './Midi.ts';
 import { renderMidiToBufferAsync, type RenderMidiAsyncOptions, type RenderedMidi } from './MidiRender.ts';
-import { INTERNAL_MIDI_ENGINES, midiSynthNames, midiSynthWorkerFactory, synthChoices } from './MidiSynth.ts';
+import { INTERNAL_MIDI_ENGINES, midiSynthNames, midiSynthWorkerSource, synthChoices } from './MidiSynth.ts';
 
 export interface MidiRenderQueueOptions {
 	/** schedules a short launch callback and returns its cancellation function; must defer the callback; defaults to requestIdleCallback, or a timer where unavailable */
@@ -38,7 +38,7 @@ function assertWorkerSynth(options: RenderMidiAsyncOptions): void {
 	const choices = synthChoices(options.synth);
 	for (const choice of choices) {
 		if (typeof choice === 'string' && INTERNAL_MIDI_ENGINES.includes(choice)) break;
-		if (typeof choice === 'function' || (midiSynthNames().includes(choice) && !midiSynthWorkerFactory(choice))) {
+		if (typeof choice === 'function' || (midiSynthNames().includes(choice) && !midiSynthWorkerSource(choice))) {
 			throw new Error('background MIDI rendering requires a named synth with a worker factory');
 		}
 	}

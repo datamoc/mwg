@@ -6397,6 +6397,7 @@ example already draws.
   filesystem. It is a page-script patch, so it works from `file://`; a service worker (the roadmap's other route)
   would need a real origin and stays a host's choice. Not shipped: an IndexedDB writeback adapter (a host that has
   one, MWGP's `nwjs-host.js`, implements the three-method interface), and Karryn's Prison's own host is untouched.
+462. **Render timed notes without a MIDI file** (2026-10-31, from a consumer's feedback). `midiFileFromTimedMessages(messages, { loopStart? })`, the inverse of `timedMidiMessages`: `{ time, status, data1, data2 }[]` in seconds become a `MidiFile` (one tick per microsecond, so a time rounds to the nearest microsecond, far under one sample) that every renderer, player and exporter takes, with no `writeSmf` and re-parse. So `MidiFile` could carry the events after all; no second render entry point was needed. Alongside it, `registerMidiSynth`'s worker factory also accepts the source text of a function expression, for cores shipped as strings.
 412. **Publish `@datamoc/mwg`** (2026-10-31). The initial publication was done with 0.37.0 and the alias's
   trusted-publisher entry was added by the owner after v0.38.0's alias step failed `E401`. v0.49.0 is the release
   that proves it: its `Publish to npm` run (check, tests, build, `stats:check`, then `npm stage publish` for the

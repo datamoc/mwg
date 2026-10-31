@@ -5,7 +5,7 @@
 	"releaseDate": "2026-10-31",
 	"source": {
 		"files": 398,
-		"lines": 80483,
+		"lines": 80555,
 		"modules": 21,
 		"breakdown": [
 			{
@@ -16,7 +16,7 @@
 			{
 				"name": "audio",
 				"files": 49,
-				"lines": 11651
+				"lines": 11723
 			},
 			{
 				"name": "mwl",
@@ -117,8 +117,8 @@
 	},
 	"tests": {
 		"files": 374,
-		"lines": 52854,
-		"cases": 3398
+		"lines": 52909,
+		"cases": 3401
 	},
 	"tools": {
 		"files": 69,
@@ -159,18 +159,18 @@
 		]
 	},
 	"roadmap": {
-		"items": 461,
+		"items": 462,
 		"completed": 411,
-		"open": 50,
+		"open": 51,
 		"percent": 89
 	},
 	"api": {
 		"declarationFiles": 398
 	},
 	"bundle": {
-		"globalRaw": 1428192,
-		"globalGzip": 433081,
-		"distRaw": 5497610
+		"globalRaw": 1428959,
+		"globalGzip": 433267,
+		"distRaw": 5502397
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

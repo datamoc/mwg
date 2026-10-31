@@ -7,6 +7,11 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `midiFileFromTimedMessages`: raw `{ time, status, data1, data2 }` messages in seconds become a `MidiFile` for `renderMidiToBufferAsync` and the rest, with no Standard MIDI File in between (item 462).
+- `registerMidiSynth` accepts the worker factory as source text as well as a function, for cores shipped as strings.
+
 ## [0.51.0] - 2026-10-31
 
 Idle-time MIDI preparation now launches by a bounded deadline, so a track prepared in the background is ready even on a page that never goes idle.

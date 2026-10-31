@@ -12,7 +12,15 @@ export { Orchestrator } from './Orchestrator.ts';
 export type { OrchestratorState } from './Orchestrator.ts';
 export { synthesizeTone, synthesizeSound, playTone } from './Synth.ts';
 export type { Waveform, ToneOptions } from './Synth.ts';
-export { parseMidi, scheduleMidi, timedMidiMessages, noteToFrequency, midiLoopStart, MidiPlayer } from './Midi.ts';
+export {
+	parseMidi,
+	scheduleMidi,
+	timedMidiMessages,
+	midiFileFromTimedMessages,
+	noteToFrequency,
+	midiLoopStart,
+	MidiPlayer,
+} from './Midi.ts';
 export {
 	INTERNAL_MIDI_ENGINES,
 	midiSynthNames,

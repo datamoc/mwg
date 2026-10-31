@@ -1,7 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { parseMidi, scheduleMidi, noteToFrequency, midiLoopStart, MidiPlayer } from '../src/audio/Midi.ts';
+import {
+	parseMidi,
+	scheduleMidi,
+	timedMidiMessages,
+	midiFileFromTimedMessages,
+	noteToFrequency,
+	midiLoopStart,
+	MidiPlayer,
+} from '../src/audio/Midi.ts';
+import { renderMidiToBuffer } from '../src/audio/MidiRender.ts';
 import type { ToneOptions } from '../src/audio/Synth.ts';
 import type { Playable } from '../src/audio/Playable.ts';
 
@@ -496,4 +505,39 @@ test("duration reflects the last scheduled note's own end", () => {
 	]);
 	const player = new MidiPlayer(parseMidi(bytes));
 	assert.ok(Math.abs(player.duration - 0.5) < 1e-9);
+});
+
+test('midiFileFromTimedMessages round-trips the messages of a parsed file and renders without an SMF', () => {
+	const source = parseMidi(
+		buildMidi(96, [0, 0xc0, 5, 0, 0xb0, 7, 90, 0, 0x90, 69, 100, ...vlq(96), 0x80, 69, 0, 0, 0xe0, 0, 0x50]),
+	);
+	const messages = timedMidiMessages(source);
+	const rebuilt = midiFileFromTimedMessages(messages);
+	assert.deepEqual(
+		timedMidiMessages(rebuilt).map((m) => ({ ...m, time: Math.round(m.time * 1e6) })),
+		messages.map((m) => ({ ...m, time: Math.round(m.time * 1e6) })),
+	);
+	assert.deepEqual(
+		renderMidiToBuffer(rebuilt, { sampleRate: 8000 }),
+		renderMidiToBuffer(source, { sampleRate: 8000 }),
+	);
+});
+
+test('midiFileFromTimedMessages orders by time, treats velocity-0 note-ons as note-offs and rejects unsupported statuses', () => {
+	const file = midiFileFromTimedMessages(
+		[
+			{ time: 0.5, status: 0x91, data1: 60, data2: 0 },
+			{ time: 0, status: 0x91, data1: 60, data2: 80 },
+		],
+		{ loopStart: 0.25 },
+	);
+	assert.deepEqual(
+		file.events.map((e) => [e.tick, e.type]),
+		[
+			[0, 'noteOn'],
+			[500_000, 'noteOff'],
+		],
+	);
+	assert.equal(file.loopStartTick, 250_000);
+	assert.throws(() => midiFileFromTimedMessages([{ time: 0, status: 0xd0, data1: 1, data2: 0 }]), /not supported/);
 });

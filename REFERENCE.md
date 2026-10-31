@@ -1070,7 +1070,8 @@ reach the compiled asset map without it.
   a package registers a synth under a name (`retro:mt32`), content asks for it by name, and
   resolution walks the request, then the internal names (`gm-soundfont`, `builtin`), firing
   `onMidiSynthFallback` whenever another engine voices the file instead. `timedMidiMessages`
-  is the raw timed message stream a synth is driven by. The optional third argument to
+  is the raw timed message stream a synth is driven by; `midiFileFromTimedMessages` is its inverse,
+  turning such messages (in seconds) into a `MidiFile` any renderer takes, with no SMF in between. The worker factory may also be given as source text. The optional third argument to
   `registerMidiSynth(name, factory, workerFactory)` enables named offline synthesis in a
   worker through `renderMidiToBufferAsync(bytes, { synth: name })`. The worker factory must
   be self-contained, like `threads.spawn` (no imports or closures); the main factory remains

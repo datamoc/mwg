@@ -416,6 +416,64 @@ export function timedMidiMessages(file: MidiFile): TimedMidiMessage[] {
 	return messages;
 }
 
+/**
+ * The inverse of `timedMidiMessages`: raw channel messages placed in seconds become a `MidiFile`
+ * every renderer, player and exporter accepts, with no Standard MIDI File written and parsed in
+ * between. The file runs at one tick per microsecond (the default tempo, 500000 microseconds per
+ * quarter, over 500000 ticks per quarter), so a time is rounded to the nearest microsecond, far
+ * below one sample at any audio rate. Messages are ordered by time, ties keeping their given
+ * order; a message of an unsupported type (status 0xa0, 0xd0 or 0xf0 and up) is rejected by name.
+ *
+ * @example
+ * ```ts
+ * import { midiFileFromTimedMessages, renderMidiToBufferAsync } from '@datamoc/mwg/audio';
+ *
+ * const file = midiFileFromTimedMessages([
+ * 	{ time: 0, status: 0x90, data1: 69, data2: 100 },
+ * 	{ time: 0.5, status: 0x80, data1: 69, data2: 0 },
+ * ]);
+ * const track = await renderMidiToBufferAsync(file);
+ * console.log(track.duration);
+ * ```
+ */
+export function midiFileFromTimedMessages(
+	messages: readonly TimedMidiMessage[],
+	options: { loopStart?: number } = {},
+): MidiFile {
+	const tickOf = (seconds: number): number => Math.max(0, Math.round(seconds * 1_000_000));
+	const events: MidiEvent[] = [];
+	for (const { time, status, data1, data2 } of messages) {
+		const tick = tickOf(time);
+		const channel = status & 0x0f;
+		switch (status & 0xf0) {
+			case 0x90:
+				// a note-on of velocity 0 is a note-off, as in a Standard MIDI File
+				events.push({ tick, type: data2 === 0 ? 'noteOff' : 'noteOn', note: data1, velocity: data2, channel });
+				break;
+			case 0x80:
+				events.push({ tick, type: 'noteOff', note: data1, velocity: data2, channel });
+				break;
+			case 0xc0:
+				events.push({ tick, type: 'program', channel, program: data1 });
+				break;
+			case 0xb0:
+				events.push({ tick, type: 'control', channel, controller: data1, value: data2 });
+				break;
+			case 0xe0:
+				events.push({ tick, type: 'pitchBend', channel, value: ((data2 << 7) | data1) - 8192 });
+				break;
+			default:
+				throw new Error(`MIDI message status 0x${status.toString(16)} is not supported`);
+		}
+	}
+	events.sort((a, b) => a.tick - b.tick);
+	return {
+		ticksPerQuarter: 500_000,
+		events,
+		loopStartTick: options.loopStart === undefined ? null : tickOf(options.loopStart),
+	};
+}
+
 /** MIDI note 69 (A4) is 440 Hz; each semitone is a twelfth root of two step */
 export function noteToFrequency(note: number): number {
 	return 440 * 2 ** ((note - 69) / 12);

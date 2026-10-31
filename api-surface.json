@@ -6330,6 +6330,12 @@
 		"declaringModule": "audio/Midi.d.ts"
 	},
 	{
+		"name": "midiFileFromTimedMessages",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/Midi.d.ts"
+	},
+	{
 		"name": "MidiHumanizerEngine",
 		"kind": "interface",
 		"subpath": "./audio",

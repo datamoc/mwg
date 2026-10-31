@@ -345,6 +345,17 @@ test('a named engine constructs on the worker without ever calling the main-thre
 	}
 });
 
+test('a worker engine registered as source text renders like the function form', async () => {
+	registerMidiSynth('test:source', portableSynth, `(${portableSynth.toString()})`);
+	try {
+		const options = { synth: 'test:source', sampleRate: 8000 };
+		const sync = renderMidiToBuffer(parseMidi(oneNote(69)), options);
+		assert.deepEqual(await renderMidiToBufferAsync(oneNote(69), options), sync);
+	} finally {
+		unregisterMidiSynth('test:source');
+	}
+});
+
 test('worker failures try the next named engine and announce one final fallback', async () => {
 	registerMidiSynth('test:broken-worker', portableSynth, () => {
 		throw new Error('worker initialization failed');

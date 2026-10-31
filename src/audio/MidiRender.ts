@@ -18,7 +18,7 @@ import type { SoundFontSampleDecoder } from './SampleDecoder.ts';
 import { spawn } from '../threads/index.ts';
 import {
 	INTERNAL_MIDI_ENGINES,
-	midiSynthWorkerFactory,
+	midiSynthWorkerSource,
 	onMidiSynthFallback,
 	renderMidiThroughSynth,
 	renderSynthMessages,
@@ -289,9 +289,9 @@ async function renderRequestedSynthAsync(
 	for (const choice of choices) {
 		if (typeof choice === 'string' && INTERNAL_MIDI_ENGINES.includes(choice)) break;
 		const name = typeof choice === 'string' ? choice : 'custom';
-		const workerFactory = typeof choice === 'string' ? midiSynthWorkerFactory(choice) : undefined;
+		const workerSource = typeof choice === 'string' ? midiSynthWorkerSource(choice) : undefined;
 		let rendered: RenderedMidi | null = null;
-		if (workerFactory) {
+		if (workerSource) {
 			try {
 				rendered = await spawn(
 					(
@@ -317,7 +317,7 @@ async function renderRequestedSynthAsync(
 						return render(messages, marker, synth, renderOptions);
 					},
 					[
-						workerFactory.toString(),
+						workerSource,
 						renderSynthMessages.toString(),
 						timedMidiMessages(file),
 						midiLoopStart(file),

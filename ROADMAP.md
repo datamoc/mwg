@@ -109,7 +109,7 @@ Safari and the iOS and Android WebViews need devices this machine does not have.
 and music additions cost bundle size (global bundle +2.5 % gzip, `dist` +2.5 %), accepted and recorded in
 `tools/bundle-size.json`; no render path changed.
 
-Items 459-461 are implemented; see [CLOSED.md](CLOSED.md).
+Items 459-462 are implemented; see [CLOSED.md](CLOSED.md).
 
 ### Parked decisions
 
