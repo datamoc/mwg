@@ -7,6 +7,10 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.52.0] - 2026-10-31
+
+Timed MIDI messages in seconds turn into a `MidiFile` directly, and a named worker synth engine can be registered from source text.
+
 ### Added
 
 - `midiFileFromTimedMessages`: raw `{ time, status, data1, data2 }` messages in seconds become a `MidiFile` for `renderMidiToBufferAsync` and the rest, with no Standard MIDI File in between (item 462).
