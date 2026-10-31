@@ -7,6 +7,14 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.51.0] - 2026-10-31
+
+Idle-time MIDI preparation now launches by a bounded deadline, so a track prepared in the background is ready even on a page that never goes idle.
+
+### Added
+
+- `MidiRenderQueueOptions.idleTimeoutMs`: the longest a preparation waits for idle time before its launch proceeds anyway (1000 by default). A busy or background page can no longer starve a queued track or authored note sequence forever.
+
 ## [0.50.0] - 2026-10-31
 
 Prepare upcoming MIDI tracks and game-authored note sequences during idle time, with named synthesis engines running in workers. Preparations can be paused or cancelled, while the same rendering core keeps synchronous and worker output consistent.

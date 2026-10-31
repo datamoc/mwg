@@ -23,6 +23,7 @@ import {
 	renderMidiThroughSynth,
 	renderSynthMessages,
 	resolveSynth,
+	synthChoices,
 	type MidiSynthFactory,
 	type MidiSynthFallback,
 	type MidiSynthRequest,
@@ -281,8 +282,7 @@ async function renderRequestedSynthAsync(
 	options: RenderMidiOptions & Pick<RenderMidiAsyncOptions, 'signal'>,
 ): Promise<RenderedMidi | null> {
 	if (!options.synth) return null;
-	const choices =
-		typeof options.synth === 'string' || typeof options.synth === 'function' ? [options.synth] : options.synth;
+	const choices = synthChoices(options.synth);
 	const requested = typeof choices[0] === 'string' ? choices[0] : 'custom';
 	const internal = options.soundfont ? 'gm-soundfont' : 'builtin';
 	let failure: MidiSynthFallback | undefined;

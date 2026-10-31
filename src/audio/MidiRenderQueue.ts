@@ -1,10 +1,16 @@
 import type { MidiFile } from './Midi.ts';
 import { renderMidiToBufferAsync, type RenderMidiAsyncOptions, type RenderedMidi } from './MidiRender.ts';
-import { INTERNAL_MIDI_ENGINES, midiSynthNames, midiSynthWorkerFactory } from './MidiSynth.ts';
+import { INTERNAL_MIDI_ENGINES, midiSynthNames, midiSynthWorkerFactory, synthChoices } from './MidiSynth.ts';
 
 export interface MidiRenderQueueOptions {
 	/** schedules a short launch callback and returns its cancellation function; must defer the callback; defaults to requestIdleCallback, or a timer where unavailable */
 	schedule?: (start: () => void) => () => void;
+	/**
+	 * longest wait for idle time before a launch proceeds anyway, in milliseconds, so a busy or
+	 * background page cannot starve a preparation forever; only the default scheduler uses it
+	 * (a custom `schedule` owns its own bound). 1000 when omitted
+	 */
+	idleTimeoutMs?: number;
 }
 
 interface PendingRender {
@@ -16,9 +22,11 @@ interface PendingRender {
 	cleanup: () => void;
 }
 
-function scheduleIdle(start: () => void): () => void {
+const DEFAULT_IDLE_TIMEOUT_MS = 1000;
+
+function scheduleIdle(start: () => void, idleTimeoutMs: number): () => void {
 	if (typeof requestIdleCallback === 'function') {
-		const id = requestIdleCallback(start);
+		const id = requestIdleCallback(start, { timeout: idleTimeoutMs });
 		return () => cancelIdleCallback(id);
 	}
 	const timer = setTimeout(start, 0);
@@ -27,10 +35,7 @@ function scheduleIdle(start: () => void): () => void {
 
 /** Rechecked at launch because a game may replace a registered engine while work waits. */
 function assertWorkerSynth(options: RenderMidiAsyncOptions): void {
-	const choices =
-		typeof options.synth === 'string' || typeof options.synth === 'function'
-			? [options.synth]
-			: (options.synth ?? []);
+	const choices = synthChoices(options.synth);
 	for (const choice of choices) {
 		if (typeof choice === 'string' && INTERNAL_MIDI_ENGINES.includes(choice)) break;
 		if (typeof choice === 'function' || (midiSynthNames().includes(choice) && !midiSynthWorkerFactory(choice))) {
@@ -41,8 +46,9 @@ function assertWorkerSynth(options: RenderMidiAsyncOptions): void {
 
 /**
  * Prepares upcoming tracks or game-authored MIDI notes in FIFO order, one worker at a time.
- * Each launch waits for browser idle time; where requestIdleCallback is absent it yields to
- * a timer. This is cooperative launch scheduling, not an operating-system worker priority.
+ * Each launch waits for browser idle time, bounded by `idleTimeoutMs` so a busy page cannot
+ * starve it forever; where requestIdleCallback is absent it yields to a timer. This is
+ * cooperative launch scheduling, not an operating-system worker priority.
  * Hold the returned promise or PCM until playback needs it; the queue keeps no PCM cache.
  * Named synths must have a worker factory; bare factories are refused to keep synthesis off
  * the game's thread. Pause stops new launches; dispose also cancels active work.
@@ -76,7 +82,10 @@ export class MidiRenderQueue {
 	private disposed = false;
 
 	constructor(options: MidiRenderQueueOptions = {}) {
-		this.schedule = options.schedule ?? scheduleIdle;
+		const idleTimeoutMs = options.idleTimeoutMs ?? DEFAULT_IDLE_TIMEOUT_MS;
+		if (!Number.isFinite(idleTimeoutMs) || idleTimeoutMs <= 0)
+			throw new Error('MIDI render queue idle timeout must be positive');
+		this.schedule = options.schedule ?? ((start) => scheduleIdle(start, idleTimeoutMs));
 	}
 
 	/** Enqueues a track or note sequence; signal cancels either a queued or an active render. */
@@ -107,10 +116,7 @@ export class MidiRenderQueue {
 				this.pending.splice(index, 1);
 				job.cleanup();
 				reject(controller.signal.reason);
-				if (!this.pending.length) {
-					this.cancelLaunch?.();
-					this.cancelLaunch = null;
-				}
+				if (!this.pending.length) this.cancelScheduledLaunch();
 			};
 			options.signal?.addEventListener('abort', cancel, { once: true });
 			controller.signal.addEventListener('abort', onAbort, { once: true });
@@ -122,8 +128,7 @@ export class MidiRenderQueue {
 	/** Stops new launches; an already active worker is allowed to finish. */
 	pause(): void {
 		this.paused = true;
-		this.cancelLaunch?.();
-		this.cancelLaunch = null;
+		this.cancelScheduledLaunch();
 	}
 
 	/** Resumes preparing queued tracks at idle time. */
@@ -139,6 +144,12 @@ export class MidiRenderQueue {
 		this.pause();
 		for (const job of [...this.pending]) job.controller.abort();
 		this.active?.controller.abort();
+	}
+
+	/** withdraws the scheduled idle launch, if one is still waiting */
+	private cancelScheduledLaunch(): void {
+		this.cancelLaunch?.();
+		this.cancelLaunch = null;
 	}
 
 	private launchNext(): void {

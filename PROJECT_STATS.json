@@ -1,11 +1,11 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mwg",
-	"version": "0.50.0",
+	"version": "0.51.0",
 	"releaseDate": "2026-10-31",
 	"source": {
 		"files": 398,
-		"lines": 80466,
+		"lines": 80483,
 		"modules": 21,
 		"breakdown": [
 			{
@@ -16,7 +16,7 @@
 			{
 				"name": "audio",
 				"files": 49,
-				"lines": 11634
+				"lines": 11651
 			},
 			{
 				"name": "mwl",
@@ -117,8 +117,8 @@
 	},
 	"tests": {
 		"files": 374,
-		"lines": 52816,
-		"cases": 3396
+		"lines": 52854,
+		"cases": 3398
 	},
 	"tools": {
 		"files": 69,
@@ -168,9 +168,9 @@
 		"declarationFiles": 398
 	},
 	"bundle": {
-		"globalRaw": 1428088,
-		"globalGzip": 433037,
-		"distRaw": 5496115
+		"globalRaw": 1428192,
+		"globalGzip": 433081,
+		"distRaw": 5497610
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

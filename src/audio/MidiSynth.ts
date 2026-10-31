@@ -154,6 +154,12 @@ export function resolveMidiSynth(
 	return resolveSynth(request, sampleRate, internalName, (event) => onMidiSynthFallback.dispatch(event));
 }
 
+/** A request as the ordered choices it names: a lone name or factory becomes a one-choice list. Internal: the render paths share this reading of a request. */
+export function synthChoices(request: MidiSynthRequest | undefined): readonly (string | MidiSynthFactory)[] {
+	if (request === undefined) return [];
+	return typeof request === 'string' || typeof request === 'function' ? [request] : request;
+}
+
 /** Internal resolver with caller-owned diagnostics for asynchronous fallback chains. */
 export function resolveSynth(
 	request: MidiSynthRequest,
@@ -161,7 +167,7 @@ export function resolveSynth(
 	internalName: 'gm-soundfont' | 'builtin',
 	notify: (event: MidiSynthFallback) => void,
 ): ResolvedMidiSynth {
-	const choices = typeof request === 'string' || typeof request === 'function' ? [request] : request;
+	const choices = synthChoices(request);
 	const label = (choice: string | MidiSynthFactory): string => (typeof choice === 'string' ? choice : 'custom');
 	let requested = '';
 	let reason: MidiSynthFallback['reason'] = 'unknown';

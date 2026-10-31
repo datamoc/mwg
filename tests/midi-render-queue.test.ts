@@ -69,6 +69,44 @@ test('MIDI preparation waits for idle time and serializes tracks and authored no
 	}
 });
 
+test('idle launches carry a timeout so a busy page cannot starve preparation forever', async () => {
+	const scope = globalThis as { requestIdleCallback?: unknown; cancelIdleCallback?: unknown };
+	const originalIdle = scope.requestIdleCallback;
+	const originalCancel = scope.cancelIdleCallback;
+	const launches: { start: () => void; timeout?: number }[] = [];
+	scope.requestIdleCallback = (start: () => void, options?: { timeout?: number }) => {
+		launches.push({ start, timeout: options?.timeout });
+		return launches.length;
+	};
+	scope.cancelIdleCallback = () => {};
+	try {
+		const defaults = new MidiRenderQueue();
+		const first = defaults.prepare(notes(), { sampleRate: 8000 });
+		assert.equal(launches.length, 1);
+		assert.equal(launches[0].timeout, 1000, 'the default idle wait is bounded at one second');
+		launches[0].start();
+		await first;
+		defaults.dispose();
+
+		const configured = new MidiRenderQueue({ idleTimeoutMs: 250 });
+		const second = configured.prepare(notes(72), { sampleRate: 8000 });
+		assert.equal(launches.length, 2);
+		assert.equal(launches[1].timeout, 250, 'a game can shorten or lengthen the bounded idle wait');
+		launches[1].start();
+		await second;
+		configured.dispose();
+	} finally {
+		scope.requestIdleCallback = originalIdle;
+		scope.cancelIdleCallback = originalCancel;
+	}
+});
+
+test('an idle timeout that cannot bound the wait is refused', () => {
+	for (const idleTimeoutMs of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+		assert.throws(() => new MidiRenderQueue({ idleTimeoutMs }), /idle timeout/);
+	}
+});
+
 test('pausing cancels a pending launch and resume schedules it once', async () => {
 	const idle = idleSlots();
 	const queue = new MidiRenderQueue({ schedule: idle.schedule });

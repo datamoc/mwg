@@ -7238,7 +7238,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.50.0";
+    export declare const version = "0.51.0";
 
 ### `VerticalLabel` (class)
 
@@ -10944,6 +10944,8 @@ build instead.
         resume(): void;
 
         dispose(): void;
+
+        private cancelScheduledLaunch;
         private launchNext;
     }
 
@@ -10952,6 +10954,8 @@ build instead.
     export interface MidiRenderQueueOptions {
 
         schedule?: (start: () => void) => () => void;
+
+        idleTimeoutMs?: number;
     }
 
 ### `MidiSynth` (interface)

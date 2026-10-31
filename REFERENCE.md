@@ -1080,7 +1080,9 @@ reach the compiled asset map without it.
 - `MidiRenderQueue`/`MidiRenderQueueOptions` - prepares upcoming MIDI tracks or game-authored
   `MidiFile` note sequences before playback. `prepare(input, options)` returns a promise of
   `RenderedMidi`, suitable for `MusicPlayer.load`. One render runs at a time; each launch waits
-  for `requestIdleCallback`, or a timer where unavailable. `pause` stops new launches, `resume`
+  for `requestIdleCallback`, or a timer where unavailable. The idle wait is bounded by
+  `idleTimeoutMs` (1000 by default), so a busy or background page cannot starve a preparation
+  forever. `pause` stops new launches, `resume`
   restarts them, and `dispose` cancels all work. `options.signal` cancels an individual queued
   or active preparation, including waiting for a SoundFont decoder. The returned PCM belongs
   to the caller, with no extra cache in the queue. Named engines require a worker factory and
