@@ -28,6 +28,8 @@ closing the requested main-thread loading gap. Idle-time preparation now queues 
 MIDI notes one worker at a time, with cancellation and pause/resume. The parked worker proposals still need their
 recorded consumer evidence; none is promoted. Rendering backend priorities are unchanged.
 
+Priority review, 2026-10-31 (later): the list was re-read end to end after item 462 shipped. No numbered item is open. What remains is external and unchanged: the ports' completeness (their own READMEs), the Pixel Dungeon port's `MidiRenderQueue` adoption entry (its call), the parked decisions, and Opus on Safari and the mobile WebViews (devices). Nothing is promoted; rendering priorities are unchanged, no render path changed this session.
+
 Priority review, 2026-10-16 (Pontifex evening feedback): complete the concrete consumer
 gaps in music playback, asset weight guards, XPBD queries and MWL data conversion before
 revisiting parked rendering or worker proposals. The existing GPU rendering paths remain
