@@ -84,6 +84,10 @@
 			"types": "./assets/binary.d.ts",
 			"import": "./assets/binary.js"
 		},
+		"./assets/virtualfs": {
+			"types": "./assets/virtualfs.d.ts",
+			"import": "./assets/virtualfs.js"
+		},
 		"./audio": {
 			"types": "./audio.d.ts",
 			"import": "./audio.js"

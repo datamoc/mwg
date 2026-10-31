@@ -30,3 +30,25 @@ export type { ByteProgress, OnByteProgress } from './ByteProgress.ts';
 
 export { loadSvgParts, releaseSvgParts } from './SvgParts.ts';
 export type { SvgPartsOptions } from './SvgParts.ts';
+
+export {
+	VirtualFileSystem,
+	VirtualFileError,
+	installVirtualReads,
+	listVirtualMods,
+	setVirtualModEnabled,
+	memoryWriteback,
+	normalizeVirtualPath,
+	virtualMimeType,
+} from './virtualfs.ts';
+export type {
+	VirtualDurability,
+	VirtualDurabilityRule,
+	VirtualFileSystemOptions,
+	VirtualMod,
+	VirtualModOptions,
+	VirtualMount,
+	VirtualReadsOptions,
+	VirtualStat,
+	VirtualWriteback,
+} from './virtualfs.ts';

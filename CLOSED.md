@@ -6366,3 +6366,34 @@ example already draws.
   the package's six real D-50 banks (64 patches each): the package stays valid and the warnings name the patches
   and waves, for instance 10 of 64 in one bank. The patch identity, the DX7 metadata (`dx7VoiceInfo`) and
   the control render (`SyxBank.audit`) were already in mwg.
+401. **The pixi-interop facade's consumer half** (2026-10-31). The framework half had shipped (every
+  `two-d/pixi-interop` export carries its interop-only note). The consumer half, in `mwg-pixel-dungeon`: its
+  gate (`tools/audit-mwg-api.mjs`) already printed the per-symbol histogram and held the runtime-importer budget
+  (Texture 37, Rectangle 31, Sprite 25, Container 24, Graphics 16, FillGradient 3, registerBuiltinPipes 2,
+  TilingSprite 1), and four files still named `pixi.js` directly (`monsterSpawn`, `aimOverlay`, `travelOverlay`,
+  `windowFit`, all type-only). They now import their types from `mwg/two-d/pixi-interop`, so `src/` of the port
+  has no raw `pixi.js` import left. A type-only import erases at build, so the emitted code is unchanged; the
+  port's `check`, API audit (histogram and budget unchanged), build and Chrome browser test (level scene, hero,
+  screenshot, no console errors) pass. Uncommitted in the port's working tree with its other changes.
+459. **The SoundFont a build embeds, for `renderMidiToBufferAsync`** (2026-10-31). `RenderMidiAsyncOptions` takes
+  `decode`, a `SoundFontSampleDecoder`: the font is decoded on the calling thread with `decodeSoundFont` before the
+  render goes to the worker, so `{ soundFontBytes: embeddedFont, decode: webAudioSampleDecoder() }` works for the
+  Opus SoundFont 3 mwg itself embeds. Without `decode` a SoundFont 3 still fails with "needs decoding first", and a
+  SoundFont 2 never calls it. The doc comment carries the pair as an `@example`, and a test renders through a SoundFont 3
+  with a fake decoder and requires the result to equal the synchronous render of the decoded font.
+460. **A module specifier option for `emitTableTypes`** (2026-10-31). `emitTableTypes(tables, { specifier })` writes
+  its two imports from the given module (`'mwg/mwl'` for a project that reaches mwg through an alias) and from
+  `'@datamoc/mwg/mwl'` when omitted, so a project no longer rewrites the generated text.
+461. **A virtual filesystem service for hosted games** (2026-10-31). `assets/virtualfs` (also
+  `@datamoc/mwg/assets/virtualfs`, renderer-free): `VirtualFileSystem`, a read-only mount of the shipped files
+  under one writable overlay per game root, with Node-coded errors (`ENOENT`, `EISDIR`, `ENOTDIR`), a tombstone
+  for a deleted shipped file, a durability rule per path pattern the game declares (`durable` or `session`, first
+  match wins, durable by default) instead of a host's hard-coded name list, and a writeback adapter
+  (`load`/`put`/`remove`, deletes included; `memoryWriteback` ships) behind synchronous reads and writes, with
+  `restore()` and `flush()`. `installVirtualReads` points `fetch`, `XMLHttpRequest` and the `src` of images, media
+  and scripts at the same store: a URL under the game's prefix is answered entirely from it, so a file the
+  toolchain just wrote reads back through any route and a probe of a not-yet-generated file is a silent 404 with no
+  request. `listVirtualMods` and `setVirtualModEnabled` cover mod discovery and enable state, kept as a file in the
+  filesystem. It is a page-script patch, so it works from `file://`; a service worker (the roadmap's other route)
+  would need a real origin and stays a host's choice. Not shipped: an IndexedDB writeback adapter (a host that has
+  one, MWGP's `nwjs-host.js`, implements the three-method interface), and Karryn's Prison's own host is untouched.

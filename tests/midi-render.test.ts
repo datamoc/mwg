@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 
 import { parseMidi } from '../src/audio/Midi.ts';
 import { renderMidiToBuffer, renderMidiToBufferAsync } from '../src/audio/MidiRender.ts';
-import type { SoundFont } from '../src/audio/SoundFont.ts';
+import { decodeSoundFont, parseSoundFont, type SoundFont } from '../src/audio/SoundFont.ts';
+import { buildSf3, fakeDecode } from './helpers/soundfont3.ts';
 
 /** builds a minimal, valid Standard MIDI File (format 0, one track) from a list of track bytes */
 function buildMidi(ticksPerQuarter: number, trackBytes: readonly number[]): Uint8Array {
@@ -333,4 +334,25 @@ test('a looping sample keeps sounding past its own length; a one-shot does not',
 	const late = (frames: Float32Array): number => energy(frames, rate, frames.length);
 	assert.ok(late(looping) > 1);
 	assert.equal(late(oneShot), 0);
+});
+
+test('the async render decodes a SoundFont 3 on this thread when given a decoder, and needs one otherwise', async () => {
+	const midi = buildMidi(96, [
+		...vlq(0),
+		...programChange(0, 5),
+		...vlq(0),
+		...noteOn(0, 60, 100),
+		...vlq(48),
+		...noteOff(0, 60),
+		...vlq(0),
+		...endOfTrack(),
+	]);
+	const sf3 = buildSf3(0, 5, Buffer.from([3, 9, 9, 9, 9]));
+	await assert.rejects(renderMidiToBufferAsync(midi, { soundFontBytes: sf3 }), /needs decoding first/);
+	const decoded = await renderMidiToBufferAsync(midi, { soundFontBytes: sf3, decode: fakeDecode });
+	const expected = renderMidiToBuffer(parseMidi(midi), {
+		soundfont: parseSoundFont(await decodeSoundFont(sf3, fakeDecode)),
+	});
+	assert.ok(peak(decoded.left) > 0, 'the decoded font must actually voice the note');
+	assert.deepEqual(decoded, expected);
 });

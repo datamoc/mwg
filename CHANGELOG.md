@@ -7,6 +7,12 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+
+- `assets/virtualfs` (`@datamoc/mwg/assets/virtualfs`): `VirtualFileSystem`, one filesystem for a hosted game behind every read route. A read-only mount of the shipped files sits under a writable overlay, with a per-path-pattern durability rule (`durable` or `session`) the game declares, a writeback adapter with delete support (`memoryWriteback` ships), `restore()` and `flush()`. `installVirtualReads` points `fetch`, `XMLHttpRequest` and element `src` at it, so a file a mod toolchain writes reads back through any route and a probe of a not-yet-generated file is a silent 404. `listVirtualMods` and `setVirtualModEnabled` cover mod discovery and enable state.
+- `renderMidiToBufferAsync` takes `decode`, so the Opus SoundFont 3 a build embeds can be rendered on the worker (it is decoded on the calling thread first).
+- `emitTableTypes` takes `specifier`, the module the generated imports read from, for a project that reaches mwg through an alias.
+
 ## [0.48.1] - 2026-10-20
 
 ### Fixed

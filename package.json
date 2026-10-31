@@ -185,6 +185,10 @@
 			"types": "./dist/assets/binary.d.ts",
 			"import": "./dist/assets/binary.js"
 		},
+		"./assets/virtualfs": {
+			"types": "./dist/assets/virtualfs.d.ts",
+			"import": "./dist/assets/virtualfs.js"
+		},
 		"./audio": {
 			"types": "./dist/audio/index.d.ts",
 			"import": "./dist/audio/index.js"

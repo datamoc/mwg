@@ -247,3 +247,12 @@ test('emitted modules compile against the real public import paths', () => {
 		rmSync(dir, { recursive: true, force: true });
 	}
 });
+
+test('emitTableTypes imports from the module the project names', () => {
+	const output = emitTableTypes([{ id: 'roster', columns: [{ name: 'kind', type: 'string' }], rows: [] }], {
+		specifier: 'mwg/mwl',
+	});
+	assert.match(output, /import \{ typedRows \} from 'mwg\/mwl';/);
+	assert.match(output, /import type \{ MwlContentCatalog \} from 'mwg\/mwl';/);
+	assert.ok(!output.includes('@datamoc'));
+});

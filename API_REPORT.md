@@ -9264,6 +9264,10 @@ build instead.
 
     export declare function has(path: string): boolean;
 
+### `installVirtualReads` (function)
+
+    export declare function installVirtualReads(fs: VirtualFileSystem, options?: VirtualReadsOptions): () => void;
+
 ### `isBinaryLoaded` (function)
 
     export declare function isBinaryLoaded(path: string): boolean;
@@ -9275,6 +9279,10 @@ build instead.
 ### `isLoaded` (function)
 
     export declare function isLoaded(path: string): boolean;
+
+### `listVirtualMods` (function)
+
+    export declare function listVirtualMods(fs: VirtualFileSystem, options?: VirtualModOptions): VirtualMod[];
 
 ### `load` (function)
 
@@ -9307,6 +9315,15 @@ build instead.
 ### `loadSvgParts` (function)
 
     export declare function loadSvgParts(source: string, options?: SvgPartsOptions): Promise<Readonly<Record<string, Texture2D>>>;
+
+### `memoryWriteback` (function)
+
+    export declare function memoryWriteback(initial?: Iterable<readonly [string, Uint8Array]>): VirtualWriteback & {
+        readonly files: Map<string, Uint8Array>;
+
+### `normalizeVirtualPath` (function)
+
+    export declare function normalizeVirtualPath(path: string): string;
 
 ### `OnByteProgress` (type)
 
@@ -9353,6 +9370,10 @@ build instead.
 
     export declare function setBase(path: string): void;
 
+### `setVirtualModEnabled` (function)
+
+    export declare function setVirtualModEnabled(fs: VirtualFileSystem, id: string, enabled: boolean): void;
+
 ### `splitSvgGroups` (function)
 
     export declare function splitSvgGroups(source: string): Record<string, string>;
@@ -9387,6 +9408,134 @@ build instead.
 ### `texture` (function)
 
     export declare function texture(path: string, fallback?: Texture): Texture;
+
+### `VirtualDurability` (type)
+
+    export type VirtualDurability = 'durable' | 'session';
+
+### `VirtualDurabilityRule` (interface)
+
+    export interface VirtualDurabilityRule {
+
+        pattern: string;
+        durability: VirtualDurability;
+    }
+
+### `VirtualFileError` (class)
+
+    export declare class VirtualFileError extends Error {
+        readonly code: 'ENOENT' | 'EISDIR' | 'ENOTDIR' | 'EINVAL';
+        readonly path: string;
+        constructor(code: 'ENOENT' | 'EISDIR' | 'ENOTDIR' | 'EINVAL', path: string);
+    }
+
+### `VirtualFileSystem` (class)
+
+    export declare class VirtualFileSystem {
+        private readonly overlay;
+        private readonly shipped;
+        private readonly rules;
+        private readonly writeback;
+        private readonly now;
+        private liveBelow;
+        private pending;
+        private failure;
+        constructor(options?: VirtualFileSystemOptions);
+
+        restore(): Promise<void>;
+        durabilityOf(path: string): VirtualDurability;
+        private lookup;
+        private files;
+
+        private counts;
+        private countFile;
+        private isDirectory;
+        exists(path: string): boolean;
+        readFile(path: string): Uint8Array;
+        readText(path: string): string;
+        stat(path: string): VirtualStat;
+
+        readdir(path: string): string[];
+        writeFile(path: string, data: Uint8Array | string): void;
+
+        unlink(path: string): void;
+
+        rm(path: string): void;
+        private drop;
+        private enqueue;
+
+        flush(): Promise<void>;
+
+        objectUrl(path: string, type?: string, createObjectURL?: (blob: Blob) => string): string;
+    }
+
+### `VirtualFileSystemOptions` (interface)
+
+    export interface VirtualFileSystemOptions {
+
+        mount?: VirtualMount | ReadonlyMap<string, Uint8Array | string>;
+
+        durability?: readonly VirtualDurabilityRule[];
+
+        writeback?: VirtualWriteback;
+
+        now?: () => number;
+    }
+
+### `virtualMimeType` (function)
+
+    export declare function virtualMimeType(path: string): string;
+
+### `VirtualMod` (interface)
+
+    export interface VirtualMod {
+        id: string;
+
+        dir: string;
+        enabled: boolean;
+    }
+
+### `VirtualModOptions` (interface)
+
+    export interface VirtualModOptions {
+
+        dir?: string;
+
+        manifest?: string;
+    }
+
+### `VirtualMount` (interface)
+
+    export interface VirtualMount {
+        read(path: string): Uint8Array | undefined;
+
+        paths(): Iterable<string>;
+    }
+
+### `VirtualReadsOptions` (interface)
+
+    export interface VirtualReadsOptions {
+
+        prefix?: string;
+
+        target?: Record<string, any>;
+    }
+
+### `VirtualStat` (interface)
+
+    export interface VirtualStat {
+        size: number;
+        mtime: number;
+        isDirectory: boolean;
+    }
+
+### `VirtualWriteback` (interface)
+
+    export interface VirtualWriteback {
+        load(): Promise<Iterable<readonly [path: string, bytes: Uint8Array | null]>>;
+        put(path: string, bytes: Uint8Array): Promise<void>;
+        remove(path: string): Promise<void>;
+    }
 
 ## `./assets/binary`
 
@@ -9466,6 +9615,157 @@ build instead.
 ### `setBase` (function)
 
     export declare function setBase(path: string): void;
+
+## `./assets/virtualfs`
+
+### `installVirtualReads` (function)
+
+    export declare function installVirtualReads(fs: VirtualFileSystem, options?: VirtualReadsOptions): () => void;
+
+### `listVirtualMods` (function)
+
+    export declare function listVirtualMods(fs: VirtualFileSystem, options?: VirtualModOptions): VirtualMod[];
+
+### `memoryWriteback` (function)
+
+    export declare function memoryWriteback(initial?: Iterable<readonly [string, Uint8Array]>): VirtualWriteback & {
+        readonly files: Map<string, Uint8Array>;
+
+### `normalizeVirtualPath` (function)
+
+    export declare function normalizeVirtualPath(path: string): string;
+
+### `setVirtualModEnabled` (function)
+
+    export declare function setVirtualModEnabled(fs: VirtualFileSystem, id: string, enabled: boolean): void;
+
+### `VirtualDurability` (type)
+
+    export type VirtualDurability = 'durable' | 'session';
+
+### `VirtualDurabilityRule` (interface)
+
+    export interface VirtualDurabilityRule {
+
+        pattern: string;
+        durability: VirtualDurability;
+    }
+
+### `VirtualFileError` (class)
+
+    export declare class VirtualFileError extends Error {
+        readonly code: 'ENOENT' | 'EISDIR' | 'ENOTDIR' | 'EINVAL';
+        readonly path: string;
+        constructor(code: 'ENOENT' | 'EISDIR' | 'ENOTDIR' | 'EINVAL', path: string);
+    }
+
+### `VirtualFileSystem` (class)
+
+    export declare class VirtualFileSystem {
+        private readonly overlay;
+        private readonly shipped;
+        private readonly rules;
+        private readonly writeback;
+        private readonly now;
+        private liveBelow;
+        private pending;
+        private failure;
+        constructor(options?: VirtualFileSystemOptions);
+
+        restore(): Promise<void>;
+        durabilityOf(path: string): VirtualDurability;
+        private lookup;
+        private files;
+
+        private counts;
+        private countFile;
+        private isDirectory;
+        exists(path: string): boolean;
+        readFile(path: string): Uint8Array;
+        readText(path: string): string;
+        stat(path: string): VirtualStat;
+
+        readdir(path: string): string[];
+        writeFile(path: string, data: Uint8Array | string): void;
+
+        unlink(path: string): void;
+
+        rm(path: string): void;
+        private drop;
+        private enqueue;
+
+        flush(): Promise<void>;
+
+        objectUrl(path: string, type?: string, createObjectURL?: (blob: Blob) => string): string;
+    }
+
+### `VirtualFileSystemOptions` (interface)
+
+    export interface VirtualFileSystemOptions {
+
+        mount?: VirtualMount | ReadonlyMap<string, Uint8Array | string>;
+
+        durability?: readonly VirtualDurabilityRule[];
+
+        writeback?: VirtualWriteback;
+
+        now?: () => number;
+    }
+
+### `virtualMimeType` (function)
+
+    export declare function virtualMimeType(path: string): string;
+
+### `VirtualMod` (interface)
+
+    export interface VirtualMod {
+        id: string;
+
+        dir: string;
+        enabled: boolean;
+    }
+
+### `VirtualModOptions` (interface)
+
+    export interface VirtualModOptions {
+
+        dir?: string;
+
+        manifest?: string;
+    }
+
+### `VirtualMount` (interface)
+
+    export interface VirtualMount {
+        read(path: string): Uint8Array | undefined;
+
+        paths(): Iterable<string>;
+    }
+
+### `VirtualReadsOptions` (interface)
+
+    export interface VirtualReadsOptions {
+
+        prefix?: string;
+
+        target?: Record<string, any>;
+    }
+
+### `VirtualStat` (interface)
+
+    export interface VirtualStat {
+        size: number;
+        mtime: number;
+        isDirectory: boolean;
+    }
+
+### `VirtualWriteback` (interface)
+
+    export interface VirtualWriteback {
+        load(): Promise<Iterable<readonly [path: string, bytes: Uint8Array | null]>>;
+        put(path: string, bytes: Uint8Array): Promise<void>;
+        remove(path: string): Promise<void>;
+    }
 
 ## `./audio`
 
@@ -10989,6 +11289,8 @@ build instead.
         synth?: MidiSynthRequest;
 
         soundFontBytes?: ArrayBuffer | ArrayBufferView;
+
+        decode?: SoundFontSampleDecoder;
 
         missingProgram?: MissingProgram;
 
@@ -15635,6 +15937,8 @@ build instead.
         readonly header?: string;
 
         readonly literalColumns?: readonly string[];
+
+        readonly specifier?: string;
     }
 
 ### `encodePackage` (function)

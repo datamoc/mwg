@@ -912,6 +912,17 @@ reach the compiled asset map without it.
   (also its own entry point, `@datamoc/mwg/assets/binary`); `3d/models`' `Vox.parseVox`
   is the direct consumer, taking bytes this now fetches and caches instead of a game doing
   it by hand.
+- `VirtualFileSystem`/`installVirtualReads`/`listVirtualMods`/`setVirtualModEnabled`/
+  `memoryWriteback` - one filesystem for a hosted game behind every read route (also its own
+  renderer-free entry point, `@datamoc/mwg/assets/virtualfs`). A read-only mount of the shipped
+  files sits under a writable overlay; the game declares a durability rule per path pattern
+  (`durable` or `session`, first match wins) and a writeback adapter (`load`/`put`/`remove`)
+  receives the durable writes and deletes. `installVirtualReads` answers `fetch`,
+  `XMLHttpRequest` and image/media/script `src` under a URL prefix from the same store, so a
+  file a mod toolchain wrote reads back through any route and a probe of a missing one is a
+  silent 404. A page-script patch, so it works from `file://`. Errors are `VirtualFileError`
+  (`ENOENT`, `EISDIR`, `ENOTDIR`, `EINVAL`), `normalizeVirtualPath` is the key every path is
+  reduced to and `virtualMimeType` names the content type a served file carries.
 - `AssetStream`/`AssetBundle` - preloads likely-next bundles with LRU eviction under a
   byte budget, for progressive loading between scenes.
 - `fetchWithByteProgress`/`ByteProgress`/`OnByteProgress` - real cumulative byte-progress

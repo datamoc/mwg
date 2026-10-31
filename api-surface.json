@@ -5184,6 +5184,12 @@
 		"declaringModule": "assets/paths.d.ts"
 	},
 	{
+		"name": "installVirtualReads",
+		"kind": "function",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
 		"name": "isBinaryLoaded",
 		"kind": "function",
 		"subpath": "./assets",
@@ -5200,6 +5206,12 @@
 		"kind": "function",
 		"subpath": "./assets",
 		"declaringModule": "assets/loader.d.ts"
+	},
+	{
+		"name": "listVirtualMods",
+		"kind": "function",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
 	},
 	{
 		"name": "load",
@@ -5230,6 +5242,18 @@
 		"kind": "function",
 		"subpath": "./assets",
 		"declaringModule": "assets/SvgParts.d.ts"
+	},
+	{
+		"name": "memoryWriteback",
+		"kind": "function",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "normalizeVirtualPath",
+		"kind": "function",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
 	},
 	{
 		"name": "OnByteProgress",
@@ -5292,6 +5316,12 @@
 		"declaringModule": "assets/paths.d.ts"
 	},
 	{
+		"name": "setVirtualModEnabled",
+		"kind": "function",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
 		"name": "splitSvgGroups",
 		"kind": "function",
 		"subpath": "./assets",
@@ -5326,6 +5356,78 @@
 		"kind": "function",
 		"subpath": "./assets",
 		"declaringModule": "assets/loader.d.ts"
+	},
+	{
+		"name": "VirtualDurability",
+		"kind": "type",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualDurabilityRule",
+		"kind": "interface",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualFileError",
+		"kind": "class",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualFileSystem",
+		"kind": "class",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualFileSystemOptions",
+		"kind": "interface",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "virtualMimeType",
+		"kind": "function",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualMod",
+		"kind": "interface",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualModOptions",
+		"kind": "interface",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualMount",
+		"kind": "interface",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualReadsOptions",
+		"kind": "interface",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualStat",
+		"kind": "interface",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualWriteback",
+		"kind": "interface",
+		"subpath": "./assets",
+		"declaringModule": "assets/virtualfs.d.ts"
 	},
 	{
 		"name": "getBinary",
@@ -5428,6 +5530,108 @@
 		"kind": "function",
 		"subpath": "./assets/paths",
 		"declaringModule": "assets/paths.d.ts"
+	},
+	{
+		"name": "installVirtualReads",
+		"kind": "function",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "listVirtualMods",
+		"kind": "function",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "memoryWriteback",
+		"kind": "function",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "normalizeVirtualPath",
+		"kind": "function",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "setVirtualModEnabled",
+		"kind": "function",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualDurability",
+		"kind": "type",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualDurabilityRule",
+		"kind": "interface",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualFileError",
+		"kind": "class",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualFileSystem",
+		"kind": "class",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualFileSystemOptions",
+		"kind": "interface",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "virtualMimeType",
+		"kind": "function",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualMod",
+		"kind": "interface",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualModOptions",
+		"kind": "interface",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualMount",
+		"kind": "interface",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualReadsOptions",
+		"kind": "interface",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualStat",
+		"kind": "interface",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
+	},
+	{
+		"name": "VirtualWriteback",
+		"kind": "interface",
+		"subpath": "./assets/virtualfs",
+		"declaringModule": "assets/virtualfs.d.ts"
 	},
 	{
 		"name": "AdaptiveLoadOptions",

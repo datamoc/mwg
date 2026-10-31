@@ -1,5 +1,12 @@
 import { midiLoopStart, noteToFrequency, parseMidi, scheduleMidi, type MidiFile, type ScheduledNote } from './Midi.ts';
-import { parseSoundFont, type MissingProgram, type SoundFont, type SoundFontVoice } from './SoundFont.ts';
+import {
+	decodeSoundFont,
+	parseSoundFont,
+	type MissingProgram,
+	type SoundFont,
+	type SoundFontVoice,
+} from './SoundFont.ts';
+import type { SoundFontSampleDecoder } from './SampleDecoder.ts';
 import { spawn } from '../threads/index.ts';
 import { onMidiSynthFallback, renderMidiThroughSynth, resolveMidiSynth, type MidiSynthRequest } from './MidiSynth.ts';
 
@@ -55,8 +62,13 @@ export interface RenderedMidi {
 export interface RenderMidiAsyncOptions {
 	/** a `MidiSynth` request as for `renderMidiToBuffer`; a synth lives on this thread, so such a render does not go to the worker */
 	synth?: MidiSynthRequest;
-	/** raw SoundFont 2 bytes: parsed on this thread, voiced on the worker */
+	/** raw SoundFont bytes: parsed on this thread, voiced on the worker; a SoundFont 3 needs `decode` */
 	soundFontBytes?: ArrayBuffer | ArrayBufferView;
+	/**
+	 * decodes a SoundFont 3's compressed samples on this thread before the render (the worker has no
+	 * `AudioContext`), as `decodeSoundFont` does; a SoundFont 2 passes through and never calls it
+	 */
+	decode?: SoundFontSampleDecoder;
 	/** what plays for a program the font lacks, as for `parseSoundFont`; `'piano'` when omitted */
 	missingProgram?: MissingProgram;
 	/** voices only these channels (0 to 15), as for `renderMidiToBuffer` */
@@ -166,15 +178,33 @@ function renderThroughRequestedSynth(file: MidiFile, options: RenderMidiOptions)
  * const track = await renderMidiToBufferAsync(midi, { soundFontBytes: soundFont });
  * console.log(track.duration, track.loopStart, track.loopEnd);
  * ```
+ *
+ * The SoundFont a build embeds is a SoundFont 3 (Opus), which the worker cannot decode: pass
+ * `decode` and the samples are decoded on this thread first.
+ *
+ * ```ts
+ * import { renderMidiToBufferAsync, webAudioSampleDecoder } from '@datamoc/mwg/audio';
+ *
+ * declare const midi: ArrayBuffer;
+ * declare const embeddedFont: ArrayBuffer;
+ *
+ * const track = await renderMidiToBufferAsync(midi, {
+ * 	soundFontBytes: embeddedFont,
+ * 	decode: webAudioSampleDecoder(),
+ * });
+ * console.log(track.duration);
+ * ```
  */
 export async function renderMidiToBufferAsync(
 	midi: ArrayBuffer | ArrayBufferView,
 	options: RenderMidiAsyncOptions = {},
 ): Promise<RenderedMidi> {
 	const file = parseMidi(midi);
-	const soundfont = options.soundFontBytes
-		? parseSoundFont(options.soundFontBytes, { missingProgram: options.missingProgram })
-		: null;
+	const fontBytes =
+		options.soundFontBytes && options.decode
+			? await decodeSoundFont(options.soundFontBytes, options.decode)
+			: options.soundFontBytes;
+	const soundfont = fontBytes ? parseSoundFont(fontBytes, { missingProgram: options.missingProgram }) : null;
 	const viaSynth = renderThroughRequestedSynth(file, { ...options, soundfont });
 	if (viaSynth) return viaSynth;
 	const task = prepare(file, {

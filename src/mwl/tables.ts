@@ -84,6 +84,8 @@ export interface EmitTableTypesOptions {
 	readonly header?: string;
 	/** String columns whose current values also become exported literal unions and readonly value lists (for example `['id', 'sprite']`). */
 	readonly literalColumns?: readonly string[];
+	/** module the generated imports read from; `'@datamoc/mwg/mwl'` unless the project reaches mwg through an alias (`'mwg/mwl'`) */
+	readonly specifier?: string;
 }
 
 /**
@@ -108,12 +110,10 @@ export interface EmitTableTypesOptions {
  */
 export function emitTableTypes(tables: readonly MwlTableDefinition[], options: EmitTableTypesOptions = {}): string {
 	const header = options.header ?? 'Generated from MWL tables - do not edit by hand.';
+	const specifier = JSON.stringify(options.specifier ?? '@datamoc/mwg/mwl').replace(/^"|"$/g, "'");
 	const lines = [`// ${header}`];
 	if (tables.length > 0)
-		lines.push(
-			`import { typedRows } from '@datamoc/mwg/mwl';`,
-			`import type { MwlContentCatalog } from '@datamoc/mwg/mwl';`,
-		);
+		lines.push(`import { typedRows } from ${specifier};`, `import type { MwlContentCatalog } from ${specifier};`);
 	const taken = new Set<string>();
 	for (const table of tables) {
 		const base = typeName(table.id, taken);

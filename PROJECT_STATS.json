@@ -4,8 +4,8 @@
 	"version": "0.48.1",
 	"releaseDate": "2026-10-20",
 	"source": {
-		"files": 396,
-		"lines": 79527,
+		"files": 397,
+		"lines": 80147,
 		"modules": 21,
 		"breakdown": [
 			{
@@ -16,7 +16,7 @@
 			{
 				"name": "audio",
 				"files": 48,
-				"lines": 11285
+				"lines": 11315
 			},
 			{
 				"name": "mwl",
@@ -59,6 +59,11 @@
 				"lines": 1702
 			},
 			{
+				"name": "assets",
+				"files": 10,
+				"lines": 1559
+			},
+			{
 				"name": "simulation",
 				"files": 9,
 				"lines": 1463
@@ -72,11 +77,6 @@
 				"name": "battle",
 				"files": 15,
 				"lines": 1157
-			},
-			{
-				"name": "assets",
-				"files": 9,
-				"lines": 969
 			},
 			{
 				"name": "three-d",
@@ -116,9 +116,9 @@
 		]
 	},
 	"tests": {
-		"files": 372,
-		"lines": 52124,
-		"cases": 3367
+		"files": 373,
+		"lines": 52376,
+		"cases": 3379
 	},
 	"tools": {
 		"files": 69,
@@ -165,12 +165,12 @@
 		"percent": 89
 	},
 	"api": {
-		"declarationFiles": 396
+		"declarationFiles": 397
 	},
 	"bundle": {
-		"globalRaw": 1418155,
-		"globalGzip": 429489,
-		"distRaw": 5439473
+		"globalRaw": 1424477,
+		"globalGzip": 432034,
+		"distRaw": 5476990
 	},
 	"quality": {
 		"testToSourceRatio": 0.7
