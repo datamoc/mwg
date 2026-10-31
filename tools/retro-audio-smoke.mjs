@@ -60,12 +60,92 @@ try {
 	assert.equal(fallen.engine, 'builtin');
 	assert.match(fallen.status, /fallback: retro:mt32/);
 
+	// Exercise the shipped IIFE too: named offline engines must work in a blob worker
+	// from file:// after minification, with no module imports or server.
+	await browser.script(
+		async (source) => {
+			await new Promise((resolve, reject) => {
+				const script = document.createElement('script');
+				script.src = source;
+				script.onload = resolve;
+				script.onerror = reject;
+				document.head.append(script);
+			});
+		},
+		pathToFileURL(resolve('dist/mwg.global.js')).href,
+	);
+	const offline = await browser.script(async () => {
+		const audio = window.mwg.Audio;
+		const fallbacks = [];
+		audio.onMidiSynthFallback.add((event) => fallbacks.push(event));
+		audio.registerMidiSynth(
+			'smoke:worker',
+			() => {
+				throw new Error('main-thread factory called');
+			},
+			(sampleRate) => {
+				if (typeof document !== 'undefined') throw new Error('engine is on the main thread');
+				return {
+					sampleRate,
+					event() {},
+					sysex() {},
+					reset() {},
+					render(left, right, start, count) {
+						left.fill(0.125, start, start + count);
+						right.fill(-0.125, start, start + count);
+					},
+				};
+			},
+		);
+		const bytes = new Uint8Array([
+			77, 84, 104, 100, 0, 0, 0, 6, 0, 0, 0, 1, 0, 96, 77, 84, 114, 107, 0, 0, 0, 12, 0, 144, 69, 100, 96, 128,
+			69, 0, 0, 255, 47, 0,
+		]);
+		const rendered = await audio.renderMidiToBufferAsync(bytes, {
+			synth: 'smoke:worker',
+			sampleRate: 8000,
+			gain: 0.5,
+			maxDuration: 0.75,
+		});
+		const queue = new audio.MidiRenderQueue();
+		queue.pause();
+		let prepared = false;
+		const ready = queue.prepare(audio.parseMidi(bytes), {
+			synth: 'smoke:worker',
+			sampleRate: 8000,
+			gain: 0.5,
+			maxDuration: 0.75,
+		});
+		ready.then(() => {
+			prepared = true;
+		});
+		await Promise.resolve();
+		if (prepared) throw new Error('a paused queue rendered early');
+		queue.resume();
+		const background = await ready;
+		queue.dispose();
+		if (background.left[0] !== rendered.left[0] || background.right[0] !== rendered.right[0]) {
+			throw new Error('idle preparation changed the PCM');
+		}
+
+		return {
+			left: rendered.left[0],
+			right: rendered.right[0],
+			sampleRate: rendered.sampleRate,
+			duration: rendered.duration,
+			fallbacks,
+		};
+	});
+	assert.deepEqual(offline, { left: 0.0625, right: -0.0625, sampleRate: 8000, duration: 0.75, fallbacks: [] });
+
 	assert.deepEqual(browser.consoleErrors(), [], 'no page errors across the whole run');
 
 	const folder = resolve('benchmark-results/retro-audio');
 	await mkdir(folder, { recursive: true });
 	await writeFile(resolve(folder, 'final.png'), await browser.screenshot());
-	console.log('retro-audio smoke: gesture start, engine change and announced fallback all verified in Chrome');
+	console.log(
+		'retro-audio smoke: gesture start, engine change, announced fallback, named offline worker and idle preparation verified in Chrome',
+	);
 } finally {
 	await browser.close();
 }

@@ -23,6 +23,11 @@ checklist below.
 
 ### Open items
 
+Priority review, 2026-10-31: named offline audio engines now have an optional worker factory,
+closing the requested main-thread loading gap. Idle-time preparation now queues tracks or authored
+MIDI notes one worker at a time, with cancellation and pause/resume. The parked worker proposals still need their
+recorded consumer evidence; none is promoted. Rendering backend priorities are unchanged.
+
 Priority review, 2026-10-16 (Pontifex evening feedback): complete the concrete consumer
 gaps in music playback, asset weight guards, XPBD queries and MWL data conversion before
 revisiting parked rendering or worker proposals. The existing GPU rendering paths remain

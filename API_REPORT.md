@@ -7238,7 +7238,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.49.0";
+    export declare const version = "0.50.0";
 
 ### `VerticalLabel` (class)
 
@@ -10926,6 +10926,34 @@ build instead.
         program: number;
     }
 
+### `MidiRenderQueue` (class)
+
+    export declare class MidiRenderQueue {
+        private readonly schedule;
+        private readonly pending;
+        private active;
+        private cancelLaunch;
+        private paused;
+        private disposed;
+        constructor(options?: MidiRenderQueueOptions);
+
+        prepare(input: ArrayBuffer | ArrayBufferView | MidiFile, options?: RenderMidiAsyncOptions): Promise<RenderedMidi>;
+
+        pause(): void;
+
+        resume(): void;
+
+        dispose(): void;
+        private launchNext;
+    }
+
+### `MidiRenderQueueOptions` (interface)
+
+    export interface MidiRenderQueueOptions {
+
+        schedule?: (start: () => void) => () => void;
+    }
+
 ### `MidiSynth` (interface)
 
     export interface MidiSynth {
@@ -11253,7 +11281,7 @@ build instead.
 
 ### `registerMidiSynth` (function)
 
-    export declare function registerMidiSynth(name: string, factory: MidiSynthFactory): void;
+    export declare function registerMidiSynth(name: string, factory: MidiSynthFactory, workerFactory?: MidiSynthFactory): void;
 
 ### `RenderBudget` (interface)
 
@@ -11285,6 +11313,8 @@ build instead.
 ### `RenderMidiAsyncOptions` (interface)
 
     export interface RenderMidiAsyncOptions {
+
+        signal?: AbortSignal;
 
         synth?: MidiSynthRequest;
 
@@ -11334,7 +11364,7 @@ build instead.
 
 ### `renderMidiToBufferAsync` (function)
 
-    export declare function renderMidiToBufferAsync(midi: ArrayBuffer | ArrayBufferView, options?: RenderMidiAsyncOptions): Promise<RenderedMidi>;
+    export declare function renderMidiToBufferAsync(midi: ArrayBuffer | ArrayBufferView | MidiFile, options?: RenderMidiAsyncOptions): Promise<RenderedMidi>;
 
 ### `RenderThroughSynthOptions` (interface)
 

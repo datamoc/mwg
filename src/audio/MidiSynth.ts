@@ -1,5 +1,5 @@
 import { Signal } from '../core/Signal.ts';
-import { midiLoopStart, timedMidiMessages, type MidiFile } from './Midi.ts';
+import { midiLoopStart, timedMidiMessages, type MidiFile, type TimedMidiMessage } from './Midi.ts';
 import type { RenderedMidi } from './MidiRender.ts';
 
 /**
@@ -64,10 +64,18 @@ export interface MidiSynthFallback {
 export const onMidiSynthFallback = new Signal<MidiSynthFallback>();
 
 const engines = new Map<string, MidiSynthFactory>();
+const workerEngines = new Map<string, MidiSynthFactory>();
+
+/** Internal lookup: worker factories must be self-contained, as for threads.spawn. */
+export function midiSynthWorkerFactory(name: string): MidiSynthFactory | undefined {
+	return workerEngines.get(name);
+}
 
 /**
  * Registers a named engine so content can say `synth: "retro:mt32"`. A name that is already
- * registered is replaced, and the two internal names are reserved.
+ * registered is replaced, and the two internal names are reserved. Pass `workerFactory` to
+ * let async offline renders construct and run the engine on a worker. It must be self-contained
+ * (no imports or closures), like `threads.spawn`; the ordinary factory stays on this thread.
  *
  * @example
  * ```ts
@@ -75,12 +83,16 @@ const engines = new Map<string, MidiSynthFactory>();
  *
  * declare function createMt32(sampleRate: number): MidiSynth;
  *
- * registerMidiSynth('retro:mt32', createMt32);
+ * // The optional third factory runs inside the worker and must have no external bindings.
+ * declare function createMt32InWorker(sampleRate: number): MidiSynth;
+ * registerMidiSynth('retro:mt32', createMt32, createMt32InWorker);
  * ```
  */
-export function registerMidiSynth(name: string, factory: MidiSynthFactory): void {
+export function registerMidiSynth(name: string, factory: MidiSynthFactory, workerFactory?: MidiSynthFactory): void {
 	if (INTERNAL_MIDI_ENGINES.includes(name)) throw new Error(`"${name}" is a reserved MIDI engine name`);
 	engines.set(name, factory);
+	if (workerFactory) workerEngines.set(name, workerFactory);
+	else workerEngines.delete(name);
 }
 
 /**
@@ -94,6 +106,7 @@ export function registerMidiSynth(name: string, factory: MidiSynthFactory): void
  * ```
  */
 export function unregisterMidiSynth(name: string): boolean {
+	workerEngines.delete(name);
 	return engines.delete(name);
 }
 
@@ -138,6 +151,16 @@ export function resolveMidiSynth(
 	sampleRate: number,
 	internalName: 'gm-soundfont' | 'builtin',
 ): ResolvedMidiSynth {
+	return resolveSynth(request, sampleRate, internalName, (event) => onMidiSynthFallback.dispatch(event));
+}
+
+/** Internal resolver with caller-owned diagnostics for asynchronous fallback chains. */
+export function resolveSynth(
+	request: MidiSynthRequest,
+	sampleRate: number,
+	internalName: 'gm-soundfont' | 'builtin',
+	notify: (event: MidiSynthFallback) => void,
+): ResolvedMidiSynth {
 	const choices = typeof request === 'string' || typeof request === 'function' ? [request] : request;
 	const label = (choice: string | MidiSynthFactory): string => (typeof choice === 'string' ? choice : 'custom');
 	let requested = '';
@@ -164,12 +187,9 @@ export function resolveMidiSynth(
 		}
 	}
 	const result = settled ?? { synth: null, name: internalName };
-	if (requested && result.name !== requested) notifyFallback(requested, result.name, reason, message);
+	if (requested && result.name !== requested)
+		notify({ requested, used: result.name, reason, ...(message ? { message } : {}) });
 	return result;
-}
-
-function notifyFallback(requested: string, used: string, reason: MidiSynthFallback['reason'], message?: string): void {
-	onMidiSynthFallback.dispatch({ requested, used, reason, ...(message ? { message } : {}) });
 }
 
 function isMidiSynth(value: unknown): value is MidiSynth {
@@ -198,10 +218,6 @@ export interface RenderThroughSynthOptions {
 	blockSize?: number;
 }
 
-const DEFAULT_TAIL = 1.5;
-const DEFAULT_MAX_DURATION = 8 * 60;
-const DEFAULT_BLOCK = 1024;
-
 /**
  * Renders a MIDI file through a `MidiSynth` to stereo frames, the same `RenderedMidi` the
  * SoundFont path produces, so it plays, loops and seeks like any other track. Messages are
@@ -224,17 +240,25 @@ export function renderMidiThroughSynth(
 	synth: MidiSynth,
 	options: RenderThroughSynthOptions = {},
 ): RenderedMidi {
-	const tail = options.tail ?? DEFAULT_TAIL;
-	const maxDuration = options.maxDuration ?? DEFAULT_MAX_DURATION;
+	return renderSynthMessages(timedMidiMessages(file), midiLoopStart(file), synth, options);
+}
+
+/** Shared synchronous/worker kernel; all runtime dependencies live inside its body. */
+export function renderSynthMessages(
+	input: TimedMidiMessage[],
+	loopMarker: number | null,
+	synth: MidiSynth,
+	options: RenderThroughSynthOptions = {},
+): RenderedMidi {
+	const tail = options.tail ?? 1.5;
+	const maxDuration = options.maxDuration ?? 8 * 60;
 	const gain = options.gain ?? 1;
-	const block = Math.max(1, Math.floor(options.blockSize ?? DEFAULT_BLOCK));
+	const block = Math.max(1, Math.floor(options.blockSize ?? 1024));
 	if (!(maxDuration > 0)) throw new Error('render max duration must be positive');
 	if (!(gain >= 0)) throw new Error('render gain must not be negative');
 	const muted = new Set(options.mutedChannels ?? []);
 
-	const messages = timedMidiMessages(file).filter(
-		(message) => message.time < maxDuration && !muted.has(message.status & 0x0f),
-	);
+	const messages = input.filter((message) => message.time < maxDuration && !muted.has(message.status & 0x0f));
 	if (!messages.some((message) => (message.status & 0xf0) === 0x90 && message.data2 > 0)) {
 		throw new Error('MIDI file has no notes');
 	}
@@ -250,10 +274,10 @@ export function renderMidiThroughSynth(
 		let frame = 0;
 		for (const message of messages) {
 			const target = Math.min(frames, Math.floor(message.time * sampleRate));
-			frame = advance(synth, left, right, frame, target, block);
+			frame = advance(frame, target);
 			synth.event(message.status, message.data1, message.data2);
 		}
-		advance(synth, left, right, frame, frames, block);
+		advance(frame, frames);
 	} finally {
 		synth.reset();
 	}
@@ -264,23 +288,16 @@ export function renderMidiThroughSynth(
 			right[i] *= gain;
 		}
 	}
-	const loopStart = Math.min(midiLoopStart(file) ?? 0, Math.max(0, duration - 0.1));
+	const loopStart = Math.min(loopMarker ?? 0, Math.max(0, duration - 0.1));
 	return { sampleRate, left, right, loopStart, loopEnd: duration, duration };
-}
 
-function advance(
-	synth: MidiSynth,
-	left: Float32Array,
-	right: Float32Array,
-	from: number,
-	to: number,
-	block: number,
-): number {
-	let frame = from;
-	while (frame < to) {
-		const count = Math.min(block, to - frame);
-		synth.render(left, right, frame, count);
-		frame += count;
+	function advance(from: number, to: number): number {
+		let frame = from;
+		while (frame < to) {
+			const count = Math.min(block, to - frame);
+			synth.render(left, right, frame, count);
+			frame += count;
+		}
+		return frame;
 	}
-	return frame;
 }

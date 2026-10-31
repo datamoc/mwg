@@ -276,3 +276,157 @@ test('pausing a synth-driven player releases held notes and stopping resets the 
 	player.stop();
 	assert.equal(synth.resets, 1);
 });
+
+/** A self-contained engine: the same function can be constructed inside a real worker. */
+function portableSynth(sampleRate: number): MidiSynth {
+	let level = 0;
+	return {
+		sampleRate,
+		event(status, _note, velocity) {
+			if ((status & 0xf0) === 0x90) level = velocity / 128;
+			if ((status & 0xf0) === 0x80) level = 0;
+		},
+		sysex() {},
+		render(left, right, start, count) {
+			left.fill(level, start, start + count);
+			right.fill(-level, start, start + count);
+		},
+		reset() {
+			level = 0;
+		},
+	};
+}
+
+test('a named worker engine produces the synchronous PCM including gain, loop and duration', async () => {
+	registerMidiSynth('test:portable', portableSynth, portableSynth);
+	try {
+		const bytes = midiFile([0, 0xb0, 111, 0, 0, 0x90, 69, 100, ...vlq(96), 0x80, 69, 0]);
+		const options = { synth: 'test:portable', sampleRate: 8000, gain: 0.25, maxDuration: 0.75 };
+		const sync = renderMidiToBuffer(parseMidi(bytes), options);
+		const worker = await renderMidiToBufferAsync(bytes, options);
+		assert.deepEqual(worker, sync);
+		assert.equal(worker.left[0], (100 / 128) * 0.25);
+		assert.equal(worker.left[4000], 0);
+		assert.equal(worker.duration, 0.75);
+	} finally {
+		unregisterMidiSynth('test:portable');
+	}
+});
+
+test('a named engine constructs on the worker without ever calling the main-thread factory', async () => {
+	registerMidiSynth(
+		'test:thread',
+		() => {
+			throw new Error('main factory was called');
+		},
+		(sampleRate) => {
+			if (process.getBuiltinModule('node:worker_threads').isMainThread) throw new Error('not on a worker');
+			return {
+				sampleRate,
+				event() {},
+				sysex() {},
+				reset() {},
+				render(left, right, start, count) {
+					left.fill(0.125, start, start + count);
+					right.fill(-0.125, start, start + count);
+				},
+			};
+		},
+	);
+	const { events, stop } = collectFallbacks();
+	try {
+		const rendered = await renderMidiToBufferAsync(oneNote(69), { synth: 'test:thread', sampleRate: 8000 });
+		assert.equal(rendered.left[0], 0.125);
+		assert.equal(rendered.right[0], -0.125);
+		assert.equal(events.length, 0);
+	} finally {
+		stop();
+		unregisterMidiSynth('test:thread');
+	}
+});
+
+test('worker failures try the next named engine and announce one final fallback', async () => {
+	registerMidiSynth('test:broken-worker', portableSynth, () => {
+		throw new Error('worker initialization failed');
+	});
+	registerMidiSynth('test:next-worker', portableSynth, portableSynth);
+	const { events, stop } = collectFallbacks();
+	try {
+		const rendered = await renderMidiToBufferAsync(oneNote(69), {
+			synth: ['test:broken-worker', 'test:next-worker'],
+			sampleRate: 8000,
+		});
+		assert.equal(rendered.left[0], 100 / 128);
+		assert.deepEqual(events, [
+			{
+				requested: 'test:broken-worker',
+				used: 'test:next-worker',
+				reason: 'failed',
+				message: 'worker initialization failed',
+			},
+		]);
+	} finally {
+		stop();
+		unregisterMidiSynth('test:broken-worker');
+		unregisterMidiSynth('test:next-worker');
+	}
+});
+
+test('a worker render failure falls back to the internal worker render', async () => {
+	registerMidiSynth('test:render-failure', portableSynth, (sampleRate) => ({
+		sampleRate,
+		event() {},
+		sysex() {},
+		reset() {},
+		render() {
+			throw new Error('render failed');
+		},
+	}));
+	const { events, stop } = collectFallbacks();
+	try {
+		const bytes = oneNote(69);
+		const rendered = await renderMidiToBufferAsync(bytes, { synth: 'test:render-failure', sampleRate: 8000 });
+		assert.deepEqual(rendered, renderMidiToBuffer(parseMidi(bytes), { sampleRate: 8000 }));
+		assert.equal(events.length, 1);
+		assert.equal(events[0].message, 'render failed');
+		assert.equal(events[0].used, 'builtin');
+	} finally {
+		stop();
+		unregisterMidiSynth('test:render-failure');
+	}
+});
+
+test('worker engines reject empty channel selections without announcing a fallback', async () => {
+	registerMidiSynth('test:muted', portableSynth, portableSynth);
+	const { events, stop } = collectFallbacks();
+	try {
+		await assert.rejects(
+			renderMidiToBufferAsync(oneNote(69), { synth: 'test:muted', channels: [] }),
+			/MIDI file has no notes/,
+		);
+		assert.equal(events.length, 0);
+	} finally {
+		stop();
+		unregisterMidiSynth('test:muted');
+	}
+});
+
+test('replacing or unregistering a named synth forgets its worker factory', async () => {
+	registerMidiSynth('test:replace', portableSynth, () => {
+		throw new Error('stale worker factory');
+	});
+	registerMidiSynth('test:replace', portableSynth);
+	const { events, stop } = collectFallbacks();
+	try {
+		const rendered = await renderMidiToBufferAsync(oneNote(69), { synth: 'test:replace', sampleRate: 8000 });
+		assert.equal(rendered.left[0], 100 / 128);
+		assert.equal(events.length, 0);
+		unregisterMidiSynth('test:replace');
+		await renderMidiToBufferAsync(oneNote(69), { synth: 'test:replace', sampleRate: 8000 });
+		assert.equal(events.length, 1);
+		assert.equal(events[0].reason, 'unknown');
+	} finally {
+		stop();
+		unregisterMidiSynth('test:replace');
+	}
+});

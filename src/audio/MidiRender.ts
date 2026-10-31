@@ -1,4 +1,12 @@
-import { midiLoopStart, noteToFrequency, parseMidi, scheduleMidi, type MidiFile, type ScheduledNote } from './Midi.ts';
+import {
+	midiLoopStart,
+	timedMidiMessages,
+	noteToFrequency,
+	parseMidi,
+	scheduleMidi,
+	type MidiFile,
+	type ScheduledNote,
+} from './Midi.ts';
 import {
 	decodeSoundFont,
 	parseSoundFont,
@@ -8,7 +16,17 @@ import {
 } from './SoundFont.ts';
 import type { SoundFontSampleDecoder } from './SampleDecoder.ts';
 import { spawn } from '../threads/index.ts';
-import { onMidiSynthFallback, renderMidiThroughSynth, resolveMidiSynth, type MidiSynthRequest } from './MidiSynth.ts';
+import {
+	INTERNAL_MIDI_ENGINES,
+	midiSynthWorkerFactory,
+	onMidiSynthFallback,
+	renderMidiThroughSynth,
+	renderSynthMessages,
+	resolveSynth,
+	type MidiSynthFactory,
+	type MidiSynthFallback,
+	type MidiSynthRequest,
+} from './MidiSynth.ts';
 
 /**
  * A Standard MIDI File rendered to stereo PCM frames, the same bridge the RPG Maker
@@ -60,7 +78,9 @@ export interface RenderedMidi {
 }
 
 export interface RenderMidiAsyncOptions {
-	/** a `MidiSynth` request as for `renderMidiToBuffer`; a synth lives on this thread, so such a render does not go to the worker */
+	/** cancels preparation and terminates its render worker; cancellation never triggers an engine fallback */
+	signal?: AbortSignal;
+	/** a `MidiSynth` request as for `renderMidiToBuffer`; named engines registered with a worker factory render on a worker, other factories stay on this thread */
 	synth?: MidiSynthRequest;
 	/** raw SoundFont bytes: parsed on this thread, voiced on the worker; a SoundFont 3 needs `decode` */
 	soundFontBytes?: ArrayBuffer | ArrayBufferView;
@@ -129,23 +149,29 @@ function otherChannels(channels: readonly number[]): number[] {
 }
 
 /** the render through `options.synth`, or null when no synth was asked for or none could be used, in which case the internal path voices the file */
-function renderThroughRequestedSynth(file: MidiFile, options: RenderMidiOptions): RenderedMidi | null {
+function renderThroughRequestedSynth(
+	file: MidiFile,
+	options: RenderMidiOptions,
+	notify: (event: MidiSynthFallback) => void = (event) => onMidiSynthFallback.dispatch(event),
+): RenderedMidi | null {
 	if (!options.synth) return null;
-	const { synth } = resolveMidiSynth(
+	const { synth } = resolveSynth(
 		options.synth,
 		options.sampleRate ?? DEFAULT_SAMPLE_RATE,
 		options.soundfont ? 'gm-soundfont' : 'builtin',
+		notify,
 	);
 	if (!synth) return null;
 	try {
 		return renderMidiThroughSynth(file, synth, {
 			maxDuration: options.maxDuration,
+			gain: options.gain,
 			mutedChannels: options.channels ? otherChannels(options.channels) : undefined,
 		});
 	} catch (error) {
 		if ((error as Error).message === 'MIDI file has no notes') throw error;
 		//a synth that fails mid-render must not take the game's music down with it
-		onMidiSynthFallback.dispatch({
+		notify({
 			requested: 'custom',
 			used: options.soundfont ? 'gm-soundfont' : 'builtin',
 			reason: 'failed',
@@ -156,14 +182,18 @@ function renderThroughRequestedSynth(file: MidiFile, options: RenderMidiOptions)
 }
 
 /**
- * Renders raw MIDI bytes to stereo PCM frames on a worker thread, so the work that costs
+ * Renders MIDI bytes or a MidiFile (including game-authored note events) to stereo PCM frames on a worker thread, so the work that costs
  * seconds on a real track (T161 measured 2 to 11.8) does not freeze the loading screen
  * the caller is presumably drawing. Everything cheap stays on this thread: the parse, the
  * schedule, option validation and the SoundFont voice lookup. Only the synthesis crosses
  * to the worker, as structured-cloneable note data, and the stereo buffers come back
  * transferred rather than copied.
  *
- * Deterministic to the bit, because both paths call the same `renderNotes`: for the same
+ * A named engine registered with a worker factory is also constructed and rendered on the
+ * worker. Legacy factories without a worker registration keep running on the calling thread.
+ * Worker failures follow the same ordered fallback request and notify on the calling thread.
+ *
+ * Deterministic to the bit for internal synthesis, because both paths call `renderNotes`: for the same
  * bytes and options this resolves exactly what `renderMidiToBuffer(parseMidi(bytes), ...)`
  * returns. A failure (a malformed file, invalid options, a dead worker) rejects with the
  * same message the synchronous path would have thrown.
@@ -196,16 +226,21 @@ function renderThroughRequestedSynth(file: MidiFile, options: RenderMidiOptions)
  * ```
  */
 export async function renderMidiToBufferAsync(
-	midi: ArrayBuffer | ArrayBufferView,
+	midi: ArrayBuffer | ArrayBufferView | MidiFile,
 	options: RenderMidiAsyncOptions = {},
 ): Promise<RenderedMidi> {
-	const file = parseMidi(midi);
+	options.signal?.throwIfAborted();
+	const file = 'events' in midi ? midi : parseMidi(midi);
 	const fontBytes =
 		options.soundFontBytes && options.decode
-			? await decodeSoundFont(options.soundFontBytes, options.decode)
+			? await decodeSoundFont(options.soundFontBytes, (bytes, rate, codec) => {
+					options.signal?.throwIfAborted();
+					return waitForDecode(Promise.resolve(options.decode!(bytes, rate, codec)), options.signal);
+				})
 			: options.soundFontBytes;
+	options.signal?.throwIfAborted();
 	const soundfont = fontBytes ? parseSoundFont(fontBytes, { missingProgram: options.missingProgram }) : null;
-	const viaSynth = renderThroughRequestedSynth(file, { ...options, soundfont });
+	const viaSynth = await renderRequestedSynthAsync(file, { ...options, soundfont });
 	if (viaSynth) return viaSynth;
 	const task = prepare(file, {
 		soundfont,
@@ -214,7 +249,107 @@ export async function renderMidiToBufferAsync(
 		gain: options.gain,
 		maxDuration: options.maxDuration,
 	});
-	return spawn(renderNotes, [task]);
+	return spawn(renderNotes, [task], { signal: options.signal });
+}
+
+/** A platform decoder cannot be stopped, but cancellation must release the preparation queue. */
+function waitForDecode(pending: Promise<Int16Array>, signal?: AbortSignal): Promise<Int16Array> {
+	if (!signal) return pending;
+	return new Promise((resolve, reject) => {
+		const cancel = (): void => reject(signal.reason);
+		signal.addEventListener('abort', cancel, { once: true });
+		pending.then(
+			(value) => {
+				signal.removeEventListener('abort', cancel);
+				resolve(value);
+			},
+			(error) => {
+				signal.removeEventListener('abort', cancel);
+				reject(error);
+			},
+		);
+		if (signal.aborted) {
+			signal.removeEventListener('abort', cancel);
+			reject(signal.reason);
+		}
+	});
+}
+
+/** Tries worker-capable names in request order, preserving legacy factories on this thread. */
+async function renderRequestedSynthAsync(
+	file: MidiFile,
+	options: RenderMidiOptions & Pick<RenderMidiAsyncOptions, 'signal'>,
+): Promise<RenderedMidi | null> {
+	if (!options.synth) return null;
+	const choices =
+		typeof options.synth === 'string' || typeof options.synth === 'function' ? [options.synth] : options.synth;
+	const requested = typeof choices[0] === 'string' ? choices[0] : 'custom';
+	const internal = options.soundfont ? 'gm-soundfont' : 'builtin';
+	let failure: MidiSynthFallback | undefined;
+	for (const choice of choices) {
+		if (typeof choice === 'string' && INTERNAL_MIDI_ENGINES.includes(choice)) break;
+		const name = typeof choice === 'string' ? choice : 'custom';
+		const workerFactory = typeof choice === 'string' ? midiSynthWorkerFactory(choice) : undefined;
+		let rendered: RenderedMidi | null = null;
+		if (workerFactory) {
+			try {
+				rendered = await spawn(
+					(
+						factoryCode: string,
+						renderCode: string,
+						messages: ReturnType<typeof timedMidiMessages>,
+						marker: number | null,
+						rate: number,
+						renderOptions: Parameters<typeof renderSynthMessages>[3],
+					) => {
+						const create = new Function(`return (${factoryCode})`)() as MidiSynthFactory;
+						const render = new Function(`return (${renderCode})`)() as typeof renderSynthMessages;
+						const synth = create(rate);
+						if (
+							!synth ||
+							typeof synth.sampleRate !== 'number' ||
+							!(synth.sampleRate > 0) ||
+							!['event', 'sysex', 'render', 'reset'].every(
+								(key) => typeof (synth as unknown as Record<string, unknown>)[key] === 'function',
+							)
+						)
+							throw new Error('the factory did not return a MidiSynth');
+						return render(messages, marker, synth, renderOptions);
+					},
+					[
+						workerFactory.toString(),
+						renderSynthMessages.toString(),
+						timedMidiMessages(file),
+						midiLoopStart(file),
+						options.sampleRate ?? DEFAULT_SAMPLE_RATE,
+						{
+							maxDuration: options.maxDuration,
+							gain: options.gain,
+							mutedChannels: options.channels ? otherChannels(options.channels) : undefined,
+						},
+					],
+					{ signal: options.signal },
+				);
+			} catch (error) {
+				options.signal?.throwIfAborted();
+				if ((error as Error).message === 'MIDI file has no notes') throw error;
+				failure = { requested, used: internal, reason: 'failed', message: (error as Error).message };
+			}
+		} else {
+			rendered = renderThroughRequestedSynth(file, { ...options, synth: choice }, (event) => {
+				failure = { ...event, requested };
+			});
+		}
+		if (rendered) {
+			if (failure && name !== requested) onMidiSynthFallback.dispatch({ ...failure, used: name });
+			return rendered;
+		}
+	}
+	if (failure) onMidiSynthFallback.dispatch(failure);
+	else if (choices.length && requested !== internal) {
+		onMidiSynthFallback.dispatch({ requested, used: internal, reason: 'unknown' });
+	}
+	return null;
 }
 
 /**

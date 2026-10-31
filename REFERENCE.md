@@ -1070,7 +1070,22 @@ reach the compiled asset map without it.
   a package registers a synth under a name (`retro:mt32`), content asks for it by name, and
   resolution walks the request, then the internal names (`gm-soundfont`, `builtin`), firing
   `onMidiSynthFallback` whenever another engine voices the file instead. `timedMidiMessages`
-  is the raw timed message stream a synth is driven by.
+  is the raw timed message stream a synth is driven by. The optional third argument to
+  `registerMidiSynth(name, factory, workerFactory)` enables named offline synthesis in a
+  worker through `renderMidiToBufferAsync(bytes, { synth: name })`. The worker factory must
+  be self-contained, like `threads.spawn` (no imports or closures); the main factory remains
+  available for synchronous rendering and live playback. Without a worker factory, existing
+  engines run on the calling thread. Worker initialization or rendering failures try the
+  next requested engine, then SoundFont or the built-in path, with a fallback notification.
+- `MidiRenderQueue`/`MidiRenderQueueOptions` - prepares upcoming MIDI tracks or game-authored
+  `MidiFile` note sequences before playback. `prepare(input, options)` returns a promise of
+  `RenderedMidi`, suitable for `MusicPlayer.load`. One render runs at a time; each launch waits
+  for `requestIdleCallback`, or a timer where unavailable. `pause` stops new launches, `resume`
+  restarts them, and `dispose` cancels all work. `options.signal` cancels an individual queued
+  or active preparation, including waiting for a SoundFont decoder. The returned PCM belongs
+  to the caller, with no extra cache in the queue. Named engines require a worker factory and
+  bare factories are refused. `schedule` can plug in a game's own spare-time scheduler.
+  Low priority governs launches, not operating-system scheduling of the worker.
 - `StreamPlayable`/`StreamChannel` - the streaming half of the `Playable` contract: seek and
   `currentTime` on a synthesised stream, `playbackRate` by resampling, and a playhead counted
   in frames, so endless formats (NSF, SID) play without a whole-track render.

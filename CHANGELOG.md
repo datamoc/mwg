@@ -7,6 +7,19 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.50.0] - 2026-10-31
+
+Prepare upcoming MIDI tracks and game-authored note sequences during idle time, with named synthesis engines running in workers. Preparations can be paused or cancelled, while the same rendering core keeps synchronous and worker output consistent.
+
+### Added
+
+- `MidiRenderQueue` prepares upcoming tracks and authored MIDI notes at browser idle time, one worker at a time, with pause/resume, per-job cancellation and disposal. `renderMidiToBufferAsync` also accepts a `MidiFile` and an abort signal.
+- Named offline MIDI rendering on a worker: `registerMidiSynth(name, factory, workerFactory)` accepts an optional self-contained worker factory, used by `renderMidiToBufferAsync` with the existing ordered engine fallback and notifications on the calling thread.
+
+### Fixed
+
+- Offline renders through a MIDI synth now apply the requested master gain, on both the synchronous and worker paths.
+
 ## [0.49.0] - 2026-10-31
 
 A filesystem for hosted games, and two small fixes found by consumers updating to 0.47.0: rendering a MIDI file on the worker through the SoundFont a build embeds, and an alias-friendly `emitTableTypes`. Roadmap items 401 (the Pixel Dungeon port's last raw Pixi imports now go through `pixi-interop`), 459, 460 and 461.

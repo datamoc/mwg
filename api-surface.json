@@ -6372,6 +6372,18 @@
 		"declaringModule": "audio/Midi.d.ts"
 	},
 	{
+		"name": "MidiRenderQueue",
+		"kind": "class",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiRenderQueue.d.ts"
+	},
+	{
+		"name": "MidiRenderQueueOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/MidiRenderQueue.d.ts"
+	},
+	{
 		"name": "MidiSynth",
 		"kind": "interface",
 		"subpath": "./audio",

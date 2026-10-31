@@ -180,3 +180,6 @@ export type { GrooveConverterEngine, GrooveFormat } from './humanize/GrooveConve
 export { HumanizerFactory, humanizeMidi } from './humanize/HumanizerFactory.ts';
 export type { HumanizeRequest } from './humanize/HumanizerFactory.ts';
 export type { HumanizationOptions, HumanizeStyle, HumanizerTier, MidiHumanizerEngine } from './humanize/Humanize.ts';
+
+export { MidiRenderQueue } from './MidiRenderQueue.ts';
+export type { MidiRenderQueueOptions } from './MidiRenderQueue.ts';

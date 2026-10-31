@@ -1,7 +1,7 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
-  "serialNumber": "urn:uuid:102a1c39-202a-58f5-943b-8cc7b688bcf6",
+  "serialNumber": "urn:uuid:8efd4981-1250-55d1-a795-7c5b473d1ffe",
   "version": 1,
   "metadata": {
     "tools": {
@@ -10,16 +10,16 @@
           "type": "application",
           "group": "datamoc",
           "name": "tools/sbom.mjs",
-          "version": "0.49.0"
+          "version": "0.50.0"
         }
       ]
     },
     "component": {
       "type": "library",
-      "bom-ref": "pkg:npm/%40datamoc/mwg@0.49.0",
+      "bom-ref": "pkg:npm/%40datamoc/mwg@0.50.0",
       "name": "@datamoc/mwg",
-      "version": "0.49.0",
-      "purl": "pkg:npm/%40datamoc/mwg@0.49.0",
+      "version": "0.50.0",
+      "purl": "pkg:npm/%40datamoc/mwg@0.50.0",
       "description": "A local-file game framework: renderer-free game logic, drawn through PixiJS in 2D or Babylon.js in 3D, with mobile and desktop packaging.",
       "licenses": [
         {
@@ -4874,7 +4874,7 @@
       ]
     },
     {
-      "ref": "pkg:npm/%40datamoc/mwg@0.49.0",
+      "ref": "pkg:npm/%40datamoc/mwg@0.50.0",
       "dependsOn": [
         "pkg:npm/%40babylonjs/core@9.33.1",
         "pkg:npm/%40babylonjs/loaders@9.33.1",
