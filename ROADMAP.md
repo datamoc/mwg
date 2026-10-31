@@ -58,26 +58,13 @@ to implementation. Its generic integration host is now closed in [CLOSED.md](CLO
 Lua calls and resumes remain bounded so a dialogue need not hold the rendering loop
 while waiting for a scene answer; frame-time claims still require consumer measurements.
 
-412. **Publish `@datamoc/mwg`.** Everything from the initial Pontifex feedback shipped in
-0.37.0 (pointer signals, `PhysicsWorld` with breakable joints, `XpbdWorld` with ground
-collision, `DropdownView`, `mwg-init`, `CREDITS.txt`, the alias package generated into
-`packages/mwg`). Registry verification on 2026-10-14 confirms `@datamoc/mwg@0.37.0`
-is public and depends on `@datamoc/mw_games@0.37.0`, so initial publication is done.
-What remains is the alias's own npm trusted-publisher entry. The v0.38.0 release
-forced the answer: its publish run (`38515954976`) staged `@datamoc/mw_games@0.38.0`
-fine, then the alias step failed `E401`, so npmjs.org listed no OIDC identity for
-`@datamoc/mwg` at all. The owner has since added it (this repository, `publish-npm.yml`,
-`npm stage publish` only, mirroring the main package). The 0.38.0 alias stays unpublished
-by decision - no hand publish, no workflow rerun (re-staging the now-public main package
-would fail before reaching the alias step). The next release stages both packages normally.
+Item 412 is closed (2026-10-31, its record is in [CLOSED.md](CLOSED.md)).
 
 Item 413's optional MWL scene and UI composition shipped in `mwl/presentation` and
 `two-d/presentation` with the `mwl-presentation` example and its browser smoke check;
 its record is in [CLOSED.md](CLOSED.md).
 
-Item 412's trusted-publisher entry is now added; the next release proves it by staging both
-packages. 393 and 394 are closed (2026-10-17), and 401 stays parked with the port. Nothing is
-promoted.
+393 and 394 are closed (2026-10-17). Nothing is promoted.
 
 Items 414-416 are implemented; see [CLOSED.md](CLOSED.md). Priority review,
 2026-10-14: the requested asset/deformation cluster is complete through the embedded

@@ -6397,3 +6397,9 @@ example already draws.
   filesystem. It is a page-script patch, so it works from `file://`; a service worker (the roadmap's other route)
   would need a real origin and stays a host's choice. Not shipped: an IndexedDB writeback adapter (a host that has
   one, MWGP's `nwjs-host.js`, implements the three-method interface), and Karryn's Prison's own host is untouched.
+412. **Publish `@datamoc/mwg`** (2026-10-31). The initial publication was done with 0.37.0 and the alias's
+  trusted-publisher entry was added by the owner after v0.38.0's alias step failed `E401`. v0.49.0 is the release
+  that proves it: its `Publish to npm` run (check, tests, build, `stats:check`, then `npm stage publish` for the
+  main package and the alias step) completed with both staging steps green and no `E401`, with CI, CodeQL and the
+  website deploy green on the same commit (`dc76980`). Approving the stages (`npm stage list`, `npm stage approve`)
+  stays the owner's step, as it always is.
