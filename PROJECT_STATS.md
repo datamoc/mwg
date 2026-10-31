@@ -1,6 +1,6 @@
 # Project statistics
 
-Generated for **mwg 0.48.1** on 2026-10-20.
+Generated for **mwg 0.49.0** on 2026-10-31.
 
 | Area | Statistics |
 | --- | ---: |

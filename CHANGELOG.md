@@ -7,6 +7,10 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.49.0] - 2026-10-31
+
+A filesystem for hosted games, and two small fixes found by consumers updating to 0.47.0: rendering a MIDI file on the worker through the SoundFont a build embeds, and an alias-friendly `emitTableTypes`. Roadmap items 401 (the Pixel Dungeon port's last raw Pixi imports now go through `pixi-interop`), 459, 460 and 461.
+
 ### Added
 
 - `assets/virtualfs` (`@datamoc/mwg/assets/virtualfs`): `VirtualFileSystem`, one filesystem for a hosted game behind every read route. A read-only mount of the shipped files sits under a writable overlay, with a per-path-pattern durability rule (`durable` or `session`) the game declares, a writeback adapter with delete support (`memoryWriteback` ships), `restore()` and `flush()`. `installVirtualReads` points `fetch`, `XMLHttpRequest` and element `src` at it, so a file a mod toolchain writes reads back through any route and a probe of a not-yet-generated file is a silent 404. `listVirtualMods` and `setVirtualModEnabled` cover mod discovery and enable state.
