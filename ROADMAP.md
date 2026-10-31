@@ -245,8 +245,7 @@ condition below that says so rather than a numbered item of its own.
       It stays a condition for declaring 1.0, held by the ports' maintainers: 1.0 is declared
       once both say their Status is no longer "In progress, not yet feature-complete". This
       repository's half (does each port build and run against the current release?) is a check
-      to re-run before that declaration. It last ran against 0.16.0 on 2026-09-20 and has
-      **not** been re-run against 0.35.x. The wording below is the 2026-09-11 and 2026-09-15
+      to re-run before that declaration. It last ran in full against 0.16.0 on 2026-09-20. On 2026-10-31 both ports were typechecked against the 0.51.0 build (`mwg-pixel-dungeon` and the Wesnoth port, `tsc --noEmit` with the package names mapped to this checkout's `dist`, neither port's files touched): both clean. Their tests, builds and browser checks were not re-run against 0.51.0, and the Wesnoth port still pins `^0.36.0`. The wording below is the 2026-09-11 and 2026-09-15
       record, kept as written.
       (requested directly, 2026-09-11): the Shattered Pixel Dungeon port
       (`mwg-pixel-dungeon`) and the Wesnoth port. This
