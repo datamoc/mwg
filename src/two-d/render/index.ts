@@ -2,6 +2,7 @@ export { ColorTransformBatcher, packColorAdd, packTintAdd, NO_COLOR_ADD } from '
 export type { HasColorAdd } from './ColorTransformBatcher.ts';
 
 export { TintedSprite, registerColorTransform } from './TintedSprite.ts';
+export type { TintedSpriteOptions } from './TintedSprite.ts';
 export {
 	applyAllImageModifiers,
 	applyImageModifiers,
@@ -73,11 +74,13 @@ export { MapLoop } from './MapLoop.ts';
 export type { MapLoopOptions, MapPoint } from './MapLoop.ts';
 
 export { Picture, PictureLayer, PICTURE_BLEND_MODES } from './PictureLayer.ts';
-export type { PictureOptions, PictureBlendMode } from './PictureLayer.ts';
+export type { PictureOptions, PictureBlendMode, PictureTweenOptions } from './PictureLayer.ts';
 export { ParallaxLayer, parallaxScroll } from './ParallaxLayer.ts';
 export type { ParallaxOptions } from './ParallaxLayer.ts';
 export { VideoOverlay } from './VideoOverlay.ts';
 export type { VideoOverlayOptions, VideoPlayOptions } from './VideoOverlay.ts';
+export { PluginLayer, PluginSprite } from './PluginLayer.ts';
+export type { PluginLayerOptions, PluginSpriteOptions } from './PluginLayer.ts';
 
 export { ParticleEmitter } from './Particles.ts';
 export type {

@@ -7,6 +7,27 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+The picture and pathfinding gaps the port hit after adopting 0.53.1, plus a display bridge
+for sandboxed plugins.
+
+### Added
+
+- `Picture.tweenTo(patch, seconds, { ease })` and `Picture.stopTween()`: one target per
+  property, so a running move never re-applies an old tone, a second tween retargets from the
+  live value, and a superseded tween's promise resolves. `PictureLayer.update(dt)` drives
+  every picture's tweens.
+- `PictureLayer.rename` and `PictureLayer.swap` re-key live pictures without losing the
+  sprite, its properties or its slot in the draw order.
+- `PictureOptions.tone` and `TintedSpriteOptions.tone`: a tone can be passed at show,
+  construction or in a `moveTo` patch, merged per channel and cleared with null.
+- `Pathfinding.shortestPath` takes `maxExpanded` (a cap on settled cells, distinct from
+  `maxCost`), passes the step origin to `canEnter` for a one-side-open diagonal rule, and
+  breaks equal-cost ties deterministically in neighbour order.
+- `PluginLayer`/`PluginSprite`: the display half of plugin support, a layer a host hands to a
+  sandboxed plugin. `create`/`remove`/`clear` and `PluginSprite.setTexture`/`moveTo`/`setTone`/
+  `setAlpha`/`setVisible`/`setZIndex` map a plugin's own sprite object onto one real Pixi sprite,
+  resolved through the host's texture function, inside the camera world so it follows the camera.
+
 ## [0.53.1] - 2026-11-01
 
 A single picture can carry the live RGSS/MV tone, the last item the MWGP port's reuse audit

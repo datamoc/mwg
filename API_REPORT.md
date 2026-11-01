@@ -4284,6 +4284,7 @@ build instead.
         private toneFilter;
         private tonePixiFilter;
         private _tone;
+        private readonly lanes;
 
         constructor(name: string, options?: PictureOptions);
 
@@ -4297,7 +4298,21 @@ build instead.
 
         setTone(tone: Tone | null): this;
 
+        toneChannel(channel: keyof Tone, value: number): this;
+        private writeTone;
+        private removeToneFilter;
+
         get tone(): NormalizedTone;
+
+        tweenTo(patch: Partial<PictureOptions>, seconds: number, options?: PictureTweenOptions): Promise<void>;
+
+        stopTween(): void;
+
+        update(dt: number): void;
+        private finishLane;
+
+        private cancelKeys;
+        private cancelLanesForPatch;
 
         setAlpha(value: number): this;
 
@@ -4336,6 +4351,13 @@ build instead.
         rotate(name: string, radians: number): Picture | null;
 
         tint(name: string, color: number): Picture | null;
+
+        rename(from: string, to: string): boolean;
+
+        swap(a: string, b: string): boolean;
+        private replacePictures;
+
+        update(dt: number): void;
 
         erase(name: string): boolean;
 
@@ -4386,6 +4408,14 @@ build instead.
         zIndex?: number;
 
         visible?: boolean;
+
+        tone?: Tone | null;
+    }
+
+### `PictureTweenOptions` (interface)
+
+    export interface PictureTweenOptions {
+        readonly ease?: (t: number) => number;
     }
 
 ### `PinnedDeform` (class)
@@ -4523,6 +4553,103 @@ build instead.
         initial: T;
 
         combine: (total: T, summary: S) => T;
+    }
+
+### `PluginLayer` (class)
+
+    export declare class PluginLayer {
+
+        readonly container: Container2D<import("pixi.js").ContainerChild>;
+        private readonly resolve;
+        private readonly items;
+        private created;
+        constructor(options?: PluginLayerOptions);
+
+        get count(): number;
+
+        get sprites(): readonly PluginSprite[];
+
+        create(options?: PluginSpriteOptions): PluginSprite;
+
+        textureFor(url: string): Texture2D | null;
+
+        remove(sprite: PluginSprite): boolean;
+
+        clear(): void;
+
+        destroy(): void;
+
+        private drawOrder;
+        private resort;
+    }
+
+### `PluginLayerOptions` (interface)
+
+    export interface PluginLayerOptions {
+
+        texture?: (path: string) => Texture2D;
+
+        parent?: Container2D;
+
+        zIndex?: number;
+    }
+
+### `PluginSprite` (class)
+
+    export declare class PluginSprite extends TintedSprite {
+
+        readonly id: string;
+        private owner;
+        private destroying;
+
+        constructor(id: string, owner: PluginLayer, options?: PluginSpriteOptions);
+
+        moveTo(patch: Partial<PluginSpriteOptions>): this;
+
+        setTexture(url: string): this;
+
+        setTone(tone: Tone | null): this;
+
+        setAlpha(value: number): this;
+
+        setVisible(value: boolean): this;
+
+        setRotation(radians: number): this;
+
+        setBlendMode(mode: string): this;
+
+        setZIndex(value: number): this;
+
+        erase(): boolean;
+
+        destroy(options?: Parameters<TintedSprite['destroy']>[0]): void;
+    }
+
+### `PluginSpriteOptions` (interface)
+
+    export interface PluginSpriteOptions {
+
+        texture?: string;
+
+        x?: number;
+
+        y?: number;
+
+        width?: number;
+
+        height?: number;
+
+        alpha?: number;
+
+        rotation?: number;
+
+        visible?: boolean;
+
+        zIndex?: number;
+
+        blendMode?: string;
+
+        tone?: Tone | null;
     }
 
 ### `pop` (function)
@@ -5958,9 +6085,11 @@ build instead.
 
         cost?: (from: T, to: T) => number;
 
-        canEnter?: (cell: T, from: T, cost: number) => boolean;
+        canEnter?: (cell: T, from: T | undefined) => boolean;
 
         maxCost?: number;
+
+        maxExpanded?: number;
     }
 
 ### `ShowOptions` (interface)
@@ -7430,7 +7559,7 @@ build instead.
         private toneFilter;
         private tonePixiFilter;
         private _tone;
-        constructor(options?: SpriteOptions | Texture2D);
+        constructor(options?: TintedSpriteOptions | Texture2D);
 
         get colorAdd(): number;
         set colorAdd(value: number);
@@ -7446,6 +7575,13 @@ build instead.
         setTone(tone: Tone | null): void;
 
         get tone(): NormalizedTone;
+    }
+
+### `TintedSpriteOptions` (interface)
+
+    export interface TintedSpriteOptions extends SpriteOptions {
+
+        tone?: Tone | null;
     }
 
 ### `TintTarget` (interface)
@@ -15948,9 +16084,11 @@ build instead.
 
         cost?: (from: T, to: T) => number;
 
-        canEnter?: (cell: T, from: T, cost: number) => boolean;
+        canEnter?: (cell: T, from: T | undefined) => boolean;
 
         maxCost?: number;
+
+        maxExpanded?: number;
     }
 
 ### `Signal` (class)
@@ -25097,6 +25235,7 @@ build instead.
         private toneFilter;
         private tonePixiFilter;
         private _tone;
+        private readonly lanes;
 
         constructor(name: string, options?: PictureOptions);
 
@@ -25110,7 +25249,21 @@ build instead.
 
         setTone(tone: Tone | null): this;
 
+        toneChannel(channel: keyof Tone, value: number): this;
+        private writeTone;
+        private removeToneFilter;
+
         get tone(): NormalizedTone;
+
+        tweenTo(patch: Partial<PictureOptions>, seconds: number, options?: PictureTweenOptions): Promise<void>;
+
+        stopTween(): void;
+
+        update(dt: number): void;
+        private finishLane;
+
+        private cancelKeys;
+        private cancelLanesForPatch;
 
         setAlpha(value: number): this;
 
@@ -25149,6 +25302,13 @@ build instead.
         rotate(name: string, radians: number): Picture | null;
 
         tint(name: string, color: number): Picture | null;
+
+        rename(from: string, to: string): boolean;
+
+        swap(a: string, b: string): boolean;
+        private replacePictures;
+
+        update(dt: number): void;
 
         erase(name: string): boolean;
 
@@ -25199,6 +25359,14 @@ build instead.
         zIndex?: number;
 
         visible?: boolean;
+
+        tone?: Tone | null;
+    }
+
+### `PictureTweenOptions` (interface)
+
+    export interface PictureTweenOptions {
+        readonly ease?: (t: number) => number;
     }
 
 ### `PinnedDeform` (class)
@@ -25253,6 +25421,103 @@ build instead.
         width: number;
 
         height: number;
+    }
+
+### `PluginLayer` (class)
+
+    export declare class PluginLayer {
+
+        readonly container: Container2D<import("pixi.js").ContainerChild>;
+        private readonly resolve;
+        private readonly items;
+        private created;
+        constructor(options?: PluginLayerOptions);
+
+        get count(): number;
+
+        get sprites(): readonly PluginSprite[];
+
+        create(options?: PluginSpriteOptions): PluginSprite;
+
+        textureFor(url: string): Texture2D | null;
+
+        remove(sprite: PluginSprite): boolean;
+
+        clear(): void;
+
+        destroy(): void;
+
+        private drawOrder;
+        private resort;
+    }
+
+### `PluginLayerOptions` (interface)
+
+    export interface PluginLayerOptions {
+
+        texture?: (path: string) => Texture2D;
+
+        parent?: Container2D;
+
+        zIndex?: number;
+    }
+
+### `PluginSprite` (class)
+
+    export declare class PluginSprite extends TintedSprite {
+
+        readonly id: string;
+        private owner;
+        private destroying;
+
+        constructor(id: string, owner: PluginLayer, options?: PluginSpriteOptions);
+
+        moveTo(patch: Partial<PluginSpriteOptions>): this;
+
+        setTexture(url: string): this;
+
+        setTone(tone: Tone | null): this;
+
+        setAlpha(value: number): this;
+
+        setVisible(value: boolean): this;
+
+        setRotation(radians: number): this;
+
+        setBlendMode(mode: string): this;
+
+        setZIndex(value: number): this;
+
+        erase(): boolean;
+
+        destroy(options?: Parameters<TintedSprite['destroy']>[0]): void;
+    }
+
+### `PluginSpriteOptions` (interface)
+
+    export interface PluginSpriteOptions {
+
+        texture?: string;
+
+        x?: number;
+
+        y?: number;
+
+        width?: number;
+
+        height?: number;
+
+        alpha?: number;
+
+        rotation?: number;
+
+        visible?: boolean;
+
+        zIndex?: number;
+
+        blendMode?: string;
+
+        tone?: Tone | null;
     }
 
 ### `pop` (function)
@@ -27420,7 +27685,7 @@ build instead.
         private toneFilter;
         private tonePixiFilter;
         private _tone;
-        constructor(options?: SpriteOptions | Texture2D);
+        constructor(options?: TintedSpriteOptions | Texture2D);
 
         get colorAdd(): number;
         set colorAdd(value: number);
@@ -27436,6 +27701,13 @@ build instead.
         setTone(tone: Tone | null): void;
 
         get tone(): NormalizedTone;
+    }
+
+### `TintedSpriteOptions` (interface)
+
+    export interface TintedSpriteOptions extends SpriteOptions {
+
+        tone?: Tone | null;
     }
 
 ### `TintTarget` (interface)
@@ -30034,6 +30306,7 @@ build instead.
         private toneFilter;
         private tonePixiFilter;
         private _tone;
+        private readonly lanes;
 
         constructor(name: string, options?: PictureOptions);
 
@@ -30047,7 +30320,21 @@ build instead.
 
         setTone(tone: Tone | null): this;
 
+        toneChannel(channel: keyof Tone, value: number): this;
+        private writeTone;
+        private removeToneFilter;
+
         get tone(): NormalizedTone;
+
+        tweenTo(patch: Partial<PictureOptions>, seconds: number, options?: PictureTweenOptions): Promise<void>;
+
+        stopTween(): void;
+
+        update(dt: number): void;
+        private finishLane;
+
+        private cancelKeys;
+        private cancelLanesForPatch;
 
         setAlpha(value: number): this;
 
@@ -30086,6 +30373,13 @@ build instead.
         rotate(name: string, radians: number): Picture | null;
 
         tint(name: string, color: number): Picture | null;
+
+        rename(from: string, to: string): boolean;
+
+        swap(a: string, b: string): boolean;
+        private replacePictures;
+
+        update(dt: number): void;
 
         erase(name: string): boolean;
 
@@ -30136,6 +30430,14 @@ build instead.
         zIndex?: number;
 
         visible?: boolean;
+
+        tone?: Tone | null;
+    }
+
+### `PictureTweenOptions` (interface)
+
+    export interface PictureTweenOptions {
+        readonly ease?: (t: number) => number;
     }
 
 ### `PinnedDeform` (class)
@@ -30190,6 +30492,103 @@ build instead.
         width: number;
 
         height: number;
+    }
+
+### `PluginLayer` (class)
+
+    export declare class PluginLayer {
+
+        readonly container: Container2D<import("pixi.js").ContainerChild>;
+        private readonly resolve;
+        private readonly items;
+        private created;
+        constructor(options?: PluginLayerOptions);
+
+        get count(): number;
+
+        get sprites(): readonly PluginSprite[];
+
+        create(options?: PluginSpriteOptions): PluginSprite;
+
+        textureFor(url: string): Texture2D | null;
+
+        remove(sprite: PluginSprite): boolean;
+
+        clear(): void;
+
+        destroy(): void;
+
+        private drawOrder;
+        private resort;
+    }
+
+### `PluginLayerOptions` (interface)
+
+    export interface PluginLayerOptions {
+
+        texture?: (path: string) => Texture2D;
+
+        parent?: Container2D;
+
+        zIndex?: number;
+    }
+
+### `PluginSprite` (class)
+
+    export declare class PluginSprite extends TintedSprite {
+
+        readonly id: string;
+        private owner;
+        private destroying;
+
+        constructor(id: string, owner: PluginLayer, options?: PluginSpriteOptions);
+
+        moveTo(patch: Partial<PluginSpriteOptions>): this;
+
+        setTexture(url: string): this;
+
+        setTone(tone: Tone | null): this;
+
+        setAlpha(value: number): this;
+
+        setVisible(value: boolean): this;
+
+        setRotation(radians: number): this;
+
+        setBlendMode(mode: string): this;
+
+        setZIndex(value: number): this;
+
+        erase(): boolean;
+
+        destroy(options?: Parameters<TintedSprite['destroy']>[0]): void;
+    }
+
+### `PluginSpriteOptions` (interface)
+
+    export interface PluginSpriteOptions {
+
+        texture?: string;
+
+        x?: number;
+
+        y?: number;
+
+        width?: number;
+
+        height?: number;
+
+        alpha?: number;
+
+        rotation?: number;
+
+        visible?: boolean;
+
+        zIndex?: number;
+
+        blendMode?: string;
+
+        tone?: Tone | null;
     }
 
 ### `pop` (function)
@@ -31213,7 +31612,7 @@ build instead.
         private toneFilter;
         private tonePixiFilter;
         private _tone;
-        constructor(options?: SpriteOptions | Texture2D);
+        constructor(options?: TintedSpriteOptions | Texture2D);
 
         get colorAdd(): number;
         set colorAdd(value: number);
@@ -31229,6 +31628,13 @@ build instead.
         setTone(tone: Tone | null): void;
 
         get tone(): NormalizedTone;
+    }
+
+### `TintedSpriteOptions` (interface)
+
+    export interface TintedSpriteOptions extends SpriteOptions {
+
+        tone?: Tone | null;
     }
 
 ### `TintTarget` (interface)

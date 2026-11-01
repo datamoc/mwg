@@ -2358,6 +2358,12 @@
 		"declaringModule": "two-d/render/PictureLayer.d.ts"
 	},
 	{
+		"name": "PictureTweenOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
 		"name": "PinnedDeform",
 		"kind": "class",
 		"subpath": ".",
@@ -2404,6 +2410,30 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "core/Stats.d.ts"
+	},
+	{
+		"name": "PluginLayer",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/PluginLayer.d.ts"
+	},
+	{
+		"name": "PluginLayerOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/PluginLayer.d.ts"
+	},
+	{
+		"name": "PluginSprite",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/PluginLayer.d.ts"
+	},
+	{
+		"name": "PluginSpriteOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/PluginLayer.d.ts"
 	},
 	{
 		"name": "pop",
@@ -3890,6 +3920,12 @@
 	{
 		"name": "TintedSprite",
 		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/TintedSprite.d.ts"
+	},
+	{
+		"name": "TintedSpriteOptions",
+		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/render/TintedSprite.d.ts"
 	},
@@ -15330,6 +15366,12 @@
 		"declaringModule": "two-d/render/PictureLayer.d.ts"
 	},
 	{
+		"name": "PictureTweenOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
 		"name": "PinnedDeform",
 		"kind": "class",
 		"subpath": "./two-d",
@@ -15340,6 +15382,30 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/SpriteDeform.d.ts"
+	},
+	{
+		"name": "PluginLayer",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/PluginLayer.d.ts"
+	},
+	{
+		"name": "PluginLayerOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/PluginLayer.d.ts"
+	},
+	{
+		"name": "PluginSprite",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/PluginLayer.d.ts"
+	},
+	{
+		"name": "PluginSpriteOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/PluginLayer.d.ts"
 	},
 	{
 		"name": "pop",
@@ -16388,6 +16454,12 @@
 	{
 		"name": "TintedSprite",
 		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/TintedSprite.d.ts"
+	},
+	{
+		"name": "TintedSpriteOptions",
+		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/TintedSprite.d.ts"
 	},
@@ -17790,6 +17862,12 @@
 		"declaringModule": "two-d/render/PictureLayer.d.ts"
 	},
 	{
+		"name": "PictureTweenOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
 		"name": "PinnedDeform",
 		"kind": "class",
 		"subpath": "./two-d/render",
@@ -17800,6 +17878,30 @@
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/SpriteDeform.d.ts"
+	},
+	{
+		"name": "PluginLayer",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/PluginLayer.d.ts"
+	},
+	{
+		"name": "PluginLayerOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/PluginLayer.d.ts"
+	},
+	{
+		"name": "PluginSprite",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/PluginLayer.d.ts"
+	},
+	{
+		"name": "PluginSpriteOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/PluginLayer.d.ts"
 	},
 	{
 		"name": "pop",
@@ -18368,6 +18470,12 @@
 	{
 		"name": "TintedSprite",
 		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/TintedSprite.d.ts"
+	},
+	{
+		"name": "TintedSpriteOptions",
+		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/TintedSprite.d.ts"
 	},

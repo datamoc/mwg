@@ -28,6 +28,13 @@ closing the requested main-thread loading gap. Idle-time preparation now queues 
 MIDI notes one worker at a time, with cancellation and pause/resume. The parked worker proposals still need their
 recorded consumer evidence; none is promoted. Rendering backend priorities are unchanged.
 
+Priority review, 2026-11-01 (later): the port's four §33 needs were the next requests, and three
+are library work now shipped: per-property picture tweening with `stopTween`, `PictureLayer.rename`/
+`swap`, and `tone` as a picture option. The fourth, a display bridge for sandboxed plugins,
+ships as `PluginLayer`/`PluginSprite` here; mapping a plugin's own object model onto it stays
+with the host. `shortestPath` also gained `maxExpanded` and an origin-aware `canEnter`.
+No numbered item is open; the parked decisions and the external port/release items are unchanged.
+
 Priority review, 2026-11-01: the MWGP port's own open upstream asks (`mwgp/4MWG`, not numbered
 roadmap items) are shipped rather than promoted: pictures, parallax, map looping, weather presets,
 a video overlay, `Camera.zoomTo`, per-line message alignment, the audio insert chain and effect

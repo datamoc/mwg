@@ -329,7 +329,10 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   flood over any cell topology, with injected costs, blockers, budget and stopping rules.
   `shortestPath`/`ShortestPathOptions` run that same flood and walk its first-reach information
   back from the goal, returning the ordered cells from start to goal inclusive, `[start]` when
-  they are the same cell, and `null` when the goal is unreachable within `maxCost`.
+  they are the same cell, and `null` when the goal is unreachable within `maxCost`. `maxExpanded`
+  caps the cells actually settled (a different limit from `maxCost`), `canEnter(cell, from)` sees
+  the step origin so a one-side-open diagonal rule can be stated by the caller, and equal-cost
+  routes break ties in neighbour iteration order, so the same map always yields the same route.
 - `cellInside`/`cellIndex`/`cellX`/`cellY`/`cellKey`/`cellFromKey` - bounded-grid indexing:
   the row-major arithmetic and bounds check that `roguelike.Level` and the `board` modules used
   to spell out for themselves, now stated once (the Wesnoth port asked for exactly this, to stop
@@ -554,7 +557,12 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   `subtract`: Pixi's own subtract blend mode is registered on first use, so RPG Maker XP's
   subtractive picture and fog (type 2) is really subtractive, and an unknown mode throws by name.
   `setTone` gives a single picture the live tone (per-channel offsets plus gray desaturation), which
-  `setTint` alone cannot express.
+  `setTint` alone cannot express. `tweenTo(patch, seconds, { ease })` eases a patch with one target
+  per property (position, scale, rotation, opacity, tint and each tone channel), so overlapping moves
+  and tones settle independently, a repeat tween retargets from the live value, and `stopTween`
+  freezes; `PictureLayer.update(dt)` drives them, and `rename`/`swap` re-key a live picture without
+  losing its sprite, properties or draw slot. `PictureOptions.tone` accepts a tone at show or in a
+  `moveTo` patch (merged per channel, null clears).
 - `ParallaxLayer`/`parallaxScroll`/`ParallaxOptions` - a scrolling, optionally looping backdrop:
   camera-relative scroll rates (0 pinned, 1 moving with the world), `loopX`/`loopY` tiling,
   opacity/tint/offset setters, `setTone` for the XP fog's own colour grade, and
@@ -564,6 +572,12 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   because Pixi has no video primitive: `play(src)` resolves when a non-looping cutscene ends,
   `stop`/`pause`/`resume`/`setBounds`/`setVisible`/`dispose` manage it, and it constructs and
   no-ops safely outside a browser.
+- `PluginLayer`/`PluginSprite`/`PluginLayerOptions`/`PluginSpriteOptions` - the display half of
+  plugin support: a host hands a sandboxed plugin this layer, and `create`/`remove`/`clear` map the
+  plugin's own sprite objects onto real Pixi sprites through the host's texture resolver. A created
+  sprite carries position, size, alpha, rotation, visibility, z-order and a tone; it lives inside
+  the camera world, so it follows the camera, and the host owns the mapping from the plugin's object
+  model onto these calls.
 - `TileMap.stampRect` copies a block of frames into a layer at a tile position and throws when
   it does not fit; `AutotileSet.mode: 'mixed'` reads the MV A4 sheet's alternating rows with the
   floor table (wall tops) and the wall table (wall faces).

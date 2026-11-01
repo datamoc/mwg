@@ -54,18 +54,37 @@ registerColorTransform();
  * genuinely see-through (the texture behind it shows through), the same as any plain Pixi
  * `Sprite`.
  */
+export interface TintedSpriteOptions extends SpriteOptions {
+	/** an RGSS/MV tone to apply at construction; see `setTone` */
+	tone?: Tone | null;
+}
+
 export class TintedSprite extends Sprite {
 	private _colorAdd = 0;
 	private toneFilter: ToneFilter | null = null;
 	private tonePixiFilter: Filter | null = null;
 	private _tone: NormalizedTone = NEUTRAL_TONE;
 
-	constructor(options?: SpriteOptions | Texture2D) {
-		super(options as SpriteOptions);
+	constructor(options?: TintedSpriteOptions | Texture2D) {
+		//`tone` is ours, not a Pixi Sprite option: strip it before super, or Container's
+		//option assignment tries to write the getter-only property
+		let spriteOptions = options as SpriteOptions;
+		const tone =
+			options && typeof options === 'object' && 'tone' in options
+				? (options as TintedSpriteOptions).tone
+				: undefined;
+		if (tone !== undefined) {
+			const copy = { ...(options as TintedSpriteOptions) };
+			delete copy.tone;
+			spriteOptions = copy;
+		}
+		super(spriteOptions);
 
 		//Sprite's constructor points this at Pixi's own pipe; redirect it to ours, which
 		//is what puts this sprite in the colour-transform batch
 		useColorTransformPipe(this);
+
+		if (tone !== undefined) this.setTone(tone);
 	}
 
 	/** the packed additive colour; use `setColorAdd` or `lerpTint` rather than setting it raw */

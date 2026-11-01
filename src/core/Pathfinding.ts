@@ -51,15 +51,36 @@ export interface ShortestPathOptions<T, K> {
 	neighbors: (cell: T) => Iterable<T>;
 	/** Cost of entering `to` from `from`, defaulting to 1; non-finite or negative costs are ignored. */
 	cost?: (from: T, to: T) => number;
-	/** Game rule that rejects a candidate before it is reached; `start` itself is always entered. */
-	canEnter?: (cell: T, from: T, cost: number) => boolean;
-	/** Maximum accumulated cost, inclusive; omitted means no limit. */
+	/**
+	 * Game rule that rejects a candidate before it is reached.
+	 *
+	 * `from` is the cell the step starts from. It is `undefined` only for the start cell, which
+	 * is checked once before the flood begins; a rule that rejects the start makes the goal
+	 * unreachable, `start === goal` included. A one-argument callback such as
+	 * `(cell) => cell !== blocked` remains valid and simply ignores `from`.
+	 */
+	canEnter?: (cell: T, from: T | undefined) => boolean;
+	/**
+	 * Maximum accumulated cost, inclusive; omitted means no limit. A route costing more than
+	 * this is not considered, so the goal can be too far to reach.
+	 */
 	maxCost?: number;
+	/**
+	 * Maximum number of cells the flood may examine, an effort cap rather than a cost cap.
+	 *
+	 * Each settled cell counts once, whether or not it improves any neighbour, so this bounds
+	 * the work a search over a large or open board may do. It differs from `maxCost`, which
+	 * limits how expensive the route may be but still lets the flood examine any number of
+	 * cheap cells; `maxExpanded` limits how many cells are looked at regardless of their cost.
+	 * Reaching the cap before the goal is settled makes `shortestPath` return null even when a
+	 * route exists. Omitted means no limit; anything other than a positive integer throws.
+	 */
+	maxExpanded?: number;
 }
 
 /**
  * The cheapest route from `start` to `goal`, in order and inclusive of both, or null when the goal
- * cannot be reached within `maxCost`.
+ * cannot be reached within `maxCost` or before `maxExpanded` cells are examined.
  *
  * @example
  * ```ts
@@ -74,27 +95,57 @@ export interface ShortestPathOptions<T, K> {
  *
  * It runs the same weighted flood as `weightedFlood`, so `cost`, `canEnter` and `maxCost` mean the
  * same thing here; the difference is that this one also remembers the neighbour that last improved
- * each cell's cost, and walks that chain back from the goal. `start === goal` is `[start]`, and a
- * goal that `canEnter` rejects is unreachable. Ties between two equally cheap routes are broken by
- * the flood's own pop order, which is deterministic for a given `neighbors` sequence but not
- * otherwise specified.
+ * each cell's cost, and walks that chain back from the goal. `start === goal` is `[start]` when
+ * `canEnter` accepts the start, and a goal that `canEnter` rejects is unreachable.
+ *
+ * `canEnter` sees both the cell being entered and the cell it is entered from, which is what an
+ * origin-dependent rule needs. The usual restriction on diagonal movement is one: a diagonal step
+ * is allowed only when at least one of the two orthogonal cells beside it is open, so a unit cannot
+ * cut the corner between two walls.
+ *
+ * ```ts
+ * // one-side-open diagonals over a grid of { x, y } cells, where `open` is the walkability rule
+ * const diagonal = (from: Cell, to: Cell) => from.x !== to.x && from.y !== to.y;
+ * const beside = (from: Cell, to: Cell) => [
+ *   { x: to.x, y: from.y },
+ *   { x: from.x, y: to.y },
+ * ];
+ *
+ * const route = shortestPath(start, goal, {
+ *   key: (cell) => `${cell.x},${cell.y}`,
+ *   neighbors: (cell) => around(cell),
+ *   canEnter: (next, from) =>
+ *     open(next) && (!from || !diagonal(from, next) || beside(from, next).some(open)),
+ * });
+ * ```
+ *
+ * Ties between two equally cheap routes are broken by the neighbour order the flood discovered
+ * cells in: the first route found, following `neighbors` in iteration order, wins, and an
+ * equal-cost revisit never replaces an existing parent. The queue settles equal-cost cells in
+ * discovery order too, so repeating the same call returns the same route.
  */
 export function shortestPath<T, K>(start: T, goal: T, options: ShortestPathOptions<T, K>): T[] | null {
+	const maxExpanded = options.maxExpanded;
+	if (maxExpanded !== undefined && (!Number.isInteger(maxExpanded) || maxExpanded < 1)) {
+		throw new RangeError(`maxExpanded must be a positive integer, got ${String(maxExpanded)}`);
+	}
+	if (options.canEnter && !options.canEnter(start, undefined)) return null;
 	if (start === goal) return [start];
 	const maxCost = options.maxCost ?? Infinity;
 	if (Number.isNaN(maxCost) || maxCost < 0) return null;
 
-	const { reached, parent } = flood(start, {
+	const { reached, parent, settled } = flood(start, {
 		key: options.key,
 		neighbors: options.neighbors,
 		cost: options.cost ?? (() => 1),
 		maxCost,
 		canEnter: options.canEnter,
+		maxExpanded,
 	});
 
 	const startKey = options.key(start);
 	const goalKey = options.key(goal);
-	if (!reached.has(goalKey)) return null;
+	if (!settled.has(goalKey)) return null;
 
 	const path: T[] = [];
 	let key = goalKey;
@@ -119,12 +170,16 @@ interface FloodOptions<T, K> {
 	readonly maxCost: number;
 	readonly canEnter?: (cell: T, from: T, cost: number) => boolean;
 	readonly stop?: (cell: T, cost: number) => boolean;
+	/** how many cells may be settled before the flood gives up; omitted means no limit */
+	readonly maxExpanded?: number;
 }
 
 interface FloodResult<T, K> {
 	readonly reached: Map<K, WeightedCell<T>>;
 	/** the neighbour that last improved each key's cost; `start` itself has no parent */
 	readonly parent: Map<K, K>;
+	/** keys popped with their final cost; a cap can leave a reachable goal out of this set */
+	readonly settled: Set<K>;
 }
 
 /** the one flood both public functions run; `parent` is what lets `shortestPath` walk back */
@@ -132,12 +187,18 @@ function flood<T, K>(start: T, options: FloodOptions<T, K>): FloodResult<T, K> {
 	const startKey = options.key(start);
 	const reached = new Map<K, WeightedCell<T>>([[startKey, { cell: start, cost: 0 }]]);
 	const parent = new Map<K, K>();
-	const queue: QueueEntry<T, K>[] = [{ cell: start, key: startKey, cost: 0 }];
+	const settled = new Set<K>();
+	const queue: QueueEntry<T, K>[] = [{ cell: start, key: startKey, cost: 0, order: 0 }];
+	let nextOrder = 1;
+	let expanded = 0;
 
 	while (queue.length > 0) {
 		const current = pop(queue)!;
 		const known = reached.get(current.key);
 		if (!known || current.cost !== known.cost) continue;
+		if (options.maxExpanded !== undefined && expanded >= options.maxExpanded) break;
+		expanded += 1;
+		settled.add(current.key);
 		if (options.stop?.(current.cell, current.cost)) continue;
 
 		for (const next of options.neighbors(current.cell)) {
@@ -151,15 +212,22 @@ function flood<T, K>(start: T, options: FloodOptions<T, K>): FloodResult<T, K> {
 			if (total >= (reached.get(key)?.cost ?? Infinity)) continue;
 			reached.set(key, { cell: next, cost: total });
 			parent.set(key, current.key);
-			push(queue, { cell: next, key, cost: total });
+			push(queue, { cell: next, key, cost: total, order: nextOrder });
+			nextOrder += 1;
 		}
 	}
 
-	return { reached, parent };
+	return { reached, parent, settled };
 }
 
 interface QueueEntry<T, K> extends WeightedCell<T> {
 	readonly key: K;
+	/** discovery sequence, so equal-cost cells pop in the order the flood found them */
+	readonly order: number;
+}
+
+function earlier<T, K>(left: QueueEntry<T, K>, right: QueueEntry<T, K>): boolean {
+	return left.cost < right.cost || (left.cost === right.cost && left.order < right.order);
 }
 
 function push<T, K>(queue: QueueEntry<T, K>[], entry: QueueEntry<T, K>): void {
@@ -167,7 +235,7 @@ function push<T, K>(queue: QueueEntry<T, K>[], entry: QueueEntry<T, K>): void {
 	let index = queue.length - 1;
 	while (index > 0) {
 		const parent = Math.floor((index - 1) / 2);
-		if (queue[parent].cost <= queue[index].cost) break;
+		if (!earlier(queue[index], queue[parent])) break;
 		[queue[parent], queue[index]] = [queue[index], queue[parent]];
 		index = parent;
 	}
@@ -183,8 +251,8 @@ function pop<T, K>(queue: QueueEntry<T, K>[]): QueueEntry<T, K> | undefined {
 		const left = index * 2 + 1;
 		const right = left + 1;
 		let smallest = index;
-		if (left < queue.length && queue[left].cost < queue[smallest].cost) smallest = left;
-		if (right < queue.length && queue[right].cost < queue[smallest].cost) smallest = right;
+		if (left < queue.length && earlier(queue[left], queue[smallest])) smallest = left;
+		if (right < queue.length && earlier(queue[right], queue[smallest])) smallest = right;
 		if (smallest === index) break;
 		[queue[index], queue[smallest]] = [queue[smallest], queue[index]];
 		index = smallest;

@@ -5,9 +5,45 @@ import {
 	ToneFilter,
 	attachToneFilter,
 	detachToneFilter,
+	normalizeTone,
 	type NormalizedTone,
 	type Tone,
 } from './Tone.ts';
+import { reducedMotion } from '../../core/Motion.ts';
+
+/** options for a picture property tween; `ease` maps 0..1 to 0..1, linear when omitted */
+export interface PictureTweenOptions {
+	readonly ease?: (t: number) => number;
+}
+
+interface TweenGroup {
+	pending: number;
+	resolve: () => void;
+}
+
+interface TweenLane {
+	group: TweenGroup;
+	from: number;
+	to: number;
+	elapsed: number;
+	duration: number;
+	ease: (t: number) => number;
+	write: (picture: Picture, value: number) => void;
+}
+
+const TONE_KEYS = ['tone.red', 'tone.green', 'tone.blue', 'tone.gray'] as const;
+
+/** applies one tint channel while keeping the others, which is how a tint tween stays independent */
+function writeTintChannel(picture: Picture, channel: 16 | 8 | 0, value: number): void {
+	const rounded = Math.min(255, Math.max(0, Math.round(value)));
+	const current = picture.tint;
+	picture.tint =
+		channel === 16
+			? (rounded << 16) | (current & 0x00ffff)
+			: channel === 8
+				? (current & 0xff0000) | (rounded << 8) | (current & 0x0000ff)
+				: (current & 0xffff00) | rounded;
+}
 
 /**
  * The blend modes a picture can name. `subtract` is RPG Maker XP's picture/fog type 2,
@@ -106,6 +142,14 @@ export interface PictureOptions {
 
 	/** false hides the picture without erasing it; default true */
 	visible?: boolean;
+
+	/**
+	 * An RGSS/MV tone to apply with the picture (per-channel offsets plus gray
+	 * desaturation), or null to clear it. A patch's tone is merged channel by channel over
+	 * the current one, so `moveTo({ tone: { gray: 255 } })` desaturates without disturbing
+	 * a red offset already set.
+	 */
+	tone?: Tone | null;
 }
 
 //the layer a picture belongs to, so a direct `setZIndex` re-sorts the stack it sits in
@@ -136,6 +180,7 @@ export class Picture extends Sprite {
 	private toneFilter: ToneFilter | null = null;
 	private tonePixiFilter: Filter | null = null;
 	private _tone: NormalizedTone = NEUTRAL_TONE;
+	private readonly lanes = new Map<string, TweenLane>();
 
 	/** @param name the key the owning `PictureLayer` addresses this picture by */
 	constructor(name: string, options: PictureOptions = {}) {
@@ -150,6 +195,8 @@ export class Picture extends Sprite {
 	 * Returns this picture for chaining.
 	 */
 	moveTo(patch: Partial<PictureOptions>): this {
+		//an instant write wins over a running tween on the same field, leaving other fields' tweens alone
+		this.cancelLanesForPatch(patch);
 		if (patch.texture !== undefined) this.texture = patch.texture;
 		if (patch.originX !== undefined || patch.originY !== undefined) {
 			this.setOrigin(patch.originX ?? this.anchor.x, patch.originY ?? this.anchor.y);
@@ -168,6 +215,9 @@ export class Picture extends Sprite {
 		//after the scale, so an explicit drawn size is the one that ends up on screen
 		if (patch.width !== undefined) this.width = patch.width;
 		if (patch.height !== undefined) this.height = patch.height;
+		if (patch.tone !== undefined) {
+			this.setTone(patch.tone === null ? null : { ...this._tone, ...patch.tone });
+		}
 		return this;
 	}
 
@@ -210,24 +260,179 @@ export class Picture extends Sprite {
 	 * ```
 	 */
 	setTone(tone: Tone | null): this {
+		this.cancelKeys(TONE_KEYS);
 		if (!tone) {
-			if (!this.toneFilter) return this;
-			detachToneFilter(this, this.tonePixiFilter);
-			this.toneFilter = null;
-			this.tonePixiFilter = null;
-			this._tone = NEUTRAL_TONE;
+			this.removeToneFilter();
 			return this;
 		}
+		this.writeTone(tone);
+		return this;
+	}
+
+	/**
+	 * Writes one tone channel while leaving the other three where they are. Used by
+	 * `tweenTo`'s tone lanes, so four independently easing channels compose into one tone
+	 * rather than each overwriting the others.
+	 */
+	toneChannel(channel: keyof Tone, value: number): this {
+		this.writeTone({ ...this._tone, [channel]: value });
+		return this;
+	}
+
+	private writeTone(tone: Tone): void {
 		this.toneFilter ??= new ToneFilter();
 		this.toneFilter.tone = tone;
 		this._tone = this.toneFilter.tone;
 		this.tonePixiFilter = attachToneFilter(this, this.toneFilter);
-		return this;
+	}
+
+	private removeToneFilter(): void {
+		if (!this.toneFilter) return;
+		detachToneFilter(this, this.tonePixiFilter);
+		this.toneFilter = null;
+		this.tonePixiFilter = null;
+		this._tone = NEUTRAL_TONE;
 	}
 
 	/** the live tone last passed to `setTone`, neutral when there is none */
 	get tone(): NormalizedTone {
 		return this._tone;
+	}
+
+	/**
+	 * Eases the patch's fields over `seconds`, one target per property, and resolves when
+	 * that call's own lanes finish. This is `Game_Picture`'s target model: a `tweenTo({ x, y })`
+	 * and a `tweenTo({ tone })` run independently, so a running move never re-applies an old
+	 * tone and undoes an instant tint. Tweening the same property again retargets from its
+	 * live value and resolves the superseded promise. A zero duration or a reduced-motion
+	 * preference applies the patch instantly.
+	 *
+	 * `PictureLayer.update(dt)` (or this picture's own `update(dt)`) drives it: like every
+	 * other renderable here, a picture owns no clock.
+	 *
+	 * @example
+	 * ```ts
+	 * import { PictureLayer } from '@datamoc/mwg/two-d/render';
+	 * import type { Texture2D } from '@datamoc/mwg/two-d/render';
+	 *
+	 * declare const art: Texture2D;
+	 *
+	 * const pictures = new PictureLayer();
+	 * const picture = pictures.show('1', { texture: art });
+	 * void picture.tweenTo({ x: 320, y: 180 }, 1); // slides over a second
+	 * void picture.tweenTo({ tone: { gray: 255 } }, 2); // desaturates over two, independently
+	 *
+	 * function onFrame(dt: number): void {
+	 * 	pictures.update(dt);
+	 * }
+	 * ```
+	 */
+	tweenTo(patch: Partial<PictureOptions>, seconds: number, options: PictureTweenOptions = {}): Promise<void> {
+		if (!(seconds > 0) || reducedMotion()) {
+			this.moveTo(patch);
+			return Promise.resolve();
+		}
+
+		const group: TweenGroup = { pending: 0, resolve: () => undefined };
+		const done = new Promise<void>((resolve) => {
+			group.resolve = resolve;
+		});
+		const ease = options.ease ?? ((t: number): number => t);
+
+		//fields with no in-between value are applied once, at the start
+		const instant: Partial<PictureOptions> = {};
+		for (const key of [
+			'texture',
+			'originX',
+			'originY',
+			'blendMode',
+			'zIndex',
+			'visible',
+			'width',
+			'height',
+		] as const) {
+			if (patch[key] !== undefined) (instant as Record<string, unknown>)[key] = patch[key];
+		}
+		if (Object.keys(instant).length > 0) this.moveTo(instant);
+
+		const add = (key: string, from: number, to: number, write: (picture: Picture, value: number) => void): void => {
+			const existing = this.lanes.get(key);
+			if (existing) this.finishLane(key, existing);
+			group.pending++;
+			this.lanes.set(key, { group, from, to, elapsed: 0, duration: seconds, ease, write });
+		};
+
+		if (patch.x !== undefined) add('x', this.x, patch.x, (p, v) => (p.x = v));
+		if (patch.y !== undefined) add('y', this.y, patch.y, (p, v) => (p.y = v));
+		if (patch.scale !== undefined) {
+			add('scaleX', this.scale.x, patch.scale, (p, v) => (p.scale.x = v));
+			add('scaleY', this.scale.y, patch.scale, (p, v) => (p.scale.y = v));
+		}
+		if (patch.scaleX !== undefined) add('scaleX', this.scale.x, patch.scaleX, (p, v) => (p.scale.x = v));
+		if (patch.scaleY !== undefined) add('scaleY', this.scale.y, patch.scaleY, (p, v) => (p.scale.y = v));
+		if (patch.rotation !== undefined) add('rotation', this.rotation, patch.rotation, (p, v) => (p.rotation = v));
+		if (patch.alpha !== undefined) add('alpha', this.alpha, patch.alpha, (p, v) => (p.alpha = v));
+		if (patch.tint !== undefined) {
+			const current = this.tint;
+			add('tintR', (current >> 16) & 0xff, (patch.tint >> 16) & 0xff, (p, v) => writeTintChannel(p, 16, v));
+			add('tintG', (current >> 8) & 0xff, (patch.tint >> 8) & 0xff, (p, v) => writeTintChannel(p, 8, v));
+			add('tintB', current & 0xff, patch.tint & 0xff, (p, v) => writeTintChannel(p, 0, v));
+		}
+		if (patch.tone !== undefined) {
+			const target = patch.tone === null ? NEUTRAL_TONE : normalizeTone({ ...this._tone, ...patch.tone });
+			add('tone.red', this._tone.red, target.red, (p, v) => p.toneChannel('red', v));
+			add('tone.green', this._tone.green, target.green, (p, v) => p.toneChannel('green', v));
+			add('tone.blue', this._tone.blue, target.blue, (p, v) => p.toneChannel('blue', v));
+			add('tone.gray', this._tone.gray, target.gray, (p, v) => p.toneChannel('gray', v));
+		}
+
+		if (group.pending === 0) group.resolve();
+		return done;
+	}
+
+	/** freezes every property tween where it is, resolving their promises, and leaves the values as they stand */
+	stopTween(): void {
+		for (const [key, lane] of [...this.lanes]) this.finishLane(key, lane);
+	}
+
+	/** advances every active lane; call once per frame from `PictureLayer.update` or the scene */
+	update(dt: number): void {
+		if (this.lanes.size === 0) return;
+		for (const [key, lane] of [...this.lanes]) {
+			lane.elapsed = Math.min(lane.duration, lane.elapsed + Math.max(0, dt));
+			const t = lane.duration > 0 ? lane.elapsed / lane.duration : 1;
+			lane.write(this, lane.from + (lane.to - lane.from) * lane.ease(t));
+			if (lane.elapsed >= lane.duration) this.finishLane(key, lane);
+		}
+	}
+
+	private finishLane(key: string, lane: TweenLane): void {
+		if (this.lanes.get(key) !== lane) return;
+		this.lanes.delete(key);
+		lane.group.pending--;
+		if (lane.group.pending === 0) lane.group.resolve();
+	}
+
+	/** cancels one lane by key and resolves its group if that was its last one */
+	private cancelKeys(keys: readonly string[]): void {
+		for (const key of keys) {
+			const lane = this.lanes.get(key);
+			if (lane) this.finishLane(key, lane);
+		}
+	}
+
+	private cancelLanesForPatch(patch: Partial<PictureOptions>): void {
+		const keys: string[] = [];
+		if (patch.x !== undefined) keys.push('x');
+		if (patch.y !== undefined) keys.push('y');
+		if (patch.scale !== undefined) keys.push('scaleX', 'scaleY');
+		if (patch.scaleX !== undefined) keys.push('scaleX');
+		if (patch.scaleY !== undefined) keys.push('scaleY');
+		if (patch.rotation !== undefined) keys.push('rotation');
+		if (patch.alpha !== undefined) keys.push('alpha');
+		if (patch.tint !== undefined) keys.push('tintR', 'tintG', 'tintB');
+		if (patch.tone !== undefined) keys.push(...TONE_KEYS);
+		this.cancelKeys(keys);
 	}
 
 	/** 0 (invisible) to 1 (opaque) */
@@ -357,6 +562,60 @@ export class PictureLayer {
 	/** multiply-tints a picture; null when no picture carries that name */
 	tint(name: string, color: number): Picture | null {
 		return this.pictures.get(name)?.setTint(color) ?? null;
+	}
+
+	/**
+	 * Re-keys a live picture, keeping its sprite, its `zIndex` and its slot in the stack.
+	 * This is the Maniac "change picture id" case: capture-and-reshow would lose the
+	 * instance and its draw position. Reports false when `from` is absent or `to` is taken.
+	 */
+	rename(from: string, to: string): boolean {
+		if (from === to) return this.pictures.has(from);
+		if (!this.pictures.has(from) || this.pictures.has(to)) return false;
+		const rebuilt = new Map<string, Picture>();
+		for (const [key, picture] of this.pictures) {
+			if (key === from) {
+				picture.name = to;
+				rebuilt.set(to, picture);
+			} else {
+				rebuilt.set(key, picture);
+			}
+		}
+		this.replacePictures(rebuilt);
+		return true;
+	}
+
+	/**
+	 * Swaps the names of two live pictures, keeping both sprites, their properties and
+	 * their slots in the stack. Reports false unless both names exist and differ.
+	 */
+	swap(a: string, b: string): boolean {
+		if (a === b) return this.pictures.has(a);
+		if (!this.pictures.has(a) || !this.pictures.has(b)) return false;
+		const rebuilt = new Map<string, Picture>();
+		for (const [key, picture] of this.pictures) {
+			if (key === a) {
+				picture.name = b;
+				rebuilt.set(b, picture);
+			} else if (key === b) {
+				picture.name = a;
+				rebuilt.set(a, picture);
+			} else {
+				rebuilt.set(key, picture);
+			}
+		}
+		this.replacePictures(rebuilt);
+		return true;
+	}
+
+	private replacePictures(next: Map<string, Picture>): void {
+		this.pictures.clear();
+		for (const [key, picture] of next) this.pictures.set(key, picture);
+	}
+
+	/** advances every picture's own property tweens; call once per frame */
+	update(dt: number): void {
+		for (const picture of this.pictures.values()) picture.update(dt);
 	}
 
 	/**
