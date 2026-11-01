@@ -7,6 +7,17 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.53.1] - 2026-11-01
+
+A single picture can carry the live RGSS/MV tone, the last item the MWGP port's reuse audit
+still listed as missing.
+
+### Added
+
+- `Picture.setTone(tone | null)` and `Picture.tone`: one picture gets the same per-channel
+  offsets and gray desaturation as `TintedSprite`, `ParallaxLayer` and `ScreenEffects`, which
+  `setTint` alone cannot express; the filter is one extra pass on that picture only.
+
 ## [0.53.0] - 2026-11-01
 
 The presentation primitives a converted RPG Maker project had to build itself, plus the
@@ -29,6 +40,7 @@ adaptor; and hotseat or split-screen local multiplayer for one to four players.
 - `World` map factories receive the entry's spawn point, and `World.enterAsync` awaits a factory that loads first while keeping the current map current, sharing one creation between concurrent entries to a persistent map.
 - `Text2D` guards `setText`/`setFill`/`text` after `destroy()`, the same protection `Label` already had.
 - `Picture.setBlendMode` accepts `PICTURE_BLEND_MODES` including `subtract`: Pixi's subtract blend mode is registered on first use, so an RPG Maker XP subtractive picture or fog really subtracts instead of drawing normally, and an unknown mode throws by name.
+- `Picture.setTone` gives one picture the live RGSS/MV tone (`setTint` alone can only multiply), and `picture.tone` reads the applied values.
 - A live RGSS/MV tone: `toneMatrix`/`normalizeTone`/`lerpTone` are the pure matrix (per-channel offsets plus gray desaturation), `ToneFilter` drives one Pixi colour-matrix filter in place, `TintedSprite.setTone` and `ParallaxLayer.setTone` apply it to one sprite or backdrop, and `ScreenEffects.tone(tone, duration)` eases it over the configured `toneTarget` (usually `camera.world`) while `setTone`/`clearTone`/`currentTone` complete the screen API.
 - `two-d/pixi-interop` gains `createPixiNamespace` (a bounded `PIXI` for a plugin sandbox: scene classes plus `Filter`/`ColorMatrixFilter`/`GlProgram`/`GpuProgram`, never a renderer) and `attachPixiFilter`, so a plugin's custom filter has a supported constructor and attachment path.
 - `core.Pathfinding.shortestPath`: the ordered cells from start to goal over the same flood `weightedFlood` uses, with costs, `canEnter` and null for unreachable.

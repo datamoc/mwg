@@ -4281,6 +4281,9 @@ build instead.
 ### `Picture` (class)
 
     export declare class Picture extends Sprite {
+        private toneFilter;
+        private tonePixiFilter;
+        private _tone;
 
         constructor(name: string, options?: PictureOptions);
 
@@ -4291,6 +4294,10 @@ build instead.
         setOrigin(x: number, y: number): this;
 
         setTint(color: number): this;
+
+        setTone(tone: Tone | null): this;
+
+        get tone(): NormalizedTone;
 
         setAlpha(value: number): this;
 
@@ -7870,7 +7877,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.53.0";
+    export declare const version = "0.53.1";
 
 ### `VerticalLabel` (class)
 
@@ -25087,6 +25094,9 @@ build instead.
 ### `Picture` (class)
 
     export declare class Picture extends Sprite {
+        private toneFilter;
+        private tonePixiFilter;
+        private _tone;
 
         constructor(name: string, options?: PictureOptions);
 
@@ -25097,6 +25107,10 @@ build instead.
         setOrigin(x: number, y: number): this;
 
         setTint(color: number): this;
+
+        setTone(tone: Tone | null): this;
+
+        get tone(): NormalizedTone;
 
         setAlpha(value: number): this;
 
@@ -30017,6 +30031,9 @@ build instead.
 ### `Picture` (class)
 
     export declare class Picture extends Sprite {
+        private toneFilter;
+        private tonePixiFilter;
+        private _tone;
 
         constructor(name: string, options?: PictureOptions);
 
@@ -30027,6 +30044,10 @@ build instead.
         setOrigin(x: number, y: number): this;
 
         setTint(color: number): this;
+
+        setTone(tone: Tone | null): this;
+
+        get tone(): NormalizedTone;
 
         setAlpha(value: number): this;
 
