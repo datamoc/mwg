@@ -156,6 +156,12 @@
 		"declaringModule": "two-d/render/SpriteAttachment.d.ts"
 	},
 	{
+		"name": "attachToneFilter",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
 		"name": "Audio",
 		"kind": "namespace",
 		"subpath": ".",
@@ -594,6 +600,24 @@
 		"declaringModule": "two-d/render/Shape2D.d.ts"
 	},
 	{
+		"name": "createLocalMultiplayer",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/LocalMultiplayer.d.ts"
+	},
+	{
+		"name": "createViewports",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
+		"name": "CreateViewportsOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
 		"name": "croppedTexture",
 		"kind": "function",
 		"subpath": ".",
@@ -682,6 +706,12 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "core/Replay.d.ts"
+	},
+	{
+		"name": "detachToneFilter",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Tone.d.ts"
 	},
 	{
 		"name": "detectWebGpu",
@@ -822,6 +852,24 @@
 		"declaringModule": "two-d/ui/markup.d.ts"
 	},
 	{
+		"name": "EscapeMarkupOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/escape-markup.d.ts"
+	},
+	{
+		"name": "EscapeRule",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/escape-markup.d.ts"
+	},
+	{
+		"name": "escapesToMarkup",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/escape-markup.d.ts"
+	},
+	{
 		"name": "euclidean",
 		"kind": "function",
 		"subpath": ".",
@@ -862,6 +910,12 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "core/Feedback.d.ts"
+	},
+	{
+		"name": "FilterOwner",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Tone.d.ts"
 	},
 	{
 		"name": "fitShareLink",
@@ -1072,6 +1126,12 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "core/Settings.d.ts"
+	},
+	{
+		"name": "GatedInput",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "core/Hotseat.d.ts"
 	},
 	{
 		"name": "Generator",
@@ -1302,6 +1362,18 @@
 		"declaringModule": "core/Hooks.d.ts"
 	},
 	{
+		"name": "Hotseat",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "core/Hotseat.d.ts"
+	},
+	{
+		"name": "HotseatOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "core/Hotseat.d.ts"
+	},
+	{
 		"name": "HttpTransport",
 		"kind": "class",
 		"subpath": ".",
@@ -1476,6 +1548,12 @@
 		"declaringModule": "two-d/ui/VerticalLabel.d.ts"
 	},
 	{
+		"name": "lerpTone",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
 		"name": "LightningArc",
 		"kind": "class",
 		"subpath": ".",
@@ -1600,6 +1678,24 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "two-d/render/TiledMap.d.ts"
+	},
+	{
+		"name": "LocalMultiplayer",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/LocalMultiplayer.d.ts"
+	},
+	{
+		"name": "LocalMultiplayerLayout",
+		"kind": "type",
+		"subpath": ".",
+		"declaringModule": "two-d/render/LocalMultiplayer.d.ts"
+	},
+	{
+		"name": "LocalMultiplayerOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/LocalMultiplayer.d.ts"
 	},
 	{
 		"name": "LockstepClient",
@@ -1944,6 +2040,12 @@
 		"declaringModule": "two-d/render/NeonGlow.d.ts"
 	},
 	{
+		"name": "NEUTRAL_TONE",
+		"kind": "const",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
 		"name": "newlyRevealed",
 		"kind": "function",
 		"subpath": ".",
@@ -2002,6 +2104,18 @@
 		"kind": "class",
 		"subpath": ".",
 		"declaringModule": "two-d/render/Shape2D.d.ts"
+	},
+	{
+		"name": "NormalizedTone",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
+		"name": "normalizeTone",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Tone.d.ts"
 	},
 	{
 		"name": "OnScreenKeyboard",
@@ -2216,6 +2330,18 @@
 	{
 		"name": "Picture",
 		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
+		"name": "PICTURE_BLEND_MODES",
+		"kind": "const",
+		"subpath": ".",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
+		"name": "PictureBlendMode",
+		"kind": "type",
 		"subpath": ".",
 		"declaringModule": "two-d/render/PictureLayer.d.ts"
 	},
@@ -2934,6 +3060,36 @@
 		"declaringModule": "two-d/ui/ScrollText.d.ts"
 	},
 	{
+		"name": "SelectAction",
+		"kind": "type",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
+		"name": "selectEntry",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
+		"name": "SelectEntry",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
+		"name": "SelectOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
+		"name": "SelectPage",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
 		"name": "serializeReplay",
 		"kind": "function",
 		"subpath": ".",
@@ -3040,6 +3196,18 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/TextSharpness.d.ts"
+	},
+	{
+		"name": "shortestPath",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "core/Pathfinding.d.ts"
+	},
+	{
+		"name": "ShortestPathOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "core/Pathfinding.d.ts"
 	},
 	{
 		"name": "ShowOptions",
@@ -3206,6 +3374,18 @@
 	{
 		"name": "splitScreenHalves",
 		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
+		"name": "splitScreenLayout",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
+		"name": "SplitScreenOptions",
+		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/render/Viewport.d.ts"
 	},
@@ -3730,6 +3910,24 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/Toast.d.ts"
+	},
+	{
+		"name": "Tone",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
+		"name": "ToneFilter",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
+		"name": "toneMatrix",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Tone.d.ts"
 	},
 	{
 		"name": "Tooltip",
@@ -8700,6 +8898,12 @@
 		"declaringModule": "core/Settings.d.ts"
 	},
 	{
+		"name": "GatedInput",
+		"kind": "interface",
+		"subpath": "./core",
+		"declaringModule": "core/Hotseat.d.ts"
+	},
+	{
 		"name": "Generator",
 		"kind": "class",
 		"subpath": "./core",
@@ -8776,6 +8980,18 @@
 		"kind": "class",
 		"subpath": "./core",
 		"declaringModule": "core/Hooks.d.ts"
+	},
+	{
+		"name": "Hotseat",
+		"kind": "class",
+		"subpath": "./core",
+		"declaringModule": "core/Hotseat.d.ts"
+	},
+	{
+		"name": "HotseatOptions",
+		"kind": "interface",
+		"subpath": "./core",
+		"declaringModule": "core/Hotseat.d.ts"
 	},
 	{
 		"name": "HttpTransport",
@@ -9340,6 +9556,18 @@
 		"kind": "type",
 		"subpath": "./core",
 		"declaringModule": "core/ShareLink.d.ts"
+	},
+	{
+		"name": "shortestPath",
+		"kind": "function",
+		"subpath": "./core",
+		"declaringModule": "core/Pathfinding.d.ts"
+	},
+	{
+		"name": "ShortestPathOptions",
+		"kind": "interface",
+		"subpath": "./core",
+		"declaringModule": "core/Pathfinding.d.ts"
 	},
 	{
 		"name": "Signal",
@@ -13566,6 +13794,12 @@
 		"declaringModule": "two-d/render/SpriteAttachment.d.ts"
 	},
 	{
+		"name": "attachToneFilter",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
 		"name": "AudioSuspendRig",
 		"kind": "interface",
 		"subpath": "./two-d",
@@ -13872,6 +14106,24 @@
 		"declaringModule": "two-d/render/Shape2D.d.ts"
 	},
 	{
+		"name": "createLocalMultiplayer",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/LocalMultiplayer.d.ts"
+	},
+	{
+		"name": "createViewports",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
+		"name": "CreateViewportsOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
 		"name": "croppedTexture",
 		"kind": "function",
 		"subpath": "./two-d",
@@ -13912,6 +14164,12 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/SpriteDeform.d.ts"
+	},
+	{
+		"name": "detachToneFilter",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Tone.d.ts"
 	},
 	{
 		"name": "detectWebGpu",
@@ -13986,10 +14244,34 @@
 		"declaringModule": "two-d/ui/markup.d.ts"
 	},
 	{
+		"name": "EscapeMarkupOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/escape-markup.d.ts"
+	},
+	{
+		"name": "EscapeRule",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/escape-markup.d.ts"
+	},
+	{
+		"name": "escapesToMarkup",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/escape-markup.d.ts"
+	},
+	{
 		"name": "extractDialogueCatalog",
 		"kind": "function",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/stage/dialogue-text.d.ts"
+	},
+	{
+		"name": "FilterOwner",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Tone.d.ts"
 	},
 	{
 		"name": "fitWindowZoom",
@@ -14430,6 +14712,12 @@
 		"declaringModule": "two-d/ui/VerticalLabel.d.ts"
 	},
 	{
+		"name": "lerpTone",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
 		"name": "LightningArc",
 		"kind": "class",
 		"subpath": "./two-d",
@@ -14524,6 +14812,24 @@
 		"kind": "function",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/TiledMap.d.ts"
+	},
+	{
+		"name": "LocalMultiplayer",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/LocalMultiplayer.d.ts"
+	},
+	{
+		"name": "LocalMultiplayerLayout",
+		"kind": "type",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/LocalMultiplayer.d.ts"
+	},
+	{
+		"name": "LocalMultiplayerOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/LocalMultiplayer.d.ts"
 	},
 	{
 		"name": "MapLoop",
@@ -14772,6 +15078,12 @@
 		"declaringModule": "two-d/render/NeonGlow.d.ts"
 	},
 	{
+		"name": "NEUTRAL_TONE",
+		"kind": "const",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
 		"name": "newlyRevealed",
 		"kind": "function",
 		"subpath": "./two-d",
@@ -14800,6 +15112,18 @@
 		"kind": "class",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/Shape2D.d.ts"
+	},
+	{
+		"name": "NormalizedTone",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
+		"name": "normalizeTone",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Tone.d.ts"
 	},
 	{
 		"name": "OnScreenKeyboard",
@@ -14978,6 +15302,18 @@
 	{
 		"name": "Picture",
 		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
+		"name": "PICTURE_BLEND_MODES",
+		"kind": "const",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
+		"name": "PictureBlendMode",
+		"kind": "type",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/PictureLayer.d.ts"
 	},
@@ -15420,6 +15756,36 @@
 		"declaringModule": "two-d/ui/ScrollText.d.ts"
 	},
 	{
+		"name": "SelectAction",
+		"kind": "type",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
+		"name": "selectEntry",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
+		"name": "SelectEntry",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
+		"name": "SelectOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
+		"name": "SelectPage",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
 		"name": "setTheme",
 		"kind": "function",
 		"subpath": "./two-d",
@@ -15584,6 +15950,18 @@
 	{
 		"name": "splitScreenHalves",
 		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
+		"name": "splitScreenLayout",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
+		"name": "SplitScreenOptions",
+		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/Viewport.d.ts"
 	},
@@ -16032,6 +16410,24 @@
 		"declaringModule": "two-d/ui/Toast.d.ts"
 	},
 	{
+		"name": "Tone",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
+		"name": "ToneFilter",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
+		"name": "toneMatrix",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
 		"name": "Tooltip",
 		"kind": "class",
 		"subpath": "./two-d",
@@ -16314,13 +16710,49 @@
 		"declaringModule": "two-d/render/RpgmAutotile.d.ts"
 	},
 	{
+		"name": "attachPixiFilter",
+		"kind": "function",
+		"subpath": "./two-d/pixi-interop",
+		"declaringModule": "two-d/pixi-interop.d.ts"
+	},
+	{
+		"name": "ColorMatrixFilter",
+		"kind": "re-export",
+		"subpath": "./two-d/pixi-interop",
+		"declaringModule": "two-d/pixi-interop.d.ts"
+	},
+	{
 		"name": "Container",
 		"kind": "re-export",
 		"subpath": "./two-d/pixi-interop",
 		"declaringModule": "two-d/pixi-interop.d.ts"
 	},
 	{
+		"name": "createPixiNamespace",
+		"kind": "function",
+		"subpath": "./two-d/pixi-interop",
+		"declaringModule": "two-d/pixi-interop.d.ts"
+	},
+	{
 		"name": "FillGradient",
+		"kind": "re-export",
+		"subpath": "./two-d/pixi-interop",
+		"declaringModule": "two-d/pixi-interop.d.ts"
+	},
+	{
+		"name": "Filter",
+		"kind": "re-export",
+		"subpath": "./two-d/pixi-interop",
+		"declaringModule": "two-d/pixi-interop.d.ts"
+	},
+	{
+		"name": "GlProgram",
+		"kind": "re-export",
+		"subpath": "./two-d/pixi-interop",
+		"declaringModule": "two-d/pixi-interop.d.ts"
+	},
+	{
+		"name": "GpuProgram",
 		"kind": "re-export",
 		"subpath": "./two-d/pixi-interop",
 		"declaringModule": "two-d/pixi-interop.d.ts"
@@ -16498,6 +16930,12 @@
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/SpriteAttachment.d.ts"
+	},
+	{
+		"name": "attachToneFilter",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Tone.d.ts"
 	},
 	{
 		"name": "AutotileCell",
@@ -16698,6 +17136,24 @@
 		"declaringModule": "two-d/render/Shape2D.d.ts"
 	},
 	{
+		"name": "createLocalMultiplayer",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/LocalMultiplayer.d.ts"
+	},
+	{
+		"name": "createViewports",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
+		"name": "CreateViewportsOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
 		"name": "croppedTexture",
 		"kind": "function",
 		"subpath": "./two-d/render",
@@ -16722,6 +17178,12 @@
 		"declaringModule": "two-d/render/SpriteDeform.d.ts"
 	},
 	{
+		"name": "detachToneFilter",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
 		"name": "detectWebGpu",
 		"kind": "function",
 		"subpath": "./two-d/render",
@@ -16744,6 +17206,12 @@
 		"kind": "const",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/TileMap.d.ts"
+	},
+	{
+		"name": "FilterOwner",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Tone.d.ts"
 	},
 	{
 		"name": "FlightHandle",
@@ -16944,6 +17412,12 @@
 		"declaringModule": "two-d/render/LayeredSprite.d.ts"
 	},
 	{
+		"name": "lerpTone",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
 		"name": "LightningArc",
 		"kind": "class",
 		"subpath": "./two-d/render",
@@ -16996,6 +17470,24 @@
 		"kind": "function",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/TiledMap.d.ts"
+	},
+	{
+		"name": "LocalMultiplayer",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/LocalMultiplayer.d.ts"
+	},
+	{
+		"name": "LocalMultiplayerLayout",
+		"kind": "type",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/LocalMultiplayer.d.ts"
+	},
+	{
+		"name": "LocalMultiplayerOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/LocalMultiplayer.d.ts"
 	},
 	{
 		"name": "MapLoop",
@@ -17082,6 +17574,12 @@
 		"declaringModule": "two-d/render/NeonGlow.d.ts"
 	},
 	{
+		"name": "NEUTRAL_TONE",
+		"kind": "const",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
 		"name": "newlyRevealed",
 		"kind": "function",
 		"subpath": "./two-d/render",
@@ -17098,6 +17596,18 @@
 		"kind": "class",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/Shape2D.d.ts"
+	},
+	{
+		"name": "NormalizedTone",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
+		"name": "normalizeTone",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Tone.d.ts"
 	},
 	{
 		"name": "openAnimationFrame",
@@ -17252,6 +17762,18 @@
 	{
 		"name": "Picture",
 		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
+		"name": "PICTURE_BLEND_MODES",
+		"kind": "const",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
+		"name": "PictureBlendMode",
+		"kind": "type",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/PictureLayer.d.ts"
 	},
@@ -17568,6 +18090,18 @@
 		"declaringModule": "two-d/render/Viewport.d.ts"
 	},
 	{
+		"name": "splitScreenLayout",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
+		"name": "SplitScreenOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
 		"name": "SpringSprite",
 		"kind": "class",
 		"subpath": "./two-d/render",
@@ -17842,6 +18376,24 @@
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/StatusVisuals.d.ts"
+	},
+	{
+		"name": "Tone",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
+		"name": "ToneFilter",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Tone.d.ts"
+	},
+	{
+		"name": "toneMatrix",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Tone.d.ts"
 	},
 	{
 		"name": "TransitionContext",
@@ -18300,6 +18852,24 @@
 		"declaringModule": "two-d/ui/markup.d.ts"
 	},
 	{
+		"name": "EscapeMarkupOptions",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/escape-markup.d.ts"
+	},
+	{
+		"name": "EscapeRule",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/escape-markup.d.ts"
+	},
+	{
+		"name": "escapesToMarkup",
+		"kind": "function",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/escape-markup.d.ts"
+	},
+	{
 		"name": "fitWindowZoom",
 		"kind": "function",
 		"subpath": "./two-d/ui",
@@ -18880,6 +19450,36 @@
 		"kind": "interface",
 		"subpath": "./two-d/ui",
 		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
+		"name": "SelectAction",
+		"kind": "type",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
+		"name": "selectEntry",
+		"kind": "function",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
+		"name": "SelectEntry",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
+		"name": "SelectOptions",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/select.d.ts"
+	},
+	{
+		"name": "SelectPage",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/select.d.ts"
 	},
 	{
 		"name": "setTheme",

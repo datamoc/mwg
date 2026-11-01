@@ -32,12 +32,15 @@ Priority review, 2026-11-01: the MWGP port's own open upstream asks (`mwgp/4MWG`
 roadmap items) are shipped rather than promoted: pictures, parallax, map looping, weather presets,
 a video overlay, `Camera.zoomTo`, per-line message alignment, the audio insert chain and effect
 helpers, an async `World.enterAsync`, the raw `Text2D` destroy guard and the per-kind autotile
-table. These are presentation and runtime primitives a conversion target needed, so none of them
-displaces a parked item. No numbered item is open; the external list is unchanged (port
-completeness, the Pixel Dungeon port's own `MidiRenderQueue` adoption, parked decisions, and Opus
-on Safari and the mobile WebViews). Rendering priorities are unchanged: no render path changed,
-the new layers use the existing Pixi path, and the bundle grew 2.3% raw for the added surface,
-recorded in `tools/bundle-size.json`.
+table. A second pass covered the asks added that evening: a real subtractive picture blend, a live
+RGSS/MV tone, a bounded Pixi namespace for plugin filters, `Pathfinding.shortestPath`, a headless
+list selection over a presenter, the engine-escape to markup adaptor, and hotseat/split-screen
+local multiplayer for 1 to 4 players. These are presentation and runtime primitives a conversion
+target needed, so none of them displaces a parked item. No numbered item is open; the external
+list is unchanged (port completeness, the Pixel Dungeon port's own `MidiRenderQueue` adoption,
+parked decisions, and Opus on Safari and the mobile WebViews). Rendering priorities are unchanged:
+no render path changed, the new layers use the existing Pixi path, and the bundle grew for the
+added surface, recorded in `tools/bundle-size.json`.
 
 Priority review, 2026-10-31 (later): the list was re-read end to end after item 462 shipped. No numbered item is open. What remains is external and unchanged: the ports' completeness (their own READMEs), the Pixel Dungeon port's `MidiRenderQueue` adoption entry (its call), the parked decisions, and Opus on Safari and the mobile WebViews (devices). Nothing is promoted; rendering priorities are unchanged, no render path changed this session.
 

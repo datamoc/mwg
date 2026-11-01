@@ -1,7 +1,18 @@
 import { Container, Graphics } from 'pixi.js';
+import type { Container2D } from './Types2D.ts';
 import { clamp } from '../../core/Math.ts';
 import { Easing } from '../../core/Tween.ts';
 import { reducedMotion } from '../../core/Motion.ts';
+import {
+	ToneFilter,
+	attachToneFilter,
+	detachToneFilter,
+	lerpTone,
+	normalizeTone,
+	type NormalizedTone,
+	type Tone,
+} from './Tone.ts';
+import type { Filter } from 'pixi.js';
 
 /** what the overlay is currently doing; `'idle'` covers both fully clear and a held tint */
 export type ScreenEffectPhase = 'idle' | 'fadeOut' | 'fadeIn' | 'flash' | 'hold';
@@ -12,6 +23,14 @@ export interface ScreenEffectsOptions {
 
 	/** the colour used when a call does not name one; defaults to black */
 	color?: number;
+
+	/**
+	 * The container a screen `tone` filters: the world layer, usually `camera.world`. A tone
+	 * is a colour matrix over what it covers, so it cannot be drawn as a wash over the
+	 * screen; without a target `tone` warns once and does nothing rather than silently
+	 * filtering the wrong layer.
+	 */
+	toneTarget?: Container2D;
 }
 
 /** one step of a `sequence`; `hold` keeps the overlay exactly as the previous step left it */
@@ -85,11 +104,20 @@ export class ScreenEffects extends Container {
 	/** steps still to run once the current one finishes, for `sequence` */
 	private queue: ScreenEffectStep[] = [];
 
+	private readonly toneTarget: Container2D | null;
+	private toneFilter: ToneFilter | null = null;
+	private tonePixiFilter: Filter | null = null;
+	private toneFrom: NormalizedTone | null = null;
+	private toneTo: NormalizedTone | null = null;
+	private toneElapsed = 0;
+	private toneDuration = 0;
+
 	constructor(options: ScreenEffectsOptions = {}) {
 		super();
 		this.defaultColor = options.color ?? 0x000000;
 		this.viewWidth = options.width ?? 0;
 		this.viewHeight = options.height ?? 0;
+		this.toneTarget = options.toneTarget ?? null;
 
 		this.overlay.alpha = 0;
 		this.overlay.tint = this.defaultColor;
@@ -111,9 +139,98 @@ export class ScreenEffects extends Container {
 		}
 	}
 
-	/** true while a fade or flash is still running; a held tint is not busy */
+	/** true while a fade, flash or tone animation is still running; a held tint or tone is not busy */
 	get isBusy(): boolean {
-		return this.phase !== 'idle';
+		return this.phase !== 'idle' || this.toneTo !== null;
+	}
+
+	/**
+	 * Eases the whole `toneTarget` towards an RGSS/MV tone over `duration` seconds, or sets
+	 * it at once with 0. Unlike `flash`/`setTint`, this is not a wash over the screen: it
+	 * filters the layer the effect was built with, so the saturation change reaches every
+	 * pixel drawn there (a world turning grey, a map washed blue) and the UI above stays
+	 * readable. Warns once and does nothing when no `toneTarget` was supplied.
+	 *
+	 * @example
+	 * ```ts
+	 * import { ScreenEffects } from '@datamoc/mwg/two-d/render';
+	 * import type { Container2D } from '@datamoc/mwg/two-d/render';
+	 *
+	 * declare const world: Container2D;
+	 *
+	 * const effects = new ScreenEffects({ width: 640, height: 360, toneTarget: world });
+	 * effects.tone({ gray: 255, blue: 30 }, 1.5); // fade the world to a cold monochrome
+	 * effects.update(1 / 60);
+	 * ```
+	 */
+	tone(tone: Tone, duration = 0): void {
+		if (!this.toneTarget) {
+			warnNoToneTarget();
+			return;
+		}
+		const target = normalizeTone(tone);
+		if (!(duration > 0) || reducedMotion()) {
+			this.applyTone(target);
+			return;
+		}
+		this.toneFrom = this.toneFilter?.tone ?? { red: 0, green: 0, blue: 0, gray: 0 };
+		this.toneTo = target;
+		this.toneElapsed = 0;
+		this.toneDuration = duration;
+		this.ensureToneFilter();
+	}
+
+	/** sets a tone immediately and drops any running tone animation */
+	setTone(tone: Tone): void {
+		this.applyTone(normalizeTone(tone));
+	}
+
+	/** removes the tone and its filter from the target */
+	clearTone(): void {
+		this.toneFrom = null;
+		this.toneTo = null;
+		this.toneElapsed = 0;
+		const filter = this.tonePixiFilter;
+		this.tonePixiFilter = null;
+		this.toneFilter = null;
+		if (this.toneTarget) detachToneFilter(this.toneTarget, filter);
+	}
+
+	/** the tone currently applied, neutral when there is none */
+	get currentTone(): NormalizedTone {
+		return this.toneFilter?.tone ?? { red: 0, green: 0, blue: 0, gray: 0 };
+	}
+
+	private ensureToneFilter(): ToneFilter {
+		if (!this.toneFilter) {
+			this.toneFilter = new ToneFilter();
+			if (this.toneTarget) this.tonePixiFilter = attachToneFilter(this.toneTarget, this.toneFilter);
+		}
+		return this.toneFilter;
+	}
+
+	private applyTone(tone: NormalizedTone): void {
+		if (!this.toneTarget) {
+			warnNoToneTarget();
+			return;
+		}
+		this.ensureToneFilter().tone = tone;
+		this.toneFrom = null;
+		this.toneTo = null;
+		this.toneElapsed = 0;
+	}
+
+	/** steps a running tone animation; @returns true on the frame it finishes */
+	private updateTone(dt: number): boolean {
+		if (!this.toneFrom || !this.toneTo) return false;
+		this.toneElapsed += dt;
+		const t = Math.min(1, this.toneElapsed / this.toneDuration);
+		const eased = Easing.easeInOutQuad(t);
+		this.ensureToneFilter().tone = lerpTone(this.toneFrom, this.toneTo, eased);
+		if (t < 1) return false;
+		this.toneFrom = null;
+		this.toneTo = null;
+		return true;
 	}
 
 	/**
@@ -182,6 +299,7 @@ export class ScreenEffects extends Container {
 		this.elapsed = 0;
 		this.overlay.alpha = 0;
 		this.overlay.tint = this.defaultColor;
+		this.clearTone();
 	}
 
 	/** @returns true if this step completed instantly (a non-positive duration) and the next one, if any, already started */
@@ -236,15 +354,16 @@ export class ScreenEffects extends Container {
 		return false;
 	}
 
-	/** @returns true on the single frame the running effect (or the whole `sequence`) completes */
+	/** @returns true on the single frame the running effect, tone or whole `sequence` completes */
 	update(dt: number): boolean {
-		if (this.phase === 'idle') return false;
+		const toneDone = this.updateTone(dt);
+		if (this.phase === 'idle') return toneDone;
 
 		//the preference can arrive while an effect is in flight; a fade or a flash is a
 		//trigger, so finish it at once rather than letting the running one play out
 		if (reducedMotion()) {
 			this.overlay.alpha = this.phase === 'flash' ? 0 : this.toAlpha;
-			return this.advance();
+			return this.advance() || toneDone;
 		}
 
 		this.elapsed += dt;
@@ -261,8 +380,16 @@ export class ScreenEffects extends Container {
 
 		if (t >= 1) {
 			this.overlay.alpha = this.phase === 'flash' ? 0 : this.toAlpha;
-			return this.advance();
+			return this.advance() || toneDone;
 		}
-		return false;
+		return toneDone;
 	}
+}
+
+let warnedNoToneTarget = false;
+
+function warnNoToneTarget(): void {
+	if (warnedNoToneTarget) return;
+	warnedNoToneTarget = true;
+	console.warn('ScreenEffects.tone needs a toneTarget (usually camera.world); the tone was not applied');
 }

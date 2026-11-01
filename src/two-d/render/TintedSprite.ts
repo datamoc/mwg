@@ -2,6 +2,15 @@ import { Sprite } from 'pixi.js';
 import type { SpriteOptions } from 'pixi.js';
 import { packColorAdd, packTintAdd, registerColorTransform, useColorTransformPipe } from './ColorTransformBatcher.ts';
 import type { Texture2D } from './Types2D.ts';
+import {
+	NEUTRAL_TONE,
+	ToneFilter,
+	attachToneFilter,
+	detachToneFilter,
+	type NormalizedTone,
+	type Tone,
+} from './Tone.ts';
+import type { Filter } from 'pixi.js';
 
 export { registerColorTransform } from './ColorTransformBatcher.ts';
 
@@ -47,6 +56,9 @@ registerColorTransform();
  */
 export class TintedSprite extends Sprite {
 	private _colorAdd = 0;
+	private toneFilter: ToneFilter | null = null;
+	private tonePixiFilter: Filter | null = null;
+	private _tone: NormalizedTone = NEUTRAL_TONE;
 
 	constructor(options?: SpriteOptions | Texture2D) {
 		super(options as SpriteOptions);
@@ -95,5 +107,46 @@ export class TintedSprite extends Sprite {
 	resetColor(): void {
 		this.tint = 0xffffff;
 		this.colorAdd = 0;
+		this.setTone(null);
+	}
+
+	/**
+	 * Applies an RGSS-style tone (per-channel offsets plus a gray desaturation) as one live
+	 * colour-matrix filter, or removes it with null. Composes with `tint`/`colorAdd`, but a
+	 * filtered sprite leaves the colour-transform batch and costs its own pass, so use it
+	 * for the handful of sprites a scene tone covers rather than every sprite on the map -
+	 * `ScreenEffects.tone` is the screen-wide version, one filter for the whole world.
+	 *
+	 * @example
+	 * ```ts
+	 * import { TintedSprite } from '@datamoc/mwg/two-d/render';
+	 * import type { Texture2D } from '@datamoc/mwg/two-d/render';
+	 *
+	 * declare const portrait: Texture2D;
+	 *
+	 * const memory = new TintedSprite({ texture: portrait });
+	 * memory.setTone({ gray: 220, blue: 20 }); // a faded, cold flashback
+	 * memory.setTone(null); // full colour again
+	 * ```
+	 */
+	setTone(tone: Tone | null): void {
+		if (!tone) {
+			if (!this.toneFilter) return;
+			detachToneFilter(this, this.tonePixiFilter);
+			this.toneFilter = null;
+			this.tonePixiFilter = null;
+			this._tone = NEUTRAL_TONE;
+			return;
+		}
+
+		this.toneFilter ??= new ToneFilter();
+		this.toneFilter.tone = tone;
+		this._tone = this.toneFilter.tone;
+		this.tonePixiFilter = attachToneFilter(this, this.toneFilter);
+	}
+
+	/** the live tone last passed to `setTone`, neutral when there is none */
+	get tone(): NormalizedTone {
+		return this._tone;
 	}
 }

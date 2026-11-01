@@ -221,6 +221,10 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   travels; `onComposition` follows an IME through `start`/`update`/`end`, so a free text
   field can be built on top.
 - `PlayerInput` - a per-player scoped `Input`, for local multiplayer/split-screen.
+- `Hotseat`/`HotseatOptions`/`GatedInput` - the hotseat turn arbiter: `active`/`activeIndex`,
+  `begin`/`next` (awaiting an optional `requestHandOver` before the next player becomes active),
+  `onTurnStart`/`onTurnEnd`, an optional `turnSeconds` clock with `update(dt)`, and `gatedInput`
+  so only the active player's `isDown`/`justPressed`/`justReleased` get through.
 - `StoredValue`/`defaultStorage` - one JSON value under one storage key (`read(fallback)`/
   `write`/`remove`) over the same storage `SaveSystem` uses: a game's structured progress or
   best scores without a save slot.
@@ -323,6 +327,9 @@ turns a rule's synchronous, readable logic into a chain no single function owns.
   hex's edge.
 - `weightedFlood`/`WeightedCell`/`WeightedFloodOptions` - renderer- and rules-neutral Dijkstra
   flood over any cell topology, with injected costs, blockers, budget and stopping rules.
+  `shortestPath`/`ShortestPathOptions` run that same flood and walk its first-reach information
+  back from the goal, returning the ordered cells from start to goal inclusive, `[start]` when
+  they are the same cell, and `null` when the goal is unreachable within `maxCost`.
 - `cellInside`/`cellIndex`/`cellX`/`cellY`/`cellKey`/`cellFromKey` - bounded-grid indexing:
   the row-major arithmetic and bounds check that `roguelike.Level` and the `board` modules used
   to spell out for themselves, now stated once (the Wesnoth port asked for exactly this, to stop
@@ -398,7 +405,16 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
 - `ColorTransformBatcher`/`packColorAdd`/`packTintAdd`/`NO_COLOR_ADD` - a per-sprite
   `texel × M + A` colour transform (multiply *and* add) in the batch shader.
 - `TintedSprite`/`registerColorTransform` - a sprite drawn through the colour-transform
-  batcher; register the extension once via `GameOptions.extensions`.
+  batcher; register the extension once via `GameOptions.extensions`. `setTone` adds the live
+  RGSS/MV tone below as one filter and `resetColor` clears it with the tint.
+- `Tone`/`NormalizedTone`/`NEUTRAL_TONE`/`normalizeTone`/`toneMatrix`/`lerpTone`/`ToneFilter`/
+  `attachToneFilter`/`detachToneFilter` - the RGSS/MV screen tone as one live colour matrix:
+  per-channel offsets (-255..255) plus a gray desaturation, which is what `tint` (multiply) and
+  `colorAdd` (additive per channel) cannot compose. `toneMatrix` is the 5x4 matrix as pure data
+  (gray 255 sends every channel to its luminance, all three offsets at 255 turn black white),
+  `ToneFilter` drives one Pixi `ColorMatrixFilter` in place, and the attach/detach pair puts it on
+  any display object without disturbing its other filters. The filter is built on first use, so
+  the matrix stays testable headless.
 - `parseImagePath`/`imageModifier`/`colorShiftMatrix`/`applyImageModifiers`/`croppedTexture` - parses common
   image suffix modifiers such as `~FL`, `~GS`, `~SCALE` and `~CROP`, then applies the supported
   Pixi presentation changes without mutating shared source textures. `channelScaleMatrix`
@@ -476,7 +492,13 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   duration)` zooms about a screen point, keeping the world under that point fixed while the zoom
   eases (a cut-in, a reveal), with `zooming`/`stopZoom` for the caller's own bookkeeping and a
   reduced-motion jump to the end.
-- `Viewport`/`splitScreenHalves` - a camera scoped to one screen region, for split-screen.
+- `Viewport`/`splitScreenHalves`/`splitScreenLayout`/`createViewports` - a camera scoped to one
+  screen region, for split-screen. `splitScreenLayout(players, width, height, { three })` returns
+  the `ViewportOptions` for 1 to 4 players (full screen, halves, one half plus two quarters, or
+  quadrants), tiling the canvas exactly at odd sizes too; `createViewports` builds them in one
+  call. `createLocalMultiplayer({ players, mode, layout, follow })` composes one `Viewport` and
+  one `PlayerInput` per player in split mode, or one full-screen viewport plus a `Hotseat` in
+  hotseat mode, with a shared `update(dt)`.
 - `createColorBlindnessFilter`/`COLOR_BLINDNESS_MATRICES` - accessibility colour filters.
 - `Minimap`/`newlyRevealed`/`minimapCellCenter`/`MinimapMarker` - bakes an explored-cell set
   into a persistent `RenderTexture`, never redrawing an already-baked cell, and supports
@@ -528,11 +550,14 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
 - `Picture`/`PictureLayer`/`PictureOptions` - a named picture stack (show/move/rotate/tint/erase,
   origin, opacity, blend mode, z-order): `show` replaces a same-name picture in place, `moveTo`/
   `rotate`/`tint` change one without rebuilding it, and z-order follows an explicit `zIndex` when
-  set and insertion order otherwise.
+  set and insertion order otherwise. `setBlendMode` accepts `PICTURE_BLEND_MODES`, which includes
+  `subtract`: Pixi's own subtract blend mode is registered on first use, so RPG Maker XP's
+  subtractive picture and fog (type 2) is really subtractive, and an unknown mode throws by name.
 - `ParallaxLayer`/`parallaxScroll`/`ParallaxOptions` - a scrolling, optionally looping backdrop:
   camera-relative scroll rates (0 pinned, 1 moving with the world), `loopX`/`loopY` tiling,
-  opacity/tint/offset setters, and `parallaxScroll(path)` for the `!` prefix convention (a `!`
-  basename is pinned; otherwise the map default and looping).
+  opacity/tint/offset setters, `setTone` for the XP fog's own colour grade, and
+  `parallaxScroll(path)` for the `!` prefix convention (a `!` basename is pinned; otherwise the
+  map default and looping).
 - `VideoOverlay`/`VideoOverlayOptions`/`VideoPlayOptions` - a DOM `<video>` over the game canvas,
   because Pixi has no video primitive: `play(src)` resolves when a non-looping cutscene ends,
   `stop`/`pause`/`resume`/`setBounds`/`setVisible`/`dispose` manage it, and it constructs and
@@ -562,6 +587,9 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   `setBounds` rebuilds it for a resize, `clear` drops it, and `update(dt)` steps it.
 - `ScreenEffects`/`ScreenEffectStep` - a full-screen colour wash: `fadeOut`/`fadeIn`/`flash`/
   `setTint`, driven by `update(dt)` returning true on the frame an effect completes.
+  `tone(tone, duration)` eases a real tone over the container passed as `toneTarget` (usually
+  `camera.world`), so the world desaturates or warms with one filter while the UI stays readable;
+  `setTone`/`clearTone` set or drop it at once, and `currentTone` reads it.
   `sequence(steps)` (item 302) chains fade/hold/flash steps end to end as one call, for the
   hold-then-fade-back transition the four individual methods cannot express alone; `update`
   keeps returning false at every step boundary, true only once the whole sequence finishes.
@@ -641,7 +669,11 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   boundary names for common 2D values. The first three work in both type and value positions,
   so a game can construct a container or use texture and rectangle constants without naming
   `pixi.js`. For the rare need the facade does not cover, `two-d/pixi-interop` re-exports the
-  underlying Pixi classes explicitly.
+  underlying Pixi classes explicitly. For a plugin sandbox, `createPixiNamespace` returns a
+  bounded `PIXI` (scene classes plus `Filter`/`ColorMatrixFilter`/`GlProgram`/`GpuProgram`, no
+  renderer or application), `attachPixiFilter` puts a plugin-built filter on a live display
+  object once, and the port maps its plugin objects onto those live objects itself: a filter
+  on a stub stays inert, exactly as before.
 - `Node2D`/`Shape2D`/`Text2D`/`Sprite2D`/`TiledSprite`/`Gradient` - bare, MWG-named
   re-exports of Pixi's `Container`/`Graphics`/`Text`/`Sprite`/`TilingSprite`/`FillGradient`:
   a plain grouping layer, vector drawing, one-off text, a plain untinted sprite, a
@@ -697,6 +729,16 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   `maxWidth`/`lineHeight`/`align`/`resolveImage`/`variables`/`resolution` options, plus
   `tagStyles` (item 313): a Pixi `TextStyleOptions` record keyed by custom tag, applied to each
   run and used when measuring it, so `<quest>...</quest>` is styled and wraps under its own font.
+- `selectEntry`/`SelectEntry`/`SelectOptions`/`SelectAction`/`SelectPage` - a renderer-free paged
+  selection over a caller's presenter, for a game whose dialogue seam has no graphical window:
+  the cursor is reported per page, pages are slices of the original entries, a disabled row
+  cannot be chosen, and a cancel resolves `null`.
+- `escapesToMarkup`/`EscapeRule`/`EscapeMarkupOptions` - the adaptor contract from an engine's
+  own escape codes (`\C[3]`, `\FS[20]`, `{#ff0000}`, `\V[4]`) to mwg markup: the caller supplies
+  a rule per code (`open`/`close` and how its argument is read) plus an optional `resolve` for
+  palette indices or variable values; an unknown or malformed code stays literal, and a rule's
+  `close` is emitted at the line break. `mwg` supplies the mechanism, while each engine's own
+  code table stays with the engine.
 - `RichLabel`/`parseMarkdown`/`stripMarkdown`/`sliceSpans` - basic inline markdown (`**bold**`,
   `*italic*`, combined `***both***`, backslash escapes) through Pixi `HTMLText`, which is
   what makes mixed styles inside one string possible at all. `parseMarkdown` is pure

@@ -288,6 +288,10 @@ build instead.
         y: number;
     }
 
+### `attachToneFilter` (function)
+
+    export declare function attachToneFilter(owner: FilterOwner, tone: ToneFilter): PixiFilter | null;
+
 ### `Audio` (namespace)
 
     export * as Audio from './audio/index.ts'
@@ -1128,6 +1132,23 @@ build instead.
 
     export declare function createLayers(parent: Container, names: readonly string[]): Record<string, Node2D>;
 
+### `createLocalMultiplayer` (function)
+
+    export declare function createLocalMultiplayer(options: LocalMultiplayerOptions): LocalMultiplayer;
+
+### `createViewports` (function)
+
+    export declare function createViewports(players: 1 | 2 | 3 | 4, options: CreateViewportsOptions): Viewport[];
+
+### `CreateViewportsOptions` (interface)
+
+    export interface CreateViewportsOptions extends SplitScreenOptions {
+        width: number;
+        height: number;
+
+        zoom?: number;
+    }
+
 ### `croppedTexture` (function)
 
     export declare function croppedTexture(texture: Texture, parsed: ParsedImagePath): Texture;
@@ -1277,6 +1298,10 @@ build instead.
 ### `deserializeReplay` (function)
 
     export declare function deserializeReplay(json: string): ReplayEvent[];
+
+### `detachToneFilter` (function)
+
+    export declare function detachToneFilter(owner: FilterOwner, filter: PixiFilter | null): void;
 
 ### `detectWebGpu` (function)
 
@@ -1508,6 +1533,30 @@ build instead.
 
     export declare function escapeHtml(text: string): string;
 
+### `EscapeMarkupOptions` (interface)
+
+    export interface EscapeMarkupOptions {
+
+        readonly resolve?: (rule: EscapeRule, argument: string) => string | undefined;
+    }
+
+### `EscapeRule` (interface)
+
+    export interface EscapeRule {
+
+        readonly code: string;
+
+        readonly open: string;
+
+        readonly close?: string;
+
+        readonly argument?: 'literal' | 'color' | 'number';
+    }
+
+### `escapesToMarkup` (function)
+
+    export declare function escapesToMarkup(source: string, rules: readonly EscapeRule[], options?: EscapeMarkupOptions): string;
+
 ### `euclidean` (function)
 
     export declare function euclidean(a: {
@@ -1546,6 +1595,12 @@ build instead.
     export interface FeedbackResponse {
         ok: boolean;
         status: number;
+    }
+
+### `FilterOwner` (interface)
+
+    export interface FilterOwner {
+        filters: readonly PixiFilter[] | null;
     }
 
 ### `fitShareLink` (function)
@@ -1960,6 +2015,14 @@ build instead.
         custom: Record<string, CustomSettingValue>;
     }
 
+### `GatedInput` (interface)
+
+    export interface GatedInput {
+        isDown(action: Action): boolean;
+        justPressed(action: Action): boolean;
+        justReleased(action: Action): boolean;
+    }
+
 ### `Generator` (class)
 
     export declare class Generator {
@@ -2315,6 +2378,57 @@ build instead.
         clear(): void;
     }
 
+### `Hotseat` (class)
+
+    export declare class Hotseat {
+        private readonly playerList;
+        private readonly options;
+        private readonly clock;
+        private index;
+        private started;
+        private remaining;
+        private timedOut;
+        private pending;
+        constructor(players: readonly string[], options?: HotseatOptions);
+
+        get active(): string | null;
+
+        get activeIndex(): number;
+        get players(): readonly string[];
+
+        get turnRemaining(): number | null;
+
+        get expired(): boolean;
+
+        begin(): void;
+
+        next(): Promise<void>;
+
+        update(dt: number): void;
+
+        acceptsInput(player: string): boolean;
+
+        gatedInput(input: PlayerInput): GatedInput;
+
+        reset(index?: number): void;
+        private startTurn;
+    }
+
+### `HotseatOptions` (interface)
+
+    export interface HotseatOptions {
+
+        turnSeconds?: number;
+
+        autoAdvance?: boolean;
+
+        onTurnStart?: (player: string, index: number) => void;
+
+        onTurnEnd?: (player: string, index: number) => void;
+
+        requestHandOver?: (from: string, to: string) => Promise<void> | void;
+    }
+
 ### `HttpTransport` (class)
 
     export declare abstract class HttpTransport {
@@ -2640,6 +2754,10 @@ build instead.
 
     export declare function layoutVertical(text: string, options: VerticalLayoutOptions): GlyphLayout[];
 
+### `lerpTone` (function)
+
+    export declare function lerpTone(from: Tone, to: Tone, t: number): NormalizedTone;
+
 ### `LightningArc` (class)
 
     export declare class LightningArc {
@@ -2936,6 +3054,51 @@ build instead.
 ### `loadTiledMap` (function)
 
     export declare function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSheet[]): LoadedTiledMap;
+
+### `LocalMultiplayer` (interface)
+
+    export interface LocalMultiplayer {
+        readonly mode: 'hotseat' | 'split';
+
+        readonly viewports: Viewport[];
+
+        readonly inputs: PlayerInput[];
+
+        readonly hotseat: Hotseat | null;
+        update(dt: number): void;
+    }
+
+### `LocalMultiplayerLayout` (type)
+
+    export type LocalMultiplayerLayout = CreateViewportsOptions;
+
+### `LocalMultiplayerOptions` (interface)
+
+    export interface LocalMultiplayerOptions {
+
+        players: readonly string[];
+
+        mode?: 'hotseat' | 'split';
+
+        layout?: LocalMultiplayerLayout;
+
+        follow?: Record<string, () => {
+            x: number;
+            y: number;
+        }>;
+
+        padIndexFor?: (player: string, index: number) => number;
+
+        onTurnStart?: (player: string, index: number) => void;
+
+        onTurnEnd?: (player: string, index: number) => void;
+
+        turnSeconds?: number;
+
+        autoAdvance?: boolean;
+
+        requestHandOver?: (from: string, to: string) => Promise<void> | void;
+    }
 
 ### `LockstepClient` (class)
 
@@ -3653,6 +3816,10 @@ build instead.
         intent?: MotionIntent;
     }
 
+### `NEUTRAL_TONE` (const)
+
+    export declare const NEUTRAL_TONE: NormalizedTone;
+
 ### `newlyRevealed` (function)
 
     export declare function newlyRevealed(explored: ReadonlySet<number>, alreadyDrawn: ReadonlySet<number>): number[];
@@ -3732,6 +3899,19 @@ build instead.
 
     export declare class Node2D extends Container {
     }
+
+### `NormalizedTone` (interface)
+
+    export interface NormalizedTone {
+        readonly red: number;
+        readonly green: number;
+        readonly blue: number;
+        readonly gray: number;
+    }
+
+### `normalizeTone` (function)
+
+    export declare function normalizeTone(tone: Tone | null | undefined): NormalizedTone;
 
 ### `OnScreenKeyboard` (class)
 
@@ -3819,6 +3999,9 @@ build instead.
         private copies;
         private columns;
         private rows;
+        private toneFilter;
+        private tonePixiFilter;
+        private _tone;
         constructor(options: ParallaxOptions);
 
         get scrollX(): number;
@@ -3834,6 +4017,10 @@ build instead.
         setOpacity(opacity: number): void;
 
         setTint(color: number): void;
+
+        setTone(tone: Tone | null): void;
+
+        get tone(): NormalizedTone;
 
         setOffset(offsetX: number, offsetY: number): void;
 
@@ -4113,6 +4300,14 @@ build instead.
 
         setZIndex(value: number): this;
     }
+
+### `PICTURE_BLEND_MODES` (const)
+
+    export declare const PICTURE_BLEND_MODES: readonly ['normal', 'add', 'subtract', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'difference', 'exclusion', 'hard-light', 'soft-light', 'color-dodge', 'color-burn', 'hue', 'saturation', 'color', 'luminosity'];
+
+### `PictureBlendMode` (type)
+
+    export type PictureBlendMode = (typeof PICTURE_BLEND_MODES)[number];
 
 ### `PictureLayer` (class)
 
@@ -5221,12 +5416,31 @@ build instead.
         private toAlpha;
 
         private queue;
+        private readonly toneTarget;
+        private toneFilter;
+        private tonePixiFilter;
+        private toneFrom;
+        private toneTo;
+        private toneElapsed;
+        private toneDuration;
         constructor(options?: ScreenEffectsOptions);
 
         setViewport(width: number, height: number): void;
         private redraw;
 
         get isBusy(): boolean;
+
+        tone(tone: Tone, duration?: number): void;
+
+        setTone(tone: Tone): void;
+
+        clearTone(): void;
+
+        get currentTone(): NormalizedTone;
+        private ensureToneFilter;
+        private applyTone;
+
+        private updateTone;
 
         get washAlpha(): number;
 
@@ -5258,6 +5472,8 @@ build instead.
         height?: number;
 
         color?: number;
+
+        toneTarget?: Container2D;
     }
 
 ### `ScreenEffectStep` (interface)
@@ -5463,6 +5679,52 @@ build instead.
         label?: Omit<LabelOptions, 'text' | 'wrapWidth'>;
 
         touch?: boolean;
+    }
+
+### `SelectAction` (type)
+
+    export type SelectAction =
+
+    {
+        cursor: number;
+
+### `selectEntry` (function)
+
+    export declare function selectEntry<T>(entries: readonly SelectEntry<T>[], options: SelectOptions<T>): Promise<SelectEntry<T> | null>;
+
+### `SelectEntry` (interface)
+
+    export interface SelectEntry<T> {
+
+        label: string;
+
+        value: T;
+
+        disabled?: boolean;
+    }
+
+### `SelectOptions` (interface)
+
+    export interface SelectOptions<T> {
+
+        present: (page: SelectPage<T>) => Promise<SelectAction>;
+
+        pageSize?: number;
+
+        start?: number;
+    }
+
+### `SelectPage` (interface)
+
+    export interface SelectPage<T> {
+
+        entries: readonly SelectEntry<T>[];
+
+        pageIndex: number;
+
+        pageCount: number;
+
+        cursor: number;
     }
 
 ### `serializeReplay` (function)
@@ -5674,6 +5936,25 @@ build instead.
 ### `sharpenText` (function)
 
     export declare function sharpenText(root: Container, devicePixelRatio: number): void;
+
+### `shortestPath` (function)
+
+    export declare function shortestPath<T, K>(start: T, goal: T, options: ShortestPathOptions<T, K>): T[] | null;
+
+### `ShortestPathOptions` (interface)
+
+    export interface ShortestPathOptions<T, K> {
+
+        key: (cell: T) => K;
+
+        neighbors: (cell: T) => Iterable<T>;
+
+        cost?: (from: T, to: T) => number;
+
+        canEnter?: (cell: T, from: T, cost: number) => boolean;
+
+        maxCost?: number;
+    }
 
 ### `ShowOptions` (interface)
 
@@ -5945,6 +6226,17 @@ build instead.
 
     export declare function splitScreenHalves(width: number, height: number): [{
         x: number;
+
+### `splitScreenLayout` (function)
+
+    export declare function splitScreenLayout(players: 1 | 2 | 3 | 4, width: number, height: number, options?: SplitScreenOptions): ViewportOptions[];
+
+### `SplitScreenOptions` (interface)
+
+    export interface SplitScreenOptions {
+
+        three?: 'half-and-quarters' | 'large-left' | 'large-right';
+    }
 
 ### `SpringSprite` (class)
 
@@ -7128,6 +7420,9 @@ build instead.
 
     export declare class TintedSprite extends Sprite {
         private _colorAdd;
+        private toneFilter;
+        private tonePixiFilter;
+        private _tone;
         constructor(options?: SpriteOptions | Texture2D);
 
         get colorAdd(): number;
@@ -7140,6 +7435,10 @@ build instead.
         silhouette(color: number): void;
 
         resetColor(): void;
+
+        setTone(tone: Tone | null): void;
+
+        get tone(): NormalizedTone;
     }
 
 ### `TintTarget` (interface)
@@ -7183,6 +7482,36 @@ build instead.
 
         scaleFrom?: number;
     }
+
+### `Tone` (interface)
+
+    export interface Tone {
+
+        red?: number;
+        green?: number;
+        blue?: number;
+
+        gray?: number;
+    }
+
+### `ToneFilter` (class)
+
+    export declare class ToneFilter {
+        private _tone;
+        private _filter;
+        constructor(tone?: Tone);
+
+        get tone(): NormalizedTone;
+        set tone(value: Tone);
+
+        get matrix(): ColorMatrix;
+
+        pixi(): ColorMatrixFilter | null;
+    }
+
+### `toneMatrix` (function)
+
+    export declare function toneMatrix(tone: Tone | null | undefined): ColorMatrix;
 
 ### `Tooltip` (class)
 
@@ -14460,6 +14789,14 @@ build instead.
         custom: Record<string, CustomSettingValue>;
     }
 
+### `GatedInput` (interface)
+
+    export interface GatedInput {
+        isDown(action: Action): boolean;
+        justPressed(action: Action): boolean;
+        justReleased(action: Action): boolean;
+    }
+
 ### `Generator` (class)
 
     export declare class Generator {
@@ -14564,6 +14901,57 @@ build instead.
 
         get size(): number;
         clear(): void;
+    }
+
+### `Hotseat` (class)
+
+    export declare class Hotseat {
+        private readonly playerList;
+        private readonly options;
+        private readonly clock;
+        private index;
+        private started;
+        private remaining;
+        private timedOut;
+        private pending;
+        constructor(players: readonly string[], options?: HotseatOptions);
+
+        get active(): string | null;
+
+        get activeIndex(): number;
+        get players(): readonly string[];
+
+        get turnRemaining(): number | null;
+
+        get expired(): boolean;
+
+        begin(): void;
+
+        next(): Promise<void>;
+
+        update(dt: number): void;
+
+        acceptsInput(player: string): boolean;
+
+        gatedInput(input: PlayerInput): GatedInput;
+
+        reset(index?: number): void;
+        private startTurn;
+    }
+
+### `HotseatOptions` (interface)
+
+    export interface HotseatOptions {
+
+        turnSeconds?: number;
+
+        autoAdvance?: boolean;
+
+        onTurnStart?: (player: string, index: number) => void;
+
+        onTurnEnd?: (player: string, index: number) => void;
+
+        requestHandOver?: (from: string, to: string) => Promise<void> | void;
     }
 
 ### `HttpTransport` (class)
@@ -15538,6 +15926,25 @@ build instead.
 ### `ShareFailure` (type)
 
     export type ShareFailure = 'too-long' | 'malformed' | 'checksum' | 'version' | 'unsupported' | 'too-big' | 'refused' | 'schema';
+
+### `shortestPath` (function)
+
+    export declare function shortestPath<T, K>(start: T, goal: T, options: ShortestPathOptions<T, K>): T[] | null;
+
+### `ShortestPathOptions` (interface)
+
+    export interface ShortestPathOptions<T, K> {
+
+        key: (cell: T) => K;
+
+        neighbors: (cell: T) => Iterable<T>;
+
+        cost?: (from: T, to: T) => number;
+
+        canEnter?: (cell: T, from: T, cost: number) => boolean;
+
+        maxCost?: number;
+    }
 
 ### `Signal` (class)
 
@@ -21604,6 +22011,10 @@ build instead.
         y: number;
     }
 
+### `attachToneFilter` (function)
+
+    export declare function attachToneFilter(owner: FilterOwner, tone: ToneFilter): PixiFilter | null;
+
 ### `AudioSuspendRig` (interface)
 
     export interface AudioSuspendRig {
@@ -22272,6 +22683,23 @@ build instead.
 
     export declare function createLayers(parent: Container, names: readonly string[]): Record<string, Node2D>;
 
+### `createLocalMultiplayer` (function)
+
+    export declare function createLocalMultiplayer(options: LocalMultiplayerOptions): LocalMultiplayer;
+
+### `createViewports` (function)
+
+    export declare function createViewports(players: 1 | 2 | 3 | 4, options: CreateViewportsOptions): Viewport[];
+
+### `CreateViewportsOptions` (interface)
+
+    export interface CreateViewportsOptions extends SplitScreenOptions {
+        width: number;
+        height: number;
+
+        zoom?: number;
+    }
+
 ### `croppedTexture` (function)
 
     export declare function croppedTexture(texture: Texture, parsed: ParsedImagePath): Texture;
@@ -22379,6 +22807,10 @@ build instead.
         x: number;
         y: number;
     }
+
+### `detachToneFilter` (function)
+
+    export declare function detachToneFilter(owner: FilterOwner, filter: PixiFilter | null): void;
 
 ### `detectWebGpu` (function)
 
@@ -22550,10 +22982,40 @@ build instead.
 
     export declare function escapeHtml(text: string): string;
 
+### `EscapeMarkupOptions` (interface)
+
+    export interface EscapeMarkupOptions {
+
+        readonly resolve?: (rule: EscapeRule, argument: string) => string | undefined;
+    }
+
+### `EscapeRule` (interface)
+
+    export interface EscapeRule {
+
+        readonly code: string;
+
+        readonly open: string;
+
+        readonly close?: string;
+
+        readonly argument?: 'literal' | 'color' | 'number';
+    }
+
+### `escapesToMarkup` (function)
+
+    export declare function escapesToMarkup(source: string, rules: readonly EscapeRule[], options?: EscapeMarkupOptions): string;
+
 ### `extractDialogueCatalog` (function)
 
     export declare function extractDialogueCatalog(commands: readonly StageCommand[] | StoryScript, options?: {
         locale?: string;
+
+### `FilterOwner` (interface)
+
+    export interface FilterOwner {
+        filters: readonly PixiFilter[] | null;
+    }
 
 ### `fitWindowZoom` (function)
 
@@ -23380,6 +23842,10 @@ build instead.
 
     export declare function layoutVertical(text: string, options: VerticalLayoutOptions): GlyphLayout[];
 
+### `lerpTone` (function)
+
+    export declare function lerpTone(from: Tone, to: Tone, t: number): NormalizedTone;
+
 ### `LightningArc` (class)
 
     export declare class LightningArc {
@@ -23623,6 +24089,51 @@ build instead.
 ### `loadTiledMap` (function)
 
     export declare function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSheet[]): LoadedTiledMap;
+
+### `LocalMultiplayer` (interface)
+
+    export interface LocalMultiplayer {
+        readonly mode: 'hotseat' | 'split';
+
+        readonly viewports: Viewport[];
+
+        readonly inputs: PlayerInput[];
+
+        readonly hotseat: Hotseat | null;
+        update(dt: number): void;
+    }
+
+### `LocalMultiplayerLayout` (type)
+
+    export type LocalMultiplayerLayout = CreateViewportsOptions;
+
+### `LocalMultiplayerOptions` (interface)
+
+    export interface LocalMultiplayerOptions {
+
+        players: readonly string[];
+
+        mode?: 'hotseat' | 'split';
+
+        layout?: LocalMultiplayerLayout;
+
+        follow?: Record<string, () => {
+            x: number;
+            y: number;
+        }>;
+
+        padIndexFor?: (player: string, index: number) => number;
+
+        onTurnStart?: (player: string, index: number) => void;
+
+        onTurnEnd?: (player: string, index: number) => void;
+
+        turnSeconds?: number;
+
+        autoAdvance?: boolean;
+
+        requestHandOver?: (from: string, to: string) => Promise<void> | void;
+    }
 
 ### `MapLoop` (class)
 
@@ -24176,6 +24687,10 @@ build instead.
         intent?: MotionIntent;
     }
 
+### `NEUTRAL_TONE` (const)
+
+    export declare const NEUTRAL_TONE: NormalizedTone;
+
 ### `newlyRevealed` (function)
 
     export declare function newlyRevealed(explored: ReadonlySet<number>, alreadyDrawn: ReadonlySet<number>): number[];
@@ -24215,6 +24730,19 @@ build instead.
 
     export declare class Node2D extends Container {
     }
+
+### `NormalizedTone` (interface)
+
+    export interface NormalizedTone {
+        readonly red: number;
+        readonly green: number;
+        readonly blue: number;
+        readonly gray: number;
+    }
+
+### `normalizeTone` (function)
+
+    export declare function normalizeTone(tone: Tone | null | undefined): NormalizedTone;
 
 ### `OnScreenKeyboard` (class)
 
@@ -24302,6 +24830,9 @@ build instead.
         private copies;
         private columns;
         private rows;
+        private toneFilter;
+        private tonePixiFilter;
+        private _tone;
         constructor(options: ParallaxOptions);
 
         get scrollX(): number;
@@ -24317,6 +24848,10 @@ build instead.
         setOpacity(opacity: number): void;
 
         setTint(color: number): void;
+
+        setTone(tone: Tone | null): void;
+
+        get tone(): NormalizedTone;
 
         setOffset(offsetX: number, offsetY: number): void;
 
@@ -24571,6 +25106,14 @@ build instead.
 
         setZIndex(value: number): this;
     }
+
+### `PICTURE_BLEND_MODES` (const)
+
+    export declare const PICTURE_BLEND_MODES: readonly ['normal', 'add', 'subtract', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'difference', 'exclusion', 'hard-light', 'soft-light', 'color-dodge', 'color-burn', 'hue', 'saturation', 'color', 'luminosity'];
+
+### `PictureBlendMode` (type)
+
+    export type PictureBlendMode = (typeof PICTURE_BLEND_MODES)[number];
 
 ### `PictureLayer` (class)
 
@@ -25185,12 +25728,31 @@ build instead.
         private toAlpha;
 
         private queue;
+        private readonly toneTarget;
+        private toneFilter;
+        private tonePixiFilter;
+        private toneFrom;
+        private toneTo;
+        private toneElapsed;
+        private toneDuration;
         constructor(options?: ScreenEffectsOptions);
 
         setViewport(width: number, height: number): void;
         private redraw;
 
         get isBusy(): boolean;
+
+        tone(tone: Tone, duration?: number): void;
+
+        setTone(tone: Tone): void;
+
+        clearTone(): void;
+
+        get currentTone(): NormalizedTone;
+        private ensureToneFilter;
+        private applyTone;
+
+        private updateTone;
 
         get washAlpha(): number;
 
@@ -25222,6 +25784,8 @@ build instead.
         height?: number;
 
         color?: number;
+
+        toneTarget?: Container2D;
     }
 
 ### `ScreenEffectStep` (interface)
@@ -25427,6 +25991,52 @@ build instead.
         label?: Omit<LabelOptions, 'text' | 'wrapWidth'>;
 
         touch?: boolean;
+    }
+
+### `SelectAction` (type)
+
+    export type SelectAction =
+
+    {
+        cursor: number;
+
+### `selectEntry` (function)
+
+    export declare function selectEntry<T>(entries: readonly SelectEntry<T>[], options: SelectOptions<T>): Promise<SelectEntry<T> | null>;
+
+### `SelectEntry` (interface)
+
+    export interface SelectEntry<T> {
+
+        label: string;
+
+        value: T;
+
+        disabled?: boolean;
+    }
+
+### `SelectOptions` (interface)
+
+    export interface SelectOptions<T> {
+
+        present: (page: SelectPage<T>) => Promise<SelectAction>;
+
+        pageSize?: number;
+
+        start?: number;
+    }
+
+### `SelectPage` (interface)
+
+    export interface SelectPage<T> {
+
+        entries: readonly SelectEntry<T>[];
+
+        pageIndex: number;
+
+        pageCount: number;
+
+        cursor: number;
     }
 
 ### `setTheme` (function)
@@ -25736,6 +26346,17 @@ build instead.
 
     export declare function splitScreenHalves(width: number, height: number): [{
         x: number;
+
+### `splitScreenLayout` (function)
+
+    export declare function splitScreenLayout(players: 1 | 2 | 3 | 4, width: number, height: number, options?: SplitScreenOptions): ViewportOptions[];
+
+### `SplitScreenOptions` (interface)
+
+    export interface SplitScreenOptions {
+
+        three?: 'half-and-quarters' | 'large-left' | 'large-right';
+    }
 
 ### `SpringSprite` (class)
 
@@ -26782,6 +27403,9 @@ build instead.
 
     export declare class TintedSprite extends Sprite {
         private _colorAdd;
+        private toneFilter;
+        private tonePixiFilter;
+        private _tone;
         constructor(options?: SpriteOptions | Texture2D);
 
         get colorAdd(): number;
@@ -26794,6 +27418,10 @@ build instead.
         silhouette(color: number): void;
 
         resetColor(): void;
+
+        setTone(tone: Tone | null): void;
+
+        get tone(): NormalizedTone;
     }
 
 ### `TintTarget` (interface)
@@ -26837,6 +27465,36 @@ build instead.
 
         scaleFrom?: number;
     }
+
+### `Tone` (interface)
+
+    export interface Tone {
+
+        red?: number;
+        green?: number;
+        blue?: number;
+
+        gray?: number;
+    }
+
+### `ToneFilter` (class)
+
+    export declare class ToneFilter {
+        private _tone;
+        private _filter;
+        constructor(tone?: Tone);
+
+        get tone(): NormalizedTone;
+        set tone(value: Tone);
+
+        get matrix(): ColorMatrix;
+
+        pixi(): ColorMatrixFilter | null;
+    }
+
+### `toneMatrix` (function)
+
+    export declare function toneMatrix(tone: Tone | null | undefined): ColorMatrix;
 
 ### `Tooltip` (class)
 
@@ -27495,13 +28153,39 @@ build instead.
 
 ## `./two-d/pixi-interop`
 
+### `attachPixiFilter` (function)
+
+    export declare function attachPixiFilter(target: {
+        filters: readonly PixiFilter[] | null;
+
+### `ColorMatrixFilter` (re-export)
+
+    export { ColorMatrixFilter } from 'pixi.js'
+
 ### `Container` (re-export)
 
     export { Container } from 'pixi.js'
 
+### `createPixiNamespace` (function)
+
+    export declare function createPixiNamespace(): {
+        Container: typeof Container;
+
 ### `FillGradient` (re-export)
 
     export { FillGradient } from 'pixi.js'
+
+### `Filter` (re-export)
+
+    export { Filter } from 'pixi.js'
+
+### `GlProgram` (re-export)
+
+    export { GlProgram } from 'pixi.js'
+
+### `GpuProgram` (re-export)
+
+    export { GpuProgram } from 'pixi.js'
 
 ### `Graphics` (re-export)
 
@@ -27797,6 +28481,10 @@ build instead.
         x: number;
         y: number;
     }
+
+### `attachToneFilter` (function)
+
+    export declare function attachToneFilter(owner: FilterOwner, tone: ToneFilter): PixiFilter | null;
 
 ### `AutotileCell` (type)
 
@@ -28222,6 +28910,23 @@ build instead.
 
     export declare function createLayers(parent: Container, names: readonly string[]): Record<string, Node2D>;
 
+### `createLocalMultiplayer` (function)
+
+    export declare function createLocalMultiplayer(options: LocalMultiplayerOptions): LocalMultiplayer;
+
+### `createViewports` (function)
+
+    export declare function createViewports(players: 1 | 2 | 3 | 4, options: CreateViewportsOptions): Viewport[];
+
+### `CreateViewportsOptions` (interface)
+
+    export interface CreateViewportsOptions extends SplitScreenOptions {
+        width: number;
+        height: number;
+
+        zoom?: number;
+    }
+
 ### `croppedTexture` (function)
 
     export declare function croppedTexture(texture: Texture, parsed: ParsedImagePath): Texture;
@@ -28277,6 +28982,10 @@ build instead.
         y: number;
     }
 
+### `detachToneFilter` (function)
+
+    export declare function detachToneFilter(owner: FilterOwner, filter: PixiFilter | null): void;
+
 ### `detectWebGpu` (function)
 
     export declare function detectWebGpu(): Promise<WebGpuDetection>;
@@ -28292,6 +29001,12 @@ build instead.
 ### `EMPTY` (const)
 
     export declare const EMPTY = -1;
+
+### `FilterOwner` (interface)
+
+    export interface FilterOwner {
+        filters: readonly PixiFilter[] | null;
+    }
 
 ### `FlightHandle` (interface)
 
@@ -28607,6 +29322,10 @@ build instead.
         private resort;
     }
 
+### `lerpTone` (function)
+
+    export declare function lerpTone(from: Tone, to: Tone, t: number): NormalizedTone;
+
 ### `LightningArc` (class)
 
     export declare class LightningArc {
@@ -28721,6 +29440,51 @@ build instead.
 ### `loadTiledMap` (function)
 
     export declare function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSheet[]): LoadedTiledMap;
+
+### `LocalMultiplayer` (interface)
+
+    export interface LocalMultiplayer {
+        readonly mode: 'hotseat' | 'split';
+
+        readonly viewports: Viewport[];
+
+        readonly inputs: PlayerInput[];
+
+        readonly hotseat: Hotseat | null;
+        update(dt: number): void;
+    }
+
+### `LocalMultiplayerLayout` (type)
+
+    export type LocalMultiplayerLayout = CreateViewportsOptions;
+
+### `LocalMultiplayerOptions` (interface)
+
+    export interface LocalMultiplayerOptions {
+
+        players: readonly string[];
+
+        mode?: 'hotseat' | 'split';
+
+        layout?: LocalMultiplayerLayout;
+
+        follow?: Record<string, () => {
+            x: number;
+            y: number;
+        }>;
+
+        padIndexFor?: (player: string, index: number) => number;
+
+        onTurnStart?: (player: string, index: number) => void;
+
+        onTurnEnd?: (player: string, index: number) => void;
+
+        turnSeconds?: number;
+
+        autoAdvance?: boolean;
+
+        requestHandOver?: (from: string, to: string) => Promise<void> | void;
+    }
 
 ### `MapLoop` (class)
 
@@ -28903,6 +29667,10 @@ build instead.
         intent?: MotionIntent;
     }
 
+### `NEUTRAL_TONE` (const)
+
+    export declare const NEUTRAL_TONE: NormalizedTone;
+
 ### `newlyRevealed` (function)
 
     export declare function newlyRevealed(explored: ReadonlySet<number>, alreadyDrawn: ReadonlySet<number>): number[];
@@ -28915,6 +29683,19 @@ build instead.
 
     export declare class Node2D extends Container {
     }
+
+### `NormalizedTone` (interface)
+
+    export interface NormalizedTone {
+        readonly red: number;
+        readonly green: number;
+        readonly blue: number;
+        readonly gray: number;
+    }
+
+### `normalizeTone` (function)
+
+    export declare function normalizeTone(tone: Tone | null | undefined): NormalizedTone;
 
 ### `openAnimationFrame` (function)
 
@@ -28991,6 +29772,9 @@ build instead.
         private copies;
         private columns;
         private rows;
+        private toneFilter;
+        private tonePixiFilter;
+        private _tone;
         constructor(options: ParallaxOptions);
 
         get scrollX(): number;
@@ -29006,6 +29790,10 @@ build instead.
         setOpacity(opacity: number): void;
 
         setTint(color: number): void;
+
+        setTone(tone: Tone | null): void;
+
+        get tone(): NormalizedTone;
 
         setOffset(offsetX: number, offsetY: number): void;
 
@@ -29248,6 +30036,14 @@ build instead.
 
         setZIndex(value: number): this;
     }
+
+### `PICTURE_BLEND_MODES` (const)
+
+    export declare const PICTURE_BLEND_MODES: readonly ['normal', 'add', 'subtract', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'difference', 'exclusion', 'hard-light', 'soft-light', 'color-dodge', 'color-burn', 'hue', 'saturation', 'color', 'luminosity'];
+
+### `PictureBlendMode` (type)
+
+    export type PictureBlendMode = (typeof PICTURE_BLEND_MODES)[number];
 
 ### `PictureLayer` (class)
 
@@ -29644,12 +30440,31 @@ build instead.
         private toAlpha;
 
         private queue;
+        private readonly toneTarget;
+        private toneFilter;
+        private tonePixiFilter;
+        private toneFrom;
+        private toneTo;
+        private toneElapsed;
+        private toneDuration;
         constructor(options?: ScreenEffectsOptions);
 
         setViewport(width: number, height: number): void;
         private redraw;
 
         get isBusy(): boolean;
+
+        tone(tone: Tone, duration?: number): void;
+
+        setTone(tone: Tone): void;
+
+        clearTone(): void;
+
+        get currentTone(): NormalizedTone;
+        private ensureToneFilter;
+        private applyTone;
+
+        private updateTone;
 
         get washAlpha(): number;
 
@@ -29681,6 +30496,8 @@ build instead.
         height?: number;
 
         color?: number;
+
+        toneTarget?: Container2D;
     }
 
 ### `ScreenEffectStep` (interface)
@@ -29748,6 +30565,17 @@ build instead.
 
     export declare function splitScreenHalves(width: number, height: number): [{
         x: number;
+
+### `splitScreenLayout` (function)
+
+    export declare function splitScreenLayout(players: 1 | 2 | 3 | 4, width: number, height: number, options?: SplitScreenOptions): ViewportOptions[];
+
+### `SplitScreenOptions` (interface)
+
+    export interface SplitScreenOptions {
+
+        three?: 'half-and-quarters' | 'large-left' | 'large-right';
+    }
 
 ### `SpringSprite` (class)
 
@@ -30361,6 +31189,9 @@ build instead.
 
     export declare class TintedSprite extends Sprite {
         private _colorAdd;
+        private toneFilter;
+        private tonePixiFilter;
+        private _tone;
         constructor(options?: SpriteOptions | Texture2D);
 
         get colorAdd(): number;
@@ -30373,6 +31204,10 @@ build instead.
         silhouette(color: number): void;
 
         resetColor(): void;
+
+        setTone(tone: Tone | null): void;
+
+        get tone(): NormalizedTone;
     }
 
 ### `TintTarget` (interface)
@@ -30381,6 +31216,36 @@ build instead.
 
         colorAdd: number;
     }
+
+### `Tone` (interface)
+
+    export interface Tone {
+
+        red?: number;
+        green?: number;
+        blue?: number;
+
+        gray?: number;
+    }
+
+### `ToneFilter` (class)
+
+    export declare class ToneFilter {
+        private _tone;
+        private _filter;
+        constructor(tone?: Tone);
+
+        get tone(): NormalizedTone;
+        set tone(value: Tone);
+
+        get matrix(): ColorMatrix;
+
+        pixi(): ColorMatrixFilter | null;
+    }
+
+### `toneMatrix` (function)
+
+    export declare function toneMatrix(tone: Tone | null | undefined): ColorMatrix;
 
 ### `TransitionContext` (interface)
 
@@ -31359,6 +32224,30 @@ build instead.
 ### `escapeHtml` (function)
 
     export declare function escapeHtml(text: string): string;
+
+### `EscapeMarkupOptions` (interface)
+
+    export interface EscapeMarkupOptions {
+
+        readonly resolve?: (rule: EscapeRule, argument: string) => string | undefined;
+    }
+
+### `EscapeRule` (interface)
+
+    export interface EscapeRule {
+
+        readonly code: string;
+
+        readonly open: string;
+
+        readonly close?: string;
+
+        readonly argument?: 'literal' | 'color' | 'number';
+    }
+
+### `escapesToMarkup` (function)
+
+    export declare function escapesToMarkup(source: string, rules: readonly EscapeRule[], options?: EscapeMarkupOptions): string;
 
 ### `fitWindowZoom` (function)
 
@@ -32630,6 +33519,52 @@ build instead.
         label?: Omit<LabelOptions, 'text' | 'wrapWidth'>;
 
         touch?: boolean;
+    }
+
+### `SelectAction` (type)
+
+    export type SelectAction =
+
+    {
+        cursor: number;
+
+### `selectEntry` (function)
+
+    export declare function selectEntry<T>(entries: readonly SelectEntry<T>[], options: SelectOptions<T>): Promise<SelectEntry<T> | null>;
+
+### `SelectEntry` (interface)
+
+    export interface SelectEntry<T> {
+
+        label: string;
+
+        value: T;
+
+        disabled?: boolean;
+    }
+
+### `SelectOptions` (interface)
+
+    export interface SelectOptions<T> {
+
+        present: (page: SelectPage<T>) => Promise<SelectAction>;
+
+        pageSize?: number;
+
+        start?: number;
+    }
+
+### `SelectPage` (interface)
+
+    export interface SelectPage<T> {
+
+        entries: readonly SelectEntry<T>[];
+
+        pageIndex: number;
+
+        pageCount: number;
+
+        cursor: number;
     }
 
 ### `setTheme` (function)

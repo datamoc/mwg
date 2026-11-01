@@ -40,8 +40,10 @@ export type { SpriteGroupMember } from './SpriteGroup.ts';
 export { SpriteSheet } from './SpriteSheet.ts';
 export { Camera, createCamera, snapZoom } from './Camera.ts';
 export type { CameraOptions } from './Camera.ts';
-export { Viewport, splitScreenHalves } from './Viewport.ts';
-export type { ViewportOptions } from './Viewport.ts';
+export { Viewport, splitScreenHalves, splitScreenLayout, createViewports } from './Viewport.ts';
+export type { ViewportOptions, SplitScreenOptions, CreateViewportsOptions } from './Viewport.ts';
+export { createLocalMultiplayer } from './LocalMultiplayer.ts';
+export type { LocalMultiplayer, LocalMultiplayerOptions, LocalMultiplayerLayout } from './LocalMultiplayer.ts';
 export { createColorBlindnessFilter, COLOR_BLINDNESS_MATRICES } from './ColorBlindness.ts';
 export type { ColorBlindnessType } from './ColorBlindness.ts';
 
@@ -70,8 +72,8 @@ export type { HaloOptions } from './Halo.ts';
 export { MapLoop } from './MapLoop.ts';
 export type { MapLoopOptions, MapPoint } from './MapLoop.ts';
 
-export { Picture, PictureLayer } from './PictureLayer.ts';
-export type { PictureOptions } from './PictureLayer.ts';
+export { Picture, PictureLayer, PICTURE_BLEND_MODES } from './PictureLayer.ts';
+export type { PictureOptions, PictureBlendMode } from './PictureLayer.ts';
 export { ParallaxLayer, parallaxScroll } from './ParallaxLayer.ts';
 export type { ParallaxOptions } from './ParallaxLayer.ts';
 export { VideoOverlay } from './VideoOverlay.ts';
@@ -96,6 +98,17 @@ export type {
 	WeatherPresetOptions,
 	WeatherLayerOptions,
 } from './Weather.ts';
+
+export {
+	NEUTRAL_TONE,
+	ToneFilter,
+	attachToneFilter,
+	detachToneFilter,
+	lerpTone,
+	normalizeTone,
+	toneMatrix,
+} from './Tone.ts';
+export type { FilterOwner, NormalizedTone, Tone } from './Tone.ts';
 
 export { ScreenEffects } from './ScreenEffects.ts';
 export type { ScreenEffectPhase, ScreenEffectStep, ScreenEffectsOptions } from './ScreenEffects.ts';

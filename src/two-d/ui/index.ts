@@ -40,6 +40,11 @@ export type {
 export { splitAlignedLines, stripAlignedLines, sliceAlignedLines } from './text-align.ts';
 export type { AlignedTextLine } from './text-align.ts';
 
+export { selectEntry } from './select.ts';
+export type { SelectEntry, SelectAction, SelectPage, SelectOptions } from './select.ts';
+export { escapesToMarkup } from './escape-markup.ts';
+export type { EscapeRule, EscapeMarkupOptions } from './escape-markup.ts';
+
 export { startReveal, advanceReveal, completeReveal, revealComplete } from './reveal.ts';
 export type { RevealState } from './reveal.ts';
 

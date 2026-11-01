@@ -58,7 +58,31 @@ export { TilingSpritePipe, NineSliceSpritePipe } from 'pixi.js';
 /** The Pixi sprite construction options, for the rare hand-built interop sprite above. */
 export type { SpriteOptions } from 'pixi.js';
 
-import { extensions, TilingSpritePipe, NineSliceSpritePipe } from 'pixi.js';
+import {
+	ColorMatrixFilter,
+	Container,
+	Filter,
+	GlProgram,
+	Graphics,
+	GpuProgram,
+	Sprite,
+	Text,
+	Texture,
+	TilingSprite,
+	extensions,
+	TilingSpritePipe,
+	NineSliceSpritePipe,
+} from 'pixi.js';
+import type { Filter as PixiFilter } from 'pixi.js';
+
+/** Interop-only: a Pixi filter, for a custom shader a facade does not model. Pair it with `GlProgram` (a WebGL shader) or `GpuProgram` (WebGPU). */
+export { Filter } from 'pixi.js';
+/** Interop-only: a colour-matrix filter, the class behind `render.ToneFilter`. A game normally uses `ToneFilter`; this is for a plugin assembling its own matrix. */
+export { ColorMatrixFilter } from 'pixi.js';
+/** Interop-only: the WebGL shader program a plugin-built filter runs on. Importing it here keeps a shader dependency visible instead of spreading `pixi.js` through game code. */
+export { GlProgram } from 'pixi.js';
+/** Interop-only: The WebGPU shader program, the `GlProgram` counterpart. */
+export { GpuProgram } from 'pixi.js';
 
 let registered = false;
 
@@ -74,4 +98,66 @@ export function registerBuiltinPipes(): void {
 
 	extensions.add(TilingSpritePipe);
 	extensions.add(NineSliceSpritePipe);
+}
+
+/**
+ * The bounded `PIXI` namespace a plugin sandbox can hand to a third-party script: the scene
+ * classes and filter/program constructors a plugin legitimately uses, and nothing that owns
+ * a renderer or an application. A port that runs MV/MZ plugins (whose code reaches for a
+ * global `PIXI`) injects this object as that global instead of leaving `PIXI` undefined, so
+ * a plugin's `new PIXI.Filter(...)` has somewhere to land.
+ *
+ * A filter built here still has to be attached to a live display object to do anything:
+ * assign it to `sprite.filters`/`container.filters` on the object the port already maps the
+ * plugin's display objects onto. This namespace is the constructors only; that mapping is
+ * the port's job, and a filter attached to a stub stays inert exactly as before.
+ *
+ * @example
+ * ```ts
+ * import { createPixiNamespace } from '@datamoc/mwg/two-d/pixi-interop';
+ *
+ * const PIXI = createPixiNamespace();
+ * // in a plugin sandbox: sandbox.global.PIXI = PIXI;
+ * const filter = new PIXI.Filter({}); // a plugin can construct one; the port attaches it
+ * ```
+ */
+export function createPixiNamespace(): {
+	Container: typeof Container;
+	Sprite: typeof Sprite;
+	Texture: typeof Texture;
+	Graphics: typeof Graphics;
+	Text: typeof Text;
+	TilingSprite: typeof TilingSprite;
+	Filter: typeof Filter;
+	ColorMatrixFilter: typeof ColorMatrixFilter;
+	GlProgram: typeof GlProgram;
+	GpuProgram: typeof GpuProgram;
+} {
+	return {
+		Container,
+		Sprite,
+		Texture,
+		Graphics,
+		Text,
+		TilingSprite,
+		Filter,
+		ColorMatrixFilter,
+		GlProgram,
+		GpuProgram,
+	};
+}
+
+/**
+ * Attaches a plugin-built filter to a live display object, keeping whatever filters it
+ * already carries and skipping a duplicate. The one-call half of the namespace contract: a
+ * port maps a plugin's sprite to the real one, then calls this, rather than each integration
+ * reassembling `filters` arrays.
+ *
+ * @returns false when the filter was already attached
+ */
+export function attachPixiFilter(target: { filters: readonly PixiFilter[] | null }, filter: PixiFilter): boolean {
+	const current = target.filters ?? [];
+	if (current.includes(filter)) return false;
+	target.filters = [...current, filter];
+	return true;
 }

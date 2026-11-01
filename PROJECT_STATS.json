@@ -4,14 +4,14 @@
 	"version": "0.52.1",
 	"releaseDate": "2026-10-31",
 	"source": {
-		"files": 405,
-		"lines": 82927,
+		"files": 410,
+		"lines": 84440,
 		"modules": 21,
 		"breakdown": [
 			{
 				"name": "two-d",
-				"files": 114,
-				"lines": 26246
+				"files": 118,
+				"lines": 27442
 			},
 			{
 				"name": "audio",
@@ -25,8 +25,8 @@
 			},
 			{
 				"name": "core",
-				"files": 53,
-				"lines": 7834
+				"files": 54,
+				"lines": 8151
 			},
 			{
 				"name": "board",
@@ -116,9 +116,9 @@
 		]
 	},
 	"tests": {
-		"files": 382,
-		"lines": 54401,
-		"cases": 3474
+		"files": 389,
+		"lines": 55392,
+		"cases": 3532
 	},
 	"tools": {
 		"files": 69,
@@ -165,12 +165,12 @@
 		"percent": 89
 	},
 	"api": {
-		"declarationFiles": 405
+		"declarationFiles": 410
 	},
 	"bundle": {
-		"globalRaw": 1449471,
-		"globalGzip": 439209,
-		"distRaw": 5642630
+		"globalRaw": 1465248,
+		"globalGzip": 443470,
+		"distRaw": 5736769
 	},
 	"quality": {
 		"testToSourceRatio": 0.7

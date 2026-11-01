@@ -1,5 +1,14 @@
 import { Container, Sprite, TilingSprite } from 'pixi.js';
 import type { Texture2D } from './Types2D.ts';
+import {
+	NEUTRAL_TONE,
+	ToneFilter,
+	attachToneFilter,
+	detachToneFilter,
+	type NormalizedTone,
+	type Tone,
+} from './Tone.ts';
+import type { Filter } from 'pixi.js';
 
 /**
  * What a backdrop needs: the art, how it follows the camera, and how far it stretches.
@@ -143,6 +152,9 @@ export class ParallaxLayer extends Container {
 	private copies: Sprite[] = [];
 	private columns = 0;
 	private rows = 0;
+	private toneFilter: ToneFilter | null = null;
+	private tonePixiFilter: Filter | null = null;
+	private _tone: NormalizedTone = NEUTRAL_TONE;
 
 	constructor(options: ParallaxOptions) {
 		super();
@@ -203,6 +215,31 @@ export class ParallaxLayer extends Container {
 		this.colour = color;
 		if (this.tiling) this.tiling.tint = color;
 		for (const copy of this.copies) copy.tint = color;
+	}
+
+	/**
+	 * An RGSS-style tone over the whole backdrop (per-channel offsets plus a gray
+	 * desaturation), or null to remove it. The fog version of this ask: an XP fog carries a
+	 * tone independent of its opacity, and this applies it to every copy the layer draws.
+	 */
+	setTone(tone: Tone | null): void {
+		if (!tone) {
+			if (!this.toneFilter) return;
+			detachToneFilter(this, this.tonePixiFilter);
+			this.toneFilter = null;
+			this.tonePixiFilter = null;
+			this._tone = NEUTRAL_TONE;
+			return;
+		}
+		this.toneFilter ??= new ToneFilter();
+		this.toneFilter.tone = tone;
+		this._tone = this.toneFilter.tone;
+		this.tonePixiFilter = attachToneFilter(this, this.toneFilter);
+	}
+
+	/** the live tone last passed to `setTone`, neutral when there is none */
+	get tone(): NormalizedTone {
+		return this._tone;
 	}
 
 	/** the layer's own nudge from its scrolled position, in screen units */

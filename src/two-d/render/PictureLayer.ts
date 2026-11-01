@@ -1,5 +1,53 @@
-import { Container, Sprite, type BLEND_MODES } from 'pixi.js';
+import { Container, Sprite, extensions, SubtractBlend, type BLEND_MODES } from 'pixi.js';
 import type { Texture2D } from './Types2D.ts';
+
+/**
+ * The blend modes a picture can name. `subtract` is RPG Maker XP's picture/fog type 2,
+ * which Pixi implements as an advanced blend mode that has to be registered before use;
+ * `Picture.setBlendMode` registers it on first call, so a game that never asks for it pays
+ * nothing at runtime beyond the mode's own shader in the bundle.
+ *
+ * @example
+ * ```ts
+ * import { PICTURE_BLEND_MODES, Picture } from '@datamoc/mwg/two-d/render';
+ *
+ * const picture = new Picture('fog');
+ * picture.setBlendMode('subtract'); // XP fog type 2, really subtractive
+ * console.log(PICTURE_BLEND_MODES.includes('subtract')); // true
+ * ```
+ */
+export const PICTURE_BLEND_MODES = [
+	'normal',
+	'add',
+	'subtract',
+	'multiply',
+	'screen',
+	'overlay',
+	'darken',
+	'lighten',
+	'difference',
+	'exclusion',
+	'hard-light',
+	'soft-light',
+	'color-dodge',
+	'color-burn',
+	'hue',
+	'saturation',
+	'color',
+	'luminosity',
+] as const;
+
+/** one of `PICTURE_BLEND_MODES` */
+export type PictureBlendMode = (typeof PICTURE_BLEND_MODES)[number];
+
+let subtractRegistered = false;
+
+/** registers Pixi's subtract blend mode once, when a picture actually asks for it */
+function ensureSubtractBlend(): void {
+	if (subtractRegistered) return;
+	subtractRegistered = true;
+	extensions.add(SubtractBlend);
+}
 
 /**
  * One picture's placement: where it sits, how it is anchored, scaled, coloured and stacked.
@@ -143,6 +191,10 @@ export class Picture extends Sprite {
 
 	/** a Pixi blend mode name such as `'add'` or `'multiply'` */
 	setBlendMode(mode: string): this {
+		if (!(PICTURE_BLEND_MODES as readonly string[]).includes(mode)) {
+			throw new Error(`picture blend mode "${mode}" is not one of ${PICTURE_BLEND_MODES.join(', ')}`);
+		}
+		if (mode === 'subtract') ensureSubtractBlend();
 		this.blendMode = mode as BLEND_MODES;
 		return this;
 	}

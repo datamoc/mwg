@@ -24,6 +24,13 @@ async map entry keeps the current map until the next one has loaded.
 - `Channel.setFilter`/`insert`/`removeInsert`/`clearInserts` and `AudioBus.setFilter` put a biquad or caller-built nodes in a playing voice or a whole kind without restarting it; `createFilter`, `applyFilter`, `createReverb` (algorithmic impulse), `createChorus` and `createDistortion` build them.
 - `World` map factories receive the entry's spawn point, and `World.enterAsync` awaits a factory that loads first while keeping the current map current, sharing one creation between concurrent entries to a persistent map.
 - `Text2D` guards `setText`/`setFill`/`text` after `destroy()`, the same protection `Label` already had.
+- `Picture.setBlendMode` accepts `PICTURE_BLEND_MODES` including `subtract`: Pixi's subtract blend mode is registered on first use, so an RPG Maker XP subtractive picture or fog really subtracts instead of drawing normally, and an unknown mode throws by name.
+- A live RGSS/MV tone: `toneMatrix`/`normalizeTone`/`lerpTone` are the pure matrix (per-channel offsets plus gray desaturation), `ToneFilter` drives one Pixi colour-matrix filter in place, `TintedSprite.setTone` and `ParallaxLayer.setTone` apply it to one sprite or backdrop, and `ScreenEffects.tone(tone, duration)` eases it over the configured `toneTarget` (usually `camera.world`) while `setTone`/`clearTone`/`currentTone` complete the screen API.
+- `two-d/pixi-interop` gains `createPixiNamespace` (a bounded `PIXI` for a plugin sandbox: scene classes plus `Filter`/`ColorMatrixFilter`/`GlProgram`/`GpuProgram`, never a renderer) and `attachPixiFilter`, so a plugin's custom filter has a supported constructor and attachment path.
+- `core.Pathfinding.shortestPath`: the ordered cells from start to goal over the same flood `weightedFlood` uses, with costs, `canEnter` and null for unreachable.
+- `ui.selectEntry`: a renderer-free paged list selection over a presenter, for a dialogue seam without graphical windows, preserving entry identity and honouring disabled entries.
+- `ui.escapesToMarkup`: the documented engine-escape to markup adaptor contract, with caller-supplied rules, argument resolution, and unknown codes left literal.
+- Local multiplayer: `splitScreenLayout` for 1 to 4 players (full, halves, one half plus two quarters, quadrants) and `createViewports`, `core.Hotseat` for turn order, callbacks, an optional clock and input gating, and `createLocalMultiplayer` composing one viewport and input per player or one screen with a hotseat.
 
 ## [0.52.1] - 2026-10-31
 
