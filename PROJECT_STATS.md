@@ -4,22 +4,22 @@ Generated for **mwg 0.52.1** on 2026-10-31.
 
 | Area | Statistics |
 | --- | ---: |
-| Source | 398 TypeScript files, 80,659 lines, 21 modules |
-| Tests | 374 files, 3,404 test cases, 52,961 lines |
+| Source | 405 TypeScript files, 82,927 lines, 21 modules |
+| Tests | 382 files, 3,474 test cases, 54,401 lines |
 | Tools | 69 files, 14,599 lines |
 | Examples | 29 runnable examples |
 | Roadmap | 411/462 items complete, 51 open |
-| API | 398 declaration files |
-| Bundle | 1396.5 kB raw, 423.4 kB gzip |
-| Published dist | 5378.7 kB excluding source maps |
+| API | 405 declaration files |
+| Bundle | 1415.5 kB raw, 428.9 kB gzip |
+| Published dist | 5510.4 kB excluding source maps |
 | Test-to-source ratio | 0.7x by line count |
 
 ## Source modules
 
 | Module | Files | Lines |
 | --- | ---: | ---: |
-| two-d | 108 | 24,479 |
-| audio | 49 | 11,827 |
+| two-d | 114 | 26,246 |
+| audio | 50 | 12,254 |
 | mwl | 29 | 10,047 |
 | core | 53 | 7,834 |
 | board | 12 | 5,284 |
@@ -33,7 +33,7 @@ Generated for **mwg 0.52.1** on 2026-10-31.
 | physics | 6 | 1,364 |
 | battle | 15 | 1,157 |
 | three-d | 9 | 851 |
-| world | 7 | 603 |
+| world | 7 | 677 |
 | testing | 3 | 560 |
 | skeleton | 1 | 441 |
 | music | 2 | 364 |

@@ -91,6 +91,8 @@ export type {
 	SoundFontVoice,
 } from './SoundFont.ts';
 export { Channel, AudioBus } from './Channels.ts';
+export { applyFilter, createChorus, createDistortion, createFilter, createReverb } from './effects.ts';
+export type { ChorusOptions, DistortionOptions, EffectUnit, FilterSpec, ReverbOptions } from './effects.ts';
 export { parseVorbisLoopTags, loopRegionFromFile, loopRegionFromTags } from './LoopTags.ts';
 export type { VorbisLoopTags } from './LoopTags.ts';
 export type { LoopRegion, ChannelPlayOptions, ChannelState, BusMixerLevel } from './Channels.ts';

@@ -1,4 +1,5 @@
 export { World } from './World.ts';
+export type { MapFactory } from './World.ts';
 export { Overworld } from './Overworld.ts';
 export type { Location } from './Overworld.ts';
 export { TurnClock } from './TurnClock.ts';

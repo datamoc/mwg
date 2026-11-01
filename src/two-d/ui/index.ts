@@ -37,6 +37,9 @@ export type {
 	PositionedMarkupSpan,
 } from './markup.ts';
 
+export { splitAlignedLines, stripAlignedLines, sliceAlignedLines } from './text-align.ts';
+export type { AlignedTextLine } from './text-align.ts';
+
 export { startReveal, advanceReveal, completeReveal, revealComplete } from './reveal.ts';
 export type { RevealState } from './reveal.ts';
 

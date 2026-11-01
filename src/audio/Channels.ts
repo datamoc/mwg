@@ -14,6 +14,7 @@
 
 import { Signal } from '../core/Signal.ts';
 import { createAudioLoader } from './AudioLoader.ts';
+import { applyFilter, createFilter, type FilterSpec } from './effects.ts';
 import { OutputRecorder, type OutputRecorderOptions } from './Recorder.ts';
 import type { SfxArbiter } from './Sfx.ts';
 import { StreamChannel, type BlockSource } from './StreamChannel.ts';
@@ -55,6 +56,7 @@ function wireVoice(
 	volume: number,
 	pitch: number,
 	pan: number,
+	chain: readonly AudioNode[] = [],
 ): { source: AudioBufferSourceNode; gain: GainNode; panner: StereoPannerNode | null } {
 	const source = context.createBufferSource();
 	source.buffer = buffer;
@@ -67,12 +69,33 @@ function wireVoice(
 		panner.pan.value = pan;
 		source.connect(gain);
 		gain.connect(panner);
-		panner.connect(destination);
+		connectThrough(panner, chain, destination);
 	} else {
 		source.connect(gain);
-		gain.connect(destination);
+		connectThrough(gain, chain, destination);
 	}
 	return { source, gain, panner };
+}
+
+/** feeds `from` through each node of `chain`, in order, and into `destination` */
+function connectThrough(from: AudioNode, chain: readonly AudioNode[], destination: AudioNode): void {
+	let node = from;
+	for (const next of chain) {
+		node.connect(next);
+		node = next;
+	}
+	node.connect(destination);
+}
+
+/** cuts one edge, tolerating a double that only knows the no-argument `disconnect` */
+function disconnectTarget(node: AudioNode, target: AudioNode): void {
+	const source = node as unknown as { disconnect?: (...args: unknown[]) => void };
+	if (typeof source.disconnect !== 'function') return;
+	try {
+		source.disconnect(target);
+	} catch {
+		//not connected, or the double lacks the overload
+	}
 }
 
 /**
@@ -105,6 +128,13 @@ export class Channel {
 	private repeat = true;
 	private startedAt = 0;
 	private offset = 0;
+	private filterSpec: FilterSpec | null = null;
+	private filterNode: BiquadFilterNode | null = null;
+	private inserts: AudioNode[] = [];
+	/** the chain nodes the live voice is currently feeding, so a rewire cuts only those edges */
+	private wiredChain: AudioNode[] = [];
+	/** the node that feeds the wired chain: the voice's panner, or its gain without one */
+	private wiredTail: AudioNode | null = null;
 
 	constructor(context: AudioContext, destination?: AudioNode) {
 		this.context = context;
@@ -122,10 +152,12 @@ export class Channel {
 	/** starts the buffer with these parameters, stopping whatever played before */
 	play(buffer: AudioBuffer, options: ChannelPlayOptions = {}): void {
 		this.stop();
+		this.detachChain();
 		const volume = options.volume ?? 1;
 		const pitch = options.pitch ?? 1;
 		const pan = options.pan ?? 0;
-		const { source, gain, panner } = wireVoice(this.context, this.destination, buffer, volume, pitch, pan);
+		const chain = this.chainNodes();
+		const { source, gain, panner } = wireVoice(this.context, this.destination, buffer, volume, pitch, pan, chain);
 		const loop = options.loop ?? null;
 		const repeat = options.repeat ?? true;
 		source.loop = repeat;
@@ -142,6 +174,8 @@ export class Channel {
 		this.source = source;
 		this.gainNode = gain;
 		this.pannerNode = panner;
+		this.wiredChain = chain;
+		this.wiredTail = panner ?? gain;
 		this.buffer = buffer;
 		this.params = { volume, pitch, pan };
 		this.loopRegion = loop;
@@ -161,6 +195,50 @@ export class Channel {
 		this.gainNode.gain.setTargetAtTime(this.params.volume, now, 0.02);
 		this.source.playbackRate.value = this.params.pitch;
 		if (this.pannerNode) this.pannerNode.pan.value = this.params.pan;
+	}
+
+	/**
+	 * Sets a biquad filter on the voice, creating it the first time and updating it in place
+	 * afterwards, so a playing voice is retuned rather than restarted or seeked. `null`
+	 * bypasses the filter without removing it.
+	 */
+	setFilter(spec: FilterSpec | null): void {
+		if (spec) {
+			this.filterSpec = { ...spec };
+			if (this.filterNode) applyFilter(this.filterNode, spec);
+			else this.filterNode = createFilter(this.context, spec);
+		} else {
+			this.filterSpec = null;
+			if (this.filterNode) applyFilter(this.filterNode, null);
+		}
+		this.connectChain();
+	}
+
+	/** the filter spec in effect, or null when the voice is unfiltered */
+	filter(): FilterSpec | null {
+		return this.filterSpec ? { ...this.filterSpec } : null;
+	}
+
+	/** places a caller-built node after the gain and panner, before the destination */
+	insert(node: AudioNode): void {
+		if (!node || this.inserts.includes(node)) return;
+		this.inserts.push(node);
+		this.connectChain();
+	}
+
+	/** takes a caller-built node out of the chain and reconnects what is left */
+	removeInsert(node: AudioNode): void {
+		const at = this.inserts.indexOf(node);
+		if (at === -1) return;
+		this.inserts.splice(at, 1);
+		this.connectChain();
+	}
+
+	/** removes every caller-built insert, leaving the filter in place */
+	clearInserts(): void {
+		if (this.inserts.length === 0) return;
+		this.inserts = [];
+		this.connectChain();
 	}
 
 	/** stops the voice, fading out over `fadeSeconds` first when positive */
@@ -232,6 +310,37 @@ export class Channel {
 		this.source = null;
 		this.gainNode = null;
 		this.pannerNode = null;
+	}
+
+	/** the nodes between the voice's gain/panner and the destination, filter first */
+	private chainNodes(): AudioNode[] {
+		const chain: AudioNode[] = [];
+		if (this.filterNode) chain.push(this.filterNode);
+		chain.push(...this.inserts);
+		return chain;
+	}
+
+	/** cuts the edges the previous wiring made, so a restart starts from a clean graph */
+	private detachChain(): void {
+		const chain = this.wiredChain;
+		const tail = this.wiredTail;
+		if (tail) disconnectTarget(tail, chain[0] ?? this.destination);
+		for (let i = 0; i < chain.length; i++) {
+			disconnectTarget(chain[i], chain[i + 1] ?? this.destination);
+		}
+		this.wiredChain = [];
+		this.wiredTail = null;
+	}
+
+	/** rewires a playing voice through the current filter and inserts, keeping its source running */
+	private connectChain(): void {
+		const tail = this.pannerNode ?? this.gainNode;
+		if (!tail) return;
+		this.detachChain();
+		const chain = this.chainNodes();
+		connectThrough(tail, chain, this.destination);
+		this.wiredChain = chain;
+		this.wiredTail = tail;
 	}
 }
 
@@ -389,6 +498,8 @@ export class AudioBus {
 		se: { volume: 1, muted: false },
 	};
 	private readonly kindGains: Record<BusKind, GainNode>;
+	private readonly kindFilters: Partial<Record<BusKind, BiquadFilterNode>> = {};
+	private readonly kindFilterSpecs: Partial<Record<BusKind, FilterSpec | null>> = {};
 
 	constructor(context: AudioContext, options: AudioBusOptions = {}) {
 		this.context = context;
@@ -416,7 +527,10 @@ export class AudioBus {
 	 * `AudioExport`. A take is bounded (`maxSeconds`, 600 when omitted) so memory stays bounded too.
 	 */
 	record(options: OutputRecorderOptions = {}): OutputRecorder {
-		return new OutputRecorder(this.context, Object.values(this.kindGains), options);
+		const taps = (Object.keys(this.kindGains) as BusKind[]).map(
+			(kind) => this.kindFilters[kind] ?? this.kindGains[kind],
+		);
+		return new OutputRecorder(this.context, taps, options);
 	}
 
 	/** the streaming voice of a loop kind, for underrun reports and its own controls */
@@ -466,6 +580,46 @@ export class AudioBus {
 	/** a kind's current mixer level */
 	mixer(kind: BusKind): BusMixerLevel {
 		return { ...this.mixerLevels[kind] };
+	}
+
+	/**
+	 * Sets one biquad filter over a whole kind, between that kind's mixer gain and the
+	 * destination, so it applies to sounds already playing and to every later play. `null`
+	 * bypasses the filter, leaving it in the graph at a neutral setting.
+	 */
+	setFilter(kind: BusKind, spec: FilterSpec | null): void {
+		if (spec) {
+			this.kindFilterSpecs[kind] = { ...spec };
+			const existing = this.kindFilters[kind];
+			if (existing) applyFilter(existing, spec);
+			else this.kindFilters[kind] = createFilter(this.context, spec);
+		} else {
+			this.kindFilterSpecs[kind] = null;
+			const existing = this.kindFilters[kind];
+			if (existing) applyFilter(existing, null);
+		}
+		this.rewireKind(kind);
+	}
+
+	/** the filter spec a kind plays through, or null when it is unfiltered */
+	filter(kind: BusKind): FilterSpec | null {
+		const spec = this.kindFilterSpecs[kind];
+		return spec ? { ...spec } : null;
+	}
+
+	/** rewires one kind's gain through its filter, or straight to the destination without one */
+	private rewireKind(kind: BusKind): void {
+		const gain = this.kindGains[kind];
+		const filter = this.kindFilters[kind];
+		disconnectTarget(gain, this.destination);
+		if (!filter) {
+			gain.connect(this.destination);
+			return;
+		}
+		disconnectTarget(gain, filter);
+		disconnectTarget(filter, this.destination);
+		gain.connect(filter);
+		filter.connect(this.destination);
 	}
 
 	/** loops this BGM, or retunes it when it already loops */

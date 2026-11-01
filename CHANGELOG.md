@@ -7,6 +7,24 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+The presentation primitives a converted RPG Maker project still had to build itself: pictures,
+parallax, looping maps, weather presets, video overlays and a zoom about a screen point. Message
+lines can carry their own alignment, audio channels take filters and effect inserts, and an
+async map entry keeps the current map until the next one has loaded.
+
+### Added
+
+- `Camera.zoomTo(point, scale, duration)` zooms about a screen point, keeping the world under that point fixed while the zoom eases, with `zooming`/`stopZoom`; reduced motion jumps to the end.
+- `PictureLayer`/`Picture`/`PictureOptions`: a named picture stack with show, move, rotate, tint, erase, origin, opacity, blend mode and z-order.
+- `ParallaxLayer`/`parallaxScroll`/`ParallaxOptions`: a scrolling, optionally looping backdrop with camera-relative scroll rates and the `!` zero-parallax convention.
+- `MapLoop`/`MapPoint` and `TileMap.setWrap`/`wrap`/`wrapPoint`/`nearestCopy`: map looping per axis, with the nearest copy of a sprite and the shortest way across the seam.
+- `WeatherLayer`/`weatherPreset`: rain, storm and snow presets over `ParticleEmitter`, with a power-to-count/opacity mapping, wind and a clear.
+- `VideoOverlay`: a DOM `<video>` over the game canvas, with play/stop/pause/resume, bounds and safe no-op outside a browser.
+- `MessageBox`, `RichLabel` and the markup pipeline honour per-line alignment: a line starting with `{align:center}`, `{align:right}`, `{align:left}` (or `<align=center>`) is aligned on its own, measured with the real font; `splitAlignedLines`/`sliceAlignedLines`/`stripAlignedLines` expose the markers as plain data.
+- `Channel.setFilter`/`insert`/`removeInsert`/`clearInserts` and `AudioBus.setFilter` put a biquad or caller-built nodes in a playing voice or a whole kind without restarting it; `createFilter`, `applyFilter`, `createReverb` (algorithmic impulse), `createChorus` and `createDistortion` build them.
+- `World` map factories receive the entry's spawn point, and `World.enterAsync` awaits a factory that loads first while keeping the current map current, sharing one creation between concurrent entries to a persistent map.
+- `Text2D` guards `setText`/`setFill`/`text` after `destroy()`, the same protection `Label` already had.
+
 ## [0.52.1] - 2026-10-31
 
 MIDI renders expose their first note and PCM weight, and can be normalized to a target level. Background preparation reports its waiting and active jobs.

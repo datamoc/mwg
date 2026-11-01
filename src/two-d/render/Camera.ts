@@ -133,6 +133,16 @@ export class Camera {
 	private shakeX = 0;
 	private shakeY = 0;
 
+	//an in-progress zoomTo, holding the world point that must stay under one screen point
+	private zoomMove: {
+		fromZoom: number;
+		toZoom: number;
+		anchor: { x: number; y: number };
+		screen: { x: number; y: number };
+		elapsed: number;
+		duration: number;
+	} | null = null;
+
 	/** clamps the view to these world bounds when set, so the map's edge is never crossed */
 	private bounds: { minX: number; minY: number; maxX: number; maxY: number } | null = null;
 
@@ -335,7 +345,90 @@ export class Camera {
 		this.shake(intensity / this.zoom, duration);
 	}
 
+	/**
+	 * Zooms to `scale` over `duration` seconds while keeping the world point under `point`
+	 * (a screen position, in the same pixels `toScreen` reports) fixed on screen - the
+	 * `Game_Screen.startZoom` shape: a cut-in on a face, a reveal of a distant landmark,
+	 * a HUD that grows out of one corner. Without an anchor this would zoom about the view
+	 * centre, which makes the thing being zoomed in on slide out of frame.
+	 *
+	 * Eases with a smoothstep, and stops following a target: the anchor is what decides the
+	 * camera centre for the duration, so a follow target would fight it. `duration <= 1e-6`
+	 * and a reduced-motion preference both jump straight to the end, the same trade `shake`
+	 * already makes.
+	 *
+	 * @param point screen pixels, such as a click or a face box's centre
+	 * @param scale the zoom to reach, in screen pixels per world unit
+	 * @param duration seconds; 1 when omitted
+	 */
+	zoomTo(point: { x: number; y: number }, scale: number, duration = 1): void {
+		const target = Math.max(0.01, scale);
+		const anchor = this.toWorld(point.x, point.y);
+		this.followTarget = null;
+		this.followIntensity = 0;
+
+		if (duration <= 0.000001 || reducedMotion()) {
+			this.zoomMove = null;
+			this.zoom = target;
+			const centre = this.centreForAnchor(anchor, point, target);
+			this.x = centre.x;
+			this.y = centre.y;
+			this.apply();
+			return;
+		}
+
+		this.zoomMove = {
+			fromZoom: this.zoom,
+			toZoom: target,
+			anchor,
+			screen: { x: point.x, y: point.y },
+			elapsed: 0,
+			duration,
+		};
+	}
+
+	/** true while a `zoomTo` is easing; false once it reached its target or was cancelled */
+	get zooming(): boolean {
+		return this.zoomMove !== null;
+	}
+
+	/** stops an in-progress `zoomTo` where it is, keeping the current zoom and centre */
+	stopZoom(): void {
+		this.zoomMove = null;
+	}
+
+	/**
+	 * The camera centre that puts `anchor` (a world point) under `screen` at `zoom`. The
+	 * inverse of `toScreen`, with the rotation applied the other way around.
+	 */
+	private centreForAnchor(
+		anchor: { x: number; y: number },
+		screen: { x: number; y: number },
+		zoom: number,
+	): { x: number; y: number } {
+		const { cos, sin } = this.spin;
+		const rx = (screen.x - this.screenX - this.viewWidth / 2) / zoom;
+		const ry = (screen.y - this.screenY - this.viewHeight / 2) / zoom;
+		return {
+			x: anchor.x - (rx * cos + ry * sin),
+			y: anchor.y + (rx * sin - ry * cos),
+		};
+	}
+
 	update(dt: number): void {
+		if (this.zoomMove) {
+			const move = this.zoomMove;
+			move.elapsed = Math.min(move.duration, move.elapsed + dt);
+			const t = move.elapsed / move.duration;
+			//smoothstep, so the zoom starts and ends at rest rather than snapping into motion
+			const eased = t * t * (3 - 2 * t);
+			this.zoom = move.fromZoom + (move.toZoom - move.fromZoom) * eased;
+			const centre = this.centreForAnchor(move.anchor, move.screen, this.zoom);
+			this.x = centre.x;
+			this.y = centre.y;
+			if (move.elapsed >= move.duration) this.zoomMove = null;
+		}
+
 		if (this.followTarget && this.followIntensity > 0) {
 			//half the view's world-unit size, not this.view itself: that getter also clamps to
 			//bounds, which the deadzone has no use for and would cost an extra allocation here

@@ -8,6 +8,7 @@ import { startReveal, advanceReveal, completeReveal, revealComplete, type Reveal
 import type { Texture2D } from '../render/Types2D.ts';
 import { parseSoundMarkers, type InlineSoundCue } from '../../i18n/index.ts';
 import { screenReader } from './a11y.ts';
+import { splitAlignedLines, sliceAlignedLines, type AlignedTextLine } from './text-align.ts';
 
 export interface MessagePage {
 	text: string;
@@ -151,7 +152,13 @@ export class MessageBox extends Window {
 	private nextCue = 0;
 	private mode: 'adv' | 'nvl';
 
-	private body: Label;
+	private body: Container;
+	private bodyLines: Label[] = [];
+	private bodyTextWidth = 0;
+	private bodyHeight = 0;
+	private pageLines: AlignedTextLine[] = [];
+	private nvlLines: AlignedTextLine[] = [];
+	private nvlCurrentStart = 0;
 	private speakerLabel: Label;
 	private portrait: Sprite | null = null;
 	private portraitLayer = new Container();
@@ -198,7 +205,9 @@ export class MessageBox extends Window {
 		this.speakerLabel = new Label({ color: t.color.textHighlight, bold: true });
 		this.content.addChild(this.speakerLabel);
 
-		this.body = new Label({ wrapWidth: this.contentWidth });
+		//one label per source line, so a line can carry its own alignment (the RPG Maker
+		//`\#`/`\_` shape) while the reveal still runs across the whole page
+		this.body = new Container();
 		this.content.addChild(this.body);
 
 		//a small hint that the box is waiting, rather than leaving the player guessing
@@ -251,12 +260,33 @@ export class MessageBox extends Window {
 
 		this.body.x = textLeft;
 		this.body.y = this.mode === 'adv' && page.speaker !== undefined ? this.speakerLabel.height + t.spacing : 0;
-		this.body.style.wordWrapWidth = Math.max(16, textWidth);
+		this.bodyTextWidth = Math.max(16, textWidth);
 
-		const parsed = parseSoundMarkers(page.text);
-		this.pageText = parsed.text;
-		this.pageCues = parsed.cues;
+		//split before stripping sound markers, so a line's own alignment survives; then parse
+		//each line and offset its cues by everything on the page before it
+		const sourceLines = splitAlignedLines(page.text);
+		this.pageLines = [];
+		this.pageCues = [];
 		this.nextCue = 0;
+		let offset = 0;
+		for (const line of sourceLines) {
+			const parsed = parseSoundMarkers(line.text);
+			for (const cue of parsed.cues) this.pageCues.push({ path: cue.path, index: offset + cue.index });
+			this.pageLines.push({ text: parsed.text, align: line.align });
+			offset += parsed.text.length + 1;
+		}
+		this.pageText = this.pageLines.map((line) => line.text).join('\n');
+
+		if (this.mode === 'nvl') {
+			if (this.nvlLines.length > 0) this.nvlLines.push({ text: '' });
+			this.nvlCurrentStart = this.nvlLines.length;
+			const lines = this.pageLines.map((line, index) => ({
+				text: index === 0 && page.speaker !== undefined ? `${page.speaker}: ${line.text}` : line.text,
+				align: line.align,
+			}));
+			this.nvlLines.push(...lines);
+		}
+
 		//the whole page, not the typewriter's current slice: a screen reader should not wait
 		if (this.announce) {
 			screenReader.announce(page.speaker !== undefined ? `${page.speaker}: ${this.pageText}` : this.pageText);
@@ -271,25 +301,58 @@ export class MessageBox extends Window {
 		this.prompt.y = this.contentHeight - this.prompt.height;
 	}
 
-	/** the current page's revealed slice, formatted with its speaker inline in nvl mode */
+	/** the current page's revealed slice, per source line so each keeps its own alignment */
 	private renderBody(): void {
+		const visible = Math.floor(this.reveal.revealed);
 		if (this.mode === 'adv') {
-			this.body.setText(this.pageText.slice(0, Math.floor(this.reveal.revealed)));
+			this.layoutLines(sliceAlignedLines(this.pageLines, visible));
 			return;
 		}
 
 		//every earlier page is already fully revealed and stays on screen; only the newest
 		//page's own reveal is still in progress
-		const lines = this.pages
-			.slice(0, this.pageIndex)
-			.map((page) => this.formatLine(page, parseSoundMarkers(page.text).text));
-		const current = this.pages[this.pageIndex];
-		lines.push(this.formatLine(current, this.pageText.slice(0, Math.floor(this.reveal.revealed))));
-		this.body.setText(lines.join('\n\n'));
+		let remaining = visible;
+		this.layoutLines(
+			this.nvlLines.map((line, index) => {
+				if (index < this.nvlCurrentStart) return line;
+				const text = line.text.slice(0, Math.max(0, remaining));
+				remaining -= line.text.length + 1;
+				return { text, align: line.align };
+			}),
+		);
 	}
 
-	private formatLine(page: MessagePage, text: string): string {
-		return page.speaker !== undefined ? `${page.speaker}: ${text}` : text;
+	/**
+	 * Draws one label per source line, keeping a line's own alignment and the theme's
+	 * direction as the default. Labels are reused between frames, so the typewriter's
+	 * per-character update does not allocate a display object per character.
+	 */
+	private layoutLines(lines: readonly AlignedTextLine[]): void {
+		const t = theme();
+		const fallback = t.direction === 'rtl' ? 'right' : 'left';
+		let y = 0;
+
+		for (let index = 0; index < lines.length; index++) {
+			let label = this.bodyLines[index];
+			if (!label) {
+				label = new Label({ wrapWidth: this.bodyTextWidth });
+				this.bodyLines.push(label);
+				this.body.addChild(label);
+			}
+			const line = lines[index];
+			label.visible = true;
+			label.x = 0;
+			label.y = y;
+			label.setWrapWidth(this.bodyTextWidth);
+			label.style.align = line.align ?? fallback;
+			label.setText(line.text);
+			y += label.height > 0 ? label.height : t.font.size * t.font.lineHeight;
+		}
+
+		for (let index = lines.length; index < this.bodyLines.length; index++) {
+			this.bodyLines[index].visible = false;
+		}
+		this.bodyHeight = y;
 	}
 
 	private playRevealedSounds(): void {
@@ -379,7 +442,7 @@ export class MessageBox extends Window {
 		//the choices go under the text, never over it. anchoring them to the bottom of the
 		//box looks tidier until a page wraps to more lines than the author expected, and
 		//then it silently eats the last line of what was said
-		const top = this.body.y + this.body.height + t.padding;
+		const top = this.body.y + this.bodyHeight + t.padding;
 
 		//if that does not fit, the box grows rather than clipping or overlapping: a
 		//conversation must never become unreadable because a translation ran long

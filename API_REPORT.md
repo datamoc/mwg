@@ -138,6 +138,13 @@ build instead.
 
     export * as AI from './ai/index.ts'
 
+### `AlignedTextLine` (interface)
+
+    export interface AlignedTextLine {
+        text: string;
+        align?: MarkupAlign;
+    }
+
 ### `Anchor` (type)
 
     export type Anchor = 'top-left' | 'top' | 'top-right' | 'left' | 'center' | 'right' | 'bottom-left' | 'bottom' | 'bottom-right' | 'fill';
@@ -694,6 +701,7 @@ build instead.
         private shakeDuration;
         private shakeX;
         private shakeY;
+        private zoomMove;
 
         private bounds;
 
@@ -754,6 +762,17 @@ build instead.
         shake(magnitude: number, duration?: number): void;
 
         shakeScreen(intensity: number, duration?: number): void;
+
+        zoomTo(point: {
+            x: number;
+            y: number;
+        }, scale: number, duration?: number): void;
+
+        get zooming(): boolean;
+
+        stopZoom(): void;
+
+        private centreForAnchor;
         update(dt: number): void;
 
         toScreen(x: number, y: number): {
@@ -1452,6 +1471,10 @@ build instead.
 ### `ellipsize` (function)
 
     export declare function ellipsize(text: string, maxWidth: number, measure: (text: string) => number, ellipsis?: string): string;
+
+### `EmittingWeather` (type)
+
+    export type EmittingWeather = Exclude<WeatherKind, 'clear'>;
 
 ### `EMPTY` (const)
 
@@ -3016,6 +3039,47 @@ build instead.
     export declare function manhattan(a: {
         readonly x: number;
 
+### `MapLoop` (class)
+
+    export declare class MapLoop {
+        readonly width: number;
+        readonly height: number;
+        readonly wrapX: boolean;
+        readonly wrapY: boolean;
+        constructor(options: MapLoopOptions);
+
+        get wraps(): boolean;
+
+        wrapPoint(x: number, y: number): MapPoint;
+
+        nearest(x: number, y: number, nearX: number, nearY: number): MapPoint;
+
+        delta(fromX: number, fromY: number, toX: number, toY: number): MapPoint;
+
+        offsets(nearX: number, nearY: number, halfWidth: number, halfHeight: number, margin?: number): MapPoint[];
+        private copyIndex;
+        private copyOffsets;
+    }
+
+### `MapLoopOptions` (interface)
+
+    export interface MapLoopOptions {
+
+        width: number;
+        height: number;
+
+        wrapX?: boolean;
+
+        wrapY?: boolean;
+    }
+
+### `MapPoint` (interface)
+
+    export interface MapPoint {
+        x: number;
+        y: number;
+    }
+
 ### `MarkdownSpan` (interface)
 
     export interface MarkdownSpan {
@@ -3057,6 +3121,8 @@ build instead.
     export interface MarkupLine {
         readonly spans: readonly MarkupSpan[];
         readonly width: number;
+
+        readonly align?: MarkupAlign;
     }
 
 ### `MarkupMeasure` (type)
@@ -3083,6 +3149,8 @@ build instead.
         image?: string;
 
         tag?: string;
+
+        align?: MarkupAlign;
     }
 
 ### `MarkupText` (class)
@@ -3230,6 +3298,12 @@ build instead.
         private nextCue;
         private mode;
         private body;
+        private bodyLines;
+        private bodyTextWidth;
+        private bodyHeight;
+        private pageLines;
+        private nvlLines;
+        private nvlCurrentStart;
         private speakerLabel;
         private portrait;
         private portraitLayer;
@@ -3250,7 +3324,8 @@ build instead.
         private showPage;
 
         private renderBody;
-        private formatLine;
+
+        private layoutLines;
         private playRevealedSounds;
         private get pageComplete();
         update(dt: number): void;
@@ -3721,6 +3796,97 @@ build instead.
 
     export type PaletteRemapMode = 'exact' | 'nearest';
 
+### `ParallaxLayer` (class)
+
+    export declare class ParallaxLayer extends Container {
+        private art;
+        private depthX;
+        private depthY;
+        private repeatsX;
+        private repeatsY;
+        private viewWidth;
+        private viewHeight;
+        private nudgeX;
+        private nudgeY;
+        private density;
+        private colour;
+
+        private draggedX;
+        private draggedY;
+
+        private tiling;
+
+        private copies;
+        private columns;
+        private rows;
+        constructor(options: ParallaxOptions);
+
+        get scrollX(): number;
+
+        get scrollY(): number;
+
+        get loopX(): boolean;
+
+        get loopY(): boolean;
+
+        setScroll(scrollX: number, scrollY: number): void;
+
+        setOpacity(opacity: number): void;
+
+        setTint(color: number): void;
+
+        setOffset(offsetX: number, offsetY: number): void;
+
+        setTexture(texture: Texture2D): void;
+
+        resize(width: number, height: number): void;
+
+        update(dt: number, camera: {
+            x: number;
+            y: number;
+            zoom?: number;
+        }): void;
+
+        private tileWidth;
+        private tileHeight;
+        private rebuild;
+        private layout;
+    }
+
+### `ParallaxOptions` (interface)
+
+    export interface ParallaxOptions {
+
+        texture: Texture2D;
+
+        scrollX?: number;
+
+        scrollY?: number;
+
+        loopX?: boolean;
+
+        loopY?: boolean;
+
+        width?: number;
+
+        height?: number;
+
+        opacity?: number;
+
+        tint?: number;
+
+        offsetX?: number;
+
+        offsetY?: number;
+
+        resolution?: number;
+    }
+
+### `parallaxScroll` (function)
+
+    export declare function parallaxScroll(path: string): {
+        scrollX: number;
+
 ### `parseColorPairs` (function)
 
     export declare function parseColorPairs(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
@@ -3924,6 +4090,101 @@ build instead.
 ### `pickReplayFile` (function)
 
     export declare function pickReplayFile(accept?: string): Promise<Blob | null>;
+
+### `Picture` (class)
+
+    export declare class Picture extends Sprite {
+
+        constructor(name: string, options?: PictureOptions);
+
+        moveTo(patch: Partial<PictureOptions>): this;
+
+        setTexture(texture: Texture2D): this;
+
+        setOrigin(x: number, y: number): this;
+
+        setTint(color: number): this;
+
+        setAlpha(value: number): this;
+
+        setRotation(radians: number): this;
+
+        setBlendMode(mode: string): this;
+
+        setZIndex(value: number): this;
+    }
+
+### `PictureLayer` (class)
+
+    export declare class PictureLayer {
+
+        readonly container: Container<import("pixi.js").ContainerChild>;
+        private readonly pictures;
+
+        get size(): number;
+
+        get names(): readonly string[];
+
+        show(name: string, options?: PictureOptions): Picture;
+        get(name: string): Picture | null;
+        has(name: string): boolean;
+
+        moveTo(name: string, patch: Partial<PictureOptions>): Picture | null;
+
+        rotate(name: string, radians: number): Picture | null;
+
+        tint(name: string, color: number): Picture | null;
+
+        erase(name: string): boolean;
+
+        clear(): void;
+
+        bringToFront(name: string): boolean;
+
+        sendToBack(name: string): boolean;
+
+        private drawOrder;
+        private resort;
+
+        destroy(): void;
+    }
+
+### `PictureOptions` (interface)
+
+    export interface PictureOptions {
+
+        texture?: Texture2D;
+
+        x?: number;
+
+        y?: number;
+
+        width?: number;
+
+        height?: number;
+
+        originX?: number;
+
+        originY?: number;
+
+        scale?: number;
+
+        scaleX?: number;
+
+        scaleY?: number;
+
+        rotation?: number;
+
+        alpha?: number;
+
+        tint?: number;
+
+        blendMode?: string;
+
+        zIndex?: number;
+
+        visible?: boolean;
+    }
 
 ### `PinnedDeform` (class)
 
@@ -4556,7 +4817,7 @@ build instead.
         private readonly opts;
         private readonly tags;
         private readonly themeListener;
-        private revealSpans;
+        private revealSource;
         private reveal;
         constructor(options?: RichLabelOptions | string);
 
@@ -5520,6 +5781,10 @@ build instead.
 
     export type SkinStates = Partial<Record<WidgetState, Skin>>;
 
+### `sliceAlignedLines` (function)
+
+    export declare function sliceAlignedLines(lines: readonly AlignedTextLine[], count: number): AlignedTextLine[];
+
 ### `sliceSpans` (function)
 
     export declare function sliceSpans(spans: readonly MarkdownSpan[], count: number): MarkdownSpan[];
@@ -5671,6 +5936,10 @@ build instead.
 ### `spinValue` (function)
 
     export declare function spinValue(value: number, delta: number, min: number, max: number, step?: number, wrap?: boolean): number;
+
+### `splitAlignedLines` (function)
+
+    export declare function splitAlignedLines(source: string): AlignedTextLine[];
 
 ### `splitScreenHalves` (function)
 
@@ -6122,6 +6391,10 @@ build instead.
         private report;
     }
 
+### `stripAlignedLines` (function)
+
+    export declare function stripAlignedLines(source: string): string;
+
 ### `stripMarkdown` (function)
 
     export declare function stripMarkdown(text: string): string;
@@ -6393,6 +6666,12 @@ build instead.
 ### `Text2D` (class)
 
     export declare class Text2D extends Text {
+
+        setText(value: string): void;
+
+        setFill(color: number): void;
+        get text(): string;
+        set text(value: string);
     }
 
 ### `TextModel` (class)
@@ -6688,6 +6967,8 @@ build instead.
         private chunkColumns;
         private chunkRows;
         private chunks;
+        private wrapMode;
+        private loopCache;
         private cellTint;
         private cellAdd;
         private cellHeight;
@@ -6698,6 +6979,28 @@ build instead.
         get worldWidth(): number;
         get worldHeight(): number;
         inside(x: number, y: number): boolean;
+
+        setWrap(mode: {
+            x?: boolean;
+            y?: boolean;
+        } | null): this;
+
+        get wrap(): {
+            x: boolean;
+            y: boolean;
+        };
+
+        get loop(): MapLoop;
+
+        wrapPoint(x: number, y: number): {
+            x: number;
+            y: number;
+        };
+
+        nearestCopy(x: number, y: number, nearX: number, nearY: number): {
+            x: number;
+            y: number;
+        };
         private index;
 
         addLayer(name: string, data?: ArrayLike<number>): this;
@@ -7271,6 +7574,77 @@ build instead.
         rotate?: RegExp;
     }
 
+### `VideoOverlay` (class)
+
+    export declare class VideoOverlay {
+        private video;
+        private readonly host;
+        private readonly defaultLoop;
+        private readonly defaultMuted;
+        private bounds;
+
+        private pending;
+        constructor(options?: VideoOverlayOptions);
+
+        get element(): HTMLVideoElement | null;
+
+        get playing(): boolean;
+
+        play(src: string, options?: VideoPlayOptions): Promise<void>;
+
+        stop(): void;
+        pause(): void;
+
+        resume(): Promise<void>;
+        setBounds(x: number, y: number, width: number, height: number): void;
+        setVisible(visible: boolean): void;
+
+        dispose(): void;
+
+        private watch;
+
+        private finish;
+
+        private seek;
+        private applyBounds;
+    }
+
+### `VideoOverlayOptions` (interface)
+
+    export interface VideoOverlayOptions {
+
+        container?: HTMLElement;
+
+        x?: number;
+
+        y?: number;
+
+        width?: number;
+
+        height?: number;
+
+        loop?: boolean;
+
+        muted?: boolean;
+
+        controls?: boolean;
+
+        autoplay?: boolean;
+
+        crossOrigin?: string;
+    }
+
+### `VideoPlayOptions` (interface)
+
+    export interface VideoPlayOptions {
+
+        loop?: boolean;
+
+        muted?: boolean;
+
+        startAt?: number;
+    }
+
 ### `Viewport` (class)
 
     export declare class Viewport {
@@ -7308,6 +7682,92 @@ build instead.
         }[];
 
         duration?: number;
+    }
+
+### `WeatherKind` (type)
+
+    export type WeatherKind = 'clear' | 'rain' | 'storm' | 'snow';
+
+### `WeatherLayer` (class)
+
+    export declare class WeatherLayer extends Container {
+        private areaWidth;
+        private areaHeight;
+        private readonly texture?;
+        private emitter;
+        private kind;
+        private power;
+        private wind;
+        constructor(options: WeatherLayerOptions);
+
+        get weather(): WeatherKind;
+
+        get intensity(): number;
+
+        get activeCount(): number;
+
+        setWeather(kind: WeatherKind, options?: {
+            power?: number;
+            wind?: number;
+        }): void;
+
+        setBounds(width: number, height: number): void;
+
+        update(dt: number): void;
+
+        clear(): void;
+
+        private stopEmitting;
+        private freeEmitter;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `WeatherLayerOptions` (interface)
+
+    export interface WeatherLayerOptions {
+
+        width: number;
+        height: number;
+
+        texture?: Texture2D;
+    }
+
+### `weatherPreset` (function)
+
+    export declare function weatherPreset(kind: WeatherKind, options: WeatherPresetOptions): WeatherPreset | null;
+
+### `WeatherPreset` (interface)
+
+    export interface WeatherPreset {
+
+        readonly width: number;
+        readonly height: number;
+        readonly spawn: ParticleSpawnArea;
+        readonly rate: number;
+        readonly max: number;
+        readonly life: readonly [number, number];
+        readonly speed: readonly [number, number];
+        readonly angle: readonly [number, number];
+        readonly gravity: {
+            readonly x: number;
+            readonly y: number;
+        };
+        readonly scale: readonly [number, number];
+        readonly alpha: readonly [number, number];
+        readonly tint: number;
+        texture?: Texture2D;
+    }
+
+### `WeatherPresetOptions` (interface)
+
+    export interface WeatherPresetOptions {
+
+        width: number;
+        height: number;
+
+        power?: number;
+
+        wind?: number;
     }
 
 ### `WebGpuDetection` (interface)
@@ -9840,6 +10300,10 @@ build instead.
         levels?: Readonly<Record<string, number>>;
     }
 
+### `applyFilter` (function)
+
+    export declare function applyFilter(node: BiquadFilterNode, spec: FilterSpec | null): void;
+
 ### `assertGrooveTemplate` (function)
 
     export declare function assertGrooveTemplate(template: GrooveTemplate): void;
@@ -9882,6 +10346,8 @@ build instead.
         private readonly seNodes;
         private readonly mixerLevels;
         private readonly kindGains;
+        private readonly kindFilters;
+        private readonly kindFilterSpecs;
         constructor(context: AudioContext, options?: AudioBusOptions);
 
         record(options?: OutputRecorderOptions): OutputRecorder;
@@ -9901,6 +10367,12 @@ build instead.
         }): void;
 
         mixer(kind: BusKind): BusMixerLevel;
+
+        setFilter(kind: BusKind, spec: FilterSpec | null): void;
+
+        filter(kind: BusKind): FilterSpec | null;
+
+        private rewireKind;
 
         playBgm(track: BusTrack): Promise<void>;
 
@@ -10355,6 +10827,13 @@ build instead.
         private repeat;
         private startedAt;
         private offset;
+        private filterSpec;
+        private filterNode;
+        private inserts;
+
+        private wiredChain;
+
+        private wiredTail;
         constructor(context: AudioContext, destination?: AudioNode);
         get isPlaying(): boolean;
         get duration(): number;
@@ -10367,6 +10846,16 @@ build instead.
             pan?: number;
         }): void;
 
+        setFilter(spec: FilterSpec | null): void;
+
+        filter(): FilterSpec | null;
+
+        insert(node: AudioNode): void;
+
+        removeInsert(node: AudioNode): void;
+
+        clearInserts(): void;
+
         stop(fadeSeconds?: number): void;
 
         position(): number;
@@ -10377,6 +10866,12 @@ build instead.
 
         restore(state: ChannelState): void;
         private clearNodes;
+
+        private chainNodes;
+
+        private detachChain;
+
+        private connectChain;
     }
 
 ### `channelEnvelopes` (function)
@@ -10409,6 +10904,17 @@ build instead.
         pos: number;
     }
 
+### `ChorusOptions` (interface)
+
+    export interface ChorusOptions {
+
+        rate?: number;
+
+        depth?: number;
+
+        delay?: number;
+    }
+
 ### `collectSoundFontUsage` (function)
 
     export declare function collectSoundFontUsage(files: readonly MidiFile[]): SoundFontProgram[];
@@ -10428,6 +10934,22 @@ build instead.
 ### `createBudgetedLoader` (function)
 
     export declare function createBudgetedLoader(inner: BusLoader, policy: BusBudgetPolicy): BudgetedLoader;
+
+### `createChorus` (function)
+
+    export declare function createChorus(context: AudioContext, options?: ChorusOptions): EffectUnit;
+
+### `createDistortion` (function)
+
+    export declare function createDistortion(context: AudioContext, options?: DistortionOptions): WaveShaperNode;
+
+### `createFilter` (function)
+
+    export declare function createFilter(context: AudioContext, spec: FilterSpec): BiquadFilterNode;
+
+### `createReverb` (function)
+
+    export declare function createReverb(context: AudioContext, options?: ReverbOptions): ConvolverNode;
 
 ### `DecodeBudgetError` (class)
 
@@ -10482,6 +11004,15 @@ build instead.
 
     export declare function detectSampleCodec(bytes: Uint8Array): SampleCodec;
 
+### `DistortionOptions` (interface)
+
+    export interface DistortionOptions {
+
+        amount?: number;
+
+        oversample?: OverSampleType;
+    }
+
 ### `downloadSaver` (function)
 
     export declare function downloadSaver(blob: Blob, filename: string): void;
@@ -10509,6 +11040,14 @@ build instead.
 ### `dynamicsLimit` (function)
 
     export declare function dynamicsLimit(sample: number, dynamics: number): number;
+
+### `EffectUnit` (interface)
+
+    export interface EffectUnit {
+        readonly input: AudioNode;
+        readonly output: AudioNode;
+        dispose(): void;
+    }
 
 ### `encodeFlac` (function)
 
@@ -10578,6 +11117,18 @@ build instead.
         readonly estimatedBytes: number;
         readonly maxBytes: number;
         constructor(estimatedBytes: number, maxBytes: number);
+    }
+
+### `FilterSpec` (interface)
+
+    export interface FilterSpec {
+        type: 'lowpass' | 'highpass' | 'bandpass' | 'lowshelf' | 'highshelf' | 'peaking' | 'notch' | 'allpass';
+
+        frequency: number;
+
+        q?: number;
+
+        gain?: number;
     }
 
 ### `fitToBudget` (function)
@@ -11433,6 +11984,19 @@ build instead.
 ### `resolveMidiSynth` (function)
 
     export declare function resolveMidiSynth(request: MidiSynthRequest, sampleRate: number, internalName: 'gm-soundfont' | 'builtin'): ResolvedMidiSynth;
+
+### `ReverbOptions` (interface)
+
+    export interface ReverbOptions {
+
+        seconds?: number;
+
+        decay?: number;
+
+        preDelay?: number;
+
+        reverse?: boolean;
+    }
 
 ### `SAMPLE_CODECS` (const)
 
@@ -20890,6 +21454,13 @@ build instead.
 
     export declare function advanceReveal(state: RevealState, dt: number): boolean;
 
+### `AlignedTextLine` (interface)
+
+    export interface AlignedTextLine {
+        text: string;
+        align?: MarkupAlign;
+    }
+
 ### `Anchor` (type)
 
     export type Anchor = 'top-left' | 'top' | 'top-right' | 'left' | 'center' | 'right' | 'bottom-left' | 'bottom' | 'bottom-right' | 'fill';
@@ -21389,6 +21960,7 @@ build instead.
         private shakeDuration;
         private shakeX;
         private shakeY;
+        private zoomMove;
 
         private bounds;
 
@@ -21449,6 +22021,17 @@ build instead.
         shake(magnitude: number, duration?: number): void;
 
         shakeScreen(intensity: number, duration?: number): void;
+
+        zoomTo(point: {
+            x: number;
+            y: number;
+        }, scale: number, duration?: number): void;
+
+        get zooming(): boolean;
+
+        stopZoom(): void;
+
+        private centreForAnchor;
         update(dt: number): void;
 
         toScreen(x: number, y: number): {
@@ -21954,6 +22537,10 @@ build instead.
 ### `ellipsize` (function)
 
     export declare function ellipsize(text: string, maxWidth: number, measure: (text: string) => number, ellipsis?: string): string;
+
+### `EmittingWeather` (type)
+
+    export type EmittingWeather = Exclude<WeatherKind, 'clear'>;
 
 ### `EMPTY` (const)
 
@@ -23037,6 +23624,47 @@ build instead.
 
     export declare function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSheet[]): LoadedTiledMap;
 
+### `MapLoop` (class)
+
+    export declare class MapLoop {
+        readonly width: number;
+        readonly height: number;
+        readonly wrapX: boolean;
+        readonly wrapY: boolean;
+        constructor(options: MapLoopOptions);
+
+        get wraps(): boolean;
+
+        wrapPoint(x: number, y: number): MapPoint;
+
+        nearest(x: number, y: number, nearX: number, nearY: number): MapPoint;
+
+        delta(fromX: number, fromY: number, toX: number, toY: number): MapPoint;
+
+        offsets(nearX: number, nearY: number, halfWidth: number, halfHeight: number, margin?: number): MapPoint[];
+        private copyIndex;
+        private copyOffsets;
+    }
+
+### `MapLoopOptions` (interface)
+
+    export interface MapLoopOptions {
+
+        width: number;
+        height: number;
+
+        wrapX?: boolean;
+
+        wrapY?: boolean;
+    }
+
+### `MapPoint` (interface)
+
+    export interface MapPoint {
+        x: number;
+        y: number;
+    }
+
 ### `MarkdownSpan` (interface)
 
     export interface MarkdownSpan {
@@ -23078,6 +23706,8 @@ build instead.
     export interface MarkupLine {
         readonly spans: readonly MarkupSpan[];
         readonly width: number;
+
+        readonly align?: MarkupAlign;
     }
 
 ### `MarkupMeasure` (type)
@@ -23104,6 +23734,8 @@ build instead.
         image?: string;
 
         tag?: string;
+
+        align?: MarkupAlign;
     }
 
 ### `MarkupText` (class)
@@ -23213,6 +23845,12 @@ build instead.
         private nextCue;
         private mode;
         private body;
+        private bodyLines;
+        private bodyTextWidth;
+        private bodyHeight;
+        private pageLines;
+        private nvlLines;
+        private nvlCurrentStart;
         private speakerLabel;
         private portrait;
         private portraitLayer;
@@ -23233,7 +23871,8 @@ build instead.
         private showPage;
 
         private renderBody;
-        private formatLine;
+
+        private layoutLines;
         private playRevealedSounds;
         private get pageComplete();
         update(dt: number): void;
@@ -23640,6 +24279,97 @@ build instead.
 
     export type PaletteRemapMode = 'exact' | 'nearest';
 
+### `ParallaxLayer` (class)
+
+    export declare class ParallaxLayer extends Container {
+        private art;
+        private depthX;
+        private depthY;
+        private repeatsX;
+        private repeatsY;
+        private viewWidth;
+        private viewHeight;
+        private nudgeX;
+        private nudgeY;
+        private density;
+        private colour;
+
+        private draggedX;
+        private draggedY;
+
+        private tiling;
+
+        private copies;
+        private columns;
+        private rows;
+        constructor(options: ParallaxOptions);
+
+        get scrollX(): number;
+
+        get scrollY(): number;
+
+        get loopX(): boolean;
+
+        get loopY(): boolean;
+
+        setScroll(scrollX: number, scrollY: number): void;
+
+        setOpacity(opacity: number): void;
+
+        setTint(color: number): void;
+
+        setOffset(offsetX: number, offsetY: number): void;
+
+        setTexture(texture: Texture2D): void;
+
+        resize(width: number, height: number): void;
+
+        update(dt: number, camera: {
+            x: number;
+            y: number;
+            zoom?: number;
+        }): void;
+
+        private tileWidth;
+        private tileHeight;
+        private rebuild;
+        private layout;
+    }
+
+### `ParallaxOptions` (interface)
+
+    export interface ParallaxOptions {
+
+        texture: Texture2D;
+
+        scrollX?: number;
+
+        scrollY?: number;
+
+        loopX?: boolean;
+
+        loopY?: boolean;
+
+        width?: number;
+
+        height?: number;
+
+        opacity?: number;
+
+        tint?: number;
+
+        offsetX?: number;
+
+        offsetY?: number;
+
+        resolution?: number;
+    }
+
+### `parallaxScroll` (function)
+
+    export declare function parallaxScroll(path: string): {
+        scrollX: number;
+
 ### `parseColorPairs` (function)
 
     export declare function parseColorPairs(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
@@ -23817,6 +24547,101 @@ build instead.
         width: number;
 
         height?: number;
+    }
+
+### `Picture` (class)
+
+    export declare class Picture extends Sprite {
+
+        constructor(name: string, options?: PictureOptions);
+
+        moveTo(patch: Partial<PictureOptions>): this;
+
+        setTexture(texture: Texture2D): this;
+
+        setOrigin(x: number, y: number): this;
+
+        setTint(color: number): this;
+
+        setAlpha(value: number): this;
+
+        setRotation(radians: number): this;
+
+        setBlendMode(mode: string): this;
+
+        setZIndex(value: number): this;
+    }
+
+### `PictureLayer` (class)
+
+    export declare class PictureLayer {
+
+        readonly container: Container<import("pixi.js").ContainerChild>;
+        private readonly pictures;
+
+        get size(): number;
+
+        get names(): readonly string[];
+
+        show(name: string, options?: PictureOptions): Picture;
+        get(name: string): Picture | null;
+        has(name: string): boolean;
+
+        moveTo(name: string, patch: Partial<PictureOptions>): Picture | null;
+
+        rotate(name: string, radians: number): Picture | null;
+
+        tint(name: string, color: number): Picture | null;
+
+        erase(name: string): boolean;
+
+        clear(): void;
+
+        bringToFront(name: string): boolean;
+
+        sendToBack(name: string): boolean;
+
+        private drawOrder;
+        private resort;
+
+        destroy(): void;
+    }
+
+### `PictureOptions` (interface)
+
+    export interface PictureOptions {
+
+        texture?: Texture2D;
+
+        x?: number;
+
+        y?: number;
+
+        width?: number;
+
+        height?: number;
+
+        originX?: number;
+
+        originY?: number;
+
+        scale?: number;
+
+        scaleX?: number;
+
+        scaleY?: number;
+
+        rotation?: number;
+
+        alpha?: number;
+
+        tint?: number;
+
+        blendMode?: string;
+
+        zIndex?: number;
+
+        visible?: boolean;
     }
 
 ### `PinnedDeform` (class)
@@ -24188,7 +25013,7 @@ build instead.
         private readonly opts;
         private readonly tags;
         private readonly themeListener;
-        private revealSpans;
+        private revealSource;
         private reveal;
         constructor(options?: RichLabelOptions | string);
 
@@ -24775,6 +25600,10 @@ build instead.
 
     export type SkinStates = Partial<Record<WidgetState, Skin>>;
 
+### `sliceAlignedLines` (function)
+
+    export declare function sliceAlignedLines(lines: readonly AlignedTextLine[], count: number): AlignedTextLine[];
+
 ### `sliceSpans` (function)
 
     export declare function sliceSpans(spans: readonly MarkdownSpan[], count: number): MarkdownSpan[];
@@ -24898,6 +25727,10 @@ build instead.
 ### `spinValue` (function)
 
     export declare function spinValue(value: number, delta: number, min: number, max: number, step?: number, wrap?: boolean): number;
+
+### `splitAlignedLines` (function)
+
+    export declare function splitAlignedLines(source: string): AlignedTextLine[];
 
 ### `splitScreenHalves` (function)
 
@@ -25280,6 +26113,10 @@ build instead.
         private report;
     }
 
+### `stripAlignedLines` (function)
+
+    export declare function stripAlignedLines(source: string): string;
+
 ### `stripMarkdown` (function)
 
     export declare function stripMarkdown(text: string): string;
@@ -25493,6 +26330,12 @@ build instead.
 ### `Text2D` (class)
 
     export declare class Text2D extends Text {
+
+        setText(value: string): void;
+
+        setFill(color: number): void;
+        get text(): string;
+        set text(value: string);
     }
 
 ### `TextModel` (class)
@@ -25778,6 +26621,8 @@ build instead.
         private chunkColumns;
         private chunkRows;
         private chunks;
+        private wrapMode;
+        private loopCache;
         private cellTint;
         private cellAdd;
         private cellHeight;
@@ -25788,6 +26633,28 @@ build instead.
         get worldWidth(): number;
         get worldHeight(): number;
         inside(x: number, y: number): boolean;
+
+        setWrap(mode: {
+            x?: boolean;
+            y?: boolean;
+        } | null): this;
+
+        get wrap(): {
+            x: boolean;
+            y: boolean;
+        };
+
+        get loop(): MapLoop;
+
+        wrapPoint(x: number, y: number): {
+            x: number;
+            y: number;
+        };
+
+        nearestCopy(x: number, y: number, nearX: number, nearY: number): {
+            x: number;
+            y: number;
+        };
         private index;
 
         addLayer(name: string, data?: ArrayLike<number>): this;
@@ -26271,6 +27138,77 @@ build instead.
         rotate?: RegExp;
     }
 
+### `VideoOverlay` (class)
+
+    export declare class VideoOverlay {
+        private video;
+        private readonly host;
+        private readonly defaultLoop;
+        private readonly defaultMuted;
+        private bounds;
+
+        private pending;
+        constructor(options?: VideoOverlayOptions);
+
+        get element(): HTMLVideoElement | null;
+
+        get playing(): boolean;
+
+        play(src: string, options?: VideoPlayOptions): Promise<void>;
+
+        stop(): void;
+        pause(): void;
+
+        resume(): Promise<void>;
+        setBounds(x: number, y: number, width: number, height: number): void;
+        setVisible(visible: boolean): void;
+
+        dispose(): void;
+
+        private watch;
+
+        private finish;
+
+        private seek;
+        private applyBounds;
+    }
+
+### `VideoOverlayOptions` (interface)
+
+    export interface VideoOverlayOptions {
+
+        container?: HTMLElement;
+
+        x?: number;
+
+        y?: number;
+
+        width?: number;
+
+        height?: number;
+
+        loop?: boolean;
+
+        muted?: boolean;
+
+        controls?: boolean;
+
+        autoplay?: boolean;
+
+        crossOrigin?: string;
+    }
+
+### `VideoPlayOptions` (interface)
+
+    export interface VideoPlayOptions {
+
+        loop?: boolean;
+
+        muted?: boolean;
+
+        startAt?: number;
+    }
+
 ### `Viewport` (class)
 
     export declare class Viewport {
@@ -26292,6 +27230,92 @@ build instead.
         y: number;
         width: number;
         height: number;
+    }
+
+### `WeatherKind` (type)
+
+    export type WeatherKind = 'clear' | 'rain' | 'storm' | 'snow';
+
+### `WeatherLayer` (class)
+
+    export declare class WeatherLayer extends Container {
+        private areaWidth;
+        private areaHeight;
+        private readonly texture?;
+        private emitter;
+        private kind;
+        private power;
+        private wind;
+        constructor(options: WeatherLayerOptions);
+
+        get weather(): WeatherKind;
+
+        get intensity(): number;
+
+        get activeCount(): number;
+
+        setWeather(kind: WeatherKind, options?: {
+            power?: number;
+            wind?: number;
+        }): void;
+
+        setBounds(width: number, height: number): void;
+
+        update(dt: number): void;
+
+        clear(): void;
+
+        private stopEmitting;
+        private freeEmitter;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `WeatherLayerOptions` (interface)
+
+    export interface WeatherLayerOptions {
+
+        width: number;
+        height: number;
+
+        texture?: Texture2D;
+    }
+
+### `weatherPreset` (function)
+
+    export declare function weatherPreset(kind: WeatherKind, options: WeatherPresetOptions): WeatherPreset | null;
+
+### `WeatherPreset` (interface)
+
+    export interface WeatherPreset {
+
+        readonly width: number;
+        readonly height: number;
+        readonly spawn: ParticleSpawnArea;
+        readonly rate: number;
+        readonly max: number;
+        readonly life: readonly [number, number];
+        readonly speed: readonly [number, number];
+        readonly angle: readonly [number, number];
+        readonly gravity: {
+            readonly x: number;
+            readonly y: number;
+        };
+        readonly scale: readonly [number, number];
+        readonly alpha: readonly [number, number];
+        readonly tint: number;
+        texture?: Texture2D;
+    }
+
+### `WeatherPresetOptions` (interface)
+
+    export interface WeatherPresetOptions {
+
+        width: number;
+        height: number;
+
+        power?: number;
+
+        wind?: number;
     }
 
 ### `WebGpuDetection` (interface)
@@ -26951,6 +27975,7 @@ build instead.
         private shakeDuration;
         private shakeX;
         private shakeY;
+        private zoomMove;
 
         private bounds;
 
@@ -27011,6 +28036,17 @@ build instead.
         shake(magnitude: number, duration?: number): void;
 
         shakeScreen(intensity: number, duration?: number): void;
+
+        zoomTo(point: {
+            x: number;
+            y: number;
+        }, scale: number, duration?: number): void;
+
+        get zooming(): boolean;
+
+        stopZoom(): void;
+
+        private centreForAnchor;
         update(dt: number): void;
 
         toScreen(x: number, y: number): {
@@ -27248,6 +28284,10 @@ build instead.
 ### `dissolve` (function)
 
     export declare function dissolve(): SceneTransition;
+
+### `EmittingWeather` (type)
+
+    export type EmittingWeather = Exclude<WeatherKind, 'clear'>;
 
 ### `EMPTY` (const)
 
@@ -27682,6 +28722,47 @@ build instead.
 
     export declare function loadTiledMap(data: TiledMapData, sheets: SpriteSheet | TilesetSheet[]): LoadedTiledMap;
 
+### `MapLoop` (class)
+
+    export declare class MapLoop {
+        readonly width: number;
+        readonly height: number;
+        readonly wrapX: boolean;
+        readonly wrapY: boolean;
+        constructor(options: MapLoopOptions);
+
+        get wraps(): boolean;
+
+        wrapPoint(x: number, y: number): MapPoint;
+
+        nearest(x: number, y: number, nearX: number, nearY: number): MapPoint;
+
+        delta(fromX: number, fromY: number, toX: number, toY: number): MapPoint;
+
+        offsets(nearX: number, nearY: number, halfWidth: number, halfHeight: number, margin?: number): MapPoint[];
+        private copyIndex;
+        private copyOffsets;
+    }
+
+### `MapLoopOptions` (interface)
+
+    export interface MapLoopOptions {
+
+        width: number;
+        height: number;
+
+        wrapX?: boolean;
+
+        wrapY?: boolean;
+    }
+
+### `MapPoint` (interface)
+
+    export interface MapPoint {
+        x: number;
+        y: number;
+    }
+
 ### `maskPixels` (function)
 
     export declare function maskPixels(base: Uint8ClampedArray, baseWidth: number, baseHeight: number, mask: Uint8ClampedArray, maskWidth: number, maskHeight: number, offsetX: number, offsetY: number): Uint8ClampedArray;
@@ -27887,6 +28968,97 @@ build instead.
 
     export type PaletteRemapMode = 'exact' | 'nearest';
 
+### `ParallaxLayer` (class)
+
+    export declare class ParallaxLayer extends Container {
+        private art;
+        private depthX;
+        private depthY;
+        private repeatsX;
+        private repeatsY;
+        private viewWidth;
+        private viewHeight;
+        private nudgeX;
+        private nudgeY;
+        private density;
+        private colour;
+
+        private draggedX;
+        private draggedY;
+
+        private tiling;
+
+        private copies;
+        private columns;
+        private rows;
+        constructor(options: ParallaxOptions);
+
+        get scrollX(): number;
+
+        get scrollY(): number;
+
+        get loopX(): boolean;
+
+        get loopY(): boolean;
+
+        setScroll(scrollX: number, scrollY: number): void;
+
+        setOpacity(opacity: number): void;
+
+        setTint(color: number): void;
+
+        setOffset(offsetX: number, offsetY: number): void;
+
+        setTexture(texture: Texture2D): void;
+
+        resize(width: number, height: number): void;
+
+        update(dt: number, camera: {
+            x: number;
+            y: number;
+            zoom?: number;
+        }): void;
+
+        private tileWidth;
+        private tileHeight;
+        private rebuild;
+        private layout;
+    }
+
+### `ParallaxOptions` (interface)
+
+    export interface ParallaxOptions {
+
+        texture: Texture2D;
+
+        scrollX?: number;
+
+        scrollY?: number;
+
+        loopX?: boolean;
+
+        loopY?: boolean;
+
+        width?: number;
+
+        height?: number;
+
+        opacity?: number;
+
+        tint?: number;
+
+        offsetX?: number;
+
+        offsetY?: number;
+
+        resolution?: number;
+    }
+
+### `parallaxScroll` (function)
+
+    export declare function parallaxScroll(path: string): {
+        scrollX: number;
+
 ### `parseColorPairs` (function)
 
     export declare function parseColorPairs(args: readonly string[], resolve?: (name: string) => number | undefined): PaletteMapping;
@@ -28052,6 +29224,101 @@ build instead.
         width: number;
 
         height?: number;
+    }
+
+### `Picture` (class)
+
+    export declare class Picture extends Sprite {
+
+        constructor(name: string, options?: PictureOptions);
+
+        moveTo(patch: Partial<PictureOptions>): this;
+
+        setTexture(texture: Texture2D): this;
+
+        setOrigin(x: number, y: number): this;
+
+        setTint(color: number): this;
+
+        setAlpha(value: number): this;
+
+        setRotation(radians: number): this;
+
+        setBlendMode(mode: string): this;
+
+        setZIndex(value: number): this;
+    }
+
+### `PictureLayer` (class)
+
+    export declare class PictureLayer {
+
+        readonly container: Container<import("pixi.js").ContainerChild>;
+        private readonly pictures;
+
+        get size(): number;
+
+        get names(): readonly string[];
+
+        show(name: string, options?: PictureOptions): Picture;
+        get(name: string): Picture | null;
+        has(name: string): boolean;
+
+        moveTo(name: string, patch: Partial<PictureOptions>): Picture | null;
+
+        rotate(name: string, radians: number): Picture | null;
+
+        tint(name: string, color: number): Picture | null;
+
+        erase(name: string): boolean;
+
+        clear(): void;
+
+        bringToFront(name: string): boolean;
+
+        sendToBack(name: string): boolean;
+
+        private drawOrder;
+        private resort;
+
+        destroy(): void;
+    }
+
+### `PictureOptions` (interface)
+
+    export interface PictureOptions {
+
+        texture?: Texture2D;
+
+        x?: number;
+
+        y?: number;
+
+        width?: number;
+
+        height?: number;
+
+        originX?: number;
+
+        originY?: number;
+
+        scale?: number;
+
+        scaleX?: number;
+
+        scaleY?: number;
+
+        rotation?: number;
+
+        alpha?: number;
+
+        tint?: number;
+
+        blendMode?: string;
+
+        zIndex?: number;
+
+        visible?: boolean;
     }
 
 ### `PinnedDeform` (class)
@@ -28825,6 +30092,12 @@ build instead.
 ### `Text2D` (class)
 
     export declare class Text2D extends Text {
+
+        setText(value: string): void;
+
+        setFill(color: number): void;
+        get text(): string;
+        set text(value: string);
     }
 
 ### `Texture2D` (export)
@@ -28927,6 +30200,8 @@ build instead.
         private chunkColumns;
         private chunkRows;
         private chunks;
+        private wrapMode;
+        private loopCache;
         private cellTint;
         private cellAdd;
         private cellHeight;
@@ -28937,6 +30212,28 @@ build instead.
         get worldWidth(): number;
         get worldHeight(): number;
         inside(x: number, y: number): boolean;
+
+        setWrap(mode: {
+            x?: boolean;
+            y?: boolean;
+        } | null): this;
+
+        get wrap(): {
+            x: boolean;
+            y: boolean;
+        };
+
+        get loop(): MapLoop;
+
+        wrapPoint(x: number, y: number): {
+            x: number;
+            y: number;
+        };
+
+        nearestCopy(x: number, y: number, nearX: number, nearY: number): {
+            x: number;
+            y: number;
+        };
         private index;
 
         addLayer(name: string, data?: ArrayLike<number>): this;
@@ -29169,6 +30466,77 @@ build instead.
         destroy(): void;
     }
 
+### `VideoOverlay` (class)
+
+    export declare class VideoOverlay {
+        private video;
+        private readonly host;
+        private readonly defaultLoop;
+        private readonly defaultMuted;
+        private bounds;
+
+        private pending;
+        constructor(options?: VideoOverlayOptions);
+
+        get element(): HTMLVideoElement | null;
+
+        get playing(): boolean;
+
+        play(src: string, options?: VideoPlayOptions): Promise<void>;
+
+        stop(): void;
+        pause(): void;
+
+        resume(): Promise<void>;
+        setBounds(x: number, y: number, width: number, height: number): void;
+        setVisible(visible: boolean): void;
+
+        dispose(): void;
+
+        private watch;
+
+        private finish;
+
+        private seek;
+        private applyBounds;
+    }
+
+### `VideoOverlayOptions` (interface)
+
+    export interface VideoOverlayOptions {
+
+        container?: HTMLElement;
+
+        x?: number;
+
+        y?: number;
+
+        width?: number;
+
+        height?: number;
+
+        loop?: boolean;
+
+        muted?: boolean;
+
+        controls?: boolean;
+
+        autoplay?: boolean;
+
+        crossOrigin?: string;
+    }
+
+### `VideoPlayOptions` (interface)
+
+    export interface VideoPlayOptions {
+
+        loop?: boolean;
+
+        muted?: boolean;
+
+        startAt?: number;
+    }
+
 ### `Viewport` (class)
 
     export declare class Viewport {
@@ -29190,6 +30558,92 @@ build instead.
         y: number;
         width: number;
         height: number;
+    }
+
+### `WeatherKind` (type)
+
+    export type WeatherKind = 'clear' | 'rain' | 'storm' | 'snow';
+
+### `WeatherLayer` (class)
+
+    export declare class WeatherLayer extends Container {
+        private areaWidth;
+        private areaHeight;
+        private readonly texture?;
+        private emitter;
+        private kind;
+        private power;
+        private wind;
+        constructor(options: WeatherLayerOptions);
+
+        get weather(): WeatherKind;
+
+        get intensity(): number;
+
+        get activeCount(): number;
+
+        setWeather(kind: WeatherKind, options?: {
+            power?: number;
+            wind?: number;
+        }): void;
+
+        setBounds(width: number, height: number): void;
+
+        update(dt: number): void;
+
+        clear(): void;
+
+        private stopEmitting;
+        private freeEmitter;
+        destroy(options?: Parameters<Container['destroy']>[0]): void;
+    }
+
+### `WeatherLayerOptions` (interface)
+
+    export interface WeatherLayerOptions {
+
+        width: number;
+        height: number;
+
+        texture?: Texture2D;
+    }
+
+### `weatherPreset` (function)
+
+    export declare function weatherPreset(kind: WeatherKind, options: WeatherPresetOptions): WeatherPreset | null;
+
+### `WeatherPreset` (interface)
+
+    export interface WeatherPreset {
+
+        readonly width: number;
+        readonly height: number;
+        readonly spawn: ParticleSpawnArea;
+        readonly rate: number;
+        readonly max: number;
+        readonly life: readonly [number, number];
+        readonly speed: readonly [number, number];
+        readonly angle: readonly [number, number];
+        readonly gravity: {
+            readonly x: number;
+            readonly y: number;
+        };
+        readonly scale: readonly [number, number];
+        readonly alpha: readonly [number, number];
+        readonly tint: number;
+        texture?: Texture2D;
+    }
+
+### `WeatherPresetOptions` (interface)
+
+    export interface WeatherPresetOptions {
+
+        width: number;
+        height: number;
+
+        power?: number;
+
+        wind?: number;
     }
 
 ### `WebGpuDetection` (interface)
@@ -29475,6 +30929,13 @@ build instead.
 ### `advanceReveal` (function)
 
     export declare function advanceReveal(state: RevealState, dt: number): boolean;
+
+### `AlignedTextLine` (interface)
+
+    export interface AlignedTextLine {
+        text: string;
+        align?: MarkupAlign;
+    }
 
 ### `Anchor` (type)
 
@@ -30462,6 +31923,8 @@ build instead.
     export interface MarkupLine {
         readonly spans: readonly MarkupSpan[];
         readonly width: number;
+
+        readonly align?: MarkupAlign;
     }
 
 ### `MarkupMeasure` (type)
@@ -30488,6 +31951,8 @@ build instead.
         image?: string;
 
         tag?: string;
+
+        align?: MarkupAlign;
     }
 
 ### `MarkupText` (class)
@@ -30589,6 +32054,12 @@ build instead.
         private nextCue;
         private mode;
         private body;
+        private bodyLines;
+        private bodyTextWidth;
+        private bodyHeight;
+        private pageLines;
+        private nvlLines;
+        private nvlCurrentStart;
         private speakerLabel;
         private portrait;
         private portraitLayer;
@@ -30609,7 +32080,8 @@ build instead.
         private showPage;
 
         private renderBody;
-        private formatLine;
+
+        private layoutLines;
         private playRevealedSounds;
         private get pageComplete();
         update(dt: number): void;
@@ -30965,7 +32437,7 @@ build instead.
         private readonly opts;
         private readonly tags;
         private readonly themeListener;
-        private revealSpans;
+        private revealSource;
         private reveal;
         constructor(options?: RichLabelOptions | string);
 
@@ -31281,6 +32753,10 @@ build instead.
 
     export type SkinStates = Partial<Record<WidgetState, Skin>>;
 
+### `sliceAlignedLines` (function)
+
+    export declare function sliceAlignedLines(lines: readonly AlignedTextLine[], count: number): AlignedTextLine[];
+
 ### `sliceSpans` (function)
 
     export declare function sliceSpans(spans: readonly MarkdownSpan[], count: number): MarkdownSpan[];
@@ -31392,6 +32868,10 @@ build instead.
 
     export declare function spinValue(value: number, delta: number, min: number, max: number, step?: number, wrap?: boolean): number;
 
+### `splitAlignedLines` (function)
+
+    export declare function splitAlignedLines(source: string): AlignedTextLine[];
+
 ### `startReveal` (function)
 
     export declare function startReveal(total: number, speed?: number): RevealState;
@@ -31419,6 +32899,10 @@ build instead.
         width: number;
         stats: readonly StatRow[];
     }
+
+### `stripAlignedLines` (function)
+
+    export declare function stripAlignedLines(source: string): string;
 
 ### `stripMarkdown` (function)
 
@@ -32162,6 +33646,10 @@ build instead.
         spawn?: string;
     }
 
+### `MapFactory` (type)
+
+    export type MapFactory<M> = (spawn?: string) => M | Promise<M>;
+
 ### `Overworld` (class)
 
     export declare class Overworld {
@@ -32284,14 +33772,21 @@ build instead.
     export declare class World<M> {
         private factories;
         private loaded;
+        private pending;
+        private enterToken;
         private currentId;
         private lastSpawn;
 
-        define(id: string, create: () => M, options?: {
+        define(id: string, create: MapFactory<M>, options?: {
             persistent?: boolean;
         }): void;
 
         enter(id: string, spawn?: string): M;
+
+        enterAsync(id: string, spawn?: string): Promise<M>;
+
+        private activate;
+        private require;
         get current(): M | null;
         get currentMapId(): string | null;
 

@@ -472,7 +472,10 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   sharing the same angle and the same `toScreen`/`toWorld`/`view` math the stepped API uses.
   `shakeScreen(intensity, duration)` (item 303) is `shake` taking screen pixels instead of world
   units, dividing by the current `zoom` once so a caller thinking in screen pixels (a convention
-  several engines use for this call) does not have to at every call site.
+  several engines use for this call) does not have to at every call site. `zoomTo(point, scale,
+  duration)` zooms about a screen point, keeping the world under that point fixed while the zoom
+  eases (a cut-in, a reveal), with `zooming`/`stopZoom` for the caller's own bookkeeping and a
+  reduced-motion jump to the end.
 - `Viewport`/`splitScreenHalves` - a camera scoped to one screen region, for split-screen.
 - `createColorBlindnessFilter`/`COLOR_BLINDNESS_MATRICES` - accessibility colour filters.
 - `Minimap`/`newlyRevealed`/`minimapCellCenter`/`MinimapMarker` - bakes an explored-cell set
@@ -480,6 +483,11 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   several game-owned unit or quest markers.
 - `TileMap`/`EMPTY`/`tileFrame`/`tileFrameSheet`/`tileFrameIndex` - tile map rendering:
   square/hex/isometric/staggered projections, multi-sheet tiles, elevation columns.
+  `setWrap({ x, y })` (square maps only) marks the map as repeating; `wrap`/`wrapPoint`/
+  `nearestCopy` expose the geometry through the map's own world size. `MapLoop`/`MapPoint` is
+  that same arithmetic on its own - `wrapPoint`, `nearest` (the copy of a sprite closest to a
+  viewer), `delta` (the shortest way across the seam) and `offsets` (which whole-map copies a
+  view reaches) - for a game with its own camera or renderer.
 - `LayeredSprite` - layered character sprites (body/hair/equipment as separate layers).
 - `SkeletalSprite`/`ArticulatedChain`/`ChainRig` (items 399/400) - bones driving drawn
   parts: the pose math lives in the renderer-free `skeleton` module (bone tree, keyframed
@@ -517,6 +525,18 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   overlay: a small linear-filtered canvas with `resolution` pixels per tile, so fog edges blur
   across cells and one cell can be shaded in parts; `paintFogPixels` is the same shading as a
   pure function over an RGBA buffer.
+- `Picture`/`PictureLayer`/`PictureOptions` - a named picture stack (show/move/rotate/tint/erase,
+  origin, opacity, blend mode, z-order): `show` replaces a same-name picture in place, `moveTo`/
+  `rotate`/`tint` change one without rebuilding it, and z-order follows an explicit `zIndex` when
+  set and insertion order otherwise.
+- `ParallaxLayer`/`parallaxScroll`/`ParallaxOptions` - a scrolling, optionally looping backdrop:
+  camera-relative scroll rates (0 pinned, 1 moving with the world), `loopX`/`loopY` tiling,
+  opacity/tint/offset setters, and `parallaxScroll(path)` for the `!` prefix convention (a `!`
+  basename is pinned; otherwise the map default and looping).
+- `VideoOverlay`/`VideoOverlayOptions`/`VideoPlayOptions` - a DOM `<video>` over the game canvas,
+  because Pixi has no video primitive: `play(src)` resolves when a non-looping cutscene ends,
+  `stop`/`pause`/`resume`/`setBounds`/`setVisible`/`dispose` manage it, and it constructs and
+  no-ops safely outside a browser.
 - `TileMap.stampRect` copies a block of frames into a layer at a tile position and throws when
   it does not fit; `AutotileSet.mode: 'mixed'` reads the MV A4 sheet's alternating rows with the
   floor table (wall tops) and the wall table (wall faces).
@@ -534,6 +554,12 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   channel, and `flicker` wobbles the scale every frame with a seeded draw (dropped under reduced
   motion). All three draws happen only when used, so an existing emitter's seeded spray is
   unchanged. `attach(target)` follows a display object or position thunk on every tick (with `offsetX`/`offsetY`, an `enabled` callback gating tick emission, a `visible` callback hiding the whole spray (fog-of-war gates) while the simulation steps on behind the invisibility, and auto-detach for destroyed targets); `detach()` keeps the last position.
+- `WeatherLayer`/`weatherPreset`/`WeatherKind`/`WeatherPreset` - rain, storm and snow over a
+  screen as presets rather than a hand-tuned emitter per kind. `weatherPreset` returns the
+  pure data (spawn strip above the top edge, speed/angle/gravity/scale/alpha/tint, life sized
+  to cross the screen), with `power` scaling count and opacity together and `wind` leaning
+  every kind by the same offset; `WeatherLayer` owns one emitter, `setWeather` retargets it,
+  `setBounds` rebuilds it for a resize, `clear` drops it, and `update(dt)` steps it.
 - `ScreenEffects`/`ScreenEffectStep` - a full-screen colour wash: `fadeOut`/`fadeIn`/`flash`/
   `setTint`, driven by `update(dt)` returning true on the frame an effect completes.
   `sequence(steps)` (item 302) chains fade/hold/flash steps end to end as one call, for the
@@ -622,7 +648,10 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   repeating/scrolling texture, and a gradient fill/stroke, none of which needed new
   behaviour, only a name a game can import without naming `pixi.js` itself. Prefer
   `ui.Label`/`BitmapLabel` over `Text2D` for anything styled through `ui.theme()`, and
-  `render.TintedSprite` over `Sprite2D` the moment a colour transform is needed.
+  `render.TintedSprite` over `Sprite2D` the moment a colour transform is needed. `Text2D` also
+  carries the destroyed-node guard `Label` has: `setText`/`setFill` and the `text` setter are
+  no-ops after `destroy()`, where a raw Pixi `Text` update would read its released texture and
+  throw.
 - `createLayers(parent, names)` (item 312) - builds one labeled `Node2D` per name, attached to
   `parent` in the order given and returned keyed by name, so a game's conventionally-ordered
   layer stack (terrain, units, effects, UI, ...) is one call rather than a dozen hand-wired
@@ -655,6 +684,12 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   so an `rtl` line flows right to left and alignment defaults to the direction's own edge. Both
   are backend-neutral: the same spans, `measure` and `maxWidth` decide the same line breaks and
   the same runs whether a caller then draws them through `HTMLText` or a canvas `Text2D` pass.
+  A line may carry its own alignment: `<align=center>` or `{align:right}` (and `left`) at the
+  start of a line becomes an empty control `MarkupSpan` with `align`, `layoutMarkupLines` gives
+  the resulting `MarkupLine` that `align` (sticky across its soft wraps, reset at a hard break),
+  and `positionMarkupLines` honours it per line. `splitAlignedLines`/`sliceAlignedLines`/
+  `stripAlignedLines` are the same per-line markers as plain data, for a renderer that draws one
+  `Text` per source line - the `MessageBox` typewriter uses them.
 - `MarkupText`/`MarkupTextOptions` - the canvas backend for that contract, the counterpart to
   `RichLabel`'s HTML text: one `Text2D` per styled run and one `Sprite2D` per `<img>` span,
   resolved through the asset resolver, so an image is drawn rather than a caller positioning it
@@ -670,7 +705,9 @@ Windows, lists, message boxes, HUD widgets - all themed from one live-swappable 
   reveal without leaking half-shown markers. Costs more than a `Label`, so this is for
   descriptions and help bodies, not per-frame numbers. `tagStyles` (item 313) takes Pixi
   `HTMLTextStyleOptions` keyed by custom tag; a registered tag survives escaping as a real element
-  for `HTMLText` to style, while an unregistered one is still escaped as literal text.
+  for `HTMLText` to style, while an unregistered one is still escaped as literal text. A source
+  line starting with `{align:center}`/`{align:right}` (or the `<align=…>` form) is wrapped in a
+  `text-align` block, and the reveal strips those markers before counting characters.
 - `startReveal`/`advanceReveal`/`completeReveal`/`revealComplete` - the shared
   progressive-display primitive: one character count behind `MessageBox` pages (which
   already revealed this way), `Label` lines, and `RichLabel` markdown. `Label` and
@@ -1065,6 +1102,12 @@ reach the compiled asset map without it.
   overlapping SE one-shots, save and replay with playheads, and plain-data snapshots.
   `AudioBus.setMixer(kind, { volume, muted })` scales a whole kind on top of each track's
   own volume, without changing what snapshots report.
+  `Channel.setFilter(spec | null)` puts a biquad in the voice (volume/pitch/pan stay editable,
+  no restart), `Channel.insert`/`removeInsert`/`clearInserts` place caller-built nodes after the
+  gain and panner, and `AudioBus.setFilter(kind, spec | null)` does the same for a whole kind.
+  `createFilter`, `applyFilter`, `createReverb` (an algorithmic impulse, no sample file),
+  `createChorus` (delay plus LFO, an `EffectUnit` with input/output/dispose) and `createDistortion`
+  build the nodes those methods take, so a game needs no Web Audio recipe of its own.
 - `MidiSynth`/`MidiSynthFactory`/`MidiSynthRequest` + `registerMidiSynth`, `unregisterMidiSynth`,
   `midiSynthNames`, `resolveMidiSynth`, `renderMidiThroughSynth`, `renderMidiStems`,
   `onMidiSynthFallback` and `INTERNAL_MIDI_ENGINES` - the named-engine contract for MIDI:
@@ -1850,8 +1893,12 @@ this module.
 Many maps, transitions, persistence, the turn clock, encounter tables - the connective
 tissue between scenes.
 
-- `World` - many maps, each created once and kept alive (or rebuilt fresh per entry when
-  defined `persistent: false`); `unload` frees a map's own state.
+- `World`/`MapFactory` - many maps, each created once and kept alive (or rebuilt fresh per entry when
+  defined `persistent: false`); `unload` frees a map's own state. A factory receives the spawn point
+  the entry asked for, so a scene captures where it starts as it is built; `enter` takes a synchronous
+  factory, and `enterAsync` awaits one that loads something first, keeping the current map current
+  until the next is ready, sharing one creation between concurrent entries to the same persistent
+  map, and letting only the newest request take over.
 - `Overworld`/`Location` - named-location lookup.
 - `TurnClock`/`TimedEffect` - hunger/poison-style timed effects, ticked on `advance`.
 - `rollEncounter`/`EncounterTable` - rolls whether an encounter fires, then weight-picks

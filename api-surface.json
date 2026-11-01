@@ -66,6 +66,12 @@
 		"declaringModule": "index.d.ts"
 	},
 	{
+		"name": "AlignedTextLine",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/text-align.d.ts"
+	},
+	{
 		"name": "Anchor",
 		"kind": "type",
 		"subpath": ".",
@@ -778,6 +784,12 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
+		"name": "EmittingWeather",
+		"kind": "type",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Weather.d.ts"
 	},
 	{
 		"name": "EMPTY",
@@ -1638,6 +1650,24 @@
 		"declaringModule": "core/Grid.d.ts"
 	},
 	{
+		"name": "MapLoop",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/MapLoop.d.ts"
+	},
+	{
+		"name": "MapLoopOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/MapLoop.d.ts"
+	},
+	{
+		"name": "MapPoint",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/MapLoop.d.ts"
+	},
+	{
 		"name": "MarkdownSpan",
 		"kind": "interface",
 		"subpath": ".",
@@ -2046,6 +2076,24 @@
 		"declaringModule": "two-d/render/PaletteRemap.d.ts"
 	},
 	{
+		"name": "ParallaxLayer",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/ParallaxLayer.d.ts"
+	},
+	{
+		"name": "ParallaxOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/ParallaxLayer.d.ts"
+	},
+	{
+		"name": "parallaxScroll",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/ParallaxLayer.d.ts"
+	},
+	{
 		"name": "parseColorPairs",
 		"kind": "function",
 		"subpath": ".",
@@ -2164,6 +2212,24 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "core/ReplayFile.d.ts"
+	},
+	{
+		"name": "Picture",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
+		"name": "PictureLayer",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
+		"name": "PictureOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
 	},
 	{
 		"name": "PinnedDeform",
@@ -3048,6 +3114,12 @@
 		"declaringModule": "two-d/ui/Skins.d.ts"
 	},
 	{
+		"name": "sliceAlignedLines",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/text-align.d.ts"
+	},
+	{
 		"name": "sliceSpans",
 		"kind": "function",
 		"subpath": ".",
@@ -3124,6 +3196,12 @@
 		"kind": "function",
 		"subpath": ".",
 		"declaringModule": "two-d/ui/Spinner.d.ts"
+	},
+	{
+		"name": "splitAlignedLines",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/text-align.d.ts"
 	},
 	{
 		"name": "splitScreenHalves",
@@ -3334,6 +3412,12 @@
 		"kind": "class",
 		"subpath": ".",
 		"declaringModule": "two-d/stage/StoryScreen.d.ts"
+	},
+	{
+		"name": "stripAlignedLines",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/ui/text-align.d.ts"
 	},
 	{
 		"name": "stripMarkdown",
@@ -3846,6 +3930,24 @@
 		"declaringModule": "two-d/ui/VerticalLabel.d.ts"
 	},
 	{
+		"name": "VideoOverlay",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/VideoOverlay.d.ts"
+	},
+	{
+		"name": "VideoOverlayOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/VideoOverlay.d.ts"
+	},
+	{
+		"name": "VideoPlayOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/VideoOverlay.d.ts"
+	},
+	{
 		"name": "Viewport",
 		"kind": "class",
 		"subpath": ".",
@@ -3868,6 +3970,42 @@
 		"kind": "interface",
 		"subpath": ".",
 		"declaringModule": "core/Spawner.d.ts"
+	},
+	{
+		"name": "WeatherKind",
+		"kind": "type",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "WeatherLayer",
+		"kind": "class",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "WeatherLayerOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "weatherPreset",
+		"kind": "function",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "WeatherPreset",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "WeatherPresetOptions",
+		"kind": "interface",
+		"subpath": ".",
+		"declaringModule": "two-d/render/Weather.d.ts"
 	},
 	{
 		"name": "WebGpuDetection",
@@ -5658,6 +5796,12 @@
 		"declaringModule": "audio/AdaptiveMusic.d.ts"
 	},
 	{
+		"name": "applyFilter",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/effects.d.ts"
+	},
+	{
 		"name": "assertGrooveTemplate",
 		"kind": "function",
 		"subpath": "./audio",
@@ -5934,6 +6078,12 @@
 		"declaringModule": "audio/Channels.d.ts"
 	},
 	{
+		"name": "ChorusOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/effects.d.ts"
+	},
+	{
 		"name": "collectSoundFontUsage",
 		"kind": "function",
 		"subpath": "./audio",
@@ -5962,6 +6112,30 @@
 		"kind": "function",
 		"subpath": "./audio",
 		"declaringModule": "audio/BusBudget.d.ts"
+	},
+	{
+		"name": "createChorus",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/effects.d.ts"
+	},
+	{
+		"name": "createDistortion",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/effects.d.ts"
+	},
+	{
+		"name": "createFilter",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/effects.d.ts"
+	},
+	{
+		"name": "createReverb",
+		"kind": "function",
+		"subpath": "./audio",
+		"declaringModule": "audio/effects.d.ts"
 	},
 	{
 		"name": "DecodeBudgetError",
@@ -6018,6 +6192,12 @@
 		"declaringModule": "audio/SampleCodec.d.ts"
 	},
 	{
+		"name": "DistortionOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/effects.d.ts"
+	},
+	{
 		"name": "downloadSaver",
 		"kind": "function",
 		"subpath": "./audio",
@@ -6046,6 +6226,12 @@
 		"kind": "function",
 		"subpath": "./audio",
 		"declaringModule": "audio/Settings.d.ts"
+	},
+	{
+		"name": "EffectUnit",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/effects.d.ts"
 	},
 	{
 		"name": "encodeFlac",
@@ -6112,6 +6298,12 @@
 		"kind": "class",
 		"subpath": "./audio",
 		"declaringModule": "audio/AudioExport.d.ts"
+	},
+	{
+		"name": "FilterSpec",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/effects.d.ts"
 	},
 	{
 		"name": "fitToBudget",
@@ -6700,6 +6892,12 @@
 		"kind": "function",
 		"subpath": "./audio",
 		"declaringModule": "audio/MidiSynth.d.ts"
+	},
+	{
+		"name": "ReverbOptions",
+		"kind": "interface",
+		"subpath": "./audio",
+		"declaringModule": "audio/effects.d.ts"
 	},
 	{
 		"name": "SAMPLE_CODECS",
@@ -13278,6 +13476,12 @@
 		"declaringModule": "two-d/ui/reveal.d.ts"
 	},
 	{
+		"name": "AlignedTextLine",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/text-align.d.ts"
+	},
+	{
 		"name": "Anchor",
 		"kind": "type",
 		"subpath": "./two-d",
@@ -13762,6 +13966,12 @@
 		"kind": "function",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/ScrollText.d.ts"
+	},
+	{
+		"name": "EmittingWeather",
+		"kind": "type",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Weather.d.ts"
 	},
 	{
 		"name": "EMPTY",
@@ -14316,6 +14526,24 @@
 		"declaringModule": "two-d/render/TiledMap.d.ts"
 	},
 	{
+		"name": "MapLoop",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/MapLoop.d.ts"
+	},
+	{
+		"name": "MapLoopOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/MapLoop.d.ts"
+	},
+	{
+		"name": "MapPoint",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/MapLoop.d.ts"
+	},
+	{
 		"name": "MarkdownSpan",
 		"kind": "interface",
 		"subpath": "./two-d",
@@ -14646,6 +14874,24 @@
 		"declaringModule": "two-d/render/PaletteRemap.d.ts"
 	},
 	{
+		"name": "ParallaxLayer",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/ParallaxLayer.d.ts"
+	},
+	{
+		"name": "ParallaxOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/ParallaxLayer.d.ts"
+	},
+	{
+		"name": "parallaxScroll",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/ParallaxLayer.d.ts"
+	},
+	{
 		"name": "parseColorPairs",
 		"kind": "function",
 		"subpath": "./two-d",
@@ -14728,6 +14974,24 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/Particles.d.ts"
+	},
+	{
+		"name": "Picture",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
+		"name": "PictureLayer",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
+		"name": "PictureOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
 	},
 	{
 		"name": "PinnedDeform",
@@ -15240,6 +15504,12 @@
 		"declaringModule": "two-d/ui/Skins.d.ts"
 	},
 	{
+		"name": "sliceAlignedLines",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/text-align.d.ts"
+	},
+	{
 		"name": "sliceSpans",
 		"kind": "function",
 		"subpath": "./two-d",
@@ -15304,6 +15574,12 @@
 		"kind": "function",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/ui/Spinner.d.ts"
+	},
+	{
+		"name": "splitAlignedLines",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/text-align.d.ts"
 	},
 	{
 		"name": "splitScreenHalves",
@@ -15472,6 +15748,12 @@
 		"kind": "class",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/stage/StoryScreen.d.ts"
+	},
+	{
+		"name": "stripAlignedLines",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/ui/text-align.d.ts"
 	},
 	{
 		"name": "stripMarkdown",
@@ -15882,6 +16164,24 @@
 		"declaringModule": "two-d/ui/VerticalLabel.d.ts"
 	},
 	{
+		"name": "VideoOverlay",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/VideoOverlay.d.ts"
+	},
+	{
+		"name": "VideoOverlayOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/VideoOverlay.d.ts"
+	},
+	{
+		"name": "VideoPlayOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/VideoOverlay.d.ts"
+	},
+	{
 		"name": "Viewport",
 		"kind": "class",
 		"subpath": "./two-d",
@@ -15892,6 +16192,42 @@
 		"kind": "interface",
 		"subpath": "./two-d",
 		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
+		"name": "WeatherKind",
+		"kind": "type",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "WeatherLayer",
+		"kind": "class",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "WeatherLayerOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "weatherPreset",
+		"kind": "function",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "WeatherPreset",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "WeatherPresetOptions",
+		"kind": "interface",
+		"subpath": "./two-d",
+		"declaringModule": "two-d/render/Weather.d.ts"
 	},
 	{
 		"name": "WebGpuDetection",
@@ -16398,6 +16734,12 @@
 		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
+		"name": "EmittingWeather",
+		"kind": "type",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
 		"name": "EMPTY",
 		"kind": "const",
 		"subpath": "./two-d/render",
@@ -16656,6 +16998,24 @@
 		"declaringModule": "two-d/render/TiledMap.d.ts"
 	},
 	{
+		"name": "MapLoop",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/MapLoop.d.ts"
+	},
+	{
+		"name": "MapLoopOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/MapLoop.d.ts"
+	},
+	{
+		"name": "MapPoint",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/MapLoop.d.ts"
+	},
+	{
 		"name": "maskPixels",
 		"kind": "function",
 		"subpath": "./two-d/render",
@@ -16806,6 +17166,24 @@
 		"declaringModule": "two-d/render/PaletteRemap.d.ts"
 	},
 	{
+		"name": "ParallaxLayer",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/ParallaxLayer.d.ts"
+	},
+	{
+		"name": "ParallaxOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/ParallaxLayer.d.ts"
+	},
+	{
+		"name": "parallaxScroll",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/ParallaxLayer.d.ts"
+	},
+	{
 		"name": "parseColorPairs",
 		"kind": "function",
 		"subpath": "./two-d/render",
@@ -16870,6 +17248,24 @@
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/Particles.d.ts"
+	},
+	{
+		"name": "Picture",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
+		"name": "PictureLayer",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
+	},
+	{
+		"name": "PictureOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/PictureLayer.d.ts"
 	},
 	{
 		"name": "PinnedDeform",
@@ -17490,6 +17886,24 @@
 		"declaringModule": "two-d/render/SceneTransition.d.ts"
 	},
 	{
+		"name": "VideoOverlay",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/VideoOverlay.d.ts"
+	},
+	{
+		"name": "VideoOverlayOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/VideoOverlay.d.ts"
+	},
+	{
+		"name": "VideoPlayOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/VideoOverlay.d.ts"
+	},
+	{
 		"name": "Viewport",
 		"kind": "class",
 		"subpath": "./two-d/render",
@@ -17500,6 +17914,42 @@
 		"kind": "interface",
 		"subpath": "./two-d/render",
 		"declaringModule": "two-d/render/Viewport.d.ts"
+	},
+	{
+		"name": "WeatherKind",
+		"kind": "type",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "WeatherLayer",
+		"kind": "class",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "WeatherLayerOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "weatherPreset",
+		"kind": "function",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "WeatherPreset",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Weather.d.ts"
+	},
+	{
+		"name": "WeatherPresetOptions",
+		"kind": "interface",
+		"subpath": "./two-d/render",
+		"declaringModule": "two-d/render/Weather.d.ts"
 	},
 	{
 		"name": "WebGpuDetection",
@@ -17668,6 +18118,12 @@
 		"kind": "function",
 		"subpath": "./two-d/ui",
 		"declaringModule": "two-d/ui/reveal.d.ts"
+	},
+	{
+		"name": "AlignedTextLine",
+		"kind": "interface",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/text-align.d.ts"
 	},
 	{
 		"name": "Anchor",
@@ -18480,6 +18936,12 @@
 		"declaringModule": "two-d/ui/Skins.d.ts"
 	},
 	{
+		"name": "sliceAlignedLines",
+		"kind": "function",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/text-align.d.ts"
+	},
+	{
 		"name": "sliceSpans",
 		"kind": "function",
 		"subpath": "./two-d/ui",
@@ -18528,6 +18990,12 @@
 		"declaringModule": "two-d/ui/Spinner.d.ts"
 	},
 	{
+		"name": "splitAlignedLines",
+		"kind": "function",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/text-align.d.ts"
+	},
+	{
 		"name": "startReveal",
 		"kind": "function",
 		"subpath": "./two-d/ui",
@@ -18550,6 +19018,12 @@
 		"kind": "interface",
 		"subpath": "./two-d/ui",
 		"declaringModule": "two-d/ui/StatsScreen.d.ts"
+	},
+	{
+		"name": "stripAlignedLines",
+		"kind": "function",
+		"subpath": "./two-d/ui",
+		"declaringModule": "two-d/ui/text-align.d.ts"
 	},
 	{
 		"name": "stripMarkdown",
@@ -18814,6 +19288,12 @@
 		"kind": "interface",
 		"subpath": "./world",
 		"declaringModule": "world/Overworld.d.ts"
+	},
+	{
+		"name": "MapFactory",
+		"kind": "type",
+		"subpath": "./world",
+		"declaringModule": "world/World.d.ts"
 	},
 	{
 		"name": "Overworld",

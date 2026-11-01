@@ -12,6 +12,7 @@ import {
 	RPGM_WALL_AUTOTILE_TABLE,
 } from './RpgmAutotile.ts';
 import type { AutotileCellPart, AutotileLayout, RpgmAutotileShapeTable, RpgmAutotileSlot } from './RpgmAutotile.ts';
+import { MapLoop } from './MapLoop.ts';
 
 /**
  * The frame value meaning "nothing here"; a cell holding it gets no sprite at all.
@@ -293,6 +294,10 @@ export class TileMap extends Container {
 	//one container per chunk per layer, so culling toggles a single flag per chunk
 	private chunks: Container[][] = [];
 
+	//how the map repeats, and the geometry helper built for it; the map's size never changes
+	private wrapMode = { x: false, y: false };
+	private loopCache: MapLoop | null = null;
+
 	//per cell, applied to every layer's sprite there
 	private cellTint: Uint32Array;
 	private cellAdd: Uint32Array;
@@ -367,6 +372,64 @@ export class TileMap extends Container {
 
 	inside(x: number, y: number): boolean {
 		return x >= 0 && y >= 0 && x < this.widthInTiles && y < this.heightInTiles;
+	}
+
+	/**
+	 * Makes the map repeat on one or both axes, the world-map shape where walking off the
+	 * east edge brings you back on the west. Square maps only: the diamond and hex
+	 * projections do not tile against themselves through this map's own `worldWidth`, so a
+	 * wrap on one of them would describe a seam that does not exist.
+	 *
+	 * `TileMap` itself does not draw the extra copies - a camera that follows a wrapping
+	 * map is what decides which ones are visible - so the helpers below are the contract:
+	 * `wrapPoint` folds a position back in, `nearestCopy` says which copy of a sprite to
+	 * draw near the viewer, and `loop.offsets` lists the translations of the whole map a
+	 * view reaches.
+	 *
+	 * @example
+	 * ```ts
+	 * import { TileMap, SpriteSheet } from '@datamoc/mwg/two-d/render';
+	 *
+	 * const map = new TileMap({ width: 20, height: 20, sheet: SpriteSheet.grid('ground.png', 16) });
+	 * map.setWrap({ x: true });
+	 * console.log(map.wrapPoint(-8, 40)); // { x: 312, y: 40 }
+	 * ```
+	 */
+	setWrap(mode: { x?: boolean; y?: boolean } | null): this {
+		const x = mode?.x ?? false;
+		const y = mode?.y ?? false;
+		if ((x || y) && this.shape !== 'square') {
+			throw new Error(`map wrapping needs a square grid, not ${this.shape}`);
+		}
+		this.wrapMode = { x, y };
+		this.loopCache = null;
+		return this;
+	}
+
+	/** which axes repeat, as `setWrap` left them */
+	get wrap(): { x: boolean; y: boolean } {
+		return { ...this.wrapMode };
+	}
+
+	/** the looping geometry for this map's world size and wrap mode */
+	get loop(): MapLoop {
+		this.loopCache ??= new MapLoop({
+			width: this.worldWidth,
+			height: this.worldHeight,
+			wrapX: this.wrapMode.x,
+			wrapY: this.wrapMode.y,
+		});
+		return this.loopCache;
+	}
+
+	/** a world position folded back into the map on its wrapped axes */
+	wrapPoint(x: number, y: number): { x: number; y: number } {
+		return this.loop.wrapPoint(x, y);
+	}
+
+	/** the copy of a world position nearest `(nearX, nearY)`, for drawing a sprite at the seam */
+	nearestCopy(x: number, y: number, nearX: number, nearY: number): { x: number; y: number } {
+		return this.loop.nearest(x, y, nearX, nearY);
 	}
 
 	private index(x: number, y: number): number {

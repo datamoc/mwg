@@ -3,6 +3,7 @@ import { theme, themeChanged, type Theme } from './theme.ts';
 import { normalizeTextOptions, themedAlign, type ThemedTextOptions } from './themedText.ts';
 import { parseMarkdown, sliceSpans, stripMarkdown, type MarkdownSpan } from './markdown.ts';
 import { startReveal, advanceReveal, completeReveal, type RevealState } from './reveal.ts';
+import { splitAlignedLines, stripAlignedLines } from './text-align.ts';
 
 export interface RichLabelOptions extends ThemedTextOptions {
 	/** Text texture resolution; omit to use the renderer default. */
@@ -38,7 +39,7 @@ export class RichLabel extends HTMLText {
 	private readonly opts: RichLabelOptions;
 	private readonly tags: readonly string[];
 	private readonly themeListener = (t: Theme) => this.restyle(t);
-	private revealSpans: MarkdownSpan[] | null = null;
+	private revealSource: string | null = null;
 	private reveal: RevealState | null = null;
 
 	constructor(options: RichLabelOptions | string = {}) {
@@ -47,7 +48,7 @@ export class RichLabel extends HTMLText {
 		const tags = opts.tagStyles === undefined ? [] : Object.keys(opts.tagStyles);
 
 		super({
-			text: toHtml(opts.text ?? '', tags),
+			text: toAlignedHtml(opts.text ?? '', tags),
 			resolution: opts.resolution,
 			style: new HTMLTextStyle({
 				fontFamily: t.font.family,
@@ -71,22 +72,23 @@ export class RichLabel extends HTMLText {
 	/** avoids the re-render when the markdown source has not actually changed */
 	setText(value: string): void {
 		//an instant set cancels any reveal in progress - the two never interleave
-		this.revealSpans = null;
+		this.revealSource = null;
 		this.reveal = null;
-		const html = toHtml(value, this.tags);
+		const html = toAlignedHtml(value, this.tags);
 		if (this.text !== html) this.text = html;
 	}
 
 	/**
 	 * Shows markdown `value` progressively, `speed` visible characters per second -
 	 * markers never count toward the total and never leak half-shown, which is exactly
-	 * what a plain character slice over the source would get wrong. Driven by
-	 * `updateReveal(dt)` like `Label`'s own reveal, for the same reason: a label owns no
-	 * update loop of its own.
+	 * what a plain character slice over the source would get wrong. A line's own
+	 * `{align:center}` marker (see `splitAlignedLines`) is stripped before counting too.
+	 * Driven by `updateReveal(dt)` like `Label`'s own reveal, for the same reason: a label
+	 * owns no update loop of its own.
 	 */
 	showProgressive(value: string, speed?: number): void {
-		this.revealSpans = parseMarkdown(value);
-		this.reveal = startReveal(stripMarkdown(value).length, speed);
+		this.revealSource = value;
+		this.reveal = startReveal(stripAlignedLines(value).length, speed);
 		this.renderRevealed();
 	}
 
@@ -106,9 +108,9 @@ export class RichLabel extends HTMLText {
 	}
 
 	private renderRevealed(): void {
-		if (!this.reveal || !this.revealSpans) return;
+		if (!this.reveal || this.revealSource === null) return;
 		//through the field rather than setText, which cancels a reveal in progress
-		const html = toHtmlSpans(sliceSpans(this.revealSpans, this.reveal.revealed), this.tags);
+		const html = toAlignedHtml(this.revealSource, this.tags, Math.floor(this.reveal.revealed));
 		if (this.text !== html) this.text = html;
 	}
 
@@ -136,6 +138,28 @@ export class RichLabel extends HTMLText {
 /** styled spans to an HTML fragment; literal text is escaped so `a < b` never parses */
 function toHtml(source: string, tags: readonly string[]): string {
 	return toHtmlSpans(parseMarkdown(source), tags);
+}
+
+/**
+ * Markdown with per-line alignment: each source line is rendered on its own, wrapped in a
+ * `div` when it asked for `{align:center}` or `{align:right}`. When `revealed` is given,
+ * only that many visible characters are rendered, the typewriter case.
+ */
+function toAlignedHtml(source: string, tags: readonly string[], revealed?: number): string {
+	let remaining = revealed ?? Number.POSITIVE_INFINITY;
+	return splitAlignedLines(source)
+		.map((line) => {
+			let content: string;
+			if (revealed === undefined) {
+				content = toHtml(line.text, tags);
+			} else {
+				const spans = parseMarkdown(line.text);
+				content = toHtmlSpans(sliceSpans(spans, Math.max(0, remaining)), tags);
+				remaining -= stripMarkdown(line.text).length + 1;
+			}
+			return line.align === undefined ? content : `<div style="text-align:${line.align}">${content}</div>`;
+		})
+		.join('\n');
 }
 
 function toHtmlSpans(spans: readonly MarkdownSpan[], tags: readonly string[]): string {

@@ -94,6 +94,12 @@ export class Shape2D extends Graphics {
  * one-off caption inside a `Shape2D`-drawn diagram, say, rather than themed game-wide UI
  * text. Prefer `Label`/`BitmapLabel` for anything styled through `ui.theme()`.
  *
+ * Setting the string after the node was destroyed is a lifecycle error in Pixi: its text
+ * update reads a texture that `destroy()` has already released and throws. This class makes
+ * that update a no-op instead, the same guard `ui.Label` carries, so a scene torn down while
+ * a text change is in flight cannot take the frame down with it. Do not rely on it as a way
+ * to keep a destroyed node on screen - it is a missing crash, not a resurrected object.
+ *
  * @example
  * ```ts
  * import { Text2D } from '@datamoc/mwg/two-d/render';
@@ -101,9 +107,35 @@ export class Shape2D extends Graphics {
  * const caption = new Text2D({ text: 'N', style: { fill: 0xffffff, fontSize: 14 } });
  * caption.x = 40;
  * caption.y = 4;
+ * caption.setText('E'); // a no-op once the caption has been destroyed
  * ```
  */
-export class Text2D extends Text {}
+export class Text2D extends Text {
+	/**
+	 * The guarded form of `text = value`: skips a destroyed node and an unchanged string.
+	 * Assigning `.text` directly goes through the accessor below and gets the same guard.
+	 */
+	setText(value: string): void {
+		if (this.destroyed || this.text === value) return;
+		this.text = value;
+	}
+
+	/** the guarded form of `style.fill = color`, for a caption recoloured by state */
+	setFill(color: number): void {
+		if (this.destroyed) return;
+		this.style.fill = color;
+	}
+
+	override get text(): string {
+		return super.text;
+	}
+
+	override set text(value: string) {
+		//Pixi's text update on a destroyed Text reads its released texture and throws
+		if (this.destroyed) return;
+		super.text = value;
+	}
+}
 
 /**
  * A plain, untinted sprite under an MWG-owned name - the neutral case `TintedSprite` is not:

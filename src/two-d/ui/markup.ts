@@ -19,6 +19,14 @@ export interface MarkupSpan extends MarkdownSpan {
 
 	/** the custom tag this run came from, when it came from one; the renderer decides its style */
 	tag?: string;
+
+	/**
+	 * A line-alignment control rather than text: the span is empty and carries where its
+	 * line sits within the wrap width. `parseMarkup` produces one for `<align=center>` or
+	 * `{align:right}`, and `layoutMarkupLines` consumes it, so a renderer that positions
+	 * lines itself (`positionMarkupLines`) honours it without extra work.
+	 */
+	align?: MarkupAlign;
 }
 
 export interface MarkupOptions {
@@ -129,8 +137,27 @@ export function parseMarkup(source: string, options: MarkupOptions = {}): Markup
 			}
 		}
 
+		if (char === '{') {
+			const marker = readAlignMarker(source, index);
+			if (marker) {
+				flush();
+				spans.push({ text: '', bold: false, italic: false, align: marker.align });
+				index = marker.end;
+				continue;
+			}
+		}
+
 		if (char === '<') {
 			const tag = readTag(source, index);
+			if (tag && tag.name === 'align') {
+				const align = alignOfTag(tag);
+				if (align) {
+					flush();
+					spans.push({ text: '', bold: false, italic: false, align });
+					index = tag.end;
+					continue;
+				}
+			}
 			if (tag && (KNOWN_TAGS.has(tag.name) || customTags?.has(tag.name))) {
 				if (tag.name === 'img') {
 					const image = readImage(source, tag);
@@ -235,6 +262,9 @@ export function markupAccessibilityText(
 export interface MarkupLine {
 	readonly spans: readonly MarkupSpan[];
 	readonly width: number;
+
+	/** where this line sits within the wrap width; absent means the layout's own default */
+	readonly align?: MarkupAlign;
 }
 
 /**
@@ -276,6 +306,11 @@ export function layoutMarkupLines(
 	type Piece = MarkupSpan & { readonly hardBreak?: boolean };
 	const pieces: Piece[] = [];
 	for (const span of spans) {
+		//an alignment marker is not text: it carries where its line sits
+		if (span.align !== undefined) {
+			pieces.push({ text: '', bold: false, italic: false, align: span.align });
+			continue;
+		}
 		if (span.image !== undefined) {
 			pieces.push({ ...span });
 			continue;
@@ -299,6 +334,9 @@ export function layoutMarkupLines(
 	const lines: MarkupLine[] = [];
 	let current: Piece[] = [];
 	let width = 0;
+	//sticky across a soft wrap inside one source line, reset at every hard break: a marker at
+	//the start of a line aligns everything that line wraps onto, nothing after it
+	let lineAlign: MarkupAlign | undefined;
 
 	const flushLine = (): void => {
 		//trailing whitespace never counts toward a line's own width or survives into it
@@ -310,14 +348,24 @@ export function layoutMarkupLines(
 			width -= measure(current[current.length - 1]);
 			current.pop();
 		}
-		lines.push({ spans: mergeMarkupSpans(current), width: Math.max(0, width) });
+		lines.push({
+			spans: mergeMarkupSpans(current),
+			width: Math.max(0, width),
+			...(lineAlign === undefined ? {} : { align: lineAlign }),
+		});
 		current = [];
 		width = 0;
 	};
 
 	for (const piece of pieces) {
+		if (piece.align !== undefined) {
+			//mid-line, it aligns the line already being built; at a line start, the next one
+			lineAlign = piece.align;
+			continue;
+		}
 		if (piece.hardBreak) {
 			flushLine();
+			lineAlign = undefined;
 			continue;
 		}
 		const pieceWidth = measure(piece);
@@ -412,11 +460,12 @@ export interface MarkupLayout {
  */
 export function positionMarkupLines(lines: readonly MarkupLine[], layout: MarkupLayout): PositionedMarkupSpan[] {
 	const direction = layout.direction ?? 'ltr';
-	const align = layout.align ?? (direction === 'rtl' ? 'right' : 'left');
+	const fallback = layout.align ?? (direction === 'rtl' ? 'right' : 'left');
 	const placed: PositionedMarkupSpan[] = [];
 
 	for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
 		const line = lines[lineIndex];
+		const align = line.align ?? fallback;
 		const y = lineIndex * layout.lineHeight;
 		const widths = line.spans.map((span) => layout.measure(span));
 		const total = widths.reduce((sum, width) => sum + width, 0);
@@ -463,6 +512,30 @@ function opened(style: Style, name: string, body: string): Style {
 function attribute(body: string, name: string): string | undefined {
 	const match = new RegExp(`(?:^|\\s)${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'>]+))`).exec(body);
 	return match ? (match[1] ?? match[2] ?? match[3]) : undefined;
+}
+
+/** the alignment a `<align=…>` tag names, or null when it is not one this parser understands */
+function alignOfTag(tag: Tag): MarkupAlign | null {
+	if (tag.closing) return null;
+	const written = (
+		/^=\s*[\"']?(left|center|centre|right)[\"']?$/i.exec(tag.body.trim())?.[1] ?? attribute(tag.body, 'value')
+	)?.toLowerCase();
+	return alignWord(written);
+}
+
+/** the alignment a `{align:…}` marker names, and where it ends; null for anything else */
+function readAlignMarker(source: string, at: number): { align: MarkupAlign; end: number } | null {
+	const match = /^\{\s*align\s*:\s*(left|center|centre|right)\s*\}/i.exec(source.slice(at));
+	const align = alignWord(match?.[1]);
+	return match && align ? { align, end: at + match[0].length - 1 } : null;
+}
+
+function alignWord(word: string | undefined): MarkupAlign | null {
+	const lower = word?.toLowerCase();
+	if (lower === 'left') return 'left';
+	if (lower === 'right') return 'right';
+	if (lower === 'center' || lower === 'centre') return 'center';
+	return null;
 }
 
 function readTag(source: string, at: number): Tag | null {

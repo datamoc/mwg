@@ -67,6 +67,16 @@ export type { FogCell, FogColor, FogLayerOptions } from './FogLayer.ts';
 export { Halo, HALO_ANIMATION } from './Halo.ts';
 export type { HaloOptions } from './Halo.ts';
 
+export { MapLoop } from './MapLoop.ts';
+export type { MapLoopOptions, MapPoint } from './MapLoop.ts';
+
+export { Picture, PictureLayer } from './PictureLayer.ts';
+export type { PictureOptions } from './PictureLayer.ts';
+export { ParallaxLayer, parallaxScroll } from './ParallaxLayer.ts';
+export type { ParallaxOptions } from './ParallaxLayer.ts';
+export { VideoOverlay } from './VideoOverlay.ts';
+export type { VideoOverlayOptions, VideoPlayOptions } from './VideoOverlay.ts';
+
 export { ParticleEmitter } from './Particles.ts';
 export type {
 	Particle,
@@ -77,6 +87,15 @@ export type {
 	FollowTarget,
 	FollowOptions,
 } from './Particles.ts';
+
+export { WeatherLayer, weatherPreset } from './Weather.ts';
+export type {
+	WeatherKind,
+	EmittingWeather,
+	WeatherPreset,
+	WeatherPresetOptions,
+	WeatherLayerOptions,
+} from './Weather.ts';
 
 export { ScreenEffects } from './ScreenEffects.ts';
 export type { ScreenEffectPhase, ScreenEffectStep, ScreenEffectsOptions } from './ScreenEffects.ts';
