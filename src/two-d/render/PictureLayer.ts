@@ -1,5 +1,13 @@
-import { Container, Sprite, extensions, SubtractBlend, type BLEND_MODES } from 'pixi.js';
+import { Container, Sprite, extensions, SubtractBlend, type BLEND_MODES, type Filter } from 'pixi.js';
 import type { Texture2D } from './Types2D.ts';
+import {
+	NEUTRAL_TONE,
+	ToneFilter,
+	attachToneFilter,
+	detachToneFilter,
+	type NormalizedTone,
+	type Tone,
+} from './Tone.ts';
 
 /**
  * The blend modes a picture can name. `subtract` is RPG Maker XP's picture/fog type 2,
@@ -125,6 +133,10 @@ const reorderHooks = new WeakMap<Picture, () => void>();
  * ```
  */
 export class Picture extends Sprite {
+	private toneFilter: ToneFilter | null = null;
+	private tonePixiFilter: Filter | null = null;
+	private _tone: NormalizedTone = NEUTRAL_TONE;
+
 	/** @param name the key the owning `PictureLayer` addresses this picture by */
 	constructor(name: string, options: PictureOptions = {}) {
 		super(options.texture ? { texture: options.texture } : undefined);
@@ -175,6 +187,47 @@ export class Picture extends Sprite {
 	setTint(color: number): this {
 		this.tint = color;
 		return this;
+	}
+
+	/**
+	 * Applies an RGSS/MV tone (per-channel offsets plus gray desaturation) to this picture
+	 * alone, or removes it with null. This is the XP picture tone: `setTint` can only
+	 * multiply a colour, while a tone brightens and darkens channels independently and can
+	 * desaturate, which is what a picture shown over a night map or a memory flashback asks
+	 * for. It costs one filter pass on this picture.
+	 *
+	 * @example
+	 * ```ts
+	 * import { PictureLayer } from '@datamoc/mwg/two-d/render';
+	 * import type { Texture2D } from '@datamoc/mwg/two-d/render';
+	 *
+	 * declare const flashback: Texture2D;
+	 *
+	 * const layer = new PictureLayer();
+	 * const picture = layer.show('memory', { texture: flashback });
+	 * picture.setTone({ gray: 200, blue: 30 }); // a cold, faded memory
+	 * picture.setTone(null); // full colour again
+	 * ```
+	 */
+	setTone(tone: Tone | null): this {
+		if (!tone) {
+			if (!this.toneFilter) return this;
+			detachToneFilter(this, this.tonePixiFilter);
+			this.toneFilter = null;
+			this.tonePixiFilter = null;
+			this._tone = NEUTRAL_TONE;
+			return this;
+		}
+		this.toneFilter ??= new ToneFilter();
+		this.toneFilter.tone = tone;
+		this._tone = this.toneFilter.tone;
+		this.tonePixiFilter = attachToneFilter(this, this.toneFilter);
+		return this;
+	}
+
+	/** the live tone last passed to `setTone`, neutral when there is none */
+	get tone(): NormalizedTone {
+		return this._tone;
 	}
 
 	/** 0 (invisible) to 1 (opaque) */

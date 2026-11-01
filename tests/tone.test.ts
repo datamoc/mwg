@@ -124,6 +124,18 @@ test('ScreenEffects.tone without a target warns instead of filtering the wrong l
 	assert.ok(warnings.some((message) => message.includes('toneTarget')));
 });
 
+test('a picture carries its own live tone, separate from its tint', () => {
+	const picture = new Picture('memory');
+	picture.setTone({ gray: 180, blue: 20 });
+	assert.equal(picture.tone.gray, 180);
+	assert.equal(picture.tone.blue, 20);
+	picture.setTint(0x808080);
+	assert.equal(picture.tone.gray, 180, 'a tint does not disturb the tone');
+	picture.setTone(null);
+	assert.equal(picture.tone.gray, 0);
+	assert.equal(picture.tint, 0x808080, 'clearing the tone leaves the tint alone');
+});
+
 test('a picture can name subtract, and an unknown blend mode fails by name', () => {
 	assert.ok((PICTURE_BLEND_MODES as readonly string[]).includes('subtract'));
 	const picture = new Picture('fog');

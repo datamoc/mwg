@@ -553,6 +553,8 @@ batcher/high-shader internals are confined to `ColorTransformBatcher.ts`.
   set and insertion order otherwise. `setBlendMode` accepts `PICTURE_BLEND_MODES`, which includes
   `subtract`: Pixi's own subtract blend mode is registered on first use, so RPG Maker XP's
   subtractive picture and fog (type 2) is really subtractive, and an unknown mode throws by name.
+  `setTone` gives a single picture the live tone (per-channel offsets plus gray desaturation), which
+  `setTint` alone cannot express.
 - `ParallaxLayer`/`parallaxScroll`/`ParallaxOptions` - a scrolling, optionally looping backdrop:
   camera-relative scroll rates (0 pinned, 1 moving with the world), `loopX`/`loopY` tiling,
   opacity/tint/offset setters, `setTone` for the XP fog's own colour grade, and
