@@ -1,8 +1,8 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mwg",
-	"version": "0.52.1",
-	"releaseDate": "2026-10-31",
+	"version": "0.53.0",
+	"releaseDate": "2026-11-01",
 	"source": {
 		"files": 410,
 		"lines": 84440,
@@ -169,7 +169,7 @@
 	},
 	"bundle": {
 		"globalRaw": 1465248,
-		"globalGzip": 443470,
+		"globalGzip": 443469,
 		"distRaw": 5736769
 	},
 	"quality": {

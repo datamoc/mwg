@@ -7,10 +7,14 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
-The presentation primitives a converted RPG Maker project still had to build itself: pictures,
-parallax, looping maps, weather presets, video overlays and a zoom about a screen point. Message
-lines can carry their own alignment, audio channels take filters and effect inserts, and an
-async map entry keeps the current map until the next one has loaded.
+## [0.53.0] - 2026-11-01
+
+The presentation primitives a converted RPG Maker project had to build itself, plus the
+runtime pieces its port asked for: pictures, parallax, looping maps, weather presets, video
+overlays and a zoom about a screen point; a live tone, real subtractive picture blending and a
+bounded Pixi namespace for plugin shaders; per-line message alignment; audio filters and
+effect inserts; async map entry; shortest paths, headless list selection and an escape-to-markup
+adaptor; and hotseat or split-screen local multiplayer for one to four players.
 
 ### Added
 
