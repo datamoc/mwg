@@ -1,7 +1,7 @@
 {
 	"project": "mwg",
 	"package": "@datamoc/mwg",
-	"version": "0.53.1",
+	"version": "0.54.0",
 	"releaseDate": "2026-11-01",
 	"source": {
 		"files": 411,

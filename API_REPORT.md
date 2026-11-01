@@ -8013,7 +8013,7 @@ build instead.
 
 ### `version` (const)
 
-    export declare const version = "0.53.1";
+    export declare const version = "0.54.0";
 
 ### `VerticalLabel` (class)
 

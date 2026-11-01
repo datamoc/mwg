@@ -7,8 +7,11 @@ the public API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.54.0] - 2026-11-01
+
 The picture and pathfinding gaps the port hit after adopting 0.53.1, plus a display bridge
-for sandboxed plugins.
+for sandboxed plugins: per-property picture tweening, live re-keying, tone as a picture
+option, a bounded and origin-aware shortest path, and `PluginLayer` for plugin-drawn sprites.
 
 ### Added
 
